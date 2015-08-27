@@ -24,21 +24,21 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, boot.projectRoot());
 		}
 	}
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			deleteObject(rc, "uuid", "project_deleted", boot.projectRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			updateObject(rc, "uuid", boot.projectRoot());
 		}
 
@@ -50,7 +50,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.projectRoot());
 			}
 		}
@@ -58,7 +58,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, boot.projectRoot(), new ProjectListResponse());
 		}
 	}

@@ -23,7 +23,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName("stringField");
@@ -58,14 +58,14 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Override
 	public void testReadNodeWithExitingField() {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			StringGraphField stringField = container.createString("stringField");
 			stringField.setString("someString");
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 			StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
 			assertNotNull(deserializedStringField);

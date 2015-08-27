@@ -40,7 +40,7 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 		route("/me").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				MeshAuthUser requestUser = getUser(rc);
 				transformAndResponde(rc, requestUser);
 			}

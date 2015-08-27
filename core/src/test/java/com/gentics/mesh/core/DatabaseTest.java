@@ -54,23 +54,23 @@ public class DatabaseTest extends AbstractDBTest {
 	@Test
 	public void testRestore() throws IOException {
 		String name = "username";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			user().setUsername(name);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertEquals(name, user().getUsername());
 		}
 		db.backupGraph(outputDirectory.getAbsolutePath());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			user().setUsername("changed");
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertEquals("changed", user().getUsername());
 		}
 		db.restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertEquals("username", user().getUsername());
 		}
 

@@ -214,7 +214,7 @@ public abstract class AbstractIndexHandler<T> {
 
 	public void handleEvent(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			switch (action) {
 			case CREATE_ACTION:
 				store(uuid, handler);

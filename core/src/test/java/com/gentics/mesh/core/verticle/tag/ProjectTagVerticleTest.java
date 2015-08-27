@@ -63,7 +63,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 
 		String noPermTagUUID;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
@@ -146,7 +146,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
@@ -159,7 +159,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
@@ -176,7 +176,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdate() throws Exception {
 		String tagUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			tagUuid = tag.getUuid();
 			Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
@@ -204,7 +204,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagResponse tag2 = updatedTagFut.result();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			test.assertTag(tag, tag2);
 		}
@@ -216,7 +216,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagResponse reloadedTag = reloadedTagFut.result();
 		assertEquals(request.getFields().getName(), reloadedTag.getFields().getName());
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			test.assertTag(tag, reloadedTag);
 		}
@@ -226,7 +226,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateTagWithConflictingName() {
 		String uuid;
 		String tagFamilyName;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("red");
 			uuid = tag.getUuid();
 			tagFamilyName = tag.getTagFamily().getName();
@@ -250,7 +250,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		String tagName;
 		String tagUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			tagName = tag.getName();
 			tagUuid = tag.getUuid();
@@ -280,7 +280,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		String name;
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			name = tag.getName();
 			uuid = tag.getUuid();
@@ -291,7 +291,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());
@@ -307,7 +307,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			role().revokePermissions(tag, DELETE_PERM);
@@ -318,7 +318,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNotNull("The tag should not have been deleted", rh.result());
@@ -353,7 +353,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull("We expect that a tag with the name already exists.", tag("red"));
 		tagCreateRequest.getFields().setName("red");
 		String tagFamilyName;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamilies().get("colors");
 			tagFamilyName = tagFamily.getName();
 			tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
@@ -464,7 +464,7 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			uuid = tag.getUuid();

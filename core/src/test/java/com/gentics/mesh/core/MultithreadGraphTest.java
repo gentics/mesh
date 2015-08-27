@@ -21,7 +21,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 	public void testMultithreading() throws InterruptedException {
 
 		runAndWait(() -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				MeshRoot meshRoot = boot.meshRoot();
 				User user = meshRoot.getUserRoot().create("test", null, null);
 				assertNotNull(user);
@@ -31,7 +31,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 		});
 
 		runAndWait(() -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				// fg.getEdges();
 				runAndWait(() -> {
 					User user = boot.meshRoot().getUserRoot().findByUsername("test");
@@ -44,7 +44,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 			}
 		});
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = boot.meshRoot().getUserRoot().findByUsername("test");
 			assertNotNull(user);
 		}

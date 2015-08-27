@@ -69,7 +69,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testAddSchemaToProjectWithPerm() throws Exception {
 		SchemaContainer schema;
 		Project extraProject;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			extraProject = projectRoot.create("extraProject", user());
@@ -80,14 +80,14 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
 			latchFor(future);
 			assertSuccess(future);
 			SchemaResponse restSchema = future.result();
 			test.assertSchema(schema, restSchema);
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 				assertNotNull("The schema should be added to the extra project", rh.result());
@@ -102,7 +102,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
 		SchemaContainer schema;
 		Project extraProject;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 			Project project = project();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
@@ -112,12 +112,12 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 			role().grantPermissions(project, READ_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", extraProject.getUuid());
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// Reload the schema and check for expected changes
 			assertFalse("The schema should not have been added to the extra project", extraProject.getSchemaContainerRoot().contains(schema));
 		}
@@ -129,20 +129,20 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
 		SchemaContainer schema;
 		Project project;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 			project = project();
 			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 		}
 
 		Future<SchemaResponse> future;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
 			latchFor(future);
 			assertSuccess(future);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaResponse restSchema = future.result();
 			test.assertSchema(schema, restSchema);
 
@@ -158,7 +158,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
 		SchemaContainer schema;
 		Project project;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 			project = project();
 
@@ -168,13 +168,13 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// Reload the schema and check for expected changes
 			assertTrue("The schema should still be listed for the project.", project.getSchemaContainerRoot().contains(schema));
 		}

@@ -17,7 +17,7 @@ public class NumberGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleNumber() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldImpl field = new NumberGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
@@ -35,7 +35,7 @@ public class NumberGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testNumberField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField numberField = container.createNumber("numberField");
 			assertEquals("numberField", numberField.getFieldKey());

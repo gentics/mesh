@@ -34,7 +34,7 @@ public class NodeGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeFieldTransformation() throws IOException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node newsNode = folder("news");
 
 			Node node = folder("2015");

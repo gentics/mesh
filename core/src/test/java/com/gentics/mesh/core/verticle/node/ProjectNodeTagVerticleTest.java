@@ -43,7 +43,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -62,20 +62,20 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddTagToNode() throws Exception {
 		Node node;
 		Tag tag;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			tag = tag("red");
 			assertFalse(node.getTags().contains(tag));
 		}
 
 		Future<NodeResponse> future;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 			latchFor(future);
 			assertSuccess(future);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node.reload();
 			NodeResponse restNode = future.result();
 			assertTrue(test.containsTag(restNode, tag));
@@ -88,7 +88,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddTagToNoPermNode() throws Exception {
 		Node node;
 		Tag tag;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			tag = tag("red");
 			assertFalse(node.getTags().contains(tag));
@@ -96,12 +96,12 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertFalse(node.getTags().contains(tag));
 		}
 	}
@@ -110,7 +110,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testAddNoPermTagToNode() throws Exception {
 		Node node;
 		Tag tag;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			tag = tag("red");
 			assertFalse(node.getTags().contains(tag));
@@ -118,13 +118,13 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertFalse(node.getTags().contains(tag));
 		}
 	}
@@ -133,20 +133,20 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveTagFromNode() throws Exception {
 		Node node;
 		Tag tag;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			tag = tag("bike");
 			assertTrue(node.getTags().contains(tag));
 		}
 
 		Future<NodeResponse> future;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 			latchFor(future);
 			assertSuccess(future);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse restNode = future.result();
 			assertFalse(test.containsTag(restNode, tag));
 			assertFalse(node.getTags().contains(tag));
@@ -158,7 +158,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			uuid = node.getUuid();
 		}
@@ -172,7 +172,7 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveTagFromNoPermNode() throws Exception {
 		Tag tag;
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			tag = tag("bike");
 			assertTrue(node.getTags().contains(tag));
@@ -180,13 +180,13 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertTrue("The tag should not be removed from the node", node.getTags().contains(tag));
 		}
 	}
@@ -195,20 +195,20 @@ public class ProjectNodeTagVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveNoPermTagFromNode() throws Exception {
 		Node node;
 		Tag tag;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			tag = tag("bike");
 			assertTrue(node.getTags().contains(tag));
 			role().revokePermissions(tag, READ_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<NodeResponse> future = getClient().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeRequestParameters());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", tag.getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertTrue("The tag should not have been removed from the node", node.getTags().contains(tag));
 		}
 	}

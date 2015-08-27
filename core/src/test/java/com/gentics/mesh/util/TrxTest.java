@@ -25,21 +25,21 @@ public class TrxTest extends AbstractDBTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		UserRoot root;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			root = meshRoot().getUserRoot();
 		}
 		int e = i.incrementAndGet();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(root.create("testuser" + e, group(), user()));
 			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 		}
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				assertNotNull(root.create("testuser" + u, group(), user()));
 				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
 				tx.failure();
@@ -50,7 +50,7 @@ public class TrxTest extends AbstractDBTest {
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNull(boot.userRoot().findByUsername("testuser" + u));
 			System.out.println("RUN: " + i.get());
 		}
@@ -62,7 +62,7 @@ public class TrxTest extends AbstractDBTest {
 		User user = user();
 
 		Runnable task2 = () -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				user.setUsername("test2");
 				assertNotNull(boot.userRoot().findByUsername("test2"));
 				tx.success();
@@ -70,7 +70,7 @@ public class TrxTest extends AbstractDBTest {
 			assertNotNull(boot.userRoot().findByUsername("test2"));
 
 			Runnable task = () -> {
-				try (Trx tx = new Trx(db)) {
+				try (Trx tx = db.trx()) {
 					user.setUsername("test3");
 					assertNotNull(boot.userRoot().findByUsername("test3"));
 					tx.failure();
@@ -90,7 +90,7 @@ public class TrxTest extends AbstractDBTest {
 		Thread t2 = new Thread(task2);
 		t2.start();
 		t2.join();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNull(boot.userRoot().findByUsername("test3"));
 			assertNotNull(boot.userRoot().findByUsername("test2"));
 		}

@@ -37,7 +37,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.groupRoot().findByUuid(uuid, rh -> {
 				if (rh.result() != null && rh.succeeded()) {
 					Group group = rh.result();

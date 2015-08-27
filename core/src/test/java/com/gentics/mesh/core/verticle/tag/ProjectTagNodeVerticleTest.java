@@ -31,7 +31,7 @@ public class ProjectTagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<NodeListResponse> future = getClient().findNodesForTag(DemoDataProvider.PROJECT_NAME, tag("red").getUuid());
 			latchFor(future);
 			assertSuccess(future);

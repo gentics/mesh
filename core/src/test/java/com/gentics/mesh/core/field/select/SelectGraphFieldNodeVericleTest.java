@@ -17,7 +17,7 @@ public class SelectGraphFieldNodeVericleTest extends AbstractGraphFieldNodeVerti
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			SelectFieldSchema selectFieldSchema = new SelectFieldSchemaImpl();
 			selectFieldSchema.setName("selectField");

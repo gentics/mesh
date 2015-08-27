@@ -59,7 +59,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, boot.meshRoot().getNodeRoot());
 		}
 	}
@@ -67,7 +67,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleDelete(RoutingContext rc) {
 //		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				String uuid = rc.request().params().get("uuid");
 				Project project = getProject(rc);
 				if (project.getBaseNode().getUuid().equals(uuid)) {
@@ -86,7 +86,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleUpdate(RoutingContext rc) {
 //		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				Project project = getProject(rc);
 				updateObject(rc, "uuid", project.getNodeRoot());
 			}
@@ -105,7 +105,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			rc.next();
 		} else {
 //			Mesh.vertx().executeBlocking(bc -> {
-				try (Trx tx = new Trx(db)) {
+				try (Trx tx = db.trx()) {
 					Project project = getProject(rc);
 					loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
 				}
@@ -119,14 +119,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, project.getNodeRoot(), new NodeListResponse());
 		}
 	}
 
 	public void handleMove(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			// Load the node that should be moved
 			String uuid = rc.request().params().get("uuid");
@@ -169,7 +169,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
 
 							// Move the node
-							try (Trx txMove = new Trx(db)) {
+							try (Trx txMove = db.trx()) {
 								sourceNode.setParentNode(targetNode);
 								sourceNode.setEditor(getUser(rc));
 								sourceNode.setLastEditedTimestamp(System.currentTimeMillis());
@@ -187,7 +187,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleDownload(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
@@ -206,7 +206,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleUpload(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			FileSystem fileSystem = Mesh.vertx().fileSystem();
 			Project project = getProject(rc);
 			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
@@ -233,7 +233,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								} else {
 									String contentType = ul.contentType();
 									String fileName = ul.fileName();
-									try (Trx txUpdate = new Trx(db)) {
+									try (Trx txUpdate = db.trx()) {
 										node.setBinaryFileName(fileName);
 										node.setBinaryFileSize(ul.size());
 										node.setBinaryContentType(contentType);
@@ -316,7 +316,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleReadChildren(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = getUser(rc);
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
@@ -334,7 +334,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void readTags(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
@@ -351,7 +351,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleAddTag(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			if (project == null) {
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Project not found"));
@@ -363,7 +363,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
 							if (hasSucceeded(rc, th)) {
 								Tag tag = th.result();
-								try (Trx txAdd = new Trx(db)) {
+								try (Trx txAdd = db.trx()) {
 									node.addTag(tag);
 									txAdd.success();
 								}
@@ -377,14 +377,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleRemoveTag(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			loadObject(rc, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 				loadObject(rc, "tagUuid", READ_PERM, project.getTagRoot(), srh -> {
 					if (hasSucceeded(rc, srh) && hasSucceeded(rc, rh)) {
 						Node node = rh.result();
 						Tag tag = srh.result();
-						try (Trx txRemove = new Trx(db)) {
+						try (Trx txRemove = db.trx()) {
 							node.removeTag(tag);
 							txRemove.success();
 						}

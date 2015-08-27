@@ -41,7 +41,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot root = meshRoot().getUserRoot();
 			int nUserBefore = root.findAll().size();
 			assertNotNull(root.create("dummy12345", null, user()));
@@ -52,7 +52,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testHasPermission() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertTrue(user().hasPermission(english(), READ_PERM));
 		}
 	}
@@ -61,7 +61,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = getUser(rc);
 
 			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
@@ -77,7 +77,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
@@ -86,7 +86,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testGetPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Language language = english();
 			String[] perms = { "create", "update", "delete", "read" };
 			String[] loadedPerms = user().getPermissionNames(language);
@@ -98,7 +98,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", group(), user());
 			Group group = group();
@@ -116,7 +116,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNull(boot.userRoot().findByUsername("bogus"));
 			boot.userRoot().findByUsername(user().getUsername());
 		}
@@ -125,7 +125,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String uuid = user().getUuid();
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.userRoot().findByUuid(uuid, rh -> {
@@ -140,7 +140,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
 			user().transformToRest(rc, rh -> {
@@ -161,7 +161,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot root = meshRoot();
 			User user = root.getUserRoot().create("Anton", null, user());
 			assertTrue(user.isEnabled());
@@ -182,7 +182,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
 			User newUser = root.getUserRoot().create("Anton", null, user());
@@ -195,7 +195,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			assertEquals("joe1", user.getUsername());
 			assertNotNull(user.getPasswordHash());
@@ -215,7 +215,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			final String USERNAME = "test";
 			final String EMAIL = "joe@nowhere.org";
 			final String FIRSTNAME = "joe";
@@ -247,7 +247,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			assertEquals(1, user.getGroups().size());
 			assertTrue(user.isEnabled());
@@ -260,7 +260,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User newUser = meshRoot().getUserRoot().create("newUser", null, user());
 
 			User user = user();
@@ -299,7 +299,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		User user;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			user = meshRoot().getUserRoot().create("Anton", null, user());
 			tx.success();
 		}
@@ -310,7 +310,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() {
 		User user;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			user = meshRoot().getUserRoot().create("Anton", null, user());
 			tx.success();
 		}
@@ -321,7 +321,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() {
 		User user;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			user = meshRoot().getUserRoot().create("Anton", null, user());
 			tx.success();
 		}
@@ -332,7 +332,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() {
 		User user;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			user = meshRoot().getUserRoot().create("Anton", null, user());
 			tx.success();
 		}

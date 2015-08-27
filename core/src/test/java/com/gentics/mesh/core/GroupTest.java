@@ -32,7 +32,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testUserGroup() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 
@@ -49,7 +49,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
 			MeshAuthUser requestUser = getUser(rc);
 			Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 19));
@@ -66,7 +66,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<? extends Group> groups = boot.groupRoot().findAll();
 			for (Group group : groups) {
 				System.out.println("G: " + group.getName());
@@ -79,7 +79,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			int nGroupsBefore = root.findAll().size();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
@@ -93,7 +93,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(boot.groupRoot().findByName("guests"));
 		}
 	}
@@ -101,7 +101,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.groupRoot().findByUuid(group().getUuid(), rh -> {
 				assertNotNull(rh.result());
 			});
@@ -111,7 +111,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
@@ -129,7 +129,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
@@ -146,7 +146,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
 			Group group = root.getGroupRoot().create("newGroup", user);
@@ -159,7 +159,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(group.getUsers());
@@ -171,7 +171,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			assertNotNull(group);
@@ -182,7 +182,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			assertNotNull(group);
@@ -202,7 +202,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			group().setName("changed");
 			assertEquals("changed", group().getName());
 		}

@@ -44,7 +44,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testTagFamilyTagCreation() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
 			TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
 			assertNotNull(tagFamily);
@@ -60,7 +60,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testSimpleTag() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily root = tagFamily("basic");
 			Tag tag = root.create("test", project(), user());
 			assertEquals("test", tag.getName());
@@ -71,7 +71,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testNodeTaggging() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Tag tag = root.create(ENGLISH_NAME, project(), user());
@@ -119,7 +119,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testNodeTagging() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			final String TEST_TAG_NAME = "testTag";
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
@@ -147,7 +147,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
 			MeshAuthUser requestUser = getUser(rc);
 
@@ -164,7 +164,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
@@ -202,7 +202,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagRoot root = meshRoot().getTagRoot();
 			assertEquals(tags().size(), root.findAll().size());
 			Tag tag = tag("red");
@@ -221,7 +221,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("car");
 			Tag foundTag = meshRoot().getTagRoot().findByName("Car");
 			assertNotNull(foundTag);
@@ -234,7 +234,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("car");
 			CountDownLatch latch = new CountDownLatch(2);
 			meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
@@ -252,7 +252,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
 			assertNotNull(tag);
@@ -273,7 +273,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			List<String> languageTags = new ArrayList<>();
@@ -304,7 +304,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
 			String uuid = tag.getUuid();
@@ -325,7 +325,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
 			assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
@@ -338,7 +338,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("car");
 			assertEquals("Car", tag.getName());
 			assertNotNull(tag.getCreationTimestamp());
@@ -353,12 +353,12 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() throws InterruptedException {
 		Tag tag;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			tag = tag("red");
 			tag.remove();
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
 				assertNull(rh.result());
@@ -371,7 +371,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Tag tag = tag("red");
 			tag.setName("Blue");
 			assertEquals("Blue", tag.getName());

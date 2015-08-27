@@ -63,7 +63,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.userRoot().findByUuid(uuid, rh -> {
 				if (rh.result() != null && rh.succeeded()) {
 					User user = rh.result();

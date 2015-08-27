@@ -23,7 +23,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName("booleanField");
@@ -38,13 +38,13 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Override
 	public void testReadNodeWithExitingField() {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			container.createBoolean("booleanField").setBoolean(true);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 			BooleanFieldImpl deserializedBooleanField = response.getField("booleanField");
 			assertNotNull(deserializedBooleanField);
@@ -55,12 +55,12 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertTrue(field.getValue());
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(false));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertFalse(field.getValue());
@@ -70,7 +70,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = createNode("booleanField", new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertTrue(field.getValue());

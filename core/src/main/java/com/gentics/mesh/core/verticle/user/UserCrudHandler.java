@@ -20,28 +20,28 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			deleteObject(rc, "uuid", "user_deleted", boot.userRoot());
 		}
 	}
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, boot.userRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			updateObject(rc, "uuid", boot.userRoot());
 		}
 	}
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
 			});
@@ -50,7 +50,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
 		}
 	}

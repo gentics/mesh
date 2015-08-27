@@ -30,7 +30,7 @@ public class MeshAuthProvider implements AuthProvider {
 	private BootstrapInitializer boot;
 
 	@Autowired
-	private Database database;
+	private Database db;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -42,7 +42,7 @@ public class MeshAuthProvider implements AuthProvider {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
-			try (Trx tx = new Trx(database)) {
+			try (Trx tx = db.trx()) {
 				user = boot.userRoot().findMeshAuthUserByUsername(username);
 			}
 			if (user != null) {

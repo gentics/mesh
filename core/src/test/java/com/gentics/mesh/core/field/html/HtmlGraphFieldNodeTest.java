@@ -34,7 +34,7 @@ public class HtmlGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testHtmlFieldTransformation() throws IOException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			Schema schema = node.getSchema();
 			HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();

@@ -44,14 +44,14 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, boot.roleRoot());
 		}
 	}
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			deleteObject(rc, "uuid", "role_deleted", boot.roleRoot());
 		}
 	}
@@ -59,7 +59,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(RoutingContext rc) {
 //		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
 			}
 //		} , false, rh -> {
@@ -71,20 +71,20 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			updateObject(rc, "uuid", boot.roleRoot());
 		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
 		}
 	}
 
 	public void handlePermissionUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String roleUuid = rc.request().getParam("param0");
 			String pathToElement = rc.request().params().get("param1");
 			if (StringUtils.isEmpty(roleUuid)) {
@@ -106,7 +106,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 								MeshVertex targetElement = vertex.result();
 
 								// Prepare the sets for revoke and grant actions
-								try (Trx txUpdate = new Trx(db)) {
+								try (Trx txUpdate = db.trx()) {
 									Set<GraphPermission> permissionsToGrant = new HashSet<>();
 									Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 									permissionsToRevoke.add(CREATE_PERM);

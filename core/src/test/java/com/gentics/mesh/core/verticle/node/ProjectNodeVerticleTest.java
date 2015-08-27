@@ -120,7 +120,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			request.setParentNodeUuid(project().getBaseNode().getUuid());
 		}
 
@@ -135,7 +135,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreate() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node parentNode = folder("news");
 			uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -158,7 +158,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We created the node. A search queue entry should have been created.", 1, searchQueue.getSize());
 			SearchQueueEntry entry = searchQueue.take();
@@ -198,7 +198,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(2);
 			meshRoot().getNodeRoot().findByUuid(restNode.getUuid(), rh -> {
 				Node node = rh.result();
@@ -250,7 +250,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Revoke create perm
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			uuid = node.getUuid();
 			role().revokePermissions(node, CREATE_PERM);
@@ -298,7 +298,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 		final String noPermNodeUUID;
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 			Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
@@ -395,7 +395,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws InterruptedException {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node parentNode = folder("news");
 			uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -444,7 +444,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid;
 		Node node;
 		final String newName = "english renamed name";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			uuid = node.getUuid();
 			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
@@ -487,7 +487,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int nJobs = 3;
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			uuid = folder("2015").getUuid();
 		}
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
@@ -544,7 +544,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			assertNotNull(node);
@@ -554,13 +554,13 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			test.assertMeshNode(folder("2015"), future.result());
 		}
 		NodeResponse response = future.result();
 		assertEquals("name", response.getDisplayField());
 		assertNotNull(response.getParentNode());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertEquals(folder("2015").getParentNode().getUuid(), response.getParentNode().getUuid());
 		}
 		assertEquals("News", response.getParentNode().getDisplayName());
@@ -572,7 +572,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("products");
 			uuid = node.getUuid();
 		}
@@ -583,7 +583,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			test.assertMeshNode(folder("products"), restNode);
 		}
 
@@ -596,7 +596,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			assertNotNull(node);
@@ -616,7 +616,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -653,7 +653,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid;
 		Node node;
 		final String newName = "english renamed name";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			uuid = node.getUuid();
 			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
@@ -679,11 +679,11 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(newName, field.getString());
 		assertNotNull(restNode);
 		assertTrue(restNode.isPublished());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We updated the node. A search queue entry should have been created.", 1, searchQueue.getSize());
 			SearchQueueEntry entry = searchQueue.take();
@@ -698,7 +698,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, UPDATE_PERM);
 			uuid = node.getUuid();
@@ -733,7 +733,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testUpdateNodeWithExtraField() throws UnknownHostException, InterruptedException {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node parentNode = folder("news");
 			uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -762,7 +762,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node parentNode = folder("news");
 			uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -789,7 +789,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node parentNode = folder("news");
 			uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -815,7 +815,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testUpdateNodeWithExtraField2() throws HttpStatusCodeErrorException, Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			uuid = node.getUuid();
 		}
@@ -839,7 +839,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertNull(future.result());
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeGraphFieldContainer englishContainer = folder("2015").getOrCreateFieldContainer(english());
 			assertNotEquals(newName, englishContainer.getString("name").getString());
 		}
@@ -851,7 +851,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testDeleteBaseNode() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = project().getBaseNode();
 			uuid = node.getUuid();
 		}
@@ -860,7 +860,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 				assertNotNull("The node should still exist.", rh.result());
@@ -882,7 +882,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		expectMessageResponse("node_deleted", future, uuid);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 				assertNull(rh.result());
@@ -891,7 +891,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			failingLatch(latch);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We deleted the item. A search queue entry should have been created.", 1, searchQueue.getSize());
 			SearchQueueEntry entry = searchQueue.take();
@@ -905,7 +905,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
@@ -916,7 +916,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 				assertNotNull(rh.result());

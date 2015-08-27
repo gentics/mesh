@@ -32,7 +32,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			root.findAll(getRequestUser(), new PagingInfo(1, 10));
 		}
@@ -41,7 +41,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			List<? extends TagFamily> families = root.findAll();
 			assertNotNull(families);
@@ -62,7 +62,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			int nProjectsBefore = root.findAll().size();
 			assertNotNull(root.create("test1234556", user()));
@@ -74,7 +74,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			assertNotNull(root);
 			assertNotNull(root.findByName("colors"));
@@ -84,7 +84,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = tagFamily("colors");
 
@@ -99,7 +99,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getName());
 			assertEquals("colors", tagFamily.getName());
@@ -111,7 +111,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily family = root.create("test", user());
 			TagFamily family2 = root.findByName(family.getName());
@@ -125,14 +125,14 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() {
 		Map<String, String> uuidToBeDeleted = new HashMap<>();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
 			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
 			tagFamily.delete();
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertDeleted(uuidToBeDeleted);
 		}
 	}
@@ -140,7 +140,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			tagFamily.setName("new Name");
 			assertEquals("new Name", tagFamily.getName());
@@ -152,7 +152,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		TagFamily tagFamily;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			tx.success();
 		}
@@ -163,7 +163,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() {
 		TagFamily tagFamily;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			tx.success();
 		}
@@ -174,7 +174,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() {
 		TagFamily tagFamily;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			tx.success();
 		}
@@ -186,7 +186,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() {
 		TagFamily tagFamily;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			tx.success();
 		}
@@ -196,7 +196,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
@@ -214,7 +214,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
@@ -237,7 +237,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));

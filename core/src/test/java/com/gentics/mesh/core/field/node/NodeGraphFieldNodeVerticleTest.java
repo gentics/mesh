@@ -27,7 +27,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeField");
@@ -42,7 +42,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			Node node2 = folder("deals");
 
@@ -60,7 +60,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			Node node2 = folder("deals");
 
@@ -84,7 +84,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = createNode("nodeField", new NodeFieldImpl().setUuid(folder("news").getUuid()));
 			NodeResponse field = response.getField("nodeField");
 			assertEquals(folder("news").getUuid(), field.getUuid());
@@ -96,7 +96,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testReadNodeWithExitingField() throws IOException {
 		Node node;
 		Node newsNode;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			newsNode = folder("news");
 			node = folder("2015");
 
@@ -104,7 +104,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			container.createNode("nodeField", newsNode);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 			NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
 			assertNotNull(deserializedNodeField);
@@ -116,7 +116,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testReadExpandedNodeWithExistingField() throws IOException {
 		Node node;
 		Node newsNode;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			resetClientSchemaStorage();
 			newsNode = folder("news");
 			node = folder("2015");
@@ -127,7 +127,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			// 1. Read node with collapsed fields and check that the collapsed node field can be read
 			NodeResponse responseCollapsed = readNode(node);

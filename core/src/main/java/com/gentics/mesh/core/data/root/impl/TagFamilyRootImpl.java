@@ -87,7 +87,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = getUser(rc);
 			TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
 
@@ -102,7 +102,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 				if (requestUser.hasPermission(this, CREATE_PERM)) {
 					TagFamily tagFamily = null;
-					try (Trx txCreate = new Trx(db)) {
+					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						tagFamily = create(name, requestUser);
 						addTagFamily(tagFamily);

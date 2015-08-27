@@ -26,7 +26,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, boot.schemaContainerRoot());
 		}
 
@@ -34,14 +34,14 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			deleteObject(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			updateObject(rc, "uuid", boot.schemaContainerRoot());
 		}
 	}
@@ -52,7 +52,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
 			}
 		}
@@ -60,20 +60,20 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
 		}
 	}
 
 	public void handleAddProjectToSchema(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
 						if (hasSucceeded(rc, srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
-							try (Trx txAdd = new Trx(db)) {
+							try (Trx txAdd = db.trx()) {
 								project.getSchemaContainerRoot().addSchemaContainer(schema);
 								txAdd.success();
 							}
@@ -88,7 +88,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleRemoveProjectFromSchema(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
 					// TODO check whether schema is assigned to project
@@ -96,7 +96,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(rc, srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
-							try (Trx txRemove = new Trx(db)) {
+							try (Trx txRemove = db.trx()) {
 								project.getSchemaContainerRoot().removeSchemaContainer(schema);
 								txRemove.success();
 							}

@@ -38,7 +38,7 @@ public class WebRootHandler {
 	private I18NService i18n;
 
 	@Autowired
-	private Database database;
+	private Database db;
 
 	public void handleGetPath(RoutingContext rc) {
 
@@ -52,7 +52,7 @@ public class WebRootHandler {
 			PathSegment lastSegment = nodePath.getLast();
 
 			if (lastSegment != null) {
-				try (Trx tx = new Trx(database)) {
+				try (Trx tx = db.trx()) {
 					Node node = tx.getGraph().frameElement(lastSegment.getVertex(), Node.class);
 					if (node == null) {
 						String message = i18n.get(rc, "node_not_found_for_path", path);

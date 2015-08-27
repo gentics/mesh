@@ -32,7 +32,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			Project project = projectRoot.create("test", user());
 			Project project2 = projectRoot.findByName(project.getName());
@@ -45,7 +45,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String uuid = project().getUuid();
 
 			Map<String, String> uuidToBeDeleted = new HashMap<>();
@@ -54,7 +54,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 			uuidToBeDeleted.put("project.schemaContainerRoot", project().getSchemaContainerRoot().getUuid());
 			uuidToBeDeleted.put("project.nodeRoot", project().getNodeRoot().getUuid());
 
-			try (Trx txDelete = new Trx(db)) {
+			try (Trx txDelete = db.trx()) {
 				Project project = project();
 				project.delete();
 				txDelete.success();
@@ -76,7 +76,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			int nProjectsBefore = projectRoot.findAll().size();
 			assertNotNull(projectRoot.create("test1234556", user()));
@@ -88,7 +88,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
 			assertNotNull(page);
 		}
@@ -97,7 +97,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<? extends Project> projects = meshRoot().getProjectRoot().findAll();
 			assertNotNull(projects);
 			assertEquals(1, projects.size());
@@ -107,7 +107,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNull(meshRoot().getProjectRoot().findByName("bogus"));
 			assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
 		}
@@ -116,7 +116,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(2);
 			meshRoot().getProjectRoot().findByUuid(project().getUuid(), rh -> {
 				assertNotNull(rh.result());
@@ -133,7 +133,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = project();
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
@@ -151,7 +151,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = meshRoot().getProjectRoot().create("newProject", user());
 			assertNotNull(project);
 			String uuid = project.getUuid();
@@ -173,7 +173,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot root = meshRoot();
 			Project project = root.getProjectRoot().create("TestProject", user());
 			assertFalse(user().hasPermission(project, GraphPermission.CREATE_PERM));
@@ -185,7 +185,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
@@ -199,7 +199,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = project();
 			project.setName("new Name");
 			assertEquals("new Name", project.getName());
@@ -213,7 +213,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() {
 		Project newProject;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			newProject = meshRoot().getProjectRoot().create("newProject", user());
 			tx.success();
 		}
@@ -224,7 +224,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() {
 		Project newProject;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			newProject = meshRoot().getProjectRoot().create("newProject", user());
 			tx.success();
 		}
@@ -235,7 +235,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() {
 		Project newProject;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			newProject = meshRoot().getProjectRoot().create("newProject", user());
 			tx.success();
 		}
@@ -246,7 +246,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() {
 		Project newProject;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			newProject = meshRoot().getProjectRoot().create("newProject", user());
 			tx.success();
 		}

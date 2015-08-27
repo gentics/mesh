@@ -314,7 +314,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.nodeRoot().findByUuid(uuid, rh -> {
 				if (rh.result() != null && rh.succeeded()) {
 					Node node = rh.result();

@@ -41,7 +41,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 	public void testRestClient() throws Exception {
 		String uuid;
 		String username;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			username = user.getUsername();
 			uuid = user.getUuid();

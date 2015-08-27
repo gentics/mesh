@@ -34,7 +34,7 @@ public class StringGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testStringFieldTransformation() throws IOException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			Schema schema = node.getSchema();
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();

@@ -35,7 +35,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			assertNotNull(schemaContainer);
 			assertEquals("content", schemaContainer.getSchema().getName());
@@ -46,7 +46,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() throws MeshSchemaException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 			int nSchemasBefore = root.findAll().size();
 			Schema schema = new SchemaImpl();
@@ -60,7 +60,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testDefaultSchema() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 			assertEquals(4, root.findAll().size());
 		}
@@ -68,7 +68,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testSchemaStorage() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schemaStorage.clear();
 			schemaStorage.init();
 			Schema schema = schemaStorage.getSchema("folder");
@@ -80,7 +80,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
 			assertNotNull(page);
 		}
@@ -89,7 +89,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<? extends SchemaContainer> schemaContainers = meshRoot().getSchemaContainerRoot().findAll();
 			assertNotNull(schemaContainers);
 			assertEquals(4, schemaContainers.size());
@@ -99,7 +99,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String uuid = getSchemaContainer().getUuid();
 			CountDownLatch latch = new CountDownLatch(1);
 			meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
@@ -113,7 +113,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String uuid = getSchemaContainer().getUuid();
 			getSchemaContainer().delete();
 
@@ -129,7 +129,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainer container = getSchemaContainer();
 			Schema schema = container.getSchema();
 			assertNotNull(schema);
@@ -143,7 +143,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws MeshSchemaException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = new SchemaImpl();
 			schema.setDisplayField("name");
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -163,7 +163,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = new SchemaImpl();
 			schema.setDisplayField("name");
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -178,7 +178,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(getSchemaContainer().getSchema());
 		}
 	}
@@ -186,7 +186,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(getSchemaContainer().getSchema());
 		}
 	}
@@ -194,7 +194,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			Schema schema = schemaContainer.getSchema();
 			schema.setName("changed");
@@ -224,7 +224,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = new SchemaImpl();
 			schema.setDisplayField("name");
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -237,7 +237,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = new SchemaImpl();
 			schema.setDisplayField("name");
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -250,7 +250,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = new SchemaImpl();
 			schema.setDisplayField("name");
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -263,7 +263,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = new SchemaImpl();
 			schema.setDisplayField("name");
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());

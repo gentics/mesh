@@ -158,13 +158,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name"))));
 			return;
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name"))));
 				} else {
 					Project project;
-					try (Trx txCreate = new Trx(db)) {
+					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						project = create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);

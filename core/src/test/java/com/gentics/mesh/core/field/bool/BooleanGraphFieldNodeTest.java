@@ -34,7 +34,7 @@ public class BooleanGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testBooleanFieldTransformation() throws IOException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			Schema schema = node.getSchema();
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();

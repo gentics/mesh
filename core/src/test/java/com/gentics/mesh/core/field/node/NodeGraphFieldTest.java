@@ -16,7 +16,7 @@ public class NodeGraphFieldTest extends AbstractDBTest {
 
 	@Test
 	public void testSimpleNodeField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);

@@ -133,7 +133,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
 				return;
 			}
-			try (Trx txUpdate = new Trx(db)) {
+			try (Trx txUpdate = db.trx()) {
 				setName(requestModel.getName());
 				txUpdate.success();
 			}

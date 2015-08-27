@@ -86,7 +86,7 @@ public class SearchHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				try (Trx tx = new Trx(db)) {
+				try (Trx tx = db.trx()) {
 					List<T> elements = new ArrayList<>();
 					for (SearchHit hit : response.getHits()) {
 						String uuid = hit.getId();

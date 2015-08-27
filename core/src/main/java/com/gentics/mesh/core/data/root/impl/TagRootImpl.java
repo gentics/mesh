@@ -80,7 +80,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 	public void create(RoutingContext rc, Handler<AsyncResult<Tag>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			Project project = getProject(rc);
 			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
@@ -105,7 +105,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				return;
 			}
 			Tag newTag;
-			try (Trx txCreate = new Trx(db)) {
+			try (Trx txCreate = db.trx()) {
 				MeshAuthUser requestUser = getUser(rc);
 				requestUser.reload();
 				tagFamily.reload();

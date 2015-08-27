@@ -35,7 +35,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
@@ -59,7 +59,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node concordeNode = content("concorde");
 			test.assertMeshNode(concordeNode, restNode);
 			// assertNotNull(restNode.getProperties());
@@ -79,7 +79,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
 		Node newsFolder;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			newsFolder = folder("2015");
 			role().revokePermissions(newsFolder, READ_PERM);
 			tx.success();
@@ -87,7 +87,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, englishPath);
 		latchFor(future);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			expectException(future, FORBIDDEN, "error_missing_perm", newsFolder.getUuid());
 		}
 	}

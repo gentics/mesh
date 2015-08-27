@@ -97,7 +97,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			bootstrapInitializer.initMandatoryData();
 
@@ -138,7 +138,7 @@ public class DemoDataProvider {
 
 	public void updatePermissions() {
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = userInfo.getRole();
 
 			for (Vertex vertex : tx.getGraph().getVertices()) {

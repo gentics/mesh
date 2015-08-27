@@ -32,7 +32,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, getProject(rc).getTagFamilyRoot());
 		}
 
@@ -40,14 +40,14 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			deleteObject(rc, "uuid", "tagfamily_deleted", getProject(rc).getTagFamilyRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			updateObject(rc, "uuid", project.getTagFamilyRoot());
 		}
@@ -55,21 +55,21 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, "uuid", READ_PERM, getProject(rc).getTagFamilyRoot());
 		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			loadTransformAndResponde(rc, project.getTagFamilyRoot(), new TagFamilyListResponse());
 		}
 	}
 
 	public void handleReadTagList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);

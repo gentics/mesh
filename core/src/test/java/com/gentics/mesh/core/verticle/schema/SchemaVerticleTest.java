@@ -71,7 +71,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertSchema(request, restSchemaResponse);
 
 		CountDownLatch latch = new CountDownLatch(1);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
 				SchemaContainer schemaContainer = rh.result();
 				assertNotNull(schemaContainer);
@@ -98,7 +98,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaResponse restSchema = createFuture.result();
 		test.assertSchema(request, restSchema);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 		}
 		// test.assertSchema(schema, restSchema);
@@ -121,7 +121,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadMultiple() throws Exception {
 		int totalSchemas;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 			final int nSchemas = 22;
 			Schema schema = new SchemaImpl();
@@ -209,10 +209,10 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUID() throws Exception {
 		SchemaContainer schemaContainer;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schemaContainer = schemaContainer("content");
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
 			latchFor(future);
 			assertSuccess(future);
@@ -225,7 +225,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		SchemaContainer schema;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 
 			role().grantPermissions(schema, DELETE_PERM);
@@ -234,7 +234,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 			role().revokePermissions(schema, READ_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
@@ -262,7 +262,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
 		assertEquals(request.getName(), restSchema.getName());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 				SchemaContainer reloaded = rh.result();
@@ -276,7 +276,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String oldName = schema.getName();
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
@@ -302,7 +302,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		SchemaContainer schema;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 
 			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
@@ -311,7 +311,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 			expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 				SchemaContainer reloaded = rh.result();
 				assertNull("The schema should have been deleted.", reloaded);
@@ -323,7 +323,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		SchemaContainer schema;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
 			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 			latchFor(future);
@@ -331,7 +331,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		}
 
 		fail("unspecified test");
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
 
@@ -419,7 +419,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(schema, UPDATE_PERM);
 			tx.success();
 		}

@@ -121,7 +121,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field"))));
 			return;
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// Load the parent group for the user
 			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 				if (hasSucceeded(rc, rh)) {
@@ -133,7 +133,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 					}
 					MeshAuthUser requestUser = getUser(rc);
 					User user;
-					try (Trx txCreate = new Trx(db)) {
+					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						user = create(requestModel.getUsername(), parentGroup, requestUser);
 						user.setFirstname(requestModel.getFirstname());

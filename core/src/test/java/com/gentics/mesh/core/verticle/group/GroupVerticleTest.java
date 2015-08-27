@@ -67,7 +67,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -77,7 +77,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		}
 
@@ -90,7 +90,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 			final String name = "test_" + i;
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
-			try (Trx tx = new Trx(db)) {
+			try (Trx tx = db.trx()) {
 				role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 				tx.success();
 			}
@@ -109,7 +109,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -119,7 +119,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		}
 		future = getClient().createGroup(request);
@@ -142,7 +142,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
 				assertNotNull("Group should have been created.", rh.result());
 			});
@@ -163,7 +163,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateGroupWithMissingName() throws Exception {
 
 		GroupCreateRequest request = new GroupCreateRequest();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(group(), CREATE_PERM);
 			tx.success();
 		}
@@ -181,7 +181,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 		String rootUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			rootUuid = root.getUuid();
 			role().revokePermissions(root, CREATE_PERM);
@@ -204,7 +204,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int totalGroups = 0;
 		String extraGroupName = "no_perm_group";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			// Create and save some groups
 			final int nGroups = 21;
@@ -299,7 +299,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		Group group = group();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(group, READ_PERM);
 			tx.success();
 		}
@@ -335,7 +335,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
 				Group reloadedGroup = rh.result();
 				assertEquals("The group should have been updated", name, reloadedGroup.getName());
@@ -347,7 +347,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(group(), UPDATE_PERM);
 			uuid = group().getUuid();
 			tx.success();
@@ -364,7 +364,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateGroupWithEmptyName() throws HttpStatusCodeErrorException, Exception {
 		Group group = group();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(group, UPDATE_PERM);
 			tx.success();
 		}
@@ -376,7 +376,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.groupRoot().findByUuid(group.getUuid(), rh -> {
 				Group reloadedGroup = rh.result();
 				assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
@@ -388,7 +388,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateGroupWithConflictingName() throws HttpStatusCodeErrorException, Exception {
 
 		final String alreadyUsedName = "extraGroup";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 			// Create a group which occupies the name
 			assertNotNull(groupRoot.create(alreadyUsedName, user()));
@@ -402,7 +402,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, CONFLICT, "group_conflicting_name");
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 			groupRoot.findByUuid(group().getUuid(), rh -> {
 				Group reloadedGroup = rh.result();
@@ -436,7 +436,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("group_deleted", future, uuid + "/" + name);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertElement(boot.groupRoot(), uuid, false);
 		}
 
@@ -449,7 +449,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid = group.getUuid();
 		assertNotNull(uuid);
 		// Don't allow delete
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(group, DELETE_PERM);
 			tx.success();
 		}
@@ -457,7 +457,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertElement(boot.groupRoot(), group.getUuid(), true);
 		}
 	}

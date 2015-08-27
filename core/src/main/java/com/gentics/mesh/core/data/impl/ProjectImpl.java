@@ -184,7 +184,7 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 	public void update(RoutingContext rc) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			I18NService i18n = I18NService.getI18n();
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {

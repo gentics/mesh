@@ -28,7 +28,7 @@ public class SearchQueueTest extends AbstractDBTest {
 
 	@Test
 	public void testQueue() throws InterruptedException, JSONException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			for (Node node : boot.nodeRoot().findAll()) {
 				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
@@ -55,7 +55,7 @@ public class SearchQueueTest extends AbstractDBTest {
 		SearchQueue searchQueue;
 
 		// Add some entries to the search queue
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			searchQueue = boot.meshRoot().getSearchQueue();
 			for (Node node : boot.nodeRoot().findAll()) {
 				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
@@ -63,14 +63,14 @@ public class SearchQueueTest extends AbstractDBTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			long size = searchQueue.getSize();
 			SearchQueueEntry entry = searchQueue.take();
 			assertNotNull(entry);
 			assertEquals(size - 1, searchQueue.getSize());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			long size = searchQueue.getSize();
 			System.out.println("Size: " + size);
 			CountDownLatch latch = new CountDownLatch((int) size);
@@ -79,7 +79,7 @@ public class SearchQueueTest extends AbstractDBTest {
 					int z = 0;
 					while (true) {
 //						try {
-							try (Trx txTake = new Trx(db)) {
+							try (Trx txTake = db.trx()) {
 								try {
 									SearchQueueEntry currentEntry = searchQueue.take();
 									assertNotNull("entry was null." + currentEntry);
@@ -103,7 +103,7 @@ public class SearchQueueTest extends AbstractDBTest {
 			failingLatch(latch);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			searchQueue.reload();
 			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
 			SearchQueueEntry entry = searchQueue.take();
@@ -113,7 +113,7 @@ public class SearchQueueTest extends AbstractDBTest {
 			AtomicReference<AssertionError> errorReference = new AtomicReference<>();
 			for (int i = 0; i < 10; i++) {
 				Runnable r = () -> {
-					try (Trx tx2 = new Trx(db)) {
+					try (Trx tx2 = db.trx()) {
 						try {
 							SearchQueueEntry currentEntry = searchQueue.take();
 							latch2.countDown();

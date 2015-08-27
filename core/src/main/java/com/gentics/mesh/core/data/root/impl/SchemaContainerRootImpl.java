@@ -109,7 +109,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			}
 			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				SchemaContainer container;
-				try (Trx txCreate = new Trx(db)) {
+				try (Trx txCreate = db.trx()) {
 					requestUser.reload();
 					container = create(schema, requestUser);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);

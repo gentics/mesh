@@ -39,7 +39,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role createdRole = root.create(roleName, null, user());
@@ -58,7 +58,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testGrantPermission() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			Node node = content("news overview");
 			role.grantPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
@@ -83,7 +83,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			int nRuns = 2000;
 			for (int i = 0; i < nRuns; i++) {
@@ -94,7 +94,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testGrantPermissionTwice() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			Node node = content("news overview");
 
@@ -113,7 +113,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testGetPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			Node node = content("news overview");
 			assertEquals(4, role.getPermissions(node).size());
@@ -122,7 +122,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testRevokePermission() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			Node node = content("news overview");
 			role.revokePermissions(node, CREATE_PERM);
@@ -138,7 +138,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			User user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.",
@@ -149,7 +149,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			int nRolesBefore = root.findAll().size();
 
@@ -163,7 +163,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testRoleAddCrudPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = user().getImpl().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("2015");
@@ -190,7 +190,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
 		Role extraRole;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", group(), user());
 
@@ -203,7 +203,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 			role().grantPermissions(extraRole, READ_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
 			MeshAuthUser requestUser = getUser(rc);
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingInfo(1, 10));
@@ -217,7 +217,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
 			MeshAuthUser requestUser = getUser(rc);
 			Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 10));
@@ -233,7 +233,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(boot.roleRoot().findByName(role().getName()));
 			assertNull(boot.roleRoot().findByName("bogus"));
 		}
@@ -242,7 +242,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.roleRoot().findByUuid(role().getUuid(), rh -> {
 				assertNotNull(rh.result());
 			});
@@ -255,7 +255,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
@@ -274,7 +274,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 
@@ -298,7 +298,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot root = meshRoot();
 			Role role = root.getRoleRoot().create("SuperUser", null, user());
 			assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
@@ -310,7 +310,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<? extends Role> roles = boot.roleRoot().findAll();
 			assertNotNull(roles);
 			assertEquals(roles().size(), roles.size());
@@ -320,7 +320,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			assertEquals("joe1_role", role.getName());
 			assertNotNull(role.getUuid());
@@ -336,7 +336,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			String uuid = role.getUuid();
 			role.delete();
@@ -352,7 +352,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Role role = role();
 			role.setName("newName");
 			assertEquals("newName", role.getName());

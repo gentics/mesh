@@ -289,7 +289,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {

@@ -72,13 +72,13 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("news");
 			prepareSchema(node, false, "image/.*");
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_error_no_binary_node");
@@ -92,13 +92,13 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("news");
 			prepareSchema(node, false, "");
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_error_no_binary_node");
@@ -124,12 +124,12 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("news");
 			prepareSchema(node, true, "");
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
@@ -155,7 +155,7 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testPathSegmentation() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			node.setUuid(UUIDUtil.randomUUID());
 			String uuid = "b677504736ed47a1b7504736ed07a14a";
@@ -172,13 +172,13 @@ public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("news");
 			prepareSchema(node, true, "");
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 			latchFor(future);
 			assertSuccess(future);

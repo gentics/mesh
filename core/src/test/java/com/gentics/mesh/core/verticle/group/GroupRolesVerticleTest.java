@@ -49,7 +49,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testReadRolesByGroup() throws Exception {
 		String groupUuid;
 		String roleUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", group(), user());
 			roleUuid = extraRole.getUuid();
@@ -70,7 +70,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 			listedRoleUuids.add(role.getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertTrue(listedRoleUuids.contains(role().getUuid()));
 			assertTrue(listedRoleUuids.contains(roleUuid));
 		}
@@ -80,7 +80,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testAddRoleToGroup() throws Exception {
 		String roleUuid;
 		String groupUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", null, user());
 			roleUuid = extraRole.getUuid();
@@ -96,7 +96,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		assertTrue(restGroup.getRoles().contains("extraRole"));
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = group();
 			assertEquals(2, group.getRoles().size());
 		}
@@ -106,7 +106,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertEquals(1, group().getRoles().size());
 			uuid = group().getUuid();
 		}
@@ -120,7 +120,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testAddNoPermissionRoleToGroup() throws Exception {
 		String roleUuid;
 		String groupUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", null, user());
 			roleUuid = extraRole.getUuid();
@@ -133,7 +133,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", roleUuid);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = group();
 			assertEquals(1, group.getRoles().size());
 		}
@@ -143,7 +143,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	public void testRemoveRoleFromGroup() throws Exception {
 		String groupUuid;
 		String roleUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", null, user());
 			roleUuid = extraRole.getUuid();
@@ -160,7 +160,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		GroupResponse restGroup = future.result();
 		assertFalse(restGroup.getRoles().contains("extraRole"));
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = group();
 			assertEquals(1, group.getRoles().size());
 		}
@@ -170,14 +170,14 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		Role extraRole;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 
 			extraRole = root.create("extraRole", null, user());
 			role().grantPermissions(extraRole, READ_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GroupResponse> future = getClient().addRoleToGroup(group().getUuid(), extraRole.getUuid());
 			latchFor(future);
 			assertSuccess(future);
@@ -185,7 +185,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 			test.assertGroup(group(), restGroup);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertTrue("Role should be assigned to group.", group().hasRole(extraRole));
 		}
 	}
@@ -193,19 +193,19 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		Role extraRole;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", null, user());
 			role().revokePermissions(group, UPDATE_PERM);
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GroupResponse> future = getClient().addRoleToGroup(group().getUuid(), extraRole.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertFalse("Role should not be assigned to group.", group().hasRole(extraRole));
 		}
 	}
@@ -213,7 +213,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GroupResponse> future = getClient().addRoleToGroup(group().getUuid(), "bogus");
 			latchFor(future);
 			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -225,7 +225,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
 		Role extraRole;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Group group = group();
 			extraRole = root.create("extraRole", group, user());
@@ -239,13 +239,13 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		Future<GroupResponse> future;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			future = getClient().removeRoleFromGroup(group().getUuid(), extraRole.getUuid());
 			latchFor(future);
 			assertSuccess(future);
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			GroupResponse restGroup = future.result();
 			test.assertGroup(group(), restGroup);
 			assertFalse("Role should now no longer be assigned to group.", group().hasRole(extraRole));
@@ -255,7 +255,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
 		Role extraRole;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", group, user());
@@ -263,13 +263,13 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<GroupResponse> future = getClient().removeRoleFromGroup(group().getUuid(), extraRole.getUuid());
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertTrue("Role should be stil assigned to group.", group().hasRole(extraRole));
 		}
 	}

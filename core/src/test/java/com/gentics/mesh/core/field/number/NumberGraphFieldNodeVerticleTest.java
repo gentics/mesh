@@ -24,7 +24,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName("numberField");
@@ -40,12 +40,12 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
 			NumberFieldImpl field = response.getField("numberField");
 			assertEquals("42", field.getNumber());
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
 			NumberFieldImpl field = response.getField("numberField");
 			assertEquals("43", field.getNumber());
@@ -70,7 +70,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Override
 	public void testReadNodeWithExitingField() throws IOException {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getFieldContainer(english());
@@ -79,7 +79,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 
 			NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);

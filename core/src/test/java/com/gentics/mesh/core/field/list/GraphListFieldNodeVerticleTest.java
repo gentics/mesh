@@ -31,14 +31,14 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			setSchema("node");
 			tx.success();
 		}
 	}
 
 	private void setSchema(String listType) throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 			listFieldSchema.setName("listField");
@@ -51,7 +51,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testStringList() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			setSchema("string");
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
@@ -67,7 +67,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testHtmlList() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			setSchema("html");
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
@@ -82,7 +82,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testBooleanList() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			setSchema("boolean");
 			BooleanFieldListImpl listField = new BooleanFieldListImpl();
 			listField.add(true);
@@ -97,7 +97,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testDateList() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			setSchema("date");
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add("01.01.1971");
@@ -112,7 +112,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testNumberList() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			setSchema("number");
 			NumberFieldListImpl listField = new NumberFieldListImpl();
 			listField.add("0.1");
@@ -128,7 +128,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			NodeFieldListImpl list = new NodeFieldListImpl();
 			list.add(new NodeFieldListItemImpl(node.getUuid()));
@@ -148,7 +148,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 			listField.add(item);
@@ -162,7 +162,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testReadNodeWithExitingField() {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getFieldContainer(english());
@@ -170,7 +170,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			nodeList.createNode("1", folder("news"));
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 			NodeFieldListImpl deserializedListField = response.getField("listField", NodeFieldListImpl.class);
 			assertNotNull(deserializedListField);
@@ -182,7 +182,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testReadExpandedNodeListWithExitingField() throws IOException {
 		Node node;
 		Node newsNode;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			resetClientSchemaStorage();
 			newsNode = folder("news");
 			node = folder("2015");
@@ -194,7 +194,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 			NodeResponse responseCollapsed = readNode(node);
 			com.gentics.mesh.core.rest.node.field.list.NodeFieldList deserializedNodeListField = responseCollapsed.getField("listField",

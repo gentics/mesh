@@ -150,7 +150,7 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
 
@@ -165,7 +165,7 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
 					return;
 				}
-				try (Trx txUpdate = new Trx(db)) {
+				try (Trx txUpdate = db.trx()) {
 					setName(requestModel.getName());
 					txUpdate.success();
 				}

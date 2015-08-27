@@ -521,7 +521,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
 				return;
 			}
-			try (Trx txUpdate = new Trx(db)) {
+			try (Trx txUpdate = db.trx()) {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));

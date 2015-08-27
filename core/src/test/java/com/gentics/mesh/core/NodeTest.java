@@ -52,7 +52,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	 */
 	@Test
 	public void testPageLinks() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node folder = folder("2015");
 			Node node = folder.create(user(), getSchemaContainer(), project());
 			Node node2 = folder.create(user(), getSchemaContainer(), project());
@@ -73,7 +73,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testMeshNodeStructure() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 			Node newSubNode;
@@ -87,7 +87,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testTaggingOfMeshNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 
@@ -105,7 +105,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<String> languageTags = new ArrayList<>();
 			languageTags.add("de");
 
@@ -127,7 +127,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testMeshNodeFields() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node newsNode = content("news overview");
 			Language german = german();
 			RoutingContext rc = getMockedRoutingContext("?lang=de,en");
@@ -141,7 +141,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<String> languageTags = new ArrayList<>();
 			languageTags.add("de");
 			languageTags.add("en");
@@ -154,7 +154,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = project();
 			Node root = project.getBaseNode();
 			assertNotNull(root);
@@ -171,7 +171,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node newsNode = content("news overview");
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.nodeRoot().findByUuid(newsNode.getUuid(), rh -> {
@@ -187,7 +187,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("lang=en");
 			Node newsNode = content("porsche 911");
 
@@ -213,7 +213,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node folder = folder("2015");
 			Node subNode = folder.create(user(), getSchemaContainer(), project());
 			assertNotNull(subNode.getUuid());
@@ -224,7 +224,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015").create(user(), getSchemaContainer(), project());
 			assertFalse(user().hasPermission(node, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
@@ -235,7 +235,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			assertEquals("folder", node.getSchema().getName());
 			assertTrue(node.getSchema().isFolder());
@@ -245,7 +245,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			Node parentNode = folder("2015");
 			Node node = parentNode.create(user, data().getSchemaContainer("content"), project());
@@ -290,7 +290,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		Map<String, String> uuidToBeDeleted = new HashMap<>();
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			for (GraphFieldContainer container : node.getGraphFieldContainers()) {
 				uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
@@ -308,7 +308,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// TODO check for attached subnodes
 			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
 				assertNull(rh.result());
@@ -321,7 +321,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = content();
 			User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
 			assertEquals(user().getUuid(), node.getCreator().getUuid());

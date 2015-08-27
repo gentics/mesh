@@ -57,7 +57,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	}
 
 	protected void setupFullIndex() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			for (Node node : boot.nodeRoot().findAll()) {
 				searchQueue.put(node, CREATE_ACTION);

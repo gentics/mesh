@@ -102,7 +102,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		// Create a delete entry in the search queue
 		NodeResponse nodeResponse = response.getData().get(0);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			searchQueue.put(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
 			tx.success();
@@ -148,7 +148,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testAddContent() throws InterruptedException, IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			Node node = folder("2015");
 
@@ -184,7 +184,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(0, response.getData().size());
 
 		// Create the update entry in the search queue
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			Node node = folder("2015");
 			searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);

@@ -22,7 +22,7 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName("htmlField");
@@ -35,7 +35,7 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
 			HtmlFieldImpl field = response.getField("htmlField");
 			assertEquals("some<b>html", field.getHTML());
@@ -59,7 +59,7 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 	@Override
 	public void testReadNodeWithExitingField() {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getFieldContainer(english());
@@ -67,7 +67,7 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 			HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
 			assertNotNull(deserializedHtmlField);

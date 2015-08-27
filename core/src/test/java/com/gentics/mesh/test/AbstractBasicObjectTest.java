@@ -32,7 +32,7 @@ public abstract class AbstractBasicObjectTest extends AbstractDBTest implements 
 	}
 
 	protected void testPermission(GraphPermission perm, GenericVertex<?> node) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(node, perm);
 			assertTrue(role().hasPermission(perm, node));
 			assertTrue(getRequestUser().hasPermission(node, perm));

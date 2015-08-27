@@ -24,7 +24,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
@@ -48,7 +48,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
 			assertEquals(182, languages.size());
 		}
@@ -57,7 +57,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Language language = meshRoot().getLanguageRoot().findByName("German");
 			assertNotNull(language);
 			assertEquals("German", language.getName());
@@ -72,7 +72,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Language language = meshRoot().getLanguageRoot().findByName("German");
 
 			CountDownLatch latch = new CountDownLatch(2);
@@ -112,7 +112,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Language language = english();
 			assertNotNull(language.getName());
 			assertEquals("English", language.getName());
@@ -126,7 +126,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";

@@ -36,7 +36,7 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 	public void testRevokeAllPermissionFromProject() {
 
 		// Add permission on own role
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 			tx.success();
@@ -49,7 +49,7 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
 	}
@@ -58,7 +58,7 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 	public void testAddPermissionToProjectTagFamily() {
 
 		// Add permission on own role
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 			tx.success();
@@ -75,7 +75,7 @@ public class RoleVerticePermissionTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
 		
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}
 	}

@@ -352,7 +352,7 @@ public class VerticleHelper {
 				String type = vertex.getType();
 				vertex.update(rc);
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx tx = new Trx(db)) {
+				try (Trx tx = db.trx()) {
 					transformAndResponde(rc, vertex);
 				}
 				triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);
@@ -371,7 +371,7 @@ public class VerticleHelper {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		// Mesh.vertx().executeBlocking(bc -> {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
 			tx.success();
 		}
@@ -398,7 +398,7 @@ public class VerticleHelper {
 				if (vertex instanceof NamedNode) {
 					name = ((NamedNode) vertex).getName();
 				}
-				try (Trx tx = new Trx(db)) {
+				try (Trx tx = db.trx()) {
 					vertex.delete();
 					tx.success();
 				}

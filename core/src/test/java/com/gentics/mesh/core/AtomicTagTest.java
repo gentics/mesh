@@ -26,7 +26,7 @@ public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() throws MeshSchemaException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot meshRoot = boot.meshRoot();
 			User user = meshRoot.getUserRoot().create("test", null, null);
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();

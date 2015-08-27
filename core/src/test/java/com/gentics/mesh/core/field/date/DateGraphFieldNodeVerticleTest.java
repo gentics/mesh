@@ -23,7 +23,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 			dateFieldSchema.setName("dateField");
@@ -37,7 +37,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = updateNode("dateField", new DateFieldImpl().setDate("01.01.1971"));
 			DateFieldImpl field = response.getField("dateField");
 			assertEquals("01.01.1971", field.getDate());
@@ -51,7 +51,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = createNode("dateField", new DateFieldImpl().setDate("01.01.1971"));
 			DateField field = response.getField("dateField");
 			assertEquals("01.01.1971", field.getDate());
@@ -62,14 +62,14 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testReadNodeWithExitingField() {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			NodeGraphFieldContainer container = node.getFieldContainer(english());
 			container.createDate("dateField").setDate("01.01.1971");
 			tx.success();
 		}
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeResponse response = readNode(node);
 			DateField deserializedDateField = response.getField("dateField");
 			assertNotNull(deserializedDateField);

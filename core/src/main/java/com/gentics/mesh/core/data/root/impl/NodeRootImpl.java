@@ -122,7 +122,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 		I18NService i18n = I18NService.getI18n();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Project project = getProject(rc);
 			MeshAuthUser requestUser = getUser(rc);
 
@@ -160,7 +160,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 					}
 
 					Node node;
-					try (Trx txCreate = new Trx(db)) {
+					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node

@@ -166,7 +166,7 @@ public class BootstrapInitializer {
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			initProjects();
 		}
 		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
@@ -314,7 +314,7 @@ public class BootstrapInitializer {
 		Role adminRole;
 		MeshRoot meshRoot;
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			meshRoot = meshRoot();
 			MeshRootImpl.setInstance(meshRoot);
 

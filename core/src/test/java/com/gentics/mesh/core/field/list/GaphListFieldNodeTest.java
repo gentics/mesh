@@ -44,7 +44,7 @@ public class GaphListFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeListTransformation() throws IOException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			Node newsNode = folder("news");
 

@@ -71,7 +71,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	synchronized private void checkPendingQueueEntries(Handler<AsyncResult<Void>> handler) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			SearchQueue root = boot.meshRoot().getSearchQueue();
 			AtomicInteger counter = new AtomicInteger();
@@ -88,7 +88,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 				try {
 					//TODO better to move this code into a mutex secured autoclosable
 					SearchQueueEntry currentEntry;
-					try (Trx txTake = new Trx(db)) {
+					try (Trx txTake = db.trx()) {
 						currentEntry = root.take();
 						entry = currentEntry;
 						txTake.success();
@@ -111,7 +111,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 				} catch (InterruptedException e) {
 					handler.handle(Future.failedFuture(e));
 					// In case of an error put the entry back into the queue
-					try (Trx txPutBack = new Trx(db)) {
+					try (Trx txPutBack = db.trx()) {
 						if (entry != null) {
 							root.put(entry);
 							txPutBack.success();
@@ -123,7 +123,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSearchEndpoints() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			addSearch("users", boot.userRoot(), UserListResponse.class);
 			addSearch("groups", boot.groupRoot(), GroupListResponse.class);
 			addSearch("role", boot.roleRoot(), RoleListResponse.class);

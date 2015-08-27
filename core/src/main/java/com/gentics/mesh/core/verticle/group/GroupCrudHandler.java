@@ -34,21 +34,21 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			createObject(rc, boot.groupRoot());
 		}
 	}
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			deleteObject(rc, "uuid", "group_deleted", boot.groupRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			updateObject(rc, "uuid", boot.groupRoot());
 		}
 
@@ -56,20 +56,20 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleRead(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.groupRoot());
 		}
 	}
 
 	@Override
 	public void handleReadList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(rc, boot.groupRoot(), new GroupListResponse());
 		}
 	}
 
 	public void handleGroupRolesList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			MeshAuthUser requestUser = getUser(rc);
 			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
@@ -84,14 +84,14 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleAddRoleToGroup(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(rc, grh)) {
 					loadObject(rc, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
 						if (hasSucceeded(rc, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							try (Trx txAdd = new Trx(db)) {
+							try (Trx txAdd = db.trx()) {
 								group.addRole(role);
 								txAdd.success();
 							}
@@ -104,7 +104,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleRemoveRoleFromGroup(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(rc, grh)) {
 					// TODO check whether the role is actually part of the group
@@ -112,7 +112,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(rc, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							try (Trx txRemove = new Trx(db)) {
+							try (Trx txRemove = db.trx()) {
 								group.removeRole(role);
 								txRemove.success();
 							}
@@ -125,7 +125,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleGroupUserList(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = getUser(rc);
 			PagingInfo pagingInfo = getPagingInfo(rc);
 			loadObject(rc, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
@@ -145,12 +145,12 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleAddUserToGroup(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(rc, grh)) {
 					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(rc, urh)) {
-							try (Trx txAdd = new Trx(db)) {
+							try (Trx txAdd = db.trx()) {
 								Group group = grh.result();
 								User user = urh.result();
 								group.addUser(user);
@@ -166,12 +166,12 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleRemoveUserFromGroup(RoutingContext rc) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			loadObject(rc, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(rc, grh)) {
 					loadObject(rc, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(rc, urh)) {
-							try (Trx txRemove = new Trx(db)) {
+							try (Trx txRemove = db.trx()) {
 								Group group = grh.result();
 								User user = urh.result();
 								group.removeUser(user);

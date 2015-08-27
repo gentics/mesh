@@ -86,7 +86,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
 			return;
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {
@@ -95,7 +95,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 				}
 				TraversalHelper.printDebugVertices();
 				Group group;
-				try (Trx txCreate = new Trx(db)) {
+				try (Trx txCreate = db.trx()) {
 					requestUser.reload();
 					group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);

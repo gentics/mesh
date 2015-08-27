@@ -46,7 +46,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateNodeAndOmitMandatoryField() throws IOException {
 		// 1. create mandatory field
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Schema schema = schemaContainer("folder").getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName("htmlField");
@@ -72,7 +72,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The field was not included in the response.", future.result().getField("htmlField"));
 
 		// 3. Update node
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
 			nodeUpdateRequest.setLanguage("en");

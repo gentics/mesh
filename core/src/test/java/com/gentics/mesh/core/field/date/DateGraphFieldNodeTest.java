@@ -34,7 +34,7 @@ public class DateGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	public void testDateFieldTransformation() throws IOException, InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			Schema schema = node.getSchema();
 			DateFieldSchemaImpl dateFieldSchema = new DateFieldSchemaImpl();

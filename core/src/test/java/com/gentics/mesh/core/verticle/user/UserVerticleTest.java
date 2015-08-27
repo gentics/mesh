@@ -68,7 +68,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
@@ -115,7 +115,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = user();
 			uuid = user.getUuid();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
@@ -133,7 +133,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 
 		String username = "testuser_3";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot root = meshRoot().getUserRoot();
 			User user3 = root.create(username, group(), user());
 			user3.setLastname("should_not_be_listed");
@@ -247,7 +247,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -290,7 +290,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNotNull(user().getReferencedNode());
 		}
 
@@ -299,7 +299,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
 			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
@@ -422,7 +422,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		test.assertUser(updateRequest, restUser);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 			assertEquals(user.getUsername(), reloadedUser.getUsername());
@@ -436,7 +436,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(user, UPDATE_PERM);
 			tx.success();
 		}
@@ -447,7 +447,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.userRoot().findByUuid(user.getUuid(), rh -> {
 				User reloadedUser = rh.result();
 				assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
@@ -460,7 +460,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			role().revokePermissions(user, UPDATE_PERM);
 			tx.success();
 		}
@@ -474,7 +474,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.userRoot().findByUuid(user.getUuid(), rh -> {
 				User reloadedUser = rh.result();
@@ -491,7 +491,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			userRoot.create("existing_username", group(), user());
 			tx.success();
@@ -522,7 +522,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
@@ -617,7 +617,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserResponse restUser = future.result();
 		test.assertUser(request, restUser);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.userRoot().findByUuid(restUser.getUuid(), rh -> {
 				User user = rh.result();
@@ -671,7 +671,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		UserResponse restUser = createFuture.result();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			test.assertUser(newUser, restUser);
 		}
 
@@ -708,7 +708,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.userRoot().findByUuid(uuid, rh -> {
 				User loadedUser = rh.result();
 				assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
@@ -737,7 +737,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
 		String uuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", group(), user());
 			uuid = user.getUuid();
@@ -751,7 +751,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			userRoot.findByUuid(uuid, rh -> {
 				assertNotNull("The user should not have been deleted", rh.result());
@@ -770,7 +770,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID2() throws Exception {
 		String uuid;
 		String name = "extraUser";
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
@@ -778,7 +778,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			userRoot.findByUuid(uuid, rh -> {
 				User user = rh.result();
@@ -791,7 +791,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 
 			// Check whether the user was correctly disabled

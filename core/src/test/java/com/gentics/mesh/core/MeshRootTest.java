@@ -26,7 +26,7 @@ public class MeshRootTest extends AbstractDBTest {
 
 	@Test
 	public void testResolvePath() throws InterruptedException {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			// Valid paths
 			expectSuccess("projects", meshRoot().getProjectRoot());
 			expectSuccess("projects/" + project().getUuid(), project());

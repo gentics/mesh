@@ -99,11 +99,12 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			return;
 		}
 
+		//TODO use blocking code here
 		loadObjectByUuid(rc, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
 			if (rh.succeeded()) {
 				Group parentGroup = rh.result();
 				Role role = null;
-				try (Trx txCreate = new Trx(db)) {
+				try (Trx txCreate = db.trx()) {
 					requestUser.reload();
 					role = create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);

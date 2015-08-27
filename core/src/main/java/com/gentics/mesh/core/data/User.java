@@ -115,7 +115,7 @@ public interface User extends GenericVertex<UserResponse>, NamedNode {
 	 * list of roles that would initially enable you to create a new project. It will do so by examining the projectRoot node. After this step the CRUD
 	 * permissions will be added to the newly created project and the found roles. In this case the call would look like this:
 	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM, newlyCreatedProject); This method will ensure that all users/roles that would be able to
-	 * create a element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles.
+	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles.
 	 * 
 	 * @param node
 	 *            Node that will be checked against to find all roles that would grant the given permission.

@@ -208,7 +208,7 @@ public abstract class AbstractDBTest {
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			User user = data().getUserInfo().getUser();
 			Map<String, Object> map = new HashMap<>();
 			RoutingContext rc = mock(RoutingContext.class);

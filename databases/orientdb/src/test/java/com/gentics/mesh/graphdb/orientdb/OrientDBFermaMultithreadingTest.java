@@ -14,11 +14,11 @@ import com.syncleus.ferma.VertexFrame;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	private Database database = new OrientDBDatabase();
+	private Database db = new OrientDBDatabase();
 
 	@Before
 	public void setup() {
-		database.init(null);
+		db.init(null);
 	}
 
 	Person p;
@@ -39,13 +39,13 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
 	@Test
 	public void testMultithreading() {
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = db.trx()) {
 			p = addPersonWithFriends(tx.getGraph(), "SomePerson");
 			p.setName("joe");
 			tx.success();
 		}
 		runAndWait(() -> {
-			try (Trx tx = new Trx(database)) {
+			try (Trx tx = db.trx()) {
 				manipulatePerson(tx.getGraph(), p);
 			}
 		});
@@ -55,7 +55,7 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 	public void testOrientThreadedTransactionalGraphWrapper() {
 
 		// Test creation of user in current thread
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = db.trx()) {
 			Person p = addPersonWithFriends(tx.getGraph(), "Person2");
 			manipulatePerson(tx.getGraph(), p);
 			tx.success();
@@ -63,27 +63,27 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
 		AtomicReference<Person> reference = new AtomicReference<>();
 		runAndWait(() -> {
-			try (Trx tx = new Trx(database)) {
+			try (Trx tx = db.trx()) {
 				manipulatePerson(tx.getGraph(), p);
 			}
-			try (Trx tx = new Trx(database)) {
+			try (Trx tx = db.trx()) {
 				Person p2 = addPersonWithFriends(tx.getGraph(), "Person3");
 				tx.success();
 				reference.set(p2);
 			}
 			runAndWait(() -> {
-				try (Trx tx = new Trx(database)) {
+				try (Trx tx = db.trx()) {
 					manipulatePerson(tx.getGraph(), p);
 				}
 			});
 		});
 
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = db.trx()) {
 			for (VertexFrame vertex : tx.getGraph().v().toList()) {
 				System.out.println(vertex.toString());
 			}
 		}
-		try (Trx tx = new Trx(database)) {
+		try (Trx tx = db.trx()) {
 			manipulatePerson(tx.getGraph(), reference.get());
 		}
 	}

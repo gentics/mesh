@@ -41,7 +41,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid());
 			latchFor(future);
 			assertSuccess(future);
@@ -51,7 +51,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testNodeHierarchy() {
 		String parentNodeUuid;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node baseNode = data().getProject().getBaseNode();
 			parentNodeUuid = baseNode.getUuid();
 		}
@@ -98,7 +98,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -115,7 +115,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
 		Node node;
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			node = content("boeing 737");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -126,7 +126,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			test.assertMeshNode(node, restNode);
 			assertFalse(restNode.isContainer());
 			assertNull(restNode.getChildren());
@@ -135,7 +135,7 @@ public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());

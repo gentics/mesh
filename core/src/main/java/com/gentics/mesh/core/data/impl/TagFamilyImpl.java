@@ -162,7 +162,7 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
 						return;
 					}
-					try (Trx txUpdate = new Trx(db)) {
+					try (Trx txUpdate = db.trx()) {
 						tagFamily.setName(newName);
 						txUpdate.success();
 					}
