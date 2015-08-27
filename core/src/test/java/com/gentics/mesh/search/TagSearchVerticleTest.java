@@ -55,13 +55,21 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertSuccess(future);
 
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
+		start = System.currentTimeMillis();
+
+		tagUpdateRequest.setFields(new TagFieldContainer().setName(newName + "2"));
+		future = getClient().updateTag(DemoDataProvider.PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
+		latchFor(future);
+		assertSuccess(future);
+
+		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
 		try (Trx tx = db.trx()) {
-			assertEquals(newName, tag.getName());
+			assertEquals(newName + "2", tag.getName());
 		}
 
 		start = System.currentTimeMillis();
-		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName));
+		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2"));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
