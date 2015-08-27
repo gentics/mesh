@@ -158,7 +158,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	public void update(RoutingContext rc) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		
+
 		TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
 		try (Trx tx = db.trx()) {
@@ -188,7 +188,6 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				}
 				setEditor(getUser(rc));
 				setLastEditedTimestamp(System.currentTimeMillis());
-				// try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
 				setName(requestModel.getFields().getName());
 				if (updateTagFamily) {
 					// TODO update the tagfamily

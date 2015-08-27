@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;

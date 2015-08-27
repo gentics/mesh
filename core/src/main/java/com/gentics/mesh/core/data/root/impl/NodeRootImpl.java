@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.util.VerticleHelper.getProject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.*;
+import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;

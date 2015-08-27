@@ -25,7 +25,6 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.TraversalHelper;
-import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
