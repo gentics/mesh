@@ -100,5 +100,5 @@ public class Neo4jDatabase extends AbstractDatabase {
 	public void restoreGraph(String backupFile) throws IOException {
 		throw new NotImplementedException();
 	}
-
+	
 }

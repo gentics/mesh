@@ -64,4 +64,8 @@ public abstract class AbstractDatabase implements Database {
 		start();
 	}
 
+	@Override
+	public Trx trx() {
+		return new Trx(this);
+	}
 }

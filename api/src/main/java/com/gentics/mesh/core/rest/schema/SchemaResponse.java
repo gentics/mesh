@@ -3,10 +3,11 @@ package com.gentics.mesh.core.rest.schema;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gentics.mesh.core.rest.common.RestResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
-public class SchemaResponse extends SchemaImpl {
+public class SchemaResponse extends SchemaImpl implements RestResponse {
 
 	private List<ProjectResponse> projects = new ArrayList<>();
 

@@ -36,7 +36,7 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	@Override
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = new Trx(db)) {
+		try (Trx tx = db.trx()) {
 			boot.projectRoot().findByUuid(uuid, rh -> {
 				if (rh.result() != null && rh.succeeded()) {
 					Project project = rh.result();
