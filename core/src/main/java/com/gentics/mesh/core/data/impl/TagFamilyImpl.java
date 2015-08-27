@@ -188,5 +188,11 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
+	
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

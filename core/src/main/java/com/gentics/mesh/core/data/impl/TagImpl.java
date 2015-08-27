@@ -35,6 +35,8 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -195,6 +197,25 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			}
 			tx.success();
 		}
+	}
+
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		String uuid = getUuid();
+		for(Node node : getNodes()) {
+			NodeIndexHandler.getInstance().store(node, rh -> {
+				
+			});
+		}
+		TagIndexHandler.getInstance().store(this, rh -> {
+			if (rh.succeeded()) {
+				log.info("Stored tag {" + uuid + "}");
+				MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+				handler.handle(Future.succeededFuture());
+			} else {
+				handler.handle(Future.failedFuture(rh.cause()));
+			}
+		});
 	}
 
 }

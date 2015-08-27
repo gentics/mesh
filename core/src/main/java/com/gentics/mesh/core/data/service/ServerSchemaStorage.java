@@ -43,13 +43,13 @@ public class ServerSchemaStorage implements SchemaStorage {
 	public void init() {
 		//Iterate over all schemas and load them into the storage
 		for (SchemaContainer container : boot.schemaContainerRoot().findAll()) {
-			try {
+//			try {
 				Schema restSchema = container.getSchema();
 				schemas.put(restSchema.getName(), restSchema);
-			} catch (IOException e) {
-				log.error("Could not load schema with uuid {" + container.getUuid() + "}", e);
-				e.printStackTrace();
-			}
+//			} catch (IOException e) {
+//				log.error("Could not load schema with uuid {" + container.getUuid() + "}", e);
+//				e.printStackTrace();
+//			}
 		}
 	}
 

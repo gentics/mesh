@@ -340,5 +340,11 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 		}
 
 	}
+	
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

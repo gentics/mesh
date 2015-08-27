@@ -185,4 +185,10 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 	public GroupImpl getImpl() {
 		return this;
 	}
+	
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+		
+	}
 }

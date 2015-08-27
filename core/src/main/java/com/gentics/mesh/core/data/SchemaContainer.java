@@ -10,7 +10,7 @@ public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedNod
 
 	public static final String TYPE = "schemaContainer";
 
-	Schema getSchema() throws IOException;
+	Schema getSchema();
 
 	void setSchema(Schema schema);
 

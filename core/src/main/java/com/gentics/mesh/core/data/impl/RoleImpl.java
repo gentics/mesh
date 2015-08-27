@@ -139,5 +139,11 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 			}
 		}
 	}
+	
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

@@ -3,10 +3,13 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.elasticsearch.action.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -37,6 +40,17 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	String getType() {
 		return Tag.TYPE;
+	}
+
+	private static TagIndexHandler instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+	
+	public static TagIndexHandler getInstance() {
+		return instance;
 	}
 
 	public void store(Tag tag, Handler<AsyncResult<ActionResponse>> handler) {
@@ -76,17 +90,17 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				if (rh.result() != null && rh.succeeded()) {
 					Tag tag = rh.result();
-//					tag.updateIndex();
-					// 1. Store the tag 
+					// tag.updateIndex();
+					// 1. Store the tag
 					store(tag, handler);
 					// 2. Update all nodes that use the tag by storing them again
 					for (Node node : tag.getNodes()) {
-						String nodeUuid= node.getUuid();
+						String nodeUuid = node.getUuid();
 						nodeIndexHandler.store(nodeUuid, rhn -> {
 							if (rhn.succeeded()) {
 								log.info("Updated node {" + nodeUuid + "}");
 							}
-							//TODO log error
+							// TODO log error
 						});
 					}
 					// 3. Update the tag family of the tag by storing it again
@@ -95,7 +109,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 						if (rht.succeeded()) {
 							log.info("Updated tagFamily {" + tagFamilyUuid + "}");
 						}
-						//TODO log error
+						// TODO log error
 					});
 				} else {
 					log.error("Could not store tag {" + uuid + "}. Tag could not be loaded.", rh.cause());

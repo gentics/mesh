@@ -352,10 +352,16 @@ public class VerticleHelper {
 				String type = vertex.getType();
 				vertex.update(rc);
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx tx = db.trx()) {
-					transformAndResponde(rc, vertex);
+				try (Trx txi = db.trx()) {
+					vertex.reload();
+					vertex.updateIndex(rh2 -> {
+						try (Trx tx = db.trx()) {
+							vertex.reload();
+							transformAndResponde(rc, vertex);
+						}
+					});
 				}
-				triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);
+				// triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);
 			}
 		});
 	}
@@ -423,11 +429,10 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root) {
+		I18NService i18n = I18NService.getI18n();
 		if (root == null) {
-			// TODO i18n
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not find root node.");
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_root_node_not_found"));
 		} else {
-			I18NService i18n = I18NService.getI18n();
 			T object = root.findByUuidBlocking(uuid);
 			if (object == null) {
 				throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
@@ -445,11 +450,10 @@ public class VerticleHelper {
 
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
+		I18NService i18n = I18NService.getI18n();
 		if (root == null) {
-			// TODO i18n
-			handler.handle(Future.failedFuture("Could not find root node."));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_root_node_not_found"));
 		} else {
-			I18NService i18n = I18NService.getI18n();
 			root.findByUuid(uuid, rh -> {
 				try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
 					if (rh.failed()) {

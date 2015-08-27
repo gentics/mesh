@@ -66,7 +66,7 @@ public interface Node extends GenericVertex<NodeResponse> {
 	 * @return
 	 * @throws IOException
 	 */
-	Schema getSchema() throws IOException;
+	Schema getSchema();
 
 	/**
 	 * Return the field container for the given language.

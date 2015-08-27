@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static org.elasticsearch.client.Requests.refreshRequest;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -41,9 +42,10 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testDocumentUpdate() {
+	public void testDocumentUpdate() throws InterruptedException {
 		Tag tag = tag("red");
 
+		long start = System.currentTimeMillis();
 		String newName = "redish";
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setFields(new TagFieldContainer().setName(newName));
@@ -52,14 +54,18 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
+		System.out.println("Took: " + (System.currentTimeMillis() - start));
+
 		try (Trx tx = db.trx()) {
 			assertEquals(newName, tag.getName());
 		}
 
+		start = System.currentTimeMillis();
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
+		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
 	}
 

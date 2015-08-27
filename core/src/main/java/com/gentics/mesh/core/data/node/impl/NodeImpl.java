@@ -141,7 +141,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public Schema getSchema() throws IOException {
+	public Schema getSchema() {
 		return getSchemaContainer().getSchema();
 	}
 
@@ -283,7 +283,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				}
 			}
 
-			try {
+//			try {
 				for (Tag tag : getTags(rc)) {
 					TagFamily tagFamily = tag.getTagFamily();
 					String tagFamilyName = tagFamily.getName();
@@ -303,10 +303,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			handler.handle(Future.succeededFuture(restNode));
-		} catch (IOException e) {
-			// TODO i18n
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
-		}
+//		} catch (IOException e) {
+//			// TODO i18n
+//			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
+//		}
 
 		return this;
 
@@ -536,7 +536,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				try {
 					Schema schema = getSchema();
 					container.setFieldFromRest(rc, requestModel.getFields(), schema);
-				} catch (MeshSchemaException | IOException e) {
+				} catch (MeshSchemaException e) {
 					// TODO i18n
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
 					txUpdate.failure();
@@ -546,6 +546,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		} catch (IOException e1) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
 		}
+	}
+
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

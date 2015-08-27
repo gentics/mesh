@@ -1,5 +1,7 @@
 package com.gentics.mesh.search;
 
+import static org.elasticsearch.client.Requests.refreshRequest;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -8,6 +10,7 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
+import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 
 import io.vertx.core.logging.Logger;
@@ -28,8 +31,10 @@ public class ElasticSearchProvider {
 		}
 		long start = System.currentTimeMillis();
 		String dataDirectory = options.getDirectory();
-		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder().put("http.enabled", "false").put("path.data",
-				dataDirectory);
+		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder();
+		elasticsearchSettings.put("http.enabled", "false");
+		elasticsearchSettings.put("path.data", dataDirectory);
+		elasticsearchSettings.put("node.name", MeshNameProvider.getInstance().getName());
 		node = NodeBuilder.nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
@@ -66,5 +71,9 @@ public class ElasticSearchProvider {
 
 	public void stop() {
 		node.close();
+	}
+
+	public void refreshIndex() {
+		getNode().client().admin().indices().refresh(refreshRequest()).actionGet();
 	}
 }

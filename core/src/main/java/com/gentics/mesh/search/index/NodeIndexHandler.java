@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
@@ -57,8 +59,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Node.TYPE;
 	}
 
+	private static NodeIndexHandler instance;
+
+	public static NodeIndexHandler getInstance() {
+		return instance;
+	}
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
 	@Override
-	public void store(Node node, Handler<AsyncResult<ActionResponse>> handler) throws IOException {
+	public void store(Node node, Handler<AsyncResult<ActionResponse>> handler) {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -235,9 +248,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 						break;
 					case "microschema":
-						//TODO implement microschemas
+						// TODO implement microschemas
 						throw new NotImplementedException();
-						//break;
+						// break;
 					case "string":
 						GraphStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
 						if (graphStringList != null) {
@@ -268,15 +281,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case SELECT:
-				//TODO implement lists
-				//break;
+				// TODO implement lists
+				// break;
 				throw new NotImplementedException();
 			case MICROSCHEMA:
-				//TODO implement microschemas
-				//break;
+				// TODO implement microschemas
+				// break;
 				throw new NotImplementedException();
 			default:
-				//TODO error?
+				// TODO error?
 				break;
 			}
 

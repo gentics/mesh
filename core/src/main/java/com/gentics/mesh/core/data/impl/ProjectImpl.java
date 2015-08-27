@@ -212,5 +212,11 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
+	
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

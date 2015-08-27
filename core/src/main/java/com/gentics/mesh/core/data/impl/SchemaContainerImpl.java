@@ -87,10 +87,14 @@ public class SchemaContainerImpl extends AbstractGenericVertex<SchemaResponse>im
 	}
 
 	@Override
-	public Schema getSchema() throws IOException {
+	public Schema getSchema() {
 		Schema schema = getSchemaStorage().getSchema(getName());
 		if (schema == null) {
-			schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
+			try {
+				schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			getSchemaStorage().addSchema(schema);
 		}
 		return schema;
@@ -126,7 +130,12 @@ public class SchemaContainerImpl extends AbstractGenericVertex<SchemaResponse>im
 		}
 		//TODO update name? check for conflicting names?
 		setSchema(requestModel);
-
+	}
+	
+	@Override
+	public void updateIndex(Handler<Future> handler) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
