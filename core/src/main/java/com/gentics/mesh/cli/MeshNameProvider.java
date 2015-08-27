@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -44,7 +45,7 @@ public class MeshNameProvider {
 	protected static String getRandomName() {
 
 		if (names == null) {
-			final InputStream ins = MeshNameProvider.class.getResourceAsStream("/" + NAME_JSON_FILENAME);
+			final InputStream ins = MeshNameProvider.class.getResourceAsStream("/json/" + NAME_JSON_FILENAME);
 			if (ins == null) {
 				log.error("Names could not be loaded from classpath file {" + NAME_JSON_FILENAME + "}");
 			} else {
@@ -62,7 +63,7 @@ public class MeshNameProvider {
 		try {
 			JSONArray array = names.getJSONArray("data");
 			int random = (int) (Math.random() * array.length());
-			return array.getJSONObject(random).getString("name");
+			return StringUtils.trim(array.getJSONObject(random).getString("name"));
 		} catch (Exception e) {
 			log.error("Error while getting random name.", e);
 			return "Unknown";

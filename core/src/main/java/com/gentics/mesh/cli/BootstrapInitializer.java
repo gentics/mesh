@@ -474,7 +474,7 @@ public class BootstrapInitializer {
 
 		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
-		final InputStream ins = getClass().getResourceAsStream("/" + filename);
+		final InputStream ins = getClass().getResourceAsStream("/json/" + filename);
 		if (ins == null) {
 			throw new NullPointerException("Languages could not be loaded from classpath file {" + filename + "}");
 		}
