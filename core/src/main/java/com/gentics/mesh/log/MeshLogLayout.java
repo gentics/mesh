@@ -19,7 +19,7 @@ public class MeshLogLayout extends LayoutBase<ILoggingEvent> {
 		sbuf.append(" ");
 
 		sbuf.append("[");
-		sbuf.append(MeshNameProvider.getName());
+		sbuf.append(MeshNameProvider.getInstance().getName());
 		sbuf.append("]");
 		sbuf.append(" ");
 		sbuf.append(" [");

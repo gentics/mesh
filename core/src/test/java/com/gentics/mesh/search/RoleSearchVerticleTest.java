@@ -1,0 +1,5 @@
+package com.gentics.mesh.search;
+
+public class RoleSearchVerticleTest {
+
+}
