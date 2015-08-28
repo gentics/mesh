@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
@@ -76,29 +77,30 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	protected void setupFullIndex() throws InterruptedException {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			SearchQueueBatch batch = searchQueue.createBatch();
 			for (Node node : boot.nodeRoot().findAll()) {
-				searchQueue.put(node, CREATE_ACTION);
+				batch.addEntry(node, CREATE_ACTION);
 			}
 			for (Project project : boot.projectRoot().findAll()) {
-				searchQueue.put(project, CREATE_ACTION);
+				batch.addEntry(project, CREATE_ACTION);
 			}
 			for (User user : boot.userRoot().findAll()) {
-				searchQueue.put(user, CREATE_ACTION);
+				batch.addEntry(user, CREATE_ACTION);
 			}
 			for (Role role : boot.roleRoot().findAll()) {
-				searchQueue.put(role, CREATE_ACTION);
+				batch.addEntry(role, CREATE_ACTION);
 			}
 			for (Group group : boot.groupRoot().findAll()) {
-				searchQueue.put(group, CREATE_ACTION);
+				batch.addEntry(group, CREATE_ACTION);
 			}
 			for (Tag tag : boot.tagRoot().findAll()) {
-				searchQueue.put(tag, CREATE_ACTION);
+				batch.addEntry(tag, CREATE_ACTION);
 			}
 			for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
-				searchQueue.put(tagFamily, CREATE_ACTION);
+				batch.addEntry(tagFamily, CREATE_ACTION);
 			}
 			for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-				searchQueue.put(schema, CREATE_ACTION);
+				batch.addEntry(schema, CREATE_ACTION);
 			}
 			//TODO add support for microschemas
 			//			for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {

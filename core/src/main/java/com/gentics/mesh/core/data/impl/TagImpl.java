@@ -11,6 +11,7 @@ import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +33,10 @@ import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -159,21 +163,25 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	@Override
 	public void addDeleteFromIndexActions() {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		queue.put(this, SearchQueueEntryAction.DELETE_ACTION);
+		SearchQueueBatch batch = queue.createBatch();
+
+		batch.addEntry(this, SearchQueueEntryAction.DELETE_ACTION);
 		for (Node node : getNodes()) {
-			queue.put(node, SearchQueueEntryAction.UPDATE_ACTION);
+			batch.addEntry(node, SearchQueueEntryAction.UPDATE_ACTION);
 		}
-		queue.put(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
+		batch.addEntry(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
 	}
 
 	@Override
 	public void addUpdateIndexActions() {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		queue.put(this, SearchQueueEntryAction.UPDATE_ACTION);
+		SearchQueueBatch batch = queue.createBatch();
+
+		batch.addEntry(this, SearchQueueEntryAction.UPDATE_ACTION);
 		for (Node node : getNodes()) {
-			queue.put(node, SearchQueueEntryAction.UPDATE_ACTION);
+			batch.addEntry(node, SearchQueueEntryAction.UPDATE_ACTION);
 		}
-		queue.put(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
+		batch.addEntry(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
 	}
 
 	@Override

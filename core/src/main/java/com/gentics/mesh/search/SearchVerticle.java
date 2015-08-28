@@ -16,6 +16,7 @@ import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -84,27 +85,30 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			};
 
 			while (true) {
-				SearchQueueEntry entry = null;
+				SearchQueueBatch batch = null;
 				try {
 					//TODO better to move this code into a mutex secured autoclosable
-					SearchQueueEntry currentEntry;
+					SearchQueueBatch currentBatch;
 					try (Trx txTake = db.trx()) {
-						currentEntry = root.take();
-						entry = currentEntry;
+						currentBatch = root.take();
+						batch = currentBatch;
 						txTake.success();
 					}
-					if (entry != null) {
-						//TODO wait for all index events to complete
-						counter.incrementAndGet();
-						vertx.eventBus().send(AbstractIndexHandler.INDEX_EVENT_ADDRESS_PREFIX + entry.getElementType(), entry.getMessage(), rh -> {
-							if (rh.failed()) {
-								log.error("Indexing failed", rh.cause());
-								//TODO handle this. Move item back into queue? queue is not a stack. broken entry would possibly directly retried.
-							} else {
-								log.info("Indexed element {" + currentEntry.getElementUuid() + ":" + currentEntry.getElementType() + "}");
-							}
-							completeHandler.handle(Future.succeededFuture(currentEntry.getMessage()));
-						});
+					if (batch != null) {
+						for (SearchQueueEntry entry : batch.getEntries()) {
+							//TODO wait for all index events to complete
+							counter.incrementAndGet();
+							vertx.eventBus().send(AbstractIndexHandler.INDEX_EVENT_ADDRESS_PREFIX + entry.getElementType(), entry.getMessage(),
+									rh -> {
+										if (rh.failed()) {
+											log.error("Indexing failed", rh.cause());
+											//TODO handle this. Move item back into queue? queue is not a stack. broken entry would possibly directly retried.
+										} else {
+											log.info("Indexed element {" + entry.getElementUuid() + ":" + entry.getElementType() + "}");
+										}
+										completeHandler.handle(Future.succeededFuture(entry.getMessage()));
+									});
+						}
 					} else {
 						break;
 					}
@@ -112,8 +116,8 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 					handler.handle(Future.failedFuture(e));
 					// In case of an error put the entry back into the queue
 					try (Trx txPutBack = db.trx()) {
-						if (entry != null) {
-							root.put(entry);
+						if (batch != null) {
+							root.addBatch(batch);
 							txPutBack.success();
 						}
 					}

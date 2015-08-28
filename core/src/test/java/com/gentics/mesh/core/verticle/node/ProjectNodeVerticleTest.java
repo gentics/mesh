@@ -37,6 +37,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -161,7 +162,9 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We created the node. A search queue entry should have been created.", 1, searchQueue.getSize());
-			SearchQueueEntry entry = searchQueue.take();
+			SearchQueueBatch batch = searchQueue.take();
+			assertEquals(1, batch.getEntries().size());
+			SearchQueueEntry entry = batch.getEntries().get(0);
 			assertEquals(restNode.getUuid(), entry.getElementUuid());
 			assertEquals(Node.TYPE, entry.getElementType());
 			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getAction());
@@ -687,7 +690,10 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We updated the node. A search queue entry should have been created.", 1, searchQueue.getSize());
-			SearchQueueEntry entry = searchQueue.take();
+			SearchQueueBatch batch = searchQueue.take();
+			assertEquals(1, batch.getEntries().size());
+			SearchQueueEntry entry = batch.getEntries().get(0);
+
 			assertEquals(restNode.getUuid(), entry.getElementUuid());
 			assertEquals(Node.TYPE, entry.getElementType());
 			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getAction());
@@ -895,7 +901,9 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We deleted the item. A search queue entry should have been created.", 1, searchQueue.getSize());
-			SearchQueueEntry entry = searchQueue.take();
+			SearchQueueBatch batch = searchQueue.take();
+			assertEquals(1, batch.getEntries().size());
+			SearchQueueEntry entry = batch.getEntries().get(0);
 			assertEquals(uuid, entry.getElementUuid());
 			assertEquals(Node.TYPE, entry.getElementType());
 			assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getAction());

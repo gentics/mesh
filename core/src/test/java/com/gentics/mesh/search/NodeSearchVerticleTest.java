@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -99,7 +100,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		NodeResponse nodeResponse = response.getData().get(0);
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			searchQueue.put(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
+			SearchQueueBatch batch = searchQueue.createBatch();
+			batch.addEntry(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
 			tx.success();
 		}
 		CountDownLatch latch = new CountDownLatch(1);
@@ -179,8 +181,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		// Create the update entry in the search queue
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			SearchQueueBatch batch = searchQueue.createBatch();
 			Node node = folder("2015");
-			searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
 		}
 		CountDownLatch latch = new CountDownLatch(1);
@@ -221,7 +224,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(1, response.getData().size());
 
 		// Create the update entry in the search queue
-		searchQueue.put(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+		SearchQueueBatch batch = searchQueue.createBatch();
+		batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();

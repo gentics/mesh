@@ -63,6 +63,7 @@ public class GraphRelationships {
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
+	public static final String HAS_BATCH = "HAS_BATCH";
 	public static final String ALLOWED_SCHEMA = "ALLOWED_SCHEMA";
 
 	public static final String HAS_LIST = "HAS_LIST";

@@ -1,14 +1,12 @@
 package com.gentics.mesh.core.data.search.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BATCH;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 
 public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
@@ -16,33 +14,19 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	private final ReentrantLock takeLock = new ReentrantLock();
 
 	@Override
-	public void put(SearchQueueEntry entry) {
-		setLinkOutTo(entry.getImpl(), HAS_ITEM);
+	public void addBatch(SearchQueueBatch batch) {
+		setLinkOutTo(batch.getImpl(), HAS_BATCH);
 	}
 
 	@Override
-	public void put(String uuid, String type, SearchQueueEntryAction action) {
-		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);
-		entry.setElementUuid(uuid);
-		entry.setElementType(type);
-		entry.setAction(action.getName());
-		put(entry);
-	}
-
-	@Override
-	public void put(GenericVertex<?> vertex, SearchQueueEntryAction action) {
-		put(vertex.getUuid(), vertex.getType(), action);
-	}
-
-	@Override
-	public SearchQueueEntry take() throws InterruptedException {
-		SearchQueueEntry entry;
+	public SearchQueueBatch take() throws InterruptedException {
+		SearchQueueBatch entry;
 		final ReentrantLock takeLock = this.takeLock;
 		takeLock.lockInterruptibly();
 		try {
-			entry = out(HAS_ITEM).nextOrDefault(SearchQueueEntryImpl.class, null);
+			entry = out(HAS_BATCH).nextOrDefault(SearchQueueBatchImpl.class, null);
 			if (entry != null) {
-				unlinkOut(entry.getImpl(), HAS_ITEM);
+				unlinkOut(entry.getImpl(), HAS_BATCH);
 				return entry;
 			} else {
 				return null;
@@ -55,8 +39,15 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	}
 
 	@Override
+	public SearchQueueBatch createBatch() {
+		SearchQueueBatch batch = getGraph().addFramedVertex(SearchQueueBatchImpl.class);
+		addBatch(batch);
+		return batch;
+	}
+
+	@Override
 	public long getSize() {
-		return out(HAS_ITEM).count();
+		return out(HAS_BATCH).count();
 	}
 
 }

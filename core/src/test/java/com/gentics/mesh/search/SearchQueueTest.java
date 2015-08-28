@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
@@ -30,21 +31,28 @@ public class SearchQueueTest extends AbstractDBTest {
 	public void testQueue() throws InterruptedException, JSONException {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			SearchQueueBatch batch = searchQueue.createBatch();
+			int i = 0;
 			for (Node node : boot.nodeRoot().findAll()) {
-				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
+				batch.addEntry(node.getUuid(), Node.TYPE, CREATE_ACTION);
+				i++;
 			}
 			long size = searchQueue.getSize();
-			SearchQueueEntry entry = searchQueue.take();
+			SearchQueueBatch loadedBatch = searchQueue.take();
+			assertNotNull(loadedBatch);
+
+			assertEquals(i, loadedBatch.getEntries().size());
+			SearchQueueEntry entry = loadedBatch.getEntries().get(0);
 			assertNotNull(entry);
 			assertEquals(size - 1, searchQueue.getSize());
 			size = searchQueue.getSize();
-			for (int i = 0; i < size; i++) {
-				entry = searchQueue.take();
-				assertNotNull("entry " + i + " was null." + entry);
+			for (int e = 0; e < size; e++) {
+				batch = searchQueue.take();
+				assertNotNull("Batch " + e + " was null.", batch);
 			}
 			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
-			entry = searchQueue.take();
-			assertNull(entry);
+			batch = searchQueue.take();
+			assertNull(batch);
 		}
 
 	}
@@ -57,16 +65,17 @@ public class SearchQueueTest extends AbstractDBTest {
 		// Add some entries to the search queue
 		try (Trx tx = db.trx()) {
 			searchQueue = boot.meshRoot().getSearchQueue();
+			SearchQueueBatch batch = searchQueue.createBatch();
 			for (Node node : boot.nodeRoot().findAll()) {
-				searchQueue.put(node.getUuid(), Node.TYPE, CREATE_ACTION);
+				batch.addEntry(node.getUuid(), Node.TYPE, CREATE_ACTION);
 			}
 			tx.success();
 		}
 
 		try (Trx tx = db.trx()) {
 			long size = searchQueue.getSize();
-			SearchQueueEntry entry = searchQueue.take();
-			assertNotNull(entry);
+			SearchQueueBatch batch = searchQueue.take();
+			assertNotNull(batch);
 			assertEquals(size - 1, searchQueue.getSize());
 		}
 
@@ -78,23 +87,23 @@ public class SearchQueueTest extends AbstractDBTest {
 				Runnable r = () -> {
 					int z = 0;
 					while (true) {
-//						try {
-							try (Trx txTake = db.trx()) {
-								try {
-									SearchQueueEntry currentEntry = searchQueue.take();
-									assertNotNull("entry was null." + currentEntry);
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-								txTake.success();
+						//						try {
+						try (Trx txTake = db.trx()) {
+							try {
+								SearchQueueBatch currentBatch = searchQueue.take();
+								assertNotNull("entry was null.", currentBatch);
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
-							System.out.println("Got the element");
-							latch.countDown();
-							break;
-//						} catch (OConcurrentModificationException e) {
-//							System.out.println("Got it  - Try: " + z + " Size: " + searchQueue.getSize());
-//							z++;
-//						}
+							txTake.success();
+						}
+						System.out.println("Got the element");
+						latch.countDown();
+						break;
+						//						} catch (OConcurrentModificationException e) {
+						//							System.out.println("Got it  - Try: " + z + " Size: " + searchQueue.getSize());
+						//							z++;
+						//						}
 					}
 				};
 				Thread t = new Thread(r);
@@ -106,8 +115,8 @@ public class SearchQueueTest extends AbstractDBTest {
 		try (Trx tx = db.trx()) {
 			searchQueue.reload();
 			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
-			SearchQueueEntry entry = searchQueue.take();
-			assertNull(entry);
+			SearchQueueBatch batch = searchQueue.take();
+			assertNull(batch);
 
 			CountDownLatch latch2 = new CountDownLatch(10);
 			AtomicReference<AssertionError> errorReference = new AtomicReference<>();
@@ -115,10 +124,10 @@ public class SearchQueueTest extends AbstractDBTest {
 				Runnable r = () -> {
 					try (Trx tx2 = db.trx()) {
 						try {
-							SearchQueueEntry currentEntry = searchQueue.take();
+							SearchQueueBatch currentBatch = searchQueue.take();
 							latch2.countDown();
 							try {
-								assertNull("entry was not null.", currentEntry);
+								assertNull("Batch was null.", currentBatch);
 							} catch (AssertionError e) {
 								if (errorReference.get() == null) {
 									errorReference.set(e);
