@@ -97,7 +97,7 @@ public class MeshNameProvider {
 			int randomNameIndex = (int) (Math.random() * nameArray.length());
 			int randomAdjectiveIndex = (int) (Math.random() * adjArray.length());
 			String partA = StringUtils.trim(adjArray.getString(randomAdjectiveIndex));
-			String partB = StringUtils.trim(nameArray.getJSONObject(randomAdjectiveIndex).getString("name"));
+			String partB = StringUtils.trim(nameArray.getString(randomNameIndex));
 			return partA + " " + partB;
 		} catch (Exception e) {
 			log.error("Error while getting random name.", e);

@@ -325,12 +325,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainer schema;
 		try (Trx tx = db.trx()) {
 			schema = schemaContainer("content");
-			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
-			latchFor(future);
-			assertSuccess(future);
+			role().revokePermissions(schema, DELETE_PERM);
+			tx.success();
 		}
 
-		fail("unspecified test");
+		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
+
 		try (Trx tx = db.trx()) {
 			assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
