@@ -30,6 +30,7 @@ public class MeshLogLayout extends LayoutBase<ILoggingEvent> {
 		sbuf.append(event.getLoggerName());
 		sbuf.append(" - ");
 		sbuf.append(event.getFormattedMessage());
+		sbuf.append("\n");
 		return sbuf.toString();
 	}
 }

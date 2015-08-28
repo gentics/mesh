@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BATCH;
 
+import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
+
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -39,8 +41,34 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	}
 
 	@Override
-	public SearchQueueBatch createBatch() {
+	public SearchQueueBatch take(String batchId) {
+		SearchQueueBatch entry;
+		final ReentrantLock takeLock = this.takeLock;
+		try {
+			takeLock.lockInterruptibly();
+			try {
+				entry = out(HAS_BATCH).has(BATCH_ID_PROPERTY_KEY).nextOrDefault(SearchQueueBatchImpl.class, null);
+				if (entry != null) {
+					unlinkOut(entry.getImpl(), HAS_BATCH);
+					return entry;
+				} else {
+					return null;
+				}
+			} finally {
+				takeLock.unlock();
+			}
+		} catch (InterruptedException e) {
+			//TODO handle  InterruptedException 
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+
+	@Override
+	public SearchQueueBatch createBatch(String batchId) {
 		SearchQueueBatch batch = getGraph().addFramedVertex(SearchQueueBatchImpl.class);
+		batch.setBatchId(batchId);
 		addBatch(batch);
 		return batch;
 	}

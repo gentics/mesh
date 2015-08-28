@@ -146,7 +146,6 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 					log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 				handler.handle(Future.succeededFuture(response));
-
 			}
 
 			@Override

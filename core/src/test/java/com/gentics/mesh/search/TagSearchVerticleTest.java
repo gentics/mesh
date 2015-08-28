@@ -74,9 +74,10 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		try (Trx tx = db.trx()) {
 			assertEquals(newName + "2", tag.getName());
+			assertEquals(0, meshRoot().getSearchQueue().getSize());
 		}
-		
-//		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+
+		//		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
 
 		start = System.currentTimeMillis();
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2"));

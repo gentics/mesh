@@ -36,4 +36,22 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		return out(HAS_ITEM).has(SearchQueueEntryImpl.class).toListExplicit(SearchQueueEntryImpl.class);
 	}
 
+	@Override
+	public String getBatchId() {
+		return getProperty(BATCH_ID_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setBatchId(String batchId) {
+		setProperty(BATCH_ID_PROPERTY_KEY, batchId);
+	}
+	
+	@Override
+	public void delete() {
+		for(SearchQueueEntry entry : getEntries()) {
+			entry.delete();
+		}
+		getVertex().remove();
+	}
+
 }

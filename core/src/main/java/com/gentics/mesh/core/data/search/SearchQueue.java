@@ -22,12 +22,26 @@ public interface SearchQueue extends MeshVertex {
 	SearchQueueBatch take() throws InterruptedException;
 
 	/**
+	 * Fetch the search queue batch with the given id and remove it from the queue.
+	 * 
+	 * @param batchId
+	 * @return
+	 */
+	SearchQueueBatch take(String batchId);
+
+	/**
 	 * Returns the size of the queue.
 	 * 
 	 * @return
 	 */
 	long getSize();
 
-	SearchQueueBatch createBatch();
+	/**
+	 * Create a new batch with the given id and add it to the queue.
+	 * 
+	 * @param batchId
+	 * @return
+	 */
+	SearchQueueBatch createBatch(String batchId);
 
 }

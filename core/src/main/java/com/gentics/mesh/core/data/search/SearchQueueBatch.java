@@ -7,6 +7,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 
 public interface SearchQueueBatch extends MeshVertex {
 
+	public static final String BATCH_ID_PROPERTY_KEY = "batch_id";
+
 	void addEntry(String uuid, String type, SearchQueueEntryAction action);
 
 	void addEntry(GenericVertex<?> vertex, SearchQueueEntryAction action);
@@ -15,4 +17,7 @@ public interface SearchQueueBatch extends MeshVertex {
 
 	List<? extends SearchQueueEntry> getEntries();
 
+	void setBatchId(String batchId);
+
+	String getBatchId();
 }

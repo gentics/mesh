@@ -5,9 +5,12 @@
 			<layout class="com.gentics.mesh.log.MeshLogLayout"/>
 		</encoder>
 	</appender>
+
 	<logger name="com.gentics.mesh" level="DEBUG"/>
+	<logger name="org.elasticsearch" level="INFO"/>
+	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
 
 	<root level="DEBUG">
-		<appender-ref ref="STDOUT" />
+		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

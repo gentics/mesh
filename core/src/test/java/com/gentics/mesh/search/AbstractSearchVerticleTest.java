@@ -77,7 +77,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	protected void setupFullIndex() throws InterruptedException {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch("0");
 			for (Node node : boot.nodeRoot().findAll()) {
 				batch.addEntry(node, CREATE_ACTION);
 			}
@@ -111,7 +111,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		}
 
 		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null, new DeliveryOptions().setSendTimeout(100000L), rh -> {
 			latch.countDown();
 		});
 		latch.await(20, TimeUnit.SECONDS);

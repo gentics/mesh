@@ -49,15 +49,9 @@ public class Trx implements AutoCloseable {
 	public void close() {
 		handleDebug();
 		if (isSuccess) {
-			if (log.isDebugEnabled()) {
-				log.debug("Commiting graph {" + currentGraph.hashCode() + "}.");
-			}
-			currentGraph.commit();
+			commit();
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Invoking rollback on graph {" + currentGraph.hashCode() + "}.");
-			}
-			currentGraph.rollback();
+			rollback();
 		}
 		setLocalGraph(oldLocalGraph);
 	}
@@ -99,11 +93,19 @@ public class Trx implements AutoCloseable {
 		return Trx.localGraph.get();
 	}
 
+	@Deprecated
 	public void commit() {
+		if (log.isDebugEnabled()) {
+			log.debug("Commiting graph {" + currentGraph.hashCode() + "}.");
+		}
 		currentGraph.commit();
 	}
 
+	@Deprecated
 	public void rollback() {
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking rollback on graph {" + currentGraph.hashCode() + "}.");
+		}
 		currentGraph.rollback();
 	}
 

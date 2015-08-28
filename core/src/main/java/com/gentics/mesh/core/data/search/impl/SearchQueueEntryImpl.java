@@ -55,4 +55,9 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 		return message;
 	}
 
+	@Override
+	public void delete() {
+		getVertex().remove();
+	}
+
 }

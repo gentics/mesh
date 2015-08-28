@@ -295,7 +295,7 @@ public class VerticleHelper {
 		root.create(rc, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
-//				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
+				//				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
 				transformAndResponde(rc, vertex);
 			}
 		});
@@ -348,40 +348,45 @@ public class VerticleHelper {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				vertex.update(rc);
-				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null, reply-> {
-					// Transform the vertex using a fresh transaction in order to start with a clean cache
-					try (Trx txi = db.trx()) {
-						vertex.reload();
-						transformAndResponde(rc, vertex);
+				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, vertex.getUuid(), reply -> {
+					if (reply.succeeded()) {
+						// Transform the vertex using a fresh transaction in order to start with a clean cache
+						try (Trx txi = db.trx()) {
+							vertex.reload();
+							transformAndResponde(rc, vertex);
+						}
+					} else {
+						//TODO i18n, logging, error handling
+						fail(rc, "error processing search queue batch");
 					}
 				});
 			}
 		});
 	}
 
-//	/**
-//	 * Trigger a search event for the given type and uuid and action.
-//	 * 
-//	 * @param uuid
-//	 * @param type
-//	 * @param action
-//	 */
-//	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
-//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-//
-//		// Mesh.vertx().executeBlocking(bc -> {
-//		try (Trx tx = db.trx()) {
-//			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
-//			tx.success();
-//		}
-//		Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-//		// } , false, rh -> {
-//		// if (rh.failed()) {
-//		// TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
-//		// rh.cause().printStackTrace();
-//		// }
-//		// });
-//	}
+	//	/**
+	//	 * Trigger a search event for the given type and uuid and action.
+	//	 * 
+	//	 * @param uuid
+	//	 * @param type
+	//	 * @param action
+	//	 */
+	//	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
+	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	//
+	//		// Mesh.vertx().executeBlocking(bc -> {
+	//		try (Trx tx = db.trx()) {
+	//			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
+	//			tx.success();
+	//		}
+	//		Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+	//		// } , false, rh -> {
+	//		// if (rh.failed()) {
+	//		// TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
+	//		// rh.cause().printStackTrace();
+	//		// }
+	//		// });
+	//	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {

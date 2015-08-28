@@ -11,13 +11,8 @@ import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.junit.Assert.assertEquals;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import org.elasticsearch.action.ActionResponse;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -34,9 +29,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -46,8 +39,6 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.NodeIndexHandler;
-import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -58,9 +49,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 
 public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag, IndexedVertex {
 
@@ -163,7 +151,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	@Override
 	public void addDeleteFromIndexActions() {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		//TODO use a dedicated uuid or timestamp for batched to avoid collisions
+		SearchQueueBatch batch = queue.createBatch(getUuid());
 
 		batch.addEntry(this, SearchQueueEntryAction.DELETE_ACTION);
 		for (Node node : getNodes()) {
@@ -175,7 +164,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	@Override
 	public void addUpdateIndexActions() {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch();
+		//TODO use a dedicated uuid or timestamp for batched to avoid collisions
+		SearchQueueBatch batch = queue.createBatch(getUuid());
 
 		batch.addEntry(this, SearchQueueEntryAction.UPDATE_ACTION);
 		for (Node node : getNodes()) {

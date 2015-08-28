@@ -100,7 +100,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		NodeResponse nodeResponse = response.getData().get(0);
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch("0");
 			batch.addEntry(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
 			tx.success();
 		}
@@ -181,7 +181,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		// Create the update entry in the search queue
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch();
+			SearchQueueBatch batch = searchQueue.createBatch("0");
 			Node node = folder("2015");
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
@@ -224,7 +224,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(1, response.getData().size());
 
 		// Create the update entry in the search queue
-		SearchQueueBatch batch = searchQueue.createBatch();
+		SearchQueueBatch batch = searchQueue.createBatch("0");
 		batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 		CountDownLatch latch = new CountDownLatch(1);
 		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
