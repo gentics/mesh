@@ -3,54 +3,35 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import com.gentics.mesh.core.data.root.RootVertex;
 
 @Component
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	@Override
-	String getIndex() {
+	protected String getIndex() {
 		return Project.TYPE;
 	}
 
 	@Override
-	String getType() {
+	protected String getType() {
 		return Project.TYPE;
 	}
 
 	@Override
-	public void store(Project project, Handler<AsyncResult<ActionResponse>> handler) {
+	protected RootVertex<Project> getRootVertex() {
+		return boot.meshRoot().getProjectRoot();
+	}
+
+	@Override
+	protected Map<String, Object> transformToDocumentMap(Project project) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", project.getName());
 		addBasicReferences(map, project);
-		store(project.getUuid(), map, handler);
-	}
-
-	@Override
-	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = db.trx()) {
-			boot.projectRoot().findByUuid(uuid, rh -> {
-				if (rh.result() != null && rh.succeeded()) {
-					Project project = rh.result();
-					store(project, handler);
-				} else {
-					//TODO reply error? discard? log?
-				}
-			});
-		}
-
-	}
-
-	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		throw new NotImplementedException();
+		return map;
 	}
 
 }

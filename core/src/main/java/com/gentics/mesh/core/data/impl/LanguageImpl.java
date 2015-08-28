@@ -75,9 +75,4 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 		throw new NotImplementedException();
 	}
 
-	@Override
-	public void updateIndex(Handler<Future> handler) {
-		// TODO Auto-generated method stub
-
-	}
 }

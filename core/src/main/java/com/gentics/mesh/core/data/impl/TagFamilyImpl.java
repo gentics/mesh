@@ -8,7 +8,6 @@ import static com.gentics.mesh.util.VerticleHelper.getProjectName;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.triggerEvent;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -29,7 +28,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -167,7 +165,7 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 						txUpdate.success();
 					}
 					transformAndResponde(rc, tagFamily);
-					triggerEvent(tagFamily.getUuid(), TagFamily.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+//					triggerEvent(tagFamily.getUuid(), TagFamily.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
 				}
 			});
 		}
@@ -187,12 +185,6 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 			}
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-	
-	@Override
-	public void updateIndex(Handler<Future> handler) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

@@ -283,30 +283,30 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				}
 			}
 
-//			try {
-				for (Tag tag : getTags(rc)) {
-					TagFamily tagFamily = tag.getTagFamily();
-					String tagFamilyName = tagFamily.getName();
-					String tagFamilyUuid = tagFamily.getUuid();
-					TagReference reference = tag.tansformToTagReference();
-					TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
-					if (group == null) {
-						group = new TagFamilyTagGroup();
-						group.setUuid(tagFamilyUuid);
-						restNode.getTags().put(tagFamilyName, group);
-					}
-					group.getItems().add(reference);
+			//			try {
+			for (Tag tag : getTags(rc)) {
+				TagFamily tagFamily = tag.getTagFamily();
+				String tagFamilyName = tagFamily.getName();
+				String tagFamilyUuid = tagFamily.getUuid();
+				TagReference reference = tag.tansformToTagReference();
+				TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
+				if (group == null) {
+					group = new TagFamilyTagGroup();
+					group.setUuid(tagFamilyUuid);
+					restNode.getTags().put(tagFamilyName, group);
 				}
-			} catch (InvalidArgumentException e) {
-				// TODO i18n
-				throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
+				group.getItems().add(reference);
 			}
+		} catch (InvalidArgumentException e) {
+			// TODO i18n
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
+		}
 
-			handler.handle(Future.succeededFuture(restNode));
-//		} catch (IOException e) {
-//			// TODO i18n
-//			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
-//		}
+		handler.handle(Future.succeededFuture(restNode));
+		//		} catch (IOException e) {
+		//			// TODO i18n
+		//			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
+		//		}
 
 		return this;
 
@@ -546,12 +546,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		} catch (IOException e1) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
 		}
-	}
-
-	@Override
-	public void updateIndex(Handler<Future> handler) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

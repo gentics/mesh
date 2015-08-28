@@ -5,33 +5,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import com.gentics.mesh.core.data.root.RootVertex;
 
 @Component
 public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
-	String getIndex() {
+	protected String getIndex() {
 		return User.TYPE;
 	}
 
 	@Override
-	String getType() {
+	protected String getType() {
 		return User.TYPE;
 	}
 
 	@Override
-	public void store(User user, Handler<AsyncResult<ActionResponse>> handler) {
+	protected RootVertex<User> getRootVertex() {
+		return boot.meshRoot().getUserRoot();
+	}
+
+	@Override
+	protected Map<String, Object> transformToDocumentMap(User user) {
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, user);
 		map.put("username", user.getUsername());
@@ -45,7 +45,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 		}
 		//TODO add node reference?
 		//TODO add disabled / enabled flag
-		store(user.getUuid(), map, handler);
+		return map;
 	}
 
 	private void addGroups(Map<String, Object> map, List<? extends Group> groups) {
@@ -61,23 +61,4 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 		map.put("groups", groupFields);
 	}
 
-	@Override
-	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = db.trx()) {
-			boot.userRoot().findByUuid(uuid, rh -> {
-				if (rh.result() != null && rh.succeeded()) {
-					User user = rh.result();
-					store(user, sh -> {
-
-					});
-				} else {
-					//TODO reply error? discard? log?
-				}
-			});
-		}
-	}
-
-	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		throw new NotImplementedException();
-	}
 }

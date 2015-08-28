@@ -48,9 +48,5 @@ public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaR
 	public void update(RoutingContext rc) {
 		throw new NotImplementedException();
 	}
-	
-	@Override
-	public void updateIndex(Handler<Future> handler) {
-		throw new NotImplementedException();
-	}
+
 }

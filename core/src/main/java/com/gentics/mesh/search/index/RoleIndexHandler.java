@@ -3,54 +3,34 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import com.gentics.mesh.core.data.root.RootVertex;
 
 @Component
 public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
-	String getIndex() {
+	protected String getIndex() {
 		return Role.TYPE;
 	}
 
 	@Override
-	String getType() {
+	protected String getType() {
 		return Role.TYPE;
 	}
 
 	@Override
-	public void store(Role role, Handler<AsyncResult<ActionResponse>> handler) {
+	protected RootVertex<Role> getRootVertex() {
+		return boot.meshRoot().getRoleRoot();
+	}
+
+	@Override
+	protected Map<String, Object> transformToDocumentMap(Role role) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", role.getName());
 		addBasicReferences(map, role);
-		store(role.getUuid(), map, handler);
+		return map;
 	}
-
-	@Override
-	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = db.trx()) {
-			boot.roleRoot().findByUuid(uuid, rh -> {
-				if (rh.result() != null && rh.succeeded()) {
-					Role role = rh.result();
-					store(role, handler);
-				} else {
-					//TODO reply error? discard? log?
-				}
-			});
-		}
-
-	}
-
-	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		throw new NotImplementedException();
-	}
-
 }

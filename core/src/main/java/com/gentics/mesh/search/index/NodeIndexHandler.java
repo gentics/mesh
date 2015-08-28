@@ -1,21 +1,16 @@
 package com.gentics.mesh.search.index;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.index.IndexResponse;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -31,11 +26,11 @@ import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -50,24 +45,23 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
 	@Override
-	String getIndex() {
+	protected String getIndex() {
 		return Node.TYPE;
 	}
 
 	@Override
-	String getType() {
+	protected String getType() {
 		return Node.TYPE;
 	}
 
-	private static NodeIndexHandler instance;
-
-	public static NodeIndexHandler getInstance() {
-		return instance;
+	@Override
+	protected RootVertex<Node> getRootVertex() {
+		return boot.meshRoot().getNodeRoot();
 	}
 
-	@PostConstruct
-	public void setup() {
-		instance = this;
+	@Override
+	protected Map<String, Object> transformToDocumentMap(Node object) {
+		throw new NotImplementedException("Nodes can't be directly transformed due to i18n support.");
 	}
 
 	@Override
@@ -94,38 +88,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			store(node.getUuid(), map, getType() + "-" + language, handler);
+			storeDocument(node.getUuid(), map, getType() + "-" + language, handler);
 		}
 
 	}
 
-	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
-		Map<String, Object> parentNodeInfo = new HashMap<>();
-		parentNodeInfo.put("uuid", parentNode.getUuid());
-		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
-		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
-		map.put("parent", parentNodeInfo);
-	}
-
-	@Override
-	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		boot.nodeRoot().findByUuid(uuid, rh -> {
-			if (rh.result() != null && rh.succeeded()) {
-				Node node = rh.result();
-				try {
-					update(node, handler);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				// TODO reply error? discard? log?
-			}
-		});
-
-	}
-
-	private void update(Node node, Handler<AsyncResult<ActionResponse>> handler) throws IOException {
+	public void update(Node node, Handler<AsyncResult<ActionResponse>> handler) {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -143,14 +111,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			update(node.getUuid(), map, getType() + "-" + language, handler);
+			updateDocument(node.getUuid(), map, getType() + "-" + language, handler);
 		}
 
 	}
 
 	@Override
-	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		Node node = BootstrapInitializer.getBoot().meshRoot().getNodeRoot().findByUuidBlocking(uuid);
+	public void deleteDocument(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+		Node node = getRootVertex().findByUuidBlocking(uuid);
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
 			String language = container.getLanguage().getLanguageTag();
 			if (log.isDebugEnabled()) {
@@ -298,52 +266,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
-	public void store(String uuid, Map<String, Object> map, String type, Handler<AsyncResult<ActionResponse>> handler) {
-		long start = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
-		}
-		getSearchClient().prepareIndex(getIndex(), type, uuid).setSource(map).execute().addListener(new ActionListener<IndexResponse>() {
-
-			@Override
-			public void onResponse(IndexResponse response) {
-				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-				}
-				handler.handle(Future.succeededFuture(response));
-
-			}
-
-			@Override
-			public void onFailure(Throwable e) {
-				if (log.isDebugEnabled()) {
-					log.debug("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]");
-				}
-				handler.handle(Future.failedFuture(e));
-			}
-		});
-
-	}
-
-	@Override
-	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
-		try (Trx tx = db.trx()) {
-			boot.nodeRoot().findByUuid(uuid, rh -> {
-				if (rh.result() != null && rh.succeeded()) {
-					Node node = rh.result();
-					try {
-						store(node, handler);
-					} catch (Exception e) {
-						log.error("Error while storing node", e);
-						handler.handle(Future.failedFuture(e));
-					}
-				} else {
-					log.error("Could not find node {" + uuid + "}", rh.cause());
-				}
-			});
-		}
-	}
-
 	private void removeFieldEntries(Map<String, Object> map) {
 		for (String key : map.keySet()) {
 			if (key.startsWith("field.")) {
@@ -368,6 +290,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		schemaFields.put("name", name);
 		schemaFields.put("uuid", uuid);
 		map.put("schema", schemaFields);
+	}
+
+	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
+		Map<String, Object> parentNodeInfo = new HashMap<>();
+		parentNodeInfo.put("uuid", parentNode.getUuid());
+		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
+		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
+		map.put("parent", parentNodeInfo);
 	}
 
 }

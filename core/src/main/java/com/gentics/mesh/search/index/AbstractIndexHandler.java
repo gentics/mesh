@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +23,7 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -39,7 +39,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Component
-public abstract class AbstractIndexHandler<T> {
+public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
@@ -77,33 +77,42 @@ public abstract class AbstractIndexHandler<T> {
 
 	}
 
-	/**
-	 * Transform the given element to a elasticsearch model and store it in the index.
-	 * 
-	 * @param element
-	 * @param handler
-	 * @throws IOException
-	 */
-	abstract public void store(T element, Handler<AsyncResult<ActionResponse>> handler) throws IOException;
+	abstract protected String getType();
 
-	abstract String getType();
+	abstract protected String getIndex();
 
-	abstract String getIndex();
+	abstract protected RootVertex<T> getRootVertex();
+
+	abstract protected Map<String, Object> transformToDocumentMap(T object);
+
+	public void update(T object, Handler<AsyncResult<ActionResponse>> handler) {
+		updateDocument(object.getUuid(), transformToDocumentMap(object), getType(), handler);
+	}
+
+	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+		getRootVertex().findByUuid(uuid, rh -> {
+			update(rh.result(), handler);
+		});
+	}
+
+	public void store(T object, Handler<AsyncResult<ActionResponse>> handler) {
+		storeDocument(object.getUuid(), transformToDocumentMap(object), getType(), handler);
+	}
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
-	 * 
-	 * @param uuid
 	 */
-	abstract public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler);
-
-	abstract public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler);
+	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+		getRootVertex().findByUuid(uuid, rh -> {
+			store(rh.result(), handler);
+		});
+	}
 
 	protected Client getSearchClient() {
 		return elasticSearchProvider.getNode().client();
 	}
 
-	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void deleteDocument(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		getSearchClient().prepareDelete(getIndex(), getType(), uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 
 			@Override
@@ -122,10 +131,10 @@ public abstract class AbstractIndexHandler<T> {
 		});
 	}
 
-	protected void update(String uuid, Map<String, Object> map, String type, Handler<AsyncResult<ActionResponse>> handler) {
+	protected void updateDocument(String uuid, Map<String, Object> map, String type, Handler<AsyncResult<ActionResponse>> handler) {
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
-			log.debug("Updating object {" + uuid + ":" + getType() + "} to index.");
+			log.debug("Updating object {" + uuid + ":" + type + "} to index.");
 		}
 		UpdateRequestBuilder builder = getSearchClient().prepareUpdate(getIndex(), type, uuid);
 		builder.setDoc(map);
@@ -134,7 +143,7 @@ public abstract class AbstractIndexHandler<T> {
 			@Override
 			public void onResponse(UpdateResponse response) {
 				if (log.isDebugEnabled()) {
-					log.debug("Update object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+					log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 				handler.handle(Future.succeededFuture(response));
 
@@ -143,7 +152,7 @@ public abstract class AbstractIndexHandler<T> {
 			@Override
 			public void onFailure(Throwable e) {
 				log.error(
-						"Updating object {" + uuid + ":" + getType() + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+						"Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
 						e);
 				handler.handle(Future.failedFuture(e));
 			}
@@ -151,19 +160,19 @@ public abstract class AbstractIndexHandler<T> {
 
 	}
 
-	protected void store(String uuid, Map<String, Object> map, Handler<AsyncResult<ActionResponse>> handler) {
+	protected void storeDocument(String uuid, Map<String, Object> map, String type, Handler<AsyncResult<ActionResponse>> handler) {
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
-			log.debug("Adding object {" + uuid + ":" + getType() + "} to index.");
+			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
 		}
-		IndexRequestBuilder builder = getSearchClient().prepareIndex(getIndex(), getType(), uuid);
+		IndexRequestBuilder builder = getSearchClient().prepareIndex(getIndex(), type, uuid);
 		builder.setSource(map);
 		builder.execute().addListener(new ActionListener<IndexResponse>() {
 
 			@Override
 			public void onResponse(IndexResponse response) {
 				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + ":" + getType() + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 				handler.handle(Future.succeededFuture(response));
 
@@ -172,7 +181,7 @@ public abstract class AbstractIndexHandler<T> {
 			@Override
 			public void onFailure(Throwable e) {
 				if (log.isDebugEnabled()) {
-					log.error("Adding object {" + uuid + ":" + getType() + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
 							+ "[ms]", e);
 				}
 				handler.handle(Future.failedFuture(e));
@@ -202,7 +211,6 @@ public abstract class AbstractIndexHandler<T> {
 	}
 
 	protected void addTags(Map<String, Object> map, List<? extends Tag> tags) {
-
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
 		for (Tag tag : tags) {
@@ -223,7 +231,8 @@ public abstract class AbstractIndexHandler<T> {
 				store(uuid, handler);
 				break;
 			case DELETE_ACTION:
-				delete(uuid, handler);
+				// We don't need to resolve the uuid and load the graph object in this case.
+				deleteDocument(uuid, handler);
 				break;
 			case UPDATE_ACTION:
 				update(uuid, handler);

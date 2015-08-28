@@ -131,11 +131,5 @@ public class SchemaContainerImpl extends AbstractGenericVertex<SchemaResponse>im
 		//TODO update name? check for conflicting names?
 		setSchema(requestModel);
 	}
-	
-	@Override
-	public void updateIndex(Handler<Future> handler) {
-		// TODO Auto-generated method stub
-		
-	}
 
 }

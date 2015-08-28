@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.NamedNode;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -296,7 +295,7 @@ public class VerticleHelper {
 		root.create(rc, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
+//				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
 				transformAndResponde(rc, vertex);
 			}
 		});
@@ -348,47 +347,41 @@ public class VerticleHelper {
 		loadObject(rc, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				String uuid = vertex.getUuid();
-				String type = vertex.getType();
 				vertex.update(rc);
-				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx txi = db.trx()) {
-					vertex.reload();
-					vertex.updateIndex(rh2 -> {
-						try (Trx tx = db.trx()) {
-							vertex.reload();
-							transformAndResponde(rc, vertex);
-						}
-					});
-				}
-				// triggerEvent(uuid, type, SearchQueueEntryAction.UPDATE_ACTION);
+				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null, reply-> {
+					// Transform the vertex using a fresh transaction in order to start with a clean cache
+					try (Trx txi = db.trx()) {
+						vertex.reload();
+						transformAndResponde(rc, vertex);
+					}
+				});
 			}
 		});
 	}
 
-	/**
-	 * Trigger a search event for the given type and uuid and action.
-	 * 
-	 * @param uuid
-	 * @param type
-	 * @param action
-	 */
-	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-
-		// Mesh.vertx().executeBlocking(bc -> {
-		try (Trx tx = db.trx()) {
-			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
-			tx.success();
-		}
-		Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-		// } , false, rh -> {
-		// if (rh.failed()) {
-		// TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
-		// rh.cause().printStackTrace();
-		// }
-		// });
-	}
+//	/**
+//	 * Trigger a search event for the given type and uuid and action.
+//	 * 
+//	 * @param uuid
+//	 * @param type
+//	 * @param action
+//	 */
+//	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
+//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+//
+//		// Mesh.vertx().executeBlocking(bc -> {
+//		try (Trx tx = db.trx()) {
+//			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
+//			tx.success();
+//		}
+//		Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
+//		// } , false, rh -> {
+//		// if (rh.failed()) {
+//		// TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
+//		// rh.cause().printStackTrace();
+//		// }
+//		// });
+//	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
@@ -410,7 +403,7 @@ public class VerticleHelper {
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
 				send(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
-				triggerEvent(uuid, type, SearchQueueEntryAction.DELETE_ACTION);
+				//triggerEvent(uuid, type, SearchQueueEntryAction.DELETE_ACTION);
 			}
 		});
 	}

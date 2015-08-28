@@ -12,11 +12,16 @@ import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.elasticsearch.action.ActionResponse;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
@@ -26,6 +31,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -47,8 +54,11 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
-public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag {
+public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag, IndexedVertex {
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
@@ -59,30 +69,37 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 		return Tag.TYPE;
 	}
 
+	@Override
 	public List<? extends Node> getNodes() {
 		return in(HAS_TAG).has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
 
+	@Override
 	public List<? extends TagFieldContainer> getFieldContainers() {
 		return out(HAS_FIELD_CONTAINER).has(TagFieldContainerImpl.class).toListExplicit(TagFieldContainerImpl.class);
 	}
 
+	@Override
 	public TagFieldContainer getFieldContainer(Language language) {
 		return getFieldContainer(language, TagFieldContainerImpl.class);
 	}
 
+	@Override
 	public TagFieldContainer getOrCreateFieldContainer(Language language) {
 		return getOrCreateFieldContainer(language, TagFieldContainerImpl.class);
 	}
 
+	@Override
 	public String getName() {
 		return getFieldContainer(BootstrapInitializer.getBoot().languageRoot().getTagDefaultLanguage()).getName();
 	}
 
+	@Override
 	public void setName(String name) {
 		getOrCreateFieldContainer(BootstrapInitializer.getBoot().languageRoot().getTagDefaultLanguage()).setName(name);
 	}
 
+	@Override
 	public void removeNode(Node node) {
 		unlinkIn(node.getImpl(), HAS_TAG);
 	}
@@ -120,20 +137,43 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 		return this;
 	}
 
-	public void setTagFamilyRoot(TagFamily root) {
-		linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
+	@Override
+	public void setTagFamily(TagFamily tagFamily) {
+		linkOut(tagFamily.getImpl(), HAS_TAGFAMILY_ROOT);
 	}
 
+	@Override
 	public TagFamily getTagFamily() {
 		return in(HAS_TAG).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
 	}
 
+	@Override
 	public void delete() {
-		// outE().removeAll();
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
+		addDeleteFromIndexActions();
 		getVertex().remove();
+	}
+
+	@Override
+	public void addDeleteFromIndexActions() {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		queue.put(this, SearchQueueEntryAction.DELETE_ACTION);
+		for (Node node : getNodes()) {
+			queue.put(node, SearchQueueEntryAction.UPDATE_ACTION);
+		}
+		queue.put(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
+	}
+
+	@Override
+	public void addUpdateIndexActions() {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		queue.put(this, SearchQueueEntryAction.UPDATE_ACTION);
+		for (Node node : getNodes()) {
+			queue.put(node, SearchQueueEntryAction.UPDATE_ACTION);
+		}
+		queue.put(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
 	}
 
 	@Override
@@ -163,7 +203,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 		TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
-		try (Trx tx = db.trx()) {
+		try (Trx txUpdate = db.trx()) {
 			boolean updateTagFamily = false;
 			if (reference != null) {
 				// Check whether a uuid was specified and whether the tag family changed
@@ -177,7 +217,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
 				fail(rc, "tag_name_not_set");
-				tx.failure();
+				txUpdate.failure();
 				return;
 			} else {
 				TagFamily tagFamily = getTagFamily();
@@ -185,7 +225,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT,
 							i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
-					tx.failure();
+					txUpdate.failure();
 					return;
 				}
 				setEditor(getUser(rc));
@@ -195,27 +235,9 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 					// TODO update the tagfamily
 				}
 			}
-			tx.success();
+			addUpdateIndexActions();
+			txUpdate.success();
 		}
-	}
-
-	@Override
-	public void updateIndex(Handler<Future> handler) {
-		String uuid = getUuid();
-		for(Node node : getNodes()) {
-			NodeIndexHandler.getInstance().store(node, rh -> {
-				
-			});
-		}
-		TagIndexHandler.getInstance().store(this, rh -> {
-			if (rh.succeeded()) {
-				log.info("Stored tag {" + uuid + "}");
-				MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
-				handler.handle(Future.succeededFuture());
-			} else {
-				handler.handle(Future.failedFuture(rh.cause()));
-			}
-		});
 	}
 
 }

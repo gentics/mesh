@@ -49,4 +49,10 @@ public interface Tag extends GenericVertex<TagResponse>, NamedNode {
 	 */
 	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
 
+	TagFieldContainer getFieldContainer(Language language);
+
+	TagFieldContainer getOrCreateFieldContainer(Language language);
+
+	void setTagFamily(TagFamily root);
+
 }
