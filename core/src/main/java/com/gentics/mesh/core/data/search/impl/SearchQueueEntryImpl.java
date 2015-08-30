@@ -1,10 +1,27 @@
 package com.gentics.mesh.core.data.search.impl;
 
-import io.vertx.core.json.JsonObject;
+import org.elasticsearch.action.ActionResponse;
 
+import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.search.index.AbstractIndexHandler;
+import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.ProjectIndexHandler;
+import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
+import com.gentics.mesh.search.index.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.TagIndexHandler;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry {
 
@@ -13,13 +30,18 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	private static final String ELEMENT_TYPE = "element_type";
 
 	@Override
-	public SearchQueueEntryAction getAction() {
-		String actionName = getProperty(ACTION_KEY);
-		return SearchQueueEntryAction.valueOfName(actionName);
+	public SearchQueueEntryAction getElementAction() {
+		return SearchQueueEntryAction.valueOfName(getElementActionName());
 	}
 
 	@Override
-	public SearchQueueEntry setAction(String action) {
+	public String getElementActionName() {
+		String actionName = getProperty(ACTION_KEY);
+		return actionName;
+	}
+
+	@Override
+	public SearchQueueEntry setElementAction(String action) {
 		setProperty(ACTION_KEY, action);
 		return this;
 	}
@@ -51,13 +73,38 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 		JsonObject message = new JsonObject();
 		message.put("uuid", getElementUuid());
 		message.put("type", getElementType());
-		message.put("action", getAction().getName());
+		message.put("action", getElementAction().getName());
 		return message;
 	}
 
 	@Override
 	public void delete() {
 		getVertex().remove();
+	}
+
+	public AbstractIndexHandler<?> getIndexHandler(String type) {
+		// TODO i think it would be better to register handlers at one point and just use an abstract implementation to access the correct handler.
+		switch (type) {
+		case Tag.TYPE:
+			return TagIndexHandler.getInstance();
+		case TagFamily.TYPE:
+			return TagFamilyIndexHandler.getInstance();
+		case Node.TYPE:
+			return NodeIndexHandler.getInstance();
+		case Project.TYPE:
+			return ProjectIndexHandler.getInstance();
+		case SchemaContainer.TYPE:
+			return SchemaContainerIndexHandler.getInstance();
+		case MicroschemaContainer.TYPE:
+			return MicroschemaContainerIndexHandler.getInstance();
+		}
+		return null;
+
+	}
+
+	@Override
+	public void process(Handler<AsyncResult<ActionResponse>> handler) {
+		getIndexHandler(getElementType()).handleAction(getElementUuid(), getElementActionName(), handler);
 	}
 
 }

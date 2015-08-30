@@ -1,15 +1,18 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.json.JsonUtil.*;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
@@ -30,10 +33,11 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -51,7 +55,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-public class UserImpl extends AbstractGenericVertex<UserResponse>implements User {
+public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -92,6 +96,16 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 	@Override
 	public boolean isEnabled() {
 		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
+	}
+
+	@Override
+	public List<? extends GenericVertexImpl> getEditedElements() {
+		return in(HAS_EDITOR).toListExplicit(GenericVertexImpl.class);
+	}
+
+	@Override
+	public List<? extends GenericVertexImpl> getCreatedElements() {
+		return in(HAS_CREATOR).toListExplicit(GenericVertexImpl.class);
 	}
 
 	@Override
@@ -280,7 +294,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
@@ -289,7 +303,7 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username")));
-					return;
+					return null;
 				}
 				setUsername(requestModel.getUsername());
 			}
@@ -312,12 +326,12 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 
 			setEditor(getUser(rc));
 			setLastEditedTimestamp(System.currentTimeMillis());
-
+			addIndexBatch(UPDATE_ACTION);
 			if (requestModel.getNodeReference() != null) {
 				NodeReference reference = requestModel.getNodeReference();
 				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference")));
-					return;
+					return null;
 				} else {
 					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
 					String projectName = requestModel.getNodeReference().getProjectName();
@@ -339,6 +353,15 @@ public class UserImpl extends AbstractGenericVertex<UserResponse>implements User
 			}
 		}
 
+	}
+
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		for (GenericVertexImpl element : getCreatedElements()) {
+			batch.addEntry(element, UPDATE_ACTION);
+		}
+		for (GenericVertexImpl element : getEditedElements()) {
+			batch.addEntry(element, UPDATE_ACTION);
+		}
 	}
 
 }

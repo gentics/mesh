@@ -1,23 +1,31 @@
 package com.gentics.mesh.core.data.search;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+
+import org.elasticsearch.action.ActionResponse;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
 public interface SearchQueueEntry extends MeshVertex {
 
-	public String getElementUuid();
+	String getElementUuid();
 
 	SearchQueueEntry setElementUuid(String uuid);
 
-	public String getElementType();
+	String getElementType();
 
 	SearchQueueEntry setElementType(String type);
 
-	public SearchQueueEntryAction getAction();
+	SearchQueueEntryAction getElementAction();
 
-	SearchQueueEntry setAction(String action);
+	SearchQueueEntry setElementAction(String action);
 
 	JsonObject getMessage();
+
+	void process(Handler<AsyncResult<ActionResponse>> handler);
+
+	String getElementActionName();
 
 }

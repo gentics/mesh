@@ -6,7 +6,7 @@ import java.util.Set;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
-public interface Role extends GenericVertex<RoleResponse>, NamedNode {
+public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "role";
 

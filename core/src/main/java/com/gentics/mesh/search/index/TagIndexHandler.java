@@ -3,6 +3,8 @@ package com.gentics.mesh.search.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Tag;
@@ -11,6 +13,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 
 @Component
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
+
+	
 
 	@Override
 	protected String getIndex() {

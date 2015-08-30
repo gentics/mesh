@@ -37,9 +37,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 @Component
-public class SearchHandler {
+public class SearchRestHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(SearchHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
 
 	@Autowired
 	private ElasticSearchProvider elasticSearchProvider;

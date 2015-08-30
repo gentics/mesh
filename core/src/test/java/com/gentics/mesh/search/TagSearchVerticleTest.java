@@ -15,13 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.ProjectTagVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
@@ -44,13 +45,35 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testDocumentCreation() {
+	public void testDocumentCreation() throws InterruptedException {
+		// TODO the test should be green even when no full index is setup. Update will fail for referenced data, we should fallback to store in those cases?
+		// setupFullIndex();
+
+		String tagName = "newtag";
+
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName("colors"));
+
+		Future<TagResponse> future = getClient().createTag(DemoDataProvider.PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		assertSuccess(future);
+
+		elasticSearchProvider.refreshIndex();
+
+		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
 
 	}
 
 	@Test
 	public void testDocumentUpdate() throws InterruptedException {
-		setupFullIndex();
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			tx.success();
+		}
 		Tag tag = tag("red");
 
 		long start = System.currentTimeMillis();
@@ -76,8 +99,6 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 			assertEquals(newName + "2", tag.getName());
 			assertEquals(0, meshRoot().getSearchQueue().getSize());
 		}
-
-		//		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
 
 		start = System.currentTimeMillis();
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", newName + "2"));
@@ -116,7 +137,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		//	3. Search again and verify that the document was removed from the index
+		// 3. Search again and verify that the document was removed from the index
 		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);

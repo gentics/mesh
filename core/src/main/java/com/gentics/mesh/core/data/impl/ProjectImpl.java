@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -19,7 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -47,7 +49,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implements Project {
+public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implements Project {
 
 	// TODO index to name + unique constraint
 
@@ -181,25 +183,29 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
-		try (Trx tx = db.trx()) {
+
+		SearchQueueBatch batch = null;
+		try (Trx txUpdate = db.trx()) {
 			I18NService i18n = I18NService.getI18n();
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
-					tx.failure();
-					return;
+					txUpdate.failure();
+					return null;
 				}
 				setName(requestModel.getName());
 			}
 
 			setEditor(getUser(rc));
 			setLastEditedTimestamp(System.currentTimeMillis());
-			tx.success();
+			addIndexBatch(UPDATE_ACTION);
+			txUpdate.success();
 		}
+		return batch;
 
 	}
 
@@ -211,6 +217,13 @@ public class ProjectImpl extends AbstractGenericVertex<ProjectResponse>implement
 			getNodeRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+	}
+
+	@Override
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		for (Node node : getNodeRoot().findAll()) {
+			batch.addEntry(node, UPDATE_ACTION);
+		}
 	}
 
 }

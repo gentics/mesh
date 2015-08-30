@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -283,7 +285,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				}
 			}
 
-			//			try {
+			// try {
 			for (Tag tag : getTags(rc)) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
@@ -303,10 +305,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		}
 
 		handler.handle(Future.succeededFuture(restNode));
-		//		} catch (IOException e) {
-		//			// TODO i18n
-		//			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
-		//		}
+		// } catch (IOException e) {
+		// // TODO i18n
+		// throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
+		// }
 
 		return this;
 
@@ -511,21 +513,22 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		I18NService i18n = I18NService.getI18n();
 
+		SearchQueueBatch batch;
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
-				return;
+				return null;
 			}
 			try (Trx txUpdate = db.trx()) {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
-					return;
+					return null;
 				}
 
 				/* TODO handle other fields, etc. */
@@ -541,11 +544,18 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
 					txUpdate.failure();
 				}
+				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
+			return batch;
 		} catch (IOException e1) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
 		}
+		return null;
 	}
 
+	@Override
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		batch.addEntry(getParentNode(), UPDATE_ACTION);
+	}
 }

@@ -20,4 +20,6 @@ public interface SearchQueueBatch extends MeshVertex {
 	void setBatchId(String batchId);
 
 	String getBatchId();
+
+	void process();
 }

@@ -2,13 +2,16 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.json.JsonUtil.fromJson;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.List;
 import java.util.Set;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import org.apache.commons.lang3.StringUtils;
-import static com.gentics.mesh.json.JsonUtil.*;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -17,8 +20,9 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -35,7 +39,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
-public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Group {
+public class GroupImpl extends AbstractIndexedVertex<GroupResponse> implements Group {
 
 	public static final String NAME_KEY = "name";
 
@@ -141,10 +145,11 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 	@Override
 	public void delete() {
 		getElement().remove();
+		addIndexBatch(DELETE_ACTION);
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
@@ -154,17 +159,18 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-				return;
+				return null;
 			}
 
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
-					return;
+					return null;
 				}
 				try (Trx txUpdate = db.trx()) {
 					setName(requestModel.getName());
+					addIndexBatch(UPDATE_ACTION);
 					txUpdate.success();
 				}
 			}
@@ -184,6 +190,12 @@ public class GroupImpl extends AbstractGenericVertex<GroupResponse>implements Gr
 	@Override
 	public GroupImpl getImpl() {
 		return this;
+	}
+
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		for (User user : getUsers()) {
+			batch.addEntry(user, UPDATE_ACTION);
+		}
 	}
 
 }

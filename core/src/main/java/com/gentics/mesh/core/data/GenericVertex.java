@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
+
+import com.gentics.mesh.core.data.impl.GenericVertexImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.vertx.ext.web.RoutingContext;
@@ -64,6 +68,6 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void setCreationTimestamp(long timestamp);
 
-	void update(RoutingContext rc);
+	SearchQueueBatch update(RoutingContext rc);
 
 }

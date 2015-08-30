@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 
 public interface SearchQueue extends MeshVertex {
 
-	public static final String SEARCH_QUEUE_ENTRY_ADDRESS = "search-queue-entry";
+//	public static final String SEARCH_QUEUE_ENTRY_ADDRESS = "search-queue-entry";
 
 	/**
 	 * Add a search queue batch to the queue.
@@ -43,5 +43,9 @@ public interface SearchQueue extends MeshVertex {
 	 * @return
 	 */
 	SearchQueueBatch createBatch(String batchId);
+
+	void addFullIndex();
+
+	void processAll();
 
 }

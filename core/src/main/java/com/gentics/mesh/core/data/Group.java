@@ -7,7 +7,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface Group extends GenericVertex<GroupResponse>, NamedNode {
+public interface Group extends GenericVertex<GroupResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "group";
 

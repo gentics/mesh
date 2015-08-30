@@ -54,6 +54,17 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	@Autowired
 	protected Database db;
 
+	private static AbstractIndexHandler<?> instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static AbstractIndexHandler<?> getInstance() {
+		return instance;
+	}
+
 	@PostConstruct
 	public void registerEventHandler() {
 		Vertx vertx = Mesh.vertx();
@@ -150,8 +161,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 			@Override
 			public void onFailure(Throwable e) {
-				log.error(
-						"Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+				log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
 						e);
 				handler.handle(Future.failedFuture(e));
 			}
@@ -174,14 +184,13 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 				handler.handle(Future.succeededFuture(response));
-
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
 				if (log.isDebugEnabled()) {
-					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-							+ "[ms]", e);
+					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
+							e);
 				}
 				handler.handle(Future.failedFuture(e));
 			}
@@ -190,7 +199,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	}
 
 	protected void addBasicReferences(Map<String, Object> map, GenericVertex<?> vertex) {
-		//TODO make sure field names match node response
+		// TODO make sure field names match node response
 		map.put("uuid", vertex.getUuid());
 		addUser(map, "creator", vertex.getCreator());
 		addUser(map, "editor", vertex.getEditor());
@@ -199,7 +208,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	}
 
 	protected void addUser(Map<String, Object> map, String prefix, User user) {
-		//TODO make sure field names match response UserResponse field names.. 
+		// TODO make sure field names match response UserResponse field names..
 		Map<String, Object> userFields = new HashMap<>();
 		userFields.put("username", user.getUsername());
 		userFields.put("emailadress", user.getEmailAddress());
@@ -222,7 +231,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		map.put("tags", tagFields);
 	}
 
-	public void handleEvent(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
+	public void handleAction(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		try (Trx tx = db.trx()) {
 			switch (action) {

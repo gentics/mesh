@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data;
 
-public interface TagFieldContainer extends BasicFieldContainer {
+public interface NamedVertex {
 
 	String getName();
 

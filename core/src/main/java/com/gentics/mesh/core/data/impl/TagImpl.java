@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
@@ -22,14 +24,12 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.TagFieldContainer;
+import com.gentics.mesh.core.data.TagGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -67,18 +67,18 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public List<? extends TagFieldContainer> getFieldContainers() {
-		return out(HAS_FIELD_CONTAINER).has(TagFieldContainerImpl.class).toListExplicit(TagFieldContainerImpl.class);
+	public List<? extends TagGraphFieldContainer> getFieldContainers() {
+		return out(HAS_FIELD_CONTAINER).has(TagGraphFieldContainerImpl.class).toListExplicit(TagGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public TagFieldContainer getFieldContainer(Language language) {
-		return getFieldContainer(language, TagFieldContainerImpl.class);
+	public TagGraphFieldContainer getFieldContainer(Language language) {
+		return getFieldContainer(language, TagGraphFieldContainerImpl.class);
 	}
 
 	@Override
-	public TagFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateFieldContainer(language, TagFieldContainerImpl.class);
+	public TagGraphFieldContainer getOrCreateFieldContainer(Language language) {
+		return getOrCreateFieldContainer(language, TagGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -144,34 +144,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
-		addDeleteFromIndexActions();
+		addIndexBatch(DELETE_ACTION);
 		getVertex().remove();
-	}
-
-	@Override
-	public void addDeleteFromIndexActions() {
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		//TODO use a dedicated uuid or timestamp for batched to avoid collisions
-		SearchQueueBatch batch = queue.createBatch(getUuid());
-
-		batch.addEntry(this, SearchQueueEntryAction.DELETE_ACTION);
-		for (Node node : getNodes()) {
-			batch.addEntry(node, SearchQueueEntryAction.UPDATE_ACTION);
-		}
-		batch.addEntry(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
-	}
-
-	@Override
-	public void addUpdateIndexActions() {
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		//TODO use a dedicated uuid or timestamp for batched to avoid collisions
-		SearchQueueBatch batch = queue.createBatch(getUuid());
-
-		batch.addEntry(this, SearchQueueEntryAction.UPDATE_ACTION);
-		for (Node node : getNodes()) {
-			batch.addEntry(node, SearchQueueEntryAction.UPDATE_ACTION);
-		}
-		batch.addEntry(getTagFamily(), SearchQueueEntryAction.UPDATE_ACTION);
 	}
 
 	@Override
@@ -195,10 +169,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
+		SearchQueueBatch batch = null;
 		TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
 		try (Trx txUpdate = db.trx()) {
@@ -216,7 +191,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			if (isEmpty(newTagName)) {
 				fail(rc, "tag_name_not_set");
 				txUpdate.failure();
-				return;
+				return null;
 			} else {
 				TagFamily tagFamily = getTagFamily();
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
@@ -224,7 +199,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT,
 							i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
 					txUpdate.failure();
-					return;
+					return null;
 				}
 				setEditor(getUser(rc));
 				setLastEditedTimestamp(System.currentTimeMillis());
@@ -233,9 +208,20 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 					// TODO update the tagfamily
 				}
 			}
-			addUpdateIndexActions();
+			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
+		batch.process();
+		return batch;
+	}
+
+	@Override
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		//TODO reenable batch handling
+		// for (Node node : getNodes()) {
+		// batch.addEntry(node, UPDATE_ACTION);
+		// }
+		// batch.addEntry(getTagFamily(), UPDATE_ACTION);
 	}
 
 }

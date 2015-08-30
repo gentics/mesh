@@ -3,16 +3,17 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getProject;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -23,9 +24,12 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.error.EntityNotFoundException;
+import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.TraversalHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -66,7 +70,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
 	@Override
 	public void delete() {
-		//TODO add check to prevent deletion of MeshRoot.tagRoot
+		// TODO add check to prevent deletion of MeshRoot.tagRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag root {" + getUuid() + "}");
 		}
@@ -89,16 +93,39 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set"))));
 				return;
 			}
-			//TODO first check uuid - then use uuid or use name if possible
 
 			TagFamilyReference reference = requestModel.getTagFamilyReference();
-			if (reference == null || isEmpty(reference.getUuid())) {
+			if (reference == null) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set"))));
 				return;
 			}
+			boolean hasName = !isEmpty(reference.getName());
+			boolean hasUuid = !isEmpty(reference.getUuid());
+			if (!hasUuid && !hasName) {
+				handler.handle(Future
+						.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_uuid_or_name_missing"))));
+				return;
+			}
 
-			TagFamily tagFamily = loadObjectByUuidBlocking(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM,
-					project.getTagFamilyRoot());
+			// First try the tag family reference by uuid if specified
+			TagFamily tagFamily = null;
+			String nameOrUuid = null;
+			if (hasUuid) {
+				nameOrUuid = reference.getUuid();
+				tagFamily = project.getTagFamilyRoot().findByUuidBlocking(reference.getUuid());
+			} else if (hasName) {
+				nameOrUuid = reference.getName();
+				tagFamily = project.getTagFamilyRoot().findByName(reference.getName());
+			}
+			if (tagFamily == null) {
+				throw new EntityNotFoundException(i18n.get(rc, "tagfamily_not_found", nameOrUuid));
+			}
+
+			MeshAuthUser requestUser = getUser(rc);
+			if (!requestUser.hasPermission(tagFamily, CREATE_PERM)) {
+				throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", tagFamily.getUuid()));
+			}
+
 			if (tagFamily.findTagByName(tagName) != null) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
 						i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
@@ -106,33 +133,20 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			}
 			Tag newTag;
 			try (Trx txCreate = db.trx()) {
-				MeshAuthUser requestUser = getUser(rc);
+				TraversalHelper.printDebugVertices();
 				requestUser.reload();
 				tagFamily.reload();
 				project.reload();
+
 				newTag = tagFamily.create(requestModel.getFields().getName(), project, requestUser);
 				getUser(rc).addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
 				project.getTagRoot().addTag(newTag);
+
+				newTag.addIndexBatch(CREATE_ACTION);
 				txCreate.success();
 			}
 			handler.handle(Future.succeededFuture(newTag));
-
-			//			loadObjectByUuid(rc, requestModel.getTagFamilyReference().getUuid(), CREATE_PERM, project.getTagFamilyRoot(), rh -> {
-			//				if (hasSucceeded(rc, rh)) {
-			//					TagFamily tagFamily = rh.result();
-			//					if (tagFamily.findTagByName(tagName) != null) {
-			//						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-			//								i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
-			//						return;
-			//					}
-			//					Tag newTag = tagFamily.create(requestModel.getFields().getName(), project, getUser(rc));
-			//					getUser(rc).addCRUDPermissionOnRole(project.getTagFamilyRoot(), CREATE_PERM, newTag);
-			//					project.getTagRoot().addTag(newTag);
-			//					txCreate.commit();
-			//					handler.handle(Future.succeededFuture(newTag));
-			//					return;
-			//				}
-			//			});
 
 		}
 

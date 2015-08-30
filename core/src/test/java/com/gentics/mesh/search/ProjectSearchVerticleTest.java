@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
 
@@ -35,7 +36,10 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testSearchProject() throws InterruptedException, JSONException {
-		setupFullIndex();
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			tx.success();
+		}
 
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);

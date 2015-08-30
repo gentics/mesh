@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedNode {
+public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "tagFamily";
 

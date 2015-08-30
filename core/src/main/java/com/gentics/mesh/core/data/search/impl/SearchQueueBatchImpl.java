@@ -17,7 +17,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);
 		entry.setElementUuid(uuid);
 		entry.setElementType(type);
-		entry.setAction(action.getName());
+		entry.setElementAction(action.getName());
 		addEntry(entry);
 	}
 
@@ -45,13 +45,20 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	public void setBatchId(String batchId) {
 		setProperty(BATCH_ID_PROPERTY_KEY, batchId);
 	}
-	
+
 	@Override
 	public void delete() {
-		for(SearchQueueEntry entry : getEntries()) {
+		for (SearchQueueEntry entry : getEntries()) {
 			entry.delete();
 		}
 		getVertex().remove();
+	}
+
+	@Override
+	public void process() {
+		for (SearchQueueEntry entry : getEntries()) {
+			entry.process();
+		}
 	}
 
 }

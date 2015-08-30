@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.*;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -15,9 +16,11 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -32,7 +35,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
-public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role {
+public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
 
 	// TODO index on name
 
@@ -114,6 +117,7 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 	@Override
 	public void delete() {
 		getVertex().remove();
+		addIndexBatch(DELETE_ACTION);
 	}
 
 	@Override
@@ -122,21 +126,31 @@ public class RoleImpl extends AbstractGenericVertex<RoleResponse>implements Role
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
+		SearchQueueBatch batch = null;
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
-				return;
+				return null;
 			}
 			try (Trx txUpdate = db.trx()) {
 				setName(requestModel.getName());
+				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
+		}
+		return batch;
+	}
+
+	@Override
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		for (Group group : getGroups()) {
+			batch.addEntry(group, SearchQueueEntryAction.UPDATE_ACTION);
 		}
 	}
 

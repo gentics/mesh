@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -52,7 +51,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testSearchAndSort() throws InterruptedException {
-		setupFullIndex();
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			tx.success();
+		}
 
 		String json = "{";
 		json += "				\"sort\" : {";
@@ -88,7 +90,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testRemoveContent() throws InterruptedException, JSONException {
-		setupFullIndex();
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			tx.success();
+		}
 
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -104,11 +109,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			batch.addEntry(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
 			tx.success();
 		}
-		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch, 10);
+		// CountDownLatch latch = new CountDownLatch(1);
+		// vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+		// latch.countDown();
+		// });
+		// failingLatch(latch, 10);
+		boot.meshRoot().getSearchQueue().processAll();
 
 		future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -127,9 +133,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testCustomQuery() throws InterruptedException {
-		setupFullIndex();
-
-	
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			tx.success();
+		}
 
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("schema.name", "content"));
 		latchFor(future);
@@ -139,7 +146,6 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertFalse(response.getData().isEmpty());
 
 	}
-
 
 	@Test
 	public void testAddContent() throws InterruptedException, IOException {
@@ -186,11 +192,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
 		}
-		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch);
+//		CountDownLatch latch = new CountDownLatch(1);
+//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+//			latch.countDown();
+//		});
+//		failingLatch(latch);
 
 		// Search again and make sure we found our document
 		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
@@ -205,8 +211,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testUpdateContent() throws InterruptedException {
-		setupFullIndex();
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+		try (Trx tx = db.trx()) {
+			searchQueue.addFullIndex();
+			tx.success();
+		}
 
 		String oldName = "Airbus A300";
 		Node node = content(oldName.toLowerCase());
@@ -226,11 +235,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		// Create the update entry in the search queue
 		SearchQueueBatch batch = searchQueue.createBatch("0");
 		batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-		CountDownLatch latch = new CountDownLatch(1);
-		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch);
+//		CountDownLatch latch = new CountDownLatch(1);
+//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+//			latch.countDown();
+//		});
+//		failingLatch(latch);
 
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -251,7 +260,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testSearchContent() throws InterruptedException, JSONException {
-		setupFullIndex();
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			tx.success();
+		}
 
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);

@@ -2,7 +2,6 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueue.SEARCH_QUEUE_ENTRY_ADDRESS;
 import static com.gentics.mesh.core.data.service.I18NService.getI18n;
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
@@ -28,7 +27,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NamedNode;
+import com.gentics.mesh.core.data.NamedVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -292,11 +291,15 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		root.create(rc, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				//				triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
-				transformAndResponde(rc, vertex);
+				// Transform the vertex using a fresh transaction in order to start with a clean cache
+				try (Trx txi = db.trx()) {
+					vertex.reload();
+					transformAndResponde(rc, vertex);
+				}
 			}
 		});
 	}
@@ -348,45 +351,14 @@ public class VerticleHelper {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				vertex.update(rc);
-				Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, vertex.getUuid(), reply -> {
-					if (reply.succeeded()) {
-						// Transform the vertex using a fresh transaction in order to start with a clean cache
-						try (Trx txi = db.trx()) {
-							vertex.reload();
-							transformAndResponde(rc, vertex);
-						}
-					} else {
-						//TODO i18n, logging, error handling
-						fail(rc, "error processing search queue batch");
-					}
-				});
+				// Transform the vertex using a fresh transaction in order to start with a clean cache
+				try (Trx txi = db.trx()) {
+					vertex.reload();
+					transformAndResponde(rc, vertex);
+				}
 			}
 		});
 	}
-
-	//	/**
-	//	 * Trigger a search event for the given type and uuid and action.
-	//	 * 
-	//	 * @param uuid
-	//	 * @param type
-	//	 * @param action
-	//	 */
-	//	public static void triggerEvent(String uuid, String type, SearchQueueEntryAction action) {
-	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-	//
-	//		// Mesh.vertx().executeBlocking(bc -> {
-	//		try (Trx tx = db.trx()) {
-	//			BootstrapInitializer.getBoot().meshRoot().getSearchQueue().put(uuid, type, action);
-	//			tx.success();
-	//		}
-	//		Mesh.vertx().eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, null);
-	//		// } , false, rh -> {
-	//		// if (rh.failed()) {
-	//		// TODO this should be handled and the request should fail. How can we rollback the update/create/delete? Should we retry?
-	//		// rh.cause().printStackTrace();
-	//		// }
-	//		// });
-	//	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
@@ -399,8 +371,8 @@ public class VerticleHelper {
 				String uuid = vertex.getUuid();
 				String name = null;
 				String type = vertex.getType();
-				if (vertex instanceof NamedNode) {
-					name = ((NamedNode) vertex).getName();
+				if (vertex instanceof NamedVertex) {
+					name = ((NamedVertex) vertex).getName();
 				}
 				try (Trx tx = db.trx()) {
 					vertex.delete();
@@ -408,7 +380,7 @@ public class VerticleHelper {
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
 				send(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
-				//triggerEvent(uuid, type, SearchQueueEntryAction.DELETE_ACTION);
+				// triggerEvent(uuid, type, SearchQueueEntryAction.DELETE_ACTION);
 			}
 		});
 	}

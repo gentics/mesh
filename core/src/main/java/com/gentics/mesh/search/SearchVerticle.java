@@ -37,7 +37,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
 	@Autowired
-	private SearchHandler searchHandler;
+	private SearchRestHandler searchHandler;
 
 	public SearchVerticle() {
 		super("search");
@@ -51,15 +51,15 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 
 	private void addSearchEndpoints() {
 		try (Trx tx = db.trx()) {
-			addSearch("users", boot.userRoot(), UserListResponse.class);
-			addSearch("groups", boot.groupRoot(), GroupListResponse.class);
-			addSearch("role", boot.roleRoot(), RoleListResponse.class);
-			addSearch("nodes", boot.nodeRoot(), NodeListResponse.class);
-			addSearch("tags", boot.tagRoot(), TagListResponse.class);
-			addSearch("tagFamilies", boot.tagFamilyRoot(), TagFamilyListResponse.class);
-			addSearch("projects", boot.projectRoot(), ProjectListResponse.class);
-			addSearch("schemas", boot.schemaContainerRoot(), SchemaListResponse.class);
-			addSearch("microschemas", boot.microschemaContainerRoot(), MicroschemaListResponse.class);
+			addSearch("users", boot.meshRoot().getUserRoot(), UserListResponse.class);
+			addSearch("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class);
+			addSearch("role", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
+			addSearch("nodes", boot.meshRoot().getNodeRoot(), NodeListResponse.class);
+			addSearch("tags", boot.meshRoot().getTagRoot(), TagListResponse.class);
+			addSearch("tagFamilies", boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class);
+			addSearch("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class);
+			addSearch("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
+			addSearch("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
 		}
 	}
 

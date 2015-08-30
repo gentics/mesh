@@ -3,11 +3,12 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getProjectName;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -25,9 +26,10 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -46,7 +48,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>implements TagFamily {
+public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
@@ -139,16 +141,19 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 			tag.remove();
 		}
 		getElement().remove();
+		addIndexBatch(DELETE_ACTION);
 
 	}
 
 	@Override
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		Project project = BootstrapInitializer.getBoot().projectRoot().findByName(getProjectName(rc));
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		String newName = requestModel.getName();
+		SearchQueueBatch batch =null;
+		
 		if (StringUtils.isEmpty(newName)) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
 		} else {
@@ -162,12 +167,14 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 					}
 					try (Trx txUpdate = db.trx()) {
 						tagFamily.setName(newName);
+						batch = addIndexBatch(UPDATE_ACTION);
 						txUpdate.success();
 					}
-					transformAndResponde(rc, tagFamily);
-//					triggerEvent(tagFamily.getUuid(), TagFamily.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+					//transformAndResponde(rc, tagFamily);
+					
 				}
 			});
+			return batch;
 		}
 
 	}
@@ -185,6 +192,13 @@ public class TagFamilyImpl extends AbstractGenericVertex<TagFamilyResponse>imple
 			}
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+	}
+
+	@Override
+	public void addUpdateEntries(SearchQueueBatch batch) {
+		for (Tag tag : getTags()) {
+			batch.addEntry(tag, UPDATE_ACTION);
+		}
 	}
 
 }

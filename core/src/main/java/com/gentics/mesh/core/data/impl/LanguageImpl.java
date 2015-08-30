@@ -9,6 +9,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
@@ -71,7 +72,7 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 		throw new NotImplementedException();
 	}
 
-	public void update(RoutingContext rc) {
+	public SearchQueueBatch update(RoutingContext rc) {
 		throw new NotImplementedException();
 	}
 

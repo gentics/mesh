@@ -9,11 +9,11 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface Tag extends GenericVertex<TagResponse>, NamedNode {
+public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "tag";
 
-	List<? extends TagFieldContainer> getFieldContainers();
+	List<? extends TagGraphFieldContainer> getFieldContainers();
 
 	/**
 	 * Return the tag family to which the tag belongs.
@@ -49,9 +49,9 @@ public interface Tag extends GenericVertex<TagResponse>, NamedNode {
 	 */
 	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
 
-	TagFieldContainer getFieldContainer(Language language);
+	TagGraphFieldContainer getFieldContainer(Language language);
 
-	TagFieldContainer getOrCreateFieldContainer(Language language);
+	TagGraphFieldContainer getOrCreateFieldContainer(Language language);
 
 	void setTagFamily(TagFamily root);
 
