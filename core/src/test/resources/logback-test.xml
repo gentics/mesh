@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+	<conversionRule conversionWord="meshName"
+		converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-			<layout class="com.gentics.mesh.log.MeshLogLayout"/>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
 		</encoder>
 	</appender>
 
+	<logger name="io.vertx" level="TRACE"/>
 	<logger name="com.gentics.mesh" level="DEBUG"/>
 	<logger name="org.elasticsearch" level="INFO"/>
 	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
 
-	<root level="DEBUG">
+	<root level="TRACE">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

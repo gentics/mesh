@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.search.ElasticSearchProvider;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -88,7 +89,12 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			log.error("Could not process batch {" + getBatchId() + "}.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			ElasticSearchProvider provider = MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider();
+			if (provider != null) {
+				provider.refreshIndex();
+			} else {
+				log.error("Could not refresh index since the elastic search provider has not been initalized");
+			}
 			handler.handle(Future.succeededFuture());
 		});
 	}

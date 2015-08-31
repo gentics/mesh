@@ -93,8 +93,17 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		});
 	}
 
+	protected boolean isSearchClientAvailable() {
+		return elasticSearchProvider != null;
+	}
+
 	protected Client getSearchClient() {
-		return elasticSearchProvider.getNode().client();
+		if (elasticSearchProvider == null) {
+			log.error("No search provider found.");
+			return null;
+		} else {
+			return elasticSearchProvider.getNode().client();
+		}
 	}
 
 	public void deleteDocument(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
@@ -203,6 +212,11 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	}
 
 	public void handleAction(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
+		if (!isSearchClientAvailable()) {
+			log.error("Search client has not been initalized. It can't be used. Omitting search index handling!");
+			handler.handle(Future.succeededFuture());
+			return;
+		}
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		try (Trx tx = db.trx()) {
 			switch (action) {
