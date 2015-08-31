@@ -215,11 +215,10 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public void addUpdateEntries(SearchQueueBatch batch) {
-		//TODO reenable batch handling
-		// for (Node node : getNodes()) {
-		// batch.addEntry(node, UPDATE_ACTION);
-		// }
-		// batch.addEntry(getTagFamily(), UPDATE_ACTION);
+		for (Node node : getNodes()) {
+			batch.addEntry(node, UPDATE_ACTION);
+		}
+		batch.addEntry(getTagFamily(), UPDATE_ACTION);
 	}
 
 }

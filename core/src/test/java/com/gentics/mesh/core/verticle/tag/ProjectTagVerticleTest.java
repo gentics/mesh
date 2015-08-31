@@ -343,10 +343,18 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
 
+		try (Trx tx = db.trx()) {
+			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
+					meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
+			assertNotNull("The tag could not be found within the project.tagRoot node.",
+					project().getTagRoot().findByUuidBlocking(future.result().getUuid()));
+		}
+
 		future = getClient().findTagByUuid(PROJECT_NAME, future.result().getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
+
 	}
 
 	@Test

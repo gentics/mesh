@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -132,6 +133,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				return;
 			}
 			Tag newTag;
+			SearchQueueBatch batch;
 			try (Trx txCreate = db.trx()) {
 				requestUser.reload();
 				tagFamily.reload();
@@ -142,10 +144,16 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
 				project.getTagRoot().addTag(newTag);
 
-				newTag.addIndexBatch(CREATE_ACTION);
+				batch = newTag.addIndexBatch(CREATE_ACTION);
 				txCreate.success();
 			}
-			handler.handle(Future.succeededFuture(newTag));
+			batch.process(rh -> {
+				if (rh.succeeded()) {
+					handler.handle(Future.succeededFuture(newTag));
+				} else if (rh.failed()) {
+					log.error("Error while processing batch for newly created tag {" + newTag.getUuid() + "}", rh.cause());
+				}
+			});
 
 		}
 

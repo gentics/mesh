@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.ProjectTagVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
@@ -46,20 +46,15 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testDocumentCreation() throws InterruptedException {
-		// TODO the test should be green even when no full index is setup. Update will fail for referenced data, we should fallback to store in those cases?
-		// setupFullIndex();
-
 		String tagName = "newtag";
 
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
 		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName("colors"));
 
-		Future<TagResponse> future = getClient().createTag(DemoDataProvider.PROJECT_NAME, tagCreateRequest);
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
-
-		elasticSearchProvider.refreshIndex();
 
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName));
 		latchFor(searchFuture);
@@ -70,15 +65,6 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testDocumentUpdate() throws InterruptedException {
-//		try (Trx tx = db.trx()) {
-//			boot.meshRoot().getSearchQueue().addFullIndex();
-//			CountDownLatch latch = new CountDownLatch(1);
-//			boot.meshRoot().getSearchQueue().processAll(rh -> {
-//				latch.countDown();
-//			});
-//			failingLatch(latch, 200);
-//			tx.success();
-//		}
 		Tag tag = tag("red");
 
 		long start = System.currentTimeMillis();
@@ -86,7 +72,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setFields(new TagFieldContainer().setName(newName));
 
-		Future<TagResponse> future = getClient().updateTag(DemoDataProvider.PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
+		Future<TagResponse> future = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -94,7 +80,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		start = System.currentTimeMillis();
 
 		tagUpdateRequest.setFields(new TagFieldContainer().setName(newName + "2"));
-		future = getClient().updateTag(DemoDataProvider.PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
+		future = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -138,7 +124,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(1, searchFuture.result().getData().size());
 
 		// 2. Delete the tag
-		Future<GenericMessageResponse> future = getClient().deleteTag(DemoDataProvider.PROJECT_NAME, uuid);
+		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 

@@ -356,12 +356,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	public void addUpdateEntries(SearchQueueBatch batch) {
-		for (GenericVertex<?> element : getCreatedElements()) {
-			batch.addEntry(element, UPDATE_ACTION);
-		}
-		for (GenericVertex<?> element : getEditedElements()) {
-			batch.addEntry(element, UPDATE_ACTION);
-		}
+//		for (GenericVertex<?> element : getCreatedElements()) {
+//			batch.addEntry(element, UPDATE_ACTION);
+//		}
+//		for (GenericVertex<?> element : getEditedElements()) {
+//			batch.addEntry(element, UPDATE_ACTION);
+//		}
 	}
 
 }

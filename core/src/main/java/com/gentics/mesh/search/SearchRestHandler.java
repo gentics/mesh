@@ -5,9 +5,11 @@ import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.send;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -24,17 +26,23 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 @Component
 public class SearchRestHandler {
@@ -46,6 +54,9 @@ public class SearchRestHandler {
 
 	@Autowired
 	private Database db;
+
+	@Autowired
+	private I18NService i18n;
 
 	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
@@ -87,57 +98,74 @@ public class SearchRestHandler {
 			@Override
 			public void onResponse(SearchResponse response) {
 				try (Trx tx = db.trx()) {
-					List<T> elements = new ArrayList<>();
+					Set<ObservableFuture<T>> futures = new HashSet<>();
+
 					for (SearchHit hit : response.getHits()) {
 						String uuid = hit.getId();
+						ObservableFuture<T> obs = RxHelper.observableFuture();
+						futures.add(obs);
 
 						// Locate the node
 						rootVertex.findByUuid(uuid, rh -> {
-							if (rh.result() != null && rh.succeeded()) {
-								T element = rh.result();
-								/* Check permissions */
-								if (requestUser.hasPermission(element, GraphPermission.READ_PERM)) {
-									elements.add(element);
-								}
+							if (rh.failed()) {
+								obs.toHandler().handle(Future.failedFuture(rh.cause()));
+							} else if (rh.result() == null) {
+								obs.toHandler().handle(Future
+										.failedFuture(new HttpStatusCodeErrorException(NOT_FOUND, i18n.get(rc, "object_not_found_for_uuid", uuid))));
 							} else {
-								log.error("Could not find node {" + uuid + "}", rh.cause());
+								T element = rh.result();
+								obs.toHandler().handle(Future.succeededFuture(element));
 							}
 						});
-
 					}
-
-					// Internally we start with page 0
-					int page = pagingInfo.getPage() - 1;
-
-					int low = page * pagingInfo.getPerPage();
-					int upper = low + pagingInfo.getPerPage() - 1;
-
-					int n = 0;
-					for (T element : elements) {
-						//Only transform elements that we want to list in our resultset
-						if (n >= low && n <= upper) {
-							// Transform node and add it to the list of nodes
-							element.transformToRest(rc, th -> {
-								listResponse.getData().add(th.result());
-							});
+					Observable<T> merged = Observable.merge(futures);
+					merged.collect(() -> {
+						return new ArrayList<T>();
+					} , (x, y) -> {
+						// Check permissions
+						if (requestUser.hasPermission(y, GraphPermission.READ_PERM)) {
+							x.add(y);
 						}
-						n++;
-					}
+					}).subscribe(list -> {
+						// Internally we start with page 0
+						int page = pagingInfo.getPage() - 1;
 
-					PagingMetaInfo metainfo = new PagingMetaInfo();
-					int totalPages = (int) Math.ceil(elements.size() / (double) pagingInfo.getPerPage());
-					// Cap totalpages to 1
-					if (totalPages == 0) {
-						totalPages = 1;
-					}
-					metainfo.setTotalCount(elements.size());
+						int low = page * pagingInfo.getPerPage();
+						int upper = low + pagingInfo.getPerPage() - 1;
 
-					metainfo.setCurrentPage(pagingInfo.getPage());
-					metainfo.setPageCount(totalPages);
-					metainfo.setPerPage(pagingInfo.getPerPage());
-					listResponse.setMetainfo(metainfo);
+						int n = 0;
+						for (T element : list) {
+							//Only transform elements that we want to list in our resultset
+							if (n >= low && n <= upper) {
+								// Transform node and add it to the list of nodes
+								element.transformToRest(rc, th -> {
+									listResponse.getData().add(th.result());
+								});
+							}
+							n++;
+						}
 
-					send(rc, toJson(listResponse));
+						PagingMetaInfo metainfo = new PagingMetaInfo();
+						int totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
+						// Cap totalpages to 1
+						if (totalPages == 0) {
+							totalPages = 1;
+						}
+						metainfo.setTotalCount(list.size());
+
+						metainfo.setCurrentPage(pagingInfo.getPage());
+						metainfo.setPageCount(totalPages);
+						metainfo.setPerPage(pagingInfo.getPerPage());
+						listResponse.setMetainfo(metainfo);
+
+						send(rc, toJson(listResponse));
+					});
+					merged.subscribe(item -> {
+						log.debug("Loaded node {" + item.getUuid() + "}");
+					} , error -> {
+						log.error("Error while processing search response items", error);
+						rc.fail(error);
+					});
 				}
 			}
 

@@ -37,8 +37,6 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	//	public static final String INDEX_EVENT_ADDRESS_PREFIX = "search-index-action-";
-
 	@Autowired
 	protected ElasticSearchProvider elasticSearchProvider;
 
@@ -181,19 +179,28 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		map.put("uuid", vertex.getUuid());
 		addUser(map, "creator", vertex.getCreator());
 		addUser(map, "editor", vertex.getEditor());
-		map.put("lastEdited", vertex.getLastEditedTimestamp());
+		map.put("edited", vertex.getLastEditedTimestamp());
 		map.put("created", vertex.getCreationTimestamp());
 	}
 
-	protected void addUser(Map<String, Object> map, String prefix, User user) {
+	/**
+	 * Add a user field to the map with the given key.
+	 * 
+	 * @param map
+	 * @param key
+	 * @param user
+	 */
+	protected void addUser(Map<String, Object> map, String key, User user) {
 		// TODO make sure field names match response UserResponse field names..
 		Map<String, Object> userFields = new HashMap<>();
-		userFields.put("username", user.getUsername());
-		userFields.put("emailadress", user.getEmailAddress());
-		userFields.put("firstname", user.getFirstname());
-		userFields.put("lastname", user.getLastname());
-		userFields.put("enabled", String.valueOf(user.isEnabled()));
-		map.put(prefix, userFields);
+		// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being modified.
+		//		userFields.put("username", user.getUsername());
+		//		userFields.put("emailadress", user.getEmailAddress());
+		//		userFields.put("firstname", user.getFirstname());
+		//		userFields.put("lastname", user.getLastname());
+		//		userFields.put("enabled", String.valueOf(user.isEnabled()));
+		userFields.put("uuid", user.getUuid());
+		map.put(key, userFields);
 	}
 
 	protected void addTags(Map<String, Object> map, List<? extends Tag> tags) {
