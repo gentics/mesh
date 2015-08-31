@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -60,7 +61,6 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		} finally {
 			takeLock.unlock();
 		}
-
 	}
 
 	@Override
@@ -105,9 +105,10 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	public void addFullIndex() {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-		SearchQueueBatch batch = searchQueue.createBatch("0");
+		SearchQueueBatch batch = searchQueue.createBatch(UUIDUtil.randomUUID());
 		for (Node node : boot.nodeRoot().findAll()) {
 			batch.addEntry(node, CREATE_ACTION);
+			break;
 		}
 		for (Project project : boot.projectRoot().findAll()) {
 			batch.addEntry(project, CREATE_ACTION);
@@ -151,9 +152,10 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		}
 		Observable.merge(futures).subscribe(item -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Proccessed batch");
+				log.debug("Proccessed batch.");
 			}
 		} , error -> {
+			log.error("Error while processing all remaining search queue batches.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
 			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();

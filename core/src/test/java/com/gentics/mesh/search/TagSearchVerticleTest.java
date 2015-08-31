@@ -72,6 +72,11 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testDocumentUpdate() throws InterruptedException {
 		try (Trx tx = db.trx()) {
 			boot.meshRoot().getSearchQueue().addFullIndex();
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.meshRoot().getSearchQueue().processAll(rh -> {
+				latch.countDown();
+			});
+			failingLatch(latch, 200);
 			tx.success();
 		}
 		Tag tag = tag("red");
@@ -95,7 +100,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
-		try (Trx tx = db.trx()) {
+		try (Trx tx = db.nonTrx()) {
 			assertEquals(newName + "2", tag.getName());
 			assertEquals(0, meshRoot().getSearchQueue().getSize());
 		}

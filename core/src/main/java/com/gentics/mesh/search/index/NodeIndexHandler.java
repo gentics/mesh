@@ -2,8 +2,10 @@ package com.gentics.mesh.search.index;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -33,6 +35,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -40,12 +43,15 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
-	
+
 	private static NodeIndexHandler instance;
 
 	@PostConstruct
@@ -56,7 +62,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public static NodeIndexHandler getInstance() {
 		return instance;
 	}
-
 
 	@Override
 	protected String getIndex() {
@@ -87,11 +92,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
+		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
+
 		// The basenode has no parent.
 		if (node.getParentNode() != null) {
 			addParentNodeInfo(map, node.getParentNode());
 		}
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			futures.add(obs);
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -102,8 +111,20 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			storeDocument(node.getUuid(), map, getType() + "-" + language, handler);
+			storeDocument(node.getUuid(), map, getType() + "-" + language, obs.toHandler());
 		}
+
+		Observable.merge(futures).subscribe(item -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Stored node in index.");
+			}
+		} , error -> {
+			log.error("Error while storing node document.", error);
+			handler.handle(Future.failedFuture(error));
+		} , () -> {
+			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			handler.handle(Future.succeededFuture());
+		});
 
 	}
 
@@ -114,7 +135,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
+
+		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			futures.add(obs);
+
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -125,15 +151,30 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			updateDocument(node.getUuid(), map, getType() + "-" + language, handler);
+			updateDocument(node.getUuid(), map, getType() + "-" + language, obs.toHandler());
 		}
+
+		Observable.merge(futures).subscribe(item -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Updated node in index.");
+			}
+		} , error -> {
+			log.error("Error while updating node document.", error);
+			handler.handle(Future.failedFuture(error));
+		} , () -> {
+			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			handler.handle(Future.succeededFuture());
+		});
 
 	}
 
 	@Override
 	public void deleteDocument(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		Node node = getRootVertex().findByUuidBlocking(uuid);
+		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			futures.add(obs);
 			String language = container.getLanguage().getLanguageTag();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking removal of document {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
@@ -144,16 +185,27 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					if (log.isDebugEnabled()) {
 						log.debug("Removed element {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
 					}
-					handler.handle(Future.succeededFuture(response));
+					obs.toHandler().handle(Future.succeededFuture(response));
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
 					log.error("Failure while removing {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
-					handler.handle(Future.failedFuture(e));
+					obs.toHandler().handle(Future.failedFuture(e));
 				}
 			});
 		}
+		Observable.merge(futures).subscribe(item -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Deleted node from index.");
+			}
+		} , error -> {
+			log.error("Error while deleting node.", error);
+			handler.handle(Future.failedFuture(error));
+		} , () -> {
+			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			handler.handle(Future.succeededFuture());
+		});
 	}
 
 	private void addFields(Map<String, Object> map, NodeGraphFieldContainer container, Schema schema) {

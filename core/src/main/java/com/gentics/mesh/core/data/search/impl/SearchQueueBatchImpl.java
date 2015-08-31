@@ -14,6 +14,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.ElasticSearchProvider;
 
 import io.vertx.core.AsyncResult;
@@ -72,10 +74,19 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
+	public void printDebug() {
+		for (SearchQueueEntry entry : getEntries()) {
+			log.debug("Entry {" + entry.toString() + "} in batch {" + getBatchId() + "}");
+		}
+	}
+
+	@Override
 	public void process(Handler<AsyncResult<Void>> handler) {
-
+		if (log.isDebugEnabled()) {
+			log.debug("Processing batch {" + getBatchId() + "}");
+			printDebug();
+		}
 		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
-
 		for (SearchQueueEntry entry : getEntries()) {
 			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
 			entry.process(obs.toHandler());
@@ -89,7 +100,14 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			log.error("Could not process batch {" + getBatchId() + "}.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			ElasticSearchProvider provider = MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider();
+			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getMeshSpringConfiguration();
+			ElasticSearchProvider provider = springConfiguration.elasticSearchProvider();
+			Database db = springConfiguration.database();
+			// We successfully finished this batch. Delete it.
+			try (Trx txDelete = db.trx()) {
+				delete();
+				txDelete.success();
+			}
 			if (provider != null) {
 				provider.refreshIndex();
 			} else {

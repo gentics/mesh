@@ -47,6 +47,8 @@ public interface Database {
 	 */
 	Trx trx();
 
+	Trx nonTrx();
+	
 	/**
 	 * Initialize the database and store the settings.
 	 * 

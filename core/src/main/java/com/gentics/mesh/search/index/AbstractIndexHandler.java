@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -230,6 +228,8 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 			case UPDATE_ACTION:
 				update(uuid, handler);
 				break;
+			default:
+				handler.handle(Future.failedFuture("Action type {" + action + "} is unknown."));
 			}
 		}
 	}

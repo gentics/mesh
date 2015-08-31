@@ -8,8 +8,6 @@ import io.vertx.core.Handler;
 
 public interface SearchQueue extends MeshVertex {
 
-//	public static final String SEARCH_QUEUE_ENTRY_ADDRESS = "search-queue-entry";
-
 	/**
 	 * Add a search queue batch to the queue.
 	 * 
@@ -48,8 +46,17 @@ public interface SearchQueue extends MeshVertex {
 	 */
 	SearchQueueBatch createBatch(String batchId);
 
+	/**
+	 * Add all objects within the graph via a single batch to the search queue.
+	 */
 	void addFullIndex();
 
+	/**
+	 * Process all search queue batches and invoke the handler when an error occurred or the batches were processed correctly.
+	 * 
+	 * @param handler
+	 * @throws InterruptedException
+	 */
 	void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException;
 
 }

@@ -555,6 +555,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	@Override
 	public void addUpdateEntries(SearchQueueBatch batch) {
-		batch.addEntry(getParentNode(), UPDATE_ACTION);
+//		batch.addEntry(getParentNode(), UPDATE_ACTION);
 	}
 }

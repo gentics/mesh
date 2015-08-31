@@ -68,4 +68,10 @@ public abstract class AbstractDatabase implements Database {
 	public Trx trx() {
 		return new Trx(this);
 	}
+
+	@Override
+	public Trx nonTrx() {
+		//TODO figure out how to use the orientdb nontrx mode via tinkerpop api.
+		return new Trx(this);
+	}
 }

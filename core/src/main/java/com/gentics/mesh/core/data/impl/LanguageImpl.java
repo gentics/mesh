@@ -1,16 +1,15 @@
 package com.gentics.mesh.core.data.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
-
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
 

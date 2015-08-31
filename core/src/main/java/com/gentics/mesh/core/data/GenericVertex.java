@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
