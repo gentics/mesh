@@ -226,7 +226,8 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 				deleteDocument(uuid, handler);
 				break;
 			case UPDATE_ACTION:
-				update(uuid, handler);
+				//update(uuid, handler);
+				store(uuid, handler);
 				break;
 			default:
 				handler.handle(Future.failedFuture("Action type {" + action + "} is unknown."));
