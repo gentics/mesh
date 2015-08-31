@@ -1,9 +1,9 @@
-package com.gentics.mesh.etc.impl;
+package com.gentics.mesh.api.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.etc.ActionContext;
+import com.gentics.mesh.api.ActionContext;
 
 public class ActionContextImpl implements ActionContext {
 

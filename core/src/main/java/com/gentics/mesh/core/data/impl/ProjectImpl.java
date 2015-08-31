@@ -176,7 +176,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			getSchemaContainerRoot().removeSchemaContainer(container);
 		}
 		getSchemaContainerRoot().delete();
-
+		reload();
 		getVertex().remove();
 
 		// TODO handle: routerStorage.removeProjectRouter(name);

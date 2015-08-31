@@ -42,6 +42,8 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.Future;
 

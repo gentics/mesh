@@ -375,7 +375,6 @@ public class VerticleHelper {
 				GenericVertex<?> vertex = rh.result();
 				String uuid = vertex.getUuid();
 				String name = null;
-				String type = vertex.getType();
 				if (vertex instanceof NamedVertex) {
 					name = ((NamedVertex) vertex).getName();
 				}
@@ -385,7 +384,6 @@ public class VerticleHelper {
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
 				send(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
-				// triggerEvent(uuid, type, SearchQueueEntryAction.DELETE_ACTION);
 			}
 		});
 	}

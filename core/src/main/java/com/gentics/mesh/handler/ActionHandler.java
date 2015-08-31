@@ -1,6 +1,6 @@
 package com.gentics.mesh.handler;
 
-import com.gentics.mesh.etc.ActionContext;
+import com.gentics.mesh.api.ActionContext;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
