@@ -15,7 +15,7 @@ import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfigur
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
+import static com.gentics.mesh.util.VerticleHelper.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -100,12 +101,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public List<? extends GenericVertexImpl> getEditedElements() {
-		return in(HAS_EDITOR).toListExplicit(GenericVertexImpl.class);
+		return in(HAS_EDITOR).toList(GenericVertexImpl.class);
 	}
 
 	@Override
 	public List<? extends GenericVertexImpl> getCreatedElements() {
-		return in(HAS_CREATOR).toListExplicit(GenericVertexImpl.class);
+		return in(HAS_CREATOR).toList(GenericVertexImpl.class);
 	}
 
 	@Override
@@ -294,16 +295,16 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
-		try (Trx tx = db.trx()) {
+		try (Trx txUpdate = db.trx()) {
 
 			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username")));
-					return null;
+					return;
 				}
 				setUsername(requestModel.getUsername());
 			}
@@ -326,12 +327,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 			setEditor(getUser(rc));
 			setLastEditedTimestamp(System.currentTimeMillis());
-			addIndexBatch(UPDATE_ACTION);
+			SearchQueueBatch batch = null;
 			if (requestModel.getNodeReference() != null) {
 				NodeReference reference = requestModel.getNodeReference();
 				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference")));
-					return null;
+					return;
 				} else {
 					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
 					String projectName = requestModel.getNodeReference().getProjectName();
@@ -340,26 +341,26 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					if (project == null) {
 						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName)));
 					} else {
-						loadObjectByUuid(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot(), nrh -> {
-							if (hasSucceeded(rc, nrh)) {
-								setReferencedNode(nrh.result());
-								tx.commit();
-							}
-						});
+						Node node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+						setReferencedNode(node);
+						batch = addIndexBatch(UPDATE_ACTION);
+						txUpdate.success();
 					}
 				}
 			} else {
-				tx.success();
+				batch = addIndexBatch(UPDATE_ACTION);
+				txUpdate.success();
 			}
+			batch.process(handler);
 		}
 
 	}
 
 	public void addUpdateEntries(SearchQueueBatch batch) {
-		for (GenericVertexImpl element : getCreatedElements()) {
+		for (GenericVertex<?> element : getCreatedElements()) {
 			batch.addEntry(element, UPDATE_ACTION);
 		}
-		for (GenericVertexImpl element : getEditedElements()) {
+		for (GenericVertex<?> element : getEditedElements()) {
 			batch.addEntry(element, UPDATE_ACTION);
 		}
 	}

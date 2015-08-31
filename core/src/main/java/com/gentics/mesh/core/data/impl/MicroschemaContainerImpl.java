@@ -5,7 +5,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 
 import io.vertx.core.AsyncResult;
@@ -46,7 +45,7 @@ public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaR
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		throw new NotImplementedException();
 	}
 

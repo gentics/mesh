@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.*;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -126,25 +127,26 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		SearchQueueBatch batch = null;
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
 				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
-				return null;
+				return;
 			}
+			SearchQueueBatch batch;
 			try (Trx txUpdate = db.trx()) {
 				setName(requestModel.getName());
 				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
+			batch.process(handler);
 		}
-		return batch;
+		
 	}
 
 	@Override

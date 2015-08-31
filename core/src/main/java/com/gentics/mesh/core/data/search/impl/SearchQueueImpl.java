@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BAT
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -18,10 +20,16 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
@@ -133,9 +141,24 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	}
 
 	@Override
-	public void processAll() {
-		// TODO Auto-generated method stub
-
+	public void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException {
+		SearchQueueBatch batch;
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
+		while ((batch = take()) != null) {
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
+			batch.process(obs.toHandler());
+			futures.add(obs);
+		}
+		Observable.merge(futures).subscribe(item -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Proccessed batch");
+			}
+		} , error -> {
+			handler.handle(Future.failedFuture(error));
+		} , () -> {
+			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			handler.handle(Future.succeededFuture());
+		});
 	}
 
 }

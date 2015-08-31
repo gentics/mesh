@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
@@ -14,6 +16,17 @@ import com.gentics.mesh.core.data.root.RootVertex;
 
 @Component
 public class UserIndexHandler extends AbstractIndexHandler<User> {
+
+	private static UserIndexHandler instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static UserIndexHandler getInstance() {
+		return instance;
+	}
 
 	@Override
 	protected String getIndex() {

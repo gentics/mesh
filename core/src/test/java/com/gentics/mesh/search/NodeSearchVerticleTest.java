@@ -34,7 +34,6 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -109,12 +108,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			batch.addEntry(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
 			tx.success();
 		}
-		// CountDownLatch latch = new CountDownLatch(1);
-		// vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-		// latch.countDown();
-		// });
-		// failingLatch(latch, 10);
-		boot.meshRoot().getSearchQueue().processAll();
+
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.meshRoot().getSearchQueue().processAll(rh -> {
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 		future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -150,7 +149,6 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	public void testAddContent() throws InterruptedException, IOException {
 		try (Trx tx = db.trx()) {
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			Node node = folder("2015");
 
 			GraphStringFieldList list = node.getFieldContainer(english()).createStringList("stringList");

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.search.impl;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionResponse;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
@@ -25,7 +26,7 @@ import io.vertx.core.json.JsonObject;
 
 public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry {
 
-	private static final String ACTION_KEY = "action";
+	private static final String ACTION_KEY = "element_action";
 	private static final String ELEMENT_UUID = "element_uuid";
 	private static final String ELEMENT_TYPE = "element_type";
 
@@ -97,8 +98,9 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 			return SchemaContainerIndexHandler.getInstance();
 		case MicroschemaContainer.TYPE:
 			return MicroschemaContainerIndexHandler.getInstance();
+		default:
+			throw new NotImplementedException("Index type {" + type + "} is not implemented.");
 		}
-		return null;
 
 	}
 

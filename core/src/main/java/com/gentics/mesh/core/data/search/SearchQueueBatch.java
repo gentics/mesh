@@ -5,6 +5,13 @@ import java.util.List;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
+/**
+ * A batch of search queue entries. Usually a batch groups those elements that need to be updated in order to sync the search index with the graph database
+ * changes.
+ */
 public interface SearchQueueBatch extends MeshVertex {
 
 	public static final String BATCH_ID_PROPERTY_KEY = "batch_id";
@@ -21,5 +28,5 @@ public interface SearchQueueBatch extends MeshVertex {
 
 	String getBatchId();
 
-	void process();
+	void process(Handler<AsyncResult<Void>> handler);
 }

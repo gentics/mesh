@@ -167,7 +167,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			SearchQueueEntry entry = batch.getEntries().get(0);
 			assertEquals(restNode.getUuid(), entry.getElementUuid());
 			assertEquals(Node.TYPE, entry.getElementType());
-			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getAction());
+			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
 		}
 
 	}
@@ -696,7 +696,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 			assertEquals(restNode.getUuid(), entry.getElementUuid());
 			assertEquals(Node.TYPE, entry.getElementType());
-			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getAction());
+			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
 		}
 
 	}
@@ -906,7 +906,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			SearchQueueEntry entry = batch.getEntries().get(0);
 			assertEquals(uuid, entry.getElementUuid());
 			assertEquals(Node.TYPE, entry.getElementType());
-			assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getAction());
+			assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getElementAction());
 		}
 	}
 

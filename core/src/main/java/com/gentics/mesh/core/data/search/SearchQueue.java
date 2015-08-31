@@ -2,6 +2,10 @@ package com.gentics.mesh.core.data.search;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public interface SearchQueue extends MeshVertex {
 
 //	public static final String SEARCH_QUEUE_ENTRY_ADDRESS = "search-queue-entry";
@@ -46,6 +50,6 @@ public interface SearchQueue extends MeshVertex {
 
 	void addFullIndex();
 
-	void processAll();
+	void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException;
 
 }

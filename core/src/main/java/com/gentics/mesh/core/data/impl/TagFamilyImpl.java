@@ -146,14 +146,13 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		Project project = BootstrapInitializer.getBoot().projectRoot().findByName(getProjectName(rc));
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		String newName = requestModel.getName();
-		SearchQueueBatch batch =null;
-		
+
 		if (StringUtils.isEmpty(newName)) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
 		} else {
@@ -165,16 +164,15 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
 						return;
 					}
+					SearchQueueBatch batch;
 					try (Trx txUpdate = db.trx()) {
 						tagFamily.setName(newName);
 						batch = addIndexBatch(UPDATE_ACTION);
 						txUpdate.success();
 					}
-					//transformAndResponde(rc, tagFamily);
-					
+					batch.process(handler);
 				}
 			});
-			return batch;
 		}
 
 	}

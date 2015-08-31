@@ -136,14 +136,14 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-			return null;
+			return;
 		}
 		// TODO update name? check for conflicting names?
 		SearchQueueBatch batch;
@@ -152,7 +152,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
-		return batch;
+		batch.process(handler);
 
 	}
 

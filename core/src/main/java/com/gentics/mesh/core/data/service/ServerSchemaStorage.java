@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +13,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Component
 @Scope(value = "singleton")

@@ -177,20 +177,21 @@ public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdate() throws Exception {
 		String tagUuid;
+		String tagName;
 		try (Trx tx = db.trx()) {
 			Tag tag = tag("vehicle");
 			tagUuid = tag.getUuid();
-			Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
-			latchFor(readTagFut);
-			assertSuccess(readTagFut);
-
-			// 1. Read the current tag
-			String name = tag.getName();
-			assertNotNull("The name of the tag should be loaded.", name);
-			String restName = readTagFut.result().getFields().getName();
-			assertNotNull("The tag name must be set.", restName);
-			assertEquals(name, restName);
+			tagName = tag.getName();
 		}
+		Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tagUuid);
+		latchFor(readTagFut);
+		assertSuccess(readTagFut);
+
+		// 1. Read the current tag
+		assertNotNull("The name of the tag should be loaded.", tagName);
+		String restName = readTagFut.result().getFields().getName();
+		assertNotNull("The tag name must be set.", restName);
+		assertEquals(tagName, restName);
 
 		// 2. Update the tag
 		TagUpdateRequest request = new TagUpdateRequest();

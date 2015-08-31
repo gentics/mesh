@@ -2,15 +2,31 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.elasticsearch.action.ActionResponse;
 
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueBatch {
+
+	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
 
 	@Override
 	public void addEntry(String uuid, String type, SearchQueueEntryAction action) {
@@ -55,10 +71,26 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void process() {
+	public void process(Handler<AsyncResult<Void>> handler) {
+
+		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
+
 		for (SearchQueueEntry entry : getEntries()) {
-			entry.process();
+			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			entry.process(obs.toHandler());
+			futures.add(obs);
 		}
+		Observable.merge(futures).subscribe(item -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Handled search queue item.");
+			}
+		} , error -> {
+			log.error("Could not process batch {" + getBatchId() + "}.", error);
+			handler.handle(Future.failedFuture(error));
+		} , () -> {
+			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			handler.handle(Future.succeededFuture());
+		});
 	}
 
 }

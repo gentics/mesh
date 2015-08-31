@@ -1,11 +1,10 @@
 package com.gentics.mesh.core.data;
 
-import java.util.List;
-
-import com.gentics.mesh.core.data.impl.GenericVertexImpl;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
@@ -68,6 +67,6 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void setCreationTimestamp(long timestamp);
 
-	SearchQueueBatch update(RoutingContext rc);
+	void update(RoutingContext rc,  Handler<AsyncResult<Void>> handler);
 
 }

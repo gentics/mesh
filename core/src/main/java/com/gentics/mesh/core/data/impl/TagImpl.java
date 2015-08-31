@@ -123,9 +123,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 		}
 
 		restTag.getFields().setName(getName());
-
 		resultHandler.handle(Future.succeededFuture(restTag));
-
 		return this;
 	}
 
@@ -169,7 +167,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
@@ -191,15 +189,15 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			if (isEmpty(newTagName)) {
 				fail(rc, "tag_name_not_set");
 				txUpdate.failure();
-				return null;
+				return;
 			} else {
 				TagFamily tagFamily = getTagFamily();
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT,
-							i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
+							i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName()))));
 					txUpdate.failure();
-					return null;
+					return;
 				}
 				setEditor(getUser(rc));
 				setLastEditedTimestamp(System.currentTimeMillis());
@@ -211,8 +209,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
-		batch.process();
-		return batch;
+		batch.process(handler);
+
 	}
 
 	@Override

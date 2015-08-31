@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
@@ -43,6 +45,18 @@ import io.vertx.core.logging.LoggerFactory;
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
+	
+	private static NodeIndexHandler instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static NodeIndexHandler getInstance() {
+		return instance;
+	}
+
 
 	@Override
 	protected String getIndex() {

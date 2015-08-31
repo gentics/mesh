@@ -183,11 +183,11 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
 
-		SearchQueueBatch batch = null;
+		SearchQueueBatch batch;
 		try (Trx txUpdate = db.trx()) {
 			I18NService i18n = I18NService.getI18n();
 			// Check for conflicting project name
@@ -195,17 +195,17 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
 					txUpdate.failure();
-					return null;
+					return;
 				}
 				setName(requestModel.getName());
 			}
 
 			setEditor(getUser(rc));
 			setLastEditedTimestamp(System.currentTimeMillis());
-			addIndexBatch(UPDATE_ACTION);
+			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
-		return batch;
+		batch.process(handler);
 
 	}
 

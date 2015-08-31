@@ -513,7 +513,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		I18NService i18n = I18NService.getI18n();
 
@@ -522,13 +522,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			NodeUpdateRequest requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
-				return null;
+				return;
 			}
 			try (Trx txUpdate = db.trx()) {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
 					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
-					return null;
+					return;
 				}
 
 				/* TODO handle other fields, etc. */
@@ -547,11 +547,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
-			return batch;
+			batch.process(handler);
 		} catch (IOException e1) {
 			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
 		}
-		return null;
 	}
 
 	@Override

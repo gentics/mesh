@@ -39,7 +39,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
-public class GroupImpl extends AbstractIndexedVertex<GroupResponse> implements Group {
+public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Group {
 
 	public static final String NAME_KEY = "name";
 
@@ -149,7 +149,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse> implements G
 	}
 
 	@Override
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
@@ -159,20 +159,22 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse> implements G
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
-				return null;
+				return;
 			}
 
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
-					return null;
+					return;
 				}
+				SearchQueueBatch batch;
 				try (Trx txUpdate = db.trx()) {
 					setName(requestModel.getName());
-					addIndexBatch(UPDATE_ACTION);
+					batch = addIndexBatch(UPDATE_ACTION);
 					txUpdate.success();
 				}
+				batch.process(handler);
 			}
 		}
 	}

@@ -350,12 +350,17 @@ public class VerticleHelper {
 		loadObject(rc, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(rc, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				vertex.update(rc);
-				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx txi = db.trx()) {
-					vertex.reload();
-					transformAndResponde(rc, vertex);
-				}
+				vertex.update(rc, rh2 -> {
+					if (rh2.failed()) {
+						rc.fail(rh2.cause());
+					} else {
+						// Transform the vertex using a fresh transaction in order to start with a clean cache
+						try (Trx txi = db.trx()) {
+							vertex.reload();
+							transformAndResponde(rc, vertex);
+						}
+					}
+				});
 			}
 		});
 	}
@@ -398,6 +403,16 @@ public class VerticleHelper {
 		}
 	}
 
+	/**
+	 * Return the object with the given uuid if found within the specified root vertex. This method will not return null. Instead a
+	 * {@link HttpStatusCodeErrorException} will be thrown when the object could not be found.
+	 * 
+	 * @param rc
+	 * @param uuid
+	 * @param perm
+	 * @param root
+	 * @return
+	 */
 	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root) {
 		I18NService i18n = I18NService.getI18n();
 		if (root == null) {

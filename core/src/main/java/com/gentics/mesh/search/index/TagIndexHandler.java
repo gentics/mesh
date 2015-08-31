@@ -14,7 +14,16 @@ import com.gentics.mesh.core.data.root.RootVertex;
 @Component
 public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
-	
+	private static TagIndexHandler instance;
+
+	@PostConstruct
+	public void setup() {
+		instance = this;
+	}
+
+	public static TagIndexHandler getInstance() {
+		return instance;
+	}
 
 	@Override
 	protected String getIndex() {

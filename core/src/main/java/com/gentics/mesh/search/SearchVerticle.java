@@ -23,7 +23,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
@@ -32,9 +31,6 @@ import com.gentics.mesh.search.ElasticSearchProvider;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -43,7 +39,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final String INDEX_EVENT_ADDRESS_PREFIX = "search-index-action-";
+	//	public static final String INDEX_EVENT_ADDRESS_PREFIX = "search-index-action-";
 
 	@Autowired
 	protected ElasticSearchProvider elasticSearchProvider;
@@ -53,40 +49,6 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 	@Autowired
 	protected Database db;
-
-	private static AbstractIndexHandler<?> instance;
-
-	@PostConstruct
-	public void setup() {
-		instance = this;
-	}
-
-	public static AbstractIndexHandler<?> getInstance() {
-		return instance;
-	}
-
-	@PostConstruct
-	public void registerEventHandler() {
-		Vertx vertx = Mesh.vertx();
-		// Event handler that deals with new index events for this type.
-		String address = INDEX_EVENT_ADDRESS_PREFIX + getType();
-		log.info("Registering event handler for type {" + getType() + "} on address {" + address + "}");
-		MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer(address);
-		consumer.handler(message -> {
-			String uuid = message.body().getString("uuid");
-			String type = message.body().getString("type");
-			String action = message.body().getString("action");
-			log.info("Handling index event for {" + uuid + ":" + type + "} event:" + action);
-			handleEvent(uuid, action, rh -> {
-				if (rh.succeeded()) {
-					message.reply(null);
-				} else {
-					message.fail(500, rh.cause().getMessage());
-				}
-			});
-		});
-
-	}
 
 	abstract protected String getType();
 
@@ -102,7 +64,13 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
-			update(rh.result(), handler);
+			if (rh.failed()) {
+				handler.handle(Future.failedFuture(rh.cause()));
+			} else if (rh.result() == null) {
+				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + getType() + "} could not be found within graph."));
+			} else {
+				update(rh.result(), handler);
+			}
 		});
 	}
 
@@ -115,7 +83,13 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	 */
 	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
-			store(rh.result(), handler);
+			if (rh.failed()) {
+				handler.handle(Future.failedFuture(rh.cause()));
+			} else if (rh.result() == null) {
+				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + getType() + "} could not be found within graph."));
+			} else {
+				store(rh.result(), handler);
+			}
 		});
 	}
 
@@ -188,10 +162,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 			@Override
 			public void onFailure(Throwable e) {
-				if (log.isDebugEnabled()) {
-					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-							e);
-				}
+				log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
 				handler.handle(Future.failedFuture(e));
 			}
 		});

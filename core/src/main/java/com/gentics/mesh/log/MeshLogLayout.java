@@ -3,6 +3,8 @@ package com.gentics.mesh.log;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.MeshNameProvider;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -20,13 +22,11 @@ public class MeshLogLayout extends LayoutBase<ILoggingEvent> {
 
 		sbuf.append("[");
 		sbuf.append(MeshNameProvider.getInstance().getName());
-		sbuf.append("]");
-		sbuf.append(" ");
+		sbuf.append("] ");
+		sbuf.append(StringUtils.rightPad(event.getLevel().toString(), 5));
 		sbuf.append(" [");
 		sbuf.append(event.getThreadName());
 		sbuf.append("] ");
-		sbuf.append(event.getLevel());
-		sbuf.append("  ");
 		sbuf.append(event.getLoggerName());
 		sbuf.append(" - ");
 		sbuf.append(event.getFormattedMessage());

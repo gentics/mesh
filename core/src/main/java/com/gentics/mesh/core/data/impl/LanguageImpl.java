@@ -72,7 +72,7 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 		throw new NotImplementedException();
 	}
 
-	public SearchQueueBatch update(RoutingContext rc) {
+	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
 		throw new NotImplementedException();
 	}
 
