@@ -133,7 +133,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			}
 			Tag newTag;
 			try (Trx txCreate = db.trx()) {
-				TraversalHelper.printDebugVertices();
 				requestUser.reload();
 				tagFamily.reload();
 				project.reload();

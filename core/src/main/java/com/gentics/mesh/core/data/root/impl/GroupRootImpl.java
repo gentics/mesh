@@ -92,7 +92,6 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name"))));
 					return;
 				}
-				TraversalHelper.printDebugVertices();
 				Group group;
 				try (Trx txCreate = db.trx()) {
 					requestUser.reload();
