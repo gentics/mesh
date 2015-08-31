@@ -47,6 +47,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.TraversalHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

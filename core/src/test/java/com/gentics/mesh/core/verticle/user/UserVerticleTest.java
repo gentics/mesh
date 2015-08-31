@@ -338,6 +338,9 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateUserWithNodeReference() {
 
 		Node node = folder("2015");
+		try (Trx tx = db.trx()) {
+			assertTrue(user().hasPermission(node, READ_PERM));
+		}
 
 		NodeReference reference = new NodeReference();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
@@ -792,15 +795,17 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID2() throws Exception {
 		String uuid;
 		String name = "extraUser";
+		User extraUser;
 		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
-			User extraUser = userRoot.create(name, group(), user());
+			extraUser = userRoot.create(name, group(), user());
 			uuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, DELETE_PERM);
-			assertNotNull(extraUser.getUuid());
 			tx.success();
 		}
+
 		try (Trx tx = db.trx()) {
+			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 			UserRoot userRoot = meshRoot().getUserRoot();
 			userRoot.findByUuid(uuid, rh -> {
 				User user = rh.result();

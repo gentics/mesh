@@ -66,7 +66,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 	@Override
 	public User create(String username, Group group, User creator) {
-		UserImpl user = getGraph().addFramedVertex(UserImpl.class);
+		User user = getGraph().addFramedVertex(UserImpl.class);
 		user.setUsername(username);
 		user.enable();
 		if (group != null) {
@@ -154,14 +154,17 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 							String referencedNodeUuid = requestModel.getNodeReference().getUuid();
 							String projectName = requestModel.getNodeReference().getProjectName();
-							// TODO decide whether we need to check perms on the project as well 
-							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
+							// TODO decide whether we need to check perms on the project as well
+							Project project = boot.projectRoot().findByName(projectName);
 							if (project == null) {
 								handler.handle(Future
 										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
 								return;
 							}
-							Node node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+							Node node;
+							try (Trx tx2 = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+								node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+							}
 							user.setReferencedNode(node);
 						}
 						txCreate.success();

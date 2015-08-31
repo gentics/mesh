@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedVertex;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -416,6 +417,7 @@ public class VerticleHelper {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_root_node_not_found"));
 		} else {
+
 			T object = root.findByUuidBlocking(uuid);
 			if (object == null) {
 				throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
@@ -437,8 +439,19 @@ public class VerticleHelper {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_root_node_not_found"));
 		} else {
+//			try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+//				root.reload();
+//				User user = getUser(rc);
+//				user.reload();
+//				T element = root.findByUuidBlocking(uuid);
+//				if (user.hasPermission(element, perm)) {
+//					System.out.println("JOW" + element.getUuid());
+//				} else {
+//					System.out.println("NÖ" + element.getUuid());
+//				}
+//			}
 			root.findByUuid(uuid, rh -> {
-				try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+				try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
 					if (rh.failed()) {
 						handler.handle(Future.failedFuture(rh.cause()));
 					} else {
