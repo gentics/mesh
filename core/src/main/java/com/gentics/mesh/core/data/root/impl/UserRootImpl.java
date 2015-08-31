@@ -162,7 +162,6 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 								return;
 							}
 							Node node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-
 							user.setReferencedNode(node);
 						}
 						txCreate.success();

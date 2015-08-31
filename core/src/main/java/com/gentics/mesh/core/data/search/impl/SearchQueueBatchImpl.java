@@ -105,6 +105,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			Database db = springConfiguration.database();
 			// We successfully finished this batch. Delete it.
 			try (Trx txDelete = db.trx()) {
+				reload();
 				delete();
 				txDelete.success();
 			}
