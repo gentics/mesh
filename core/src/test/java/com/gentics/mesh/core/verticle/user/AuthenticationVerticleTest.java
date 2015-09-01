@@ -52,7 +52,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = client.login();
 		latchFor(future);
 		assertSuccess(future);
-		assertNotNull(getClient().getCookie());
+		assertNotNull(client.getCookie());
 
 		GenericMessageResponse loginResponse = future.result();
 		assertNotNull(loginResponse);

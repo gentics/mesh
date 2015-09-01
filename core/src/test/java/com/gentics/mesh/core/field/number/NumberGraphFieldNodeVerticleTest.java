@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -53,6 +54,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testCreateNodeWithBooleanFieldInsteadOfNumber() {
 		//We expect the json serializer to fail.
 		fail("not yet implemented");

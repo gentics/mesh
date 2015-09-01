@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
 import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.send;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
@@ -90,7 +91,8 @@ public class SearchRestHandler {
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			builder = client.prepareSearch().setSource(searchQuery);
 		} catch (Exception e) {
-			throw new MeshJsonException("Could not parse query string {" + searchQuery + "}", e);
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "search_query_not_parsable"), e));
+			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 		builder.execute().addListener(new ActionListener<SearchResponse>() {

@@ -709,8 +709,13 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			Node node = folder("2015");
 			role().revokePermissions(node, UPDATE_PERM);
 			uuid = node.getUuid();
+			tx.success();
 		}
 		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference reference = new SchemaReference();
+		reference.setName("content");
+		request.setSchema(reference);
+		request.setLanguage("en");
 
 		Future<NodeResponse> future = getClient().updateNode(DemoDataProvider.PROJECT_NAME, uuid, request);
 		latchFor(future);

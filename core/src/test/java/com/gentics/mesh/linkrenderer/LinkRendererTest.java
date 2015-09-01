@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
 import com.gentics.mesh.core.link.LinkResolverFactory;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class LinkRendererTest extends AbstractDBTest {
@@ -26,9 +26,6 @@ public class LinkRendererTest extends AbstractDBTest {
 	@Autowired
 	private LinkResolverFactory<LinkResolver> resolverFactory;
 
-	@Autowired
-	private NodeRoot nodeRoot;
-
 	@Before
 	public void setup() throws Exception {
 		setupData();
@@ -37,23 +34,25 @@ public class LinkRendererTest extends AbstractDBTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 
-		Language german = german();
-		Language english = english();
-		Node parentNode = folder("2015");
+		try (Trx tx = db.trx()) {
+			Language german = german();
+			Language english = english();
+			Node parentNode = folder("2015");
 
-		// Create some dummy content
-		Node content = parentNode.create(user(), data().getSchemaContainer("content"), project());
-		NodeGraphFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
-		germanContainer.createString("displayName").setString("german name");
-		germanContainer.createString("name").setString("german.html");
+			// Create some dummy content
+			Node content = parentNode.create(user(), data().getSchemaContainer("content"), project());
+			NodeGraphFieldContainer germanContainer = content.getOrCreateFieldContainer(german);
+			germanContainer.createString("displayName").setString("german name");
+			germanContainer.createString("name").setString("german.html");
 
-		Node content2 = parentNode.create(user(), data().getSchemaContainer("content"),project());
-		NodeGraphFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
-		englishContainer.createString("displayName").setString("content 2 english");
-		englishContainer.createString("name").setString("english.html");
+			Node content2 = parentNode.create(user(), data().getSchemaContainer("content"), project());
+			NodeGraphFieldContainer englishContainer = content2.getOrCreateFieldContainer(english);
+			englishContainer.createString("displayName").setString("content 2 english");
+			englishContainer.createString("name").setString("english.html");
 
-		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
-		String out = replacer.replace("dgasd");
+			LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
+			String out = replacer.replace("dgasd");
+		}
 	}
 
 	@Ignore("Disabled for now")

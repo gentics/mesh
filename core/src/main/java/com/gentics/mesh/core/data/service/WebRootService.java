@@ -28,7 +28,7 @@ public class WebRootService {
 	private BootstrapInitializer boot;
 
 	@Autowired
-	private I18NService i18nService;
+	private I18NService i18n;
 
 	public Path findByProjectPath(RoutingContext rc, String projectName, String path) {
 		String parts[] = path.split("/");
@@ -50,7 +50,7 @@ public class WebRootService {
 			if (nextNode != null) {
 				currentVertex = nextNode;
 			} else {
-				String message = i18nService.get(rc, "node_not_found_for_path", path);
+				String message = i18n.get(rc, "node_not_found_for_path", path);
 				throw new EntityNotFoundException(message);
 			}
 		}

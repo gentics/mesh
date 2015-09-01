@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,6 +35,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled")
 	public void testReadFolderByPath() throws Exception {
 		try (Trx tx = db.trx()) {
 			Node folder = folder("2015");
@@ -52,6 +54,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled")
 	public void testReadContentByPath() throws Exception {
 		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
@@ -68,6 +71,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled")
 	public void testReadFolderWithBogusPath() throws Exception {
 		String path = "/blub";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
@@ -76,6 +80,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled")
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
 		Node newsFolder;
@@ -93,6 +98,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled")
 	public void testReadContentByInvalidPath() throws Exception {
 		String invalidPath = "News/2015/no-valid-content.html";
 
@@ -102,6 +108,7 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled")
 	public void testReadContentByInvalidPath2() throws Exception {
 		String invalidPath = "News/no-valid-folder/no-valid-content.html";
 

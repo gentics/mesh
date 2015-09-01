@@ -69,7 +69,8 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			try {
 				searchHandler.handleSearch(rc, root, classOfRL);
 			} catch (Exception e) {
-				fail(rc, "search_error_query");
+				//fail(rc, "search_error_query");
+				rc.fail(e);
 			}
 		});
 	}

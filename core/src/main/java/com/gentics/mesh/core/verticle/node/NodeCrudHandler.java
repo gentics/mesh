@@ -66,35 +66,35 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(RoutingContext rc) {
-//		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = db.trx()) {
-				String uuid = rc.request().params().get("uuid");
-				Project project = getProject(rc);
-				if (project.getBaseNode().getUuid().equals(uuid)) {
-					rc.fail(new HttpStatusCodeErrorException(METHOD_NOT_ALLOWED, i18n.get(rc, "node_basenode_not_deletable")));
-				} else {
-					deleteObject(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
-				}
+		//		Mesh.vertx().executeBlocking(bc -> {
+		try (Trx tx = db.trx()) {
+			String uuid = rc.request().params().get("uuid");
+			Project project = getProject(rc);
+			if (project.getBaseNode().getUuid().equals(uuid)) {
+				rc.fail(new HttpStatusCodeErrorException(METHOD_NOT_ALLOWED, i18n.get(rc, "node_basenode_not_deletable")));
+			} else {
+				deleteObject(rc, "uuid", "node_deleted", getProject(rc).getNodeRoot());
 			}
-//		} , false, rh -> {
-//			if (rh.failed()) {
-//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, rh.cause().getMessage()));
-//			}
-//		});
+		}
+		//		} , false, rh -> {
+		//			if (rh.failed()) {
+		//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, rh.cause().getMessage()));
+		//			}
+		//		});
 	}
 
 	@Override
 	public void handleUpdate(RoutingContext rc) {
-//		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = db.trx()) {
-				Project project = getProject(rc);
-				updateObject(rc, "uuid", project.getNodeRoot());
-			}
-//		} , false, rh -> {
-//			if (rh.failed()) {
-//				rh.cause().printStackTrace();
-//			}
-//		});
+		//		Mesh.vertx().executeBlocking(bc -> {
+		try (Trx tx = db.trx()) {
+			Project project = getProject(rc);
+			updateObject(rc, "uuid", project.getNodeRoot());
+		}
+		//		} , false, rh -> {
+		//			if (rh.failed()) {
+		//				rh.cause().printStackTrace();
+		//			}
+		//		});
 
 	}
 
@@ -104,16 +104,16 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		if (StringUtils.isEmpty(uuid)) {
 			rc.next();
 		} else {
-//			Mesh.vertx().executeBlocking(bc -> {
-				try (Trx tx = db.trx()) {
-					Project project = getProject(rc);
-					loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
-				}
-//			} , false, rh -> {
-//				if (rh.failed()) {
-//					rh.cause().printStackTrace();
-//				}
-//			});
+			//			Mesh.vertx().executeBlocking(bc -> {
+			try (Trx tx = db.trx()) {
+				Project project = getProject(rc);
+				loadTransformAndResponde(rc, "uuid", READ_PERM, project.getNodeRoot());
+			}
+			//			} , false, rh -> {
+			//				if (rh.failed()) {
+			//					rh.cause().printStackTrace();
+			//				}
+			//			});
 		}
 	}
 
@@ -264,35 +264,36 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 										FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
 											if (hash.succeeded()) {
-												node.setBinarySHA512Sum(hash.result());
-												System.out.println("FILE: " + ul.uploadedFileName());
+												try (Trx tx2 = db.trx()) {
+													node.setBinarySHA512Sum(hash.result());
 
-												File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
-												if (log.isDebugEnabled()) {
-													log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
-												}
-												fileSystem.exists(folder.getAbsolutePath(), deh -> {
-													if (deh.succeeded()) {
-														if (!deh.result()) {
-															fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
-																if (mkh.succeeded()) {
-																	targetFolderChecked.handle(Future.succeededFuture(folder));
-																} else {
-																	log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}",
-																			mkh.cause());
-																	fail(rc, "node_error_upload_failed");
-																}
-															});
-														} else {
-															targetFolderChecked.handle(Future.succeededFuture(folder));
-														}
-													} else {
-														log.error(
-																"Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.",
-																deh.cause());
-														fail(rc, "node_error_upload_failed");
+													File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
+													if (log.isDebugEnabled()) {
+														log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
 													}
-												});
+
+													fileSystem.exists(folder.getAbsolutePath(), deh -> {
+														if (deh.succeeded()) {
+															if (!deh.result()) {
+																fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
+																	if (mkh.succeeded()) {
+																		targetFolderChecked.handle(Future.succeededFuture(folder));
+																	} else {
+																		log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}",
+																				mkh.cause());
+																		fail(rc, "node_error_upload_failed");
+																	}
+																});
+															} else {
+																targetFolderChecked.handle(Future.succeededFuture(folder));
+															}
+														} else {
+															log.error("Could not check whether target directory {" + folder.getAbsolutePath()
+																	+ "} exists.", deh.cause());
+															fail(rc, "node_error_upload_failed");
+														}
+													});
+												}
 
 												// node.setBinaryImageDPI(dpi);
 												// node.setBinaryImageHeight(heigth);

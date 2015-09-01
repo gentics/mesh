@@ -250,7 +250,6 @@ public class BootstrapInitializer {
 //			}
 	return foundMeshRoot;
 //		}
-//		((OrientVertex) meshRoot.getImpl().getElement()).reload();
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {

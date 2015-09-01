@@ -59,7 +59,9 @@ public class MeshSpringConfiguration {
 	public Database database() {
 		Database database = databaseService().getDatabase();
 		if (database == null) {
-			throw new RuntimeException("No database provider could be found.");
+			String message = "No database provider could be found.";
+			log.error(message);
+			throw new RuntimeException(message);
 		}
 		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
 		database.init(options);

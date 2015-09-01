@@ -48,11 +48,11 @@ public class WebRootHandler {
 		List<String> languageTags = getSelectedLanguageTags(rc);
 
 		Mesh.vertx().executeBlocking((Future<Node> bch) -> {
-			Path nodePath = webrootService.findByProjectPath(rc, projectName, path);
-			PathSegment lastSegment = nodePath.getLast();
+			try (Trx tx = db.trx()) {
+				Path nodePath = webrootService.findByProjectPath(rc, projectName, path);
+				PathSegment lastSegment = nodePath.getLast();
 
-			if (lastSegment != null) {
-				try (Trx tx = db.trx()) {
+				if (lastSegment != null) {
 					Node node = tx.getGraph().frameElement(lastSegment.getVertex(), Node.class);
 					if (node == null) {
 						String message = i18n.get(rc, "node_not_found_for_path", path);
@@ -67,10 +67,10 @@ public class WebRootHandler {
 							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, i18n.get(rc, "error_missing_perm", node.getUuid())));
 						}
 					});
-				}
 
-			} else {
-				throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
+				} else {
+					throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
+				}
 			}
 		} , arh -> {
 			if (arh.failed()) {
