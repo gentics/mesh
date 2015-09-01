@@ -52,6 +52,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.test.DummySearchProvider;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
@@ -64,6 +65,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
+
+	@Autowired
+	private DummySearchProvider searchProvider;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
@@ -153,21 +157,25 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
+		assertEquals(0, searchProvider.getStoreEvents().size());
+
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
+		assertEquals(1, searchProvider.getStoreEvents().size());
+
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We created the node. A search queue batch should have been created.", 1, searchQueue.getSize());
-			SearchQueueBatch batch = searchQueue.take();
-			assertEquals(1, batch.getEntries().size());
-			SearchQueueEntry entry = batch.getEntries().get(0);
-			assertEquals(restNode.getUuid(), entry.getElementUuid());
-			assertEquals(Node.TYPE, entry.getElementType());
-			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
+			assertEquals("We created the node. The searchqueue batch should have been processed.", 0, searchQueue.getSize());
+			//			SearchQueueBatch batch = searchQueue.take();
+			//			assertEquals(1, batch.getEntries().size());
+			//			SearchQueueEntry entry = batch.getEntries().get(0);
+			//			assertEquals(restNode.getUuid(), entry.getElementUuid());
+			//			assertEquals(Node.TYPE, entry.getElementType());
+			//			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
 		}
 
 	}

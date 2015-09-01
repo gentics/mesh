@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.elasticsearch.action.ActionResponse;
-
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -86,9 +84,9 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			log.debug("Processing batch {" + getBatchId() + "}");
 			printDebug();
 		}
-		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
 		for (SearchQueueEntry entry : getEntries()) {
-			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
 			entry.process(obs.toHandler());
 			futures.add(obs);
 		}

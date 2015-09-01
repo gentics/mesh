@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
@@ -99,7 +98,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {
 		getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 
 			@Override
@@ -107,7 +106,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted object {" + uuid + ":" + type + "} from index {" + index + "}");
 				}
-				handler.handle(Future.succeededFuture(response));
+				handler.handle(Future.succeededFuture());
 			}
 
 			@Override
@@ -119,7 +118,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void updateDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<ActionResponse>> handler) {
+	public void updateDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Updating object {" + uuid + ":" + type + "} to index.");
@@ -133,7 +132,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-				handler.handle(Future.succeededFuture(response));
+				handler.handle(Future.succeededFuture());
 			}
 
 			@Override
@@ -147,7 +146,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<ActionResponse>> handler) {
+	public void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
@@ -161,7 +160,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-				handler.handle(Future.succeededFuture(response));
+				handler.handle(Future.succeededFuture());
 			}
 
 			@Override

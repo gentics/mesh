@@ -82,7 +82,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public void store(Node node, Handler<AsyncResult<ActionResponse>> handler) {
+	public void store(Node node, Handler<AsyncResult<Void>> handler) {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -90,14 +90,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
-		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
 		// The basenode has no parent.
 		if (node.getParentNode() != null) {
 			addParentNodeInfo(map, node.getParentNode());
 		}
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
 			futures.add(obs);
 			removeFieldEntries(map);
 			map.remove("language");
@@ -134,9 +134,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
-		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
 			futures.add(obs);
 
 			removeFieldEntries(map);
@@ -166,11 +166,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void delete(String uuid, Handler<AsyncResult<Void>> handler) {
 		Node node = getRootVertex().findByUuidBlocking(uuid);
-		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-			ObservableFuture<ActionResponse> obs = RxHelper.observableFuture();
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
 			futures.add(obs);
 			String language = container.getLanguage().getLanguageTag();
 			if (log.isDebugEnabled()) {

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasticsearch.action.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,11 +46,11 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 
 	abstract protected Map<String, Object> transformToDocumentMap(T object);
 
-	public void update(T object, Handler<AsyncResult<ActionResponse>> handler) {
+	public void update(T object, Handler<AsyncResult<Void>> handler) {
 		searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
-	public void update(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void update(String uuid, Handler<AsyncResult<Void>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
 			if (rh.failed()) {
 				handler.handle(Future.failedFuture(rh.cause()));
@@ -63,11 +62,11 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		});
 	}
 
-	public void store(T object, Handler<AsyncResult<ActionResponse>> handler) {
+	public void store(T object, Handler<AsyncResult<Void>> handler) {
 		searchProvider.storeDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
-	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void delete(String uuid, Handler<AsyncResult<Void>> handler) {
 		// We don't need to resolve the uuid and load the graph object in this case.
 		searchProvider.deleteDocument(getIndex(), getType(), uuid, handler);
 	}
@@ -75,7 +74,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 */
-	public void store(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void store(String uuid, Handler<AsyncResult<Void>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
 			if (rh.failed()) {
 				handler.handle(Future.failedFuture(rh.cause()));
@@ -133,7 +132,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		map.put("tags", tagFields);
 	}
 
-	public void handleAction(String uuid, String actionName, Handler<AsyncResult<ActionResponse>> handler) {
+	public void handleAction(String uuid, String actionName, Handler<AsyncResult<Void>> handler) {
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);

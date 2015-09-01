@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.search.impl;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.action.ActionResponse;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MicroschemaContainer;
@@ -117,7 +116,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public void process(Handler<AsyncResult<ActionResponse>> handler) {
+	public void process(Handler<AsyncResult<Void>> handler) {
 		getIndexHandler(getElementType()).handleAction(getElementUuid(), getElementActionName(), handler);
 	}
 

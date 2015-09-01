@@ -1,12 +1,10 @@
 package com.gentics.mesh.core.data.search;
 
+import com.gentics.mesh.core.data.MeshVertex;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-
-import org.elasticsearch.action.ActionResponse;
-
-import com.gentics.mesh.core.data.MeshVertex;
 
 public interface SearchQueueEntry extends MeshVertex {
 
@@ -24,7 +22,7 @@ public interface SearchQueueEntry extends MeshVertex {
 
 	JsonObject getMessage();
 
-	void process(Handler<AsyncResult<ActionResponse>> handler);
+	void process(Handler<AsyncResult<Void>> handler);
 
 	String getElementActionName();
 

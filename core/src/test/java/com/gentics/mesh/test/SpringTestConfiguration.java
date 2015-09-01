@@ -15,9 +15,14 @@ import com.gentics.mesh.search.SearchProvider;
 public class SpringTestConfiguration {
 
 	@Bean
+	public DummySearchProvider dummySearchProvider() {
+		return new DummySearchProvider();
+	}
+
+	@Bean
 	public SearchProvider searchProvider() {
 		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
-		return null;
+		return dummySearchProvider();
 	}
 
 	@PostConstruct
