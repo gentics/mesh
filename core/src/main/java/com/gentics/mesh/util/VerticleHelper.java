@@ -66,15 +66,17 @@ public class VerticleHelper {
 			// TODO log
 			ac.fail(BAD_REQUEST, "element creation failed");
 		} else {
-			batch.process(rh -> {
-				if (rh.failed()) {
-					log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":" + element.getType()
-							+ "}.");
-					ac.fail(BAD_REQUEST, "indexing_failed");
-				} else {
-					handler.handle(Future.succeededFuture(element));
-				}
-			});
+			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+				batch.process(rh -> {
+					if (rh.failed()) {
+						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
+								+ element.getType() + "}.", rh.cause());
+						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
+					} else {
+						handler.handle(Future.succeededFuture(element));
+					}
+				});
+			}
 		}
 	}
 

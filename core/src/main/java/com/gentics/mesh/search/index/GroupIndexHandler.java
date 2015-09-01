@@ -24,7 +24,6 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 		return instance;
 	}
 
-	
 	@Override
 	protected String getIndex() {
 		return "group";

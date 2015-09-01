@@ -99,6 +99,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 					batch = group.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					txCreate.success();
 				}
+
 				processOrFail(ac, batch, handler, group);
 				return;
 			} else {
