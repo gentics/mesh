@@ -4,7 +4,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 
 public interface SearchQueueEntry extends MeshVertex {
 
@@ -20,10 +19,12 @@ public interface SearchQueueEntry extends MeshVertex {
 
 	SearchQueueEntry setElementAction(String action);
 
-	JsonObject getMessage();
-
-	void process(Handler<AsyncResult<Void>> handler);
+	SearchQueueEntry process(Handler<AsyncResult<Void>> handler);
 
 	String getElementActionName();
+
+	SearchQueueEntry setElementIndexType(String indexType);
+
+	String getElementIndexType();
 
 }

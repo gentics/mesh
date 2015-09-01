@@ -11,7 +11,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 
 public abstract class GenericFieldContainerNode<T extends AbstractResponse> extends AbstractIndexedVertex<T> {
 
-	protected <T extends BasicFieldContainer> T getFieldContainer(Language language, Class<T> classOfT) {
+	protected <T extends BasicFieldContainer> T getGraphFieldContainer(Language language, Class<T> classOfT) {
 		T container = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag()).inV().nextOrDefault(classOfT, null);
 		return container;
 	}
@@ -22,7 +22,7 @@ public abstract class GenericFieldContainerNode<T extends AbstractResponse> exte
 	 * @param language
 	 * @return i18n properties vertex entity
 	 */
-	protected <T extends BasicFieldContainer> T getOrCreateFieldContainer(Language language, Class<T> classOfT) {
+	protected <T extends BasicFieldContainer> T getOrCreateGraphFieldContainer(Language language, Class<T> classOfT) {
 
 		T container = null;
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag());

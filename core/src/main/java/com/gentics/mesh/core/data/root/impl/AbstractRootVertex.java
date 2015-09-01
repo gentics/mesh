@@ -109,28 +109,6 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 	}
 
 	@Override
-	public void processOrFail(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
-		//TODO i18n
-		if (batch == null) {
-			//TODO log
-			ac.fail(BAD_REQUEST, "indexing_not_possible");
-		} else if (element == null) {
-			//TODO log
-			ac.fail(BAD_REQUEST, "element creation failed");
-		} else {
-			batch.process(rh -> {
-				if (rh.failed()) {
-					log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":" + element.getType()
-							+ "}.");
-					ac.fail(BAD_REQUEST, "indexing_failed");
-				} else {
-					handler.handle(Future.succeededFuture(element));
-				}
-			});
-		}
-	}
-
-	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (T t : findAll()) {

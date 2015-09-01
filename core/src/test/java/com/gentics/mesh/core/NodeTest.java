@@ -57,11 +57,11 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Node node = folder.create(user(), getSchemaContainer(), project());
 			Node node2 = folder.create(user(), getSchemaContainer(), project());
 
-			NodeGraphFieldContainer englishContainer = node2.getOrCreateFieldContainer(english());
+			NodeGraphFieldContainer englishContainer = node2.getOrCreateGraphFieldContainer(english());
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 
-			NodeGraphFieldContainer englishContainer2 = node.getOrCreateFieldContainer(german());
+			NodeGraphFieldContainer englishContainer2 = node.getOrCreateGraphFieldContainer(german());
 			englishContainer2.createString("content").setString("english2 content");
 			englishContainer2.createString("name").setString("english2.html");
 			node.createLink(node2);
@@ -133,7 +133,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Language german = german();
 			RoutingContext rc = getMockedRoutingContext("?lang=de,en");
 			ActionContext ac = ActionContext.create(rc);
-			NodeGraphFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanFields = newsNode.getOrCreateGraphFieldContainer(german);
 			assertEquals(germanFields.getString(newsNode.getSchema().getDisplayField()).getString(), newsNode.getDisplayName(ac));
 		}
 		// TODO add some fields
@@ -266,7 +266,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Language english = english();
 			Language german = german();
 
-			NodeGraphFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 			assertNotNull(node.getUuid());
@@ -275,11 +275,11 @@ public class NodeTest extends AbstractBasicObjectTest {
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
-			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, node.getGraphFieldContainers().size());
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english);
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english);
 			assertNotNull(container);
 			String text = container.getString("content").getString();
 			assertNotNull(text);

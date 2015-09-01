@@ -39,7 +39,10 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
@@ -59,6 +62,7 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
@@ -103,12 +107,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public NodeGraphFieldContainer getFieldContainer(Language language) {
-		return getFieldContainer(language, NodeGraphFieldContainerImpl.class);
+	public NodeGraphFieldContainer getGraphFieldContainer(Language language) {
+		return getGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
 	}
 
-	public NodeGraphFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateFieldContainer(language, NodeGraphFieldContainerImpl.class);
+	public NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language) {
+		return getOrCreateGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -317,7 +321,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			if (language == null) {
 				throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", languageTag));
 			}
-			fieldContainer = getFieldContainer(language);
+			fieldContainer = getGraphFieldContainer(language);
 			// We found a container for one of the languages
 			if (fieldContainer != null) {
 				break;
@@ -446,7 +450,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal,ac.getPagingInfo(), TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, ac.getPagingInfo(), TagImpl.class);
 	}
 
 	@Override
@@ -527,7 +531,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				setPublished(requestModel.isPublished());
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
-				NodeGraphFieldContainer container = getOrCreateFieldContainer(language);
+				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
 				try {
 					Schema schema = getSchema();
 					container.setFieldFromRest(ac, requestModel.getFields(), schema);
@@ -542,13 +546,26 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			batch.process(handler);
 		} catch (IOException e1) {
 			log.error(e1);
-			//TODO handle e1 within fail
+			// TODO handle e1 within fail
 			ac.fail(BAD_REQUEST, e1.getMessage());
 		}
 	}
 
 	@Override
 	public void addUpdateEntries(SearchQueueBatch batch) {
-		//		batch.addEntry(getParentNode(), UPDATE_ACTION);
+		// batch.addEntry(getParentNode(), UPDATE_ACTION);
+	}
+
+	@Override
+	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		// TODO use a dedicated uuid or timestamp for batched to avoid collisions
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
+			String indexType = getType() + "-" + container.getLanguage().getLanguageTag();
+			batch.addEntry(getUuid(), getType(), action, indexType);
+		}
+		addUpdateEntries(batch);
+		return batch;
 	}
 }

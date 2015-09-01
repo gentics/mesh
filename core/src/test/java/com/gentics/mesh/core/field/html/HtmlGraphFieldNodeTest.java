@@ -44,7 +44,7 @@ public class HtmlGraphFieldNodeTest extends AbstractDBTest {
 			schema.addField(htmlFieldSchema);
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			HtmlGraphField field = container.createHTML("htmlField");
 			field.setHtml("Some<b>htmlABCDE");
 

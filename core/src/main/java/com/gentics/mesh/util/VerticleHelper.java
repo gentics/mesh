@@ -10,10 +10,13 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -51,6 +54,28 @@ public class VerticleHelper {
 		info.setPageCount(page.getTotalPages());
 		info.setPerPage(page.getPerPage());
 		info.setTotalCount(page.getTotalElements());
+	}
+
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(ActionContext ac,
+			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
+		// TODO i18n
+		if (batch == null) {
+			// TODO log
+			ac.fail(BAD_REQUEST, "indexing_not_possible");
+		} else if (element == null) {
+			// TODO log
+			ac.fail(BAD_REQUEST, "element creation failed");
+		} else {
+			batch.process(rh -> {
+				if (rh.failed()) {
+					log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":" + element.getType()
+							+ "}.");
+					ac.fail(BAD_REQUEST, "indexing_failed");
+				} else {
+					handler.handle(Future.succeededFuture(element));
+				}
+			});
+		}
 	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(ActionContext ac,
@@ -225,12 +250,18 @@ public class VerticleHelper {
 				if (vertex instanceof NamedVertex) {
 					name = ((NamedVertex) vertex).getName();
 				}
-				try (Trx tx = db.trx()) {
+				SearchQueueBatch batch = null;
+				try (Trx txDelete = db.trx()) {
+					if (vertex instanceof IndexedVertex) {
+						batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+					}
 					vertex.delete();
-					tx.success();
+					txDelete.success();
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
-				ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+				batch.process(brh -> {
+					ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+				});
 			}
 		});
 	}
@@ -282,17 +313,17 @@ public class VerticleHelper {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {
-			//			try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-			//				root.reload();
-			//				User user = getUser(rc);
-			//				user.reload();
-			//				T element = root.findByUuidBlocking(uuid);
-			//				if (user.hasPermission(element, perm)) {
-			//					System.out.println("JOW" + element.getUuid());
-			//				} else {
-			//					System.out.println("NÖ" + element.getUuid());
-			//				}
-			//			}
+			// try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+			// root.reload();
+			// User user = getUser(rc);
+			// user.reload();
+			// T element = root.findByUuidBlocking(uuid);
+			// if (user.hasPermission(element, perm)) {
+			// System.out.println("JOW" + element.getUuid());
+			// } else {
+			// System.out.println("NÖ" + element.getUuid());
+			// }
+			// }
 			root.findByUuid(uuid, rh -> {
 				try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
 					if (rh.failed()) {

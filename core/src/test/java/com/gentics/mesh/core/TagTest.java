@@ -85,7 +85,7 @@ public class TagTest extends AbstractBasicObjectTest {
 			Node parentNode = folder("2015");
 			Node node = parentNode.create(user(), getSchemaContainer(), project());
 			Language german = boot.languageRoot().findByLanguageTag("de");
-			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
 
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 			germanContainer.createString("name").setString("german node name");
@@ -99,7 +99,7 @@ public class TagTest extends AbstractBasicObjectTest {
 				Tag reloadedTag = rh.result();
 				assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
 				Node contentFromTag = reloadedTag.getNodes().iterator().next();
-				NodeGraphFieldContainer fieldContainer = contentFromTag.getFieldContainer(german);
+				NodeGraphFieldContainer fieldContainer = contentFromTag.getGraphFieldContainer(german);
 
 				assertNotNull(contentFromTag);
 				assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());

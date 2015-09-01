@@ -44,7 +44,7 @@ public class DateGraphFieldNodeTest extends AbstractDBTest {
 			schema.addField(dateFieldSchema);
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			DateGraphField field = container.createDate("dateField");
 			field.setDate("01.01.1971");
 

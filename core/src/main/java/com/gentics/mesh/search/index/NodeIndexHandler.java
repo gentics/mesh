@@ -165,31 +165,31 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-	@Override
-	public void delete(String uuid, Handler<AsyncResult<Void>> handler) {
-		Node node = getRootVertex().findByUuidBlocking(uuid);
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
-		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			futures.add(obs);
-			String language = container.getLanguage().getLanguageTag();
-			if (log.isDebugEnabled()) {
-				log.debug("Invoking removal of document {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
-			}
-			searchProvider.deleteDocument(getIndex(), getType() + "-" + language, uuid, obs.toHandler());
-		}
-		Observable.merge(futures).subscribe(item -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Deleted node from index.");
-			}
-		} , error -> {
-			log.error("Error while deleting node.", error);
-			handler.handle(Future.failedFuture(error));
-		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
-			handler.handle(Future.succeededFuture());
-		});
-	}
+//	@Override
+//	public void delete(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
+//		Node node = getRootVertex().findByUuidBlocking(uuid);
+//		Set<ObservableFuture<Void>> futures = new HashSet<>();
+//		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+//			ObservableFuture<Void> obs = RxHelper.observableFuture();
+//			futures.add(obs);
+//			String language = container.getLanguage().getLanguageTag();
+//			if (log.isDebugEnabled()) {
+//				log.debug("Invoking removal of document {" + uuid + ":" + indexType+ ":" + language + "} from index {" + getIndex() + "}");
+//			}
+//			searchProvider.deleteDocument(getIndex(), indexType , uuid, obs.toHandler());
+//		}
+//		Observable.merge(futures).subscribe(item -> {
+//			if (log.isDebugEnabled()) {
+//				log.debug("Deleted node from index.");
+//			}
+//		} , error -> {
+//			log.error("Error while deleting node.", error);
+//			handler.handle(Future.failedFuture(error));
+//		} , () -> {
+//			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
+//			handler.handle(Future.succeededFuture());
+//		});
+//	}
 
 	private void addFields(Map<String, Object> map, NodeGraphFieldContainer container, Schema schema) {
 		Map<String, Object> fieldsMap = new HashMap<>();

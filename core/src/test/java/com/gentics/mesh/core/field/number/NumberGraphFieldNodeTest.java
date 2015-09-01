@@ -46,7 +46,7 @@ public class NumberGraphFieldNodeTest extends AbstractDBTest {
 			schema.addField(numberFieldSchema);
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 
 			NumberGraphField numberField = container.createNumber("numberField");
 			numberField.setNumber("100.9");

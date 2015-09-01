@@ -45,7 +45,7 @@ public class NodeGraphFieldNodeTest extends AbstractDBTest {
 			schema.addField(nodeFieldSchema);
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			container.createNode("nodeField", newsNode);
 
 			String json = getJson(node);

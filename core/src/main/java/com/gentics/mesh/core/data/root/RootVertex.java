@@ -72,6 +72,4 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 
 	T findByUuidBlocking(String uuid);
 
-	void processOrFail(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element);
-
 }

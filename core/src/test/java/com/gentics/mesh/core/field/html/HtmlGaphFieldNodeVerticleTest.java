@@ -62,7 +62,7 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			container.createHTML("htmlField").setHtml("some<b>html");
 			tx.success();
 		}

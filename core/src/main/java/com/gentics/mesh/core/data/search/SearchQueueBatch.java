@@ -36,6 +36,16 @@ public interface SearchQueueBatch extends MeshVertex {
 	/**
 	 * Add an entry to this batch.
 	 * 
+	 * @param uuid
+	 * @param type
+	 * @param action
+	 * @param indexType
+	 */
+	void addEntry(String uuid, String type, SearchQueueEntryAction action, String indexType);
+
+	/**
+	 * Add an entry to this batch.
+	 * 
 	 * @param entry
 	 */
 	void addEntry(SearchQueueEntry entry);
@@ -69,4 +79,5 @@ public interface SearchQueueBatch extends MeshVertex {
 	void process(Handler<AsyncResult<Void>> handler);
 
 	void printDebug();
+
 }

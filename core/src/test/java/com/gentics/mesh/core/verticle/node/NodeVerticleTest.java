@@ -1,13 +1,14 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.util.MeshAssert.*;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -170,12 +171,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We created the node. The searchqueue batch should have been processed.", 0, searchQueue.getSize());
-			//			SearchQueueBatch batch = searchQueue.take();
-			//			assertEquals(1, batch.getEntries().size());
-			//			SearchQueueEntry entry = batch.getEntries().get(0);
-			//			assertEquals(restNode.getUuid(), entry.getElementUuid());
-			//			assertEquals(Node.TYPE, entry.getElementType());
-			//			assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
+			// SearchQueueBatch batch = searchQueue.take();
+			// assertEquals(1, batch.getEntries().size());
+			// SearchQueueEntry entry = batch.getEntries().get(0);
+			// assertEquals(restNode.getUuid(), entry.getElementUuid());
+			// assertEquals(Node.TYPE, entry.getElementType());
+			// assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
 		}
 
 	}
@@ -458,7 +459,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			uuid = node.getUuid();
-			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
+			assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 		}
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
@@ -668,7 +669,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
 			uuid = node.getUuid();
-			assertEquals("2015", node.getFieldContainer(english()).getString("name").getString());
+			assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 		}
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
@@ -692,7 +693,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(restNode);
 		assertTrue(restNode.isPublished());
 		try (Trx tx = db.trx()) {
-			assertEquals(newName, node.getFieldContainer(english()).getString("name").getString());
+			assertEquals(newName, node.getGraphFieldContainer(english()).getString("name").getString());
 		}
 
 		try (Trx tx = db.trx()) {
@@ -860,7 +861,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNull(future.result());
 
 		try (Trx tx = db.trx()) {
-			NodeGraphFieldContainer englishContainer = folder("2015").getOrCreateFieldContainer(english());
+			NodeGraphFieldContainer englishContainer = folder("2015").getOrCreateGraphFieldContainer(english());
 			assertNotEquals(newName, englishContainer.getString("name").getString());
 		}
 
@@ -894,7 +895,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 
-		Node node = folder("2015");
+		Node node = content("concorde");
 		String uuid = node.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
@@ -903,23 +904,20 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectMessageResponse("node_deleted", future, uuid);
 
 		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-				assertNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
+			assertElement(meshRoot().getNodeRoot(), uuid, false);
 		}
+
+		assertEquals("Two documents within the index should have been deleted. (en,de)", 2, searchProvider.getDeleteEvents().size());
 
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We deleted the item. A search queue entry should have been created.", 1, searchQueue.getSize());
-			SearchQueueBatch batch = searchQueue.take();
-			assertEquals(1, batch.getEntries().size());
-			SearchQueueEntry entry = batch.getEntries().get(0);
-			assertEquals(uuid, entry.getElementUuid());
-			assertEquals(Node.TYPE, entry.getElementType());
-			assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getElementAction());
+			assertEquals("We deleted the item. A search queue entry should have been created.", 0, searchQueue.getSize());
+			// SearchQueueBatch batch = searchQueue.take();
+			// assertEquals(1, batch.getEntries().size());
+			// SearchQueueEntry entry = batch.getEntries().get(0);
+			// assertEquals(uuid, entry.getElementUuid());
+			// assertEquals(Node.TYPE, entry.getElementType());
+			// assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getElementAction());
 		}
 	}
 

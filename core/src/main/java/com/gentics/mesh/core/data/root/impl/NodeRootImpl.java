@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
@@ -173,7 +174,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 							return;
 						}
 						try {
-							NodeGraphFieldContainer container = node.getOrCreateFieldContainer(language);
+							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
 							container.setFieldFromRest(ac, requestModel.getFields(), schema);
 						} catch (Exception e) {
 							handler.handle(Future.failedFuture(e));

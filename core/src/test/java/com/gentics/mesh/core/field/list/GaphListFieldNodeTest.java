@@ -81,7 +81,7 @@ public class GaphListFieldNodeTest extends AbstractDBTest {
 
 			node.getSchemaContainer().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 
 			GraphNodeFieldList nodeList = container.createNodeList("nodeList");
 			nodeList.createNode("1", newsNode);

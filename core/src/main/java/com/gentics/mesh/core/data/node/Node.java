@@ -75,9 +75,9 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param language
 	 * @return
 	 */
-	NodeGraphFieldContainer getFieldContainer(Language language);
+	NodeGraphFieldContainer getGraphFieldContainer(Language language);
 
-	NodeGraphFieldContainer getOrCreateFieldContainer(Language language);
+	NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language);
 
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 

@@ -64,7 +64,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		Node node;
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			container.createDate("dateField").setDate("01.01.1971");
 			tx.success();
 		}

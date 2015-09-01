@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -50,7 +49,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
-	public void update(String uuid, Handler<AsyncResult<Void>> handler) {
+	public void update(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
 			if (rh.failed()) {
 				handler.handle(Future.failedFuture(rh.cause()));
@@ -66,7 +65,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		searchProvider.storeDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
-	public void delete(String uuid, Handler<AsyncResult<Void>> handler) {
+	public void delete(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
 		// We don't need to resolve the uuid and load the graph object in this case.
 		searchProvider.deleteDocument(getIndex(), getType(), uuid, handler);
 	}
@@ -74,12 +73,12 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 */
-	public void store(String uuid, Handler<AsyncResult<Void>> handler) {
+	public void store(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
 			if (rh.failed()) {
 				handler.handle(Future.failedFuture(rh.cause()));
 			} else if (rh.result() == null) {
-				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + getType() + "} could not be found within graph."));
+				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + indexType + "} could not be found within graph."));
 			} else {
 				store(rh.result(), handler);
 			}
@@ -110,11 +109,11 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		// TODO make sure field names match response UserResponse field names..
 		Map<String, Object> userFields = new HashMap<>();
 		// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being modified.
-		//		userFields.put("username", user.getUsername());
-		//		userFields.put("emailadress", user.getEmailAddress());
-		//		userFields.put("firstname", user.getFirstname());
-		//		userFields.put("lastname", user.getLastname());
-		//		userFields.put("enabled", String.valueOf(user.isEnabled()));
+		// userFields.put("username", user.getUsername());
+		// userFields.put("emailadress", user.getEmailAddress());
+		// userFields.put("firstname", user.getFirstname());
+		// userFields.put("lastname", user.getLastname());
+		// userFields.put("enabled", String.valueOf(user.isEnabled()));
 		userFields.put("uuid", user.getUuid());
 		map.put(key, userFields);
 	}
@@ -132,30 +131,34 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		map.put("tags", tagFields);
 	}
 
-	public void handleAction(String uuid, String actionName, Handler<AsyncResult<Void>> handler) {
+	public void handleAction(String uuid, String actionName, String indexType, Handler<AsyncResult<Void>> handler) {
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);
 			handler.handle(Future.failedFuture(msg));
 			return;
 		}
-		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
-		try (Trx tx = db.trx()) {
-			switch (action) {
-			case CREATE_ACTION:
-				store(uuid, handler);
-				break;
-			case DELETE_ACTION:
-				delete(uuid, handler);
-				break;
-			case UPDATE_ACTION:
-				//update(uuid, handler);
-				store(uuid, handler);
-				break;
-			default:
-				handler.handle(Future.failedFuture("Action type {" + action + "} is unknown."));
-			}
+
+		if (indexType == null) {
+			indexType = getType();
 		}
+		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
+		// try (Trx tx = db.trx()) {
+		switch (action) {
+		case CREATE_ACTION:
+			store(uuid, indexType, handler);
+			break;
+		case DELETE_ACTION:
+			delete(uuid, indexType, handler);
+			break;
+		case UPDATE_ACTION:
+			// update(uuid, handler);
+			store(uuid, indexType, handler);
+			break;
+		default:
+			handler.handle(Future.failedFuture("Action type {" + action + "} is unknown."));
+		}
+		// }
 	}
 
 }

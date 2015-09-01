@@ -100,7 +100,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			newsNode = folder("news");
 			node = folder("2015");
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			container.createNode("nodeField", newsNode);
 			tx.success();
 		}
@@ -122,7 +122,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			node = folder("2015");
 
 			// Create test field
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			container.createNode("nodeField", newsNode);
 			tx.success();
 		}

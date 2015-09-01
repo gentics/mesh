@@ -43,7 +43,7 @@ public class SelectGraphFieldNodeTest extends AbstractDBTest {
 		schema.addField(selectFieldSchema);
 		node.getSchemaContainer().setSchema(schema);
 
-		NodeGraphFieldContainer container = node.getFieldContainer(english());
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 
 		GraphSelectField<?> selectField = container.createSelect("selectField");
 

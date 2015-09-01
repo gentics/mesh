@@ -160,22 +160,6 @@ public class DemoDataProvider {
 		}
 		log.info("Added BasicPermissions to nodes");
 
-		//		try (BlueprintTransaction tx = new BlueprintTransaction(fg)) {
-		//			for (EdgeFrame frame : userInfo.getRole().getImpl().outE().toListExplicit(EdgeFrame.class)) {
-		//				System.out.println(frame.getLabel());
-		//				System.out.println(frame.outV().next().getId().toString());
-		//				System.out.println(frame.inV().next().getId().toString());
-		//				System.out.println("---------");
-		//			}
-		//
-		//			if (userInfo.getRole().hasPermission(READ_PERM, userInfo.getUser())) {
-		//				System.out.println("HAS PERM");
-		//			} else {
-		//				log.debug("permissions on {" + userInfo.getUser().getElement().getId() + "} with role {" + userInfo.getRole().getElement().getId()
-		//						+ "}");
-		//				System.out.println("HAS NO PERM");
-		//			}
-		//		}
 	}
 
 	private void addBootstrappedData() {
@@ -194,44 +178,44 @@ public class DemoDataProvider {
 
 		SchemaContainer contentSchema = schemaContainers.get("content");
 
-		for (int i = 0; i < 12 * multiplicator; i++) {
+		for (int i = 0; i < 4 * multiplicator; i++) {
 			addContent(folders.get("2014"), "News_2014_" + i, "News " + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 		}
 
 		addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
 
 		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!", contentSchema);
-		for (int i = 0; i < 12 * multiplicator; i++) {
+		for (int i = 0; i < 4 * multiplicator; i++) {
 			addContent(folders.get("deals"), "Special Deal June 2015 - " + i, "Buy two get three! " + i, "Kauf zwei und nimm drei mit!" + i,
 					contentSchema);
 		}
 
 		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
-		for (int i = 0; i < 12 * multiplicator; i++) {
+		for (int i = 0; i < 4 * multiplicator; i++) {
 			addContent(folders.get("2015"), "News_2015_" + i, "News" + i + "!", "Neuigkeiten " + i + "!", contentSchema);
 		}
 
-		Node porsche911 = addContent(folders.get("products"), "Porsche 911",
-				"997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and 2012.",
-				"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
-		porsche911.addTag(tags.get("vehicle"));
-		porsche911.addTag(tags.get("car"));
+//		Node porsche911 = addContent(folders.get("products"), "Porsche 911",
+//				"997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and 2012.",
+//				"Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
+//		porsche911.addTag(tags.get("vehicle"));
+//		porsche911.addTag(tags.get("car"));
+//
+//		Node nissanGTR = addContent(folders.get("products"), "Nissan GT-R",
+//				"The Nissan GT-R is a 2-door 2+2 sports coupé produced by Nissan and first released in Japan in 2007",
+//				"Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline GT-R R34.",
+//				contentSchema);
+//		nissanGTR.addTag(tags.get("vehicle"));
+//		nissanGTR.addTag(tags.get("car"));
+//		nissanGTR.addTag(tags.get("green"));
 
-		Node nissanGTR = addContent(folders.get("products"), "Nissan GT-R",
-				"The Nissan GT-R is a 2-door 2+2 sports coupé produced by Nissan and first released in Japan in 2007",
-				"Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline GT-R R34.",
-				contentSchema);
-		nissanGTR.addTag(tags.get("vehicle"));
-		nissanGTR.addTag(tags.get("car"));
-		nissanGTR.addTag(tags.get("green"));
-
-		Node bmwM3 = addContent(folders.get("products"), "BMW M3",
-				"The BMW M3 (first launched in 1986) is a high-performance version of the BMW 3-Series, developed by BMW's in-house motorsport division, BMW M.",
-				"Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.",
-				contentSchema);
-		bmwM3.addTag(tags.get("vehicle"));
-		bmwM3.addTag(tags.get("car"));
-		bmwM3.addTag(tags.get("blue"));
+//		Node bmwM3 = addContent(folders.get("products"), "BMW M3",
+//				"The BMW M3 (first launched in 1986) is a high-performance version of the BMW 3-Series, developed by BMW's in-house motorsport division, BMW M.",
+//				"Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.",
+//				contentSchema);
+//		bmwM3.addTag(tags.get("vehicle"));
+//		bmwM3.addTag(tags.get("car"));
+//		bmwM3.addTag(tags.get("blue"));
 
 		Node concorde = addContent(folders.get("products"), "Concorde",
 				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
@@ -241,36 +225,36 @@ public class DemoDataProvider {
 		concorde.addTag(tags.get("twinjet"));
 		concorde.addTag(tags.get("red"));
 
-		Node boeing737 = addContent(folders.get("products"), "Boeing 737",
-				"The Boeing 737 is a short- to medium-range twinjet narrow-body airliner. Originally developed as a shorter, lower-cost twin-engined airliner derived from Boeing's 707 and 727, the 737 has developed into a family of nine passenger models with a capacity of 85 to 215 passengers.",
-				"Die Boeing 737 des US-amerikanischen Flugzeugherstellers Boeing ist die weltweit meistgebaute Familie strahlgetriebener Verkehrsflugzeuge.",
-				contentSchema);
-		boeing737.addTag(tags.get("plane"));
-		boeing737.addTag(tags.get("twinjet"));
+//		Node boeing737 = addContent(folders.get("products"), "Boeing 737",
+//				"The Boeing 737 is a short- to medium-range twinjet narrow-body airliner. Originally developed as a shorter, lower-cost twin-engined airliner derived from Boeing's 707 and 727, the 737 has developed into a family of nine passenger models with a capacity of 85 to 215 passengers.",
+//				"Die Boeing 737 des US-amerikanischen Flugzeugherstellers Boeing ist die weltweit meistgebaute Familie strahlgetriebener Verkehrsflugzeuge.",
+//				contentSchema);
+//		boeing737.addTag(tags.get("plane"));
+//		boeing737.addTag(tags.get("twinjet"));
 
-		Node a300 = addContent(folders.get("products"), "Airbus A300",
-				"The Airbus A300 is a short- to medium-range wide-body twin-engine jet airliner that was developed and manufactured by Airbus. Released in 1972 as the world's first twin-engined widebody, it was the first product of Airbus Industrie, a consortium of European aerospace manufacturers, now a subsidiary of Airbus Group.",
-				"Der Airbus A300 ist das erste zweistrahlige Großraumflugzeug der Welt, produziert vom europäischen Flugzeughersteller Airbus.",
-				contentSchema);
-		a300.addTag(tags.get("plane"));
-		a300.addTag(tags.get("twinjet"));
-		a300.addTag(tags.get("red"));
+//		Node a300 = addContent(folders.get("products"), "Airbus A300",
+//				"The Airbus A300 is a short- to medium-range wide-body twin-engine jet airliner that was developed and manufactured by Airbus. Released in 1972 as the world's first twin-engined widebody, it was the first product of Airbus Industrie, a consortium of European aerospace manufacturers, now a subsidiary of Airbus Group.",
+//				"Der Airbus A300 ist das erste zweistrahlige Großraumflugzeug der Welt, produziert vom europäischen Flugzeughersteller Airbus.",
+//				contentSchema);
+//		a300.addTag(tags.get("plane"));
+//		a300.addTag(tags.get("twinjet"));
+//		a300.addTag(tags.get("red"));
 
-		Node wrangler = addContent(folders.get("products"), "Jeep Wrangler",
-				"The Jeep Wrangler is a compact and mid-size (Wrangler Unlimited models) four-wheel drive off-road and sport utility vehicle (SUV), manufactured by American automaker Chrysler, under its Jeep marque – and currently in its third generation.",
-				"Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.", contentSchema);
-		wrangler.addTag(tags.get("vehicle"));
-		wrangler.addTag(tags.get("jeep"));
-
-		Node volvo = addContent(folders.get("products"), "Volvo B10M",
-				"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
-		volvo.addTag(tags.get("vehicle"));
-		volvo.addTag(tags.get("bus"));
-
-		Node hondact90 = addContent(folders.get("products"), "Honda CT90",
-				"The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null, contentSchema);
-		hondact90.addTag(tags.get("vehicle"));
-		hondact90.addTag(tags.get("motorcycle"));
+//		Node wrangler = addContent(folders.get("products"), "Jeep Wrangler",
+//				"The Jeep Wrangler is a compact and mid-size (Wrangler Unlimited models) four-wheel drive off-road and sport utility vehicle (SUV), manufactured by American automaker Chrysler, under its Jeep marque – and currently in its third generation.",
+//				"Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.", contentSchema);
+//		wrangler.addTag(tags.get("vehicle"));
+//		wrangler.addTag(tags.get("jeep"));
+//
+//		Node volvo = addContent(folders.get("products"), "Volvo B10M",
+//				"The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
+//		volvo.addTag(tags.get("vehicle"));
+//		volvo.addTag(tags.get("bus"));
+//
+//		Node hondact90 = addContent(folders.get("products"), "Honda CT90",
+//				"The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null, contentSchema);
+//		hondact90.addTag(tags.get("vehicle"));
+//		hondact90.addTag(tags.get("motorcycle"));
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
@@ -384,7 +368,7 @@ public class DemoDataProvider {
 		roles.put(guestRole.getName(), guestRole);
 
 		// Extra User
-		for (int i = 0; i < 12 * multiplicator; i++) {
+		for (int i = 0; i < 6 * multiplicator; i++) {
 			User user = userRoot.create("guest_" + i, guests, userInfo.getUser());
 			// userService.setPassword(user, "guestpw" + i);
 			user.setFirstname("Guest Firstname");
@@ -394,14 +378,14 @@ public class DemoDataProvider {
 			users.put(user.getUsername(), user);
 		}
 		// Extra Groups
-		for (int i = 0; i < 12 * multiplicator; i++) {
+		for (int i = 0; i < 6 * multiplicator; i++) {
 			Group group = groupRoot.create("extra_group_" + i, userInfo.getUser());
 			setCreatorEditor(group);
 			groups.put(group.getName(), group);
 		}
 
 		// Extra Roles
-		for (int i = 0; i < 12 * multiplicator; i++) {
+		for (int i = 0; i < 6 * multiplicator; i++) {
 			Role role = roleRoot.create("extra_role_" + i, null, userInfo.getUser());
 			setCreatorEditor(role);
 			roles.put(role.getName(), role);
@@ -486,12 +470,12 @@ public class DemoDataProvider {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
 
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = folderNode.getOrCreateGraphFieldContainer(german);
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.getOrCreateFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = folderNode.getOrCreateGraphFieldContainer(english);
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
@@ -532,7 +516,7 @@ public class DemoDataProvider {
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.getOrCreateFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
 			englishContainer.createString("name").setString(name + " english name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -541,7 +525,7 @@ public class DemoDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.getOrCreateFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " english title");
 			germanContainer.createString("displayName").setString(name + " german");
@@ -561,8 +545,8 @@ public class DemoDataProvider {
 	 */
 	public String getPathForNews2015Tag(Language language) {
 
-		String name = folders.get("news").getFieldContainer(language).getString("name").getString();
-		String name2 = folders.get("2015").getFieldContainer(language).getString("name").getString();
+		String name = folders.get("news").getGraphFieldContainer(language).getString("name").getString();
+		String name2 = folders.get("2015").getGraphFieldContainer(language).getString("name").getString();
 		return name + "/" + name2;
 	}
 

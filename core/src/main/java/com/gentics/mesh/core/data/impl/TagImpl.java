@@ -70,12 +70,12 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public TagGraphFieldContainer getFieldContainer(Language language) {
-		return getFieldContainer(language, TagGraphFieldContainerImpl.class);
+		return getGraphFieldContainer(language, TagGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	public TagGraphFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateFieldContainer(language, TagGraphFieldContainerImpl.class);
+		return getOrCreateGraphFieldContainer(language, TagGraphFieldContainerImpl.class);
 	}
 
 	@Override

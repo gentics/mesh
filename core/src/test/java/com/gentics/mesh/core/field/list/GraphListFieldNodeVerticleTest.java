@@ -165,7 +165,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			GraphNodeFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", folder("news"));
 			tx.success();
@@ -188,7 +188,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			node = folder("2015");
 
 			// Create node list
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			GraphNodeFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", newsNode);
 			tx.success();

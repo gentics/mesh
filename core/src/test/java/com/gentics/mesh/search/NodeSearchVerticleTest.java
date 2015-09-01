@@ -151,7 +151,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 
-			GraphStringFieldList list = node.getFieldContainer(english()).createStringList("stringList");
+			GraphStringFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
 			list.createString("one");
 			list.createString("two");
 			list.createString("three");
@@ -218,7 +218,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		String oldName = "Airbus A300";
 		Node node = content(oldName.toLowerCase());
 		assertNotNull(node);
-		HtmlGraphField field = node.getFieldContainer(german()).getHtml("content");
+		HtmlGraphField field = node.getGraphFieldContainer(german()).getHtml("content");
 		assertNotNull(field);
 		String newString = "ABCDEFGHI";
 		field.setHtml(newString);

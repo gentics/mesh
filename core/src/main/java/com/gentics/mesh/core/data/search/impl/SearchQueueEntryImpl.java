@@ -27,13 +27,24 @@ import com.gentics.mesh.search.index.UserIndexHandler;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 
 public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry {
 
 	private static final String ACTION_KEY = "element_action";
 	private static final String ELEMENT_UUID = "element_uuid";
 	private static final String ELEMENT_TYPE = "element_type";
+	private static final String ELEMENT_INDEX_TYPE = "element_index_type";
+
+	@Override
+	public String getElementUuid() {
+		return getProperty(ELEMENT_UUID);
+	}
+
+	@Override
+	public SearchQueueEntry setElementUuid(String uuid) {
+		setProperty(ELEMENT_UUID, uuid);
+		return this;
+	}
 
 	@Override
 	public SearchQueueEntryAction getElementAction() {
@@ -53,17 +64,6 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public String getElementUuid() {
-		return getProperty(ELEMENT_UUID);
-	}
-
-	@Override
-	public SearchQueueEntry setElementUuid(String uuid) {
-		setProperty(ELEMENT_UUID, uuid);
-		return this;
-	}
-
-	@Override
 	public String getElementType() {
 		return getProperty(ELEMENT_TYPE);
 	}
@@ -75,12 +75,14 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public JsonObject getMessage() {
-		JsonObject message = new JsonObject();
-		message.put("uuid", getElementUuid());
-		message.put("type", getElementType());
-		message.put("action", getElementAction().getName());
-		return message;
+	public String getElementIndexType() {
+		return getProperty(ELEMENT_INDEX_TYPE);
+	}
+
+	@Override
+	public SearchQueueEntry setElementIndexType(String indexType) {
+		setProperty(ELEMENT_INDEX_TYPE, indexType);
+		return this;
 	}
 
 	@Override
@@ -116,8 +118,10 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public void process(Handler<AsyncResult<Void>> handler) {
-		getIndexHandler(getElementType()).handleAction(getElementUuid(), getElementActionName(), handler);
+	public SearchQueueEntry process(Handler<AsyncResult<Void>> handler) {
+		AbstractIndexHandler<?> indexHandler = getIndexHandler(getElementType());
+		indexHandler.handleAction(getElementUuid(), getElementActionName(), getElementIndexType(), handler);
+		return this;
 	}
 
 	@Override

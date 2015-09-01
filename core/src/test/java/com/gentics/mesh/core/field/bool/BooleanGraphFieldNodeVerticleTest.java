@@ -40,7 +40,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 		Node node;
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			container.createBoolean("booleanField").setBoolean(true);
 			tx.success();
 		}

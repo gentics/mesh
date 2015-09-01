@@ -75,7 +75,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		try (Trx tx = db.trx()) {
 			node = folder("2015");
 
-			NodeGraphFieldContainer container = node.getFieldContainer(english());
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 			NumberGraphField numberField = container.createNumber("numberField");
 			numberField.setNumber("100.9");
 			tx.success();
