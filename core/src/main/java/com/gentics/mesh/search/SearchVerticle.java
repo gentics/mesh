@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.util.VerticleHelper.fail;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import org.jacpfx.vertx.spring.SpringVerticle;

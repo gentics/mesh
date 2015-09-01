@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -30,13 +28,13 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
@@ -98,40 +96,40 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<User>> handler) {
+	public void create(ActionContext ac, Handler<AsyncResult<User>> handler) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		UserCreateRequest requestModel = fromJson(rc, UserCreateRequest.class);
+		UserCreateRequest requestModel = ac.fromJson(UserCreateRequest.class);
 		if (requestModel == null) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_parse_request_json_error"))));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_parse_request_json_error"))));
 			return;
 		}
 		if (isEmpty(requestModel.getPassword())) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_password"))));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_password"))));
 			return;
 		}
 		if (isEmpty(requestModel.getUsername())) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_username"))));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_username"))));
 			return;
 		}
 		String groupUuid = requestModel.getGroupUuid();
 		if (isEmpty(groupUuid)) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_missing_parentgroup_field"))));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_parentgroup_field"))));
 			return;
 		}
 		try (Trx tx = db.trx()) {
 			// Load the parent group for the user
-			loadObjectByUuid(rc, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
+			loadObjectByUuid(ac, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
 					Group parentGroup = rh.result();
 					if (findByUsername(requestModel.getUsername()) != null) {
-						String message = i18n.get(rc, "user_conflicting_username");
+						String message = ac.i18n("user_conflicting_username");
 						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, message)));
 						return;
 					}
-					MeshAuthUser requestUser = getUser(rc);
+					MeshAuthUser requestUser = ac.getUser();
 					User user;
 					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
@@ -148,7 +146,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 						if (reference != null) {
 							if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
 								handler.handle(Future
-										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference"))));
+										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_incomplete_node_reference"))));
 								return;
 							}
 
@@ -158,12 +156,12 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 							Project project = boot.projectRoot().findByName(projectName);
 							if (project == null) {
 								handler.handle(Future
-										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName))));
+										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_not_found", projectName))));
 								return;
 							}
 							Node node;
 							try (Trx tx2 = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-								node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
 							}
 							user.setReferencedNode(node);
 						}

@@ -6,7 +6,6 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -14,8 +13,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 @Component
 public class ProjectCrudHandler extends AbstractCrudHandler {
@@ -23,43 +21,37 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
 
 	@Override
-	public void handleCreate(RoutingContext rc) {
+	public void handleCreate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			createObject(rc, boot.projectRoot());
+			createObject(ac, boot.projectRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(RoutingContext rc) {
+	public void handleDelete(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			deleteObject(rc, "uuid", "project_deleted", boot.projectRoot());
+			deleteObject(ac, "uuid", "project_deleted", boot.projectRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(RoutingContext rc) {
+	public void handleUpdate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			updateObject(rc, "uuid", boot.projectRoot());
-		}
-
-	}
-
-	@Override
-	public void handleRead(RoutingContext rc) {
-		String uuid = rc.request().params().get("uuid");
-		if (StringUtils.isEmpty(uuid)) {
-			rc.next();
-		} else {
-			try (Trx tx = db.trx()) {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.projectRoot());
-			}
+			updateObject(ac, "uuid", boot.projectRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(RoutingContext rc) {
+	public void handleRead(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadTransformAndResponde(rc, boot.projectRoot(), new ProjectListResponse());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.projectRoot());
+		}
+	}
+
+	@Override
+	public void handleReadList(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			loadTransformAndResponde(ac, boot.projectRoot(), new ProjectListResponse());
 		}
 	}
 }

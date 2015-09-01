@@ -5,11 +5,11 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
 
@@ -50,7 +50,7 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 	}
 
 	@Override
-	public Language transformToRest(RoutingContext rc, Handler<AsyncResult<LanguageResponse>> handler) {
+	public Language transformToRest(ActionContext ac, Handler<AsyncResult<LanguageResponse>> handler) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());
@@ -71,7 +71,8 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 		throw new NotImplementedException();
 	}
 
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
+	@Override
+	public void update(ActionContext rc, Handler<AsyncResult<Void>> handler) {
 		throw new NotImplementedException();
 	}
 

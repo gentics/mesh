@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -200,7 +201,8 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 			TagFamily tagFamily = tagFamily("colors");
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
-			tagFamily.transformToRest(rc, rh -> {
+			ActionContext ac = ActionContext.create(rc);
+			tagFamily.transformToRest(ac, rh -> {
 				assertNotNull(rh.result());
 				TagFamilyResponse response = rh.result();
 				assertEquals(tagFamily.getName(), response.getName());

@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -61,8 +61,9 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
+		ActionContext ac = ActionContext.create(rc);
 		try (Trx tx = db.trx()) {
-			MeshAuthUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = ac.getUser();
 
 			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
 			assertEquals(users().size(), page.getTotalElements());
@@ -106,7 +107,8 @@ public class UserTest extends AbstractBasicObjectTest {
 			role.grantPermissions(extraUser, READ_PERM);
 
 			RoutingContext rc = getMockedRoutingContext("");
-			MeshAuthUser requestUser = getUser(rc);
+			ActionContext ac = ActionContext.create(rc);
+			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 			assertEquals(2, userPage.getTotalElements());
@@ -143,7 +145,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
-			user().transformToRest(rc, rh -> {
+			ActionContext ac = ActionContext.create(rc);
+			user().transformToRest(ac, rh -> {
 				UserResponse restUser = rh.result();
 				assertNotNull(restUser);
 				assertEquals(user().getUsername(), restUser.getUsername());

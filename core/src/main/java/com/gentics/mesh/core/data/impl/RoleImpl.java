@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
@@ -23,18 +22,17 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
 
@@ -88,11 +86,11 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	}
 
 	@Override
-	public Role transformToRest(RoutingContext rc, Handler<AsyncResult<RoleResponse>> handler) {
+	public Role transformToRest(ActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
-		fillRest(restRole, rc);
+		fillRest(restRole, ac);
 
 		for (Group group : getGroups()) {
 			GroupResponse restGroup = new GroupResponse();
@@ -127,15 +125,15 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
-		RoleUpdateRequest requestModel = fromJson(rc, RoleUpdateRequest.class);
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "role_conflicting_name")));
+				ac.fail(CONFLICT, "role_conflicting_name");
 				return;
 			}
 			SearchQueueBatch batch;

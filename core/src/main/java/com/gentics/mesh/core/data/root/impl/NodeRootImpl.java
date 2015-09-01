@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
-import static com.gentics.mesh.util.VerticleHelper.getProject;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -40,6 +38,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -50,7 +49,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
@@ -115,7 +113,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<Node>> handler) {
+	public void create(ActionContext ac, Handler<AsyncResult<Node>> handler) {
 
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -123,10 +121,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
 		try (Trx tx = db.trx()) {
-			Project project = getProject(rc);
-			MeshAuthUser requestUser = getUser(rc);
+			Project project = ac.getProject();
+			MeshAuthUser requestUser = ac.getUser();
 
-			String body = rc.getBodyAsString();
+			String body = ac.getBodyAsString();
 
 			// 1. Extract the schema information from the given json
 			SchemaReferenceInfo schemaInfo;
@@ -139,7 +137,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			boolean missingSchemaInfo = schemaInfo.getSchema() == null
 					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 			if (missingSchemaInfo) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_schema_parameter_missing"))));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_schema_parameter_missing"))));
 				return;
 			}
 
@@ -150,12 +148,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
 						handler.handle(
-								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_missing_parentnode_field"))));
+								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field"))));
 						return;
 					}
 					if (StringUtils.isEmpty(requestModel.getLanguage())) {
 						handler.handle(
-								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "node_no_languagecode_specified"))));
+								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified"))));
 						return;
 					}
 
@@ -164,20 +162,19 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node
-						Node parentNode = loadObjectByUuidBlocking(rc, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot());
+						Node parentNode = loadObjectByUuidBlocking(ac, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot());
 						node = parentNode.create(requestUser, schemaContainer, project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST,
-									i18n.get(rc, "node_no_language_found", requestModel.getLanguage()))));
+							handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST,ac.i18n("node_no_language_found", requestModel.getLanguage()))));
 							txCreate.failure();
 							return;
 						}
 						try {
 							NodeGraphFieldContainer container = node.getOrCreateFieldContainer(language);
-							container.setFieldFromRest(rc, requestModel.getFields(), schema);
+							container.setFieldFromRest(ac, requestModel.getFields(), schema);
 						} catch (Exception e) {
 							handler.handle(Future.failedFuture(e));
 							txCreate.failure();
@@ -199,17 +196,17 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						containerFoundHandler.handle(Future.succeededFuture(containerByName));
 					} else {
 						handler.handle(
-								Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", containerByName.getUuid()))));
+								Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", containerByName.getUuid()))));
 						return;
 					}
 				} else {
 					handler.handle(
-							Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "schema_not_found", schemaInfo.getSchema().getName()))));
+							Future.failedFuture(new EntityNotFoundException(ac.i18n("schema_not_found", schemaInfo.getSchema().getName()))));
 					return;
 				}
 			} else {
-				loadObjectByUuid(rc, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaContainerRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
+				loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaContainerRoot(), rh -> {
+					if (hasSucceeded(ac, rh)) {
 						SchemaContainer schemaContainer = rh.result();
 						containerFoundHandler.handle(Future.succeededFuture(schemaContainer));
 						return;

@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.*;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
@@ -22,7 +21,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -31,12 +29,12 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>implements SchemaContainer {
 
@@ -48,7 +46,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	}
 
 	@Override
-	public SchemaContainer transformToRest(RoutingContext rc, Handler<AsyncResult<SchemaResponse>> handler) {
+	public SchemaContainer transformToRest(ActionContext ac, Handler<AsyncResult<SchemaResponse>> handler) {
 		try {
 			SchemaResponse schemaResponse = JsonUtil.readSchema(getJson(), SchemaResponse.class);
 			schemaResponse.setUuid(getUuid());
@@ -68,7 +66,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 				};
 			});
 
-			schemaResponse.setPermissions(getUser(rc).getPermissionNames(this));
+			schemaResponse.setPermissions(ac.getUser().getPermissionNames(this));
 
 			handler.handle(Future.succeededFuture(schemaResponse));
 		} catch (IOException e) {
@@ -136,13 +134,12 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		SchemaUpdateRequest requestModel = fromJson(rc, SchemaUpdateRequest.class);
-		I18NService i18n = I18NService.getI18n();
+		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
+			ac.fail(BAD_REQUEST, "error_name_must_be_set");
 			return;
 		}
 		// TODO update name? check for conflicting names?

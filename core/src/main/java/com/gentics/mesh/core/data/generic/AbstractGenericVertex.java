@@ -2,15 +2,12 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
-
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
-
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
 
@@ -42,7 +39,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
-	protected void fillRest(AbstractGenericNodeRestModel model, RoutingContext rc) {
+	protected void fillRest(AbstractGenericNodeRestModel model, ActionContext ac) {
 
 		model.setUuid(getUuid());
 
@@ -59,7 +56,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		} else {
 			// TODO throw error and log something
 		}
-		model.setPermissions(getUser(rc).getPermissionNames(this));
+		model.setPermissions(ac.getUser().getPermissionNames(this));
 
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());

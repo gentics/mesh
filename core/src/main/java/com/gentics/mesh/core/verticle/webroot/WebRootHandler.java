@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.verticle.webroot;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.getProjectName;
-import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
@@ -15,18 +12,17 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
 import io.vertx.core.Future;
-import io.vertx.ext.web.RoutingContext;
 
 @Component
 public class WebRootHandler {
@@ -35,27 +31,24 @@ public class WebRootHandler {
 	private WebRootService webrootService;
 
 	@Autowired
-	private I18NService i18n;
-
-	@Autowired
 	private Database db;
 
-	public void handleGetPath(RoutingContext rc) {
+	public void handleGetPath(ActionContext ac) {
 
-		String path = rc.request().params().get("param0");
-		String projectName = getProjectName(rc);
-		MeshAuthUser requestUser = getUser(rc);
-		List<String> languageTags = getSelectedLanguageTags(rc);
+		String path = ac.getParameter("param0");
+		String projectName = ac.getProject().getName();
+		MeshAuthUser requestUser = ac.getUser();
+		List<String> languageTags = ac.getSelectedLanguageTags();
 
 		Mesh.vertx().executeBlocking((Future<Node> bch) -> {
 			try (Trx tx = db.trx()) {
-				Path nodePath = webrootService.findByProjectPath(rc, projectName, path);
+				Path nodePath = webrootService.findByProjectPath(ac, projectName, path);
 				PathSegment lastSegment = nodePath.getLast();
 
 				if (lastSegment != null) {
 					Node node = tx.getGraph().frameElement(lastSegment.getVertex(), Node.class);
 					if (node == null) {
-						String message = i18n.get(rc, "node_not_found_for_path", path);
+						String message = ac.i18n("node_not_found_for_path", path);
 						throw new EntityNotFoundException(message);
 					}
 
@@ -64,24 +57,24 @@ public class WebRootHandler {
 						if (rh.result()) {
 							bch.complete(node);
 						} else {
-							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, i18n.get(rc, "error_missing_perm", node.getUuid())));
+							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
 						}
 					});
 
 				} else {
-					throw new EntityNotFoundException(i18n.get(rc, "node_not_found_for_path", path));
+					throw new EntityNotFoundException(ac.i18n("node_not_found_for_path", path));
 				}
 			}
 		} , arh -> {
 			if (arh.failed()) {
-				rc.fail(arh.cause());
+				ac.fail(arh.cause());
 			}
 			/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 			if (arh.succeeded()) {
 				Node node = arh.result();
-				node.transformToRest(rc, th -> {
-					if (hasSucceeded(rc, th)) {
-						rc.response().end(JsonUtil.toJson(th.result()));
+				node.transformToRest(ac, th -> {
+					if (hasSucceeded(ac, th)) {
+						ac.send(JsonUtil.toJson(th.result()));
 					}
 				});
 			}

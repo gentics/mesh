@@ -10,7 +10,6 @@ import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
@@ -18,59 +17,53 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(RoutingContext rc) {
+	public void handleCreate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			createObject(rc, boot.schemaContainerRoot());
+			createObject(ac, boot.schemaContainerRoot());
 		}
 
 	}
 
 	@Override
-	public void handleDelete(RoutingContext rc) {
+	public void handleDelete(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			deleteObject(rc, "uuid", "schema_deleted", boot.schemaContainerRoot());
+			deleteObject(ac, "uuid", "schema_deleted", boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(RoutingContext rc) {
+	public void handleUpdate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			updateObject(rc, "uuid", boot.schemaContainerRoot());
+			updateObject(ac, "uuid", boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(RoutingContext rc) {
-		String uuid = rc.request().params().get("uuid");
-		if (StringUtils.isEmpty(uuid)) {
-			rc.next();
-		} else {
-			try (Trx tx = db.trx()) {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.schemaContainerRoot());
-			}
+	public void handleRead(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(RoutingContext rc) {
+	public void handleReadList(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadTransformAndResponde(rc, boot.schemaContainerRoot(), new SchemaListResponse());
+			loadTransformAndResponde(ac, boot.schemaContainerRoot(), new SchemaListResponse());
 		}
 	}
 
-	public void handleAddProjectToSchema(RoutingContext rc) {
+	public void handleAddProjectToSchema(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
-					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
-						if (hasSucceeded(rc, srh)) {
+			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
+					loadObject(ac, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
+						if (hasSucceeded(ac, srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
 							try (Trx txAdd = db.trx()) {
@@ -78,7 +71,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 								txAdd.success();
 							}
 							// TODO add simple message or return schema?
-							transformAndResponde(rc, schema);
+							transformAndResponde(ac, schema);
 						}
 					});
 				}
@@ -87,20 +80,20 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	}
 
-	public void handleRemoveProjectFromSchema(RoutingContext rc) {
+	public void handleRemoveProjectFromSchema(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadObject(rc, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
+			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
 					// TODO check whether schema is assigned to project
-					loadObject(rc, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
-						if (hasSucceeded(rc, srh)) {
+					loadObject(ac, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
+						if (hasSucceeded(ac, srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
 							try (Trx txRemove = db.trx()) {
 								project.getSchemaContainerRoot().removeSchemaContainer(schema);
 								txRemove.success();
 							}
-							transformAndResponde(rc, schema);
+							transformAndResponde(ac, schema);
 						}
 					});
 				}

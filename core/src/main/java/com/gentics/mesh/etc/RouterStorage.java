@@ -1,11 +1,6 @@
 package com.gentics.mesh.etc;
 
 import static com.gentics.mesh.core.AbstractWebVerticle.APPLICATION_JSON;
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.CookieHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +14,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.http.LocaleContextDataHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -27,6 +21,12 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CookieHandler;
 
 /**
  * Central storage for all apex request routers.
@@ -50,9 +50,6 @@ public class RouterStorage {
 	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
 	private static RouterStorage instance;
-
-	@Autowired
-	private LocaleContextDataHandler dataHandler;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
@@ -157,7 +154,6 @@ public class RouterStorage {
 		router.route().handler(CookieHandler.create());
 		router.route().handler(springConfiguration.sessionHandler());
 		router.route().handler(springConfiguration.userSessionHandler());
-		router.route().handler(dataHandler);
 	}
 
 	public Router getCustomRouter() {

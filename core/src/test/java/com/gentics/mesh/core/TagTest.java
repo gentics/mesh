@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -149,7 +149,8 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
-			MeshAuthUser requestUser = getUser(rc);
+			ActionContext ac = ActionContext.create(rc);
+			MeshAuthUser requestUser = ac.getUser();
 
 			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingInfo(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
@@ -282,9 +283,10 @@ public class TagTest extends AbstractBasicObjectTest {
 			int depth = 3;
 
 			RoutingContext rc = getMockedRoutingContext("lang=de,en");
+			ActionContext ac = ActionContext.create(rc);
 			for (int i = 0; i < 100; i++) {
 				long start = System.currentTimeMillis();
-				tag.transformToRest(rc, th -> {
+				tag.transformToRest(ac, th -> {
 					if (th.failed()) {
 						rc.fail(th.cause());
 					}

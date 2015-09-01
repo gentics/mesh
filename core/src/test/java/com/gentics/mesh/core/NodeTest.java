@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -110,7 +110,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 			languageTags.add("de");
 
 			RoutingContext rc = getMockedRoutingContext("");
-			MeshAuthUser requestUser = getUser(rc);
+			ActionContext ac = ActionContext.create(rc);
+			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 10));
 
 			// There are nodes that are only available in english
@@ -131,8 +132,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Node newsNode = content("news overview");
 			Language german = german();
 			RoutingContext rc = getMockedRoutingContext("?lang=de,en");
+			ActionContext ac = ActionContext.create(rc);
 			NodeGraphFieldContainer germanFields = newsNode.getOrCreateFieldContainer(german);
-			assertEquals(germanFields.getString(newsNode.getSchema().getDisplayField()).getString(), newsNode.getDisplayName(rc));
+			assertEquals(germanFields.getString(newsNode.getSchema().getDisplayField()).getString(), newsNode.getDisplayName(ac));
 		}
 		// TODO add some fields
 
@@ -189,11 +191,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testTransformation() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
 		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("lang=en");
+			ActionContext ac = ActionContext.create(rc);
 			Node newsNode = content("porsche 911");
 
 			CountDownLatch latch = new CountDownLatch(1);
 			AtomicReference<NodeResponse> reference = new AtomicReference<>();
-			newsNode.transformToRest(rc, rh -> {
+			newsNode.transformToRest(ac, rh -> {
 				reference.set(rh.result());
 				latch.countDown();
 			});

@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -25,7 +23,6 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -33,13 +30,13 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class ProjectRootImpl extends AbstractRootVertex<Project>implements ProjectRoot {
 
@@ -142,26 +139,25 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<Project>> handler) {
+	public void create(ActionContext ac, Handler<AsyncResult<Project>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		RouterStorage routerStorage = RouterStorage.getRouterStorage();
-		I18NService i18n = I18NService.getI18n();
 		MeshRoot meshRoot = BootstrapInitializer.getBoot().meshRoot();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		// TODO also create a default object schema for the project. Move this into service class
 		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
-		ProjectCreateRequest requestModel = fromJson(rc, ProjectCreateRequest.class);
-		MeshAuthUser requestUser = getUser(rc);
+		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
+		MeshAuthUser requestUser = ac.getUser();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_missing_name"))));
+			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_missing_name"))));
 			return;
 		}
 		try (Trx tx = db.trx()) {
 			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name"))));
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
 				} else {
 					Project project;
 					try (Trx txCreate = db.trx()) {
@@ -186,13 +182,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							// TODO should we really fail here?
 							txCreate.failure();
 							handler.handle(Future.failedFuture(
-									new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "Error while adding project to router storage"), e)));
+									new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("Error while adding project to router storage"), e)));
 						}
 					}
 					handler.handle(Future.succeededFuture(project));
 				}
 			} else {
-				handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", boot.projectRoot().getUuid()))));
+				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", boot.projectRoot().getUuid()))));
 			}
 		}
 

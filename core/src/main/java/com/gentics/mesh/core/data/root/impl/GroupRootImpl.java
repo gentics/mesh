@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -16,20 +15,17 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot {
 
@@ -73,23 +69,22 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<Group>> handler) {
-		MeshAuthUser requestUser = getUser(rc);
-		GroupCreateRequest requestModel = JsonUtil.fromJson(rc, GroupCreateRequest.class);
+	public void create(ActionContext ac, Handler<AsyncResult<Group>> handler) {
+		MeshAuthUser requestUser = ac.getUser();
+		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		I18NService i18n = I18NService.getI18n();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
+			ac.fail(BAD_REQUEST, "error_name_must_be_set");
 			return;
 		}
 		try (Trx tx = db.trx()) {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name"))));
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("group_conflicting_name"))));
 					return;
 				}
 				Group group;
@@ -102,7 +97,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 				handler.handle(Future.succeededFuture(group));
 				return;
 			} else {
-				handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", this.getUuid()))));
+				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
 				return;
 			}
 		}

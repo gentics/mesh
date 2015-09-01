@@ -11,10 +11,10 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language>implements LanguageRoot {
 
@@ -45,7 +45,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<Language>> handler) {
+	public void create(ActionContext rc, Handler<AsyncResult<Language>> handler) {
 		throw new NotImplementedException("Languages can be created using REST");
 	}
 

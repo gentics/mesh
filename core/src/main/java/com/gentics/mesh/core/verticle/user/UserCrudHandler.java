@@ -12,46 +12,45 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 @Component
 public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleDelete(RoutingContext rc) {
+	public void handleDelete(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			deleteObject(rc, "uuid", "user_deleted", boot.userRoot());
+			deleteObject(ac, "uuid", "user_deleted", boot.userRoot());
 		}
 	}
 
 	@Override
-	public void handleCreate(RoutingContext rc) {
+	public void handleCreate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			createObject(rc, boot.userRoot());
+			createObject(ac, boot.userRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(RoutingContext rc) {
+	public void handleUpdate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			updateObject(rc, "uuid", boot.userRoot());
+			updateObject(ac, "uuid", boot.userRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(RoutingContext rc) {
+	public void handleRead(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadObject(rc, "uuid", READ_PERM, boot.userRoot(), rh -> {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.userRoot());
+			loadObject(ac, "uuid", READ_PERM, boot.userRoot(), rh -> {
+				loadTransformAndResponde(ac, "uuid", READ_PERM, boot.userRoot());
 			});
 		}
 	}
 
 	@Override
-	public void handleReadList(RoutingContext rc) {
+	public void handleReadList(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadTransformAndResponde(rc, boot.userRoot(), new UserListResponse());
+			loadTransformAndResponde(ac, boot.userRoot(), new UserListResponse());
 		}
 	}
 

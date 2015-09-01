@@ -5,46 +5,38 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 @Component
 public class MicroschemaCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(RoutingContext rc) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleDelete(RoutingContext rc) {
-		deleteObject(rc, "uuid", "group_deleted", boot.microschemaContainerRoot());
-	}
-
-	@Override
-	public void handleUpdate(RoutingContext rc) {
+	public void handleCreate(ActionContext ac) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public void handleRead(RoutingContext rc) {
-		String uuid = rc.request().params().get("uuid");
-		if (StringUtils.isEmpty(uuid)) {
-			rc.next();
-		} else {
-			loadTransformAndResponde(rc, "uuid", READ_PERM, boot.microschemaContainerRoot());
-		}
+	public void handleDelete(ActionContext ac) {
+		deleteObject(ac, "uuid", "group_deleted", boot.microschemaContainerRoot());
 	}
 
 	@Override
-	public void handleReadList(RoutingContext rc) {
-		loadTransformAndResponde(rc, boot.microschemaContainerRoot(), new MicroschemaListResponse());
+	public void handleUpdate(ActionContext ac) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void handleRead(ActionContext ac) {
+		loadTransformAndResponde(ac, "uuid", READ_PERM, boot.microschemaContainerRoot());
+	}
+
+	@Override
+	public void handleReadList(ActionContext ac) {
+		loadTransformAndResponde(ac, boot.microschemaContainerRoot(), new MicroschemaListResponse());
 	}
 
 }

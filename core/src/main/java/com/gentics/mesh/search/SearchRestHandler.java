@@ -1,10 +1,6 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.VerticleHelper.fail;
-import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
-import static com.gentics.mesh.util.VerticleHelper.send;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -34,6 +30,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -63,7 +60,8 @@ public class SearchRestHandler {
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
-		PagingInfo pagingInfo = getPagingInfo(rc);
+		ActionContext ac = ActionContext.create(rc);
+		PagingInfo pagingInfo = ac.getPagingInfo();
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}
@@ -72,7 +70,7 @@ public class SearchRestHandler {
 		}
 
 		RL listResponse = classOfRL.newInstance();
-		MeshAuthUser requestUser = getUser(rc);
+		MeshAuthUser requestUser = ac.getUser();
 		Client client = elasticSearchProvider.getNode().client();
 
 		String searchQuery = rc.getBodyAsString();
@@ -91,7 +89,7 @@ public class SearchRestHandler {
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			builder = client.prepareSearch().setSource(searchQuery);
 		} catch (Exception e) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "search_query_not_parsable"), e));
+			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("search_query_not_parsable"), e));
 			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
@@ -112,8 +110,8 @@ public class SearchRestHandler {
 							if (rh.failed()) {
 								obs.toHandler().handle(Future.failedFuture(rh.cause()));
 							} else if (rh.result() == null) {
-								obs.toHandler().handle(Future
-										.failedFuture(new HttpStatusCodeErrorException(NOT_FOUND, i18n.get(rc, "object_not_found_for_uuid", uuid))));
+								obs.toHandler().handle(
+										Future.failedFuture(new HttpStatusCodeErrorException(NOT_FOUND, ac.i18n("object_not_found_for_uuid", uuid))));
 							} else {
 								T element = rh.result();
 								obs.toHandler().handle(Future.succeededFuture(element));
@@ -140,7 +138,7 @@ public class SearchRestHandler {
 							//Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
 								// Transform node and add it to the list of nodes
-								element.transformToRest(rc, th -> {
+								element.transformToRest(ac, th -> {
 									listResponse.getData().add(th.result());
 								});
 							}
@@ -160,7 +158,7 @@ public class SearchRestHandler {
 						metainfo.setPerPage(pagingInfo.getPerPage());
 						listResponse.setMetainfo(metainfo);
 
-						send(rc, toJson(listResponse));
+						ac.send(toJson(listResponse));
 					});
 					merged.subscribe(item -> {
 						log.debug("Loaded node {" + item.getUuid() + "}");
@@ -174,7 +172,7 @@ public class SearchRestHandler {
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Search query failed", e);
-				fail(rc, "search_error_query");
+				ac.fail(BAD_REQUEST, "search_error_query");
 			}
 		});
 

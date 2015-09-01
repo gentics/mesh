@@ -2,34 +2,16 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
-import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedVertex;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -41,44 +23,25 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class VerticleHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
 
-	public static final String QUERY_MAP_DATA_KEY = "queryMap";
-
-	public static String getProjectName(RoutingContext rc) {
-		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
-	}
-
-	/**
-	 * Shortcut method to access projectRoot aggregation vertex.
-	 * 
-	 * @param rc
-	 * @return
-	 */
-	public static Project getProject(RoutingContext rc) {
-		return BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(getProjectName(rc));
-	}
-
-	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(RoutingContext rc, RootVertex<T> root,
+	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(ActionContext ac, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
-		loadObjects(rc, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
-				send(rc, toJson(rh.result()));
+		loadObjects(ac, root, rh -> {
+			if (hasSucceeded(ac, rh)) {
+				ac.send(toJson(rh.result()));
 			}
 		} , listResponse);
 	}
@@ -91,16 +54,16 @@ public class VerticleHelper {
 		info.setTotalCount(page.getTotalElements());
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(RoutingContext rc,
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(ActionContext ac,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
-		PagingInfo pagingInfo = getPagingInfo(rc);
-		MeshAuthUser requestUser = getUser(rc);
+		PagingInfo pagingInfo = ac.getPagingInfo();
+		MeshAuthUser requestUser = ac.getUser();
 		try {
 
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
 			for (T node : page) {
-				node.transformToRest(rc, rh -> {
-					if (hasSucceeded(rc, rh)) {
+				node.transformToRest(ac, rh -> {
+					if (hasSucceeded(ac, rh)) {
 						listResponse.getData().add(rh.result());
 					}
 					// TODO handle async issue
@@ -113,28 +76,28 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(RoutingContext rc, String uuidParameterName,
+	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(ActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root) {
-		loadAndTransform(rc, uuidParameterName, permission, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
-				send(rc, toJson(rh.result()));
+		loadAndTransform(ac, uuidParameterName, permission, root, rh -> {
+			if (hasSucceeded(ac, rh)) {
+				ac.send(toJson(rh.result()));
 			}
 		});
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
-			RoutingContext rc, Page<T> page, RL listResponse) {
-		transformPage(rc, page, th -> {
-			if (hasSucceeded(rc, th)) {
-				send(rc, toJson(th.result()));
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(ActionContext ac,
+			Page<T> page, RL listResponse) {
+		transformPage(ac, page, th -> {
+			if (hasSucceeded(ac, th)) {
+				ac.send(toJson(th.result()));
 			}
 		} , listResponse);
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(RoutingContext rc,
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(ActionContext ac,
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		for (T node : page) {
-			node.transformToRest(rc, rh -> {
+			node.transformToRest(ac, rh -> {
 				listResponse.getData().add(rh.result());
 			});
 		}
@@ -142,14 +105,14 @@ public class VerticleHelper {
 		handler.handle(Future.succeededFuture(listResponse));
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(RoutingContext rc, String uuidParameterName,
+	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(ActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
-		loadObject(rc, uuidParameterName, permission, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
+		loadObject(ac, uuidParameterName, permission, root, rh -> {
+			if (hasSucceeded(ac, rh)) {
 				// TODO handle nested exceptions differently
 				try {
-					rh.result().transformToRest(rc, th -> {
-						if (hasSucceeded(rc, th)) {
+					rh.result().transformToRest(ac, th -> {
+						if (hasSucceeded(ac, th)) {
 							handler.handle(Future.succeededFuture(th.result()));
 						} else {
 							handler.handle(Future.failedFuture("Not authorized"));
@@ -162,150 +125,47 @@ public class VerticleHelper {
 		});
 	}
 
-	public static MeshAuthUser getUser(RoutingContext routingContext) {
-		if (routingContext.user() instanceof MeshAuthUser) {
-			MeshAuthUser user = (MeshAuthUser) routingContext.user();
-			return user;
-		}
-		// TODO i18n
-		throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not load request user");
-	}
-
-	/**
-	 * Extracts the lang parameter values from the query.
-	 * 
-	 * @param rc
-	 * @return List of languages. List can be empty.
-	 */
-	public static List<String> getSelectedLanguageTags(RoutingContext rc) {
-		List<String> languageTags = new ArrayList<>();
-		Map<String, String> queryPairs = splitQuery(rc);
-		if (queryPairs == null) {
-			return new ArrayList<>();
-		}
-		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value != null) {
-			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
-		}
-		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
-		return languageTags;
-
-	}
-
-	/**
-	 * Extracts the lang parameter values from the query.
-	 * 
-	 * @param rc
-	 * @return List of languages. List can be empty.
-	 */
-	public static List<String> getExpandedFieldnames(RoutingContext rc) {
-		List<String> expandFieldnames = new ArrayList<>();
-		Map<String, String> queryPairs = splitQuery(rc);
-		if (queryPairs == null) {
-			return new ArrayList<>();
-		}
-		String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
-		if (value != null) {
-			expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
-		}
-		return expandFieldnames;
-	}
-
-	public static Map<String, String> splitQuery(RoutingContext rc) {
-		rc.data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
-			String query = rc.request().query();
-			Map<String, String> queryPairs = new LinkedHashMap<String, String>();
-			if (query == null) {
-				return queryPairs;
-			}
-			String[] pairs = query.split("&");
-			for (String pair : pairs) {
-				int idx = pair.indexOf("=");
-
-				try {
-					queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
-				}
-
-			}
-			return queryPairs;
-		});
-		return (Map<String, String>) rc.data().get(QUERY_MAP_DATA_KEY);
-	}
-
-	/**
-	 * Extract the paging information from the request parameters. The paging information contains information about the number of the page that is currently
-	 * requested and the amount of items that should be included in a single page.
-	 * 
-	 * @param rc
-	 * @return Paging information
-	 */
-	public static PagingInfo getPagingInfo(RoutingContext rc) {
-		MultiMap params = rc.request().params();
-		int page = 1;
-		int perPage = MeshOptions.DEFAULT_PAGE_SIZE;
-		if (params != null) {
-			page = NumberUtils.toInt(params.get("page"), 1);
-			perPage = NumberUtils.toInt(params.get("perPage"), MeshOptions.DEFAULT_PAGE_SIZE);
-		}
-		if (page < 1) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));
-		}
-		if (perPage <= 0) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_invalid_paging_parameters"));
-		}
-		return new PagingInfo(page, perPage);
-	}
-
-	public static <T extends RestModel> void transformAndResponde(RoutingContext rc, GenericVertex<T> node) {
-		node.transformToRest(rc, th -> {
-			if (hasSucceeded(rc, th)) {
-				send(rc, toJson(th.result()));
+	public static <T extends RestModel> void transformAndResponde(ActionContext ac, GenericVertex<T> node) {
+		node.transformToRest(ac, th -> {
+			if (hasSucceeded(ac, th)) {
+				ac.send(toJson(th.result()));
 			}
 		});
 	}
 
-	public static void responde(RoutingContext rc, String i18nKey, String... parameters) {
-		I18NService i18n = I18NService.getI18n();
+	public static void responde(ActionContext ac, String i18nKey, String... parameters) {
 		GenericMessageResponse msg = new GenericMessageResponse();
-		msg.setMessage(i18n.get(rc, i18nKey, parameters));
-		send(rc, toJson(msg));
+		msg.setMessage(ac.i18n(i18nKey, parameters));
+		ac.send(toJson(msg));
 	}
 
-	public static void send(RoutingContext rc, String body) {
-		rc.response().putHeader("content-type", AbstractWebVerticle.APPLICATION_JSON);
-		// TODO use 201 for created entities
-		rc.response().setStatusCode(200).end(body);
-	}
+//	/**
+//	 * Calls the rc.fail method and sets a http 400 error with the additional response information.
+//	 * 
+//	 * @param rc
+//	 * @param msg
+//	 * @param parameters
+//	 */
+//	public static void fail(ActionContext ac, String msg, String... parameters) {
+//		I18NService i18n = I18NService.getI18n();
+//		ac.fail(BAD_REQUEST, msg, parameters);
+//	}
 
-	/**
-	 * Calls the rc.fail method and sets a http 400 error with the additional response information.
-	 * 
-	 * @param rc
-	 * @param msg
-	 * @param parameters
-	 */
-	public static void fail(RoutingContext rc, String msg, String... parameters) {
-		I18NService i18n = I18NService.getI18n();
-		rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, msg, parameters)));
-	}
-
-	public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		root.create(rc, rh -> {
-			if (hasSucceeded(rc, rh)) {
+		root.create(ac, rh -> {
+			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
 				try (Trx txi = db.trx()) {
 					vertex.reload();
-					transformAndResponde(rc, vertex);
+					transformAndResponde(ac, vertex);
 				}
 			}
 		});
 	}
 
-	// public static <T extends GenericVertex<?>> void createObject(RoutingContext rc, RootVertex<T> root) {
+	// public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
 	// final int RETRY_COUNT = 15;
 	//// Mesh.vertx().executeBlocking(bc -> {
 	// AtomicBoolean hasFinished = new AtomicBoolean(false);
@@ -346,19 +206,19 @@ public class VerticleHelper {
 	//
 	// }
 
-	public static <T extends GenericVertex<?>> void updateObject(RoutingContext rc, String uuidParameterName, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> void updateObject(ActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		loadObject(rc, uuidParameterName, UPDATE_PERM, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
+		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
+			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				vertex.update(rc, rh2 -> {
+				vertex.update(ac, rh2 -> {
 					if (rh2.failed()) {
-						rc.fail(rh2.cause());
+						ac.fail(rh2.cause());
 					} else {
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
 						try (Trx txi = db.trx()) {
 							vertex.reload();
-							transformAndResponde(rc, vertex);
+							transformAndResponde(ac, vertex);
 						}
 					}
 				});
@@ -366,13 +226,13 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(RoutingContext rc, String uuidParameterName, String i18nMessageKey,
+	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(ActionContext ac, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		loadObject(rc, uuidParameterName, DELETE_PERM, root, rh -> {
-			if (hasSucceeded(rc, rh)) {
+		loadObject(ac, uuidParameterName, DELETE_PERM, root, rh -> {
+			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				String uuid = vertex.getUuid();
 				String name = null;
@@ -384,21 +244,20 @@ public class VerticleHelper {
 					tx.success();
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
-				send(rc, toJson(new GenericMessageResponse(i18n.get(rc, i18nMessageKey, id))));
+				ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
 			}
 		});
 	}
 
-	public static <T extends GenericVertex<?>> void loadObject(RoutingContext rc, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
+	public static <T extends GenericVertex<?>> void loadObject(ActionContext ac, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 
-		I18NService i18n = I18NService.getI18n();
-		String uuid = rc.request().params().get(uuidParameterName);
+		String uuid = ac.getParameter(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
 			handler.handle(Future
-					.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_request_parameter_missing", uuidParameterName))));
+					.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_request_parameter_missing", uuidParameterName))));
 		} else {
-			loadObjectByUuid(rc, uuid, perm, root, handler);
+			loadObjectByUuid(ac, uuid, perm, root, handler);
 		}
 	}
 
@@ -406,50 +265,50 @@ public class VerticleHelper {
 	 * Return the object with the given uuid if found within the specified root vertex. This method will not return null. Instead a
 	 * {@link HttpStatusCodeErrorException} will be thrown when the object could not be found.
 	 * 
-	 * @param rc
+	 * @param ac
 	 * @param uuid
 	 * @param perm
 	 * @param root
 	 * @return
 	 */
-	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(ActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root) {
 		I18NService i18n = I18NService.getI18n();
 		if (root == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_root_node_not_found"));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {
 
 			T object = root.findByUuidBlocking(uuid);
 			if (object == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid));
+				throw new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid));
 			} else {
-				MeshAuthUser requestUser = getUser(rc);
+				MeshAuthUser requestUser = ac.getUser();
 				if (requestUser.hasPermission(object, perm)) {
 					return object;
 				} else {
-					throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", object.getUuid()));
+					throw new InvalidPermissionException(ac.i18n("error_missing_perm", object.getUuid()));
 				}
 
 			}
 		}
 	}
 
-	public static <T extends GenericVertex<?>> void loadObjectByUuid(RoutingContext rc, String uuid, GraphPermission perm, RootVertex<T> root,
+	public static <T extends GenericVertex<?>> void loadObjectByUuid(ActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		if (root == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_root_node_not_found"));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {
-//			try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-//				root.reload();
-//				User user = getUser(rc);
-//				user.reload();
-//				T element = root.findByUuidBlocking(uuid);
-//				if (user.hasPermission(element, perm)) {
-//					System.out.println("JOW" + element.getUuid());
-//				} else {
-//					System.out.println("NÖ" + element.getUuid());
-//				}
-//			}
+			//			try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+			//				root.reload();
+			//				User user = getUser(rc);
+			//				user.reload();
+			//				T element = root.findByUuidBlocking(uuid);
+			//				if (user.hasPermission(element, perm)) {
+			//					System.out.println("JOW" + element.getUuid());
+			//				} else {
+			//					System.out.println("NÖ" + element.getUuid());
+			//				}
+			//			}
 			root.findByUuid(uuid, rh -> {
 				try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
 					if (rh.failed()) {
@@ -457,14 +316,13 @@ public class VerticleHelper {
 					} else {
 						T node = rh.result();
 						if (node == null) {
-							handler.handle(Future.failedFuture(new EntityNotFoundException(i18n.get(rc, "object_not_found_for_uuid", uuid))));
+							handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
 						} else {
-							MeshAuthUser requestUser = getUser(rc);
+							MeshAuthUser requestUser = ac.getUser();
 							if (requestUser.hasPermission(node, perm)) {
 								handler.handle(Future.succeededFuture(node));
 							} else {
-								handler.handle(
-										Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", node.getUuid()))));
+								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
 							}
 						}
 					}
@@ -473,9 +331,9 @@ public class VerticleHelper {
 		}
 	}
 
-	public static boolean hasSucceeded(RoutingContext rc, AsyncResult<?> result) {
+	public static boolean hasSucceeded(ActionContext ac, AsyncResult<?> result) {
 		if (result.failed()) {
-			rc.fail(result.cause());
+			ac.fail(result.cause());
 			return false;
 		}
 		return true;

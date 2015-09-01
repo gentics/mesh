@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getProjectName;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -31,12 +29,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -46,8 +44,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
-
 public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
@@ -122,11 +118,11 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public TagFamily transformToRest(RoutingContext rc, Handler<AsyncResult<TagFamilyResponse>> handler) {
+	public TagFamily transformToRest(ActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
 		TagFamilyResponse response = new TagFamilyResponse();
 		response.setName(getName());
 
-		fillRest(response, rc);
+		fillRest(response, ac);
 		handler.handle(Future.succeededFuture(response));
 		return this;
 	}
@@ -146,22 +142,23 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
-		TagFamilyUpdateRequest requestModel = fromJson(rc, TagFamilyUpdateRequest.class);
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		I18NService i18n = I18NService.getI18n();
-		Project project = BootstrapInitializer.getBoot().projectRoot().findByName(getProjectName(rc));
+		//Project project = BootstrapInitializer.getBoot().projectRoot().findByName(ac.getProjectName());
+		Project project = ac.getProject();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set")));
+			ac.fail(BAD_REQUEST, "tagfamily_name_not_set");
 		} else {
-			loadObject(rc, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
+			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
 					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", newName)));
+						ac.fail(CONFLICT, "tagfamily_conflicting_name", newName);
 						return;
 					}
 					SearchQueueBatch batch;

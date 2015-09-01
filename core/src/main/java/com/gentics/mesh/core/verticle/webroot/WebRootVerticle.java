@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,7 +43,7 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 	private void addPathHandler() {
 
 		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			handler.handleGetPath(rc);
+			handler.handleGetPath(ActionContext.create(rc));
 		});
 
 	}

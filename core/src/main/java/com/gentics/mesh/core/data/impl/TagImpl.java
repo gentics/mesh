@@ -8,9 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.fail;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -30,7 +28,6 @@ import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -39,6 +36,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -48,7 +46,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag, IndexedVertex {
 
@@ -97,10 +94,10 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public Tag transformToRest(RoutingContext rc, Handler<AsyncResult<TagResponse>> resultHandler) {
+	public Tag transformToRest(ActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 		TagResponse restTag = new TagResponse();
 
-		restTag.setPermissions(getUser(rc).getPermissionNames(this));
+		restTag.setPermissions(ac.getUser().getPermissionNames(this));
 		restTag.setUuid(getUuid());
 
 		TagFamily tagFamily = getTagFamily();
@@ -167,12 +164,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
-		I18NService i18n = I18NService.getI18n();
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		SearchQueueBatch batch = null;
-		TagUpdateRequest requestModel = fromJson(rc, TagUpdateRequest.class);
+		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
 		try (Trx txUpdate = db.trx()) {
 			boolean updateTagFamily = false;
@@ -187,7 +183,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
-				fail(rc, "tag_name_not_set");
+				ac.fail(BAD_REQUEST,"tag_name_not_set");
 				txUpdate.failure();
 				return;
 			} else {
@@ -195,11 +191,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-							i18n.get(rc, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName()))));
+							ac.i18n("tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName()))));
 					txUpdate.failure();
 					return;
 				}
-				setEditor(getUser(rc));
+				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				setName(requestModel.getFields().getName());
 				if (updateTagFamily) {

@@ -3,16 +3,12 @@ package com.gentics.mesh.core.verticle.tag;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
-import static com.gentics.mesh.util.VerticleHelper.fail;
-import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
-import static com.gentics.mesh.util.VerticleHelper.getProject;
-import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.springframework.stereotype.Component;
 
@@ -24,63 +20,61 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.Trx;
-
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 @Component
 public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(RoutingContext rc) {
+	public void handleCreate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			createObject(rc, boot.tagRoot());
+			createObject(ac, boot.tagRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(RoutingContext rc) {
+	public void handleDelete(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			deleteObject(rc, "uuid", "tag_deleted", getProject(rc).getTagRoot());
+			deleteObject(ac, "uuid", "tag_deleted", ac.getProject().getTagRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(RoutingContext rc) {
+	public void handleUpdate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			Project project = getProject(rc);
-			updateObject(rc, "uuid", project.getTagRoot());
+			updateObject(ac, "uuid", ac.getProject().getTagRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(RoutingContext rc) {
+	public void handleRead(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			Project project = getProject(rc);
-			loadTransformAndResponde(rc, "uuid", READ_PERM, project.getTagRoot());
+			Project project = ac.getProject();
+			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getTagRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(RoutingContext rc) {
+	public void handleReadList(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			Project project = getProject(rc);
-			loadTransformAndResponde(rc, project.getTagRoot(), new TagListResponse());
+			Project project = ac.getProject();
+			loadTransformAndResponde(ac, project.getTagRoot(), new TagListResponse());
 		}
 	}
 
-	public void handleTaggedNodesList(RoutingContext rc) {
+	public void handleTaggedNodesList(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			Project project = getProject(rc);
-			loadObject(rc, "uuid", READ_PERM, project.getTagRoot(), rh -> {
-				if (hasSucceeded(rc, rh)) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", READ_PERM, project.getTagRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
 					Tag tag = rh.result();
 					Page<? extends Node> page;
 					try {
-						page = tag.findTaggedNodes(getUser(rc), getSelectedLanguageTags(rc), getPagingInfo(rc));
-						transformAndResponde(rc, page, new NodeListResponse());
+						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingInfo());
+						transformAndResponde(ac, page, new NodeListResponse());
 					} catch (Exception e) {
 						//TODO i18n - exception handling
-						fail(rc, "Could not load nodes");
+						ac.fail(BAD_REQUEST, "Could not load nodes");
 					}
 				}
 			});

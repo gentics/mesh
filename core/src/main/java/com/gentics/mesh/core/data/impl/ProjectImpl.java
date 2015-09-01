@@ -7,8 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.List;
@@ -34,20 +32,18 @@ import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implements Project {
 
@@ -137,11 +133,11 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public Project transformToRest(RoutingContext rc, Handler<AsyncResult<ProjectResponse>> handler) {
+	public Project transformToRest(ActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
 		ProjectResponse projectResponse = new ProjectResponse();
 		projectResponse.setName(getName());
 		projectResponse.setRootNodeUuid(getBaseNode().getUuid());
-		fillRest(projectResponse, rc);
+		fillRest(projectResponse, ac);
 		handler.handle(Future.succeededFuture(projectResponse));
 		return this;
 	}
@@ -183,24 +179,23 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		ProjectUpdateRequest requestModel = fromJson(rc, ProjectUpdateRequest.class);
+		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		SearchQueueBatch batch;
 		try (Trx txUpdate = db.trx()) {
-			I18NService i18n = I18NService.getI18n();
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "project_conflicting_name")));
+					ac.fail(CONFLICT, "project_conflicting_name");
 					txUpdate.failure();
 					return;
 				}
 				setName(requestModel.getName());
 			}
 
-			setEditor(getUser(rc));
+			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();

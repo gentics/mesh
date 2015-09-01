@@ -9,11 +9,11 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -64,10 +64,10 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	/**
 	 * Create a new object within this aggregation vertex.
 	 * 
-	 * @param rc
+	 * @param ac
 	 * @param handler
 	 */
-	void create(RoutingContext rc, Handler<AsyncResult<T>> handler);
+	void create(ActionContext rc, Handler<AsyncResult<T>> handler);
 
 	T findByUuidBlocking(String uuid);
 

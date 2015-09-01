@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.Future;
@@ -80,7 +81,7 @@ public interface Node extends GenericVertex<NodeResponse> {
 
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
-	Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException;
+	Page<? extends Tag> getTags(ActionContext ac) throws InvalidArgumentException;
 
 	void createLink(Node node);
 
@@ -175,12 +176,12 @@ public interface Node extends GenericVertex<NodeResponse> {
 	/**
 	 * Returns the i18n display name for the node.
 	 * 
-	 * @param rc
+	 * @param ac
 	 * @return
 	 */
-	String getDisplayName(RoutingContext rc);
+	String getDisplayName(ActionContext ac);
 
-	NodeGraphFieldContainer findNextMatchingFieldContainer(RoutingContext rc);
+	NodeGraphFieldContainer findNextMatchingFieldContainer(ActionContext ac);
 
 	String getFilePath();
 

@@ -1,9 +1,5 @@
 package com.gentics.mesh.core.data.service;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,10 +10,14 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.error.EntityNotFoundException;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.path.Path;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public class WebRootService {
@@ -30,7 +30,7 @@ public class WebRootService {
 	@Autowired
 	private I18NService i18n;
 
-	public Path findByProjectPath(RoutingContext rc, String projectName, String path) {
+	public Path findByProjectPath(ActionContext ac, String projectName, String path) {
 		String parts[] = path.split("/");
 		Project project = boot.projectRoot().findByName(projectName);
 
@@ -50,7 +50,7 @@ public class WebRootService {
 			if (nextNode != null) {
 				currentVertex = nextNode;
 			} else {
-				String message = i18n.get(rc, "node_not_found_for_path", path);
+				String message = ac.i18n("node_not_found_for_path", path);
 				throw new EntityNotFoundException(message);
 			}
 		}

@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -39,40 +40,40 @@ public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addReadTagsHandler() {
 		Route route = route("/:tagFamilyUuid/tags").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleReadTagList(rc);
+			crudHandler.handleReadTagList(ActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
 		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			crudHandler.handleDelete(rc);
+			crudHandler.handleDelete(ActionContext.create(rc));
 		});
 	}
 
 	private void addReadHandler() {
 		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		readRoute.handler(rc -> {
-			crudHandler.handleRead(rc);
+			crudHandler.handleRead(ActionContext.create(rc));
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			crudHandler.handleReadList(rc);
+			crudHandler.handleReadList(ActionContext.create(rc));
 		});
 	}
 
 	private void addCreateHandler() {
 		Route createRoute = route().method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createRoute.handler(rc -> {
-			crudHandler.handleCreate(rc);
+			crudHandler.handleCreate(ActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandler() {
 		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		updateRoute.handler(rc -> {
-			crudHandler.handleUpdate(rc);
+			crudHandler.handleUpdate(ActionContext.create(rc));
 		});
 	}
 }

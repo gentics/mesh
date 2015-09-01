@@ -1,17 +1,17 @@
 package com.gentics.mesh.core.verticle.handler;
 
-import io.vertx.ext.web.RoutingContext;
+import com.gentics.mesh.handler.ActionContext;
 
 public abstract class AbstractCrudHandler extends AbstractHandler{
 
-	abstract public void handleCreate(RoutingContext rc);
+	abstract public void handleCreate(ActionContext ac);
 
-	abstract public void handleDelete(RoutingContext rc);
+	abstract public void handleDelete(ActionContext ac);
 
-	abstract public void handleUpdate(RoutingContext rc);
+	abstract public void handleUpdate(ActionContext ac);
 
-	abstract public void handleRead(RoutingContext rc);
+	abstract public void handleRead(ActionContext ac);
 
-	abstract public void handleReadList(RoutingContext rc);
+	abstract public void handleReadList(ActionContext ac);
 
 }

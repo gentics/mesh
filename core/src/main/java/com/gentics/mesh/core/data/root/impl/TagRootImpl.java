@@ -4,9 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getProject;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -30,14 +27,13 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
@@ -82,29 +78,29 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<Tag>> handler) {
+	public void create(ActionContext ac, Handler<AsyncResult<Tag>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		try (Trx tx = db.trx()) {
 
-			Project project = getProject(rc);
-			TagCreateRequest requestModel = fromJson(rc, TagCreateRequest.class);
+			Project project = ac.getProject();
+			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 			String tagName = requestModel.getFields().getName();
 			if (StringUtils.isEmpty(tagName)) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_name_not_set"))));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_name_not_set"))));
 				return;
 			}
 
 			TagFamilyReference reference = requestModel.getTagFamilyReference();
 			if (reference == null) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_not_set"))));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set"))));
 				return;
 			}
 			boolean hasName = !isEmpty(reference.getName());
 			boolean hasUuid = !isEmpty(reference.getUuid());
 			if (!hasUuid && !hasName) {
-				handler.handle(Future
-						.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tag_tagfamily_reference_uuid_or_name_missing"))));
+				handler.handle(
+						Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing"))));
 				return;
 			}
 
@@ -119,17 +115,17 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				tagFamily = project.getTagFamilyRoot().findByName(reference.getName());
 			}
 			if (tagFamily == null) {
-				throw new EntityNotFoundException(i18n.get(rc, "tagfamily_not_found", nameOrUuid));
+				throw new EntityNotFoundException(ac.i18n("tagfamily_not_found", nameOrUuid));
 			}
 
-			MeshAuthUser requestUser = getUser(rc);
+			MeshAuthUser requestUser = ac.getUser();
 			if (!requestUser.hasPermission(tagFamily, CREATE_PERM)) {
-				throw new InvalidPermissionException(i18n.get(rc, "error_missing_perm", tagFamily.getUuid()));
+				throw new InvalidPermissionException(ac.i18n("error_missing_perm", tagFamily.getUuid()));
 			}
 
 			if (tagFamily.findTagByName(tagName) != null) {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-						i18n.get(rc, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
+						ac.i18n("tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
 				return;
 			}
 			Tag newTag;
@@ -140,7 +136,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				project.reload();
 
 				newTag = tagFamily.create(requestModel.getFields().getName(), project, requestUser);
-				getUser(rc).addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
 				project.getTagRoot().addTag(newTag);
 

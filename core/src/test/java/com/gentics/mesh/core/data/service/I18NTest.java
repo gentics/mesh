@@ -8,7 +8,7 @@ import java.util.MissingResourceException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.handler.impl.AbstractActionContext;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class I18NTest extends AbstractDBTest {
@@ -55,11 +55,11 @@ public class I18NTest extends AbstractDBTest {
 
 	@Test
 	public void testLocaleFromHeader() {
-		Locale locale = new I18NService().getLocale("da, en-gb;q=0.8, en;q=0.7, de;q=0.81");
+		Locale locale = AbstractActionContext.getLocale("da, en-gb;q=0.8, en;q=0.7, de;q=0.81");
 		assertEquals("de", locale.getLanguage());
-		locale = new I18NService().getLocale("da, en-gb;q=0.9, en;q=0.7, de;q=0.81");
+		locale = AbstractActionContext.getLocale("da, en-gb;q=0.9, en;q=0.7, de;q=0.81");
 		assertEquals("en", locale.getLanguage());
-		locale = new I18NService().getLocale("de, en-gb;q=0.9, en;q=0.7, de;q=0.81");
+		locale = AbstractActionContext.getLocale("de, en-gb;q=0.9, en;q=0.7, de;q=0.81");
 		assertEquals("de", locale.getLanguage());
 	}
 }

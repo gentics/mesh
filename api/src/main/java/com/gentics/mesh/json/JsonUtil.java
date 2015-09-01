@@ -2,7 +2,6 @@ package com.gentics.mesh.json;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import io.vertx.ext.web.RoutingContext;
 
 import java.io.IOException;
 
@@ -142,17 +141,6 @@ public final class JsonUtil {
 		return (T) schemaMapper.readValue(json, classOfT);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T fromJson(RoutingContext rc, Class<?> classOfT) throws HttpStatusCodeErrorException {
-		try {
-			String body = rc.getBodyAsString();
-			return (T) defaultMapper.readValue(body, classOfT);
-		} catch (Exception e) {
-			// throw new HttpStatusCodeErrorException(400, new I18NService().get(rc, "error_parse_request_json_error"), e);
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Error while parsing json.", e);
-		}
-
-	}
 
 	public static String writeNodeJson(NodeResponse response) {
 		try {

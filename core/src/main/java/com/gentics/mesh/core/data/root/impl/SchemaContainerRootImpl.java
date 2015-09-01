@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +19,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -27,7 +27,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>implements SchemaContainerRoot {
 
@@ -94,16 +93,16 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<SchemaContainer>> handler) {
-		MeshAuthUser requestUser = getUser(rc);
+	public void create(ActionContext ac, Handler<AsyncResult<SchemaContainer>> handler) {
+		MeshAuthUser requestUser = ac.getUser();
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		SchemaCreateRequest schema;
 		try {
-			schema = JsonUtil.readSchema(rc.getBodyAsString(), SchemaCreateRequest.class);
+			schema = JsonUtil.readSchema(ac.getBodyAsString(), SchemaCreateRequest.class);
 			if (StringUtils.isEmpty(schema.getName())) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "schema_missing_name"))));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_name"))));
 				return;
 			}
 			if (requestUser.hasPermission(this, CREATE_PERM)) {

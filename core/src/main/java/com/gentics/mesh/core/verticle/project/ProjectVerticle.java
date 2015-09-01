@@ -4,14 +4,17 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
-import io.vertx.ext.web.Route;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.handler.ActionContext;
+
+import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
@@ -37,7 +40,7 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleUpdate(rc);
+			crudHandler.handleUpdate(ActionContext.create(rc));
 		});
 	}
 
@@ -46,23 +49,28 @@ public class ProjectVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleCreate(rc);
+			crudHandler.handleCreate(ActionContext.create(rc));
 		});
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRead(rc);
+			String uuid = rc.request().params().get("uuid");
+			if (StringUtils.isEmpty(uuid)) {
+				rc.next();
+			} else {
+				crudHandler.handleRead(ActionContext.create(rc));
+			}
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleReadList(rc);
+			crudHandler.handleReadList(ActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleDelete(rc);
+			crudHandler.handleDelete(ActionContext.create(rc));
 		});
 	}
 }

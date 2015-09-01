@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
 
@@ -66,6 +66,6 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void setCreationTimestamp(long timestamp);
 
-	void update(RoutingContext rc,  Handler<AsyncResult<Void>> handler);
+	void update(ActionContext ac,  Handler<AsyncResult<Void>> handler);
 
 }

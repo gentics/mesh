@@ -1,7 +1,6 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -51,7 +51,8 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
-			MeshAuthUser requestUser = getUser(rc);
+			ActionContext ac = ActionContext.create(rc);
+			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 19));
 
 			assertEquals(groups().size(), page.getTotalElements());
@@ -115,7 +116,8 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 			CountDownLatch latch = new CountDownLatch(1);
 			RoutingContext rc = getMockedRoutingContext("");
-			group().transformToRest(rc, rh -> {
+			ActionContext ac = ActionContext.create(rc);
+			group().transformToRest(ac, rh -> {
 				GroupResponse response = rh.result();
 				assertNotNull(response);
 				assertEquals(group().getUuid(), response.getUuid());

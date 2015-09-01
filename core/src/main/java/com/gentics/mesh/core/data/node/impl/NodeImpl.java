@@ -6,10 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.core.data.service.I18NService.getI18n;
-import static com.gentics.mesh.util.VerticleHelper.getPagingInfo;
-import static com.gentics.mesh.util.VerticleHelper.getSelectedLanguageTags;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
@@ -60,6 +56,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -72,7 +69,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements Node {
 
@@ -194,12 +190,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public Node transformToRest(RoutingContext rc, Handler<AsyncResult<NodeResponse>> handler) {
+	public Node transformToRest(ActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 
-		List<String> fieldToExpand = VerticleHelper.getExpandedFieldnames(rc);
+		List<String> fieldToExpand = ac.getExpandedFieldnames();
 
 		NodeResponse restNode = new NodeResponse();
-		fillRest(restNode, rc);
+		fillRest(restNode, ac);
 
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
@@ -224,7 +220,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			if (getParentNode() != null) {
 				NodeReference parentNodeReference = new NodeReference();
 				parentNodeReference.setUuid(getParentNode().getUuid());
-				parentNodeReference.setDisplayName(getParentNode().getDisplayName(rc));
+				parentNodeReference.setDisplayName(getParentNode().getDisplayName(ac));
 				restNode.setParentNode(parentNodeReference);
 			}
 
@@ -241,7 +237,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				restNode.setChildren(children);
 			}
 
-			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(rc);
+			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
 
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
 			if (schema.isBinary()) {
@@ -261,7 +257,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			if (fieldContainer == null) {
-				List<String> languageTags = getSelectedLanguageTags(rc);
+				List<String> languageTags = ac.getSelectedLanguageTags();
 				String langInfo = getLanguageInfo(languageTags);
 				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 						+ langInfo + "}. Fields will be empty.");
@@ -270,7 +266,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					boolean expandField = fieldToExpand.contains(fieldEntry.getName());
-					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(rc, fieldEntry.getName(), fieldEntry,
+					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry,
 							expandField);
 					if (fieldEntry.isRequired() && restField == null) {
 						/* TODO i18n */
@@ -286,7 +282,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			// try {
-			for (Tag tag : getTags(rc)) {
+			for (Tag tag : getTags(ac)) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
 				String tagFamilyUuid = tagFamily.getUuid();
@@ -315,13 +311,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findNextMatchingFieldContainer(RoutingContext rc) {
+	public NodeGraphFieldContainer findNextMatchingFieldContainer(ActionContext ac) {
 		NodeGraphFieldContainer fieldContainer = null;
-		List<String> languageTags = getSelectedLanguageTags(rc);
+		List<String> languageTags = ac.getSelectedLanguageTags();
 		for (String languageTag : languageTags) {
 			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
-				throw new HttpStatusCodeErrorException(BAD_REQUEST, getI18n().get(rc, "error_language_not_found", languageTag));
+				throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", languageTag));
 			}
 			fieldContainer = getFieldContainer(language);
 			// We found a container for one of the languages
@@ -448,11 +444,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(RoutingContext rc) throws InvalidArgumentException {
+	public Page<? extends Tag> getTags(ActionContext ac) throws InvalidArgumentException {
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, getPagingInfo(rc), TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal,ac.getPagingInfo(), TagImpl.class);
 	}
 
 	@Override
@@ -485,10 +481,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public String getDisplayName(RoutingContext rc) {
+	public String getDisplayName(ActionContext ac) {
 		String displayFieldName = null;
 		try {
-			GraphFieldContainer container = findNextMatchingFieldContainer(rc);
+			GraphFieldContainer container = findNextMatchingFieldContainer(ac);
 			if (container == null) {
 				log.error("Could not find any matching i18n field container for node {" + getUuid() + "}.");
 			} else {
@@ -513,35 +509,35 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		I18NService i18n = I18NService.getI18n();
 
 		SearchQueueBatch batch;
 		try {
-			NodeUpdateRequest requestModel = JsonUtil.readNode(rc.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_set")));
+				ac.fail(BAD_REQUEST, "error_language_not_set");
 				return;
 			}
 			try (Trx txUpdate = db.trx()) {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_language_not_found", requestModel.getLanguage())));
+					ac.fail(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 					return;
 				}
 
 				/* TODO handle other fields, etc. */
 				setPublished(requestModel.isPublished());
-				setEditor(getUser(rc));
+				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				NodeGraphFieldContainer container = getOrCreateFieldContainer(language);
 				try {
 					Schema schema = getSchema();
-					container.setFieldFromRest(rc, requestModel.getFields(), schema);
+					container.setFieldFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e.getMessage()));
+					ac.fail(BAD_REQUEST, e.getMessage());
 					txUpdate.failure();
 				}
 				batch = addIndexBatch(UPDATE_ACTION);
@@ -549,12 +545,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 			batch.process(handler);
 		} catch (IOException e1) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, e1.getMessage(), e1));
+			log.error(e1);
+			//TODO handle e1 within fail
+			ac.fail(BAD_REQUEST, e1.getMessage());
 		}
 	}
 
 	@Override
 	public void addUpdateEntries(SearchQueueBatch batch) {
-//		batch.addEntry(getParentNode(), UPDATE_ACTION);
+		//		batch.addEntry(getParentNode(), UPDATE_ACTION);
 	}
 }

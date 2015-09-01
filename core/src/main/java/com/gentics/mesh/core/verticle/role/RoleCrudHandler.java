@@ -4,16 +4,14 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
-import static com.gentics.mesh.util.VerticleHelper.fail;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.send;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +29,7 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,66 +41,66 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
 
 	@Override
-	public void handleCreate(RoutingContext rc) {
+	public void handleCreate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			createObject(rc, boot.roleRoot());
+			createObject(ac, boot.roleRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(RoutingContext rc) {
+	public void handleDelete(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			deleteObject(rc, "uuid", "role_deleted", boot.roleRoot());
+			deleteObject(ac, "uuid", "role_deleted", boot.roleRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(RoutingContext rc) {
-//		Mesh.vertx().executeBlocking(bc -> {
-			try (Trx tx = db.trx()) {
-				loadTransformAndResponde(rc, "uuid", READ_PERM, boot.roleRoot());
-			}
-//		} , false, rh -> {
-//			if (rh.failed()) {
-//				rc.fail(rh.cause());
-//			}
-//		});
+	public void handleRead(ActionContext ac) {
+		//		Mesh.vertx().executeBlocking(bc -> {
+		try (Trx tx = db.trx()) {
+			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot());
+		}
+		//		} , false, rh -> {
+		//			if (rh.failed()) {
+		//				rc.fail(rh.cause());
+		//			}
+		//		});
 	}
 
 	@Override
-	public void handleUpdate(RoutingContext rc) {
+	public void handleUpdate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			updateObject(rc, "uuid", boot.roleRoot());
+			updateObject(ac, "uuid", boot.roleRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(RoutingContext rc) {
+	public void handleReadList(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			loadTransformAndResponde(rc, boot.roleRoot(), new RoleListResponse());
+			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse());
 		}
 	}
 
-	public void handlePermissionUpdate(RoutingContext rc) {
+	public void handlePermissionUpdate(ActionContext ac) {
 		try (Trx tx = db.trx()) {
-			String roleUuid = rc.request().getParam("param0");
-			String pathToElement = rc.request().params().get("param1");
+			String roleUuid = ac.getParameter("param0");
+			String pathToElement = ac.getParameter("param1");
 			if (StringUtils.isEmpty(roleUuid)) {
-				fail(rc, "error_uuid_must_be_specified");
+				ac.fail(BAD_REQUEST, "error_uuid_must_be_specified");
 			} else if (StringUtils.isEmpty(pathToElement)) {
-				fail(rc, "role_permission_path_missing");
+				ac.fail(BAD_REQUEST, "role_permission_path_missing");
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 				// 1. Load the role that should be used
-				loadObjectByUuid(rc, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
-					if (hasSucceeded(rc, rh)) {
+				loadObjectByUuid(ac, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
+					if (hasSucceeded(ac, rh)) {
 						Role role = rh.result();
-						RolePermissionRequest requestModel = fromJson(rc, RolePermissionRequest.class);
+						RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 						//2. Resolve the path to element that is targeted
 						MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
-							if (hasSucceeded(rc, vertex)) {
+							if (hasSucceeded(ac, vertex)) {
 								MeshVertex targetElement = vertex.result();
 
 								// Prepare the sets for revoke and grant actions
@@ -116,7 +115,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 										GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
 										if (permission == null) {
 											txUpdate.failure();
-											fail(rc, "role_error_permission_name_unknown", permName);
+											ac.fail(BAD_REQUEST, "role_error_permission_name_unknown", permName);
 										}
 										if (log.isDebugEnabled()) {
 											log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
@@ -138,7 +137,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 											permissionsToRevoke);
 									txUpdate.success();
 								}
-								send(rc, toJson(new GenericMessageResponse(i18n.get(rc, "role_updated_permission", role.getName()))));
+								ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))));
 							}
 						});
 

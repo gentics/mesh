@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -30,6 +29,7 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -111,9 +111,9 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	}
 
-	public Group transformToRest(RoutingContext rc, Handler<AsyncResult<GroupResponse>> handler) {
+	public Group transformToRest(ActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
 		GroupResponse restGroup = new GroupResponse();
-		fillRest(restGroup, rc);
+		fillRest(restGroup, ac);
 		restGroup.setName(getName());
 
 		// for (User user : group.getUsers()) {
@@ -149,23 +149,23 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		I18NService i18n = I18NService.getI18n();
 		try (Trx tx = db.trx()) {
 
-			GroupUpdateRequest requestModel = fromJson(rc, GroupUpdateRequest.class);
+			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "error_name_must_be_set")));
+				ac.fail(BAD_REQUEST, "error_name_must_be_set");
 				return;
 			}
 
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "group_conflicting_name")));
+					ac.fail(CONFLICT, "group_conflicting_name");
 					return;
 				}
 				SearchQueueBatch batch;

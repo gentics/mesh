@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -16,20 +14,19 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements TagFamilyRoot {
 
@@ -83,20 +80,19 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 	}
 
 	@Override
-	public void create(RoutingContext rc, Handler<AsyncResult<TagFamily>> handler) {
-		I18NService i18n = I18NService.getI18n();
+	public void create(ActionContext ac, Handler<AsyncResult<TagFamily>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		try (Trx tx = db.trx()) {
-			MeshAuthUser requestUser = getUser(rc);
-			TagFamilyCreateRequest requestModel = fromJson(rc, TagFamilyCreateRequest.class);
+			MeshAuthUser requestUser = ac.getUser();
+			TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 			String name = requestModel.getName();
 			if (StringUtils.isEmpty(name)) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "tagfamily_name_not_set"))));
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tagfamily_name_not_set"))));
 			} else {
 				if (findByName(name) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "tagfamily_conflicting_name", name))));
+					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("tagfamily_conflicting_name", name))));
 					return;
 				}
 
@@ -111,7 +107,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 					}
 					handler.handle(Future.succeededFuture(tagFamily));
 				} else {
-					handler.handle(Future.failedFuture(new InvalidPermissionException(i18n.get(rc, "error_missing_perm", this.getUuid()))));
+					handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
 				}
 			}
 		}

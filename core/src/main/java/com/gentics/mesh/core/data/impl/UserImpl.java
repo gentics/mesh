@@ -12,8 +12,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
-import static com.gentics.mesh.json.JsonUtil.fromJson;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -27,7 +25,6 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -39,7 +36,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -47,14 +43,13 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
 
@@ -213,9 +208,9 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public User transformToRest(RoutingContext rc, Handler<AsyncResult<UserResponse>> handler) {
+	public User transformToRest(ActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
 		UserResponse restUser = new UserResponse();
-		fillRest(restUser, rc);
+		fillRest(restUser, ac);
 		restUser.setUsername(getUsername());
 		restUser.setEmailAddress(getEmailAddress());
 		restUser.setFirstname(getFirstname());
@@ -295,15 +290,15 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void update(RoutingContext rc, Handler<AsyncResult<Void>> handler) {
+	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		UserUpdateRequest requestModel = fromJson(rc, UserUpdateRequest.class);
+		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		try (Trx txUpdate = db.trx()) {
 
 			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-					rc.fail(new HttpStatusCodeErrorException(CONFLICT, i18n.get(rc, "user_conflicting_username")));
+					ac.fail(CONFLICT, "user_conflicting_username");
 					return;
 				}
 				setUsername(requestModel.getUsername());
@@ -325,13 +320,13 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
 			}
 
-			setEditor(getUser(rc));
+			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			SearchQueueBatch batch = null;
 			if (requestModel.getNodeReference() != null) {
 				NodeReference reference = requestModel.getNodeReference();
 				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-					rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "user_incomplete_node_reference")));
+					ac.fail(BAD_REQUEST, "user_incomplete_node_reference");
 					return;
 				} else {
 					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
@@ -339,9 +334,9 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					/* TODO decide whether we need to check perms on the project as well */
 					Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 					if (project == null) {
-						rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, i18n.get(rc, "project_not_found", projectName)));
+						ac.fail(BAD_REQUEST, "project_not_found", projectName);
 					} else {
-						Node node = loadObjectByUuidBlocking(rc, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
 						setReferencedNode(node);
 						batch = addIndexBatch(UPDATE_ACTION);
 						txUpdate.success();
@@ -357,12 +352,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	public void addUpdateEntries(SearchQueueBatch batch) {
-//		for (GenericVertex<?> element : getCreatedElements()) {
-//			batch.addEntry(element, UPDATE_ACTION);
-//		}
-//		for (GenericVertex<?> element : getEditedElements()) {
-//			batch.addEntry(element, UPDATE_ACTION);
-//		}
+		//		for (GenericVertex<?> element : getCreatedElements()) {
+		//			batch.addEntry(element, UPDATE_ACTION);
+		//		}
+		//		for (GenericVertex<?> element : getEditedElements()) {
+		//			batch.addEntry(element, UPDATE_ACTION);
+		//		}
 	}
 
 }

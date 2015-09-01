@@ -1,7 +1,6 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.VerticleHelper.getUser;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -16,6 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractDBTest;
 
 import io.vertx.ext.web.RoutingContext;
@@ -33,7 +33,8 @@ public class AuthUserTest extends AbstractDBTest {
 	@Test
 	public void testAuthorization() throws InterruptedException {
 		RoutingContext rc = getMockedRoutingContext("");
-		MeshAuthUser requestUser = getUser(rc);
+		ActionContext ac = ActionContext.create(rc);
+		MeshAuthUser requestUser = ac.getUser();
 		Language targetNode = english();
 		final CountDownLatch latch = new CountDownLatch(1);
 		try (Trx tx = db.trx()) {

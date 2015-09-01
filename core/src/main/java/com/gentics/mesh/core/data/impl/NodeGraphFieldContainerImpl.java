@@ -67,11 +67,11 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
 
@@ -84,7 +84,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void setFieldFromRest(RoutingContext rc, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
+	public void setFieldFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -311,7 +311,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST,
-					I18NService.getI18n().get(rc, "node_unhandled_fields", schema.getName(), extraFields));
+					I18NService.getI18n().get(ac, "node_unhandled_fields", schema.getName(), extraFields));
 			// throw new MeshSchemaException("The following fields were not
 			// specified within the {" + schema.getName() + "} schema: " +
 			// extraFields);
@@ -339,7 +339,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Field getRestField(RoutingContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField) {
+	public Field getRestField(ActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		// TODO replace switch case
 		if (FieldTypes.STRING.equals(type)) {
@@ -392,7 +392,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// TODO don't use countdown latch here
 					CountDownLatch latch = new CountDownLatch(1);
 					AtomicReference<NodeResponse> reference = new AtomicReference<>();
-					graphNodeField.getNode().transformToRest(rc, rh -> {
+					graphNodeField.getNode().transformToRest(ac, rh -> {
 						reference.set(rh.result());
 						latch.countDown();
 					});
@@ -434,7 +434,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						// TODO, FIXME get rid of the countdown latch
 						CountDownLatch latch = new CountDownLatch(1);
 						AtomicReference<NodeResponse> reference = new AtomicReference<>();
-						item.getNode().transformToRest(rc, rh -> {
+						item.getNode().transformToRest(ac, rh -> {
 							reference.set(rh.result());
 							latch.countDown();
 						});
