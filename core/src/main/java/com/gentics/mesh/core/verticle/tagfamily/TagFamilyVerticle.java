@@ -18,12 +18,12 @@ import io.vertx.ext.web.Route;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ProjectTagFamilyVerticle extends AbstractProjectRestVerticle {
+public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private TagFamilyCrudHandler crudHandler;
 
-	public ProjectTagFamilyVerticle() {
+	public TagFamilyVerticle() {
 		super("tagFamilies");
 	}
 

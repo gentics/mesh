@@ -47,10 +47,10 @@ import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectTagVerticleTest extends AbstractBasicCrudVerticleTest {
+public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
-	private ProjectTagVerticle verticle;
+	private TagVerticle verticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {

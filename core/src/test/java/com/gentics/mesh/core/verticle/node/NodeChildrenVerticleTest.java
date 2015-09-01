@@ -26,10 +26,10 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
-public class ProjectNodeChildrenVerticleTest extends AbstractRestVerticleTest {
+public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	
 	@Override

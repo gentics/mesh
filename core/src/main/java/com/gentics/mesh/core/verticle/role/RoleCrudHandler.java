@@ -33,7 +33,6 @@ import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 @Component
 public class RoleCrudHandler extends AbstractCrudHandler {

@@ -58,12 +58,12 @@ import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
+public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
-	private static final Logger log = LoggerFactory.getLogger(ProjectNodeVerticleTest.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
 	@Autowired
-	private ProjectNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
@@ -161,7 +161,7 @@ public class ProjectNodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We created the node. A search queue entry should have been created.", 1, searchQueue.getSize());
+			assertEquals("We created the node. A search queue batch should have been created.", 1, searchQueue.getSize());
 			SearchQueueBatch batch = searchQueue.take();
 			assertEquals(1, batch.getEntries().size());
 			SearchQueueEntry entry = batch.getEntries().get(0);

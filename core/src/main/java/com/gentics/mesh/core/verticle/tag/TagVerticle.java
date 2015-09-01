@@ -26,14 +26,14 @@ import io.vertx.ext.web.Route;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ProjectTagVerticle extends AbstractProjectRestVerticle {
+public class TagVerticle extends AbstractProjectRestVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(ProjectTagVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(TagVerticle.class);
 
 	@Autowired
 	private TagCrudHandler crudHandler;
 
-	public ProjectTagVerticle() {
+	public TagVerticle() {
 		super("tags");
 	}
 

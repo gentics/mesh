@@ -36,10 +36,10 @@ import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
-public class ProjectNodeBinaryVerticleTest extends AbstractRestVerticleTest {
+public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	String uploads = "target/testuploads";
 

@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.ProjectNodeVerticle;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -27,7 +27,7 @@ import io.vertx.core.Future;
 public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {

@@ -23,10 +23,10 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectNodeMoveVerticleTest extends AbstractRestVerticleTest {
+public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectNodeVerticle verticle;
+	private NodeVerticle verticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {

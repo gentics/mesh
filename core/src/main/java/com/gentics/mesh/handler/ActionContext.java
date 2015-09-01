@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.handler.impl.VertxWebActionContextImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
 
@@ -49,6 +50,8 @@ public interface ActionContext {
 
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
+	AsyncResult<Project> failedFuture(HttpResponseStatus badRequest, String i18nKey, Throwable cause);
+
 	void fail(Throwable cause);
 
 	/**
@@ -73,5 +76,6 @@ public interface ActionContext {
 	Locale getLocale();
 
 	List<String> getExpandedFieldnames();
+
 
 }

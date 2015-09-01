@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -76,7 +75,6 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 	}
 
 	public void create(ActionContext ac, Handler<AsyncResult<Role>> handler) {
-		I18NService i18n = I18NService.getI18n();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 

@@ -38,7 +38,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticleTest.class);
 
-	@Autowired
 	private I18NService i18n;
 
 	protected Vertx vertx;

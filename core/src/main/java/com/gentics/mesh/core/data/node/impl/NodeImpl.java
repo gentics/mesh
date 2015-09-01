@@ -40,7 +40,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
@@ -60,7 +59,6 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
-import com.gentics.mesh.util.VerticleHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
@@ -511,8 +509,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		I18NService i18n = I18NService.getI18n();
-
 		SearchQueueBatch batch;
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());

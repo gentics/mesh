@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -98,7 +97,6 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	@Override
 	public void create(ActionContext ac, Handler<AsyncResult<User>> handler) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		UserCreateRequest requestModel = ac.fromJson(UserCreateRequest.class);

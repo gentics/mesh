@@ -41,16 +41,16 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.tagfamily.ProjectTagFamilyVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectTagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
+public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
-	private ProjectTagFamilyVerticle verticle;
+	private TagFamilyVerticle verticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {

@@ -14,9 +14,9 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
-import com.gentics.mesh.core.verticle.node.ProjectNodeVerticle;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.ProjectTagFamilyVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -27,10 +27,10 @@ public class CrossVerticleTest extends AbstractRestVerticleTest {
 	private ProjectVerticle projectVerticle;
 
 	@Autowired
-	private ProjectTagFamilyVerticle tagFamilyVerticle;
+	private TagFamilyVerticle tagFamilyVerticle;
 
 	@Autowired
-	private ProjectNodeVerticle nodeVerticle;
+	private NodeVerticle nodeVerticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {

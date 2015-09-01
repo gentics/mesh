@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -139,18 +138,6 @@ public class VerticleHelper {
 		ac.send(toJson(msg));
 	}
 
-//	/**
-//	 * Calls the rc.fail method and sets a http 400 error with the additional response information.
-//	 * 
-//	 * @param rc
-//	 * @param msg
-//	 * @param parameters
-//	 */
-//	public static void fail(ActionContext ac, String msg, String... parameters) {
-//		I18NService i18n = I18NService.getI18n();
-//		ac.fail(BAD_REQUEST, msg, parameters);
-//	}
-
 	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		root.create(ac, rh -> {
@@ -228,7 +215,6 @@ public class VerticleHelper {
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(ActionContext ac, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
-		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		loadObject(ac, uuidParameterName, DELETE_PERM, root, rh -> {
@@ -272,7 +258,6 @@ public class VerticleHelper {
 	 * @return
 	 */
 	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(ActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root) {
-		I18NService i18n = I18NService.getI18n();
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {
@@ -294,7 +279,6 @@ public class VerticleHelper {
 
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(ActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
-		I18NService i18n = I18NService.getI18n();
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {

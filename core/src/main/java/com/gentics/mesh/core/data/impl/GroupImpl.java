@@ -22,8 +22,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.I18NService;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -37,7 +35,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
 
 public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Group {
 
@@ -152,7 +149,6 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		I18NService i18n = I18NService.getI18n();
 		try (Trx tx = db.trx()) {
 
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);

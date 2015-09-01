@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -144,8 +143,6 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	@Override
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		I18NService i18n = I18NService.getI18n();
-		//Project project = BootstrapInitializer.getBoot().projectRoot().findByName(ac.getProjectName());
 		Project project = ac.getProject();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		String newName = requestModel.getName();

@@ -22,12 +22,12 @@ import io.vertx.ext.web.Route;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ProjectNodeVerticle extends AbstractProjectRestVerticle {
+public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private NodeCrudHandler crudHandler;
 
-	public ProjectNodeVerticle() {
+	public NodeVerticle() {
 		super("nodes");
 	}
 

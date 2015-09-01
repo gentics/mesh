@@ -17,10 +17,10 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class ProjectTagNodeVerticleTest extends AbstractRestVerticleTest {
+public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private ProjectTagVerticle verticle;
+	private TagVerticle verticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {

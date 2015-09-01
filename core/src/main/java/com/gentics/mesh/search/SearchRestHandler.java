@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -52,9 +51,6 @@ public class SearchRestHandler {
 
 	@Autowired
 	private Database db;
-
-	@Autowired
-	private I18NService i18n;
 
 	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)

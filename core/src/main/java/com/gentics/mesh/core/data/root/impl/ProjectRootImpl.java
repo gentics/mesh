@@ -23,6 +23,8 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -181,11 +183,17 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 						} catch (Exception e) {
 							// TODO should we really fail here?
 							txCreate.failure();
-							handler.handle(Future.failedFuture(
-									new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("Error while adding project to router storage"), e)));
+							handler.handle(ac.failedFuture(BAD_REQUEST, "Error while adding project to router storage", e));
 						}
 					}
-					handler.handle(Future.succeededFuture(project));
+					SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					batch.process(rh -> {
+						if (rh.failed()) {
+							ac.fail(BAD_REQUEST, "indexing_failed");
+						} else {
+							handler.handle(Future.succeededFuture(project));
+						}
+					});
 				}
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", boot.projectRoot().getUuid()))));

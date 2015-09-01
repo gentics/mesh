@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -310,8 +309,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST,
-					I18NService.getI18n().get(ac, "node_unhandled_fields", schema.getName(), extraFields));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_unhandled_fields", schema.getName(), extraFields));
 			// throw new MeshSchemaException("The following fields were not
 			// specified within the {" + schema.getName() + "} schema: " +
 			// extraFields);

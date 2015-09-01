@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -127,7 +126,6 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();

@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -117,7 +116,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		I18NService i18n = I18NService.getI18n();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
 		try (Trx tx = db.trx()) {

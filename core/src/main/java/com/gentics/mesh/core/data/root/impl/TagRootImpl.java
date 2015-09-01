@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -79,7 +78,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
 	@Override
 	public void create(ActionContext ac, Handler<AsyncResult<Tag>> handler) {
-		I18NService i18n = I18NService.getI18n();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		try (Trx tx = db.trx()) {
 

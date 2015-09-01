@@ -19,6 +19,8 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -74,6 +76,11 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 	@Override
 	public String i18n(String i18nKey, String... parameters) {
 		return I18NService.getI18n().get(this, i18nKey, parameters);
+	}
+
+	@Override
+	public AsyncResult<Project> failedFuture(HttpResponseStatus status, String i18nMessage, Throwable cause) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18nMessage, cause));
 	}
 
 	@Override

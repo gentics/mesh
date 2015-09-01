@@ -14,9 +14,9 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class ProjectLanguageVerticle extends AbstractProjectRestVerticle {
+public class LanguageVerticle extends AbstractProjectRestVerticle {
 
-	protected ProjectLanguageVerticle() {
+	protected LanguageVerticle() {
 		super("languages");
 	}
 

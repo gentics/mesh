@@ -20,7 +20,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.RoutingContext;
 
 public interface Node extends GenericVertex<NodeResponse> {
 
