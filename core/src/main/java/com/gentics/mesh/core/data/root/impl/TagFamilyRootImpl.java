@@ -14,6 +14,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -98,14 +100,16 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 				if (requestUser.hasPermission(this, CREATE_PERM)) {
 					TagFamily tagFamily = null;
+					SearchQueueBatch batch;
 					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						tagFamily = create(name, requestUser);
 						addTagFamily(tagFamily);
 						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
+						batch = tagFamily.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.success();
 					}
-					handler.handle(Future.succeededFuture(tagFamily));
+					processOrFail(ac, batch, handler, tagFamily);
 				} else {
 					handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
 				}

@@ -29,11 +29,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	protected SearchVerticle searchVerticle;
 
 	@Autowired
-	protected ElasticSearchProvider elasticSearchProvider;
+	protected SearchProvider searchProvider;
 
 	@After
 	public void resetElasticSearch() {
-		elasticSearchProvider.reset();
+		searchProvider.reset();
 	}
 
 	@BeforeClass

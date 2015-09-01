@@ -8,14 +8,14 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.search.ElasticSearchProvider;
+import com.gentics.mesh.search.SearchProvider;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class SpringTestConfiguration {
 
 	@Bean
-	public ElasticSearchProvider elasticSearchProvider() {
+	public SearchProvider searchProvider() {
 		// For testing it is not needed to start ES in most cases. This will speedup test execution since ES does not need to initialize.
 		return null;
 	}

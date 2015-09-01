@@ -141,13 +141,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				batch = newTag.addIndexBatch(CREATE_ACTION);
 				txCreate.success();
 			}
-			batch.process(rh -> {
-				if (rh.succeeded()) {
-					handler.handle(Future.succeededFuture(newTag));
-				} else if (rh.failed()) {
-					log.error("Error while processing batch for newly created tag {" + newTag.getUuid() + "}", rh.cause());
-				}
-			});
+			processOrFail(ac, batch, handler, newTag);
 
 		}
 

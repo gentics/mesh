@@ -181,7 +181,7 @@ public class MeshImpl implements Mesh {
 	public void shutdown() {
 		log.info("Mesh shutting down...");
 		//Orientdb has a dedicated shutdown hook
-		MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().stop();
+		MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().stop();
 		getVertx().close();
 	}
 

@@ -6,6 +6,7 @@ import java.util.List;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -21,7 +22,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
-public interface Node extends GenericVertex<NodeResponse> {
+public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
 	public static final String TYPE = "node";
 

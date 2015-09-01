@@ -162,6 +162,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
 				} else {
 					Project project;
+					SearchQueueBatch batch = null;
 					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						project = create(requestModel.getName(), requestUser);
@@ -179,6 +180,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
 							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
 
+							batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 							txCreate.success();
 						} catch (Exception e) {
 							// TODO should we really fail here?
@@ -186,14 +188,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							handler.handle(ac.failedFuture(BAD_REQUEST, "Error while adding project to router storage", e));
 						}
 					}
-					SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-					batch.process(rh -> {
-						if (rh.failed()) {
-							ac.fail(BAD_REQUEST, "indexing_failed");
-						} else {
-							handler.handle(Future.succeededFuture(project));
-						}
-					});
+					processOrFail(ac, batch, handler, project);
 				}
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", boot.projectRoot().getUuid()))));
@@ -201,4 +196,5 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 		}
 
 	}
+
 }

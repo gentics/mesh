@@ -115,7 +115,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 			});
 			failingLatch(latch);
 		}
-		elasticSearchProvider.refreshIndex();
+		searchProvider.refreshIndex();
 
 		// 1. Verify that the tag is indexed
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));

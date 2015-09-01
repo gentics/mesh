@@ -16,6 +16,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -100,13 +102,15 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			if (rh.succeeded()) {
 				Group parentGroup = rh.result();
 				Role role = null;
+				SearchQueueBatch batch;
 				try (Trx txCreate = db.trx()) {
 					requestUser.reload();
 					role = create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
+					batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					txCreate.success();
 				}
-				handler.handle(Future.succeededFuture(role));
+				processOrFail(ac, batch, handler, role);
 				return;
 			} else {
 				if (rh.cause() != null) {

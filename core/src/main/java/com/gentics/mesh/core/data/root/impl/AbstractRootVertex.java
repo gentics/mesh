@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 
 import java.util.List;
@@ -13,11 +14,14 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -101,6 +105,28 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 			} else {
 				resultHandler.handle(Future.failedFuture("Can't resolve remaining segments. Next segment would be: " + stack.peek()));
 			}
+		}
+	}
+
+	@Override
+	public void processOrFail(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
+		//TODO i18n
+		if (batch == null) {
+			//TODO log
+			ac.fail(BAD_REQUEST, "indexing_not_possible");
+		} else if (element == null) {
+			//TODO log
+			ac.fail(BAD_REQUEST, "element creation failed");
+		} else {
+			batch.process(rh -> {
+				if (rh.failed()) {
+					log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":" + element.getType()
+							+ "}.");
+					ac.fail(BAD_REQUEST, "indexing_failed");
+				} else {
+					handler.handle(Future.succeededFuture(element));
+				}
+			});
 		}
 	}
 

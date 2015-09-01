@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.ElasticSearchProvider;
+import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -101,7 +101,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
 			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getMeshSpringConfiguration();
-			ElasticSearchProvider provider = springConfiguration.elasticSearchProvider();
+			SearchProvider provider = springConfiguration.searchProvider();
 			Database db = springConfiguration.database();
 			// We successfully finished this batch. Delete it.
 			try (Trx txDelete = db.trx()) {

@@ -27,6 +27,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -145,17 +147,16 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 					Schema schema = schemaContainer.getSchema();
 					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-						handler.handle(
-								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field"))));
+						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field"))));
 						return;
 					}
 					if (StringUtils.isEmpty(requestModel.getLanguage())) {
-						handler.handle(
-								Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified"))));
+						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified"))));
 						return;
 					}
 
 					Node node;
+					SearchQueueBatch batch;
 					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						project.reload();
@@ -166,7 +167,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST,ac.i18n("node_no_language_found", requestModel.getLanguage()))));
+							handler.handle(Future.failedFuture(
+									new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage()))));
 							txCreate.failure();
 							return;
 						}
@@ -178,9 +180,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 							txCreate.failure();
 							return;
 						}
+						batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.success();
 					}
-					handler.handle(Future.succeededFuture(node));
+					processOrFail(ac, batch, handler, node);
 				} catch (Exception e) {
 					handler.handle(Future.failedFuture(e));
 					return;
@@ -193,13 +196,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 					if (requestUser.hasPermission(containerByName, READ_PERM)) {
 						containerFoundHandler.handle(Future.succeededFuture(containerByName));
 					} else {
-						handler.handle(
-								Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", containerByName.getUuid()))));
+						handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", containerByName.getUuid()))));
 						return;
 					}
 				} else {
-					handler.handle(
-							Future.failedFuture(new EntityNotFoundException(ac.i18n("schema_not_found", schemaInfo.getSchema().getName()))));
+					handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("schema_not_found", schemaInfo.getSchema().getName()))));
 					return;
 				}
 			} else {

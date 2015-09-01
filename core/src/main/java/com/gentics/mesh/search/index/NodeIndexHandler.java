@@ -10,9 +10,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionResponse;
-import org.elasticsearch.action.delete.DeleteResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -111,7 +109,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			storeDocument(node.getUuid(), map, getType() + "-" + language, obs.toHandler());
+			searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
 
 		Observable.merge(futures).subscribe(item -> {
@@ -122,7 +120,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while storing node document.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 
@@ -151,7 +149,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
-			updateDocument(node.getUuid(), map, getType() + "-" + language, obs.toHandler());
+			searchProvider.updateDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
 
 		Observable.merge(futures).subscribe(item -> {
@@ -162,14 +160,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while updating node document.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
-
 	}
 
 	@Override
-	public void deleteDocument(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
+	public void delete(String uuid, Handler<AsyncResult<ActionResponse>> handler) {
 		Node node = getRootVertex().findByUuidBlocking(uuid);
 		Set<ObservableFuture<ActionResponse>> futures = new HashSet<>();
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
@@ -179,21 +176,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking removal of document {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
 			}
-			getSearchClient().prepareDelete(getIndex(), getType() + "-" + language, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
-				@Override
-				public void onResponse(DeleteResponse response) {
-					if (log.isDebugEnabled()) {
-						log.debug("Removed element {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
-					}
-					obs.toHandler().handle(Future.succeededFuture(response));
-				}
-
-				@Override
-				public void onFailure(Throwable e) {
-					log.error("Failure while removing {" + uuid + ":" + getType() + ":" + language + "} from index {" + getIndex() + "}");
-					obs.toHandler().handle(Future.failedFuture(e));
-				}
-			});
+			searchProvider.deleteDocument(getIndex(), getType() + "-" + language, uuid, obs.toHandler());
 		}
 		Observable.merge(futures).subscribe(item -> {
 			if (log.isDebugEnabled()) {
@@ -203,7 +186,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while deleting node.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().elasticSearchProvider().refreshIndex();
+			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 	}

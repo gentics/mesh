@@ -12,6 +12,7 @@ import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.ElasticSearchProvider;
+import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -74,7 +75,7 @@ public class MeshSpringConfiguration {
 	}
 
 	@Bean
-	public ElasticSearchProvider elasticSearchProvider() {
+	public SearchProvider searchProvider() {
 		return new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
 	}
 

@@ -6,13 +6,14 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticSearchProvider;
+import com.gentics.mesh.search.SearchProvider;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class SpringElasticSearchTestConfiguration extends SpringTestConfiguration {
 
 	@Bean
-	public ElasticSearchProvider elasticSearchProvider() {
+	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = new ElasticSearchOptions();
 		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
 		return new ElasticSearchProvider().init(options);

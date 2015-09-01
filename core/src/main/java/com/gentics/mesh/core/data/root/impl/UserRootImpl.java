@@ -21,6 +21,8 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -129,6 +131,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 					}
 					MeshAuthUser requestUser = ac.getUser();
 					User user;
+					SearchQueueBatch batch;
 					try (Trx txCreate = db.trx()) {
 						requestUser.reload();
 						user = create(requestModel.getUsername(), parentGroup, requestUser);
@@ -163,9 +166,10 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 							}
 							user.setReferencedNode(node);
 						}
+						batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.success();
 					}
-					handler.handle(Future.succeededFuture(user));
+					processOrFail(ac, batch, handler, user);
 
 				}
 			});

@@ -15,6 +15,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
@@ -88,13 +90,15 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 					return;
 				}
 				Group group;
+				SearchQueueBatch batch;
 				try (Trx txCreate = db.trx()) {
 					requestUser.reload();
 					group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
+					batch = group.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					txCreate.success();
 				}
-				handler.handle(Future.succeededFuture(group));
+				processOrFail(ac, batch, handler, group);
 				return;
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));

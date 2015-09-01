@@ -8,6 +8,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -70,5 +71,7 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	void create(ActionContext rc, Handler<AsyncResult<T>> handler);
 
 	T findByUuidBlocking(String uuid);
+
+	void processOrFail(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element);
 
 }

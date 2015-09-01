@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
-public interface User extends GenericVertex<UserResponse> , NamedVertex {
+public interface User extends GenericVertex<UserResponse> , NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "user";
 
