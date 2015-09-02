@@ -647,4 +647,5 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	public Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request) {
 		return handleRequest(PUT, "/roles/" + roleUuid + "/permissions/" + pathToElement, GenericMessageResponse.class, request);
 	}
+
 }

@@ -75,4 +75,8 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		}
 	}
 
+	abstract public void testDocumentDeletion() throws InterruptedException, JSONException;
+	abstract public void testDocumentCreation() throws InterruptedException, JSONException;
+	abstract public void testDocumentUpdate() throws InterruptedException, JSONException;
+
 }

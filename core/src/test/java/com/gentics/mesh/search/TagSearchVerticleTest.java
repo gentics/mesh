@@ -46,6 +46,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
+	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
 
@@ -65,6 +66,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
+	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		Tag tag = tag("red");
 
@@ -102,6 +104,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
+	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String name;
 		String uuid;

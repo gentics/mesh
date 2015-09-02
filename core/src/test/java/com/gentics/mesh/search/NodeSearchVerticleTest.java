@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -85,11 +84,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testRemoveContent() throws InterruptedException, JSONException {
-		try (Trx tx = db.trx()) {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			tx.success();
-		}
+	@Override
+	public void testDocumentDeletion() throws InterruptedException, JSONException {
+		fullIndex();
 
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -144,7 +141,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testAddContent() throws InterruptedException, IOException {
+	@Override
+	public void testDocumentCreation() throws InterruptedException, JSONException {
 		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 
@@ -205,7 +203,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testUpdateContent() throws InterruptedException {
+	@Override
+	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		SearchQueue searchQueue;
 		try (Trx tx = db.trx()) {
 			searchQueue = boot.meshRoot().getSearchQueue();

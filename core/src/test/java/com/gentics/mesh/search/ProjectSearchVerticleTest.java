@@ -59,7 +59,8 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testSearchCreatedProject() throws InterruptedException, JSONException {
+	@Override
+	public void testDocumentCreation() throws InterruptedException, JSONException {
 		final String newName = "newproject";
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(newName);
@@ -77,6 +78,20 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertSuccess(future);
 		ProjectListResponse response = future.result();
 		assertEquals(1, response.getData().size());
+	}
+
+	@Test
+	@Override
+	public void testDocumentDeletion() throws InterruptedException, JSONException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDocumentUpdate() throws InterruptedException, JSONException {
+		// TODO Auto-generated method stub
+
 	}
 
 }
