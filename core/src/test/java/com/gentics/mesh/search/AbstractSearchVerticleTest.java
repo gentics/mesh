@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.After;
@@ -53,12 +54,14 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		return request.toString();
 	}
 
-	protected String getSimpleTermQuery(String key, String value) {
+	protected String getSimpleTermQuery(String key, String value) throws JSONException {
 		QueryBuilder qb = QueryBuilders.termQuery(key, value);
-		String json = "{";
-		json += "	 \"query\":" + qb.toString();
-		json += "	}";
-		return json;
+		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
+		bqb.must(qb);
+
+		JSONObject request = new JSONObject();
+		request.put("query", new JSONObject(bqb.toString()));
+		return request.toString();
 	}
 
 	protected void fullIndex() throws InterruptedException {

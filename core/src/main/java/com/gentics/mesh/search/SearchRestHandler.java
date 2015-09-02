@@ -36,7 +36,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
@@ -52,11 +51,10 @@ public class SearchRestHandler {
 	@Autowired
 	private Database db;
 
-	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(RoutingContext rc,
+	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(ActionContext ac,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
-		ActionContext ac = ActionContext.create(rc);
 		PagingInfo pagingInfo = ac.getPagingInfo();
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
@@ -69,7 +67,7 @@ public class SearchRestHandler {
 		MeshAuthUser requestUser = ac.getUser();
 		Client client = searchProvider.getNode().client();
 
-		String searchQuery = rc.getBodyAsString();
+		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
@@ -85,7 +83,7 @@ public class SearchRestHandler {
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			builder = client.prepareSearch().setSource(searchQuery);
 		} catch (Exception e) {
-			rc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("search_query_not_parsable"), e));
+			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("search_query_not_parsable"), e));
 			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
@@ -94,6 +92,7 @@ public class SearchRestHandler {
 			@Override
 			public void onResponse(SearchResponse response) {
 				try (Trx tx = db.trx()) {
+					rootVertex.reload();
 					Set<ObservableFuture<T>> futures = new HashSet<>();
 
 					for (SearchHit hit : response.getHits()) {
@@ -106,16 +105,14 @@ public class SearchRestHandler {
 							if (rh.failed()) {
 								obs.toHandler().handle(Future.failedFuture(rh.cause()));
 							} else if (rh.result() == null) {
-								obs.toHandler().handle(
-										Future.failedFuture(new HttpStatusCodeErrorException(NOT_FOUND, ac.i18n("object_not_found_for_uuid", uuid))));
+								obs.toHandler().handle(ac.failedFuture(NOT_FOUND, "object_not_found_for_uuid", uuid));
 							} else {
 								T element = rh.result();
 								obs.toHandler().handle(Future.succeededFuture(element));
 							}
 						});
 					}
-					Observable<T> merged = Observable.merge(futures);
-					merged.collect(() -> {
+					Observable.merge(futures).collect(() -> {
 						return new ArrayList<T>();
 					} , (x, y) -> {
 						// Check permissions
@@ -155,13 +152,11 @@ public class SearchRestHandler {
 						listResponse.setMetainfo(metainfo);
 
 						ac.send(toJson(listResponse));
-					});
-					merged.subscribe(item -> {
-						log.debug("Loaded node {" + item.getUuid() + "}");
 					} , error -> {
 						log.error("Error while processing search response items", error);
-						rc.fail(error);
+						ac.fail(error);
 					});
+
 				}
 			}
 

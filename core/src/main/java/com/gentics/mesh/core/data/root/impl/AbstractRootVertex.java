@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 
 import java.util.List;
@@ -14,14 +13,11 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -60,8 +56,7 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	@Override
 	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
-		resultHandler.handle(Future.succeededFuture(
-				out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
+		resultHandler.handle(Future.succeededFuture(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
 		return this;
 	}
 

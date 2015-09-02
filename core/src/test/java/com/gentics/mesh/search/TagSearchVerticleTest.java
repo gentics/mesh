@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,7 +46,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testDocumentCreation() throws InterruptedException {
+	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
 
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
@@ -64,7 +65,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testDocumentUpdate() throws InterruptedException {
+	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		Tag tag = tag("red");
 
 		long start = System.currentTimeMillis();
@@ -101,7 +102,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testDocumentDeletion() throws InterruptedException {
+	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String name;
 		String uuid;
 		try (Trx tx = db.trx()) {

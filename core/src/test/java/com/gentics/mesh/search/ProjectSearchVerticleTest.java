@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.Future;
 
@@ -36,10 +37,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testSearchProject() throws InterruptedException, JSONException {
-		try (Trx tx = db.trx()) {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			tx.success();
-		}
+		fullIndex();
 
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleQuery("dummy"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -61,13 +59,17 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testSearchCreatedProject() throws InterruptedException {
-		final String newName = "newProject";
+	public void testSearchCreatedProject() throws InterruptedException, JSONException {
+		final String newName = "newproject";
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(newName);
 		Future<ProjectResponse> createFuture = getClient().createProject(projectCreateRequest);
 		latchFor(createFuture);
 		assertSuccess(createFuture);
+
+		try (Trx txUpdate = db.trx()) {
+			MeshAssert.assertElement(boot.projectRoot(), createFuture.result().getUuid(), true);
+		}
 
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
 				new PagingInfo().setPage(1).setPerPage(2));

@@ -24,7 +24,6 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 		return instance;
 	}
 
-	
 	@Override
 	protected String getIndex() {
 		return Project.TYPE;

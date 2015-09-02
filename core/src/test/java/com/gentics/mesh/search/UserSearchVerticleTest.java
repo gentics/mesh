@@ -6,19 +6,18 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.core.verticle.user.UserVerticle;
 
-public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest {
+public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Autowired
-	private TagFamilyVerticle tagFamilyVerticle;
+	private UserVerticle userVerticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
-		list.add(tagFamilyVerticle);
+		list.add(userVerticle);
 		return list;
 	}
-
 }
