@@ -226,7 +226,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(25, restResponse.getData().size());
 
-		int perPage = 11;
+		int perPage = 6;
 		future = getClient().findGroups(new PagingInfo(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
@@ -276,8 +276,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertEquals(0, future.result().getData().size());
 		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
-		assertEquals(36, future.result().getMetainfo().getPageCount());
-		assertEquals(36, future.result().getMetainfo().getTotalCount());
+		assertEquals(30, future.result().getMetainfo().getPageCount());
+		assertEquals(30, future.result().getMetainfo().getTotalCount());
 		assertEquals(1, future.result().getMetainfo().getPerPage());
 
 	}

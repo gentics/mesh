@@ -98,7 +98,12 @@ public class Trx implements AutoCloseable {
 		if (log.isDebugEnabled()) {
 			log.debug("Commiting graph {" + currentGraph.hashCode() + "}.");
 		}
+		long start = System.currentTimeMillis();
 		currentGraph.commit();
+		long duration = System.currentTimeMillis() - start;
+		if (log.isDebugEnabled()) {
+			log.debug("Comitting took: " + duration + " [ms]");
+		}
 	}
 
 	@Deprecated
