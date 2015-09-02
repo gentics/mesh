@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
@@ -36,12 +35,7 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String groupName = "testgroup42a";
-		GroupCreateRequest request = new GroupCreateRequest();
-		request.setName(groupName);
-
-		Future<GroupResponse> future = getClient().createGroup(request);
-		latchFor(future);
-		assertSuccess(future);
+		createGroup(groupName);
 
 		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName));
 		latchFor(searchFuture);
@@ -52,14 +46,36 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
-		// TODO Auto-generated method stub
+		String groupName = "testgroup42a";
+
+		GroupResponse group = createGroup(groupName);
+		deleteGroup(group.getUuid());
+
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(0, searchFuture.result().getData().size());
 
 	}
 
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		// TODO Auto-generated method stub
+		String groupName = "testgroup42a";
+		GroupResponse group = createGroup(groupName);
+
+		String newGroupName = "testgrouprenamed";
+		updateGroup(group.getUuid(), newGroupName);
+
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("name", groupName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(0, searchFuture.result().getData().size());
+
+		searchFuture = getClient().searchGroups(getSimpleTermQuery("name", newGroupName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
 
 	}
 

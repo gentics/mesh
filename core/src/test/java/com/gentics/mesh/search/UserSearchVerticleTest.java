@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
@@ -37,14 +36,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 
 		String username = "testuser42a";
-		UserCreateRequest request = new UserCreateRequest();
-		request.setUsername(username);
-		request.setPassword("test1234");
-		request.setGroupUuid(group().getUuid());
-
-		Future<UserResponse> future = getClient().createUser(request);
-		latchFor(future);
-		assertSuccess(future);
+		createUser(username);
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", username));
 		latchFor(searchFuture);
@@ -56,14 +48,34 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
-		// TODO Auto-generated method stub
+		String userName = "testuser42a";
+		UserResponse user = createUser(userName);
+		deleteUser(user.getUuid());
 
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(0, searchFuture.result().getData().size());
 	}
 
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		// TODO Auto-generated method stub
+		String userName = "testuser42a";
+		UserResponse user = createUser(userName);
 
+		String newUserName = "testgrouprenamed";
+		user = updateUser(user.getUuid(), newUserName);
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("username", userName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(0, searchFuture.result().getData().size());
+
+		searchFuture = getClient().searchUsers(getSimpleTermQuery("username", newUserName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
 	}
+
 }

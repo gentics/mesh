@@ -17,19 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.tag.TagCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyReference;
-import com.gentics.mesh.core.rest.tag.TagFieldContainer;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.Future;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
+
+	private static final Logger log = LoggerFactory.getLogger(TagSearchVerticleTest.class);
 
 	@Autowired
 	private TagVerticle tagVerticle;
@@ -49,14 +48,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
-
-		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName("colors"));
-
-		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
-		latchFor(future);
-		assertSuccess(future);
+		createTag(PROJECT_NAME, tagName, "colors");
 
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName));
 		latchFor(searchFuture);
@@ -72,21 +64,11 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 		long start = System.currentTimeMillis();
 		String newName = "redish";
-		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
-		tagUpdateRequest.setFields(new TagFieldContainer().setName(newName));
-
-		Future<TagResponse> future = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
-		latchFor(future);
-		assertSuccess(future);
-
+		updateTag(PROJECT_NAME, tag.getUuid(), newName);
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 		start = System.currentTimeMillis();
 
-		tagUpdateRequest.setFields(new TagFieldContainer().setName(newName + "2"));
-		future = getClient().updateTag(PROJECT_NAME, tag.getUuid(), tagUpdateRequest);
-		latchFor(future);
-		assertSuccess(future);
-
+		updateTag(PROJECT_NAME, tag.getUuid(), newName + "2");
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
 		try (Trx tx = db.nonTrx()) {
@@ -128,9 +110,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(1, searchFuture.result().getData().size());
 
 		// 2. Delete the tag
-		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
+		deleteTag(PROJECT_NAME, uuid);
 
 		// 3. Search again and verify that the document was removed from the index
 		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));

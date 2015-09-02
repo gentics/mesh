@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
@@ -62,14 +61,10 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		final String newName = "newproject";
-		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
-		projectCreateRequest.setName(newName);
-		Future<ProjectResponse> createFuture = getClient().createProject(projectCreateRequest);
-		latchFor(createFuture);
-		assertSuccess(createFuture);
+		ProjectResponse project = createProject(newName);
 
 		try (Trx txUpdate = db.trx()) {
-			MeshAssert.assertElement(boot.projectRoot(), createFuture.result().getUuid(), true);
+			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
 		}
 
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
@@ -83,15 +78,41 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
-		// TODO Auto-generated method stub
+		final String projectName = "newproject";
+		ProjectResponse project = createProject(projectName);
 
+		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
+				new PagingInfo().setPage(1).setPerPage(2));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(1, future.result().getData().size());
+
+		deleteProject(project.getUuid());
+		future = getClient().searchProjects(getSimpleTermQuery("name", projectName), new PagingInfo().setPage(1).setPerPage(2));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
 	}
 
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		// TODO Auto-generated method stub
+		final String projectName = "newproject";
+		ProjectResponse project = createProject(projectName);
 
+		String newProjectName = "updatedprojectname";
+		updateProject(project.getUuid(), newProjectName);
+
+		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", projectName),
+				new PagingInfo().setPage(1).setPerPage(2));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
+
+		future = getClient().searchProjects(getSimpleTermQuery("name", newProjectName), new PagingInfo().setPage(1).setPerPage(2));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(1, future.result().getData().size());
 	}
 
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,6 +26,7 @@ public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		// TODO Auto-generated method stub
 
@@ -32,6 +34,7 @@ public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		// TODO Auto-generated method stub
 
@@ -39,6 +42,7 @@ public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		// TODO Auto-generated method stub
 
