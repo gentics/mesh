@@ -1,7 +1,10 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
@@ -14,6 +17,7 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
@@ -57,5 +61,15 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		return json;
 	}
 
+	protected void fullIndex() throws InterruptedException {
+		try (Trx tx = db.trx()) {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			CountDownLatch latch = new CountDownLatch(1);
+			boot.meshRoot().getSearchQueue().processAll(rh -> {
+				latch.countDown();
+			});
+			failingLatch(latch, 30);
+		}
+	}
 
 }

@@ -102,14 +102,14 @@ public class UserTest extends AbstractBasicObjectTest {
 		try (Trx tx = db.trx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", group(), user());
-			Group group = group();
-			Role role = role();
-			role.grantPermissions(extraUser, READ_PERM);
-
+			role().grantPermissions(extraUser, READ_PERM);
+			tx.success();
+		}
+		try (Trx txUpdate = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("");
 			ActionContext ac = ActionContext.create(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends User> userPage = group.getVisibleUsers(requestUser, new PagingInfo(1, 10));
+			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingInfo(1, 10));
 
 			assertEquals(2, userPage.getTotalElements());
 		}

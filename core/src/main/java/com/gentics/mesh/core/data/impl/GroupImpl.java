@@ -59,7 +59,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	}
 
 	public void addUser(User user) {
-		setLinkIn(user.getImpl(), HAS_USER);
+		setLinkInTo(user.getImpl(), HAS_USER);
 	}
 
 	public void removeUser(User user) {

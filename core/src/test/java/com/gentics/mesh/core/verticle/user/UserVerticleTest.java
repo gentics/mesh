@@ -171,7 +171,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(14, restResponse.getData().size());
+		assertEquals(8, restResponse.getData().size());
 
 		int perPage = 2;
 		int totalUsers = users().size();
@@ -225,7 +225,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(0, future.result().getData().size());
 		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
 		assertEquals(1, future.result().getMetainfo().getPageCount());
-		assertEquals(14, future.result().getMetainfo().getTotalCount());
+		assertEquals(8, future.result().getMetainfo().getTotalCount());
 		assertEquals(25, future.result().getMetainfo().getPerPage());
 
 	}

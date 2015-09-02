@@ -50,10 +50,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testSearchAndSort() throws InterruptedException {
-		try (Trx tx = db.trx()) {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			tx.success();
-		}
+		fullIndex();
 
 		String json = "{";
 		json += "				\"sort\" : {";
@@ -190,11 +187,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
 		}
-//		CountDownLatch latch = new CountDownLatch(1);
-//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-//			latch.countDown();
-//		});
-//		failingLatch(latch);
+		//		CountDownLatch latch = new CountDownLatch(1);
+		//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+		//			latch.countDown();
+		//		});
+		//		failingLatch(latch);
 
 		// Search again and make sure we found our document
 		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
@@ -209,8 +206,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testUpdateContent() throws InterruptedException {
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+		SearchQueue searchQueue;
 		try (Trx tx = db.trx()) {
+			searchQueue = boot.meshRoot().getSearchQueue();
 			searchQueue.addFullIndex();
 			tx.success();
 		}
@@ -230,14 +228,16 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		NodeListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
-		// Create the update entry in the search queue
-		SearchQueueBatch batch = searchQueue.createBatch("0");
-		batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-//		CountDownLatch latch = new CountDownLatch(1);
-//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-//			latch.countDown();
-//		});
-//		failingLatch(latch);
+		try (Trx tx = db.trx()) {
+			// Create the update entry in the search queue
+			SearchQueueBatch batch = searchQueue.createBatch("0");
+			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
+			//		CountDownLatch latch = new CountDownLatch(1);
+			//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+			//			latch.countDown();
+			//		});
+			//		failingLatch(latch);
+		}
 
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
