@@ -16,6 +16,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.io.File;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,8 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -33,6 +36,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.FileUtils;
+import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -198,7 +202,6 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	public void handleUpload(RoutingContext rc) {
 		ActionContext ac = ActionContext.create(rc);
 		try (Trx tx = db.trx()) {
-			FileSystem fileSystem = Mesh.vertx().fileSystem();
 			Project project = ac.getProject();
 			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -224,76 +227,30 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								} else {
 									String contentType = ul.contentType();
 									String fileName = ul.fileName();
-									try (Trx txUpdate = db.trx()) {
-										node.setBinaryFileName(fileName);
-										node.setBinaryFileSize(ul.size());
-										node.setBinaryContentType(contentType);
 
-										Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
-
-											if (tfc.succeeded()) {
-												File targetFolder = tfc.result();
-												String targetPath = new File(targetFolder, node.getUuid() + ".bin").getAbsolutePath();
-												if (log.isDebugEnabled()) {
-													log.debug("Moving file from {" + ul.uploadedFileName() + "} to {" + targetPath + "}");
-												}
-
-												fileSystem.move(ul.uploadedFileName(), targetPath, mh -> {
-													if (mh.succeeded()) {
-														txUpdate.success();
-														ac.send(toJson(
-																new GenericMessageResponse(ac.i18n("node_binary_field_updated", node.getUuid()))));
-													} else {
-														log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-														ac.fail(INTERNAL_SERVER_ERROR, "node_error_upload_failed");
-													}
-												});
-											} else {
-												ac.fail(INTERNAL_SERVER_ERROR, "node_error_upload_failed");
-											}
-										};
-
-										FileUtils.generateSha512Sum(ul.uploadedFileName(), hash -> {
-											if (hash.succeeded()) {
-												try (Trx tx2 = db.trx()) {
-													node.setBinarySHA512Sum(hash.result());
-
-													File folder = new File(uploadOptions.getDirectory(), node.getSegmentedPath());
-													if (log.isDebugEnabled()) {
-														log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
-													}
-
-													fileSystem.exists(folder.getAbsolutePath(), deh -> {
-														if (deh.succeeded()) {
-															if (!deh.result()) {
-																fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
-																	if (mkh.succeeded()) {
-																		targetFolderChecked.handle(Future.succeededFuture(folder));
-																	} else {
-																		log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}",
-																				mkh.cause());
-																		ac.fail(BAD_REQUEST, "node_error_upload_failed");
-																	}
-																});
-															} else {
-																targetFolderChecked.handle(Future.succeededFuture(folder));
-															}
-														} else {
-															log.error("Could not check whether target directory {" + folder.getAbsolutePath()
-																	+ "} exists.", deh.cause());
-															ac.fail(BAD_REQUEST, "node_error_upload_failed");
-														}
-													});
-												}
-
+									hashAndMoveBinaryFile(ac, ul, node.getUuid(), node.getSegmentedPath(), fh -> {
+										if (fh.failed()) {
+											ac.fail(fh.cause());
+										} else {
+											SearchQueueBatch batch;
+											try (Trx txUpdate = db.trx()) {
+												node.setBinaryFileName(fileName);
+												node.setBinaryFileSize(ul.size());
+												node.setBinaryContentType(contentType);
+												node.setBinarySHA512Sum(fh.result());
 												// node.setBinaryImageDPI(dpi);
 												// node.setBinaryImageHeight(heigth);
 												// node.setBinaryImageWidth(width);
-											} else {
-												ac.fail(BAD_REQUEST, "node_error_hashing_failed");
+												batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+												txUpdate.success();
 											}
-										});
-									}
+											VerticleHelper.processOrFail(ac, batch, ch -> {
+												ac.send(toJson(
+														new GenericMessageResponse(ac.i18n("node_binary_field_updated", ch.result().getUuid()))));
+											} , node);
+
+										}
+									});
 								}
 							}
 						}
@@ -305,6 +262,67 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				}
 			});
 		}
+	}
+
+	private void hashAndMoveBinaryFile(ActionContext ac, FileUpload fileUpload, String uuid, String segmentedPath,
+			Handler<AsyncResult<String>> handler) {
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		FileSystem fileSystem = Mesh.vertx().fileSystem();
+
+		AtomicReference<String> hashSum = new AtomicReference<>();
+		// Handler that is invoked when the fileupload folder was checked and created if missing.
+		Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
+			if (tfc.succeeded()) {
+				File targetFolder = tfc.result();
+				String targetPath = new File(targetFolder, uuid + ".bin").getAbsolutePath();
+				if (log.isDebugEnabled()) {
+					log.debug("Moving file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
+				}
+
+				fileSystem.move(fileUpload.uploadedFileName(), targetPath, mh -> {
+					if (mh.succeeded()) {
+						handler.handle(Future.succeededFuture(hashSum.get()));
+					} else {
+						log.error("Failed to move file to {" + targetPath + "}", mh.cause());
+						handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+					}
+				});
+			} else {
+				handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
+			}
+		};
+
+		FileUtils.generateSha512Sum(fileUpload.uploadedFileName(), hash -> {
+			if (hash.succeeded()) {
+				hashSum.set(hash.result());
+				File folder = new File(uploadOptions.getDirectory(), segmentedPath);
+				if (log.isDebugEnabled()) {
+					log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
+				}
+				fileSystem.exists(folder.getAbsolutePath(), deh -> {
+					if (deh.succeeded()) {
+						if (!deh.result()) {
+							fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
+								if (mkh.succeeded()) {
+									targetFolderChecked.handle(Future.succeededFuture(folder));
+								} else {
+									log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}", mkh.cause());
+									handler.handle(ac.failedFuture(BAD_REQUEST, "node_error_upload_failed"));
+								}
+							});
+						} else {
+							targetFolderChecked.handle(Future.succeededFuture(folder));
+						}
+					} else {
+						log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.", deh.cause());
+						handler.handle(ac.failedFuture(BAD_REQUEST, "node_error_upload_failed", deh.cause()));
+					}
+				});
+			} else {
+				handler.handle(ac.failedFuture(BAD_REQUEST, "node_error_hashing_failed"));
+			}
+		});
+
 	}
 
 	public void handleReadChildren(ActionContext ac) {

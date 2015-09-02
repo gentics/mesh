@@ -50,7 +50,9 @@ public interface ActionContext {
 
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
-	AsyncResult<Project> failedFuture(HttpResponseStatus badRequest, String i18nKey, Throwable cause);
+	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, Throwable cause);
+
+	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters);
 
 	void fail(Throwable cause);
 
@@ -76,6 +78,5 @@ public interface ActionContext {
 	Locale getLocale();
 
 	List<String> getExpandedFieldnames();
-
 
 }

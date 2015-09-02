@@ -378,16 +378,16 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadNodesWithoutPermissions() throws Exception {
 
 		// TODO add node that has no perms and check the response
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo());
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(1,10));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
 
 		int nElements = restResponse.getData().size();
-		assertEquals("The amount of elements in the list did not match the expected count", 25, nElements);
+		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(3, restResponse.getMetainfo().getPageCount());
-		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(10, restResponse.getMetainfo().getPerPage());
 		assertEquals(data().getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
 

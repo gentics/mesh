@@ -79,8 +79,13 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 	}
 
 	@Override
-	public AsyncResult<Project> failedFuture(HttpResponseStatus status, String i18nMessage, Throwable cause) {
-		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18nMessage, cause));
+	public <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nMessage, Throwable cause) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18n(i18nMessage), cause));
+	}
+
+	@Override
+	public <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18n(i18nKey, parameters)));
 	}
 
 	@Override

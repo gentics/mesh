@@ -185,15 +185,19 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 			expectMessageResponse("node_binary_field_updated", future, node.getUuid());
 		}
 
+		try (Trx tx = db.trx()) {
+			assertEquals(fileName, node.getBinaryFileName());
+		}
+
 		Future<NodeResponse> responseFuture = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
 		latchFor(responseFuture);
 		assertSuccess(responseFuture);
 		NodeResponse response = responseFuture.result();
 
 		assertEquals("The filename should be set in the response.", fileName, response.getFileName());
-		assertEquals(contentType, response.getBinaryProperties().getMimeType());
-		assertEquals(binaryLen, response.getBinaryProperties().getFileSize());
-		assertNotNull(response.getBinaryProperties().getSha512sum());
+		assertEquals("The contentType was correctly set in the response.", contentType, response.getBinaryProperties().getMimeType());
+		assertEquals("The binary length was not correctly set in the response.", binaryLen, response.getBinaryProperties().getFileSize());
+		assertNotNull("The hashsum was not found in the response.", response.getBinaryProperties().getSha512sum());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getDpi());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getWidth());
 		assertNull("The data did not contain image information.", response.getBinaryProperties().getHeight());

@@ -519,13 +519,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				ac.fail(BAD_REQUEST, "error_language_not_set");
+				handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_set"));
 				return;
 			}
 			try (Trx txUpdate = db.trx()) {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
-					ac.fail(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+					handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
 					return;
 				}
 
@@ -539,7 +539,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					container.setFieldFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
-					ac.fail(BAD_REQUEST, e.getMessage());
+					handler.handle(ac.failedFuture(BAD_REQUEST, e.getMessage()));
 					txUpdate.failure();
 				}
 				batch = addIndexBatch(UPDATE_ACTION);
@@ -549,7 +549,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		} catch (IOException e1) {
 			log.error(e1);
 			// TODO handle e1 within fail
-			ac.fail(BAD_REQUEST, e1.getMessage());
+			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage()));
 		}
 	}
 
