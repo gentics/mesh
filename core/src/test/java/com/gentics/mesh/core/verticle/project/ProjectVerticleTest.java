@@ -283,11 +283,13 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
 
+		assertEquals(0, searchProvider.getStoreEvents().size());
 		Future<ProjectResponse> future = getClient().updateProject(uuid, request);
 		latchFor(future);
 		assertSuccess(future);
 		ProjectResponse restProject = future.result();
 		test.assertProject(request, restProject);
+		assertTrue(searchProvider.getStoreEvents().size() != 0);
 
 		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);

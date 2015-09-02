@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -292,6 +293,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
+		SearchQueueBatch batch = null;
 		try (Trx txUpdate = db.trx()) {
 
 			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
@@ -320,7 +322,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			SearchQueueBatch batch = null;
 			if (requestModel.getNodeReference() != null) {
 				NodeReference reference = requestModel.getNodeReference();
 				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
@@ -344,8 +345,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
-			batch.process(handler);
 		}
+		processOrFail2(ac, batch, handler, this);
 
 	}
 

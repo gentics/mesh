@@ -67,9 +67,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
-	@Autowired
-	private DummySearchProvider searchProvider;
-
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
@@ -302,7 +299,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(25, restResponse.getData().size());
+		assertEquals(24, restResponse.getData().size());
 	}
 
 	@Test
@@ -696,16 +693,18 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			assertEquals(newName, node.getGraphFieldContainer(english()).getString("name").getString());
 		}
 
+		assertEquals(1, searchProvider.getStoreEvents().size());
+
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We updated the node. A search queue entry should have been created.", 1, searchQueue.getSize());
-			SearchQueueBatch batch = searchQueue.take();
-			assertEquals(1, batch.getEntries().size());
-			SearchQueueEntry entry = batch.getEntries().get(0);
-
-			assertEquals(restNode.getUuid(), entry.getElementUuid());
-			assertEquals(Node.TYPE, entry.getElementType());
-			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
+			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.getSize());
+			//			SearchQueueBatch batch = searchQueue.take();
+			//			assertEquals(1, batch.getEntries().size());
+			//			SearchQueueEntry entry = batch.getEntries().get(0);
+			//
+			//			assertEquals(restNode.getUuid(), entry.getElementUuid());
+			//			assertEquals(Node.TYPE, entry.getElementType());
+			//			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
 		}
 
 	}

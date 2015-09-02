@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.List;
@@ -200,7 +201,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
-		batch.process(handler);
+		processOrFail2(ac, batch, handler, this);
 
 	}
 

@@ -65,9 +65,9 @@ public class UserTest extends AbstractBasicObjectTest {
 		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = ac.getUser();
 
-			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 10));
+			Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
-			assertEquals(10, page.getSize());
+			assertEquals(6, page.getSize());
 
 			page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
 			assertEquals(users().size(), page.getTotalElements());

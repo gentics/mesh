@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedVertex;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -54,6 +55,31 @@ public class VerticleHelper {
 		info.setPageCount(page.getTotalPages());
 		info.setPerPage(page.getPerPage());
 		info.setTotalCount(page.getTotalElements());
+	}
+
+	// TODO merge with prev method
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
+			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler, T element) {
+		// TODO i18n
+		if (batch == null) {
+			// TODO log
+			ac.fail(BAD_REQUEST, "indexing_not_possible");
+		} else if (element == null) {
+			// TODO log
+			ac.fail(BAD_REQUEST, "element creation failed");
+		} else {
+			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+				batch.process(rh -> {
+					if (rh.failed()) {
+						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
+								+ element.getType() + "}.", rh.cause());
+						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
+					} else {
+						handler.handle(Future.succeededFuture());
+					}
+				});
+			}
+		}
 	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(ActionContext ac,

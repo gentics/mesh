@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
+import static com.gentics.mesh.util.VerticleHelper.*;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
@@ -63,6 +64,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VerticleHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
@@ -543,13 +545,15 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
-			batch.process(handler);
+			processOrFail2(ac, batch, handler, this);
 		} catch (IOException e1) {
 			log.error(e1);
 			// TODO handle e1 within fail
 			ac.fail(BAD_REQUEST, e1.getMessage());
 		}
 	}
+
+	
 
 	@Override
 	public void addUpdateEntries(SearchQueueBatch batch) {

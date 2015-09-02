@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -170,7 +171,8 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 					batch = addIndexBatch(UPDATE_ACTION);
 					txUpdate.success();
 				}
-				batch.process(handler);
+				processOrFail2(ac, batch, handler, this);
+
 			}
 		}
 	}

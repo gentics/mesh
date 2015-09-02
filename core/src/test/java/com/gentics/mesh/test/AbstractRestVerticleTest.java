@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
@@ -51,7 +50,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	private RouterStorage routerStorage;
 
 	@Autowired
-	private DatabaseService databaseService;
+	protected DummySearchProvider searchProvider;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -81,6 +80,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() {
+		searchProvider.reset();
 		BootstrapInitializer.clearReferences();
 		// databaseService.getDatabase().clear();
 		databaseService.getDatabase().reset();
