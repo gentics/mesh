@@ -116,7 +116,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
 		Node node;
 		try (Trx tx = db.trx()) {
-			node = content("boeing 737");
+			node = content("concorde");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 		}

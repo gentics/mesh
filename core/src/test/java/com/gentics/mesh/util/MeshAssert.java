@@ -26,7 +26,7 @@ public final class MeshAssert {
 
 	private static final Integer CI_TIMEOUT_SECONDS = 10;
 
-	private static final Integer DEV_TIMEOUT_SECONDS = 10;
+	private static final Integer DEV_TIMEOUT_SECONDS = 10000;
 
 	public static void assertSuccess(Future<?> future) {
 		if (future.cause() != null) {
@@ -50,10 +50,10 @@ public final class MeshAssert {
 	}
 
 	public static int getTimeout() throws UnknownHostException {
-		int timeout = DEV_TIMEOUT_SECONDS;
-//		if (TestUtil.isHost("jenkins.office")) {
-//			timeout = CI_TIMEOUT_SECONDS;
-//		}
+		int timeout = CI_TIMEOUT_SECONDS;
+		if (TestUtil.isHost("NeXuS") || TestUtil.isHost("satan3.office")) {
+			timeout = DEV_TIMEOUT_SECONDS;
+		}
 		log.info("Using test timeout of {" + timeout + "} seconds for host {" + TestUtil.getHostname() + "}");
 		return timeout;
 	}

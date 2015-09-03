@@ -156,8 +156,12 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		for (Node node : getNodes()) {
-			batch.addEntry(node, UPDATE_ACTION);
+		if (action == DELETE_ACTION) {
+			// TODO Delete handling is not yet supported for schemas
+		} else {
+			for (Node node : getNodes()) {
+				batch.addEntry(node, UPDATE_ACTION);
+			}
 		}
 	}
 
