@@ -61,6 +61,9 @@ public class VerticleHelper {
 	// TODO merge with prev method
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler, T element) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+
 		// TODO i18n
 		if (batch == null) {
 			// TODO log
@@ -69,11 +72,24 @@ public class VerticleHelper {
 			// TODO log
 			ac.fail(BAD_REQUEST, "element creation failed");
 		} else {
+			SearchQueue searchQueue;
+			try (Trx txBatch = db.trx()) {
+				searchQueue = boot.meshRoot().getSearchQueue();
+				searchQueue.reload();
+				searchQueue.remove(batch);
+				txBatch.success();
+			}
+
 			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
 				batch.process(rh -> {
 					if (rh.failed()) {
 						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
 								+ element.getType() + "}.", rh.cause());
+						try (Trx tx = db.trx()) {
+							log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
+							searchQueue.add(batch);
+							tx.success();
+						}
 						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
 					} else {
 						handler.handle(Future.succeededFuture());
@@ -97,8 +113,9 @@ public class VerticleHelper {
 			// TODO log
 			ac.fail(BAD_REQUEST, "element creation failed");
 		} else {
+			SearchQueue searchQueue;
 			try (Trx txBatch = db.trx()) {
-				SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+				searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();
 				searchQueue.remove(batch);
 				txBatch.success();
@@ -109,7 +126,13 @@ public class VerticleHelper {
 					if (rh.failed()) {
 						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
 								+ element.getType() + "}.", rh.cause());
+						try (Trx tx = db.trx()) {
+							log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
+							searchQueue.add(batch);
+							tx.success();
+						}
 						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
+
 					} else {
 						handler.handle(Future.succeededFuture(element));
 					}

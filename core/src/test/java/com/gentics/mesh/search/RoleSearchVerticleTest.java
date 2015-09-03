@@ -40,7 +40,7 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest {
 		Future<RoleListResponse> searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
-		assertEquals(0, searchFuture.result().getData().size());
+		assertEquals(1, searchFuture.result().getData().size());
 	}
 
 	@Test
@@ -79,6 +79,11 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest {
 		updateRole(role.getUuid(), newRoleName);
 
 		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", newRoleName));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+
+		searchFuture = getClient().searchRoles(getSimpleTermQuery("name", roleName));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

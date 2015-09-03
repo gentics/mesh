@@ -52,7 +52,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		try (Trx tx = db.trx()) {
 			addSearch("users", boot.meshRoot().getUserRoot(), UserListResponse.class);
 			addSearch("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class);
-			addSearch("role", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
+			addSearch("roles", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
 			addSearch("nodes", boot.meshRoot().getNodeRoot(), NodeListResponse.class);
 			addSearch("tags", boot.meshRoot().getTagRoot(), TagListResponse.class);
 			addSearch("tagFamilies", boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class);
