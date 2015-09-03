@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_AC
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -36,56 +35,27 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueImpl.class);
 
-	/** Lock held by take, poll, etc */
-	private final ReentrantLock takeLock = new ReentrantLock();
+	@Override
+	synchronized public SearchQueueBatch take() throws InterruptedException {
+		SearchQueueBatch batch = out(HAS_BATCH).nextOrDefault(SearchQueueBatchImpl.class, null);
+		if (batch != null) {
+			remove(batch);
+		}
+		return batch;
+	}
+
+	@Override
+	synchronized public SearchQueueBatch take(String batchId) {
+		SearchQueueBatch batch = out(HAS_BATCH).has(BATCH_ID_PROPERTY_KEY).nextOrDefault(SearchQueueBatchImpl.class, null);
+		if (batch != null) {
+			remove(batch);
+		}
+		return batch;
+	}
 
 	@Override
 	public void add(SearchQueueBatch batch) {
 		setLinkOutTo(batch.getImpl(), HAS_BATCH);
-	}
-
-	@Override
-	public SearchQueueBatch take() throws InterruptedException {
-		SearchQueueBatch entry;
-		final ReentrantLock takeLock = this.takeLock;
-		takeLock.lockInterruptibly();
-		try {
-			entry = out(HAS_BATCH).nextOrDefault(SearchQueueBatchImpl.class, null);
-			if (entry != null) {
-				unlinkOut(entry.getImpl(), HAS_BATCH);
-				return entry;
-			} else {
-				return null;
-			}
-
-		} finally {
-			takeLock.unlock();
-		}
-	}
-
-	@Override
-	public SearchQueueBatch take(String batchId) {
-		SearchQueueBatch batch;
-		final ReentrantLock takeLock = this.takeLock;
-		try {
-			takeLock.lockInterruptibly();
-			try {
-				batch = out(HAS_BATCH).has(BATCH_ID_PROPERTY_KEY).nextOrDefault(SearchQueueBatchImpl.class, null);
-				if (batch != null) {
-					unlinkOut(batch.getImpl(), HAS_BATCH);
-					return batch;
-				} else {
-					return null;
-				}
-			} finally {
-				takeLock.unlock();
-			}
-		} catch (InterruptedException e) {
-			// TODO handle InterruptedException
-			e.printStackTrace();
-		}
-		return null;
-
 	}
 
 	@Override
