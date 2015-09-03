@@ -96,7 +96,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 			uuid = tag.getUuid();
 			// Add the tag to the index
 			CountDownLatch latch = new CountDownLatch(1);
-			tagIndexHandler.store(tag, rh -> {
+			tagIndexHandler.store(tag, Tag.TYPE, rh -> {
 				latch.countDown();
 			});
 			failingLatch(latch);

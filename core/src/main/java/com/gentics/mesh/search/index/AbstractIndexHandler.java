@@ -61,8 +61,8 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		});
 	}
 
-	public void store(T object, Handler<AsyncResult<Void>> handler) {
-		searchProvider.storeDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
+	public void store(T object, String type, Handler<AsyncResult<Void>> handler) {
+		searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
 	public void delete(String uuid, String type, Handler<AsyncResult<Void>> handler) {
@@ -80,7 +80,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 			} else if (rh.result() == null) {
 				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + indexType + "} could not be found within graph."));
 			} else {
-				store(rh.result(), handler);
+				store(rh.result(), indexType, handler);
 			}
 		});
 	}
@@ -143,7 +143,6 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 			indexType = getType();
 		}
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
-		// try (Trx tx = db.trx()) {
 		switch (action) {
 		case CREATE_ACTION:
 			store(uuid, indexType, handler);
@@ -158,7 +157,6 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		default:
 			handler.handle(Future.failedFuture("Action type {" + action + "} is unknown."));
 		}
-		// }
 	}
 
 }

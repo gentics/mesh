@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +11,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -196,48 +198,47 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		SearchQueue searchQueue;
+		fullIndex();
+
+		String newString = "ABCDEFGHI";
+		Node node;
+		SearchQueueBatch batch;
 		try (Trx tx = db.trx()) {
-			searchQueue = boot.meshRoot().getSearchQueue();
-			searchQueue.addFullIndex();
+			node = content("concorde");
+			assertNotNull(node);
+			HtmlGraphField field = node.getGraphFieldContainer(english()).getHtml("content");
+			assertNotNull(field);
+			field.setHtml(newString);
+
+			// Create the update entry in the search queue
+			batch = boot.meshRoot().getSearchQueue().createBatch("0");
+			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION, Node.TYPE + "-en");
+			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION, Node.TYPE + "-de");
 			tx.success();
 		}
 
-		String oldName = "Airbus A300";
-		Node node = content(oldName.toLowerCase());
-		assertNotNull(node);
-		HtmlGraphField field = node.getGraphFieldContainer(german()).getHtml("content");
-		assertNotNull(field);
-		String newString = "ABCDEFGHI";
-		field.setHtml(newString);
-
-		QueryBuilder qb = QueryBuilders.queryStringQuery("Großraumflugzeug");
-		Future<NodeListResponse> future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertEquals(1, response.getData().size());
 
 		try (Trx tx = db.trx()) {
-			// Create the update entry in the search queue
-			SearchQueueBatch batch = searchQueue.createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-			// CountDownLatch latch = new CountDownLatch(1);
-			// vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-			// latch.countDown();
-			// });
-			// failingLatch(latch);
+			CountDownLatch latch = new CountDownLatch(1);
+			batch.process(rh -> {
+				latch.countDown();
+			});
+			failingLatch(latch);
 		}
 
-		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
-		assertEquals("The node with name {" + oldName + "} should no longer be found since we updated the node and updated the index.", 0,
+		assertEquals("The node with name {" + "Concorde" + "} should no longer be found since we updated the node and updated the content.", 0,
 				response.getData().size());
 
-		qb = QueryBuilders.queryStringQuery(newString);
-		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery(newString), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -248,17 +249,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testSearchContent() throws InterruptedException, JSONException {
-		try (Trx tx = db.trx()) {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			tx.success();
-		}
+		fullIndex();
 
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
-		assertEquals(2, response.getData().size());
-		assertEquals(9, response.getMetainfo().getTotalCount());
+		assertEquals(1, response.getData().size());
+		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
 			assertNotNull(nodeResponse);
 			assertNotNull(nodeResponse.getUuid());

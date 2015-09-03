@@ -82,7 +82,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public void store(Node node, Handler<AsyncResult<Void>> handler) {
+	public void store(Node node, String type, Handler<AsyncResult<Void>> handler) {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
