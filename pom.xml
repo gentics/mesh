@@ -18,7 +18,7 @@
 
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
-		<ferma.version>2.1.0-SNAPSHOT</ferma.version>
+		<ferma.version>2.1.0</ferma.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
 		 
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
