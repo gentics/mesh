@@ -5,8 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -93,8 +92,8 @@ public class SearchRestHandler {
 			public void onResponse(SearchResponse response) {
 				try (Trx tx = db.trx()) {
 					rootVertex.reload();
-					Set<ObservableFuture<T>> futures = new HashSet<>();
 
+					List<ObservableFuture<T>> futures = new ArrayList<>();
 					for (SearchHit hit : response.getHits()) {
 						String uuid = hit.getId();
 						ObservableFuture<T> obs = RxHelper.observableFuture();

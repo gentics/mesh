@@ -113,7 +113,6 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		SearchQueueBatch batch = searchQueue.createBatch(UUIDUtil.randomUUID());
 		for (Node node : boot.nodeRoot().findAll()) {
 			batch.addEntry(node, CREATE_ACTION);
-			break;
 		}
 		for (Project project : boot.projectRoot().findAll()) {
 			batch.addEntry(project, CREATE_ACTION);
