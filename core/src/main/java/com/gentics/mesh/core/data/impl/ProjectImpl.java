@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -165,6 +166,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
+		RouterStorage.getRouterStorage().removeProjectRouter(getName());
 		getBaseNode().delete();
 		getTagFamilyRoot().delete();
 		getNodeRoot().delete();
@@ -176,7 +178,6 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 		reload();
 		getVertex().remove();
 
-		// TODO handle: routerStorage.removeProjectRouter(name);
 	}
 
 	@Override
@@ -201,7 +202,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
-		processOrFail2(ac, batch, handler, this);
+		processOrFail2(ac, batch, handler);
 
 	}
 
@@ -216,7 +217,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		for (Node node : getNodeRoot().findAll()) {
 			batch.addEntry(node, UPDATE_ACTION);
 		}

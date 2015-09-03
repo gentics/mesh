@@ -165,7 +165,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 						batch = addIndexBatch(UPDATE_ACTION);
 						txUpdate.success();
 					}
-					processOrFail2(ac, batch, handler, this);
+					processOrFail2(ac, batch, handler);
 				}
 			});
 		}
@@ -188,7 +188,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		for (Tag tag : getTags()) {
 			batch.addEntry(tag, UPDATE_ACTION);
 		}

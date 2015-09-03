@@ -60,7 +60,7 @@ public class VerticleHelper {
 
 	// TODO merge with prev method
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
-			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler, T element) {
+			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -68,9 +68,6 @@ public class VerticleHelper {
 		if (batch == null) {
 			// TODO log
 			ac.fail(BAD_REQUEST, "indexing_not_possible");
-		} else if (element == null) {
-			// TODO log
-			ac.fail(BAD_REQUEST, "element creation failed");
 		} else {
 			SearchQueue searchQueue;
 			try (Trx txBatch = db.trx()) {
@@ -83,10 +80,9 @@ public class VerticleHelper {
 			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
 				batch.process(rh -> {
 					if (rh.failed()) {
-						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
-								+ element.getType() + "}.", rh.cause());
 						try (Trx tx = db.trx()) {
-							log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
+							batch.reload();
+							log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
 							searchQueue.add(batch);
 							tx.success();
 						}
@@ -322,7 +318,7 @@ public class VerticleHelper {
 					txDelete.success();
 				}
 				String id = name != null ? uuid + "/" + name : uuid;
-				batch.process(brh -> {
+				VerticleHelper.processOrFail2(ac, batch, brh -> {
 					ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
 				});
 			}

@@ -141,13 +141,13 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
-			processOrFail2(ac, batch, handler, this);
+			processOrFail2(ac, batch, handler);
 		}
 		
 	}
 
 	@Override
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		for (Group group : getGroups()) {
 			batch.addEntry(group, SearchQueueEntryAction.UPDATE_ACTION);
 		}

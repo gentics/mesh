@@ -346,11 +346,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				txUpdate.success();
 			}
 		}
-		processOrFail2(ac, batch, handler, this);
+		processOrFail2(ac, batch, handler);
 
 	}
 
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		//		for (GenericVertex<?> element : getCreatedElements()) {
 		//			batch.addEntry(element, UPDATE_ACTION);
 		//		}

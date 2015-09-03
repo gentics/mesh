@@ -171,7 +171,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 					batch = addIndexBatch(UPDATE_ACTION);
 					txUpdate.success();
 				}
-				processOrFail2(ac, batch, handler, this);
+				processOrFail2(ac, batch, handler);
 
 			}
 		}
@@ -192,7 +192,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 		return this;
 	}
 
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		for (User user : getUsers()) {
 			batch.addEntry(user, UPDATE_ACTION);
 		}

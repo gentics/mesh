@@ -16,7 +16,7 @@ public abstract class AbstractIndexedVertex<T extends RestModel> extends Abstrac
 		// TODO use a dedicated uuid or timestamp for batched to avoid collisions
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this, action);
-		addUpdateEntries(batch);
+		addRelatedEntries(batch);
 		return batch;
 	}
 

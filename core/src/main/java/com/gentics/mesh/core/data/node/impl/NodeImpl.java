@@ -543,7 +543,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				batch = addIndexBatch(UPDATE_ACTION);
 				txUpdate.success();
 			}
-			processOrFail2(ac, batch, handler, this);
+			processOrFail2(ac, batch, handler);
 		} catch (IOException e1) {
 			log.error(e1);
 			// TODO handle e1 within fail
@@ -554,7 +554,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	
 
 	@Override
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		// batch.addEntry(getParentNode(), UPDATE_ACTION);
 	}
 
@@ -567,7 +567,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			String indexType = getType() + "-" + container.getLanguage().getLanguageTag();
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
-		addUpdateEntries(batch);
+		addRelatedEntries(batch);
 		return batch;
 	}
 }

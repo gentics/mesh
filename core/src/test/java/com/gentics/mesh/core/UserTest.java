@@ -28,6 +28,7 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 public class UserTest extends AbstractBasicObjectTest {
@@ -81,6 +82,27 @@ public class UserTest extends AbstractBasicObjectTest {
 			Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
+		}
+	}
+
+	@Test
+	public void testGetPrincipal() {
+		RoutingContext rc = getMockedRoutingContext("");
+		io.vertx.ext.auth.User user = rc.user();
+		assertNotNull(user);
+		JsonObject json = user.principal();
+		assertNotNull(json);
+		try (Trx tx = db.trx()) {
+			assertEquals(user().getUuid(), json.getString("uuid"));
+			assertEquals(user().getUsername(), json.getString("username"));
+			assertEquals(user().getFirstname(), json.getString("firstname"));
+			assertEquals(user().getLastname(), json.getString("lastname"));
+			assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
+
+			assertNotNull(json.getJsonArray("roles"));
+			assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
+			assertNotNull(json.getJsonArray("groups"));
+			assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
 		}
 	}
 

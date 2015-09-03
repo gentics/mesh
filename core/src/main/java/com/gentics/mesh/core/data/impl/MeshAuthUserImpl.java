@@ -5,15 +5,21 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.auth.AuthProvider;
@@ -23,7 +29,38 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 
 	@Override
 	public JsonObject principal() {
-		throw new NotImplementedException();
+		JsonObject user = new JsonObject();
+		try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+			user.put("uuid", getUuid());
+			user.put("username", getUsername());
+			user.put("firstname", getFirstname());
+			user.put("lastname", getLastname());
+			user.put("emailAddress", getEmailAddress());
+
+			JsonArray rolesArray = new JsonArray();
+			user.put("roles", rolesArray);
+			for (Role role : getRoles()) {
+				JsonObject roleJson = new JsonObject();
+				roleJson.put("uuid", role.getUuid());
+				roleJson.put("name", role.getName());
+				rolesArray.add(roleJson);
+			}
+
+			JsonArray groupsArray = new JsonArray();
+			user.put("groups", groupsArray);
+			for (Group group : getGroups()) {
+				JsonObject groupJson = new JsonObject();
+				groupJson.put("uuid", group.getUuid());
+				groupJson.put("name", group.getName());
+				groupsArray.add(groupJson);
+			}
+
+			Node reference = getReferencedNode();
+			if (reference != null) {
+				user.put("nodeReference", reference.getUuid());
+			}
+		}
+		return user;
 	}
 
 	@Override

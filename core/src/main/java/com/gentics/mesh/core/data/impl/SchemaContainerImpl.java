@@ -149,12 +149,12 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
-		processOrFail2(ac, batch, handler, this);
+		processOrFail2(ac, batch, handler);
 
 	}
 
 	@Override
-	public void addUpdateEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch) {
 		for (Node node : getNodes()) {
 			batch.addEntry(node, UPDATE_ACTION);
 		}
