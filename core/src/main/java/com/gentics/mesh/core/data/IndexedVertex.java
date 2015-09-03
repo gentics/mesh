@@ -7,6 +7,6 @@ public interface IndexedVertex {
 
 	SearchQueueBatch addIndexBatch(SearchQueueEntryAction action);
 
-	void addRelatedEntries(SearchQueueBatch batch);
+	void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action);
 
 }

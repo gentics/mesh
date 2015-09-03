@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -350,7 +351,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	}
 
-	public void addRelatedEntries(SearchQueueBatch batch) {
+	@Override
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		//		for (GenericVertex<?> element : getCreatedElements()) {
 		//			batch.addEntry(element, UPDATE_ACTION);
 		//		}

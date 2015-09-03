@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -184,7 +185,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
-				ac.fail(BAD_REQUEST,"tag_name_not_set");
+				ac.fail(BAD_REQUEST, "tag_name_not_set");
 				txUpdate.failure();
 				return;
 			} else {
@@ -211,7 +212,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (Node node : getNodes()) {
 			batch.addEntry(node, UPDATE_ACTION);
 		}

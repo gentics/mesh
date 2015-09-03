@@ -143,11 +143,11 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 			}
 			processOrFail2(ac, batch, handler);
 		}
-		
+
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (Group group : getGroups()) {
 			batch.addEntry(group, SearchQueueEntryAction.UPDATE_ACTION);
 		}

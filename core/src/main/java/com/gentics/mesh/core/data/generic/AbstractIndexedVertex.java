@@ -13,10 +13,9 @@ public abstract class AbstractIndexedVertex<T extends RestModel> extends Abstrac
 	@Override
 	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		// TODO use a dedicated uuid or timestamp for batched to avoid collisions
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this, action);
-		addRelatedEntries(batch);
+		addRelatedEntries(batch, action);
 		return batch;
 	}
 

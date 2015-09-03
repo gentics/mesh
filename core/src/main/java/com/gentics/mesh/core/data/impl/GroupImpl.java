@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -192,7 +193,8 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 		return this;
 	}
 
-	public void addRelatedEntries(SearchQueueBatch batch) {
+	@Override
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (User user : getUsers()) {
 			batch.addEntry(user, UPDATE_ACTION);
 		}

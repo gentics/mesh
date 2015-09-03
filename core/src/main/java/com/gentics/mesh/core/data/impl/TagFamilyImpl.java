@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -44,6 +45,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
@@ -188,9 +190,15 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch) {
-		for (Tag tag : getTags()) {
-			batch.addEntry(tag, UPDATE_ACTION);
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+		if (action == DELETE_ACTION) {
+			for (Tag tag : getTags()) {
+				batch.addEntry(tag, DELETE_ACTION);
+			}
+		} else {
+			for (Tag tag : getTags()) {
+				batch.addEntry(tag, UPDATE_ACTION);
+			}
 		}
 	}
 

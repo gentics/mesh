@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.node.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.util.VerticleHelper.*;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
@@ -554,7 +554,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch , SearchQueueEntryAction action) {
 		// batch.addEntry(getParentNode(), UPDATE_ACTION);
 	}
 
@@ -567,7 +567,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			String indexType = getType() + "-" + container.getLanguage().getLanguageTag();
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
-		addRelatedEntries(batch);
+		addRelatedEntries(batch, action);
 		return batch;
 	}
 }

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -18,6 +19,8 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
@@ -33,6 +36,7 @@ import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -217,9 +221,21 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch) {
-		for (Node node : getNodeRoot().findAll()) {
-			batch.addEntry(node, UPDATE_ACTION);
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+		if (action == SearchQueueEntryAction.DELETE_ACTION) {
+			for (TagFamily tagFamily : getTagFamilyRoot().findAll()) {
+				batch.addEntry(tagFamily, DELETE_ACTION);
+			}
+			for (Node node : getNodeRoot().findAll()) {
+				batch.addEntry(node, DELETE_ACTION);
+			}
+			for (Tag tag : getTagRoot().findAll()) {
+				batch.addEntry(tag, DELETE_ACTION);
+			}
+		} else {
+			for (Node node : getNodeRoot().findAll()) {
+				batch.addEntry(node, UPDATE_ACTION);
+			}
 		}
 	}
 

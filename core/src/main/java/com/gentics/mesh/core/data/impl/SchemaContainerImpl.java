@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -154,7 +155,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch) {
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (Node node : getNodes()) {
 			batch.addEntry(node, UPDATE_ACTION);
 		}
