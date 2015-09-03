@@ -193,7 +193,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		try (Trx tx = db.trx()) {
 			RoutingContext rc = getMockedRoutingContext("lang=en");
 			ActionContext ac = ActionContext.create(rc);
-			Node newsNode = content("porsche 911");
+			Node newsNode = content("concorde");
 
 			CountDownLatch latch = new CountDownLatch(1);
 			AtomicReference<NodeResponse> reference = new AtomicReference<>();

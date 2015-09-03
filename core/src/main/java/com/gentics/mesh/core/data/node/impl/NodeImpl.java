@@ -546,22 +546,18 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			processOrFail2(ac, batch, handler);
 		} catch (IOException e1) {
 			log.error(e1);
-			// TODO handle e1 within fail
-			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage()));
+			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage(), e1));
 		}
 	}
 
-	
-
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch , SearchQueueEntryAction action) {
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		// batch.addEntry(getParentNode(), UPDATE_ACTION);
 	}
 
 	@Override
 	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		// TODO use a dedicated uuid or timestamp for batched to avoid collisions
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
 			String indexType = getType() + "-" + container.getLanguage().getLanguageTag();

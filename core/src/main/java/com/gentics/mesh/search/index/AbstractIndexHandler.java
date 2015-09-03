@@ -49,12 +49,12 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
-	public void update(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
+	public void update(String uuid, String type, Handler<AsyncResult<Void>> handler) {
 		getRootVertex().findByUuid(uuid, rh -> {
 			if (rh.failed()) {
 				handler.handle(Future.failedFuture(rh.cause()));
 			} else if (rh.result() == null) {
-				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + getType() + "} could not be found within graph."));
+				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + type + "} could not be found within graph."));
 			} else {
 				update(rh.result(), handler);
 			}
@@ -65,9 +65,9 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		searchProvider.storeDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
 	}
 
-	public void delete(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
+	public void delete(String uuid, String type, Handler<AsyncResult<Void>> handler) {
 		// We don't need to resolve the uuid and load the graph object in this case.
-		searchProvider.deleteDocument(getIndex(), getType(), uuid, handler);
+		searchProvider.deleteDocument(getIndex(), type, uuid, handler);
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
@@ -11,12 +10,12 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
@@ -30,6 +29,8 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
@@ -40,10 +41,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchVerticleTest.class);
 
+	@Autowired
+	private NodeVerticle nodeVerticle;
+
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
+		list.add(nodeVerticle);
 		return list;
 	}
 
@@ -88,28 +93,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
-		assertEquals(1, response.getData().size());
+		assertEquals(2, response.getData().size());
+		deleteNode(DemoDataProvider.PROJECT_NAME, content("concorde").getUuid());
 
-		// Create a delete entry in the search queue
-		NodeResponse nodeResponse = response.getData().get(0);
-		try (Trx tx = db.trx()) {
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch("0");
-			batch.addEntry(nodeResponse.getUuid(), Node.TYPE, SearchQueueEntryAction.DELETE_ACTION);
-			tx.success();
-		}
-
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.meshRoot().getSearchQueue().processAll(rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch);
-
-		future = getClient().searchNodes(getSimpleQuery("Großraumflugzeug"), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -185,11 +176,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
 		}
-		//		CountDownLatch latch = new CountDownLatch(1);
-		//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-		//			latch.countDown();
-		//		});
-		//		failingLatch(latch);
+		// CountDownLatch latch = new CountDownLatch(1);
+		// vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+		// latch.countDown();
+		// });
+		// failingLatch(latch);
 
 		// Search again and make sure we found our document
 		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
@@ -231,11 +222,11 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			// Create the update entry in the search queue
 			SearchQueueBatch batch = searchQueue.createBatch("0");
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION);
-			//		CountDownLatch latch = new CountDownLatch(1);
-			//		vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-			//			latch.countDown();
-			//		});
-			//		failingLatch(latch);
+			// CountDownLatch latch = new CountDownLatch(1);
+			// vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
+			// latch.countDown();
+			// });
+			// failingLatch(latch);
 		}
 
 		future = getClient().searchNodes(qb.toString(), new PagingInfo().setPage(1).setPerPage(2));

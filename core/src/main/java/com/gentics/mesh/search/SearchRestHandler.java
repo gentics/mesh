@@ -104,7 +104,9 @@ public class SearchRestHandler {
 							if (rh.failed()) {
 								obs.toHandler().handle(Future.failedFuture(rh.cause()));
 							} else if (rh.result() == null) {
-								obs.toHandler().handle(ac.failedFuture(NOT_FOUND, "object_not_found_for_uuid", uuid));
+								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
+										+ "}");
+								obs.toHandler().handle(Future.succeededFuture());
 							} else {
 								T element = rh.result();
 								obs.toHandler().handle(Future.succeededFuture(element));
@@ -115,7 +117,7 @@ public class SearchRestHandler {
 						return new ArrayList<T>();
 					} , (x, y) -> {
 						// Check permissions
-						if (requestUser.hasPermission(y, GraphPermission.READ_PERM)) {
+						if (y != null && requestUser.hasPermission(y, GraphPermission.READ_PERM)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -127,7 +129,7 @@ public class SearchRestHandler {
 
 						int n = 0;
 						for (T element : list) {
-							//Only transform elements that we want to list in our resultset
+							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
 								// Transform node and add it to the list of nodes
 								element.transformToRest(ac, th -> {
