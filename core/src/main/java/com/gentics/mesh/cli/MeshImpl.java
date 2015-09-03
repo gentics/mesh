@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -91,7 +92,7 @@ public class MeshImpl implements Mesh {
 		printProductInformation();
 
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
-			SpringVerticleFactory.setParentContext(ctx);
+			setParentContext(ctx);
 			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);
 			ctx.start();
 			initalizer.init(options, verticleLoader);
@@ -100,6 +101,25 @@ public class MeshImpl implements Mesh {
 			dontExit();
 
 		}
+	}
+
+	/**
+	 * This method injects the spring context into the spring verticle factory. This method should be replaced by SpringVerticleFactory.setParentContext(ctx);
+	 * as soon as version 2.0.1 is released.
+	 * 
+	 * @param ctx
+	 */
+	@Deprecated
+	private void setParentContext(AnnotationConfigApplicationContext ctx) {
+		java.lang.reflect.Field field;
+		try {
+			field = SpringVerticleFactory.class.getField("parentContext");
+			field.setAccessible(true);
+			field.set(null, ctx);
+		} catch (Exception e) {
+			log.error("Could not set spring context", e);
+		}
+
 	}
 
 	private void registerShutdownHook() {

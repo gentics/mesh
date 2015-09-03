@@ -20,13 +20,10 @@
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.1.0</ferma.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
-		 
+
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
-		<!--
-		 <mesh.database.provider>mesh-neo4j</mesh.database.provider>
-		<mesh.database.provider>mesh-tinkergraph</mesh.database.provider>
-		<mesh.database.provider>mesh-titandb</mesh.database.provider>
-		-->
+		<!-- <mesh.database.provider>mesh-neo4j</mesh.database.provider> <mesh.database.provider>mesh-tinkergraph</mesh.database.provider> 
+			<mesh.database.provider>mesh-titandb</mesh.database.provider> -->
 	</properties>
 
 	<parent>
