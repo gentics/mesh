@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -91,9 +92,9 @@ public class SearchQueueTest extends AbstractDBTest {
 						try (Trx txTake = db.trx()) {
 							try {
 								SearchQueueBatch currentBatch = searchQueue.take();
-								assertNotNull("entry was null.", currentBatch);
+								assertNotNull("Batch was null.", currentBatch);
 							} catch (Exception e) {
-								e.printStackTrace();
+								fail(e.getMessage());
 							}
 							txTake.success();
 						}

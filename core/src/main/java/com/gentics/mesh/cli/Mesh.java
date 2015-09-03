@@ -88,8 +88,6 @@ public interface Mesh {
 	 */
 	void shutdown();
 
-	void run(Runnable startupHandler) throws Exception;
-
 	void setCustomLoader(MeshCustomLoader<Vertx> verticleLoader);
 
 	MeshOptions getOptions();

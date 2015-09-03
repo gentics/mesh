@@ -33,11 +33,7 @@ public class RestIntegrationTest extends AbstractIntegrationTest {
 
 		new Thread(() -> {
 			try {
-				mesh.run(() -> {
-					assertTrue("The custom loader was not invoked during the startup process", customLoaderInvoked.get());
-					meshStarted.set(true);
-					latch.countDown();
-				});
+				mesh.run();
 			} catch (Exception e) {
 				fail("Error while starting instance: " + e.getMessage());
 				e.printStackTrace();

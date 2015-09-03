@@ -40,7 +40,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	private final ReentrantLock takeLock = new ReentrantLock();
 
 	@Override
-	public void addBatch(SearchQueueBatch batch) {
+	public void add(SearchQueueBatch batch) {
 		setLinkOutTo(batch.getImpl(), HAS_BATCH);
 	}
 
@@ -65,15 +65,15 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	@Override
 	public SearchQueueBatch take(String batchId) {
-		SearchQueueBatch entry;
+		SearchQueueBatch batch;
 		final ReentrantLock takeLock = this.takeLock;
 		try {
 			takeLock.lockInterruptibly();
 			try {
-				entry = out(HAS_BATCH).has(BATCH_ID_PROPERTY_KEY).nextOrDefault(SearchQueueBatchImpl.class, null);
-				if (entry != null) {
-					unlinkOut(entry.getImpl(), HAS_BATCH);
-					return entry;
+				batch = out(HAS_BATCH).has(BATCH_ID_PROPERTY_KEY).nextOrDefault(SearchQueueBatchImpl.class, null);
+				if (batch != null) {
+					unlinkOut(batch.getImpl(), HAS_BATCH);
+					return batch;
 				} else {
 					return null;
 				}
@@ -89,10 +89,15 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	}
 
 	@Override
+	public void remove(SearchQueueBatch batch) {
+		unlinkOut(batch.getImpl(), HAS_BATCH);
+	}
+
+	@Override
 	public SearchQueueBatch createBatch(String batchId) {
 		SearchQueueBatch batch = getGraph().addFramedVertex(SearchQueueBatchImpl.class);
 		batch.setBatchId(batchId);
-		addBatch(batch);
+		add(batch);
 		return batch;
 	}
 

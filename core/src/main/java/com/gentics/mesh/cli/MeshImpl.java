@@ -79,19 +79,13 @@ public class MeshImpl implements Mesh {
 		return vertx;
 	}
 
-	@Override
-	public void run() throws Exception {
-		run(null);
-	}
-
 	/**
 	 * Main entry point for mesh. This method will initialize the spring context and deploy mandatory verticles and extensions.
 	 * 
-	 * @param startupHandler
 	 * @throws Exception
 	 */
 	@Override
-	public void run(Runnable startupHandler) throws Exception {
+	public void run() throws Exception {
 		registerShutdownHook();
 
 		printProductInformation();
@@ -103,11 +97,7 @@ public class MeshImpl implements Mesh {
 			initalizer.init(options, verticleLoader);
 			ctx.registerShutdownHook();
 
-			if (startupHandler != null) {
-				startupHandler.run();
-			} else {
-				dontExit();
-			}
+			dontExit();
 
 		}
 	}

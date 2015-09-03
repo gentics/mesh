@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.IndexedVertex;
@@ -15,6 +16,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NamedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
@@ -83,6 +85,10 @@ public class VerticleHelper {
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(ActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
+
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+
 		// TODO i18n
 		if (batch == null) {
 			// TODO log
@@ -91,7 +97,14 @@ public class VerticleHelper {
 			// TODO log
 			ac.fail(BAD_REQUEST, "element creation failed");
 		} else {
-			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+			try (Trx txBatch = db.trx()) {
+				SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+				searchQueue.reload();
+				searchQueue.remove(batch);
+				txBatch.success();
+			}
+
+			try (Trx txBatch = db.trx()) {
 				batch.process(rh -> {
 					if (rh.failed()) {
 						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"

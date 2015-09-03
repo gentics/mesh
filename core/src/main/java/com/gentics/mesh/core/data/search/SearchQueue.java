@@ -9,13 +9,6 @@ import io.vertx.core.Handler;
 public interface SearchQueue extends MeshVertex {
 
 	/**
-	 * Add a search queue batch to the queue.
-	 * 
-	 * @param entry
-	 */
-	void addBatch(SearchQueueBatch batch);
-
-	/**
 	 * Fetch a search queue batch and remove it from the queue.
 	 * 
 	 * @return
@@ -58,5 +51,9 @@ public interface SearchQueue extends MeshVertex {
 	 * @throws InterruptedException
 	 */
 	void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException;
+
+	void remove(SearchQueueBatch batch);
+
+	void add(SearchQueueBatch batch);
 
 }
