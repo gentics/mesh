@@ -8,6 +8,11 @@ import io.vertx.core.Handler;
 
 public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
 
+	/**
+	 * Return the type of the vertex.
+	 * 
+	 * @return
+	 */
 	String getType();
 
 	/**
@@ -66,6 +71,6 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void setCreationTimestamp(long timestamp);
 
-	void update(ActionContext ac,  Handler<AsyncResult<Void>> handler);
+	void update(ActionContext ac, Handler<AsyncResult<Void>> handler);
 
 }

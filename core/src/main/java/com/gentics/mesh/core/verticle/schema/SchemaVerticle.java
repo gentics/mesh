@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.schema;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;

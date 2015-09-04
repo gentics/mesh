@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 
-public interface User extends GenericVertex<UserResponse> , NamedVertex, IndexedVertex {
+public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "user";
 
@@ -116,7 +116,8 @@ public interface User extends GenericVertex<UserResponse> , NamedVertex, Indexed
 	 * list of roles that would initially enable you to create a new project. It will do so by examining the projectRoot node. After this step the CRUD
 	 * permissions will be added to the newly created project and the found roles. In this case the call would look like this:
 	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM, newlyCreatedProject); This method will ensure that all users/roles that would be able to
-	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles.
+	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles. Additionally the
+	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
 	 * 
 	 * @param node
 	 *            Node that will be checked against to find all roles that would grant the given permission.
@@ -126,6 +127,8 @@ public interface User extends GenericVertex<UserResponse> , NamedVertex, Indexed
 	 *            Node to which the CRUD permissions will be assigned.
 	 */
 	void addCRUDPermissionOnRole(MeshVertex node, GraphPermission permission, MeshVertex targetNode);
+
+	void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
 	/**
 	 * Return a list of groups to which the user was assigned.

@@ -9,6 +9,9 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+/**
+ * Graph Domain Model interface for a tag.
+ */
 public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "tag";
@@ -22,8 +25,18 @@ public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVer
 	 */
 	TagFamily getTagFamily();
 
+	/**
+	 * Transform the tag into a rest tag reference object.
+	 * 
+	 * @return
+	 */
 	TagReference tansformToTagReference();
 
+	/**
+	 * Unassign the the node from the tag.
+	 * 
+	 * @param node
+	 */
 	void removeNode(Node node);
 
 	/**
@@ -49,10 +62,21 @@ public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVer
 	 */
 	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
 
+	/**
+	 * Return the tag graph field container that hold the tag name for the given language.
+	 * 
+	 * @param language
+	 * @return
+	 */
 	TagGraphFieldContainer getFieldContainer(Language language);
 
 	TagGraphFieldContainer getOrCreateFieldContainer(Language language);
 
-	void setTagFamily(TagFamily root);
+	/**
+	 * Set the tag family of this tag.
+	 * 
+	 * @param tagFamily
+	 */
+	void setTagFamily(TagFamily tagFamily);
 
 }

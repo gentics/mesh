@@ -1,15 +1,17 @@
 package com.gentics.mesh.core.verticle.project;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
-import io.vertx.ext.web.Route;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+
+import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")

@@ -130,7 +130,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		return getUsername();
 	}
 
-	// TODO add unique index
 	@Override
 	public String getUsername() {
 		return getProperty(USERNAME_PROPERTY_KEY);
@@ -259,15 +258,33 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void addCRUDPermissionOnRole(MeshVertex node, GraphPermission permission, MeshVertex targetNode) {
+	public void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode) {
 
-		// 1. Determine all roles that grant given permission
-		List<? extends Role> rolesThatGrantPermission = node.getImpl().in(permission.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+		// 1. Determine all roles that grant given permission on the source node.
+		List<? extends Role> rolesThatGrantPermission = sourceNode.getImpl().in(permission.label()).has(RoleImpl.class)
+				.toListExplicit(RoleImpl.class);
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
 			role.grantPermissions(targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 		}
+
+		inheritRolePermissions(sourceNode, targetNode);
+	}
+
+	@Override
+	public void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
+
+		for (GraphPermission perm : GraphPermission.values()) {
+			List<? extends Role> rolesWithPerm = sourceNode.getImpl().in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+			for (Role role : rolesWithPerm) {
+				if (log.isDebugEnabled()) {
+					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
+				}
+				role.grantPermissions(targetNode, perm);
+			}
+		}
+
 	}
 
 	@Override

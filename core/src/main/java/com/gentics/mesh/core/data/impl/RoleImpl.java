@@ -36,8 +36,6 @@ import io.vertx.core.Handler;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
 
-	// TODO index on name
-
 	@Override
 	public String getType() {
 		return Role.TYPE;
@@ -105,11 +103,8 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 
 	@Override
 	public void revokePermissions(MeshVertex node, GraphPermission... permissions) {
-
 		for (GraphPermission permission : permissions) {
-			// System.out.println(inE(permission.label()).mark().outV().retain(node).back().next().getLabel());
 			outE(permission.label()).mark().inV().retain((MeshVertexImpl) node).back().removeAll();
-			// System.out.println(outE(permission.label()).mark().inV().retain(node).back().next().getLabel());
 		}
 	}
 
@@ -117,11 +112,6 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	public void delete() {
 		getVertex().remove();
 		addIndexBatch(DELETE_ACTION);
-	}
-
-	@Override
-	public RoleImpl getImpl() {
-		return this;
 	}
 
 	@Override

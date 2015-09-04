@@ -131,7 +131,6 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 
 	@Override
 	public void delete() {
-
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}

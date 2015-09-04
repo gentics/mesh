@@ -15,7 +15,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<surefire.forkcount>10</surefire.forkcount>
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>

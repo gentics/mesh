@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.auth;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpMethod.GET;

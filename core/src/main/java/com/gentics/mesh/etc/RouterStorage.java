@@ -1,6 +1,6 @@
 package com.gentics.mesh.etc;
 
-import static com.gentics.mesh.core.AbstractWebVerticle.APPLICATION_JSON;
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 
 import java.util.HashMap;
 import java.util.Map;

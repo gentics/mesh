@@ -6,20 +6,58 @@ import java.util.Set;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
+/**
+ * Graph domain model interface for a role.
+ */
 public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "role";
 
+	/**
+	 * Grant the given permissions on the vertex.
+	 * 
+	 * @param vertex
+	 * @param permissions
+	 */
 	void grantPermissions(MeshVertex vertex, GraphPermission... permissions);
 
+	/**
+	 * Revoke the given permissions on the vertex.
+	 * 
+	 * @param vertex
+	 * @param permissions
+	 */
 	void revokePermissions(MeshVertex vertex, GraphPermission... permissions);
 
-	Set<GraphPermission> getPermissions(MeshVertex vertex);
+	/**
+	 * Return a set of permissions which the role is granting to the given element.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	Set<GraphPermission> getPermissions(MeshVertex element);
 
+	/**
+	 * Return a list of groups to which this role was assigned.
+	 * 
+	 * @return
+	 */
+	List<? extends Group> getGroups();
+
+	/**
+	 * Assign the role to the given group.
+	 * 
+	 * @param group
+	 */
 	void addGroup(Group group);
 
-	boolean hasPermission(GraphPermission permission, GenericVertex<?> node);
-
-	List<? extends Group> getGroups();
+	/**
+	 * Check whether the role grants the given permission on the given element.
+	 * 
+	 * @param permission
+	 * @param element
+	 * @return
+	 */
+	boolean hasPermission(GraphPermission permission, GenericVertex<?> element);
 
 }

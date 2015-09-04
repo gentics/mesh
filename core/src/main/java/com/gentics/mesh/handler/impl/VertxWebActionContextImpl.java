@@ -1,5 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -10,7 +11,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.service.I18NService;
@@ -90,7 +90,7 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 
 	@Override
 	public void send(String body) {
-		rc.response().putHeader("content-type", AbstractWebVerticle.APPLICATION_JSON);
+		rc.response().putHeader("content-type", APPLICATION_JSON);
 		// TODO use 201 for created entities
 		rc.response().setStatusCode(200).end(body);
 	}

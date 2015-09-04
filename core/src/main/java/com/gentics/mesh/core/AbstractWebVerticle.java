@@ -21,8 +21,6 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
 
-	public static final String APPLICATION_JSON = ContentType.APPLICATION_JSON.getMimeType();
-
 	protected Router localRouter = null;
 	protected String basePath;
 	protected HttpServer server;
