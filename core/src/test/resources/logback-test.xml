@@ -28,11 +28,11 @@
 	<logger name="com.gentics.mesh" level="DEBUG"/>
 	<logger name="org.elasticsearch" level="INFO"/>
 	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
-
+<!-- 
 	<logger name="com.gentics" level="ERROR" additivity="false">
 		<appender-ref ref="STDERR"/>
 	</logger>
-
+ -->
 	<root level="TRACE">
 		<appender-ref ref="STDOUT"/>
 	</root>

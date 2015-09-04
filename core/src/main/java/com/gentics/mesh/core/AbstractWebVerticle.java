@@ -2,7 +2,6 @@ package com.gentics.mesh.core;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

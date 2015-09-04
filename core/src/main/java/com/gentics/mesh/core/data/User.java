@@ -119,14 +119,14 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles. Additionally the
 	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
 	 * 
-	 * @param node
+	 * @param sourceNode
 	 *            Node that will be checked against to find all roles that would grant the given permission.
 	 * @param permission
 	 *            Permission that is used in conjunction with the node to determine the list of affected roles.
 	 * @param targetNode
 	 *            Node to which the CRUD permissions will be assigned.
 	 */
-	void addCRUDPermissionOnRole(MeshVertex node, GraphPermission permission, MeshVertex targetNode);
+	void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
