@@ -793,8 +793,7 @@ traits:
 /copy/{uuid}/to/{uuid}:
   displayName: Copy
   put:
-    description: Copy the object to the second object. Include all nested objects during this process. (TODO enhance documentation).
-    
+    description: Copy the object to the second object. Include all nested objects and children during this process.
 
 #------------------------------------------------------------------------------
 # Move Verticle
@@ -805,15 +804,31 @@ traits:
     description: Move entities.
 
 #------------------------------------------------------------------------------
+# Authentication Verticle
+#------------------------------------------------------------------------------
+/auth:
+  displayName: Authentication
+  /me:
+    get:
+      description: Return the user response for the current user.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/UserResponse.example.json
+
+  /login:
+    post:
+      description: Login the user using the provided credentials.
+  /logout:
+    get:
+      description: Logout the user.
+
+#------------------------------------------------------------------------------
 # Admin Verticle
 #------------------------------------------------------------------------------
 /admin:
   displayName: Admin
-
-  /neo4j/restart:
-    is: [ localized ]
-    description: Restart the neo4vertx verticle.
-    get:
 
   /services/{mavenCoordinates}:
     is: [ localized ]
