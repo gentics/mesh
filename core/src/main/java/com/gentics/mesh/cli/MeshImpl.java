@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -113,11 +112,12 @@ public class MeshImpl implements Mesh {
 	private void setParentContext(AnnotationConfigApplicationContext ctx) {
 		java.lang.reflect.Field field;
 		try {
-			field = SpringVerticleFactory.class.getField("parentContext");
+			field = SpringVerticleFactory.class.getDeclaredField("parentContext");
 			field.setAccessible(true);
 			field.set(null, ctx);
 		} catch (Exception e) {
 			log.error("Could not set spring context", e);
+			System.exit(10);
 		}
 
 	}

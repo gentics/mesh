@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -325,11 +324,18 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
+		User newUser;
 		try (Trx tx = db.trx()) {
 			Node node = content();
-			User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
+			newUser = meshRoot().getUserRoot().create("newUser", group(), user());
 			assertEquals(user().getUuid(), node.getCreator().getUuid());
+			System.out.println(newUser.getUuid());
 			node.setCreator(newUser);
+			System.out.println(node.getCreator().getUuid());
+			tx.success();
+		}
+		try (Trx tx = db.trx()) {
+			Node node = content();
 			assertEquals(newUser.getUuid(), node.getCreator().getUuid());
 			// TODO update other fields
 		}

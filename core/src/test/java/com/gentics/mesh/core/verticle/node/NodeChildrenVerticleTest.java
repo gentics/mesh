@@ -1,4 +1,5 @@
 package com.gentics.mesh.core.verticle.node;
+
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -26,12 +27,12 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
+
 public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private NodeVerticle verticle;
 
-	
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
@@ -108,7 +109,10 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 			NodeResponse restNode = future.result();
 			test.assertMeshNode(node, restNode);
 			assertTrue(restNode.isContainer());
-			assertTrue(restNode.getChildren().size() > 5);
+
+			int nChildren = 4;
+			assertTrue("The node should have more than {" + nChildren + "} children. But it got {" + restNode.getChildren().size() + "}",
+					restNode.getChildren().size() > nChildren);
 		}
 	}
 

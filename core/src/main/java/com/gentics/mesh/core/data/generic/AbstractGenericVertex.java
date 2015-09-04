@@ -21,7 +21,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 	@Override
 	public void setCreator(User user) {
-		setLinkOutTo(user.getImpl(), HAS_CREATOR);
+		setLinkOut(user.getImpl(), HAS_CREATOR);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 	@Override
 	public void setEditor(User user) {
-		setLinkOutTo(user.getImpl(), HAS_EDITOR);
+		setLinkOut(user.getImpl(), HAS_EDITOR);
 	}
 
 	@Override

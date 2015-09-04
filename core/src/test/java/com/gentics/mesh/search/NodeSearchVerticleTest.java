@@ -119,10 +119,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	public void testCustomQuery() throws InterruptedException, JSONException {
-		try (Trx tx = db.trx()) {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			tx.success();
-		}
+		fullIndex();
 
 		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("schema.name", "content"));
 		latchFor(future);

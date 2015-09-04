@@ -43,7 +43,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		String oldParentUuid;
 		try (Trx tx = db.trx()) {
 			sourceNode = folder("news");
-			targetNode = content("jeep wrangler");
+			targetNode = content("concorde");
 			oldParentUuid = sourceNode.getParentNode().getUuid();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 		}

@@ -204,27 +204,32 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertMeshNode(request, restNode);
 
 		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(2);
+			CountDownLatch latch = new CountDownLatch(1);
 			meshRoot().getNodeRoot().findByUuid(restNode.getUuid(), rh -> {
 				Node node = rh.result();
 				assertNotNull(node);
 				test.assertMeshNode(request, node);
-				// Load the node again
-				Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
-				latchFor(future2);
-				assertSuccess(future2);
-				NodeResponse restNode2 = future2.result();
-				test.assertMeshNode(node, restNode2);
+				latch.countDown();
+			});
+			failingLatch(latch);
+		}
 
-				// Delete the node
-				Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
-				latchFor(deleteFut);
-				assertSuccess(deleteFut);
-				expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
-				meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
-					assertNull("The node should have been deleted.", rh2.result());
-					latch.countDown();
-				});
+		// Load the node again
+		Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
+		latchFor(future2);
+		assertSuccess(future2);
+		NodeResponse restNode2 = future2.result();
+
+		// Delete the node
+		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
+		latchFor(deleteFut);
+		assertSuccess(deleteFut);
+		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
+
+		try (Trx tx = db.trx()) {
+			CountDownLatch latch = new CountDownLatch(1);
+			meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
+				assertNull("The node should have been deleted.", rh2.result());
 				latch.countDown();
 			});
 			failingLatch(latch);
@@ -316,12 +321,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
-		assertEquals(perPage, restResponse.getData().size());
+		assertEquals(2, restResponse.getData().size());
 
 		// Extra Nodes + permitted node
 		int totalNodes = data().getNodeCount();
 		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
-		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", 2, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -365,7 +370,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
-		assertEquals(3, list.getMetainfo().getPageCount());
+		assertEquals(1, list.getMetainfo().getPageCount());
 		assertEquals(data().getNodeCount(), list.getMetainfo().getTotalCount());
 
 	}
@@ -374,7 +379,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadNodesWithoutPermissions() throws Exception {
 
 		// TODO add node that has no perms and check the response
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(1,10));
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, 10));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
@@ -694,13 +699,13 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = meshRoot().getSearchQueue();
 			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.getSize());
-			//			SearchQueueBatch batch = searchQueue.take();
-			//			assertEquals(1, batch.getEntries().size());
-			//			SearchQueueEntry entry = batch.getEntries().get(0);
+			// SearchQueueBatch batch = searchQueue.take();
+			// assertEquals(1, batch.getEntries().size());
+			// SearchQueueEntry entry = batch.getEntries().get(0);
 			//
-			//			assertEquals(restNode.getUuid(), entry.getElementUuid());
-			//			assertEquals(Node.TYPE, entry.getElementType());
-			//			assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
+			// assertEquals(restNode.getUuid(), entry.getElementUuid());
+			// assertEquals(Node.TYPE, entry.getElementType());
+			// assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
 		}
 
 	}

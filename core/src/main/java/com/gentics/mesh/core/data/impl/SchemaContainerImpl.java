@@ -147,6 +147,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 		SearchQueueBatch batch;
 		try (Trx txUpdate = db.trx()) {
 			setSchema(requestModel);
+			setName(requestModel.getName());
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}

@@ -252,9 +252,10 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
+		String name = "new-name";
 		SchemaContainer schema = schemaContainer("content");
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
-		request.setName("new-name");
+		request.setName(name);
 
 		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
@@ -262,10 +263,13 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaResponse restSchema = future.result();
 		assertEquals(request.getName(), restSchema.getName());
 		try (Trx tx = db.trx()) {
+			assertEquals(name, schema.getName());
+		}
+		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
 				SchemaContainer reloaded = rh.result();
-				assertEquals("The name should have been updated", "new-name", reloaded.getName());
+				assertEquals("The name should have been updated", name, reloaded.getName());
 				latch.countDown();
 			});
 			failingLatch(latch);
