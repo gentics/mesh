@@ -10,8 +10,11 @@ public interface AuthClientMethods {
 
 	Future<GenericMessageResponse> login();
 
+	Future<GenericMessageResponse> logout();
+
 	Future<UserResponse> me();
 
 	Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive);
+
 
 }

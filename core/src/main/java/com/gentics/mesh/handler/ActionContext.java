@@ -13,8 +13,12 @@ import com.gentics.mesh.handler.impl.VertxWebActionContextImpl;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Abstraction of the vertx-web routing context.
+ */
 public interface ActionContext {
 
 	Map<String, Object> data();
@@ -78,5 +82,12 @@ public interface ActionContext {
 	Locale getLocale();
 
 	List<String> getExpandedFieldnames();
+
+	void setUser(User user);
+
+	/**
+	 * Perform a logout.
+	 */
+	void logout();
 
 }

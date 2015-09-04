@@ -42,7 +42,7 @@ public class MeshAuthProvider implements AuthProvider {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
-			try (Trx tx = db.trx()) {
+			try (Trx tx = db.nonTrx()) {
 				user = boot.userRoot().findMeshAuthUserByUsername(username);
 			}
 			if (user != null) {

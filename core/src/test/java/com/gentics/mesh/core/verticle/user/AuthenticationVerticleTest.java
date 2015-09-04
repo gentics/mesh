@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.user;
 
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.*;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,6 +21,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 
 public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
@@ -65,6 +66,14 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 
 		assertNotNull(me);
 		assertEquals(uuid, me.getUuid());
+
+		Future<GenericMessageResponse> logoutFuture = client.logout();
+		latchFor(logoutFuture);
+		assertSuccess(logoutFuture);
+
+		meResponse = client.me();
+		latchFor(meResponse);
+		expectMessage(meResponse, HttpResponseStatus.UNAUTHORIZED, "Unauthorized");
 	}
 
 }

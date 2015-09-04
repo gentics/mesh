@@ -24,6 +24,7 @@ import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
 public class VertxWebActionContextImpl extends AbstractActionContext {
@@ -61,7 +62,7 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 
 	@Override
 	public MeshAuthUser getUser() {
-		if (user == null) {
+		if (user == null && rc.user() != null) {
 			if (rc.user() instanceof MeshAuthUser) {
 				user = (MeshAuthUser) rc.user();
 			} else {
@@ -71,6 +72,11 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 			}
 		}
 		return user;
+	}
+
+	@Override
+	public void setUser(User user) {
+		rc.setUser(user);
 	}
 
 	@Override
@@ -137,6 +143,12 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 			return getLocale(header);
 		});
 		return (Locale) data().get(LOCALE_MAP_DATA_KEY);
+	}
+
+	@Override
+	public void logout() {
+		rc.session().destroy();
+		rc.clearUser();
 	}
 
 	@Override

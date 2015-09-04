@@ -469,6 +469,11 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<GenericMessageResponse> logout() {
+		return handleRequest(GET, "/auth/logout", GenericMessageResponse.class);
+	}
+
+	@Override
 	public Future<Void> initSchemaStorage() {
 		//TODO handle paging correctly
 		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingInfo(1, 100));
@@ -644,6 +649,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		return future;
 	}
 
+	@Override
 	public Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request) {
 		return handleRequest(PUT, "/roles/" + roleUuid + "/permissions/" + pathToElement, GenericMessageResponse.class, request);
 	}

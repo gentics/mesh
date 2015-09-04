@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -16,6 +17,9 @@ public class AbstractHandler {
 
 	@Autowired
 	protected BootstrapInitializer boot;
+
+	@Autowired
+	protected MeshSpringConfiguration springConfiguration;
 
 	@Autowired
 	protected Database db;
