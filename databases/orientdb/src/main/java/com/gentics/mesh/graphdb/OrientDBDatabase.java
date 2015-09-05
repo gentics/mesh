@@ -42,7 +42,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void start() {
 		Orient.instance().startup();
-		if (options.getDirectory() == null) {
+		if (options == null || options.getDirectory() == null) {
+			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop");
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory());
