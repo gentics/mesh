@@ -67,6 +67,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	public SearchQueueBatch createBatch(String batchId) {
 		SearchQueueBatch batch = getGraph().addFramedVertex(SearchQueueBatchImpl.class);
 		batch.setBatchId(batchId);
+		batch.setTimestamp(System.currentTimeMillis());
 		add(batch);
 		return batch;
 	}

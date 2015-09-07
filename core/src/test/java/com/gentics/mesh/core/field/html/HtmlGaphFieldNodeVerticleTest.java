@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.html;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
@@ -12,6 +13,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -29,6 +31,16 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 			htmlFieldSchema.setLabel("Some label");
 			schema.addField(htmlFieldSchema);
 			schemaContainer("folder").setSchema(schema);
+		}
+	}
+
+	@Test
+	public void testCreateNodeWithEmptyField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode(null, (Field) null);
+			HtmlFieldImpl htmlField = response.getField("htmlField");
+			assertNotNull(htmlField);
+			assertNull(htmlField.getHTML());
 		}
 	}
 
@@ -52,7 +64,6 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 		NodeResponse response = createNode("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 		HtmlFieldImpl htmlField = response.getField("htmlField");
 		assertEquals("Some<b>html", htmlField.getHTML());
-
 	}
 
 	@Test

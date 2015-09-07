@@ -53,14 +53,18 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
 		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
 		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.getFields().put(fieldKey, field);
+		if (fieldKey != null) {
+			nodeCreateRequest.getFields().put(fieldKey, field);
+		}
 
 		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
 				new NodeRequestParameters().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
-		assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		if (fieldKey != null) {
+			assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		}
 		return future.result();
 	}
 

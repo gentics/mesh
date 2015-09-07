@@ -70,6 +70,17 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
+	public long getTimestamp() {
+		return getProperty("timestamp");
+	}
+
+	@Override
+	public void setTimestamp(long timestamp) {
+		setProperty("timestamp", timestamp);
+
+	}
+
+	@Override
 	public void delete() {
 		for (SearchQueueEntry entry : getEntries()) {
 			entry.delete();

@@ -402,7 +402,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws InterruptedException {
 		String uuid;
 		try (Trx tx = db.trx()) {
@@ -422,10 +421,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
-		int nJobs = 5;
-		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		Trx.enableDebug();
-		Trx.setBarrier(barrier);
+		int nJobs = 50;
+//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+//		Trx.enableDebug();
+//		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking createNode REST call");
@@ -441,14 +440,14 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-		Trx.disableDebug();
-		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+//		Trx.disableDebug();
+//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
+	//@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		String uuid;
@@ -472,9 +471,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("en", "de");
 
 		int nJobs = 5;
-		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		Trx.enableDebug();
-		Trx.setBarrier(barrier);
+//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+//		Trx.enableDebug();
+//		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking updateNode REST call");
@@ -486,7 +485,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			assertSuccess(future);
 		}
 		Trx.disableDebug();
-		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
 
@@ -515,12 +514,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
+//	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
-		int nJobs = 10;
-		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		Trx.enableDebug();
-		Trx.setBarrier(barrier);
+		int nJobs = 50;
+//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+//		Trx.enableDebug();
+//		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking findNodeByUuid REST call");

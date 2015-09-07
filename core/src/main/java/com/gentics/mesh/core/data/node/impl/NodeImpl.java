@@ -268,7 +268,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					boolean expandField = fieldToExpand.contains(fieldEntry.getName());
-					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry,
+					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry,
 							expandField);
 					if (fieldEntry.isRequired() && restField == null) {
 						/* TODO i18n */
@@ -276,7 +276,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 								+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
 					}
 					if (restField == null) {
-						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field");
+						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
 					} else {
 						restNode.getFields().put(fieldEntry.getName(), restField);
 					}

@@ -80,4 +80,8 @@ public interface SearchQueueBatch extends MeshVertex {
 
 	void printDebug();
 
+	void setTimestamp(long currentTimeMillis);
+
+	long getTimestamp();
+
 }

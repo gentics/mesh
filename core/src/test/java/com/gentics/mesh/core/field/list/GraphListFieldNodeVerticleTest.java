@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
@@ -49,6 +50,31 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		}
 	}
 
+	@Test
+	public void testEmptyStringList() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("string");
+			StringFieldListImpl listField = new StringFieldListImpl();
+
+			NodeResponse response = createNode("listField", listField);
+			StringFieldListImpl listFromResponse = response.getField("listField");
+			assertEquals(0, listFromResponse.getList().size());
+		}
+	}
+
+	@Test
+	public void testOmittedStringListValue() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("string");
+
+			NodeResponse response = createNode(null, (Field)null);
+			StringFieldListImpl listFromResponse = response.getField("listField");
+			assertNotNull(listFromResponse);
+			assertEquals(0, listFromResponse.getList().size());
+		}
+	}
+
+	
 	@Test
 	public void testStringList() throws IOException {
 		try (Trx tx = db.trx()) {
