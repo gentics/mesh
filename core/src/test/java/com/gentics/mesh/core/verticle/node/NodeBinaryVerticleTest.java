@@ -41,7 +41,8 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
-	String uploads = "target/testuploads";
+	final String uploads = "target/testuploads";
+	final String targetTmpDir = "target/tmp";
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
@@ -54,6 +55,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	public void setup() throws IOException {
 		FileUtils.deleteDirectory(new File(uploads));
 		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
+		Mesh.mesh().getOptions().getUploadOptions().setTempDirectory(targetTmpDir);
 	}
 
 	@After
@@ -61,7 +63,8 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		FileUtils.deleteDirectory(new File(uploads));
 		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
 
-		FileUtils.deleteDirectory(new File("target/file-uploads"));
+		FileUtils.deleteDirectory(new File(uploads));
+		FileUtils.deleteDirectory(new File(targetTmpDir));
 		FileUtils.deleteDirectory(new File("file-uploads"));
 	}
 
@@ -169,7 +172,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	public void testUpload() throws Exception {
 
 		String contentType = "application/octet-stream";
-		int binaryLen = 10000;
+		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node;
 		try (Trx tx = db.trx()) {

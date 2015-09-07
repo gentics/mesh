@@ -46,6 +46,20 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
+	public void testSearchUserForGroup() throws InterruptedException, JSONException {
+
+		String groupName = group().getName();
+		String username = "extrauser42a";
+		createUser(username);
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+
+	}
+
+	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String userName = "testuser42a";

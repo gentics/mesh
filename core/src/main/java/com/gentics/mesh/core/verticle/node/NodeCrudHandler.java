@@ -221,6 +221,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								FileUpload ul = fileUploads.iterator().next();
 								long byteLimit = uploadOptions.getByteLimit();
 								if (ul.size() > byteLimit) {
+									if (log.isDebugEnabled()) {
+										log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {"
+												+ (ul.size() - byteLimit) + "} bytes.");
+									}
 									String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
 									String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
 									ac.fail(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);

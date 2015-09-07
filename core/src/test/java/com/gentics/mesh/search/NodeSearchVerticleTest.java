@@ -168,18 +168,22 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(0, response.getData().size());
 
 		// Create the update entry in the search queue
+		SearchQueueBatch batch;
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch("0");
+			batch = searchQueue.createBatch("0");
 			Node node = folder("2015");
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
 		}
-		// CountDownLatch latch = new CountDownLatch(1);
-		// vertx.eventBus().send(SEARCH_QUEUE_ENTRY_ADDRESS, true, new DeliveryOptions().setSendTimeout(100000L), rh -> {
-		// latch.countDown();
-		// });
-		// failingLatch(latch);
+		try (Trx tx = db.trx()) {
+			CountDownLatch latch = new CountDownLatch(1);
+			batch.process(rh -> {
+				latch.countDown();
+
+			});
+			failingLatch(latch);
+		}
 
 		// Search again and make sure we found our document
 		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
