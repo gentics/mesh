@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.number;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -15,6 +16,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -37,6 +40,19 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 			tx.success();
 		}
 	}
+	
+
+	@Test
+	@Override
+	public void testCreateNodeWithNoField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode("numberField", (Field)null);
+			NumberFieldImpl field = response.getField("numberField");
+			assertNotNull(field);
+			assertNull(field.getNumber());
+		}
+	}
+
 
 	@Test
 	@Override

@@ -101,6 +101,11 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	 */
 	abstract public void testCreateNodeWithField();
 
+	/**
+	 * Create a new node and set no field value for the field. Make sure the node was correctly loaded and that the field was set to an empty value. Basic fields must be set to null.
+	 */
+	abstract public void testCreateNodeWithNoField();
+
 	// TODO testcases for mandatory fields? deletion testcases? We can use explicit null values to delete a field.
 
 }

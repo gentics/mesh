@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
@@ -13,7 +14,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -31,6 +34,17 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			schema.addField(dateFieldSchema);
 			schemaContainer("folder").setSchema(schema);
 			tx.success();
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateNodeWithNoField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode("dateField", (Field) null);
+			DateFieldImpl field = response.getField("dateField");
+			assertNotNull(field);
+			assertNull(field.getDate());
 		}
 	}
 

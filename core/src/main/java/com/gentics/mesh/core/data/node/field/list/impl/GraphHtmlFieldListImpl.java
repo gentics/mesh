@@ -4,8 +4,10 @@ import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.handler.ActionContext;
 
-public class GraphHtmlFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField>implements GraphHtmlFieldList {
+public class GraphHtmlFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl>implements GraphHtmlFieldList {
 
 	@Override
 	public HtmlGraphField createHTML(String html) {
@@ -32,6 +34,14 @@ public class GraphHtmlFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	@Override
 	public void delete() {
 		// TODO Auto-generated method stub
+	}
 
+	@Override
+	public HtmlFieldListImpl transformToRest(ActionContext ac, String fieldKey) {
+		HtmlFieldListImpl restModel = new HtmlFieldListImpl();
+		for (HtmlGraphField item : getList()) {
+			restModel.add(item.getHTML());
+		}
+		return restModel;
 	}
 }

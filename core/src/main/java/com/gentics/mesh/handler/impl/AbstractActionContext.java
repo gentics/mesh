@@ -29,6 +29,7 @@ public abstract class AbstractActionContext implements ActionContext {
 	private static final Logger log = LoggerFactory.getLogger(AbstractActionContext.class);
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
+	public static final String EXPANDED_FIELDNAMED_DATA_KEY = "expandedFieldnames";
 
 	private Map<String, Object> data;
 
@@ -93,16 +94,20 @@ public abstract class AbstractActionContext implements ActionContext {
 	 */
 	@Override
 	public List<String> getExpandedFieldnames() {
-		List<String> expandFieldnames = new ArrayList<>();
-		Map<String, String> queryPairs = splitQuery();
-		if (queryPairs == null) {
-			return new ArrayList<>();
-		}
-		String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
-		if (value != null) {
-			expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
-		}
-		return expandFieldnames;
+		data().computeIfAbsent(EXPANDED_FIELDNAMED_DATA_KEY, map -> {
+			List<String> expandFieldnames = new ArrayList<>();
+			Map<String, String> queryPairs = splitQuery();
+			if (queryPairs == null) {
+				return new ArrayList<>();
+			}
+
+			String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
+			if (value != null) {
+				expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
+			}
+			return expandFieldnames;
+		});
+		return (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
 	}
 
 	@Override

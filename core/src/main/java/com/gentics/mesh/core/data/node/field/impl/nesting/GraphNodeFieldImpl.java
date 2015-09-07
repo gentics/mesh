@@ -1,10 +1,18 @@
 package com.gentics.mesh.core.data.node.field.impl.nesting;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.handler.ActionContext;
 
 public class GraphNodeFieldImpl extends MeshEdgeImpl implements GraphNodeField {
 
@@ -22,5 +30,33 @@ public class GraphNodeFieldImpl extends MeshEdgeImpl implements GraphNodeField {
 	public Node getNode() {
 		return inV().has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
+
+	@Override
+	public Field transformToRest(ActionContext ac, String fieldKey) {
+		// TODO handle null across all types
+		//if (getNode() != null) {
+		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey);
+		if (expandField) {
+			// TODO, FIXME don't use countdown latch here
+			CountDownLatch latch = new CountDownLatch(1);
+			AtomicReference<NodeResponse> reference = new AtomicReference<>();
+			getNode().transformToRest(ac, rh -> {
+				reference.set(rh.result());
+				latch.countDown();
+			});
+			try {
+				latch.await(2, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return reference.get();
+		} else {
+			NodeFieldImpl nodeField = new NodeFieldImpl();
+			nodeField.setUuid(getNode().getUuid());
+			return nodeField;
+		}
+	}
+
+	//}
 
 }

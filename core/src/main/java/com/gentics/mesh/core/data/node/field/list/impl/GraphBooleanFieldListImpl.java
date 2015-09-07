@@ -4,8 +4,10 @@ import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.handler.ActionContext;
 
-public class GraphBooleanFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField> implements GraphBooleanFieldList {
+public class GraphBooleanFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl>implements GraphBooleanFieldList {
 
 	@Override
 	public BooleanGraphField getBoolean(int index) {
@@ -28,11 +30,19 @@ public class GraphBooleanFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	public Class<? extends BooleanGraphField> getListType() {
 		return BooleanGraphFieldImpl.class;
 	}
-	
+
 	@Override
 	public void delete() {
 		// TODO Auto-generated method stub
-		
+	}
+
+	@Override
+	public BooleanFieldListImpl transformToRest(ActionContext ac, String fieldKey) {
+		BooleanFieldListImpl restModel = new BooleanFieldListImpl();
+		for (BooleanGraphField item : getList()) {
+			restModel.add(item.getBoolean());
+		}
+		return restModel;
 	}
 
 }

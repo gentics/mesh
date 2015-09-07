@@ -112,7 +112,11 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		case BOOLEAN:
 			BooleanField booleanField = new BooleanFieldImpl();
 			//booleanField.setValue(BooleanUtils.toBooleanObject(jsonNode.booleanValue()));
+			if(jsonNode.textValue()==null) {
+				booleanField.setValue(null);
+			} else {
 			booleanField.setValue(jsonNode.booleanValue());
+			}
 			map.put(fieldKey, booleanField);
 			break;
 		case DATE:

@@ -3,8 +3,9 @@ package com.gentics.mesh.core.data.node.field.list;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
 
-public abstract class AbstractGraphFieldList<T extends ListableGraphField> extends MeshVertexImpl implements GraphListField<T> {
+public abstract class AbstractGraphFieldList<T extends ListableGraphField, RM extends Field> extends MeshVertexImpl implements GraphListField<T, RM> {
 
 	@Override
 	public void setFieldKey(String key) {

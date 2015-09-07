@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -109,6 +111,17 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
 			assertNotNull(deserializedNodeField);
 			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateNodeWithNoField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode("nodeField", (Field) null);
+			NodeResponse field = response.getField("nodeField");
+			assertNotNull(field);
+			assertNull(field.getUuid());
 		}
 	}
 

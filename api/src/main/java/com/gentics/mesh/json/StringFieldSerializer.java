@@ -33,42 +33,62 @@ public class StringFieldSerializer<T extends Field> extends JsonSerializer<T> {
 			switch (type) {
 			case HTML:
 				HtmlField htmlField = (HtmlFieldImpl) value;
-				gen.writeString(htmlField.getHTML());
+				if (htmlField.getHTML() == null) {
+					gen.writeNull();
+				} else {
+					gen.writeString(htmlField.getHTML());
+				}
 				break;
 			case STRING:
 				StringField stringField = (StringFieldImpl) value;
-				gen.writeString(stringField.getString());
+				if (stringField.getString() == null) {
+					gen.writeNull();
+				} else {
+					gen.writeString(stringField.getString());
+				}
 				break;
 			case NUMBER:
 				NumberField numberField = (NumberFieldImpl) value;
-				gen.writeNumber(numberField.getNumber());
+				if (numberField.getNumber() == null) {
+					gen.writeNull();
+				} else {
+					gen.writeNumber(numberField.getNumber());
+				}
 				break;
 			case BOOLEAN:
 				BooleanField booleanField = (BooleanFieldImpl) value;
-				gen.writeBoolean(booleanField.getValue());
+				if (booleanField.getValue() == null) {
+					gen.writeNull();
+				} else {
+					gen.writeBoolean(booleanField.getValue());
+				}
 				break;
 			case DATE:
 				DateField dateField = (DateFieldImpl) value;
-				gen.writeString(dateField.getDate());
+				if (dateField.getDate() == null) {
+					gen.writeNull();
+				} else {
+					gen.writeString(dateField.getDate());
+				}
 				break;
-//			case NODE:
-//				NodeField nodeField = (NodeFieldImpl) value;
-//				// TODO impl
-//				break;
-//			case LIST:
-//				//TODO just continue with normal deserialization
-//				//ListField listField = (ListFieldImpl) value;
-//				// TODO impl
-//				gen.writeObject(value);
-//				break;
-//			case SELECT:
-//				SelectField selectField = (SelectFieldImpl) value;
-//				// TODO impl
-//				break;
-//			case MICROSCHEMA:
-//				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
-//				// TODO impl
-//				break;
+			//			case NODE:
+			//				NodeField nodeField = (NodeFieldImpl) value;
+			//				// TODO impl
+			//				break;
+			//			case LIST:
+			//				//TODO just continue with normal deserialization
+			//				//ListField listField = (ListFieldImpl) value;
+			//				// TODO impl
+			//				gen.writeObject(value);
+			//				break;
+			//			case SELECT:
+			//				SelectField selectField = (SelectFieldImpl) value;
+			//				// TODO impl
+			//				break;
+			//			case MICROSCHEMA:
+			//				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
+			//				// TODO impl
+			//				break;
 			default:
 				//TODO handle error
 				break;

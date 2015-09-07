@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.Trx;
 
-public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
+public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
@@ -35,7 +35,8 @@ public class HtmlGaphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticl
 	}
 
 	@Test
-	public void testCreateNodeWithEmptyField() {
+	@Override
+	public void testCreateNodeWithNoField() {
 		try (Trx tx = db.trx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			HtmlFieldImpl htmlField = response.getField("htmlField");

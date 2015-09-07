@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.string;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -31,6 +33,17 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 			schema.addField(stringFieldSchema);
 			schemaContainer("folder").setSchema(schema);
 			tx.success();
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateNodeWithNoField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode(null, (Field) null);
+			StringFieldImpl stringField = response.getField("stringField");
+			assertNotNull(stringField);
+			assertNull(stringField.getString());
 		}
 	}
 

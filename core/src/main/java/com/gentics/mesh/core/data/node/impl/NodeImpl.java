@@ -194,7 +194,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public Node transformToRest(ActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 
-		List<String> fieldToExpand = ac.getExpandedFieldnames();
 
 		NodeResponse restNode = new NodeResponse();
 		fillRest(restNode, ac);
@@ -266,8 +265,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
+				List<String> fieldsToExpand = ac.getExpandedFieldnames();
 				for (FieldSchema fieldEntry : schema.getFields()) {
-					boolean expandField = fieldToExpand.contains(fieldEntry.getName());
+					boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
 					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry,
 							expandField);
 					if (fieldEntry.isRequired() && restField == null) {

@@ -30,6 +30,13 @@ public class SelectGraphFieldNodeVericleTest extends AbstractGraphFieldNodeVerti
 	@Test
 	@Override
 	@Ignore
+	public void testCreateNodeWithNoField() {
+		throw new NotImplementedException();
+	}
+
+	@Test
+	@Override
+	@Ignore
 	public void testUpdateNodeFieldWithField() {
 		throw new NotImplementedException();
 	}

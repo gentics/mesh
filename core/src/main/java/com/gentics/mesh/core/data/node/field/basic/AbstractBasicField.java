@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.data.node.field.basic;
 
-import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-public abstract class AbstractBasicField implements GraphField {
+public abstract class AbstractBasicField<T extends Field> implements BasicGraphField<T> {
 
 	private String fieldKey;
 	private AbstractVertexFrame parentContainer;
@@ -34,5 +35,7 @@ public abstract class AbstractBasicField implements GraphField {
 	public String getFieldProperty(String key) {
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
+
+	abstract public T transformToRest(ActionContext ac);
 
 }

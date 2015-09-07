@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.node.field.impl.basic;
 
 import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
-import com.gentics.mesh.core.data.node.field.basic.BasicGraphField;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-public class BooleanGraphFieldImpl extends AbstractBasicField implements BooleanGraphField, BasicGraphField {
+public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField>implements BooleanGraphField {
 
 	public BooleanGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
@@ -27,6 +29,13 @@ public class BooleanGraphFieldImpl extends AbstractBasicField implements Boolean
 			return null;
 		}
 		return Boolean.valueOf(fieldValue);
+	}
+
+	@Override
+	public BooleanField transformToRest(ActionContext ac) {
+		BooleanFieldImpl restModel = new BooleanFieldImpl();
+		restModel.setValue(getBoolean());
+		return restModel;
 	}
 
 }

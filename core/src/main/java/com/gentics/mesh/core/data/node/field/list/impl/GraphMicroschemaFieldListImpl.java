@@ -4,8 +4,11 @@ import com.gentics.mesh.core.data.node.field.impl.nesting.GraphMicroschemaFieldI
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
+import com.gentics.mesh.handler.ActionContext;
 
-public class GraphMicroschemaFieldListImpl extends AbstractReferencingGraphFieldList<GraphMicroschemaField>implements GraphMicroschemaFieldList {
+public class GraphMicroschemaFieldListImpl extends AbstractReferencingGraphFieldList<GraphMicroschemaField, MicroschemaFieldListImpl>
+		implements GraphMicroschemaFieldList {
 
 	@Override
 	public Class<? extends GraphMicroschemaField> getListType() {
@@ -16,6 +19,12 @@ public class GraphMicroschemaFieldListImpl extends AbstractReferencingGraphField
 	public void delete() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public MicroschemaFieldListImpl transformToRest(ActionContext ac, String fieldKey) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

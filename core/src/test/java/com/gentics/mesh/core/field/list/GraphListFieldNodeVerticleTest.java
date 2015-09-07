@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.list;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -51,7 +53,18 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
-	public void testEmptyStringList() throws IOException {
+	@Override
+	public void testCreateNodeWithNoField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode(null, (Field) null);
+			StringFieldListImpl stringField = response.getField("listField");
+			assertNotNull(stringField);
+			assertEquals(0, stringField.getList().size());
+		}
+	}
+
+	@Test
+	public void testCreateEmptyStringList() throws IOException {
 		try (Trx tx = db.trx()) {
 			setSchema("string");
 			StringFieldListImpl listField = new StringFieldListImpl();
@@ -63,18 +76,17 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
-	public void testOmittedStringListValue() throws IOException {
+	public void testCreateWithOmittedStringListValue() throws IOException {
 		try (Trx tx = db.trx()) {
 			setSchema("string");
 
-			NodeResponse response = createNode(null, (Field)null);
+			NodeResponse response = createNode(null, (Field) null);
 			StringFieldListImpl listFromResponse = response.getField("listField");
 			assertNotNull(listFromResponse);
 			assertEquals(0, listFromResponse.getList().size());
 		}
 	}
 
-	
 	@Test
 	public void testStringList() throws IOException {
 		try (Trx tx = db.trx()) {

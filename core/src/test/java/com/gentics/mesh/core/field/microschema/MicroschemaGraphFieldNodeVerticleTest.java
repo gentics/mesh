@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.field.microschema;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.IOException;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -8,9 +11,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
+import com.gentics.mesh.graphdb.Trx;
 
 public class MicroschemaGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
@@ -22,6 +29,18 @@ public class MicroschemaGraphFieldNodeVerticleTest extends AbstractGraphFieldNod
 		microschemaFieldSchema.setLabel("Some label");
 		schema.addField(microschemaFieldSchema);
 		schemaContainer("folder").setSchema(schema);
+	}
+
+	@Ignore("Not yet implemented")
+	@Test
+	@Override
+	public void testCreateNodeWithNoField() {
+		try (Trx tx = db.trx()) {
+			NodeResponse response = createNode("microschemaField", (Field) null);
+			MicroschemaField field = response.getField("microschemaField");
+			assertNotNull(field);
+			assertNull(field.getFields());
+		}
 	}
 
 	@Ignore("Not yet implemented")

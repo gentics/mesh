@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.impl.nesting.GraphSelectFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.GraphListField;
 import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
@@ -34,9 +35,9 @@ import com.gentics.mesh.core.data.node.field.list.impl.GraphMicroschemaFieldList
 import com.gentics.mesh.core.data.node.field.list.impl.GraphNodeFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.GraphNumberFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.GraphStringFieldListImpl;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
+import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 
@@ -215,11 +216,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		return getList(GraphDateFieldListImpl.class, fieldKey);
 	}
 
-	private <T extends com.gentics.mesh.core.data.node.field.list.GraphListField<?>> T getList(Class<T> classOfT, String fieldKey) {
+	private <T extends GraphListField<?,?>> T getList(Class<T> classOfT, String fieldKey) {
 		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
 	}
 
-	private <T extends com.gentics.mesh.core.data.node.field.list.GraphListField<?>> T createList(Class<T> classOfT, String fieldKey) {
+	private <T extends GraphListField<?,?>> T createList(Class<T> classOfT, String fieldKey) {
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
 		linkOut(list.getImpl(), HAS_LIST);

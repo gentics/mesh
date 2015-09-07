@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
 
-public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField> extends AbstractGraphFieldList<T> {
+public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, RM extends Field> extends AbstractGraphFieldList<T, RM> {
 
 	protected abstract T createField(String key);
 

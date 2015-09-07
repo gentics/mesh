@@ -6,8 +6,9 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
 
-public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphField> extends AbstractGraphFieldList<T> {
+public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphField, RM extends Field> extends AbstractGraphFieldList<T, RM> {
 
 	@Override
 	public long getSize() {
