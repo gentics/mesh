@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.user;
 
 import static com.gentics.mesh.util.MeshAssert.*;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

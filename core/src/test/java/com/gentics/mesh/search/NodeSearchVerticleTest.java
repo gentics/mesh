@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

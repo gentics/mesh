@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
-import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -340,32 +339,32 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			//			StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
 			//					fieldKey, this);
 			StringGraphField graphStringField = getString(fieldKey);
-			if (graphStringField != null) {
-				return graphStringField.transformToRest(ac);
-			} else {
+			if (graphStringField == null) {
 				return new StringFieldImpl();
+			} else {
+				return graphStringField.transformToRest(ac);
 			}
 		case NUMBER:
 			NumberGraphField graphNumberField = getNumber(fieldKey);
-			if (graphNumberField != null) {
-				graphNumberField.transformToRest(ac);
-			} else {
+			if (graphNumberField == null) {
 				return new NumberFieldImpl();
+			} else {
+				return graphNumberField.transformToRest(ac);
 			}
 
 		case DATE:
 			DateGraphField graphDateField = getDate(fieldKey);
-			if (graphDateField != null) {
-				return graphDateField.transformToRest(ac);
-			} else {
+			if (graphDateField == null) {
 				return new DateFieldImpl();
+			} else {
+				return graphDateField.transformToRest(ac);
 			}
 		case BOOLEAN:
 			BooleanGraphField graphBooleanField = getBoolean(fieldKey);
-			if (graphBooleanField != null) {
-				return graphBooleanField.transformToRest(ac);
-			} else {
+			if (graphBooleanField == null) {
 				return new BooleanFieldImpl();
+			} else {
+				return graphBooleanField.transformToRest(ac);
 			}
 		case NODE:
 			GraphNodeField graphNodeField = getNode(fieldKey);

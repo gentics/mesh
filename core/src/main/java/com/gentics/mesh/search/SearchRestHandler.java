@@ -2,8 +2,6 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
 import java.util.ArrayList;
 import java.util.List;
 

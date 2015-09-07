@@ -111,11 +111,10 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			break;
 		case BOOLEAN:
 			BooleanField booleanField = new BooleanFieldImpl();
-			//booleanField.setValue(BooleanUtils.toBooleanObject(jsonNode.booleanValue()));
-			if(jsonNode.textValue()==null) {
+			if (jsonNode.isNull()) {
 				booleanField.setValue(null);
 			} else {
-			booleanField.setValue(jsonNode.booleanValue());
+				booleanField.setValue(jsonNode.booleanValue());
 			}
 			map.put(fieldKey, booleanField);
 			break;
@@ -139,7 +138,9 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 						nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class, schemaStorage);
 					} catch (MeshJsonException e) {
 						if (log.isDebugEnabled()) {
-							log.debug("Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: " + e.getMessage());
+							log.debug(
+									"Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: "
+											+ e.getMessage());
 						}
 						nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
 					} catch (IOException e) {
@@ -180,9 +181,9 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				map.put(fieldKey, expandedField);
 			} catch (MeshJsonException e) {
 				//TODO disable bogus output for now
-//				if (log.isDebugEnabled()) {
-//					log.debug("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version of that field.", e);
-//				}
+				//				if (log.isDebugEnabled()) {
+				//					log.debug("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version of that field.", e);
+				//				}
 				NodeFieldImpl collapsedField = oc.treeToValue(jsonNode, NodeFieldImpl.class);
 				NodeResponse restNode = new NodeResponse();
 				restNode.setUuid(collapsedField.getUuid());

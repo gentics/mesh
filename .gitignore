@@ -21,4 +21,4 @@ examples/demo-java/data
 core/tmp
 core/mesh-graphdb/
 core/mesh-searchindex/
-
+examples/demo-java/mesh-searchindex

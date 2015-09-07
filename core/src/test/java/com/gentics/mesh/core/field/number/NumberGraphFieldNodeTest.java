@@ -47,12 +47,11 @@ public class NumberGraphFieldNodeTest extends AbstractDBTest {
 			node.getSchemaContainer().setSchema(schema);
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-
 			NumberGraphField numberField = container.createNumber("numberField");
 			numberField.setNumber("100.9");
 
 			String json = getJson(node);
-			assertTrue(json.indexOf("100.9") > 1);
+			assertTrue("Could not find number within json. Json {" + json + "}", json.indexOf("100.9") > 1);
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 			assertNotNull(response);

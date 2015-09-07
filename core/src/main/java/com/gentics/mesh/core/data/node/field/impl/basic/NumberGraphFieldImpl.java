@@ -23,8 +23,8 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField>impleme
 
 	@Override
 	public NumberField transformToRest(ActionContext ac) {
-		NumberField numberField = new NumberFieldImpl();
-		numberField.setNumber(getNumber());
-		return numberField;
+		NumberField restModel = new NumberFieldImpl();
+		restModel.setNumber(getNumber());
+		return restModel;
 	}
 }

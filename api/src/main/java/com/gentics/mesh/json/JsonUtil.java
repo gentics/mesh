@@ -86,11 +86,11 @@ public final class JsonUtil {
 
 		SimpleModule module = new SimpleModule();
 		module.addDeserializer(NodeFieldListItem.class, new NodeFieldListItemDeserializer());
-		module.addSerializer(NumberFieldImpl.class, new StringFieldSerializer<NumberFieldImpl>());
-		module.addSerializer(HtmlFieldImpl.class, new StringFieldSerializer<HtmlFieldImpl>());
-		module.addSerializer(StringFieldImpl.class, new StringFieldSerializer<StringFieldImpl>());
-		module.addSerializer(DateFieldImpl.class, new StringFieldSerializer<DateFieldImpl>());
-		module.addSerializer(BooleanFieldImpl.class, new StringFieldSerializer<BooleanFieldImpl>());
+		module.addSerializer(NumberFieldImpl.class, new BasicFieldSerializer<NumberFieldImpl>());
+		module.addSerializer(HtmlFieldImpl.class, new BasicFieldSerializer<HtmlFieldImpl>());
+		module.addSerializer(StringFieldImpl.class, new BasicFieldSerializer<StringFieldImpl>());
+		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
+		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
 
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class,

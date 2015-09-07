@@ -551,7 +551,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
-			User conflictingUser = userRoot.create("existing_username", group(), user());
+			userRoot.create("existing_username", group(), user());
 			// Add update permission to group in order to create the user in that group
 			role().grantPermissions(group(), CREATE_PERM);
 			tx.success();
