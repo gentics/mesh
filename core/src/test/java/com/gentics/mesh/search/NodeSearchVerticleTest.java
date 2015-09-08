@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
@@ -126,6 +127,27 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
+	}
+
+	@Test
+	public void testSearchForChildNodes() throws JSONException, InterruptedException {
+		fullIndex();
+
+		try (Trx tx = db.trx()) {
+			Node parentNode = folder("news");
+
+			Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()));
+			latchFor(future);
+			assertSuccess(future);
+			NodeListResponse response = future.result();
+			assertNotNull(response);
+			assertFalse(response.getData().isEmpty());
+			//TODO verify the found nodes are correct
+//			for (NodeResponse childNode : response.getData()) {
+//				System.out.println(childNode.getUuid());
+//				System.out.println(((StringField)childNode.getField("name")).getString());
+//			}
+		}
 	}
 
 	@Test

@@ -92,35 +92,54 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		switch (type) {
 		case HTML:
 			HtmlField htmlField = new HtmlFieldImpl();
-			htmlField.setHTML(jsonNode.textValue());
+			if (!jsonNode.isNull() && jsonNode.isTextual()) {
+				htmlField.setHTML(jsonNode.textValue());
+			}
+			if (!jsonNode.isNull() && !jsonNode.isTextual()) {
+				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a text value. The value was {" + jsonNode.asText() + "}");
+			}
 			map.put(fieldKey, htmlField);
 			break;
 		case STRING:
 			StringField stringField = new StringFieldImpl();
-			stringField.setString(jsonNode.textValue());
+			if (!jsonNode.isNull() && jsonNode.isTextual()) {
+				stringField.setString(jsonNode.textValue());
+			}
+			if (!jsonNode.isNull() && !jsonNode.isTextual()) {
+				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a text value. The value was {" + jsonNode.asText() + "}");
+			}
 			map.put(fieldKey, stringField);
 			break;
 		case NUMBER:
 			NumberField numberField = new NumberFieldImpl();
-			Number number = jsonNode.numberValue();
-			if (number == null) {
-				throw new MeshJsonException("Could not find number for number field {" + fieldKey + "}");
+			if (!jsonNode.isNull() && jsonNode.isNumber()) {
+				Number number = jsonNode.numberValue();
+				numberField.setNumber(number.toString());
 			}
-			numberField.setNumber(number.toString());
+			if (!jsonNode.isNull() && !jsonNode.isNumber()) {
+				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
+			}
 			map.put(fieldKey, numberField);
 			break;
 		case BOOLEAN:
 			BooleanField booleanField = new BooleanFieldImpl();
-			if (jsonNode.isNull()) {
-				booleanField.setValue(null);
-			} else {
+			if (!jsonNode.isNull() && jsonNode.isBoolean()) {
 				booleanField.setValue(jsonNode.booleanValue());
+			}
+			if (!jsonNode.isNull() && !jsonNode.isBoolean()) {
+				throw new MeshJsonException(
+						"The field value for {" + fieldKey + "} is not a boolean value. The value was {" + jsonNode.asText() + "}");
 			}
 			map.put(fieldKey, booleanField);
 			break;
 		case DATE:
 			DateField dateField = new DateFieldImpl();
-			dateField.setDate(jsonNode.textValue());
+			if (!jsonNode.isNull() && jsonNode.isTextual()) {
+				dateField.setDate(jsonNode.textValue());
+			}
+			if (!jsonNode.isNull() && !jsonNode.isTextual()) {
+				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a text value. The value was {" + jsonNode.asText() + "}");
+			}
 			map.put(fieldKey, dateField);
 			break;
 		case SELECT:

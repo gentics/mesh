@@ -14,11 +14,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -53,6 +55,9 @@ public class RouterStorage {
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
+
+	@Autowired
+	private I18NService i18n;
 
 	@PostConstruct
 	public void init() {
@@ -112,14 +117,16 @@ public class RouterStorage {
 					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
 					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 						failureRoutingContext.response().setStatusCode(400);
-						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
+						String msg = i18n.get(ActionContext.create(failureRoutingContext), "error_parse_request_json_error");
+						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
 					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
 						failureRoutingContext.response().setStatusCode(code);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 					} else {
+						String msg = i18n.get(ActionContext.create(failureRoutingContext), "error_internal");
 						failureRoutingContext.response().setStatusCode(500);
-						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse("Internal error occured")));
+						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 					}
 				}
 

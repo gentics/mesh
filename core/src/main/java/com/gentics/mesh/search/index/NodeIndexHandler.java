@@ -318,6 +318,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put("uuid", parentNode.getUuid());
+		//TODO check whether nesting of nested elements would also work
 		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
 		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		map.put("parentNode", parentNodeInfo);
