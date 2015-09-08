@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.handler.ActionContext;
@@ -188,5 +189,14 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	void setPublished(boolean published);
 
 	boolean isPublished();
+
+	/**
+	 * Move this node into the target node.
+	 * 
+	 * @param ac
+	 * @param targetNode
+	 * @return
+	 */
+	SearchQueueBatch moveTo(ActionContext ac, Node targetNode);
 
 }

@@ -143,10 +143,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			assertNotNull(response);
 			assertFalse(response.getData().isEmpty());
 			//TODO verify the found nodes are correct
-//			for (NodeResponse childNode : response.getData()) {
-//				System.out.println(childNode.getUuid());
-//				System.out.println(((StringField)childNode.getField("name")).getString());
-//			}
+			//			for (NodeResponse childNode : response.getData()) {
+			//				System.out.println(childNode.getUuid());
+			//				System.out.println(((StringField)childNode.getField("name")).getString());
+			//			}
 		}
 	}
 

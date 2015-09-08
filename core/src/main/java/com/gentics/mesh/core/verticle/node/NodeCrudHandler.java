@@ -8,6 +8,7 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -161,16 +162,15 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
 
 							// Move the node
+							SearchQueueBatch batch;
 							try (Trx txMove = db.trx()) {
-								sourceNode.setParentNode(targetNode);
-								sourceNode.setEditor(ac.getUser());
-								sourceNode.setLastEditedTimestamp(System.currentTimeMillis());
-								targetNode.setEditor(ac.getUser());
-								targetNode.setLastEditedTimestamp(System.currentTimeMillis());
+								batch = sourceNode.moveTo(ac, targetNode);
 								txMove.success();
 							}
-							// TODO update the search index
-							ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))));
+							processOrFail2(ac, batch, rh -> {
+								ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))));
+							});
+
 						}
 					});
 				}

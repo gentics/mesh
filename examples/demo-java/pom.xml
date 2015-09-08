@@ -16,7 +16,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<dockerHost>satan3.office</dockerHost>
+		<!-- 
 		<dockerHost>cetus.office</dockerHost>
+		 -->
 		<dockerIP>10.43.84.220</dockerIP>
 	</properties>
 
@@ -36,13 +39,12 @@
 
 	<build>
 		<plugins>
-
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.11.2</version>
 				<configuration>
-					<dockerHost>http://cetus.office:2375</dockerHost>
+					<dockerHost>http://${dockerHost}:2375</dockerHost>
 					<images>
 						<image>
 							<name>gentics/mesh-demo:0.1</name>

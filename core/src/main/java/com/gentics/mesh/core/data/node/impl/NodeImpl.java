@@ -194,7 +194,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public Node transformToRest(ActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 
-
 		NodeResponse restNode = new NodeResponse();
 		fillRest(restNode, ac);
 
@@ -548,6 +547,18 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			log.error(e1);
 			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage(), e1));
 		}
+	}
+
+	@Override
+	public SearchQueueBatch moveTo(ActionContext ac, Node targetNode) {
+		setParentNode(targetNode);
+		setEditor(ac.getUser());
+		setLastEditedTimestamp(System.currentTimeMillis());
+		targetNode.setEditor(ac.getUser());
+		targetNode.setLastEditedTimestamp(System.currentTimeMillis());
+		SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+		return batch;
+
 	}
 
 	@Override
