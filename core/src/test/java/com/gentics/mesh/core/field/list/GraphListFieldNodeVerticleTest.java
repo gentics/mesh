@@ -55,9 +55,9 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testCreateNodeWithNoField() {
 		try (Trx tx = db.trx()) {
 			NodeResponse response = createNode(null, (Field) null);
-			StringFieldListImpl stringField = response.getField("listField");
-			assertNotNull(stringField);
-			assertEquals(0, stringField.getList().size());
+			NodeFieldListImpl nodeField = response.getField("listField");
+			assertNotNull(nodeField);
+			assertEquals(0, nodeField.getList().size());
 		}
 	}
 

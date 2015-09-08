@@ -130,7 +130,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				} else {
 					numberGraphField.setNumber(numberField.getNumber());
 				}
-
 				break;
 			case BOOLEAN:
 				BooleanGraphField booleanGraphField = getBoolean(key);
@@ -144,7 +143,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				} else {
 					booleanGraphField.setBoolean(booleanField.getValue());
 				}
-
 				break;
 			case DATE:
 				DateGraphField dateGraphField = getDate(key);

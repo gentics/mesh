@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -52,6 +53,7 @@ public class DatabaseTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Ignore
 	public void testRestore() throws IOException {
 		String name = "username";
 		try (Trx tx = db.trx()) {

@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -422,9 +423,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setParentNodeUuid(uuid);
 
 		int nJobs = 50;
-//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-//		Trx.enableDebug();
-//		Trx.setBarrier(barrier);
+		//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		//		Trx.enableDebug();
+		//		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking createNode REST call");
@@ -440,8 +441,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-//		Trx.disableDebug();
-//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		//		Trx.disableDebug();
+		//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
 
@@ -471,9 +472,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("en", "de");
 
 		int nJobs = 5;
-//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-//		Trx.enableDebug();
-//		Trx.setBarrier(barrier);
+		//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		//		Trx.enableDebug();
+		//		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking updateNode REST call");
@@ -485,7 +486,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			assertSuccess(future);
 		}
 		Trx.disableDebug();
-//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
 
@@ -514,12 +515,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-//	@Ignore("not yet supported")
+	//	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
-//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-//		Trx.enableDebug();
-//		Trx.setBarrier(barrier);
+		//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		//		Trx.enableDebug();
+		//		Trx.setBarrier(barrier);
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking findNodeByUuid REST call");
@@ -773,8 +774,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectMessage(future, BAD_REQUEST,
-				"Can't handle field {extrafield} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeCreateRequest[\"fields\"])");
+		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
+		assertEquals(
+				"Can't handle field {extrafield} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeCreateRequest[\"fields\"])",
+				((MeshRestClientHttpException) future.cause()).getResponseMessage().getInternalMessage());
 		assertNull(future.result());
 
 	}
@@ -801,7 +804,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "Could not find value for required schema field with key {name}");
+		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
+		assertEquals("Could not find value for required schema field with key {name}",
+				((MeshRestClientHttpException) future.cause()).getResponseMessage().getInternalMessage());
 		assertNull(future.result());
 
 	}
