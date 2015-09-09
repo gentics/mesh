@@ -138,7 +138,7 @@ public class DemoDataProvider {
 
 	public void updatePermissions() {
 
-		try (Trx tx = db.trx()) {
+		try (Trx tx = db.nonTrx()) {
 			Role role = userInfo.getRole();
 
 			for (Vertex vertex : tx.getGraph().getVertices()) {

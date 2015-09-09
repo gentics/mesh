@@ -47,8 +47,23 @@ public interface Database {
 	 */
 	Trx trx();
 
+	/**
+	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
+	 * and no rollback can be performed. This object should be used within a try-with-resource block.
+	 * 
+	 * <pre>
+	 * {
+	 * 	&#64;code
+	 * 	try(Trx tx = db.nonTrx()) {
+	 * 	  // interact with graph db here
+	 *  }
+	 * }
+	 * </pre>
+	 * 
+	 * @return
+	 */
 	Trx nonTrx();
-	
+
 	/**
 	 * Initialize the database and store the settings.
 	 * 

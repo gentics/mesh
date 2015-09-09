@@ -87,8 +87,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		config.put("port", port);
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
 
+		// Inject spring config and start each verticle
 		for (AbstractWebVerticle verticle : vertices) {
-			// Inject spring config
 			verticle.setSpringConfig(springConfig);
 			verticle.init(vertx, context);
 			verticle.start();
@@ -103,8 +103,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	public void cleanup() {
 		searchProvider.reset();
 		BootstrapInitializer.clearReferences();
-		// databaseService.getDatabase().clear();
-		databaseService.getDatabase().reset();
+		databaseService.getDatabase().clear();
+//		databaseService.getDatabase().reset();
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {
