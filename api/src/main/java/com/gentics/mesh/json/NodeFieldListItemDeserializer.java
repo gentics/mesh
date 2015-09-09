@@ -22,19 +22,25 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 
 	@Override
 	public NodeFieldListItem deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode jsonNode = oc.readTree(jsonParser);
+		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
+		return deserialize(jsonNode, jsonParser, schemaStorage);
+	}
+
+	public NodeFieldListItem deserialize(JsonNode jsonNode, JsonParser jsonParser, SchemaStorage schemaStorage) throws JsonProcessingException {
+		ObjectCodec oc = jsonParser.getCodec();
+
 		NodeResponse nodeItem = null;
 		try {
-//			if(log.isDebugEnabled()) {
-//			log.debug("Json: " + jsonNode.toString());
-//			}
+			// if(log.isDebugEnabled()) {
+			// log.debug("Json: " + jsonNode.toString());
+			// }
 			nodeItem = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
 		} catch (MeshJsonException e) {
-//			if (log.isDebugEnabled()) {
-//				log.debug("Could not deserialize json to expanded Node Response", e);
-//			}
+			// if (log.isDebugEnabled()) {
+			// log.debug("Could not deserialize json to expanded Node Response", e);
+			// }
 			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
 			nodeItem = new NodeResponse();
 			nodeItem.setUuid(collapsedItem.getUuid());

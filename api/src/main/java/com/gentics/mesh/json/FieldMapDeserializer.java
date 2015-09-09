@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.MicroschemaField;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -40,7 +39,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -83,7 +81,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				}
 			}
 			if (fieldSchema != null) {
-				addField(map, fieldKey, fieldSchema, currentEntry.getValue(), oc, schemaStorage);
+				addField(map, fieldKey, fieldSchema, currentEntry.getValue(), jsonParser, schemaStorage);
 			} else {
 				throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
 			}
@@ -91,8 +89,9 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		return map;
 	}
 
-	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, ObjectCodec oc,
+	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, JsonParser jsonParser,
 			SchemaStorage schemaStorage) throws JsonProcessingException {
+		ObjectCodec oc = jsonParser.getCodec();
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case HTML:
@@ -159,9 +158,13 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				switch (listFieldSchema.getListType()) {
 				case "node":
 					//TODO use  NodeFieldListItemDeserializer to deserialize the item in expanded form
-					NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
 					NodeFieldListImpl nodeListField = new NodeFieldListImpl();
-					nodeListField.getItems().addAll(Arrays.asList(itemsArray));
+					NodeFieldListItemDeserializer deser = new NodeFieldListItemDeserializer();
+					for(JsonNode node : jsonNode) {
+						nodeListField.getItems().add(deser.deserialize(node, jsonParser, schemaStorage));
+					}
+					//NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
+					//nodeListField.getItems().addAll(Arrays.asList(itemsArray));
 
 					//					NodeFieldListImpl nodeListField = null;
 					//					try {
