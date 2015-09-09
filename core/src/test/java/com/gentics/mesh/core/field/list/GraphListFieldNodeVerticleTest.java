@@ -66,7 +66,6 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		try (Trx tx = db.trx()) {
 			setSchema("string");
 			StringFieldListImpl listField = new StringFieldListImpl();
-
 			NodeResponse response = createNode("listField", listField);
 			StringFieldListImpl listFromResponse = response.getField("listField");
 			assertEquals(0, listFromResponse.getItems().size());
@@ -77,7 +76,6 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testCreateWithOmittedStringListValue() throws IOException {
 		try (Trx tx = db.trx()) {
 			setSchema("string");
-
 			NodeResponse response = createNode(null, (Field) null);
 			StringFieldListImpl listFromResponse = response.getField("listField");
 			assertNotNull(listFromResponse);
@@ -198,6 +196,72 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 			// Add another item to the list and update the node
 			listField.add("D");
+			response = updateNode("listField", listField);
+			listFromResponse = response.getField("listField");
+			assertEquals(4, listFromResponse.getItems().size());
+		}
+	}
+
+	@Test
+	public void testUpdateNodeWithHtmlField() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("html");
+
+			HtmlFieldListImpl listField = new HtmlFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			listField.add("C");
+
+			NodeResponse response = createNode("listField", listField);
+			HtmlFieldListImpl listFromResponse = response.getField("listField");
+			assertEquals(3, listFromResponse.getItems().size());
+
+			// Add another item to the list and update the node
+			listField.add("D");
+			response = updateNode("listField", listField);
+			listFromResponse = response.getField("listField");
+			assertEquals(4, listFromResponse.getItems().size());
+		}
+	}
+
+	@Test
+	public void testUpdateNodeWithDateField() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("date");
+
+			DateFieldListImpl listField = new DateFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			listField.add("C");
+
+			NodeResponse response = createNode("listField", listField);
+			DateFieldListImpl listFromResponse = response.getField("listField");
+			assertEquals(3, listFromResponse.getItems().size());
+
+			// Add another item to the list and update the node
+			listField.add("D");
+			response = updateNode("listField", listField);
+			listFromResponse = response.getField("listField");
+			assertEquals(4, listFromResponse.getItems().size());
+		}
+	}
+
+	@Test
+	public void testUpdateNodeWithNumberField() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("number");
+
+			NumberFieldListImpl listField = new NumberFieldListImpl();
+			listField.add("1.1");
+			listField.add("1.2");
+			listField.add("1.4");
+
+			NodeResponse response = createNode("listField", listField);
+			NumberFieldListImpl listFromResponse = response.getField("listField");
+			assertEquals(3, listFromResponse.getItems().size());
+
+			// Add another item to the list and update the node
+			listField.add("1.6");
 			response = updateNode("listField", listField);
 			listFromResponse = response.getField("listField");
 			assertEquals(4, listFromResponse.getItems().size());

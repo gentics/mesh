@@ -201,12 +201,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					if (graphStringList == null) {
 						graphStringList = createStringList(key);
-						for (String item : stringList.getItems()) {
-							graphStringList.createString(item);
-						}
 					} else {
-						//TODO handle update - remove all strings and set the new ones
 						graphStringList.removeAll();
+					}
+					for (String item : stringList.getItems()) {
+						graphStringList.createString(item);
 					}
 
 				} else if (restField instanceof HtmlFieldListImpl) {
@@ -215,12 +214,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					HtmlFieldListImpl htmlList = (HtmlFieldListImpl) restField;
 
 					if (graphHtmlFieldList == null) {
-						HtmlGraphFieldList graphHtmlList = createHTMLList(key);
-						for (String item : htmlList.getItems()) {
-							graphHtmlList.createHTML(item);
-						}
+						graphHtmlFieldList = createHTMLList(key);
 					} else {
-						//TODO handle update
+						graphHtmlFieldList.removeAll();
+					}
+					for (String item : htmlList.getItems()) {
+						graphHtmlFieldList.createHTML(item);
 					}
 				} else if (restField instanceof NumberFieldListImpl) {
 					NumberGraphFieldList graphNumberFieldList = getNumberList(key);
@@ -228,12 +227,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
 
 					if (graphNumberFieldList == null) {
-						NumberGraphFieldList graphNumberList = createNumberList(key);
-						for (String item : numberList.getItems()) {
-							graphNumberList.createNumber(item);
-						}
+						graphNumberFieldList = createNumberList(key);
 					} else {
-						//TODO handle update
+						graphNumberFieldList.removeAll();
+					}
+					for (String item : numberList.getItems()) {
+						graphNumberFieldList.createNumber(item);
 					}
 				} else if (restField instanceof BooleanFieldListImpl) {
 					BooleanGraphFieldList graphBooleanFieldList = getBooleanList(key);
@@ -241,12 +240,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					BooleanFieldListImpl booleanList = (BooleanFieldListImpl) restField;
 
 					if (graphBooleanFieldList == null) {
-						BooleanGraphFieldList graphBooleanList = createBooleanList(key);
-						for (Boolean item : booleanList.getItems()) {
-							graphBooleanList.createBoolean(item);
-						}
+						graphBooleanFieldList = createBooleanList(key);
 					} else {
-						//TODO handle update
+						graphBooleanFieldList.removeAll();
+					}
+					for (Boolean item : booleanList.getItems()) {
+						graphBooleanFieldList.createBoolean(item);
 					}
 				} else if (restField instanceof DateFieldListImpl) {
 
@@ -257,11 +256,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// Create new list if no existing one could be found
 					if (graphDateFieldList == null) {
 						graphDateFieldList = createDateList(key);
-						for (String item : dateList.getItems()) {
-							graphDateFieldList.createDate(item);
-						}
 					} else {
-						//TODO handle Update
+						graphDateFieldList.removeAll();
+					}
+					for (String item : dateList.getItems()) {
+						graphDateFieldList.createDate(item);
 					}
 				} else if (restField instanceof MicroschemaFieldListImpl) {
 					throw new NotImplementedException();
