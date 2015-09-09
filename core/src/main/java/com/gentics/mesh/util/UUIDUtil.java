@@ -18,28 +18,22 @@ public final class UUIDUtil {
 
 	public static String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
-		final StringBuilder sb = new StringBuilder();
-		sb.append(Long.toHexString(uuid.getMostSignificantBits())).append(Long.toHexString(uuid.getLeastSignificantBits()));
-		String uuidAsString = sb.toString();
-		return uuidAsString;
+		return (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
+				+ digits(uuid.getMostSignificantBits(), 4) + digits(uuid.getLeastSignificantBits() >> 48, 4)
+				+ digits(uuid.getLeastSignificantBits(), 12));
+	}
+
+	/** Returns val represented by the specified number of hex digits. */
+	private static String digits(long val, int digits) {
+		long hi = 1L << (digits * 4);
+		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
 	}
 
 	public static boolean isUUID(String text) {
-		// TODO maybe use regex here?
-		// 
 		if (text == null || text.length() != 32) {
 			return false;
 		} else {
 			return p.matcher(text).matches();
 		}
-		//		try {
-		//			if (com.fasterxml.uuid.impl.UUIDUtil.uuid(text) != null) {
-		//				return true;
-		//			}
-		//		} catch (NumberFormatException e) {
-		//			if (log.isDebugEnabled()) {
-		//				log.debug("Could not parse uuid {" + text + "}.", e);
-		//			}
-		//		}
 	}
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
