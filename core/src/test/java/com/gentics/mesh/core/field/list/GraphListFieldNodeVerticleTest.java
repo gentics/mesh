@@ -302,7 +302,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
-	public void testReadExpandedNodeListWithExitingField() throws IOException {
+	public void testReadExpandedNodeListWithExistingField() throws IOException {
 		Node node;
 		Node newsNode;
 		try (Trx tx = db.trx()) {

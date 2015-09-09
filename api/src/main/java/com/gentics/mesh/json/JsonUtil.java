@@ -1,6 +1,5 @@
 package com.gentics.mesh.json;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
@@ -91,6 +91,7 @@ public final class JsonUtil {
 		module.addSerializer(StringFieldImpl.class, new BasicFieldSerializer<StringFieldImpl>());
 		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
+		module.addSerializer(FieldList.class, new FieldListSerializer());
 
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class,
@@ -116,8 +117,8 @@ public final class JsonUtil {
 		}
 	}
 
-	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage) throws IOException, JsonParseException,
-			JsonMappingException {
+	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage)
+			throws IOException, JsonParseException, JsonMappingException {
 
 		InjectableValues injectedSchemaStorage = new InjectableValues() {
 
@@ -140,7 +141,6 @@ public final class JsonUtil {
 	public static <T> T readSchema(String json, Class<T> classOfT) throws JsonParseException, JsonMappingException, IOException {
 		return (T) schemaMapper.readValue(json, classOfT);
 	}
-
 
 	public static String writeNodeJson(NodeResponse response) {
 		try {

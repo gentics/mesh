@@ -1,10 +1,9 @@
 package com.gentics.mesh.json;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.MicroschemaField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -34,17 +34,22 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
@@ -117,7 +122,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				numberField.setNumber(number.toString());
 			}
 			if (!jsonNode.isNull() && !jsonNode.isNumber()) {
-				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
+				throw new MeshJsonException(
+						"The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
 			}
 			map.put(fieldKey, numberField);
 			break;
@@ -152,38 +158,50 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 				switch (listFieldSchema.getListType()) {
 				case "node":
-					NodeFieldListImpl nodeListField = null;
-					try {
-						nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class, schemaStorage);
-					} catch (MeshJsonException e) {
-						if (log.isDebugEnabled()) {
-							log.debug(
-									"Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: "
-											+ e.getMessage());
-						}
-						nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
-					} catch (IOException e) {
-						throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
-					}
+					//TODO use  NodeFieldListItemDeserializer to deserialize the item in expanded form
+					NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
+					NodeFieldListImpl nodeListField = new NodeFieldListImpl();
+					nodeListField.getItems().addAll(Arrays.asList(itemsArray));
+
+					//					NodeFieldListImpl nodeListField = null;
+					//					try {
+					//						nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class, schemaStorage);
+					//					} catch (MeshJsonException e) {
+					//						if (log.isDebugEnabled()) {
+					//							log.debug(
+					//									"Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: "
+					//											+ e.getMessage());
+					//						}
+					//						nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
+					//					} catch (IOException e) {
+					//						throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
+					//					}
 					map.put(fieldKey, nodeListField);
 					break;
-				case "number":
-					map.put(fieldKey, oc.treeToValue(jsonNode, NumberFieldListImpl.class));
-					break;
-				case "date":
-					map.put(fieldKey, oc.treeToValue(jsonNode, DateFieldListImpl.class));
-					break;
-				case "boolean":
-					map.put(fieldKey, oc.treeToValue(jsonNode, BooleanFieldListImpl.class));
-					break;
+
 				case "microschema":
 					map.put(fieldKey, oc.treeToValue(jsonNode, MicroschemaFieldListImpl.class));
 					break;
+				// Basic types
 				case "string":
-					map.put(fieldKey, oc.treeToValue(jsonNode, StringFieldListImpl.class));
+					String[] itemsStringArray = oc.treeToValue(jsonNode, String[].class);
+					addBasicList(map, fieldKey, String[].class, new StringFieldListImpl(), String.class, itemsStringArray);
 					break;
 				case "html":
-					map.put(fieldKey, oc.treeToValue(jsonNode, HtmlFieldListImpl.class));
+					String[] itemsHtmlArray = oc.treeToValue(jsonNode, String[].class);
+					addBasicList(map, fieldKey, String[].class, new HtmlFieldListImpl(), String.class, itemsHtmlArray);
+					break;
+				case "date":
+					String[] itemsDateArray = oc.treeToValue(jsonNode, String[].class);
+					addBasicList(map, fieldKey, String[].class, new DateFieldListImpl(), String.class, itemsDateArray);
+					break;
+				case "number":
+					String[] itemsNumberArray = oc.treeToValue(jsonNode, String[].class);
+					addBasicList(map, fieldKey, String[].class, new NumberFieldListImpl(), String.class, itemsNumberArray);
+					break;
+				case "boolean":
+					Boolean[] itemsBooleanArray = oc.treeToValue(jsonNode, Boolean[].class);
+					addBasicList(map, fieldKey, Boolean[].class, new BooleanFieldListImpl(), Boolean.class, itemsBooleanArray);
 					break;
 				default:
 					log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
@@ -199,10 +217,9 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				NodeResponse expandedField = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
 				map.put(fieldKey, expandedField);
 			} catch (MeshJsonException e) {
-				//TODO disable bogus output for now
-				//				if (log.isDebugEnabled()) {
-				//					log.debug("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version of that field.", e);
-				//				}
+				if (log.isTraceEnabled()) {
+					log.trace("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version of that field.", e);
+				}
 				NodeFieldImpl collapsedField = oc.treeToValue(jsonNode, NodeFieldImpl.class);
 				NodeResponse restNode = new NodeResponse();
 				restNode.setUuid(collapsedField.getUuid());
@@ -219,5 +236,11 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			// TODO handle unknown type situation
 			break;
 		}
+	}
+
+	private <I, AT> void addBasicList(Map<String, Field> map, String fieldKey, Class<AT> clazzOfJsonArray, FieldList<I> list, Class<I> classOfItem,
+			I[] itemsArray) throws JsonProcessingException {
+		list.getItems().addAll((List<I>) Arrays.asList(itemsArray));
+		map.put(fieldKey, list);
 	}
 }
