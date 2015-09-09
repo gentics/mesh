@@ -127,6 +127,6 @@ public class GaphListFieldNodeTest extends AbstractDBTest {
 	private <T extends AbstractFieldList<?>> void assertList(int expectedItems, String fieldKey, Class<T> classOfT, NodeResponse response) {
 		T deserializedList = response.getField(fieldKey, classOfT);
 		assertNotNull(deserializedList);
-		assertEquals(expectedItems, deserializedList.getList().size());
+		assertEquals(expectedItems, deserializedList.getItems().size());
 	}
 }

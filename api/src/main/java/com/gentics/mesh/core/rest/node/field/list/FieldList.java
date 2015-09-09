@@ -20,6 +20,6 @@ public interface FieldList<T> extends Field {
 
 	void add(T field);
 
-	List<T> getList();
+	List<T> getItems();
 
 }

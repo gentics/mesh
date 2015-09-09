@@ -1,0 +1,18 @@
+{
+    "dv":{
+        "name":"Divehi; Dhivehi; Maldivian;",
+        "nativeName":"ދިވެހި"
+    },
+    "nl":{
+        "name":"Dutch",
+        "nativeName":"Nederlands, Vlaams"
+    },
+    "de":{
+        "name":"German",
+        "nativeName":"Deutsch"
+    },
+    "en":{
+        "name":"English",
+        "nativeName":"English"
+    }
+}

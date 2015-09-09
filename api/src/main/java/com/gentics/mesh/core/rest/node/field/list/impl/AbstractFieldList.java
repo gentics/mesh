@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.node.field.list.FieldList;
 
 public abstract class AbstractFieldList<T> implements FieldList<T> {
 
-	private List<T> list = new ArrayList<>();
+	private List<T> items = new ArrayList<>();
 
 	private String order;
 
@@ -17,8 +17,8 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 	private long totalCount;
 
 	@Override
-	public List<T> getList() {
-		return list;
+	public List<T> getItems() {
+		return items;
 	}
 
 	@JsonIgnore
@@ -29,7 +29,7 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 
 	@Override
 	public void add(T field) {
-		list.add(field);
+		items.add(field);
 	}
 
 	@Override

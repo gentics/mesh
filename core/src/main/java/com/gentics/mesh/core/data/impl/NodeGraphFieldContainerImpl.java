@@ -186,7 +186,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					GraphNodeFieldList graphNodeList = createNodeList(key);
 
 					// Add the listed items
-					for (NodeFieldListItem item : nodeList.getList()) {
+					for (NodeFieldListItem item : nodeList.getItems()) {
 						boot.nodeRoot().findByUuid(item.getUuid(), rh -> {
 							if (rh.failed() || rh.result() == null) {
 								// TODO log info that node was not found or
@@ -204,7 +204,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					if (graphStringList == null) {
 						graphStringList = createStringList(key);
-						for (String item : stringList.getList()) {
+						for (String item : stringList.getItems()) {
 							graphStringList.createString(item);
 						}
 					} else {
@@ -219,7 +219,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					if (graphHtmlFieldList == null) {
 						GraphHtmlFieldList graphHtmlList = createHTMLList(key);
-						for (String item : htmlList.getList()) {
+						for (String item : htmlList.getItems()) {
 							graphHtmlList.createHTML(item);
 						}
 					} else {
@@ -232,7 +232,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					if (graphNumberFieldList == null) {
 						GraphNumberFieldList graphNumberList = createNumberList(key);
-						for (String item : numberList.getList()) {
+						for (String item : numberList.getItems()) {
 							graphNumberList.createNumber(item);
 						}
 					} else {
@@ -245,7 +245,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					if (graphBooleanFieldList == null) {
 						GraphBooleanFieldList graphBooleanList = createBooleanList(key);
-						for (Boolean item : booleanList.getList()) {
+						for (Boolean item : booleanList.getItems()) {
 							graphBooleanList.createBoolean(item);
 						}
 					} else {
@@ -260,7 +260,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// Create new list if no existing one could be found
 					if (graphDateFieldList == null) {
 						graphDateFieldList = createDateList(key);
-						for (String item : dateList.getList()) {
+						for (String item : dateList.getItems()) {
 							graphDateFieldList.createDate(item);
 						}
 					} else {
