@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -44,7 +46,12 @@ public class DatabaseTest extends AbstractDBTest {
 	@Test
 	public void testImport() throws IOException {
 		db.exportGraph(outputDirectory.getAbsolutePath());
-		db.importGraph(outputDirectory.listFiles()[0].getAbsolutePath());
+		File[] fileArray = outputDirectory.listFiles();
+		if (fileArray != null) {
+			List<File> files = Arrays.asList(fileArray);
+			File importFile = files.iterator().next();
+			db.importGraph(importFile.getAbsolutePath());
+		}
 	}
 
 	@Test

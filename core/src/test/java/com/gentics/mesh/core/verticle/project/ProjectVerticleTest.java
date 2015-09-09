@@ -416,16 +416,16 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet enabled")
+	
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		String uuid = project().getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
+//		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findProjectByUuid(uuid));
 		}
-		validateSet(set, barrier);
+		validateSet(set, null);
 	}
 
 	@Test

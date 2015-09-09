@@ -44,7 +44,9 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 			assertSuccess(future);
 		}
 		Trx.disableDebug();
-		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		if (barrier != null) {
+			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		}
 	}
 
 	protected void validateFutures(Set<Future<?>> set) {
