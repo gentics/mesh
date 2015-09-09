@@ -51,7 +51,6 @@ public class DummySearchProvider implements SearchProvider {
 	@Override
 	public void stop() {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override

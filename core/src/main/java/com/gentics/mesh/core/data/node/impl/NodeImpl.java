@@ -550,14 +550,49 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public SearchQueueBatch moveTo(ActionContext ac, Node targetNode) {
-		setParentNode(targetNode);
-		setEditor(ac.getUser());
-		setLastEditedTimestamp(System.currentTimeMillis());
-		targetNode.setEditor(ac.getUser());
-		targetNode.setLastEditedTimestamp(System.currentTimeMillis());
-		SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
-		return batch;
+	public void moveTo(ActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+
+		// TODO should we add a guard that terminates this loop when it runs to long?
+		// Check whether the target node is part of the subtree of the source node.
+		Node parent = targetNode.getParentNode();
+		while (parent != null) {
+			if (parent.getUuid().equals(getUuid())) {
+				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
+				return;
+			}
+			parent = parent.getParentNode();
+		}
+
+		try {
+			if (!targetNode.getSchema().isFolder()) {
+				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
+				return;
+			}
+		} catch (Exception e) {
+			log.error("Could not load schema for target node during move action", e);
+			// TODO maybe add better i18n error
+			handler.handle(ac.failedFuture(BAD_REQUEST, "error"));
+			return;
+		}
+
+		if (getUuid().equals(targetNode.getUuid())) {
+			handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_same_nodes"));
+			return;
+		}
+
+		// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
+		SearchQueueBatch batch ;
+		try (Trx txMove = db.trx()) {
+			setParentNode(targetNode);
+			setEditor(ac.getUser());
+			setLastEditedTimestamp(System.currentTimeMillis());
+			targetNode.setEditor(ac.getUser());
+			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
+			batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			txMove.success();
+		}
+		processOrFail2(ac, batch, handler);
 
 	}
 

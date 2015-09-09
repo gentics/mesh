@@ -138,8 +138,9 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 					targetNode.getUuid(), folder("deals").getParentNode().getUuid());
 		}
-		
-		assertEquals(1, searchProvider.getUpdateEvents().size());
+
+		// TODO assert entries
+		assertEquals(4, searchProvider.getStoreEvents().size());
 	}
 
 }

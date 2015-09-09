@@ -20,7 +20,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 
 public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
@@ -195,8 +197,9 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @param ac
 	 * @param targetNode
+	 * @param resultHandler
 	 * @return
 	 */
-	SearchQueueBatch moveTo(ActionContext ac, Node targetNode);
+	void moveTo(ActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
 
 }

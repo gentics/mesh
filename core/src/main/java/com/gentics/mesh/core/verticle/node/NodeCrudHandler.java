@@ -8,7 +8,6 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -131,44 +130,12 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							Node sourceNode = sourceNodeHandler.result();
 							Node targetNode = targetNodeHandler.result();
 
-							// TODO should we add a guard that terminates this loop when it runs to long?
-							// Check whether the target node is part of the subtree of the source node.
-							Node parent = targetNode.getParentNode();
-							while (parent != null) {
-								if (parent.getUuid().equals(sourceNode.getUuid())) {
-									ac.fail(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
-									return;
+							sourceNode.moveTo(ac, targetNode, mh -> {
+								if (mh.failed()) {
+									ac.fail(mh.cause());
+								} else {
+									ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))));
 								}
-								parent = parent.getParentNode();
-							}
-
-							try {
-								if (!targetNode.getSchema().isFolder()) {
-									ac.fail(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
-									return;
-								}
-							} catch (Exception e) {
-								log.error("Could not load schema for target node during move action", e);
-								// TODO maybe add better i18n error
-								ac.fail(BAD_REQUEST, "error");
-								return;
-							}
-
-							if (sourceNode.getUuid().equals(targetNode.getUuid())) {
-								ac.fail(BAD_REQUEST, "node_move_error_same_nodes");
-								return;
-							}
-
-							// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
-
-							// Move the node
-							SearchQueueBatch batch;
-							try (Trx txMove = db.trx()) {
-								batch = sourceNode.moveTo(ac, targetNode);
-								txMove.success();
-							}
-							processOrFail2(ac, batch, rh -> {
-								ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))));
 							});
 
 						}
@@ -187,7 +154,6 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, rh)) {
 					Node node = rh.result();
 					node.getBinaryFileBuffer().setHandler(bh -> {
-						// TODO set content disposition
 						rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(node.getBinaryFileSize()));
 						rc.response().putHeader(HttpHeaders.CONTENT_TYPE, node.getBinaryContentType());
 						// TODO encode filename?
