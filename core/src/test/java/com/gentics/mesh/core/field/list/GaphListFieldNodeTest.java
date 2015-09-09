@@ -11,12 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
@@ -83,28 +83,28 @@ public class GaphListFieldNodeTest extends AbstractDBTest {
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 
-			GraphNodeFieldList nodeList = container.createNodeList("nodeList");
+			NodeGraphFieldList nodeList = container.createNodeList("nodeList");
 			nodeList.createNode("1", newsNode);
 			nodeList.createNode("2", newsNode);
 
-			GraphBooleanFieldList booleanList = container.createBooleanList("booleanList");
+			BooleanGraphFieldList booleanList = container.createBooleanList("booleanList");
 			booleanList.createBoolean(true);
 			booleanList.createBoolean(null);
 			booleanList.createBoolean(false);
 
-			GraphNumberFieldList numberList = container.createNumberList("numberList");
+			NumberGraphFieldList numberList = container.createNumberList("numberList");
 			numberList.createNumber("1");
 			numberList.createNumber("1.11");
 
-			GraphDateFieldList dateList = container.createDateList("dateList");
+			DateGraphFieldList dateList = container.createDateList("dateList");
 			dateList.createDate("01.01.1971");
 			dateList.createDate("01.01.1972");
 
-			GraphStringFieldList stringList = container.createStringList("stringList");
+			StringGraphFieldList stringList = container.createStringList("stringList");
 			stringList.createString("dummyString1");
 			stringList.createString("dummyString2");
 
-			GraphHtmlFieldList htmlList = container.createHTMLList("htmlList");
+			HtmlGraphFieldList htmlList = container.createHTMLList("htmlList");
 			htmlList.createHTML("some<b>html</b>");
 			htmlList.createHTML("some<b>more html</b>");
 

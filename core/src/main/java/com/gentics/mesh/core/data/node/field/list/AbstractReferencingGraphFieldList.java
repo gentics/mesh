@@ -20,6 +20,11 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	@Override
+	public void removeAll() {
+		outE(HAS_ITEM).removeAll();
+	}
+
+	@Override
 	public List<? extends T> getList() {
 		return outE(HAS_ITEM).has(getListType()).toListExplicit(getListType());
 	}

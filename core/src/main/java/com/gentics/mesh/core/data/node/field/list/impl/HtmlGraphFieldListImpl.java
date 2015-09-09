@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public class GraphHtmlFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl>implements GraphHtmlFieldList {
+public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl>implements HtmlGraphFieldList {
 
 	@Override
 	public HtmlGraphField createHTML(String html) {

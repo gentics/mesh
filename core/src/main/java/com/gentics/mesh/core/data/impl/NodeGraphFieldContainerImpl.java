@@ -18,16 +18,16 @@ import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.nesting.GraphMicroschemaFieldImpl;
-import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
-import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
+import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -72,7 +72,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void setFieldFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
+	public void updateFieldsFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -153,7 +153,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				break;
 			case NODE:
-				GraphNodeField graphNodeField = getNode(key);
+				NodeGraphField graphNodeField = getNode(key);
 				failOnMissingMandatoryField(graphNodeField, restField, entry, key);
 				NodeField nodeField = (NodeField) restField;
 				if (restField == null) {
@@ -178,27 +178,24 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case LIST:
 
 				if (restField instanceof NodeFieldListImpl) {
-					GraphNodeFieldList graphNodeFieldList = getNodeList(key);
+					NodeGraphFieldList graphNodeFieldList = getNodeList(key);
 					failOnMissingMandatoryField(graphNodeFieldList, restField, entry, key);
 					NodeFieldListImpl nodeList = (NodeFieldListImpl) restField;
 
-					AtomicInteger integer = new AtomicInteger();
-					GraphNodeFieldList graphNodeList = createNodeList(key);
+					if (graphNodeFieldList == null) {
+						graphNodeFieldList = createNodeList(key);
+					} else {
+						graphNodeFieldList.removeAll();
+					}
 
 					// Add the listed items
+					AtomicInteger integer = new AtomicInteger();
 					for (NodeFieldListItem item : nodeList.getItems()) {
-						boot.nodeRoot().findByUuid(item.getUuid(), rh -> {
-							if (rh.failed() || rh.result() == null) {
-								// TODO log info that node was not found or
-								// throw error? -> throw error
-							} else {
-								Node node = rh.result();
-								graphNodeList.createNode(String.valueOf(integer.incrementAndGet()), node);
-							}
-						});
+						Node node = boot.nodeRoot().findByUuidBlocking(item.getUuid());
+						graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
 					}
 				} else if (restField instanceof StringFieldListImpl) {
-					GraphStringFieldList graphStringList = getStringList(key);
+					StringGraphFieldList graphStringList = getStringList(key);
 					failOnMissingMandatoryField(graphStringList, restField, entry, key);
 					StringFieldListImpl stringList = (StringFieldListImpl) restField;
 
@@ -209,16 +206,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						}
 					} else {
 						//TODO handle update - remove all strings and set the new ones
-
+						graphStringList.removeAll();
 					}
 
 				} else if (restField instanceof HtmlFieldListImpl) {
-					GraphHtmlFieldList graphHtmlFieldList = getHTMLList(key);
+					HtmlGraphFieldList graphHtmlFieldList = getHTMLList(key);
 					failOnMissingMandatoryField(graphHtmlFieldList, restField, entry, key);
 					HtmlFieldListImpl htmlList = (HtmlFieldListImpl) restField;
 
 					if (graphHtmlFieldList == null) {
-						GraphHtmlFieldList graphHtmlList = createHTMLList(key);
+						HtmlGraphFieldList graphHtmlList = createHTMLList(key);
 						for (String item : htmlList.getItems()) {
 							graphHtmlList.createHTML(item);
 						}
@@ -226,12 +223,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						//TODO handle update
 					}
 				} else if (restField instanceof NumberFieldListImpl) {
-					GraphNumberFieldList graphNumberFieldList = getNumberList(key);
+					NumberGraphFieldList graphNumberFieldList = getNumberList(key);
 					failOnMissingMandatoryField(graphNumberFieldList, restField, entry, key);
 					NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
 
 					if (graphNumberFieldList == null) {
-						GraphNumberFieldList graphNumberList = createNumberList(key);
+						NumberGraphFieldList graphNumberList = createNumberList(key);
 						for (String item : numberList.getItems()) {
 							graphNumberList.createNumber(item);
 						}
@@ -239,12 +236,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						//TODO handle update
 					}
 				} else if (restField instanceof BooleanFieldListImpl) {
-					GraphBooleanFieldList graphBooleanFieldList = getBooleanList(key);
+					BooleanGraphFieldList graphBooleanFieldList = getBooleanList(key);
 					failOnMissingMandatoryField(graphBooleanFieldList, restField, entry, key);
 					BooleanFieldListImpl booleanList = (BooleanFieldListImpl) restField;
 
 					if (graphBooleanFieldList == null) {
-						GraphBooleanFieldList graphBooleanList = createBooleanList(key);
+						BooleanGraphFieldList graphBooleanList = createBooleanList(key);
 						for (Boolean item : booleanList.getItems()) {
 							graphBooleanList.createBoolean(item);
 						}
@@ -253,7 +250,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					}
 				} else if (restField instanceof DateFieldListImpl) {
 
-					GraphDateFieldList graphDateFieldList = getDateList(key);
+					DateGraphFieldList graphDateFieldList = getDateList(key);
 					failOnMissingMandatoryField(graphDateFieldList, restField, entry, key);
 					DateFieldListImpl dateList = (DateFieldListImpl) restField;
 
@@ -278,29 +275,35 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				break;
 			case SELECT:
 				SelectField restSelectField = (SelectFieldImpl) restField;
-				com.gentics.mesh.core.data.node.field.nesting.GraphSelectField<ListableGraphField> selectField = createSelect(key);
+				com.gentics.mesh.core.data.node.field.nesting.SelectGraphField<ListableGraphField> selectField = createSelect(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;
 			case MICROSCHEMA:
 				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) restField;
-				GraphMicroschemaField microschemaField = createMicroschema(key);
+				MicroschemaGraphField microschemaField = createMicroschema(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;
 			}
 
 		}
+
 		String extraFields = "";
-		for (String key : restFields.keySet()) {
+		for (String key : restFields.keySet())
+
+		{
 			extraFields += "[" + key + "]";
 		}
-		if (!StringUtils.isEmpty(extraFields)) {
+		if (!StringUtils.isEmpty(extraFields))
+
+		{
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_unhandled_fields", schema.getName(), extraFields));
 			// throw new MeshSchemaException("The following fields were not
 			// specified within the {" + schema.getName() + "} schema: " +
 			// extraFields);
 		}
+
 	}
 
 	private void deleteField(String key) {
@@ -311,13 +314,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public GraphMicroschemaField getMicroschema(String key) {
+	public MicroschemaGraphField getMicroschema(String key) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public GraphMicroschemaField createMicroschema(String key) {
-		GraphMicroschemaFieldImpl field = getGraph().addFramedVertex(GraphMicroschemaFieldImpl.class);
+	public MicroschemaGraphField createMicroschema(String key) {
+		MicroschemaGraphFieldImpl field = getGraph().addFramedVertex(MicroschemaGraphFieldImpl.class);
 		field.setFieldKey(key);
 		linkOut(field, GraphRelationships.HAS_FIELD);
 		return field;
@@ -360,7 +363,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				return graphBooleanField.transformToRest(ac);
 			}
 		case NODE:
-			GraphNodeField graphNodeField = getNode(fieldKey);
+			NodeGraphField graphNodeField = getNode(fieldKey);
 			if (graphNodeField == null) {
 				return new NodeFieldImpl();
 			} else {
@@ -377,50 +380,50 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 
 			switch (listFieldSchema.getListType()) {
-			case GraphNodeFieldList.TYPE:
-				GraphNodeFieldList nodeFieldList = getNodeList(fieldKey);
+			case NodeGraphFieldList.TYPE:
+				NodeGraphFieldList nodeFieldList = getNodeList(fieldKey);
 				if (nodeFieldList == null) {
 					return new NodeFieldListImpl();
 				} else {
 					return nodeFieldList.transformToRest(ac, fieldKey);
 				}
-			case GraphNumberFieldList.TYPE:
-				GraphNumberFieldList numberFieldList = getNumberList(fieldKey);
+			case NumberGraphFieldList.TYPE:
+				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
 					return new NumberFieldListImpl();
 				} else {
 					return numberFieldList.transformToRest(ac, fieldKey);
 				}
-			case GraphBooleanFieldList.TYPE:
-				GraphBooleanFieldList booleanFieldList = getBooleanList(fieldKey);
+			case BooleanGraphFieldList.TYPE:
+				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
 				if (booleanFieldList == null) {
 					return new BooleanFieldListImpl();
 				} else {
 					return booleanFieldList.transformToRest(ac, fieldKey);
 				}
-			case GraphHtmlFieldList.TYPE:
-				GraphHtmlFieldList htmlFieldList = getHTMLList(fieldKey);
+			case HtmlGraphFieldList.TYPE:
+				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
 					return new HtmlFieldListImpl();
 				} else {
 					return htmlFieldList.transformToRest(ac, fieldKey);
 				}
-			case GraphMicroschemaFieldList.TYPE:
-				GraphMicroschemaFieldList graphMicroschemaField = getMicroschemaList(fieldKey);
+			case MicroschemaGraphFieldList.TYPE:
+				MicroschemaGraphFieldList graphMicroschemaField = getMicroschemaList(fieldKey);
 				if (graphMicroschemaField == null) {
 					return new MicroschemaFieldListImpl();
 				} else {
 					return graphMicroschemaField.transformToRest(ac, fieldKey);
 				}
-			case GraphStringFieldList.TYPE:
-				GraphStringFieldList stringFieldList = getStringList(fieldKey);
+			case StringGraphFieldList.TYPE:
+				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
 					return new StringFieldListImpl();
 				} else {
 					return stringFieldList.transformToRest(ac, fieldKey);
 				}
-			case GraphDateFieldList.TYPE:
-				GraphDateFieldList dateFieldList = getDateList(fieldKey);
+			case DateGraphFieldList.TYPE:
+				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
 					return new DateFieldListImpl();
 				} else {
@@ -440,7 +443,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			// throw new NotImplementedException();
 			break;
 		case MICROSCHEMA:
-			GraphMicroschemaField graphMicroschemaField = getMicroschema(fieldKey);
+			MicroschemaGraphField graphMicroschemaField = getMicroschema(fieldKey);
 			if (graphMicroschemaField == null) {
 				return new MicroschemaFieldImpl();
 			} else {

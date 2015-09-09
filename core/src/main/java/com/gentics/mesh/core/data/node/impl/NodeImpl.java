@@ -533,7 +533,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
 				try {
 					Schema schema = getSchema();
-					container.setFieldFromRest(ac, requestModel.getFields(), schema);
+					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
 					handler.handle(ac.failedFuture(BAD_REQUEST, e.getMessage()));

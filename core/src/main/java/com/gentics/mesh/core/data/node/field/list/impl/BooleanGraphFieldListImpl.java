@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public class GraphBooleanFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl>implements GraphBooleanFieldList {
+public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl>implements BooleanGraphFieldList {
 
 	@Override
 	public BooleanGraphField getBoolean(int index) {

@@ -19,7 +19,7 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	protected T getField(int index) {
 		return createField("item-" + index);
 	}
-	
+
 	protected T createField() {
 		return createField("item-" + (getSize() + 1));
 	}
@@ -30,10 +30,15 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	}
 
 	@Override
+	public void removeAll() {
+		for (String key : getProperties("item-").keySet()) {
+			setProperty(key, null);
+		}
+	}
+
+	@Override
 	public List<? extends T> getList() {
-//		for (String key : getPropertyKeys()) {
-//			log.debug(key + "=" + getProperty(key));
-//		}
+
 		Map<String, String> map = getProperties("item");
 		List<T> list = new ArrayList<>();
 		for (String itemKey : map.keySet()) {

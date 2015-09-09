@@ -17,17 +17,17 @@ public class MeshOptions {
 	public static final int DEFAULT_MAX_DEPTH = 5;
 	public static final int DEFAULT_PAGE_SIZE = 25;
 	public static final String DEFAULT_LANGUAGE = "en";
-	public static final int DEFAULT_NESTED_TAGS_LIMIT = 25;
-	public static final int DEFAULT_NESTED_NODES_LIMIT = 25;
+//	public static final int DEFAULT_NESTED_TAGS_LIMIT = 25;
+//	public static final int DEFAULT_NESTED_NODES_LIMIT = 25;
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 
 	private int maxDepth = DEFAULT_MAX_DEPTH;
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
-	private int defaultNestedTagsLimit = DEFAULT_NESTED_TAGS_LIMIT;
+//	private int defaultNestedTagsLimit = DEFAULT_NESTED_TAGS_LIMIT;
 
-	private int defaultNestedNodesLimit = DEFAULT_NESTED_NODES_LIMIT;
+//	private int defaultNestedNodesLimit = DEFAULT_NESTED_NODES_LIMIT;
 
 	private int defaultPageSize = DEFAULT_PAGE_SIZE;
 
@@ -76,13 +76,13 @@ public class MeshOptions {
 		return defaultPageSize;
 	}
 
-	public int getDefaultNestedNodesLimit() {
-		return defaultNestedNodesLimit;
-	}
+//	public int getDefaultNestedNodesLimit() {
+//		return defaultNestedNodesLimit;
+//	}
 
-	public int getDefaultNestedTagsLimit() {
-		return defaultNestedTagsLimit;
-	}
+//	public int getDefaultNestedTagsLimit() {
+//		return defaultNestedTagsLimit;
+//	}
 
 	public MailConfig getMailServerOptions() {
 		return this.mailServerOptions;

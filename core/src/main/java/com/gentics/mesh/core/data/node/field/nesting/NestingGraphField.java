@@ -8,13 +8,13 @@ import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 
-public interface GraphNestingField extends GraphField {
+public interface NestingGraphField extends GraphField {
 
 	StringGraphField createString(String string);
 
 	StringGraphField getString(String key);
 
-	GraphNodeField createNode(String key, Node node);
+	NodeGraphField createNode(String key, Node node);
 
 	DateGraphField createDate(String key);
 

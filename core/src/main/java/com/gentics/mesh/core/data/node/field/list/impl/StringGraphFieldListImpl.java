@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public class GraphStringFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl>implements GraphStringFieldList {
+public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl>implements StringGraphFieldList {
 
 	@Override
 	public StringGraphField createString(String string) {

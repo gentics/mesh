@@ -10,11 +10,7 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 
 	private List<T> items = new ArrayList<>();
 
-	private String order;
-
-	private String orderBy;
-
-	private long totalCount;
+//	private long totalCount;
 
 	@Override
 	public List<T> getItems() {
@@ -32,33 +28,14 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 		items.add(field);
 	}
 
-	@Override
-	public String getOrder() {
-		return order;
-	}
 
-	@Override
-	public void setOrder(String order) {
-		this.order = order;
-	}
-
-	@Override
-	public String getOrderBy() {
-		return orderBy;
-	}
-
-	@Override
-	public void setOrderBy(String orderBy) {
-		this.orderBy = orderBy;
-	}
-
-	@Override
-	public long getTotalCount() {
-		return totalCount;
-	}
-
-	@Override
-	public void setTotalCount(long totalCount) {
-		this.totalCount = totalCount;
-	}
+//	@Override
+//	public long getTotalCount() {
+//		return totalCount;
+//	}
+//
+//	@Override
+//	public void setTotalCount(long totalCount) {
+//		this.totalCount = totalCount;
+//	}
 }

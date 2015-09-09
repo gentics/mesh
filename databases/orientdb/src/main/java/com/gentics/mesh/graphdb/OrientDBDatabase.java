@@ -38,10 +38,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Orient.instance().shutdown();
 		Trx.setLocalGraph(null);
 	}
-	
+
 	@Override
 	public void clear() {
-		factory.getNoTx().getVertices().forEach(v-> {
+		factory.getNoTx().getVertices().forEach(v -> {
 			v.remove();
 		});
 	}

@@ -175,7 +175,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						}
 						try {
 							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
-							container.setFieldFromRest(ac, requestModel.getFields(), schema);
+							container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 						} catch (Exception e) {
 							handler.handle(Future.failedFuture(e));
 							txCreate.failure();

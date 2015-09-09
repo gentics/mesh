@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public class GraphDateFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl>implements GraphDateFieldList {
+public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl>implements DateGraphFieldList {
 
 	@Override
 	public DateGraphField createDate(String date) {

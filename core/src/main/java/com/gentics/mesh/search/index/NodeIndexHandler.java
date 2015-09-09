@@ -22,12 +22,12 @@ import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -197,7 +197,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 				break;
 			case NODE:
-				GraphNodeField nodeField = container.getNode(name);
+				NodeGraphField nodeField = container.getNode(name);
 				if (nodeField != null) {
 					fieldsMap.put(name, nodeField.getNode().getUuid());
 				}
@@ -209,7 +209,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					case "node":
 						break;
 					case "date":
-						GraphDateFieldList graphDateList = container.getDateList(fieldSchema.getName());
+						DateGraphFieldList graphDateList = container.getDateList(fieldSchema.getName());
 						if (graphDateList != null) {
 							List<String> dateItems = new ArrayList<>();
 							for (DateGraphField listItem : graphDateList.getList()) {
@@ -219,7 +219,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 						break;
 					case "number":
-						GraphNumberFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
+						NumberGraphFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
 						if (graphNumberList != null) {
 							List<String> numberItems = new ArrayList<>();
 							for (NumberGraphField listItem : graphNumberList.getList()) {
@@ -229,7 +229,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 						break;
 					case "boolean":
-						GraphBooleanFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
+						BooleanGraphFieldList graphBooleanList = container.getBooleanList(fieldSchema.getName());
 						if (graphBooleanList != null) {
 							List<String> booleanItems = new ArrayList<>();
 							for (BooleanGraphField listItem : graphBooleanList.getList()) {
@@ -243,7 +243,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						throw new NotImplementedException();
 						// break;
 					case "string":
-						GraphStringFieldList graphStringList = container.getStringList(fieldSchema.getName());
+						StringGraphFieldList graphStringList = container.getStringList(fieldSchema.getName());
 						if (graphStringList != null) {
 							List<String> stringItems = new ArrayList<>();
 							for (StringGraphField listItem : graphStringList.getList()) {
@@ -253,7 +253,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 						break;
 					case "html":
-						GraphHtmlFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
+						HtmlGraphFieldList graphHtmlList = container.getHTMLList(fieldSchema.getName());
 						if (graphHtmlList != null) {
 							List<String> htmlItems = new ArrayList<>();
 							for (HtmlGraphField listItem : graphHtmlList.getList()) {

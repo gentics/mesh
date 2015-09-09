@@ -1,18 +1,18 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import com.gentics.mesh.core.data.node.field.impl.nesting.GraphMicroschemaFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.nesting.MicroschemaGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
+import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public class GraphMicroschemaFieldListImpl extends AbstractReferencingGraphFieldList<GraphMicroschemaField, MicroschemaFieldListImpl>
-		implements GraphMicroschemaFieldList {
+public class MicroschemaGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicroschemaGraphField, MicroschemaFieldListImpl>
+		implements MicroschemaGraphFieldList {
 
 	@Override
-	public Class<? extends GraphMicroschemaField> getListType() {
-		return GraphMicroschemaFieldImpl.class;
+	public Class<? extends MicroschemaGraphField> getListType() {
+		return MicroschemaGraphFieldImpl.class;
 	}
 
 	@Override

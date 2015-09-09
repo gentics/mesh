@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
+import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
@@ -45,7 +45,7 @@ public class SelectGraphFieldNodeTest extends AbstractDBTest {
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 
-		GraphSelectField<?> selectField = container.createSelect("selectField");
+		SelectGraphField<?> selectField = container.createSelect("selectField");
 
 		String json = getJson(node);
 		assertTrue(json.indexOf("selectField") > 1);

@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public class GraphNumberFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements GraphNumberFieldList {
+public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements NumberGraphFieldList {
 
 	@Override
 	public NumberGraphField createNumber(String number) {

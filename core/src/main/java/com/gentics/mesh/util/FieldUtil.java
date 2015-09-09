@@ -67,8 +67,6 @@ public final class FieldUtil {
 		field.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
 		field.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
 		field.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
-		field.setOrder("desc");
-		field.setOrderBy("name");
 		return field;
 	}
 
@@ -77,7 +75,6 @@ public final class FieldUtil {
 		for (String number : numbers) {
 			field.add(number);
 		}
-		field.setOrder("asc");
 		return field;
 	}
 
@@ -86,8 +83,6 @@ public final class FieldUtil {
 		for (String string : strings) {
 			field.add(string);
 		}
-		field.setOrder("desc");
-		field.setOrderBy("name");
 		return field;
 	}
 }

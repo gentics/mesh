@@ -33,7 +33,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, Microschem
 	 * @param schema
 	 * @throws MeshSchemaException
 	 */
-	void setFieldFromRest(ActionContext ac, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
+	void updateFieldsFromRest(ActionContext ac, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists

@@ -42,9 +42,52 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addChildrenHandler();
 		addTagsHandler();
 		addMoveHandler();
+		addFieldHandlers();
 
 		addFileuploadHandler();
 		addFileDownloadHandler();
+	}
+
+	private void addFieldHandlers() {
+		route("/:uuid/fields/:fieldName").method(GET).handler(rc -> {
+			crudHandler.handleReadField(ActionContext.create(rc));
+		});
+
+		route("/:uuid/fields/:fieldName").method(PUT).handler(rc -> {
+			crudHandler.handleUpdateField(ActionContext.create(rc));
+		});
+
+		route("/:uuid/fields/:fieldName").method(DELETE).handler(rc -> {
+			crudHandler.handleRemoveField(ActionContext.create(rc));
+		});
+
+		// List methods
+
+		route("/:uuid/fields/:fieldName").method(POST).handler(rc -> {
+			crudHandler.handleAddFieldItem(ActionContext.create(rc));
+		});
+
+		route("/:uuid/fields/:fieldName/:itemIndex").method(DELETE).handler(rc -> {
+			crudHandler.handleRemoveFieldItem(ActionContext.create(rc));
+		});
+
+		route("/:uuid/fields/:fieldName/:itemIndex").method(GET).handler(rc -> {
+			crudHandler.handleReadFieldItem(ActionContext.create(rc));
+		});
+
+		route("/:uuid/fields/:fieldName/:itemIndex").method(PUT).handler(rc -> {
+			crudHandler.handleUpdateFieldItem(ActionContext.create(rc));
+		});
+
+		route("/:uuid/fields/:fieldName/:itemIndex/move/:newItemIndex").method(POST).handler(rc -> {
+			crudHandler.handleMoveFieldItem(ActionContext.create(rc));
+		});
+
+		//TODO copy?
+		//		route("/:uuid/fields/:fieldName/:itemIndex/copy/:newItemIndex").method(POST).handler(rc -> {
+		//			crudHandler.handleMoveFieldItem(ActionContext.create(rc));
+		//		});
+
 	}
 
 	private void addFileDownloadHandler() {

@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.node.field.nesting.AbstractComplexGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
+import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 
-public class GraphSelectFieldImpl<T extends ListableGraphField> extends AbstractComplexGraphField implements GraphSelectField<T> {
+public class SelectGraphFieldImpl<T extends ListableGraphField> extends AbstractComplexGraphField implements SelectGraphField<T> {
 
 	@Override
 	public void addOption(T t) {

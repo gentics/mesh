@@ -21,7 +21,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -151,7 +151,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 
-			GraphStringFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
+			StringGraphFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
 			list.createString("one");
 			list.createString("two");
 			list.createString("three");

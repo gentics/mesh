@@ -27,6 +27,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		setProperty("uuid", UUIDUtil.randomUUID());
 	}
 
+	/**
+	 * Return the properties which are prefixed using the given key.
+	 * 
+	 * @param prefix
+	 * @return
+	 */
 	public Map<String, String> getProperties(String prefix) {
 		Map<String, String> properties = new HashMap<>();
 

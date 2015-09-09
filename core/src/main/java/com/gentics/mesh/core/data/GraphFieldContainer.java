@@ -6,16 +6,16 @@ import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.list.GraphBooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphDateFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphMicroschemaFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphNumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.GraphStringFieldList;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.GraphNodeField;
-import com.gentics.mesh.core.data.node.field.nesting.GraphSelectField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 
 public interface GraphFieldContainer extends BasicFieldContainer {
 
@@ -23,9 +23,9 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 
 	StringGraphField createString(String key);
 
-	GraphNodeField getNode(String key);
+	NodeGraphField getNode(String key);
 
-	GraphNodeField createNode(String key, Node node);
+	NodeGraphField createNode(String key, Node node);
 
 	DateGraphField getDate(String key);
 
@@ -43,36 +43,36 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 
 	BooleanGraphField createBoolean(String key);
 
-	GraphDateFieldList createDateList(String fieldKey);
+	DateGraphFieldList createDateList(String fieldKey);
 
-	GraphDateFieldList getDateList(String fieldKey);
+	DateGraphFieldList getDateList(String fieldKey);
 
-	GraphHtmlFieldList createHTMLList(String fieldKey);
+	HtmlGraphFieldList createHTMLList(String fieldKey);
 
-	GraphHtmlFieldList getHTMLList(String fieldKey);
+	HtmlGraphFieldList getHTMLList(String fieldKey);
 
-	GraphNumberFieldList createNumberList(String fieldKey);
+	NumberGraphFieldList createNumberList(String fieldKey);
 
-	GraphNumberFieldList getNumberList(String fieldKey);
+	NumberGraphFieldList getNumberList(String fieldKey);
 
-	GraphNodeFieldList createNodeList(String fieldKey);
+	NodeGraphFieldList createNodeList(String fieldKey);
 
-	GraphNodeFieldList getNodeList(String fieldKey);
+	NodeGraphFieldList getNodeList(String fieldKey);
 
-	GraphStringFieldList createStringList(String fieldKey);
+	StringGraphFieldList createStringList(String fieldKey);
 
-	GraphStringFieldList getStringList(String fieldKey);
+	StringGraphFieldList getStringList(String fieldKey);
 
-	GraphBooleanFieldList createBooleanList(String fieldKey);
+	BooleanGraphFieldList createBooleanList(String fieldKey);
 
-	GraphBooleanFieldList getBooleanList(String fieldKey);
+	BooleanGraphFieldList getBooleanList(String fieldKey);
 
-	GraphMicroschemaFieldList createMicroschemaFieldList(String fieldKey);
+	MicroschemaGraphFieldList createMicroschemaFieldList(String fieldKey);
 
-	GraphMicroschemaFieldList getMicroschemaList(String fieldKey);
+	MicroschemaGraphFieldList getMicroschemaList(String fieldKey);
 
-	<T extends ListableGraphField> GraphSelectField<T> createSelect(String key);
+	<T extends ListableGraphField> SelectGraphField<T> createSelect(String key);
 
-	<T extends ListableGraphField> GraphSelectField<T> getSelect(String key);
+	<T extends ListableGraphField> SelectGraphField<T> getSelect(String key);
 
 }

@@ -27,11 +27,14 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 		JsonNode jsonNode = oc.readTree(jsonParser);
 		NodeResponse nodeItem = null;
 		try {
+//			if(log.isDebugEnabled()) {
+//			log.debug("Json: " + jsonNode.toString());
+//			}
 			nodeItem = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
 		} catch (MeshJsonException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Could not deserialize json to expanded Node Response", e);
-			}
+//			if (log.isDebugEnabled()) {
+//				log.debug("Could not deserialize json to expanded Node Response", e);
+//			}
 			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
 			nodeItem = new NodeResponse();
 			nodeItem.setUuid(collapsedItem.getUuid());

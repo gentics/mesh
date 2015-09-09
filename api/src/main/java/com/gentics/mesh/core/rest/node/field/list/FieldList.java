@@ -6,17 +6,9 @@ import com.gentics.mesh.core.rest.node.field.Field;
 
 public interface FieldList<T> extends Field {
 
-	void setTotalCount(long totalCount);
+//	void setTotalCount(long totalCount);
 
-	long getTotalCount();
-
-	void setOrderBy(String orderBy);
-
-	String getOrderBy();
-
-	void setOrder(String order);
-
-	String getOrder();
+//	long getTotalCount();
 
 	void add(T field);
 

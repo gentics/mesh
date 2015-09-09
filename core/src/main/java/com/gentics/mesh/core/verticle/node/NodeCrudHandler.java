@@ -373,4 +373,76 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			});
 		}
 	}
+
+	public void handleReadField(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleAddFieldItem(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleUpdateField(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleRemoveField(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleRemoveFieldItem(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleUpdateFieldItem(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleReadFieldItem(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
+
+	public void handleMoveFieldItem(ActionContext ac) {
+		try (Trx tx = db.trx()) {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
+
+			});
+		}
+	}
 }

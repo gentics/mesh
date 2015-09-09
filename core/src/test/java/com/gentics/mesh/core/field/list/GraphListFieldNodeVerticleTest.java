@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.GraphNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -166,18 +166,41 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testUpdateNodeFieldWithField() {
 		try (Trx tx = db.trx()) {
 			Node node = folder("news");
+			Node node2 = folder("deals");
+
 			NodeFieldListImpl list = new NodeFieldListImpl();
 			list.add(new NodeFieldListItemImpl(node.getUuid()));
 			NodeResponse response = updateNode("listField", list);
 			NodeFieldListImpl field = response.getField("listField");
 			assertEquals(1, field.getItems().size());
 
-			Node node2 = folder("deals");
-			list = new NodeFieldListImpl();
+			/// Add another item to the list and update the node
 			list.add(new NodeFieldListItemImpl(node2.getUuid()));
 			response = updateNode("listField", list);
 			field = response.getField("listField");
-			assertEquals(1, field.getItems().size());
+			assertEquals(2, field.getItems().size());
+		}
+	}
+
+	@Test
+	public void testUpdateNodeWithStringField() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("string");
+
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.add("A");
+			listField.add("B");
+			listField.add("C");
+
+			NodeResponse response = createNode("listField", listField);
+			StringFieldListImpl listFromResponse = response.getField("listField");
+			assertEquals(3, listFromResponse.getItems().size());
+
+			// Add another item to the list and update the node
+			listField.add("D");
+			response = updateNode("listField", listField);
+			listFromResponse = response.getField("listField");
+			assertEquals(4, listFromResponse.getItems().size());
 		}
 	}
 
@@ -202,7 +225,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-			GraphNodeFieldList nodeList = container.createNodeList("listField");
+			NodeGraphFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", folder("news"));
 			tx.success();
 		}
@@ -225,7 +248,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 			// Create node list
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-			GraphNodeFieldList nodeList = container.createNodeList("listField");
+			NodeGraphFieldList nodeList = container.createNodeList("listField");
 			nodeList.createNode("1", newsNode);
 			tx.success();
 		}

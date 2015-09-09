@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.node.field.nesting;
 
 import java.util.List;
 
-public interface GraphSelectField<T extends ListableGraphField> extends GraphNestingField, MicroschemaListableGraphField {
+public interface SelectGraphField<T extends ListableGraphField> extends NestingGraphField, MicroschemaListableGraphField {
 
 	void addOption(T t);
 
