@@ -67,7 +67,7 @@ public class RouterStorage {
 
 	@PostConstruct
 	public void setup() {
-		instance = this;
+		RouterStorage.instance = this;
 	}
 
 	public static RouterStorage getRouterStorage() {

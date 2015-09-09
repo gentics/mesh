@@ -11,9 +11,8 @@ import io.vertx.ext.mail.MailConfig;
 
 public class MeshOptions {
 
-	private static final boolean ENABLED = true;
-	private static final boolean DISABLED = false;
-
+	public static final boolean ENABLED = true;
+	public static final boolean DISABLED = false;
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final int DEFAULT_MAX_DEPTH = 5;
 	public static final int DEFAULT_PAGE_SIZE = 25;

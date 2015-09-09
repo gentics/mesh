@@ -11,13 +11,8 @@ import com.gentics.mesh.core.data.node.field.nesting.AbstractComplexGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.GraphMicroschemaField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 public class GraphMicroschemaFieldImpl extends AbstractComplexGraphField implements GraphMicroschemaField, GraphFieldContainer {
 
-	private static final Logger log = LoggerFactory.getLogger(GraphMicroschemaFieldImpl.class);
-	
 	@Override
 	public <T extends MicroschemaListableGraphField> List<? extends T> getFields() {
 		List<? extends NodeGraphFieldContainer> list = out(HAS_FIELD_CONTAINER).has(NodeGraphFieldContainerImpl.class)
@@ -28,7 +23,6 @@ public class GraphMicroschemaFieldImpl extends AbstractComplexGraphField impleme
 	@Override
 	public void delete() {
 		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -156,14 +156,14 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				ac.fail(BAD_REQUEST, "error_name_must_be_set");
+				handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 				return;
 			}
 
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					ac.fail(CONFLICT, "group_conflicting_name");
+					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name"));
 					return;
 				}
 				SearchQueueBatch batch;

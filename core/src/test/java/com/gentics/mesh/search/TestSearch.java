@@ -13,7 +13,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -65,10 +64,10 @@ public class TestSearch {
 		client.close();
 	}
 
-	private void setupIndex() {
-		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate("node");
-		createIndexRequestBuilder.execute().actionGet();
-	}
+	//	private void setupIndex() {
+	//		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate("node");
+	//		createIndexRequestBuilder.execute().actionGet();
+	//	}
 
 	private void getDocument(String uuid, String language) {
 		GetResponse getResponse = client.prepareGet("node", "node-" + language, uuid).setFields("uuid", "name", "fields.name", "language").execute()

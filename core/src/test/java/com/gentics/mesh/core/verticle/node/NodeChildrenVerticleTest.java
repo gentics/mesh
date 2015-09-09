@@ -53,7 +53,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	public void testNodeHierarchy() {
 		String parentNodeUuid;
 		try (Trx tx = db.trx()) {
-			Node baseNode = data().getProject().getBaseNode();
+			Node baseNode = project().getBaseNode();
 			parentNodeUuid = baseNode.getUuid();
 		}
 		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid);

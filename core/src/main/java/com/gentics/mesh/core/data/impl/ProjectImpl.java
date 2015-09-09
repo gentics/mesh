@@ -194,7 +194,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
-					ac.fail(CONFLICT, "project_conflicting_name");
+					handler.handle(ac.failedFuture(CONFLICT, "project_conflicting_name"));
 					txUpdate.failure();
 					return;
 				}

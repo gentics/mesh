@@ -328,7 +328,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(2, restResponse.getData().size());
 
 		// Extra Nodes + permitted node
-		int totalNodes = data().getNodeCount();
+		int totalNodes = getNodeCount();
 		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
 		assertEquals("The response did not contain the correct amount of items", 2, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
@@ -375,7 +375,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
 		assertEquals(1, list.getMetainfo().getPageCount());
-		assertEquals(data().getNodeCount(), list.getMetainfo().getTotalCount());
+		assertEquals(getNodeCount(), list.getMetainfo().getTotalCount());
 
 	}
 
@@ -393,7 +393,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(3, restResponse.getMetainfo().getPageCount());
 		assertEquals(10, restResponse.getMetainfo().getPerPage());
-		assertEquals(data().getNodeCount(), restResponse.getMetainfo().getTotalCount());
+		assertEquals(getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
 
 	@Test

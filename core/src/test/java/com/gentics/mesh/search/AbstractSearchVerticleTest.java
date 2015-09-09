@@ -22,13 +22,8 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 
 	@Autowired
 	protected SearchVerticle searchVerticle;
@@ -76,7 +71,9 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	}
 
 	abstract public void testDocumentDeletion() throws InterruptedException, JSONException;
+
 	abstract public void testDocumentCreation() throws InterruptedException, JSONException;
+
 	abstract public void testDocumentUpdate() throws InterruptedException, JSONException;
 
 }

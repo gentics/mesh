@@ -13,8 +13,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
@@ -39,8 +37,6 @@ import io.vertx.core.Handler;
 
 public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>implements SchemaContainer {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaContainerImpl.class);
-
 	@Override
 	public String getType() {
 		return SchemaContainer.TYPE;
@@ -54,7 +50,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 
 			// for (ProjectImpl project : getProjects()) {
 			// ProjectResponse restProject = new ProjectResponse();
-			// restProject.setUuid(project.getUuid());
+			// restProje	ct.setUuid(project.getUuid());
 			// restProject.setName(project.getName());
 			// schemaResponse.getProjects().add(restProject);
 			// }
@@ -140,7 +136,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 
 		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			ac.fail(BAD_REQUEST, "error_name_must_be_set");
+			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
 		// TODO update name? check for conflicting names?

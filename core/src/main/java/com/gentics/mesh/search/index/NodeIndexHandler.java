@@ -54,7 +54,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@PostConstruct
 	public void setup() {
-		instance = this;
+		NodeIndexHandler.instance = this;
 	}
 
 	public static NodeIndexHandler getInstance() {

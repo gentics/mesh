@@ -4,10 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -40,9 +38,6 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 @Component
 public class RestAssert {
-
-	@Autowired
-	private BootstrapInitializer boot;
 
 	public void assertGroup(Group group, GroupResponse restGroup) {
 		assertEquals(group.getUuid(), restGroup.getUuid());

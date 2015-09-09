@@ -40,18 +40,18 @@ public class LinkRendererTest extends AbstractDBTest {
 			Node parentNode = folder("2015");
 
 			// Create some dummy content
-			Node content = parentNode.create(user(), data().getSchemaContainer("content"), project());
+			Node content = parentNode.create(user(), schemaContainer("content"), project());
 			NodeGraphFieldContainer germanContainer = content.getOrCreateGraphFieldContainer(german);
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
-			Node content2 = parentNode.create(user(), data().getSchemaContainer("content"), project());
+			Node content2 = parentNode.create(user(), schemaContainer("content"), project());
 			NodeGraphFieldContainer englishContainer = content2.getOrCreateGraphFieldContainer(english);
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
 			LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
-			String out = replacer.replace("dgasd");
+			replacer.replace("dgasd");
 		}
 	}
 

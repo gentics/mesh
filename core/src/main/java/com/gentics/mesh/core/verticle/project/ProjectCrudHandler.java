@@ -6,8 +6,6 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
@@ -17,8 +15,6 @@ import com.gentics.mesh.handler.ActionContext;
 
 @Component
 public class ProjectCrudHandler extends AbstractCrudHandler {
-
-	private static final Logger log = LoggerFactory.getLogger(ProjectVerticle.class);
 
 	@Override
 	public void handleCreate(ActionContext ac) {

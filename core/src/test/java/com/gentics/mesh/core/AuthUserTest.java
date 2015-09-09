@@ -27,7 +27,7 @@ public class AuthUserTest extends AbstractDBTest {
 	@Before
 	public void setup() throws Exception {
 		setupData();
-		info = data().getUserInfo();
+		info = getUserInfo();
 	}
 
 	@Test

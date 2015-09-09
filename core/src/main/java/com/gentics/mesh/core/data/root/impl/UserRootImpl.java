@@ -35,12 +35,8 @@ import com.gentics.mesh.handler.ActionContext;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
-
-	private static final Logger log = LoggerFactory.getLogger(UserRootImpl.class);
 
 	@Override
 	protected Class<? extends User> getPersistanceClass() {
@@ -61,8 +57,6 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	public void removeUser(User user) {
 		removeItem(user);
 	}
-
-	// TODO unique index
 
 	@Override
 	public User create(String username, Group group, User creator) {

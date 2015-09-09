@@ -316,7 +316,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-					ac.fail(CONFLICT, "user_conflicting_username");
+					handler.handle(ac.failedFuture(CONFLICT, "user_conflicting_username"));
 					return;
 				}
 				setUsername(requestModel.getUsername());
@@ -343,7 +343,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			if (requestModel.getNodeReference() != null) {
 				NodeReference reference = requestModel.getNodeReference();
 				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-					ac.fail(BAD_REQUEST, "user_incomplete_node_reference");
+					handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
 					return;
 				} else {
 					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
@@ -351,7 +351,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					/* TODO decide whether we need to check perms on the project as well */
 					Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 					if (project == null) {
-						ac.fail(BAD_REQUEST, "project_not_found", projectName);
+						handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+						return;
 					} else {
 						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
 						setReferencedNode(node);

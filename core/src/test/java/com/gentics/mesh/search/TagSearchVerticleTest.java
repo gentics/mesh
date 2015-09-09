@@ -22,12 +22,8 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(TagSearchVerticleTest.class);
 
 	@Autowired
 	private TagVerticle tagVerticle;

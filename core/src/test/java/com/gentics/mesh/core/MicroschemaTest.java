@@ -41,11 +41,11 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 
 		Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingInfo(1, 10));
 
-		assertEquals(data().getNodeCount(), page.getTotalElements());
+		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		page = boot.microschemaContainerRoot().findAll(requestUser, new PagingInfo(1, 15));
-		assertEquals(data().getNodeCount(), page.getTotalElements());
+		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}
 

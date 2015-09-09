@@ -122,7 +122,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				ac.fail(CONFLICT, "role_conflicting_name");
+				handler.handle(ac.failedFuture(CONFLICT, "role_conflicting_name"));
 				return;
 			}
 			SearchQueueBatch batch;

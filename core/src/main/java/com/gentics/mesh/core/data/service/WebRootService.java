@@ -23,12 +23,9 @@ import io.vertx.core.logging.LoggerFactory;
 public class WebRootService {
 
 	private static Logger log = LoggerFactory.getLogger(WebRootService.class);
-	
-	@Autowired
-	private BootstrapInitializer boot;
 
 	@Autowired
-	private I18NService i18n;
+	private BootstrapInitializer boot;
 
 	public Path findByProjectPath(ActionContext ac, String projectName, String path) {
 		String parts[] = path.split("/");

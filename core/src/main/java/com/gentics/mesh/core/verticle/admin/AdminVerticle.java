@@ -3,8 +3,6 @@ package com.gentics.mesh.core.verticle.admin;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -20,7 +18,6 @@ import com.gentics.mesh.git.GitPullChecker;
 @SpringVerticle
 public class AdminVerticle extends AbstractCoreApiVerticle {
 
-	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 	public static final String GIT_PULL_CHECKER_INTERVAL_KEY = "gitPullCheckerInterval";
 	public static final String GIT_PULL_CHECKER_KEY = "gitPullChecker";
 
@@ -30,7 +27,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	@Autowired
 	private AdminHandler handler;
 
-	GitPullChecker gitChecker;
+	private GitPullChecker gitChecker;
 
 	public AdminVerticle() {
 		super("admin");

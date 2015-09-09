@@ -214,7 +214,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 				role().grantPermissions(group, READ_PERM);
 			}
 
-			totalGroups = nGroups + data().getGroups().size();
+			totalGroups = nGroups + groups().size();
 			tx.success();
 		}
 		// Test default paging parameters

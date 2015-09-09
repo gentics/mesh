@@ -132,11 +132,11 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagFamilyListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The response did not contain the correct amount of items", data().getTagFamilies().size(), restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", tagFamilies().size(), restResponse.getData().size());
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
-		int totalTagFamilies = data().getTagFamilies().size();
+		int totalTagFamilies = tagFamilies().size();
 		int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 		List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {

@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
@@ -35,12 +34,8 @@ import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeSearchVerticleTest.class);
 
 	@Autowired
 	private NodeVerticle nodeVerticle;

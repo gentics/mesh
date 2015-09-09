@@ -126,8 +126,8 @@ public class RestModelTest extends AbstractDBTest {
 	@Test
 	public void testNodeList() throws IOException, MeshSchemaException {
 		setupData();
-		Schema folderSchema = data().getSchemaContainer("folder").getSchema();
-		Schema contentSchema = data().getSchemaContainer("content").getSchema();
+		Schema folderSchema = schemaContainer("folder").getSchema();
+		Schema contentSchema = schemaContainer("content").getSchema();
 
 		NodeResponse folder = new NodeResponse();
 		folder.setSchema(new SchemaReference(folderSchema.getName(), null));

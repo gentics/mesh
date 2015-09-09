@@ -42,22 +42,54 @@ public interface ActionContext {
 
 	String getParameter(String string);
 
+	/**
+	 * Send the body string and complete the action.
+	 * 
+	 * @param body
+	 */
 	void send(String body);
 
+	/**
+	 * Return the i18n string for the given i18n key and the parameters. This method is a wrapper that will lookup the defined locale and return a matching i18n
+	 * translation.
+	 * 
+	 * @param i18nKey
+	 * @param parameters
+	 * @return
+	 */
 	String i18n(String i18nKey, String... parameters);
 
 	MultiMap getParameters();
 
 	String query();
 
+	/**
+	 * Fail the action with the given status and return a generic message response which includes the given i18n message.
+	 * 
+	 * @param status
+	 * @param i18nKey
+	 * @param parameters
+	 */
 	void fail(HttpResponseStatus status, String i18nKey, String... parameters);
 
+	/**
+	 * Fail the action with the given status and return a generic message response which includes the given i18n message and cause.
+	 * 
+	 * @param status
+	 * @param i18nKey
+	 * @param cause
+	 */
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
 	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, Throwable cause);
 
 	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters);
 
+	/**
+	 * Fail the action with the given cause.
+	 * 
+	 * @param cause
+	 */
 	void fail(Throwable cause);
 
 	/**

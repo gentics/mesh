@@ -80,7 +80,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			ac.fail(BAD_REQUEST, "error_name_must_be_set");
+			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
 		try (Trx tx = db.trx()) {

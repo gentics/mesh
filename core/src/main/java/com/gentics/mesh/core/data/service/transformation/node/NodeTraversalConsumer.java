@@ -10,16 +10,16 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public class NodeTraversalConsumer implements Consumer<NodeImpl> {
 
-	private TransformationParameters info;
-	private int currentDepth;
-	private TagResponse restTag;
-	private Set<ForkJoinTask<Void>> tasks;
+//	private TransformationParameters info;
+//	private int currentDepth;
+//	private TagResponse restTag;
+//	private Set<ForkJoinTask<Void>> tasks;
 
 	public NodeTraversalConsumer(TransformationParameters info, int currentDepth, TagResponse restTag, Set<ForkJoinTask<Void>> tasks) {
-		this.info = info;
-		this.currentDepth = currentDepth;
-		this.restTag = restTag;
-		this.tasks = tasks;
+//		this.info = info;
+//		this.currentDepth = currentDepth;
+//		this.restTag = restTag;
+//		this.tasks = tasks;
 	}
 
 	@Override

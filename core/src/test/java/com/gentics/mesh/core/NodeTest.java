@@ -115,12 +115,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 			Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 10));
 
 			// There are nodes that are only available in english
-			assertEquals(data().getNodeCount(), page.getTotalElements());
+			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
 
 			languageTags.add("en");
 			page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 15));
-			assertEquals(data().getNodeCount(), page.getTotalElements());
+			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(15, page.getSize());
 		}
 
@@ -251,7 +251,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		try (Trx tx = db.trx()) {
 			User user = user();
 			Node parentNode = folder("2015");
-			Node node = parentNode.create(user, data().getSchemaContainer("content"), project());
+			Node node = parentNode.create(user, schemaContainer("content"), project());
 			long ts = System.currentTimeMillis();
 			node.setCreationTimestamp(ts);
 			node.setLastEditedTimestamp(ts);

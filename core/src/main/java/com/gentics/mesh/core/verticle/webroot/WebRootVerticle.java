@@ -11,16 +11,12 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class WebRootVerticle extends AbstractProjectRestVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(WebRootVerticle.class);
 
 	@Autowired
 	private WebRootHandler handler;

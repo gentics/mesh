@@ -139,7 +139,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 				role().grantPermissions(extraSchema, READ_PERM);
 			}
 			// Don't grant permissions to no perm schema
-			totalSchemas = nSchemas + data().getSchemaContainers().size();
+			totalSchemas = nSchemas + schemaContainers().size();
 			tx.success();
 		}
 		// Test default paging parameters

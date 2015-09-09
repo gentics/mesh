@@ -185,7 +185,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
-				ac.fail(BAD_REQUEST, "tag_name_not_set");
+				handler.handle(ac.failedFuture(BAD_REQUEST, "tag_name_not_set"));
 				txUpdate.failure();
 				return;
 			} else {

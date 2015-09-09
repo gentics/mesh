@@ -25,16 +25,12 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class SearchVerticle extends AbstractCoreApiVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(SearchVerticle.class);
 
 	@Autowired
 	private SearchRestHandler searchHandler;

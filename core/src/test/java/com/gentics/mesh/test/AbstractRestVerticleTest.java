@@ -55,12 +55,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
-
-	private static final Logger log = LoggerFactory.getLogger(AbstractRestVerticleTest.class);
 
 	@Autowired
 	private I18NService i18n;
@@ -99,7 +95,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			verticle.registerEndPoints();
 		}
 		client = new MeshRestClient("localhost", getPort());
-		client.setLogin(user().getUsername(), data().getUserInfo().getPassword());
+		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();
 	}
 
@@ -113,7 +109,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected void resetClientSchemaStorage() throws IOException {
 		getClient().getClientSchemaStorage().clear();
-		for (SchemaContainer container : data().getSchemaContainers().values()) {
+		for (SchemaContainer container : schemaContainers().values()) {
 			getClient().getClientSchemaStorage().addSchema(container.getSchema());
 		}
 	}

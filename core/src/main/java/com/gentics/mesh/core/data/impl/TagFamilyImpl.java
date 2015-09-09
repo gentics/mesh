@@ -150,14 +150,14 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {
-			ac.fail(BAD_REQUEST, "tagfamily_name_not_set");
+			handler.handle(ac.failedFuture(BAD_REQUEST, "tagfamily_name_not_set"));
 		} else {
 			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
 					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						ac.fail(CONFLICT, "tagfamily_conflicting_name", newName);
+						handler.handle(ac.failedFuture(CONFLICT, "tagfamily_conflicting_name", newName));
 						return;
 					}
 					SearchQueueBatch batch;

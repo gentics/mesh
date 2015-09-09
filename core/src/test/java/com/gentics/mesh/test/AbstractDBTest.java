@@ -1,4 +1,5 @@
 package com.gentics.mesh.test;
+
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -81,115 +83,122 @@ public abstract class AbstractDBTest {
 		dataProvider.updatePermissions();
 	}
 
-	@Deprecated
-	public DemoDataProvider data() {
-		return dataProvider;
-	}
-
 	public SchemaContainer schemaContainer(String key) {
-		SchemaContainer container = data().getSchemaContainer(key);
+		SchemaContainer container = dataProvider.getSchemaContainer(key);
 		container.reload();
 		return container;
 
 	}
 
+	public UserInfo getUserInfo() {
+		return dataProvider.getUserInfo();
+	}
+
 	public Map<String, ? extends Tag> tags() {
-		return data().getTags();
+		return dataProvider.getTags();
 	}
 
 	public Tag tag(String key) {
-		Tag tag = data().getTag(key);
+		Tag tag = dataProvider.getTag(key);
 		tag.reload();
 		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
-		TagFamily family = data().getTagFamily(key);
+		TagFamily family = dataProvider.getTagFamily(key);
 		family.reload();
 		return family;
 	}
 
 	public Project project() {
-		Project project = data().getProject();
+		Project project = dataProvider.getProject();
 		project.reload();
 		return project;
 	}
 
 	public Node content(String key) {
-		Node node = data().getContent(key);
+		Node node = dataProvider.getContent(key);
 		node.reload();
 		return node;
 
 	}
 
 	public Node folder(String key) {
-		Node node = data().getFolder(key);
+		Node node = dataProvider.getFolder(key);
 		node.reload();
 		return node;
 	}
 
 	public Map<String, User> users() {
-		return data().getUsers();
+		return dataProvider.getUsers();
 	}
 
 	public Map<String, Role> roles() {
-		return data().getRoles();
+		return dataProvider.getRoles();
 	}
 
 	public Map<String, TagFamily> tagFamilies() {
-		return data().getTagFamilies();
+		return dataProvider.getTagFamilies();
 	}
 
 	public Map<String, Group> groups() {
-		return data().getGroups();
+		return dataProvider.getGroups();
+	}
+
+	public Map<String, SchemaContainer> schemaContainers() {
+		return dataProvider.getSchemaContainers();
+	}
+
+	public int getNodeCount() {
+		return dataProvider.getNodeCount();
 	}
 
 	public Language english() {
-		return data().getEnglish();
+		return dataProvider.getEnglish();
 	}
 
 	public Language german() {
-		return data().getGerman();
+		return dataProvider.getGerman();
 	}
 
 	public User user() {
-		User user = data().getUserInfo().getUser();
+		User user = dataProvider.getUserInfo().getUser();
 		user.reload();
 		return user;
 	}
 
 	public String password() {
-		return data().getUserInfo().getPassword();
+		return dataProvider.getUserInfo().getPassword();
 	}
 
 	public Group group() {
-		Group group = data().getUserInfo().getGroup();
+		Group group = dataProvider.getUserInfo().getGroup();
 		group.reload();
 		return group;
 	}
 
 	public Role role() {
-		Role role = data().getUserInfo().getRole();
+		Role role = dataProvider.getUserInfo().getRole();
 		role.reload();
 		return role;
 	}
 
 	public MeshRoot meshRoot() {
-		return data().getMeshRoot();
+		return dataProvider.getMeshRoot();
 	}
 
 	public Node content() {
-		Node content = data().getContent("news overview");
+		Node content = dataProvider.getContent("news overview");
 		content.reload();
 		return content;
 	}
 
 	public MeshAuthUser getRequestUser() {
-		return data().getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
+		return dataProvider.getUserInfo().getUser().getImpl().reframe(MeshAuthUserImpl.class);
 	}
 
 	public SchemaContainer getSchemaContainer() {
-		SchemaContainer container = data().getSchemaContainer("content");
+		SchemaContainer container = dataProvider.getSchemaContainer("content");
 		container.reload();
 		return container;
 	}
@@ -211,7 +220,7 @@ public abstract class AbstractDBTest {
 
 	protected RoutingContext getMockedRoutingContext(String query) {
 		try (Trx tx = db.trx()) {
-			User user = data().getUserInfo().getUser();
+			User user = dataProvider.getUserInfo().getUser();
 			Map<String, Object> map = new HashMap<>();
 			RoutingContext rc = mock(RoutingContext.class);
 			Session session = mock(Session.class);

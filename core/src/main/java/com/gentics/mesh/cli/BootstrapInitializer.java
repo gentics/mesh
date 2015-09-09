@@ -93,7 +93,6 @@ public class BootstrapInitializer {
 	private Database db;
 
 	private static BootstrapInitializer instance;
-	private static MeshRoot meshRoot;
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
@@ -235,21 +234,21 @@ public class BootstrapInitializer {
 
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
-//		if (meshRoot == null) {
-//			synchronized (BootstrapInitializer.class) {
-				MeshRoot foundMeshRoot = Trx.getFramedLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-				if (foundMeshRoot == null) {
-					foundMeshRoot = Trx.getFramedLocalGraph().addFramedVertex(MeshRootImpl.class);
-					if (log.isInfoEnabled()) {
-						log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
-					}
-				} 
-//				else {
-//					meshRoot = foundMeshRoot;
-//				}
-//			}
-	return foundMeshRoot;
-//		}
+		//		if (meshRoot == null) {
+		//			synchronized (BootstrapInitializer.class) {
+		MeshRoot foundMeshRoot = Trx.getFramedLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+		if (foundMeshRoot == null) {
+			foundMeshRoot = Trx.getFramedLocalGraph().addFramedVertex(MeshRootImpl.class);
+			if (log.isInfoEnabled()) {
+				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
+			}
+		}
+		//				else {
+		//					meshRoot = foundMeshRoot;
+		//				}
+		//			}
+		return foundMeshRoot;
+		//		}
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {
@@ -298,7 +297,6 @@ public class BootstrapInitializer {
 
 	public static void clearReferences() {
 		MeshRootImpl.clearReferences();
-		BootstrapInitializer.meshRoot = null;
 	}
 
 	/**
