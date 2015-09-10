@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.data.service.I18NService;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.HttpActionContext;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -25,11 +27,12 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
-public class VertxWebActionContextImpl extends AbstractActionContext {
+public class HttpActionContextImpl extends AbstractActionContext implements HttpActionContext {
 
-	private static final Logger log = LoggerFactory.getLogger(VertxWebActionContextImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(HttpActionContextImpl.class);
 
 	private static final String LOCALE_MAP_DATA_KEY = "locale";
 	private Project project;
@@ -38,7 +41,7 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 
 	private RoutingContext rc;
 
-	public VertxWebActionContextImpl(RoutingContext rc) {
+	public HttpActionContextImpl(RoutingContext rc) {
 		this.rc = rc;
 
 	}
@@ -143,6 +146,16 @@ public class VertxWebActionContextImpl extends AbstractActionContext {
 			return getLocale(header);
 		});
 		return (Locale) data().get(LOCALE_MAP_DATA_KEY);
+	}
+
+	@Override
+	public Set<FileUpload> getFileUploads() {
+		return rc.fileUploads();
+	}
+
+	@Override
+	public MultiMap requestHeaders() {
+		return rc.request().headers();
 	}
 
 	@Override

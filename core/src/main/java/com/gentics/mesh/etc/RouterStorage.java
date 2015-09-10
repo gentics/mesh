@@ -114,6 +114,7 @@ public class RouterStorage {
 					if (failure != null) {
 						log.error("Error:", failure);
 					}
+					//TODO wrap this instead into a try/catch and throw the failure
 					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
 					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 						failureRoutingContext.response().setStatusCode(400);

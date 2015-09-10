@@ -51,7 +51,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		try (Trx tx = db.trx()) {
 			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
-			assertEquals(182, languages.size());
+			assertEquals(4, languages.size());
 		}
 	}
 

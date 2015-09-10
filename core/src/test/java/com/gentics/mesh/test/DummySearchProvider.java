@@ -1,6 +1,7 @@
 package com.gentics.mesh.test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,9 +15,9 @@ import io.vertx.core.Handler;
 
 public class DummySearchProvider implements SearchProvider {
 
-	private List<String> updateEvents = new ArrayList<>();
+	private Map<String, Map<String, Object>> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
-	private List<String> storeEvents = new ArrayList<>();
+	private Map<String, Map<String, Object>> storeEvents = new HashMap<>();
 
 	@Override
 	public void refreshIndex() {
@@ -24,9 +25,8 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void updateDocument(String index, String type, String uuid, Map<String, Object> transformToDocumentMap,
-			Handler<AsyncResult<Void>> handler) {
-		updateEvents.add(index + "-" + type + "-" + uuid);
+	public void updateDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
+		updateEvents.put(index + "-" + type + "-" + uuid, map);
 		handler.handle(Future.succeededFuture());
 	}
 
@@ -38,7 +38,7 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
-		storeEvents.add(index + "-" + type + "-" + uuid);
+		storeEvents.put(index + "-" + type + "-" + uuid, map);
 		handler.handle(Future.succeededFuture());
 	}
 
@@ -66,7 +66,7 @@ public class DummySearchProvider implements SearchProvider {
 		return null;
 	}
 
-	public List<String> getStoreEvents() {
+	public Map<String, Map<String, Object>> getStoreEvents() {
 		return storeEvents;
 	}
 
@@ -74,7 +74,7 @@ public class DummySearchProvider implements SearchProvider {
 		return deleteEvents;
 	}
 
-	public List<String> getUpdateEvents() {
+	public Map<String, Map<String, Object>> getUpdateEvents() {
 		return updateEvents;
 	}
 

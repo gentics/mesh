@@ -35,6 +35,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.HttpActionContext;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.VerticleHelper;
 
@@ -165,8 +166,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleUpload(RoutingContext rc) {
-		ActionContext ac = ActionContext.create(rc);
+	public void handleUpload(HttpActionContext ac) {
+
 		try (Trx tx = db.trx()) {
 			Project project = ac.getProject();
 			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
@@ -178,7 +179,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						if (!schema.isBinary()) {
 							ac.fail(BAD_REQUEST, "node_error_no_binary_node");
 						} else {
-							Set<FileUpload> fileUploads = rc.fileUploads();
+							Set<FileUpload> fileUploads = ac.getFileUploads();
 							if (fileUploads.isEmpty()) {
 								ac.fail(BAD_REQUEST, "node_error_no_binarydata_found");
 							} else if (fileUploads.size() > 1) {

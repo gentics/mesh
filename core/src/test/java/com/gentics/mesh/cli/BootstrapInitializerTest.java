@@ -25,10 +25,10 @@ public class BootstrapInitializerTest extends AbstractDBTest {
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
 		try (Trx tx = db.trx()) {
 			boot.initLanguages(meshRoot().getLanguageRoot());
-			Language language = boot.languageRoot().findByLanguageTag("xh");
+			Language language = boot.languageRoot().findByLanguageTag("de");
 			assertNotNull(language);
-			assertEquals("Xhosa", language.getName());
-			assertEquals("isiXhosa", language.getNativeName());
+			assertEquals("German", language.getName());
+			assertEquals("Deutsch", language.getNativeName());
 		}
 	}
 }

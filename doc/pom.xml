@@ -25,7 +25,6 @@
 	</properties>
 
 	<dependencies>
-
 		<dependency>
 			<artifactId>mesh-core</artifactId>
 			<groupId>${project.groupId}</groupId>
@@ -38,7 +37,6 @@
 			<artifactId>highlightjs</artifactId>
 			<version>8.4-4</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.raml</groupId>
 			<artifactId>raml-parser</artifactId>
@@ -64,8 +62,21 @@
 			<artifactId>mesh-admin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.gentics.mesh</groupId> <artifactId>mesh-admin-gui</artifactId> 
-			<version>${project.version}</version> </dependency> -->
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -80,7 +91,6 @@
 							<goal>compile</goal>
 						</goals>
 					</execution>
-
 				</executions>
 				<configuration>
 					<source>1.8</source>

@@ -8,7 +8,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.handler.impl.VertxWebActionContextImpl;
+import com.gentics.mesh.handler.impl.HttpActionContextImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -27,20 +27,27 @@ public interface ActionContext {
 
 	<T> T get(String key);
 
+	//TODO we should get this of this and make it possible to choose between httmlaction context and internal context
 	/**
 	 * Create a action context using the routing context in order to extract needed parameters.
 	 *
 	 * @return the body handler
 	 */
 	static ActionContext create(RoutingContext rc) {
-		return new VertxWebActionContextImpl(rc);
+		return new HttpActionContextImpl(rc);
 	}
 
 	Project getProject();
 
 	MeshAuthUser getUser();
 
-	String getParameter(String string);
+	/**
+	 * Return the request parameter with the given name.
+	 * 
+	 * @param string
+	 * @return
+	 */
+	String getParameter(String name);
 
 	/**
 	 * Send the body string and complete the action.

@@ -69,7 +69,7 @@ public class I18NService {
 	}
 
 	public String get(ActionContext ac, String key, String... parameters) {
-		return get(MESH_CORE_BUNDLENAME, (Locale) ac.get("locale"), key, parameters);
+		return get(MESH_CORE_BUNDLENAME, ac.getLocale(), key, parameters);
 	}
 
 	public String get(String bundleName, ActionContext ac, String key, String... parameters) {

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.HttpActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -98,7 +99,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private void addFileuploadHandler() {
 		route("/:uuid/bin").method(POST).method(PUT).handler(rc -> {
-			crudHandler.handleUpload(rc);
+			crudHandler.handleUpload(HttpActionContext.create(rc));
 		});
 	}
 
