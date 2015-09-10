@@ -16,10 +16,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<dockerHost>satan3.office</dockerHost>
-		<!-- 
 		<dockerHost>cetus.office</dockerHost>
-		 -->
 		<dockerIP>10.43.84.220</dockerIP>
 	</properties>
 
