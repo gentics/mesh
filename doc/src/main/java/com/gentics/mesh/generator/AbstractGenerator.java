@@ -1,4 +1,4 @@
-package com.gentics.mesh.raml;
+package com.gentics.mesh.generator;
 
 import java.io.File;
 

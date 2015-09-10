@@ -1,4 +1,4 @@
-package com.gentics.mesh.raml;
+package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.util.FieldUtil.createBooleanField;
 import static com.gentics.mesh.util.FieldUtil.createDateField;
@@ -77,15 +77,13 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 
-public class Generator extends AbstractGenerator {
+public class RAMLExampleGeneratorTest extends AbstractGenerator {
 
-	private File outputDir;
-
-	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
-		new Generator().start();
+	public static void main(String[] args) throws IOException {
+		new RAMLExampleGeneratorTest().run();
 	}
-
-	public void start() throws IOException {
+	
+	public void run() throws IOException {
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
 			baseDirProp = "target" + File.separator + "site" + File.separator + "docs" + File.separator + "raml";
@@ -112,6 +110,21 @@ public class Generator extends AbstractGenerator {
 		// System.out.println(dumpFromRaml);
 
 	}
+
+//	private File baseDir = new File("target", "raml2html");
+//
+//	@Before
+//	public void setup() throws IOException {
+//		FileUtils.deleteDirectory(baseDir);
+//	}
+
+//	@Test
+//	public void testGenerator() throws IOException {
+//		System.setProperty("baseDir", baseDir.getAbsolutePath());
+//		File jsonDir = new File(baseDir, "json");
+//		assertTrue(jsonDir.exists());
+//		assertTrue(jsonDir.listFiles().length != 0);
+//	}
 
 	private void createJson() throws IOException {
 

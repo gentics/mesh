@@ -1,4 +1,4 @@
-package com.gentics.mesh.raml;
+package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.mock.MockingUtils.mockGroup;
 import static com.gentics.mesh.mock.MockingUtils.mockLanguage;
@@ -9,7 +9,6 @@ import static com.gentics.mesh.mock.MockingUtils.mockRole;
 import static com.gentics.mesh.mock.MockingUtils.mockTag;
 import static com.gentics.mesh.mock.MockingUtils.mockTagFamily;
 import static com.gentics.mesh.mock.MockingUtils.mockUser;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.util.Arrays;
@@ -20,7 +19,6 @@ import java.util.TreeMap;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -42,15 +40,10 @@ import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 import com.gentics.mesh.test.DummySearchProvider;
 
-public class SearchModelGenerator extends AbstractGenerator {
+public class SearchModelGeneratorTest extends AbstractGenerator {
 
 	public static void main(String[] args) throws Exception {
-		new SearchModelGenerator().start();
-	}
-
-	@Test
-	public void testGenerator() throws Exception {
-		start();
+		new SearchModelGeneratorTest().start();
 	}
 
 	DummySearchProvider provider;
@@ -81,6 +74,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			writeRoleDocumentExample();
 			writeProjectDocumentExample();
 			writeTagFamilyDocumentExample();
+			System.exit(0);
 		}
 
 	}
@@ -135,7 +129,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Group groupA = mockGroup("editors", user);
 		Group groupB = mockGroup("superEditors", user);
-		Mockito.<List<? extends Group>>when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
+		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = ctx.getBean(UserIndexHandler.class);
 		userIndexHandler.store(user, "user", rh -> {
 		});
@@ -166,7 +160,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeStoreEvent(String name) throws Exception {
 		Map<String, Object> eventMap = provider.getStoreEvents().values().iterator().next();
-		assertNotNull(eventMap);
+		if (eventMap == null) {
+			throw new RuntimeException("Could not find event to handle");
+		}
 		Map<String, Object> outputMap = new TreeMap<>();
 		flatten(eventMap, outputMap, null);
 		JSONObject json = new JSONObject(outputMap);
@@ -178,7 +174,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 		File file = new File(outputDir, filename + ".json");
 		System.out.println("Writing to {" + file.getAbsolutePath() + "}");
 		JsonNode node = getMapper().readTree(jsonObject.toString());
-		System.out.println(jsonObject.toString(4));
 		getMapper().writerWithDefaultPrettyPrinter().writeValue(file, node);
 	}
 

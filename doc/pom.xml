@@ -63,19 +63,17 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Test dependencies -->
+		<!-- Generator dependencies -->
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.10.19</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -103,7 +101,7 @@
 				<version>1.3.2</version>
 				<executions>
 					<execution>
-						<id>Generate JSON files</id>
+						<id>Generate RestModel JSON files</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -113,7 +111,22 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath/>
-								<argument>com.gentics.mesh.raml.Generator</argument>
+								<argument>com.gentics.mesh.generator.RAMLExampleGeneratorTest</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Generate SearchModel JSON files</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>pre-site</phase>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath/>
+								<argument>com.gentics.mesh.generator.SearchModelGeneratorTest</argument>
 							</arguments>
 						</configuration>
 					</execution>
