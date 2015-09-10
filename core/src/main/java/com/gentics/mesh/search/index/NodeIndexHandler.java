@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -207,6 +208,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 					switch (listFieldSchema.getListType()) {
 					case "node":
+						NodeGraphFieldList graphNodeList = container.getNodeList(fieldSchema.getName());
+						if (graphNodeList != null) {
+							List<String> nodeItems = new ArrayList<>();
+							for (NodeGraphField listItem : graphNodeList.getList()) {
+								nodeItems.add(listItem.getNode().getUuid());
+							}
+							fieldsMap.put(fieldSchema.getName(), nodeItems);
+						}
 						break;
 					case "date":
 						DateGraphFieldList graphDateList = container.getDateList(fieldSchema.getName());

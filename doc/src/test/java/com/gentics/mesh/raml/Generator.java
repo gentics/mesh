@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.FieldUtil.createNumberField;
 import static com.gentics.mesh.util.FieldUtil.createNumberListField;
 import static com.gentics.mesh.util.FieldUtil.createStringField;
 import static com.gentics.mesh.util.FieldUtil.createStringListField;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,15 +76,10 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.UUIDUtil;
 
-public class Generator {
+public class Generator extends AbstractGenerator {
 
 	private File outputDir;
-
-	public static String getUUID() {
-		return UUIDUtil.randomUUID();
-	}
 
 	public static void main(String[] args) throws JsonGenerationException, JsonMappingException, IOException {
 		new Generator().start();
@@ -140,25 +136,25 @@ public class Generator {
 
 	private void projectJson() throws JsonGenerationException, JsonMappingException, IOException {
 		ProjectResponse project = new ProjectResponse();
-		project.setUuid(getUUID());
+		project.setUuid(randomUUID());
 		project.setName("Dummy Project");
 		project.setCreated(getTimestamp());
 		project.setCreator(getUserReference());
 		project.setEdited(getTimestamp());
 		project.setEditor(getUserReference());
 		project.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		project.setRootNodeUuid(getUUID());
+		project.setRootNodeUuid(randomUUID());
 		write(project);
 
 		ProjectResponse project2 = new ProjectResponse();
-		project2.setUuid(getUUID());
+		project2.setUuid(randomUUID());
 		project2.setName("Dummy Project (Mobile)");
 		project2.setCreated(getTimestamp());
 		project2.setCreator(getUserReference());
 		project2.setEdited(getTimestamp());
 		project2.setEditor(getUserReference());
 		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		project2.setRootNodeUuid(getUUID());
+		project2.setRootNodeUuid(randomUUID());
 
 		ProjectListResponse projectList = new ProjectListResponse();
 		projectList.getData().add(project);
@@ -179,7 +175,7 @@ public class Generator {
 	private void roleJson() throws JsonGenerationException, JsonMappingException, IOException {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
-		role.setUuid(getUUID());
+		role.setUuid(randomUUID());
 		role.setCreated(getTimestamp());
 		role.setCreator(getUserReference());
 		role.setEdited(getTimestamp());
@@ -194,7 +190,7 @@ public class Generator {
 		role2.setEdited(getTimestamp());
 		role2.setEditor(getUserReference());
 		role2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		role2.setUuid(getUUID());
+		role2.setUuid(randomUUID());
 
 		RoleListResponse roleList = new RoleListResponse();
 		roleList.getData().add(role);
@@ -223,10 +219,10 @@ public class Generator {
 
 		TagFamilyReference tagFamilyReference = new TagFamilyReference();
 		tagFamilyReference.setName("colors");
-		tagFamilyReference.setUuid(getUUID());
+		tagFamilyReference.setUuid(randomUUID());
 
 		TagResponse tag = new TagResponse();
-		tag.setUuid(getUUID());
+		tag.setUuid(randomUUID());
 		tag.setCreated(getTimestamp());
 		tag.setCreator(getUserReference());
 		tag.setEdited(getTimestamp());
@@ -244,7 +240,7 @@ public class Generator {
 		write(tagCreate);
 
 		TagResponse tag2 = new TagResponse();
-		tag2.setUuid(getUUID());
+		tag2.setUuid(randomUUID());
 		tag2.setCreated(getTimestamp());
 		tag2.setCreator(getUserReference());
 		tag2.setEdited(getTimestamp());
@@ -298,7 +294,7 @@ public class Generator {
 
 	private void microschemaJson() throws JsonGenerationException, JsonMappingException, IOException {
 		MicroschemaResponse response = new MicroschemaResponse();
-		response.setUuid(getUUID());
+		response.setUuid(randomUUID());
 		write(response);
 
 		MicroschemaListResponse listResponse = new MicroschemaListResponse();
@@ -345,7 +341,7 @@ public class Generator {
 
 	private SchemaResponse getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaResponse schema = new SchemaResponse();
-		schema.setUuid(getUUID());
+		schema.setUuid(randomUUID());
 		// schema.setDescription("Description of the schema");
 		// schema.setName("extended-content");
 		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -391,9 +387,9 @@ public class Generator {
 
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
-		nodeResponse.setUuid(getUUID());
+		nodeResponse.setUuid(randomUUID());
 		NodeReference parentNodeReference = new NodeReference();
-		parentNodeReference.setUuid(getUUID());
+		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
 		nodeResponse.setCreated(getTimestamp());
@@ -408,8 +404,8 @@ public class Generator {
 		binaryProperties.setWidth(800);
 		binaryProperties.setHeight(600);
 		binaryProperties.setMimeType("image/jpeg");
-		binaryProperties
-				.setSha512sum("ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
+		binaryProperties.setSha512sum(
+				"ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
 		nodeResponse.setBinaryProperties(binaryProperties);
 
 		Map<String, Field> fields = nodeResponse.getFields();
@@ -417,7 +413,7 @@ public class Generator {
 		fields.put("filename-stringField", createStringField("dummy-content.de.html"));
 		fields.put("teaser-stringField", createStringField("Dummy teaser for de-DE"));
 		fields.put("content-htmlField", createHtmlField("Content for language tag de-DE"));
-		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));
+		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField("22.12.2015"));
@@ -432,9 +428,9 @@ public class Generator {
 
 	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
-		nodeResponse.setUuid(getUUID());
+		nodeResponse.setUuid(randomUUID());
 		NodeReference parentNodeReference = new NodeReference();
-		parentNodeReference.setUuid(getUUID());
+		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
 		nodeResponse.setCreator(getUserReference());
@@ -455,7 +451,7 @@ public class Generator {
 
 	private NodeCreateRequest getNodeCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
-		contentCreate.setParentNodeUuid(getUUID());
+		contentCreate.setParentNodeUuid(randomUUID());
 		contentCreate.setLanguage("en");
 		contentCreate.setPublished(true);
 
@@ -465,7 +461,7 @@ public class Generator {
 		fields.put("content", createStringField("English content"));
 		fields.put("title", createStringField("English title"));
 		fields.put("teaser", createStringField("English teaser"));
-		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));
+		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField("22.12.2015"));
@@ -484,7 +480,7 @@ public class Generator {
 
 		Map<String, Field> fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
-		fields.put("relatedProduct-nodeField", createNodeField(getUUID()));
+		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField("22.12.2015"));
@@ -505,7 +501,7 @@ public class Generator {
 	private SchemaReference getSchemaReference(String name) {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName(name);
-		schemaReference.setUuid(getUUID());
+		schemaReference.setUuid(randomUUID());
 		return schemaReference;
 	}
 
@@ -518,7 +514,7 @@ public class Generator {
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
 		GroupResponse group = new GroupResponse();
-		group.setUuid(getUUID());
+		group.setUuid(randomUUID());
 		group.setCreated(getTimestamp());
 		group.setCreator(getUserReference());
 		group.setEdited(getTimestamp());
@@ -528,7 +524,7 @@ public class Generator {
 		write(group);
 
 		GroupResponse group2 = new GroupResponse();
-		group2.setUuid(getUUID());
+		group2.setUuid(randomUUID());
 		group2.setName("Editor Group");
 		group2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 
@@ -580,21 +576,21 @@ public class Generator {
 		userCreate.setFirstname("Joe");
 		userCreate.setLastname("Doe");
 		userCreate.setEmailAddress("j.doe@nowhere.com");
-		userCreate.setGroupUuid(getUUID());
+		userCreate.setGroupUuid(randomUUID());
 		userCreate.setNodeReference(user2.getNodeReference());
 		write(userCreate);
 	}
 
 	private UserReference getUserReference() {
 		UserReference reference = new UserReference();
-		reference.setUuid(getUUID());
+		reference.setUuid(randomUUID());
 		reference.setName("jdoe42");
 		return reference;
 	}
 
 	private UserResponse getUser() {
 		UserResponse user = new UserResponse();
-		user.setUuid(getUUID());
+		user.setUuid(randomUUID());
 		user.setCreated(getTimestamp());
 		user.setCreator(getUserReference());
 		user.setEdited(getTimestamp());
@@ -604,7 +600,7 @@ public class Generator {
 		user.setLastname("Doe");
 		NodeReference reference = new NodeReference();
 		reference.setProjectName("dummy");
-		reference.setUuid(getUUID());
+		reference.setUuid(randomUUID());
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
 		user.addGroup("editors");
