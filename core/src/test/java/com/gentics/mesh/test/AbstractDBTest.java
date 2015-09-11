@@ -80,7 +80,6 @@ public abstract class AbstractDBTest {
 
 	public void setupData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		dataProvider.setup(1);
-		dataProvider.updatePermissions();
 	}
 
 	public SchemaContainer schemaContainer(String key) {

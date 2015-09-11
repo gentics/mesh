@@ -16,8 +16,9 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<dockerHost>cetus.office</dockerHost>
-		<dockerIP>10.43.84.220</dockerIP>
+		<!-- <dockerHost>cetus.office</dockerHost> <dockerIP>10.43.84.220</dockerIP> -->
+		<dockerHost>satan3.office</dockerHost>
+		<dockerIP>10.43.94.243</dockerIP>
 	</properties>
 
 	<dependencies>
@@ -39,7 +40,6 @@
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.11.2</version>
 				<configuration>
 					<dockerHost>http://${dockerHost}:2375</dockerHost>
 					<images>
@@ -63,7 +63,7 @@
 								<wait>
 									<url>http://${dockerIP}:${mesh.port}/api/v1/admin/status</url>
 									<log>.*Initalized project.*</log>
-									<time>50000</time>
+									<time>80000</time>
 								</wait>
 								<log>
 									<color>cyan</color>

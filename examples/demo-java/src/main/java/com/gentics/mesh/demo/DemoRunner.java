@@ -1,7 +1,6 @@
 package com.gentics.mesh.demo;
 
 import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
-import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 
@@ -13,24 +12,27 @@ import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
+
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
- * 
- * @author johannes2
- *
  */
 public class DemoRunner {
+
+	static {
+		// Use slf4j instead of jul
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+	}
 
 	public static void main(String[] args) throws Exception {
 
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
 		File graphDBDir = new File(System.getProperty("java.io.tmpdir"), "graphdb");
 		FileUtils.deleteDirectory(graphDBDir);
-
-		// Setup custom config to enable neo4j web console
 		MeshOptions options = OptionsLoader.createOrloadOptions();
-		// config.getNeo4jConfiguration().setMode("gui");
-		// config.getNeo4jConfiguration().setPath(graphDBDir.getAbsolutePath());
+		options.getStorageOptions().setDirectory(null);
 		Mesh mesh = Mesh.initalize(options);
 
 		mesh.setCustomLoader((vertx) -> {
@@ -43,15 +45,6 @@ public class DemoRunner {
 			// deployAndWait(vertx, config, StaticContentVerticle.class);
 			deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
-		// // DeploymentOptions options = new DeploymentOptions();
-		// // vertx.deployVerticle("service:com.gentics.vertx:mesh-rest-navigation:0.1.0-SNAPSHOT",options, dh -> {
-		// // if (dh.failed()) {
-		// // System.out.println(dh.cause());
-		// // }
-		// // });
-		// // deployAndWait(vertx, "", "TestJSVerticle.js");
-		// });
-
 		mesh.run();
 
 	}

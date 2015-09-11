@@ -57,7 +57,7 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 				} else {
 					SchemaListResponse list = rh.result();
 					for (SchemaResponse schema : list.getData()) {
-						System.out.println(schema.getName());
+						log.info("Found schema {" + schema.getName() + "}");
 						client.getClientSchemaStorage().addSchema(schema);
 					}
 				}
@@ -72,7 +72,7 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 					} else {
 						NodeListResponse resp = rh.result();
 						for (NodeResponse node : resp.getData()) {
-							System.out.println(node.getUuid());
+							log.info("Found nodes {" + node.getUuid() + "}");
 						}
 					}
 				});

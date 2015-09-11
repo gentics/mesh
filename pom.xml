@@ -206,6 +206,11 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.jolokia</groupId>
+					<artifactId>docker-maven-plugin</artifactId>
+					<version>0.13.3</version>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>${maven.javadoc.plugin.version}</version>
