@@ -27,7 +27,6 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 		try (Trx tx = db.trx()) {
 			createObject(ac, boot.schemaContainerRoot());
 		}
-
 	}
 
 	@Override
@@ -70,7 +69,6 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 								project.getSchemaContainerRoot().addSchemaContainer(schema);
 								txAdd.success();
 							}
-							// TODO add simple message or return schema?
 							transformAndResponde(ac, schema);
 						}
 					});

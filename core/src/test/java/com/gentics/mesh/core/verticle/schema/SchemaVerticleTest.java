@@ -263,7 +263,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaResponse restSchema = future.result();
 		assertEquals(request.getName(), restSchema.getName());
 		try (Trx tx = db.trx()) {
-			assertEquals(name, schema.getName());
+			schema.reload();
+			assertEquals("The name of the schema was not updated", name, schema.getName());
 		}
 		try (Trx tx = db.trx()) {
 			CountDownLatch latch = new CountDownLatch(1);
@@ -273,6 +274,24 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 				latch.countDown();
 			});
 			failingLatch(latch);
+		}
+
+	}
+
+	@Test
+	public void testUpdateWithConflictingName() {
+		String name = "folder";
+		String originalSchemaName = "content";
+		SchemaContainer schema = schemaContainer(originalSchemaName);
+		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		request.setName(name);
+
+		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "schema_conflicting_name", name);
+		try (Trx tx = db.trx()) {
+			schema.reload();
+			assertEquals("The name of the schema was updated", originalSchemaName, schema.getName());
 		}
 
 	}

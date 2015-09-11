@@ -14,10 +14,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -133,17 +135,26 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	@Override
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
 
 		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
-		// TODO update name? check for conflicting names?
+
+		SchemaContainer foundSchema = root.findByName(requestModel.getName());
+		if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
+			handler.handle(ac.failedFuture(BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
+			return;
+		}
+
 		SearchQueueBatch batch;
 		try (Trx txUpdate = db.trx()) {
+			if (!getName().equals(requestModel.getName())) {
+				setName(requestModel.getName());
+			}
 			setSchema(requestModel);
-			setName(requestModel.getName());
 			batch = addIndexBatch(UPDATE_ACTION);
 			txUpdate.success();
 		}
