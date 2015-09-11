@@ -111,7 +111,6 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-auth-jwt</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -274,7 +273,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>${surefireArgLine}</argLine>
-					<skip>${skip.unit.tests}</skip>
+					<!-- <skip>${skip.unit.tests}</skip>  -->
 					<forkCount>${surefire.forkcount}</forkCount>
 					<reuseForks>false</reuseForks>
 					<!-- Don't execute more than one test per jvm fork! -->

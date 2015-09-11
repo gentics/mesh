@@ -160,7 +160,7 @@ public class MeshImpl implements Mesh {
 		log.info("#---------------------------------------------------#");
 		//log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
-		log.info(infoLine("Name:" + MeshNameProvider.getInstance().getName()));
+		log.info(infoLine("Name: " + MeshNameProvider.getInstance().getName()));
 		log.info("#####################################################");
 	}
 

@@ -461,8 +461,8 @@ public class BootstrapInitializer {
 			}
 			MeshVertex meshVertex = Trx.getFramedLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-			if (log.isDebugEnabled()) {
-				log.debug("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + role.getUuid() + "}");
+			if (log.isTraceEnabled()) {
+				log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + role.getUuid() + "}");
 			}
 		}
 	}

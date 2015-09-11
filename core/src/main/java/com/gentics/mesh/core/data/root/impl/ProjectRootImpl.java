@@ -161,6 +161,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
+					return;
 				} else {
 					Project project;
 					SearchQueueBatch batch = null;
@@ -187,12 +188,14 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							// TODO should we really fail here?
 							txCreate.failure();
 							handler.handle(ac.failedFuture(BAD_REQUEST, "Error while adding project to router storage", e));
+							return;
 						}
 					}
 					processOrFail(ac, batch, handler, project);
 				}
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", boot.projectRoot().getUuid()))));
+				return;
 			}
 		}
 
