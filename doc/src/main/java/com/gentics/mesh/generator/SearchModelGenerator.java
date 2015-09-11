@@ -40,15 +40,15 @@ import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 import com.gentics.mesh.test.DummySearchProvider;
 
-public class SearchModelGeneratorTest extends AbstractGenerator {
+public class SearchModelGenerator extends AbstractGenerator {
 
-	public static void main(String[] args) throws Exception {
-		new SearchModelGeneratorTest().start();
-	}
-
-	DummySearchProvider provider;
+	private DummySearchProvider provider;
 
 	private AnnotationConfigApplicationContext ctx;
+
+	public static void main(String[] args) throws Exception {
+		new SearchModelGenerator().start();
+	}
 
 	private void start() throws Exception {
 

@@ -111,7 +111,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath/>
-								<argument>com.gentics.mesh.generator.RAMLExampleGeneratorTest</argument>
+								<argument>com.gentics.mesh.generator.RAMLExampleGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -126,7 +126,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath/>
-								<argument>com.gentics.mesh.generator.SearchModelGeneratorTest</argument>
+								<argument>com.gentics.mesh.generator.SearchModelGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>

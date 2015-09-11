@@ -77,10 +77,10 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 
-public class RAMLExampleGeneratorTest extends AbstractGenerator {
+public class RAMLExampleGenerator extends AbstractGenerator {
 
 	public static void main(String[] args) throws IOException {
-		new RAMLExampleGeneratorTest().run();
+		new RAMLExampleGenerator().run();
 	}
 	
 	public void run() throws IOException {

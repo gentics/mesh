@@ -19,7 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -57,9 +57,6 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 
 public abstract class AbstractRestVerticleTest extends AbstractDBTest {
-
-	@Autowired
-	private I18NService i18n;
 
 	protected Vertx vertx;
 
@@ -374,7 +371,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected void expectMessageResponse(String i18nKey, Future<GenericMessageResponse> responseFuture, String... i18nParams) {
 		assertTrue("The given future has not yet completed.", responseFuture.isComplete());
 		Locale en = Locale.ENGLISH;
-		String message = i18n.get(en, i18nKey, i18nParams);
+		String message = I18NUtil.get(en, i18nKey, i18nParams);
 		assertEquals("The response message does not match.", message, responseFuture.result().getMessage());
 	}
 
@@ -396,7 +393,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected void expectException(Future<?> future, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		Locale en = Locale.ENGLISH;
-		String message = i18n.get(en, bodyMessageI18nKey, i18nParams);
+		String message = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
 		expectMessage(future, status, message);
 	}
 

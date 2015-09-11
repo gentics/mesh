@@ -14,7 +14,7 @@ import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -84,7 +84,7 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	@Override
 	public String i18n(String i18nKey, String... parameters) {
-		return I18NService.getI18n().get(this, i18nKey, parameters);
+		return I18NUtil.get(this, i18nKey, parameters);
 	}
 
 	@Override

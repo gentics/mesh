@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -55,9 +55,6 @@ public class RouterStorage {
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;
-
-	@Autowired
-	private I18NService i18n;
 
 	@PostConstruct
 	public void init() {
@@ -118,14 +115,14 @@ public class RouterStorage {
 					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
 					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 						failureRoutingContext.response().setStatusCode(400);
-						String msg = i18n.get(ActionContext.create(failureRoutingContext), "error_parse_request_json_error");
+						String msg = I18NUtil.get(ActionContext.create(failureRoutingContext), "error_parse_request_json_error");
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
 					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
 						failureRoutingContext.response().setStatusCode(code);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 					} else {
-						String msg = i18n.get(ActionContext.create(failureRoutingContext), "error_internal");
+						String msg = I18NUtil.get(ActionContext.create(failureRoutingContext), "error_internal");
 						failureRoutingContext.response().setStatusCode(500);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 					}

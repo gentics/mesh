@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.gentics.mesh.cli.Mesh;
-import com.gentics.mesh.core.data.service.I18NService;
+import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -126,10 +126,10 @@ public abstract class AbstractActionContext implements ActionContext {
 	}
 
 	public static Locale getLocale(String header) {
-		Locale bestMatchingLocale = I18NService.DEFAULT_LOCALE;
+		Locale bestMatchingLocale = I18NUtil.DEFAULT_LOCALE;
 		Double highesQ = 0.;
 		if (header == null) {
-			return I18NService.DEFAULT_LOCALE;
+			return I18NUtil.DEFAULT_LOCALE;
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Parsing accept language header value {" + header + "}");
