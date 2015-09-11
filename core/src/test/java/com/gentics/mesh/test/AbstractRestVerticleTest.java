@@ -78,14 +78,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
 
-		List<AbstractWebVerticle> vertices = getVertices();
-
 		JsonObject config = new JsonObject();
 		config.put("port", port);
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
 
 		// Inject spring config and start each verticle
-		for (AbstractWebVerticle verticle : vertices) {
+		for (AbstractWebVerticle verticle : getVertices()) {
 			verticle.setSpringConfig(springConfig);
 			verticle.init(vertx, context);
 			verticle.start();
@@ -97,11 +95,15 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	@After
-	public void cleanup() {
+	public void cleanup() throws Exception {
 		searchProvider.reset();
 		BootstrapInitializer.clearReferences();
 		databaseService.getDatabase().clear();
-//		databaseService.getDatabase().reset();
+		//		databaseService.getDatabase().reset();
+		for (AbstractWebVerticle verticle : getVertices()) {
+			verticle.stop();
+		}
+
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {
