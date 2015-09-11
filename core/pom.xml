@@ -247,8 +247,6 @@
 
 
 	<build>
-
-
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -266,36 +264,8 @@
 			</resource>
 		</resources>
 
-
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>${surefireArgLine}</argLine>
-					<!-- <skip>${skip.unit.tests}</skip>  -->
-					<forkCount>${surefire.forkcount}</forkCount>
-					<reuseForks>false</reuseForks>
-					<!-- Don't execute more than one test per jvm fork! -->
-					<threadCount>1</threadCount>
-					<threadCountClasses>1</threadCountClasses>
-					<testFailureIgnore>true</testFailureIgnore>
-					<trimStackTrace>false</trimStackTrace>
-					<!-- // Kill the forked test if it takes more than 3h for execution. 
-						Nope, currently disabled -->
-					<forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
-					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*TestSuite.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/*AbstractTest.java</exclude>
-						<exclude>**/*Abstract*.java</exclude>
-						<exclude>**/Abstract*.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -356,10 +326,37 @@
 						</goals>
 						<configuration>
 							<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-							<outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>${surefireArgLine}</argLine>
+					<skip>${skip.unit.tests}</skip>
+					<forkCount>${surefire.forkcount}</forkCount>
+					<reuseForks>false</reuseForks>
+					<!-- Don't execute more than one test per jvm fork! -->
+					<threadCount>1</threadCount>
+					<threadCountClasses>1</threadCountClasses>
+					<testFailureIgnore>true</testFailureIgnore>
+					<trimStackTrace>false</trimStackTrace>
+					<!-- // Kill the forked test if it takes more than 3h for execution. 
+						Nope, currently disabled -->
+					<forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
+					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
+					<includes>
+						<include>**/*Test.java</include>
+						<include>**/*TestSuite.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/*AbstractTest.java</exclude>
+						<exclude>**/*Abstract*.java</exclude>
+						<exclude>**/Abstract*.java</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
