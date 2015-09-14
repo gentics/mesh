@@ -4,11 +4,15 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.IndexedVertex;
@@ -27,9 +31,11 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -222,60 +228,61 @@ public class VerticleHelper {
 		ac.send(toJson(msg));
 	}
 
+	//	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
+	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	//
+	//		root.create(ac, rh -> {
+	//			if (hasSucceeded(ac, rh)) {
+	//				GenericVertex<?> vertex = rh.result();
+	//				// Transform the vertex using a fresh transaction in order to start with a clean cache
+	//				try (Trx txi = db.trx()) {
+	//					vertex.reload();
+	//					transformAndResponde(ac, vertex);
+	//				}
+	//			}
+	//		});
+	//	}
+
 	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
+
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		root.create(ac, rh -> {
-			if (hasSucceeded(ac, rh)) {
-				GenericVertex<?> vertex = rh.result();
-				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx txi = db.trx()) {
-					vertex.reload();
-					transformAndResponde(ac, vertex);
+
+		final int RETRY_COUNT = 15;
+		Mesh.vertx().executeBlocking(bc -> {
+			AtomicBoolean hasFinished = new AtomicBoolean(false);
+			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
+				try {
+					log.debug("Opening new transaction for try: {" + i + "}");
+					try (NonTrx tx = db.nonTrx()) {
+						if (log.isDebugEnabled()) {
+							log.debug("Invoking create on root vertex");
+						}
+						root.create(ac, rh -> {
+							if (hasSucceeded(ac, rh)) {
+								GenericVertex<?> vertex = rh.result();
+								try (NonTrx txRead = db.nonTrx()) {
+									vertex.reload();
+									transformAndResponde(ac, vertex);
+								}
+							}
+							hasFinished.set(true);
+						});
+					}
+				} catch (OConcurrentModificationException e) {
+					log.error("Creation failed in try {" + i + "} retrying.");
 				}
 			}
+			if (!hasFinished.get()) {
+				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
+				ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
+			}
+		} , false, rh -> {
+			if (rh.failed()) {
+				ac.fail(rh.cause());
+			}
 		});
-	}
 
-	// public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
-	// final int RETRY_COUNT = 15;
-	//// Mesh.vertx().executeBlocking(bc -> {
-	// AtomicBoolean hasFinished = new AtomicBoolean(false);
-	// for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-	// try {
-	// log.debug("Opening new transaction for try: {" + i + "}");
-	// try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-	// if (log.isDebugEnabled()) {
-	// log.debug("Invoking create on root vertex");
-	// }
-	// root.create(rc, rh -> {
-	// if (rh.failed()) {
-	// log.debug("Request for creation failed.", rh.cause());
-	// } else {
-	// GenericVertex<?> vertex = rh.result();
-	// //triggerEvent(vertex.getUuid(), vertex.getType(), SearchQueueEntryAction.CREATE_ACTION);
-	// try (Trx txRead = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
-	// vertex.reload();
-	// transformAndResponde(rc, vertex);
-	// }
-	// }
-	// hasFinished.set(true);
-	// });
-	// }
-	// } catch (OConcurrentModificationException e) {
-	// log.error("Creation failed in try {" + i + "} retrying.");
-	// }
-	// }
-	// if (!hasFinished.get()) {
-	// log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
-	// rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepmts."));
-	// }
-	//// } , false, rh -> {
-	//// if (rh.failed()) {
-	//// rc.fail(rh.cause());
-	//// }
-	//// });
-	//
-	// }
+	}
 
 	public static <T extends GenericVertex<?>> void updateObject(ActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();

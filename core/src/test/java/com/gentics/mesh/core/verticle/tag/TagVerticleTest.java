@@ -420,18 +420,18 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("Not yet supported")
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 5;
+		int nJobs = 500;
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
+//		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
 			request.getFields().setName("newcolor_" + i);
+			request.setTagFamilyReference(new TagFamilyReference().setName("colors"));
 			set.add(getClient().createTag(DemoDataProvider.PROJECT_NAME, request));
 		}
-		validateCreation(set, barrier);
+		validateCreation(set, null);
 	}
 
 	@Test

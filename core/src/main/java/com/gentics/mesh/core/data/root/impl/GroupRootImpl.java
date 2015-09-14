@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -83,7 +84,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {

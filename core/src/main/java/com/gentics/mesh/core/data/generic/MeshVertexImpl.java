@@ -13,7 +13,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
@@ -86,7 +86,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public FramedGraph getGraph() {
-		return new DelegatingFramedTransactionalGraph<>(Trx.getLocalGraph(), true, false);
+		return new DelegatingFramedGraph<>(Trx.getLocalGraph(), true, false);
 	}
 
 	@Override

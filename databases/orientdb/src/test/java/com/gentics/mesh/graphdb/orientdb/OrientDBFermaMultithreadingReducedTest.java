@@ -25,7 +25,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 		try (Trx tx = db.trx()) {
 			String name = "SomeName";
 			p = addPersonWithFriends(tx.getGraph(), name);
-			tx.getGraph().commit();
+//			tx.getGraph().commit();
 			tx.success();
 			runAndWait(() -> {
 				try (Trx tx2 = db.trx()) {

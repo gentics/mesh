@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -77,7 +78,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		}
 

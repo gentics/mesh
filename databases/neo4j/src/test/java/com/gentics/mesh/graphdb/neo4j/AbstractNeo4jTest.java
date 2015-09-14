@@ -2,7 +2,7 @@ package com.gentics.mesh.graphdb.neo4j;
 
 import com.syncleus.ferma.FramedGraph;
 
-public class AbstractDBTest {
+public class AbstractNeo4jTest {
 
 	protected void runAndWait(Runnable runnable) {
 		Thread thread = new Thread(runnable);

@@ -6,26 +6,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class Trx implements AutoCloseable {
+public class Trx extends AbstractTrx implements AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(Trx.class);
 
-	private static ThreadLocal<FramedTransactionalGraph> localGraph = new ThreadLocal<>();
-	private FramedTransactionalGraph currentGraph;
 	private boolean isSuccess = false;
-	private FramedTransactionalGraph oldLocalGraph;
 
 	private static boolean debug = false;
 	private static CyclicBarrier barrier;
 
 	public Trx(Database database) {
-		
+
 		currentGraph = database.startTransaction();
 		if (log.isDebugEnabled()) {
 			log.debug("Starting transaction {" + currentGraph.hashCode() + "}");
@@ -40,10 +36,6 @@ public class Trx implements AutoCloseable {
 
 	public void failure() {
 		isSuccess = false;
-	}
-
-	public FramedTransactionalGraph getGraph() {
-		return currentGraph;
 	}
 
 	@Override
@@ -82,37 +74,27 @@ public class Trx implements AutoCloseable {
 		Trx.debug = true;
 	}
 
-	public static void setLocalGraph(FramedTransactionalGraph graph) {
-		Trx.localGraph.set(graph);
-	}
-
-	public static FramedTransactionalGraph getFramedLocalGraph() {
-		return getLocalGraph();
-	}
-
-	public static FramedTransactionalGraph getLocalGraph() {
-		return Trx.localGraph.get();
-	}
-
-	@Deprecated
-	public void commit() {
+	private void commit() {
 		if (log.isDebugEnabled()) {
 			log.debug("Commiting graph {" + currentGraph.hashCode() + "}.");
 		}
 		long start = System.currentTimeMillis();
-		currentGraph.commit();
+		if (currentGraph instanceof FramedTransactionalGraph) {
+			((FramedTransactionalGraph) currentGraph).commit();
+		}
 		long duration = System.currentTimeMillis() - start;
 		if (log.isDebugEnabled()) {
 			log.debug("Comitting took: " + duration + " [ms]");
 		}
 	}
 
-	@Deprecated
-	public void rollback() {
+	private void rollback() {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking rollback on graph {" + currentGraph.hashCode() + "}.");
 		}
-		currentGraph.rollback();
+		if (currentGraph instanceof FramedTransactionalGraph) {
+			((FramedTransactionalGraph) currentGraph).rollback();
+		}
 	}
 
 	public static void disableDebug() {

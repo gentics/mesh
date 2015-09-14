@@ -99,7 +99,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		searchProvider.reset();
 		BootstrapInitializer.clearReferences();
 		databaseService.getDatabase().clear();
-		//		databaseService.getDatabase().reset();
 		for (AbstractWebVerticle verticle : getVertices()) {
 			verticle.stop();
 		}

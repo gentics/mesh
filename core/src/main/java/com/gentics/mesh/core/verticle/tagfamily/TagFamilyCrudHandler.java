@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.handler.ActionContext;
 
 @Component
@@ -28,42 +28,42 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(ActionContext ac) {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			createObject(ac, ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
 	public void handleDelete(ActionContext ac) {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			deleteObject(ac, "uuid", "tagfamily_deleted", ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
 	public void handleUpdate(ActionContext ac) {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			updateObject(ac, "uuid", ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
 	public void handleRead(ActionContext ac) {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
 	public void handleReadList(ActionContext ac) {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getTagFamilyRoot(), new TagFamilyListResponse());
 		}
 	}
 
 	public void handleReadTagList(ActionContext ac) {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingInfo pagingInfo = ac.getPagingInfo();

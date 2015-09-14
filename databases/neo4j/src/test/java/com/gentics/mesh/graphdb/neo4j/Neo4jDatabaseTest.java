@@ -7,7 +7,7 @@ import com.gentics.mesh.graphdb.Neo4jDatabase;
 import com.gentics.mesh.graphdb.Trx;
 import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
-public class Neo4jDatabaseTest extends AbstractDBTest {
+public class Neo4jDatabaseTest extends AbstractNeo4jTest {
 
 	@Test
 	public void testDatabase() {

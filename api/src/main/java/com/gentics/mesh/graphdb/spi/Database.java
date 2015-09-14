@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb.spi;
 import java.io.IOException;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
@@ -48,6 +49,7 @@ public interface Database {
 	 * 
 	 * @return
 	 */
+	@Deprecated
 	Trx trx();
 
 	/**
@@ -57,7 +59,7 @@ public interface Database {
 	 * <pre>
 	 * {
 	 * 	&#64;code
-	 * 	try(Trx tx = db.nonTrx()) {
+	 * 	try(NonTrx tx = db.nonTrx()) {
 	 * 	  // interact with graph db here
 	 *  }
 	 * }
@@ -65,7 +67,7 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	Trx nonTrx();
+	NonTrx nonTrx();
 
 	/**
 	 * Initialize the database and store the settings.

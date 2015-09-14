@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.logging.Logger;
@@ -16,12 +17,6 @@ public abstract class AbstractDatabase implements Database {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
 	protected StorageOptions options;
-//	protected FramedThreadedTransactionalGraph fg;
-
-//	@Override
-//	public FramedThreadedTransactionalGraph getFramedGraph() {
-//		return fg;
-//	}
 
 	@Override
 	public void clear() {
@@ -69,8 +64,7 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public Trx nonTrx() {
-		//TODO figure out how to use the orientdb nontrx mode via tinkerpop api.
-		return new Trx(this);
+	public NonTrx nonTrx() {
+		return new NonTrx(this);
 	}
 }

@@ -18,6 +18,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
@@ -66,7 +67,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		updateTag(PROJECT_NAME, tag.getUuid(), newName + "2");
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
-		try (Trx tx = db.nonTrx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			assertEquals(newName + "2", tag.getName());
 			assertEquals(0, meshRoot().getSearchQueue().getSize());
 		}
