@@ -42,7 +42,6 @@ public class TestSearch {
 		FileUtils.deleteDirectory(new File("data"));
 		Node node = NodeBuilder.nodeBuilder().node();
 		client = node.client();
-
 	}
 
 	@Test

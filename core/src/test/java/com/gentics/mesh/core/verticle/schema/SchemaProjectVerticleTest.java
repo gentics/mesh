@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -67,117 +66,81 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddSchemaToProjectWithPerm() throws Exception {
-		SchemaContainer schema;
-		Project extraProject;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			extraProject = projectRoot.create("extraProject", user());
+		SchemaContainer schema = schemaContainer("content");
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
+		Project extraProject = projectRoot.create("extraProject", user());
 
-			// Add only read perms
-			role().grantPermissions(schema, READ_PERM);
-			role().grantPermissions(extraProject, UPDATE_PERM);
-			tx.success();
-		}
+		// Add only read perms
+		role().grantPermissions(schema, READ_PERM);
+		role().grantPermissions(extraProject, UPDATE_PERM);
 
-		try (Trx tx = db.trx()) {
-			Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			SchemaResponse restSchema = future.result();
-			test.assertSchema(schema, restSchema);
-		}
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-				assertNotNull("The schema should be added to the extra project", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
-
+		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchema = future.result();
+		test.assertSchema(schema, restSchema);
+		CountDownLatch latch = new CountDownLatch(1);
+		extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			assertNotNull("The schema should be added to the extra project", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
 	public void testAddSchemaToProjectWithoutPerm() throws Exception {
-		SchemaContainer schema;
-		Project extraProject;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
-			Project project = project();
-			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			extraProject = projectRoot.create("extraProject", user());
-			// Add only read perms
-			role().grantPermissions(schema, READ_PERM);
-			role().grantPermissions(project, READ_PERM);
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", extraProject.getUuid());
-		}
-		try (Trx tx = db.trx()) {
-			// Reload the schema and check for expected changes
-			assertFalse("The schema should not have been added to the extra project", extraProject.getSchemaContainerRoot().contains(schema));
-		}
+		SchemaContainer schema = schemaContainer("content");
+		Project project = project();
+		ProjectRoot projectRoot = meshRoot().getProjectRoot();
+		Project extraProject = projectRoot.create("extraProject", user());
+		// Add only read perms
+		role().grantPermissions(schema, READ_PERM);
+		role().grantPermissions(project, READ_PERM);
+		Future<SchemaResponse> future = getClient().addSchemaToProject(schema.getUuid(), extraProject.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", extraProject.getUuid());
+		// Reload the schema and check for expected changes
+		assertFalse("The schema should not have been added to the extra project", extraProject.getSchemaContainerRoot().contains(schema));
 
 	}
 
 	// Schema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
-		SchemaContainer schema;
-		Project project;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
-			project = project();
-			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
-		}
+		SchemaContainer schema = schemaContainer("content");
+		Project project = project();
+		assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 
 		Future<SchemaResponse> future;
-		try (Trx tx = db.trx()) {
-			future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-		}
+		future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
+		latchFor(future);
+		assertSuccess(future);
 
-		try (Trx tx = db.trx()) {
-			SchemaResponse restSchema = future.result();
-			test.assertSchema(schema, restSchema);
+		SchemaResponse restSchema = future.result();
+		test.assertSchema(schema, restSchema);
 
-			final String removedProjectName = project.getName();
-			assertFalse(restSchema.getProjects().stream().filter(p -> p.getName() == removedProjectName).findFirst().isPresent());
+		final String removedProjectName = project.getName();
+		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName() == removedProjectName).findFirst().isPresent());
 
-			// Reload the schema and check for expected changes
-			assertFalse("The schema should not be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
-		}
+		// Reload the schema and check for expected changes
+		assertFalse("The schema should not be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 	}
 
 	@Test
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
-		SchemaContainer schema;
-		Project project;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
-			project = project();
+		SchemaContainer schema = schemaContainer("content");
+		Project project = project();
 
-			assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
-			// Revoke update perms on the project
-			role().revokePermissions(project, UPDATE_PERM);
-			tx.success();
-		}
+		assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
+		// Revoke update perms on the project
+		role().revokePermissions(project, UPDATE_PERM);
 
-		try (Trx tx = db.trx()) {
-			Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
-		}
+		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", project.getUuid());
 
-		try (Trx tx = db.trx()) {
-			// Reload the schema and check for expected changes
-			assertTrue("The schema should still be listed for the project.", project.getSchemaContainerRoot().contains(schema));
-		}
+		// Reload the schema and check for expected changes
+		assertTrue("The schema should still be listed for the project.", project.getSchemaContainerRoot().contains(schema));
 	}
 
 }

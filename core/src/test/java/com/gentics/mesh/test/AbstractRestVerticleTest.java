@@ -102,16 +102,16 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() throws Exception {
+		if (trx != null) {
+			trx.close();
+		}
 		searchProvider.reset();
 		BootstrapInitializer.clearReferences();
 		databaseService.getDatabase().clear();
 		for (AbstractWebVerticle verticle : getVertices()) {
 			verticle.stop();
 		}
-		if (trx != null) {
-			trx.close();
-		}
-
+	
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {

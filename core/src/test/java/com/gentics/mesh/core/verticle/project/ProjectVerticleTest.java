@@ -39,9 +39,9 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.util.TraversalHelper;
 
 import io.vertx.core.Future;
 
@@ -62,7 +62,6 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
@@ -73,26 +72,22 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		ProjectResponse restProject = future.result();
 
 		test.assertProject(request, restProject);
-		try (Trx tx = db.trx()) {
-			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
-		}
+		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			AtomicReference<Project> reference = new AtomicReference<>();
-			meshRoot().getProjectRoot().findByUuid(restProject.getUuid(), rh -> {
-				reference.set(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-			Project project = reference.get();
-			assertNotNull(project);
-			assertTrue(user().hasPermission(project, CREATE_PERM));
-			assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
-			assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
-			assertTrue(user().hasPermission(project.getTagRoot(), CREATE_PERM));
-			assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		AtomicReference<Project> reference = new AtomicReference<>();
+		meshRoot().getProjectRoot().findByUuid(restProject.getUuid(), rh -> {
+			reference.set(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
+		Project project = reference.get();
+		assertNotNull(project);
+		assertTrue(user().hasPermission(project, CREATE_PERM));
+		assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
+		assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(project.getTagRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
 	}
 
 	@Test
@@ -102,10 +97,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
-			tx.success();
-		}
+		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -113,9 +105,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		ProjectResponse restProject = createFuture.result();
 		test.assertProject(request, restProject);
-		try (Trx tx = db.trx()) {
-			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
-		}
+		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 		// Read the project
 		Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid());
@@ -136,23 +126,17 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadMultiple() throws Exception {
 
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(project(), READ_PERM);
-			tx.success();
-		}
+		role().grantPermissions(project(), READ_PERM);
 
 		final int nProjects = 142;
 		String noPermProjectName;
-		try (Trx tx = db.trx()) {
-			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user());
-				extraProject.setBaseNode(project().getBaseNode());
-				role().grantPermissions(extraProject, READ_PERM);
-			}
-			Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user());
-			noPermProjectName = noPermProject.getName();
-			tx.success();
+		for (int i = 0; i < nProjects; i++) {
+			Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user());
+			extraProject.setBaseNode(project().getBaseNode());
+			role().grantPermissions(extraProject, READ_PERM);
 		}
+		Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user());
+		noPermProjectName = noPermProject.getName();
 
 		// Don't grant permissions to no perm project
 
@@ -226,22 +210,16 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Project project = project();
-			uuid = project.getUuid();
-			assertNotNull("The UUID of the project must not be null.", project.getUuid());
-			role().grantPermissions(project, READ_PERM);
-			tx.success();
-		}
+		Project project = project();
+		String uuid = project.getUuid();
+		assertNotNull("The UUID of the project must not be null.", project.getUuid());
+		role().grantPermissions(project, READ_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		ProjectResponse restProject = future.result();
-		try (Trx tx = db.trx()) {
-			test.assertProject(project(), restProject);
-		}
+		test.assertProject(project(), restProject);
 
 		List<String> permissions = Arrays.asList(restProject.getPermissions());
 		assertTrue(permissions.contains("create"));
@@ -253,14 +231,10 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Project project = project();
-			uuid = project.getUuid();
-			assertNotNull("The UUID of the project must not be null.", project.getUuid());
-			role().revokePermissions(project, READ_PERM);
-			tx.success();
-		}
+		Project project = project();
+		String uuid = project.getUuid();
+		assertNotNull("The UUID of the project must not be null.", project.getUuid());
+		role().revokePermissions(project, READ_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
 		latchFor(future);
@@ -272,13 +246,9 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Project project = project();
-			uuid = project.getUuid();
-			role().grantPermissions(project, UPDATE_PERM);
-			tx.success();
-		}
+		Project project = project();
+		String uuid = project.getUuid();
+		role().grantPermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -291,15 +261,14 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertProject(request, restProject);
 		assertTrue(searchProvider.getStoreEvents().size() != 0);
 
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-				Project reloadedProject = rh.result();
-				assertEquals("New Name", reloadedProject.getName());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+			Project reloadedProject = rh.result();
+			reloadedProject.reload();
+			assertEquals("New Name", reloadedProject.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
@@ -317,16 +286,11 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
-		String uuid;
-		String name;
-		try (Trx tx = db.trx()) {
-			Project project = project();
-			uuid = project.getUuid();
-			name = project.getName();
-			role().grantPermissions(project, READ_PERM);
-			role().revokePermissions(project, UPDATE_PERM);
-			tx.success();
-		}
+		Project project = project();
+		String uuid = project.getUuid();
+		String name = project.getName();
+		role().grantPermissions(project, READ_PERM);
+		role().revokePermissions(project, UPDATE_PERM);
 
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("New Name");
@@ -335,15 +299,13 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-				Project reloadedProject = rh.result();
-				assertEquals("The name should not have been changed", name, reloadedProject.getName());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+			Project reloadedProject = rh.result();
+			assertEquals("The name should not have been changed", name, reloadedProject.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	// Delete Tests
@@ -351,51 +313,38 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String uuid;
-		String name;
-		try (Trx tx = db.trx()) {
-			Project project = project();
-			uuid = project.getUuid();
-			name = project.getName();
-			assertNotNull(uuid);
-			assertNotNull(name);
-			role().grantPermissions(project, DELETE_PERM);
-			tx.success();
-		}
+		Project project = project();
+		String uuid = project.getUuid();
+		String name = project.getName();
+		assertNotNull(uuid);
+		assertNotNull(name);
+		role().grantPermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("project_deleted", future, uuid + "/" + name);
-		try (Trx tx = db.trx()) {
-			assertElement(meshRoot().getProjectRoot(), uuid, false);
-		}
+		assertElement(meshRoot().getProjectRoot(), uuid, false);
 		// TODO check for removed routers?
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Project project = project();
-			uuid = project.getUuid();
-			role().revokePermissions(project, DELETE_PERM);
-			tx.success();
-		}
+		Project project = project();
+		String uuid = project.getUuid();
+		role().revokePermissions(project, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-				assertNotNull("The project should not have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+			assertNotNull("The project should not have been deleted", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
@@ -416,11 +365,11 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	
+
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		String uuid = project().getUuid();
-//		CyclicBarrier barrier = prepareBarrier(nJobs);
+		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findProjectByUuid(uuid));

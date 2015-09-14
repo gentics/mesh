@@ -70,17 +70,15 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertSchema(request, restSchemaResponse);
 
 		CountDownLatch latch = new CountDownLatch(1);
-		try (Trx tx = db.trx()) {
-			boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
-				SchemaContainer schemaContainer = rh.result();
-				assertNotNull(schemaContainer);
-				assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
-				// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-				// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
+			SchemaContainer schemaContainer = rh.result();
+			assertNotNull(schemaContainer);
+			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
+			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
+			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 	}
 
@@ -97,9 +95,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaResponse restSchema = createFuture.result();
 		test.assertSchema(request, restSchema);
 
-		try (Trx tx = db.trx()) {
-			assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
-		}
+		assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 		// test.assertSchema(schema, restSchema);
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
@@ -120,28 +116,25 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadMultiple() throws Exception {
 		int totalSchemas;
-		try (Trx tx = db.trx()) {
-			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
-			final int nSchemas = 22;
-			Schema schema = new SchemaImpl();
-			schema.setName("No Perm Schema");
+		SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
+		final int nSchemas = 22;
+		Schema schema = new SchemaImpl();
+		schema.setName("No Perm Schema");
+		schema.setDisplayField("name");
+		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
+		Schema dummySchema = new SchemaImpl();
+		dummySchema.setName("dummy");
+		noPermSchema.setSchema(dummySchema);
+		for (int i = 0; i < nSchemas; i++) {
+			schema = new SchemaImpl();
+			schema.setName("extra_schema_" + i);
 			schema.setDisplayField("name");
-			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
-			Schema dummySchema = new SchemaImpl();
-			dummySchema.setName("dummy");
-			noPermSchema.setSchema(dummySchema);
-			for (int i = 0; i < nSchemas; i++) {
-				schema = new SchemaImpl();
-				schema.setName("extra_schema_" + i);
-				schema.setDisplayField("name");
-				SchemaContainer extraSchema = schemaRoot.create(schema, user());
-				extraSchema.setSchema(dummySchema);
-				role().grantPermissions(extraSchema, READ_PERM);
-			}
-			// Don't grant permissions to no perm schema
-			totalSchemas = nSchemas + schemaContainers().size();
-			tx.success();
+			SchemaContainer extraSchema = schemaRoot.create(schema, user());
+			extraSchema.setSchema(dummySchema);
+			role().grantPermissions(extraSchema, READ_PERM);
 		}
+		// Don't grant permissions to no perm schema
+		totalSchemas = nSchemas + schemaContainers().size();
 		// Test default paging parameters
 		Future<SchemaListResponse> future = getClient().findSchemas();
 		latchFor(future);
@@ -207,37 +200,27 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		SchemaContainer schemaContainer;
-		try (Trx tx = db.trx()) {
-			schemaContainer = schemaContainer("content");
-		}
-		try (Trx tx = db.trx()) {
-			Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			SchemaResponse restSchema = future.result();
-			test.assertSchema(schemaContainer, restSchema);
-		}
+		SchemaContainer schemaContainer = schemaContainer("content");
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		SchemaResponse restSchema = future.result();
+		test.assertSchema(schemaContainer, restSchema);
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		SchemaContainer schema;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
+		schema = schemaContainer("content");
 
-			role().grantPermissions(schema, DELETE_PERM);
-			role().grantPermissions(schema, UPDATE_PERM);
-			role().grantPermissions(schema, CREATE_PERM);
-			role().revokePermissions(schema, READ_PERM);
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
-		}
+		role().grantPermissions(schema, DELETE_PERM);
+		role().grantPermissions(schema, UPDATE_PERM);
+		role().grantPermissions(schema, CREATE_PERM);
+		role().revokePermissions(schema, READ_PERM);
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 	}
 
 	@Test
@@ -262,19 +245,15 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
 		assertEquals(request.getName(), restSchema.getName());
-		try (Trx tx = db.trx()) {
-			schema.reload();
-			assertEquals("The name of the schema was not updated", name, schema.getName());
-		}
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-				SchemaContainer reloaded = rh.result();
-				assertEquals("The name should have been updated", name, reloaded.getName());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		schema.reload();
+		assertEquals("The name of the schema was not updated", name, schema.getName());
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			assertEquals("The name should have been updated", name, reloaded.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 	}
 
@@ -298,24 +277,22 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-		try (Trx tx = db.trx()) {
-			SchemaContainer schema = schemaContainer("content");
-			String oldName = schema.getName();
-			SchemaUpdateRequest request = new SchemaUpdateRequest();
-			request.setName("new-name");
+		SchemaContainer schema = schemaContainer("content");
+		String oldName = schema.getName();
+		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		request.setName("new-name");
 
-			Future<SchemaResponse> future = getClient().updateSchema("bogus", request);
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		Future<SchemaResponse> future = getClient().updateSchema("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-				SchemaContainer reloaded = rh.result();
-				assertEquals("The name should not have been changed.", oldName, reloaded.getName());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	// Delete Tests
@@ -323,41 +300,31 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		SchemaContainer schema;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
 
-			Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
-		}
+		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
 
-		try (Trx tx = db.trx()) {
-			boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-				SchemaContainer reloaded = rh.result();
-				assertNull("The schema should have been deleted.", reloaded);
-			});
-		}
+		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
+			SchemaContainer reloaded = rh.result();
+			assertNull("The schema should have been deleted.", reloaded);
+		});
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		SchemaContainer schema;
-		try (Trx tx = db.trx()) {
-			schema = schemaContainer("content");
-			role().revokePermissions(schema, DELETE_PERM);
-			tx.success();
-		}
+		schema = schemaContainer("content");
+		role().revokePermissions(schema, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 
-		try (Trx tx = db.trx()) {
-			assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
-		}
+		assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 
 	}
 
@@ -443,11 +410,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
-
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(schema, UPDATE_PERM);
-			tx.success();
-		}
+		role().revokePermissions(schema, UPDATE_PERM);
 
 		SchemaUpdateRequest request = new SchemaUpdateRequest();
 		request.setName("new-name");

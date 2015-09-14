@@ -19,76 +19,57 @@ import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.graphdb.Trx;
 
 public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = db.trx()) {
-			Schema schema = schemaContainer("folder").getSchema();
-			BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
-			booleanFieldSchema.setName("booleanField");
-			booleanFieldSchema.setLabel("Some label");
-			schema.addField(booleanFieldSchema);
-			schemaContainer("folder").setSchema(schema);
-			tx.success();
-		}
+		Schema schema = schemaContainer("folder").getSchema();
+		BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
+		booleanFieldSchema.setName("booleanField");
+		booleanFieldSchema.setLabel("Some label");
+		schema.addField(booleanFieldSchema);
+		schemaContainer("folder").setSchema(schema);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("2015");
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-			container.createBoolean("booleanField").setBoolean(true);
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			NodeResponse response = readNode(node);
-			BooleanFieldImpl deserializedBooleanField = response.getField("booleanField");
-			assertNotNull(deserializedBooleanField);
-			assertTrue(deserializedBooleanField.getValue());
-		}
+		Node node = folder("2015");
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		container.createBoolean("booleanField").setBoolean(true);
+		NodeResponse response = readNode(node);
+		BooleanFieldImpl deserializedBooleanField = response.getField("booleanField");
+		assertNotNull(deserializedBooleanField);
+		assertTrue(deserializedBooleanField.getValue());
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NonTrx tx = db.nonTrx()) {
-			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(true));
-			BooleanFieldImpl field = response.getField("booleanField");
-			assertTrue(field.getValue());
-		}
-		try (NonTrx tx = db.nonTrx()) {
-			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(false));
-			BooleanFieldImpl field = response.getField("booleanField");
-			assertFalse(field.getValue());
-		}
+		NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(true));
+		BooleanFieldImpl field = response.getField("booleanField");
+		assertTrue(field.getValue());
+		response = updateNode("booleanField", new BooleanFieldImpl().setValue(false));
+		field = response.getField("booleanField");
+		assertFalse(field.getValue());
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NonTrx tx = db.nonTrx()) {
-			NodeResponse response = createNode("booleanField", (Field)null);
-			BooleanFieldImpl field = response.getField("booleanField");
-			assertNotNull(field);
-			assertNull(field.getValue());
-		}
+		NodeResponse response = createNode("booleanField", (Field) null);
+		BooleanFieldImpl field = response.getField("booleanField");
+		assertNotNull(field);
+		assertNull(field.getValue());
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NonTrx tx = db.nonTrx()) {
-			NodeResponse response = createNode("booleanField", new BooleanFieldImpl().setValue(true));
-			BooleanFieldImpl field = response.getField("booleanField");
-			assertTrue(field.getValue());
-		}
+		NodeResponse response = createNode("booleanField", new BooleanFieldImpl().setValue(true));
+		BooleanFieldImpl field = response.getField("booleanField");
+		assertTrue(field.getValue());
 	}
 
 }

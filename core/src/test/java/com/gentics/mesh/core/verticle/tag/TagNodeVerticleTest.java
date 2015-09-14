@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -31,10 +30,8 @@ public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		try (Trx tx = db.trx()) {
-			Future<NodeListResponse> future = getClient().findNodesForTag(DemoDataProvider.PROJECT_NAME, tag("red").getUuid());
-			latchFor(future);
-			assertSuccess(future);
-		}
+		Future<NodeListResponse> future = getClient().findNodesForTag(DemoDataProvider.PROJECT_NAME, tag("red").getUuid());
+		latchFor(future);
+		assertSuccess(future);
 	}
 }

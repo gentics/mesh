@@ -24,19 +24,16 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = db.trx()) {
+		LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
-			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
+		int nLanguagesBefore = languageRoot.findAll().size();
 
-			int nLanguagesBefore = languageRoot.findAll().size();
+		final String languageName = "klingon";
+		final String languageTag = "tlh";
+		assertNotNull(languageRoot.create(languageName, languageTag));
 
-			final String languageName = "klingon";
-			final String languageTag = "tlh";
-			assertNotNull(languageRoot.create(languageName, languageTag));
-
-			int nLanguagesAfter = languageRoot.findAll().size();
-			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
-		}
+		int nLanguagesAfter = languageRoot.findAll().size();
+		assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 	}
 
 	@Test
@@ -49,47 +46,41 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = db.trx()) {
-			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
-			assertEquals(4, languages.size());
-		}
+		List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
+		assertEquals(4, languages.size());
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = db.trx()) {
-			Language language = meshRoot().getLanguageRoot().findByName("German");
-			assertNotNull(language);
-			assertEquals("German", language.getName());
-			assertEquals("Deutsch", language.getNativeName());
-			assertEquals("de", language.getLanguageTag());
+		Language language = meshRoot().getLanguageRoot().findByName("German");
+		assertNotNull(language);
+		assertEquals("German", language.getName());
+		assertEquals("Deutsch", language.getNativeName());
+		assertEquals("de", language.getLanguageTag());
 
-			language = meshRoot().getLanguageRoot().findByName("bogus");
-			assertNull(language);
-		}
+		language = meshRoot().getLanguageRoot().findByName("bogus");
+		assertNull(language);
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = db.trx()) {
-			Language language = meshRoot().getLanguageRoot().findByName("German");
+		Language language = meshRoot().getLanguageRoot().findByName("German");
 
-			CountDownLatch latch = new CountDownLatch(2);
-			meshRoot().getLanguageRoot().findByUuid(language.getUuid(), rh -> {
-				Language foundLanguage = rh.result();
-				assertNotNull(foundLanguage);
-				latch.countDown();
-			});
+		CountDownLatch latch = new CountDownLatch(2);
+		meshRoot().getLanguageRoot().findByUuid(language.getUuid(), rh -> {
+			Language foundLanguage = rh.result();
+			assertNotNull(foundLanguage);
+			latch.countDown();
+		});
 
-			meshRoot().getLanguageRoot().findByUuid("bogus", rh -> {
-				Language foundLanguage = rh.result();
-				assertNull(foundLanguage);
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		meshRoot().getLanguageRoot().findByUuid("bogus", rh -> {
+			Language foundLanguage = rh.result();
+			assertNull(foundLanguage);
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
@@ -113,32 +104,28 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (Trx tx = db.trx()) {
-			Language language = english();
-			assertNotNull(language.getName());
-			assertEquals("English", language.getName());
-			assertNotNull(language.getNativeName());
-			assertEquals("English", language.getNativeName());
-			assertNotNull(language.getLanguageTag());
-			assertEquals("en", language.getLanguageTag());
-		}
+		Language language = english();
+		assertNotNull(language.getName());
+		assertEquals("English", language.getName());
+		assertNotNull(language.getNativeName());
+		assertEquals("English", language.getNativeName());
+		assertNotNull(language.getLanguageTag());
+		assertEquals("en", language.getLanguageTag());
 	}
 
 	@Test
 	@Override
 	public void testCreate() {
-		try (Trx tx = db.trx()) {
-			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
-			final String languageTag = "tlh";
-			final String languageName = "klingon";
-			Language lang = languageRoot.create(languageName, languageTag);
+		LanguageRoot languageRoot = meshRoot().getLanguageRoot();
+		final String languageTag = "tlh";
+		final String languageName = "klingon";
+		Language lang = languageRoot.create(languageName, languageTag);
 
-			lang = languageRoot.findByName(languageName);
-			assertNotNull(lang);
-			assertEquals(languageName, lang.getName());
+		lang = languageRoot.findByName(languageName);
+		assertNotNull(lang);
+		assertEquals(languageName, lang.getName());
 
-			assertNotNull(languageRoot.findByLanguageTag(languageTag));
-		}
+		assertNotNull(languageRoot.findByLanguageTag(languageTag));
 	}
 
 	@Test

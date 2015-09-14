@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
@@ -25,14 +25,8 @@ import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.test.AbstractDBTest;
 
-public class SchemaFieldTest extends AbstractDBTest {
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
+public class SchemaFieldTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testSimpleSchema() throws IOException {
@@ -73,14 +67,14 @@ public class SchemaFieldTest extends AbstractDBTest {
 		listFieldSchema.setMin(3);
 		schema.addField(listFieldSchema);
 
-//		MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
-//		microschemaFieldSchema.setLabel("label_8").setName("name_8").setRequired(true);
-//		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "content", "folder" });
-//		
-//		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
-//		stringFieldSchema.setName("field1").setLabel("label1");
-//		microschemaFieldSchema.getFields().add(stringFieldSchema);
-//		schema.addField(microschemaFieldSchema);
+		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
+		// microschemaFieldSchema.setLabel("label_8").setName("name_8").setRequired(true);
+		// microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "content", "folder" });
+		//
+		// StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
+		// stringFieldSchema.setName("field1").setLabel("label1");
+		// microschemaFieldSchema.getFields().add(stringFieldSchema);
+		// schema.addField(microschemaFieldSchema);
 
 		schema.validate();
 		validateSchema(schema);

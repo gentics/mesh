@@ -24,7 +24,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -44,15 +43,13 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateNodeAndOmitMandatoryField() throws IOException {
 		// 1. create mandatory field
-		try (Trx tx = db.trx()) {
-			Schema schema = schemaContainer("folder").getSchema();
-			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
-			htmlFieldSchema.setName("htmlField");
-			htmlFieldSchema.setLabel("Some label");
-			htmlFieldSchema.setRequired(true);
-			schema.addField(htmlFieldSchema);
-			schemaContainer("folder").setSchema(schema);
-		}
+		Schema schema = schemaContainer("folder").getSchema();
+		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
+		htmlFieldSchema.setName("htmlField");
+		htmlFieldSchema.setLabel("Some label");
+		htmlFieldSchema.setRequired(true);
+		schema.addField(htmlFieldSchema);
+		schemaContainer("folder").setSchema(schema);
 
 		// 2. Create new node with mandatory field value
 		Node parentNode = folder("2015");
@@ -70,17 +67,15 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The field was not included in the response.", future.result().getField("htmlField"));
 
 		// 3. Update node
-		try (Trx tx = db.trx()) {
-			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-			nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
-			nodeUpdateRequest.setLanguage("en");
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
+		nodeUpdateRequest.setLanguage("en");
 
-			Future<NodeResponse> updateFuture = getClient().updateNode(DemoDataProvider.PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
-					new NodeRequestParameters().setLanguages("en"));
-			latchFor(updateFuture);
-			assertSuccess(updateFuture);
-			assertNotNull("The response could not be found in the result of the future.", updateFuture.result());
-		}
+		Future<NodeResponse> updateFuture = getClient().updateNode(DemoDataProvider.PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
+				new NodeRequestParameters().setLanguages("en"));
+		latchFor(updateFuture);
+		assertSuccess(updateFuture);
+		assertNotNull("The response could not be found in the result of the future.", updateFuture.result());
 
 	}
 }

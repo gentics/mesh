@@ -35,12 +35,10 @@ public class MicroschemaGraphFieldNodeVerticleTest extends AbstractGraphFieldNod
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = createNode("microschemaField", (Field) null);
-			MicroschemaField field = response.getField("microschemaField");
-			assertNotNull(field);
-			assertNull(field.getFields());
-		}
+		NodeResponse response = createNode("microschemaField", (Field) null);
+		MicroschemaField field = response.getField("microschemaField");
+		assertNotNull(field);
+		assertNull(field.getFields());
 	}
 
 	@Ignore("Not yet implemented")

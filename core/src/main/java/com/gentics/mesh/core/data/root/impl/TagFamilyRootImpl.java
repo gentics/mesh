@@ -47,7 +47,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 	@Override
 	public TagFamily create(String name, User creator) {
-
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);

@@ -38,8 +38,6 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -64,44 +62,33 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-			tx.success();
-		}
+		role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
-		try (NonTrx tx = db.nonTrx()) {
-			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
-		}
+		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 
 	}
 
 	@Test
 	public void testBatchCreation() {
 		for (int i = 0; i < 10; i++) {
-
 			final String name = "test_" + i;
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
-			try (Trx tx = db.trx()) {
-				role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-				tx.success();
-			}
+			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
 			assertSuccess(future);
 			GroupResponse restGroup = future.result();
 			test.assertGroup(request, restGroup);
-
 		}
 	}
 
@@ -110,19 +97,14 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-			tx.success();
-		}
+		role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		try (Trx tx = db.trx()) {
-			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
-		}
+		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		future = getClient().createGroup(request);
 		latchFor(future);
 		expectException(future, CONFLICT, "group_conflicting_name");
@@ -131,7 +113,6 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-
 		// Create the group
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
@@ -143,11 +124,9 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		try (Trx tx = db.trx()) {
-			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
-				assertNotNull("Group should have been created.", rh.result());
-			});
-		}
+		boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
+			assertNotNull("Group should have been created.", rh.result());
+		});
 
 		Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid());
 		latchFor(readFuture);
@@ -162,12 +141,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
-
 		GroupCreateRequest request = new GroupCreateRequest();
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(group(), CREATE_PERM);
-			tx.success();
-		}
+		role().grantPermissions(group(), CREATE_PERM);
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -177,19 +152,15 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateGroupWithNoPerm() throws Exception {
-
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 		String rootUuid;
-		try (Trx tx = db.trx()) {
-			GroupRoot root = meshRoot().getGroupRoot();
-			rootUuid = root.getUuid();
-			role().revokePermissions(root, CREATE_PERM);
-			User user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
-			tx.success();
-		}
+		GroupRoot root = meshRoot().getGroupRoot();
+		rootUuid = root.getUuid();
+		role().revokePermissions(root, CREATE_PERM);
+		User user = user();
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -205,19 +176,16 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int totalGroups = 0;
 		String extraGroupName = "no_perm_group";
-		try (Trx tx = db.trx()) {
-			GroupRoot root = meshRoot().getGroupRoot();
-			// Create and save some groups
-			final int nGroups = 21;
-			Group extraGroupWithNoPerm = root.create(extraGroupName, user());
-			for (int i = 0; i < nGroups; i++) {
-				Group group = root.create("group_" + i, user());
-				role().grantPermissions(group, READ_PERM);
-			}
-
-			totalGroups = nGroups + groups().size();
-			tx.success();
+		GroupRoot root = meshRoot().getGroupRoot();
+		// Create and save some groups
+		final int nGroups = 21;
+		Group extraGroupWithNoPerm = root.create(extraGroupName, user());
+		for (int i = 0; i < nGroups; i++) {
+			Group group = root.create("group_" + i, user());
+			role().grantPermissions(group, READ_PERM);
 		}
+
+		totalGroups = nGroups + groups().size();
 		// Test default paging parameters
 		Future<GroupListResponse> future = getClient().findGroups();
 		latchFor(future);
@@ -286,29 +254,24 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
+		Group group = group();
+		assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
-			Group group = group();
-			assertNotNull("The UUID of the group must not be null.", group.getUuid());
-
-			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			test.assertGroup(group, future.result());
-		}
+		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		test.assertGroup(group, future.result());
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
-			Group group = group();
-			role().revokePermissions(group, READ_PERM);
-			assertNotNull("The UUID of the group must not be null.", group.getUuid());
-			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
-		}
+		Group group = group();
+		role().revokePermissions(group, READ_PERM);
+		assertNotNull("The UUID of the group must not be null.", group.getUuid());
+		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 	}
 
 	@Test
@@ -324,35 +287,28 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
-		try (NonTrx tx = db.nonTrx()) {
+		Group group = group();
+		final String name = "New Name";
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
 
-			Group group = group();
-			final String name = "New Name";
-			GroupUpdateRequest request = new GroupUpdateRequest();
-			request.setName(name);
+		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		GroupResponse restGroup = future.result();
+		test.assertGroup(request, restGroup);
 
-			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
-			latchFor(future);
-			assertSuccess(future);
-			GroupResponse restGroup = future.result();
-			test.assertGroup(request, restGroup);
-
-			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
-				Group reloadedGroup = rh.result();
-				assertEquals("The group should have been updated", name, reloadedGroup.getName());
-			});
-		}
+		boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
+			Group reloadedGroup = rh.result();
+			assertEquals("The group should have been updated", name, reloadedGroup.getName());
+		});
 	}
 
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(group(), UPDATE_PERM);
-			uuid = group().getUuid();
-			tx.success();
-		}
+		role().revokePermissions(group(), UPDATE_PERM);
+		String uuid = group().getUuid();
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName("new Name");
 
@@ -365,10 +321,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateGroupWithEmptyName() throws HttpStatusCodeErrorException, Exception {
 		Group group = group();
 
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(group, UPDATE_PERM);
-			tx.success();
-		}
+		role().grantPermissions(group, UPDATE_PERM);
 		final String name = "";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
@@ -377,25 +330,20 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-		try (Trx tx = db.trx()) {
-			boot.groupRoot().findByUuid(group.getUuid(), rh -> {
-				Group reloadedGroup = rh.result();
-				assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
-			});
-		}
+		boot.groupRoot().findByUuid(group.getUuid(), rh -> {
+			Group reloadedGroup = rh.result();
+			assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
+		});
 	}
 
 	@Test
 	public void testUpdateGroupWithConflictingName() throws HttpStatusCodeErrorException, Exception {
 
 		final String alreadyUsedName = "extraGroup";
-		try (Trx tx = db.trx()) {
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
-			// Create a group which occupies the name
-			assertNotNull(groupRoot.create(alreadyUsedName, user()));
-			role().grantPermissions(group(), UPDATE_PERM);
-			tx.success();
-		}
+		GroupRoot groupRoot = meshRoot().getGroupRoot();
+		// Create a group which occupies the name
+		assertNotNull(groupRoot.create(alreadyUsedName, user()));
+		role().grantPermissions(group(), UPDATE_PERM);
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(alreadyUsedName);
 
@@ -403,13 +351,10 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, CONFLICT, "group_conflicting_name");
 
-		try (Trx tx = db.trx()) {
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
-			groupRoot.findByUuid(group().getUuid(), rh -> {
-				Group reloadedGroup = rh.result();
-				assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
-			});
-		}
+		groupRoot.findByUuid(group().getUuid(), rh -> {
+			Group reloadedGroup = rh.result();
+			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
+		});
 	}
 
 	@Test
@@ -437,9 +382,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("group_deleted", future, uuid + "/" + name);
-		try (Trx tx = db.trx()) {
-			assertElement(boot.groupRoot(), uuid, false);
-		}
+		assertElement(boot.groupRoot(), uuid, false);
 
 	}
 
@@ -450,24 +393,18 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid = group.getUuid();
 		assertNotNull(uuid);
 		// Don't allow delete
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(group, DELETE_PERM);
-			tx.success();
-		}
+		role().revokePermissions(group, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
-		try (Trx tx = db.trx()) {
-			assertElement(boot.groupRoot(), group.getUuid(), true);
-		}
+		assertElement(boot.groupRoot(), group.getUuid(), true);
 	}
 
 	@Test
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws InterruptedException {
-
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName("changed");
 
@@ -500,7 +437,6 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	@Ignore("not yet enabled")
 	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
-
 		int nJobs = 3;
 		String uuid = group().getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -516,7 +452,6 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
-
 		int nJobs = 5;
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
@@ -533,17 +468,15 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		try (NonTrx tx = db.nonTrx()) {
-			int nJobs = 200;
-			Set<Future<GroupResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking findGroupByUuid REST call");
-				set.add(getClient().findGroupByUuid(group().getUuid()));
-			}
-			for (Future<GroupResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+		int nJobs = 200;
+		Set<Future<GroupResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findGroupByUuid REST call");
+			set.add(getClient().findGroupByUuid(group().getUuid()));
+		}
+		for (Future<GroupResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 

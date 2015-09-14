@@ -18,45 +18,38 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.graphdb.Trx;
 
 public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = db.trx()) {
-			Schema schema = schemaContainer("folder").getSchema();
-			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
-			htmlFieldSchema.setName("htmlField");
-			htmlFieldSchema.setLabel("Some label");
-			schema.addField(htmlFieldSchema);
-			schemaContainer("folder").setSchema(schema);
-		}
+		Schema schema = schemaContainer("folder").getSchema();
+		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
+		htmlFieldSchema.setName("htmlField");
+		htmlFieldSchema.setLabel("Some label");
+		schema.addField(htmlFieldSchema);
+		schemaContainer("folder").setSchema(schema);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = createNode(null, (Field) null);
-			HtmlFieldImpl htmlField = response.getField("htmlField");
-			assertNotNull(htmlField);
-			assertNull(htmlField.getHTML());
-		}
+		NodeResponse response = createNode(null, (Field) null);
+		HtmlFieldImpl htmlField = response.getField("htmlField");
+		assertNotNull(htmlField);
+		assertNull(htmlField.getHTML());
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
-			HtmlFieldImpl field = response.getField("htmlField");
-			assertEquals("some<b>html", field.getHTML());
+		NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
+		HtmlFieldImpl field = response.getField("htmlField");
+		assertEquals("some<b>html", field.getHTML());
 
-			response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
-			field = response.getField("htmlField");
-			assertEquals("some<b>html2", field.getHTML());
-		}
+		response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
+		field = response.getField("htmlField");
+		assertEquals("some<b>html2", field.getHTML());
 	}
 
 	@Test
@@ -70,21 +63,14 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("2015");
+		Node node = folder("2015");
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		container.createHTML("htmlField").setHtml("some<b>html");
 
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-			container.createHTML("htmlField").setHtml("some<b>html");
-			tx.success();
-		}
-
-		try (Trx tx = db.trx()) {
-			NodeResponse response = readNode(node);
-			HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
-			assertNotNull(deserializedHtmlField);
-			assertEquals("some<b>html", deserializedHtmlField.getHTML());
-		}
+		NodeResponse response = readNode(node);
+		HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
+		assertNotNull(deserializedHtmlField);
+		assertEquals("some<b>html", deserializedHtmlField.getHTML());
 
 	}
 

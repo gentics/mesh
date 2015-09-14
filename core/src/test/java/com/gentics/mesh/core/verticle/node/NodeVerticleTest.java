@@ -77,58 +77,50 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		schemaReference.setUuid(schemaContainer("content").getUuid());
+		// No language code set
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		try (NonTrx tx = db.nonTrx()) {
-			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("content");
-			schemaReference.setUuid(schemaContainer("content").getUuid());
-			// No language code set
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
-			request.setSchema(schemaReference);
-			request.setParentNodeUuid(folder("news").getUuid());
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
-		}
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(folder("news").getUuid());
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
 	}
 
 	@Test
 	public void testCreateNodeWithBogusLanguageCode() throws HttpStatusCodeErrorException, Exception {
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		schemaReference.setUuid(schemaContainer("content").getUuid());
+		request.setLanguage("BOGUS");
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 
-		try (NonTrx tx = db.nonTrx()) {
-			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("content");
-			schemaReference.setUuid(schemaContainer("content").getUuid());
-			request.setLanguage("BOGUS");
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
-			request.setSchema(schemaReference);
-			request.setParentNodeUuid(folder("news").getUuid());
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
-		}
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(folder("news").getUuid());
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
 	}
 
 	@Test
 	public void testCreateNodeInBaseNode() {
 		NodeCreateRequest request = new NodeCreateRequest();
-		try (NonTrx tx = db.nonTrx()) {
-			request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(project().getBaseNode().getUuid());
-		}
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(project().getBaseNode().getUuid());
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -140,42 +132,39 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node parentNode = folder("news");
-			uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setPublished(true);
-			request.setParentNodeUuid(uuid);
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setPublished(true);
+		request.setParentNodeUuid(uuid);
 
-			assertEquals(0, searchProvider.getStoreEvents().size());
+		assertEquals(0, searchProvider.getStoreEvents().size());
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			assertSuccess(future);
-			NodeResponse restNode = future.result();
-			test.assertMeshNode(request, restNode);
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(request, restNode);
 
-			assertEquals(1, searchProvider.getStoreEvents().size());
+		assertEquals(1, searchProvider.getStoreEvents().size());
 
-			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We created the node. The searchqueue batch should have been processed.", 0, searchQueue.getSize());
-			// SearchQueueBatch batch = searchQueue.take();
-			// assertEquals(1, batch.getEntries().size());
-			// SearchQueueEntry entry = batch.getEntries().get(0);
-			// assertEquals(restNode.getUuid(), entry.getElementUuid());
-			// assertEquals(Node.TYPE, entry.getElementType());
-			// assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
-		}
+		SearchQueue searchQueue = meshRoot().getSearchQueue();
+		assertEquals("We created the node. The searchqueue batch should have been processed.", 0, searchQueue.getSize());
+		// SearchQueueBatch batch = searchQueue.take();
+		// assertEquals(1, batch.getEntries().size());
+		// SearchQueueEntry entry = batch.getEntries().get(0);
+		// assertEquals(restNode.getUuid(), entry.getElementUuid());
+		// assertEquals(Node.TYPE, entry.getElementType());
+		// assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
 	}
 
 	@Test
@@ -188,105 +177,95 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		NodeResponse restNode2;
-		try (NonTrx tx = db.nonTrx()) {
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("content");
-			schemaReference.setUuid(schemaContainer("content").getUuid());
-			request.setSchema(schemaReference);
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		schemaReference.setUuid(schemaContainer("content").getUuid());
+		request.setSchema(schemaReference);
 
-			request.setLanguage("de");
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("title", FieldUtil.createStringField("Title"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(folder("news").getUuid());
+		request.setLanguage("de");
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("title", FieldUtil.createStringField("Title"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(folder("news").getUuid());
 
-			// Create node
-			NodeRequestParameters parameters = new NodeRequestParameters();
-			parameters.setLanguages("de");
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request, parameters);
-			latchFor(future);
-			assertSuccess(future);
-			NodeResponse restNode = future.result();
-			test.assertMeshNode(request, restNode);
+		// Create node
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("de");
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request, parameters);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(request, restNode);
 
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getNodeRoot().findByUuid(restNode.getUuid(), rh -> {
-				Node node = rh.result();
-				assertNotNull(node);
-				test.assertMeshNode(request, node);
-				latch.countDown();
-			});
-			failingLatch(latch);
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getNodeRoot().findByUuid(restNode.getUuid(), rh -> {
+			Node node = rh.result();
+			assertNotNull(node);
+			test.assertMeshNode(request, node);
+			latch.countDown();
+		});
+		failingLatch(latch);
 
-			// Load the node again
-			Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
-			latchFor(future2);
-			assertSuccess(future2);
-			restNode2 = future2.result();
+		// Load the node again
+		Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
+		latchFor(future2);
+		assertSuccess(future2);
+		restNode2 = future2.result();
 
-			// Delete the node
-			Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
-			latchFor(deleteFut);
-			assertSuccess(deleteFut);
-			expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
+		// Delete the node
+		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
+		latchFor(deleteFut);
+		assertSuccess(deleteFut);
+		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
 
-		}
-		try (NonTrx tx = db.nonTrx()) {
-			CountDownLatch latch2 = new CountDownLatch(1);
-			meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
-				assertNull("The node should have been deleted.", rh2.result());
-				latch2.countDown();
-			});
-			failingLatch(latch2);
-		}
+		CountDownLatch latch2 = new CountDownLatch(1);
+		meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
+			assertNull("The node should have been deleted.", rh2.result());
+			latch2.countDown();
+		});
+		failingLatch(latch2);
 	}
 
 	@Test
 	public void testCreateNodeWithMissingParentNodeUuid() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("node");
-			request.setSchema(schemaReference);
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("node");
+		request.setSchema(schemaReference);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
-		}
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
 	}
 
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
-
 		// Revoke create perm
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node node = folder("news");
-			uuid = node.getUuid();
-			role().revokePermissions(node, CREATE_PERM);
+		Node node = folder("news");
+		String uuid = node.getUuid();
+		role().revokePermissions(node, CREATE_PERM);
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
-			request.setSchema(schemaReference);
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.setParentNodeUuid(uuid);
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
+		request.setSchema(schemaReference);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.setParentNodeUuid(uuid);
 
-			Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		}
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	// Read tests
@@ -298,7 +277,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	 */
 	@Test
 	public void testReadNodesDefaultPaging() throws Exception {
-
 		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME);
 		latchFor(future);
 		assertSuccess(future);
@@ -315,14 +293,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 		final String noPermNodeUUID;
 
-		try (NonTrx tx = db.nonTrx()) {
-			Node parentNode = folder("2015");
-			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-			Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
-			noPermNode.setCreator(user());
-			noPermNodeUUID = noPermNode.getUuid();
-			assertNotNull(noPermNode.getUuid());
-		}
+		Node parentNode = folder("2015");
+		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
+		Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
+		noPermNode.setCreator(user());
+		noPermNodeUUID = noPermNode.getUuid();
+		assertNotNull(noPermNode.getUuid());
 		int perPage = 11;
 		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(3, perPage));
 		latchFor(future);
@@ -410,89 +386,84 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws InterruptedException {
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node parentNode = folder("news");
-			uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields().put("title", FieldUtil.createStringField("some title"));
-			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setPublished(true);
-			request.setParentNodeUuid(uuid);
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setPublished(true);
+		request.setParentNodeUuid(uuid);
 
-			int nJobs = 50;
-			//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-			//		Trx.enableDebug();
-			//		Trx.setBarrier(barrier);
-			Set<Future<NodeResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking createNode REST call");
-				set.add(getClient().createNode(PROJECT_NAME, request));
-			}
-
-			Set<String> uuids = new HashSet<>();
-			for (Future<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-				String currentUuid = future.result().getUuid();
-				assertFalse("The rest api returned a node response with a uuid that was returned before. Each create request must always be atomic.",
-						uuids.contains(currentUuid));
-				uuids.add(currentUuid);
-			}
-			//		Trx.disableDebug();
-			//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		int nJobs = 50;
+		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		// Trx.enableDebug();
+		// Trx.setBarrier(barrier);
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking createNode REST call");
+			set.add(getClient().createNode(PROJECT_NAME, request));
 		}
+
+		Set<String> uuids = new HashSet<>();
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+			String currentUuid = future.result().getUuid();
+			assertFalse("The rest api returned a node response with a uuid that was returned before. Each create request must always be atomic.",
+					uuids.contains(currentUuid));
+			uuids.add(currentUuid);
+		}
+		// Trx.disableDebug();
+		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 	}
 
 	@Test
 	@Override
-	//@Ignore("not yet supported")
+	// @Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		String uuid;
 		Node node;
 		final String newName = "english renamed name";
-		try (NonTrx tx = db.nonTrx()) {
-			node = folder("2015");
-			uuid = node.getUuid();
-			assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
+		node = folder("2015");
+		uuid = node.getUuid();
+		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("folder");
-			schemaReference.setUuid(schemaContainer("folder").getUuid());
-			request.setSchema(schemaReference);
-			request.setLanguage("en");
-			request.setPublished(true);
-			request.getFields().put("name", FieldUtil.createStringField(newName));
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		request.setSchema(schemaReference);
+		request.setLanguage("en");
+		request.setPublished(true);
+		request.getFields().put("name", FieldUtil.createStringField(newName));
 
-			NodeRequestParameters parameters = new NodeRequestParameters();
-			parameters.setLanguages("en", "de");
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("en", "de");
 
-			int nJobs = 5;
-			//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-			//		Trx.enableDebug();
-			//		Trx.setBarrier(barrier);
-			Set<Future<NodeResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking updateNode REST call");
-				set.add(getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
-			}
+		int nJobs = 5;
+		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		// Trx.enableDebug();
+		// Trx.setBarrier(barrier);
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking updateNode REST call");
+			set.add(getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
+		}
 
-			for (Future<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 		Trx.disableDebug();
-		//		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
 
@@ -521,41 +492,36 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	//	@Ignore("not yet supported")
+	// @Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
-		try (NonTrx tx = db.nonTrx()) {
-
-			int nJobs = 50;
-			//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-			//		Trx.enableDebug();
-			//		Trx.setBarrier(barrier);
-			Set<Future<NodeResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking findNodeByUuid REST call");
-				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
-			}
-			for (Future<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
-			Trx.disableDebug();
+		int nJobs = 50;
+		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		// Trx.enableDebug();
+		// Trx.setBarrier(barrier);
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findNodeByUuid REST call");
+			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
 		}
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+		Trx.disableDebug();
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
-		try (NonTrx tx = db.nonTrx()) {
-			Set<Future<NodeResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				log.debug("Invoking findNodeByUuid REST call");
-				set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
-			}
-			for (Future<NodeResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+		Set<Future<NodeResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			log.debug("Invoking findNodeByUuid REST call");
+			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
+		}
+		for (Future<NodeResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 		Trx.disableDebug();
 	}
@@ -564,26 +530,20 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadByUUID() throws Exception {
 
 		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
-			Node node = folder("2015");
-			uuid = node.getUuid();
-			assertNotNull(node);
-			assertNotNull(node.getUuid());
-		}
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		Node node = folder("2015");
+		uuid = node.getUuid();
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
 
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
-		try (NonTrx tx = db.nonTrx()) {
-			test.assertMeshNode(folder("2015"), future.result());
-		}
+		test.assertMeshNode(folder("2015"), future.result());
 		NodeResponse response = future.result();
 		assertEquals("name", response.getDisplayField());
 		assertNotNull(response.getParentNode());
-		try (NonTrx tx = db.nonTrx()) {
-			assertEquals(folder("2015").getParentNode().getUuid(), response.getParentNode().getUuid());
-		}
+		assertEquals(folder("2015").getParentNode().getUuid(), response.getParentNode().getUuid());
 		assertEquals("News", response.getParentNode().getDisplayName());
 		assertEquals("en", response.getLanguage());
 	}
@@ -591,12 +551,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
 
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
-			Node node = folder("products");
-			uuid = node.getUuid();
-		}
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		Node node = folder("products");
+		String uuid = node.getUuid();
 
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("de");
@@ -604,9 +561,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
-		try (NonTrx tx = db.nonTrx()) {
-			test.assertMeshNode(folder("products"), restNode);
-		}
+		test.assertMeshNode(folder("products"), restNode);
 
 		StringField field = restNode.getField("name");
 		String nameText = field.getString();
@@ -616,32 +571,26 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node node = folder("2015");
-			uuid = node.getUuid();
-			assertNotNull(node);
-			assertNotNull(node.getUuid());
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
 
-			NodeRequestParameters parameters = new NodeRequestParameters();
-			parameters.setLanguages("blabla", "edgsdg");
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("blabla", "edgsdg");
 
-			Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
-		}
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
 
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node node = folder("2015");
-			uuid = node.getUuid();
-			role().revokePermissions(node, READ_PERM);
-		}
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		role().revokePermissions(node, READ_PERM);
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
@@ -649,7 +598,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByBogusUUID() throws Exception {
-
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, "bogusUUID");
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogusUUID");
@@ -658,11 +606,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByInvalidUUID() throws Exception {
 		String uuid = "dde8ba06bb7211e4897631a9ce2772f5";
-
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", uuid);
-
 	}
 
 	// Update
@@ -673,61 +619,52 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid;
 		Node node;
 		final String newName = "english renamed name";
-		try (NonTrx tx = db.nonTrx()) {
-			node = folder("2015");
-			uuid = node.getUuid();
-			assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
+		node = folder("2015");
+		uuid = node.getUuid();
+		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("folder");
-			schemaReference.setUuid(schemaContainer("folder").getUuid());
-			request.setSchema(schemaReference);
-			request.setLanguage("en");
-			request.setPublished(true);
-			request.getFields().put("name", FieldUtil.createStringField(newName));
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		request.setSchema(schemaReference);
+		request.setLanguage("en");
+		request.setPublished(true);
+		request.getFields().put("name", FieldUtil.createStringField(newName));
 
-			NodeRequestParameters parameters = new NodeRequestParameters();
-			parameters.setLanguages("en", "de");
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("en", "de");
 
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
-			latchFor(future);
-			assertSuccess(future);
-			NodeResponse restNode = future.result();
-			assertEquals("en", restNode.getLanguage());
-			StringField field = restNode.getField("name");
-			assertEquals(newName, field.getString());
-			assertNotNull(restNode);
-			assertTrue(restNode.isPublished());
-		}
-		try (NonTrx tx = db.nonTrx()) {
-			assertEquals(newName, node.getGraphFieldContainer(english()).getString("name").getString());
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		assertEquals("en", restNode.getLanguage());
+		StringField field = restNode.getField("name");
+		assertEquals(newName, field.getString());
+		assertNotNull(restNode);
+		assertTrue(restNode.isPublished());
+		assertEquals(newName, node.getGraphFieldContainer(english()).getString("name").getString());
 
-			assertEquals(1, searchProvider.getStoreEvents().size());
+		assertEquals(1, searchProvider.getStoreEvents().size());
 
-			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.getSize());
-			// SearchQueueBatch batch = searchQueue.take();
-			// assertEquals(1, batch.getEntries().size());
-			// SearchQueueEntry entry = batch.getEntries().get(0);
-			//
-			// assertEquals(restNode.getUuid(), entry.getElementUuid());
-			// assertEquals(Node.TYPE, entry.getElementType());
-			// assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
-
-		}
-
+		SearchQueue searchQueue = meshRoot().getSearchQueue();
+		assertEquals("We updated the node. The search queue batch should have been processed.", 0, searchQueue.getSize());
+		// SearchQueueBatch batch = searchQueue.take();
+		// assertEquals(1, batch.getEntries().size());
+		// SearchQueueEntry entry = batch.getEntries().get(0);
+		//
+		// assertEquals(restNode.getUuid(), entry.getElementUuid());
+		// assertEquals(Node.TYPE, entry.getElementType());
+		// assertEquals(SearchQueueEntryAction.UPDATE_ACTION, entry.getElementAction());
 	}
 
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node node = folder("2015");
-			role().revokePermissions(node, UPDATE_PERM);
-			uuid = node.getUuid();
-		}
+		Node node = folder("2015");
+		role().revokePermissions(node, UPDATE_PERM);
+		String uuid = node.getUuid();
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference reference = new SchemaReference();
 		reference.setName("content");
@@ -743,34 +680,29 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-		try (NonTrx tx = db.nonTrx()) {
 
-			NodeUpdateRequest request = new NodeUpdateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("folder");
-			schemaReference.setUuid(schemaContainer("folder").getUuid());
-			request.setSchema(schemaReference);
-			request.setLanguage("en");
-			request.setPublished(true);
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		request.setSchema(schemaReference);
+		request.setLanguage("en");
+		request.setPublished(true);
 
-			NodeRequestParameters parameters = new NodeRequestParameters();
-			parameters.setLanguages("en", "de");
+		NodeRequestParameters parameters = new NodeRequestParameters();
+		parameters.setLanguages("en", "de");
 
-			Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters);
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
-		}
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
 	public void testUpdateNodeWithExtraField() throws UnknownHostException, InterruptedException {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Node parentNode = folder("news");
-			uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
-		}
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -795,13 +727,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Node parentNode = folder("news");
-			uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
-		}
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -824,13 +753,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Node parentNode = folder("news");
-			uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
-		}
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
@@ -850,11 +776,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateNodeWithExtraField2() throws HttpStatusCodeErrorException, Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Node node = folder("2015");
-			uuid = node.getUuid();
-		}
+		Node node = folder("2015");
+		String uuid = node.getUuid();
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
@@ -875,10 +798,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertNull(future.result());
 
-		try (NonTrx tx = db.nonTrx()) {
-			NodeGraphFieldContainer englishContainer = folder("2015").getOrCreateGraphFieldContainer(english());
-			assertNotEquals(newName, englishContainer.getString("name").getString());
-		}
+		NodeGraphFieldContainer englishContainer = folder("2015").getOrCreateGraphFieldContainer(english());
+		assertNotEquals(newName, englishContainer.getString("name").getString());
 
 	}
 
@@ -886,76 +807,62 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testDeleteBaseNode() throws Exception {
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node node = project().getBaseNode();
-			uuid = node.getUuid();
-		}
+		Node node = project().getBaseNode();
+		String uuid = node.getUuid();
 
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-		try (NonTrx tx = db.nonTrx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-				assertNotNull("The node should still exist.", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+			assertNotNull("The node should still exist.", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		Node node = content("concorde");
+		String uuid = node.getUuid();
+		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
+		latchFor(future);
+		assertSuccess(future);
 
-		try (NonTrx tx = db.nonTrx()) {
+		expectMessageResponse("node_deleted", future, uuid);
 
-			Node node = content("concorde");
-			String uuid = node.getUuid();
-			Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
-			latchFor(future);
-			assertSuccess(future);
+		assertElement(meshRoot().getNodeRoot(), uuid, false);
 
-			expectMessageResponse("node_deleted", future, uuid);
+		assertEquals("Two documents within the index should have been deleted. (en,de)", 2, searchProvider.getDeleteEvents().size());
 
-			assertElement(meshRoot().getNodeRoot(), uuid, false);
-
-			assertEquals("Two documents within the index should have been deleted. (en,de)", 2, searchProvider.getDeleteEvents().size());
-
-			SearchQueue searchQueue = meshRoot().getSearchQueue();
-			assertEquals("We deleted the item. A search queue entry should have been created.", 0, searchQueue.getSize());
-			// SearchQueueBatch batch = searchQueue.take();
-			// assertEquals(1, batch.getEntries().size());
-			// SearchQueueEntry entry = batch.getEntries().get(0);
-			// assertEquals(uuid, entry.getElementUuid());
-			// assertEquals(Node.TYPE, entry.getElementType());
-			// assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getElementAction());
-		}
+		SearchQueue searchQueue = meshRoot().getSearchQueue();
+		assertEquals("We deleted the item. A search queue entry should have been created.", 0, searchQueue.getSize());
+		// SearchQueueBatch batch = searchQueue.take();
+		// assertEquals(1, batch.getEntries().size());
+		// SearchQueueEntry entry = batch.getEntries().get(0);
+		// assertEquals(uuid, entry.getElementUuid());
+		// assertEquals(Node.TYPE, entry.getElementType());
+		// assertEquals(SearchQueueEntryAction.DELETE_ACTION, entry.getElementAction());
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
-			Node node = folder("2015");
-			uuid = node.getUuid();
-			role().revokePermissions(node, DELETE_PERM);
-		}
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		role().revokePermissions(node, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteNode(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (NonTrx tx = db.nonTrx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-				assertNotNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 }

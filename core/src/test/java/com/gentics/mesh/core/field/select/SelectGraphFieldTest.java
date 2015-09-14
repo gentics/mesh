@@ -11,21 +11,18 @@ import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
-import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 
-public class SelectGraphFieldTest extends AbstractDBTest {
+public class SelectGraphFieldTest extends AbstractBasicDBTest {
 
 	@Test
 	@Ignore("Not yet implemented")
 	public void testStringSelection() {
-		try (Trx tx = db.trx()) {
-			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-			SelectGraphField<StringGraphField> field = container.createSelect("dummySelect");
-			field.addOption(new StringGraphFieldImpl("test", null));
-			assertEquals(1, field.getOptions().size());
-		}
+		SelectGraphField<StringGraphField> field = container.createSelect("dummySelect");
+		field.addOption(new StringGraphFieldImpl("test", null));
+		assertEquals(1, field.getOptions().size());
 	}
 
 	@Test

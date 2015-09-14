@@ -66,7 +66,6 @@ public class RoleSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-
 		String roleName = "rolename42a";
 		RoleResponse role = createRole(roleName, group().getUuid());
 

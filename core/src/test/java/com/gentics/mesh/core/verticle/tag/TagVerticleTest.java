@@ -64,16 +64,13 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadMultiple() throws Exception {
 
-		String noPermTagUUID;
-		try (NonTrx tx = db.nonTrx()) {
-			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-			TagFamily basicTagFamily = tagFamily("basic");
-			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
-			noPermTagUUID = noPermTag.getUuid();
-			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-			project().getTagRoot().addTag(noPermTag);
-			assertNotNull(noPermTag.getUuid());
-		}
+		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+		TagFamily basicTagFamily = tagFamily("basic");
+		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+		String noPermTagUUID = noPermTag.getUuid();
+		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
+		project().getTagRoot().addTag(noPermTag);
+		assertNotNull(noPermTag.getUuid());
 
 		// Test default paging parameters
 		Future<TagListResponse> future = getClient().findTags(PROJECT_NAME);
@@ -147,26 +144,20 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("red");
-			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-			Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			test.assertTag(tag, future.result());
-		}
+		Tag tag = tag("red");
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, tag.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		test.assertTag(tag, future.result());
 	}
 
 	@Test
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("vehicle");
-			uuid = tag.getUuid();
-			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-			role().revokePermissions(tag, READ_PERM);
-			tx.success();
-		}
+		Tag tag = tag("vehicle");
+		String uuid = tag.getUuid();
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+		role().revokePermissions(tag, READ_PERM);
 
 		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
@@ -176,13 +167,9 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		String tagUuid;
-		String tagName;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("vehicle");
-			tagUuid = tag.getUuid();
-			tagName = tag.getName();
-		}
+		Tag tag = tag("vehicle");
+		String tagUuid = tag.getUuid();
+		String tagName = tag.getName();
 		Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tagUuid);
 		latchFor(readTagFut);
 		assertSuccess(readTagFut);
@@ -206,10 +193,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagResponse tag2 = updatedTagFut.result();
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("vehicle");
-			test.assertTag(tag, tag2);
-		}
+		test.assertTag(tag, tag2);
 
 		// 4. read the tag again and verify that it was changed
 		Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, tagUuid);
@@ -218,10 +202,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagResponse reloadedTag = reloadedTagFut.result();
 		assertEquals(request.getFields().getName(), reloadedTag.getFields().getName());
 
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("vehicle");
-			test.assertTag(tag, reloadedTag);
-		}
+		test.assertTag(tag, reloadedTag);
 	}
 
 	@Test
@@ -423,7 +404,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 500;
 
-		//		CyclicBarrier barrier = prepareBarrier(nJobs);
+		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
@@ -481,14 +462,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("red");
-			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
-			uuid = tag.getUuid();
-			role().revokePermissions(tag, READ_PERM);
-			tx.success();
-		}
+		Tag tag = tag("red");
+		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
+		String uuid = tag.getUuid();
+		role().revokePermissions(tag, READ_PERM);
 
 		Future<TagResponse> future = getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, uuid);
 		latchFor(future);

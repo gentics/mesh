@@ -99,13 +99,11 @@ public abstract class AbstractDBTest {
 
 	public Tag tag(String key) {
 		Tag tag = dataProvider.getTag(key);
-		tag.reload();
 		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
 		TagFamily family = dataProvider.getTagFamily(key);
-		family.reload();
 		return family;
 	}
 
@@ -117,14 +115,11 @@ public abstract class AbstractDBTest {
 
 	public Node content(String key) {
 		Node node = dataProvider.getContent(key);
-		node.reload();
 		return node;
-
 	}
 
 	public Node folder(String key) {
 		Node node = dataProvider.getFolder(key);
-		node.reload();
 		return node;
 	}
 
@@ -162,7 +157,6 @@ public abstract class AbstractDBTest {
 
 	public User user() {
 		User user = dataProvider.getUserInfo().getUser();
-		user.reload();
 		return user;
 	}
 
@@ -188,7 +182,6 @@ public abstract class AbstractDBTest {
 
 	public Node content() {
 		Node content = dataProvider.getContent("news overview");
-		content.reload();
 		return content;
 	}
 
@@ -198,7 +191,6 @@ public abstract class AbstractDBTest {
 
 	public SchemaContainer getSchemaContainer() {
 		SchemaContainer container = dataProvider.getSchemaContainer("content");
-		container.reload();
 		return container;
 	}
 

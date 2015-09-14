@@ -33,93 +33,79 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			root.findAll(getRequestUser(), new PagingInfo(1, 10));
-		}
+		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
+		root.findAll(getRequestUser(), new PagingInfo(1, 10));
 	}
 
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			List<? extends TagFamily> families = root.findAll();
-			assertNotNull(families);
-			assertEquals(2, families.size());
+		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
+		List<? extends TagFamily> families = root.findAll();
+		assertNotNull(families);
+		assertEquals(2, families.size());
 
-			TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
-			assertNotNull(projectTagFamilyRoot);
+		TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
+		assertNotNull(projectTagFamilyRoot);
 
-			TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
-			assertNotNull(projectTagFamily);
+		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
+		assertNotNull(projectTagFamily);
 
-			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
-			assertEquals(3, projectTagFamilyRoot.findAll().size());
-			assertEquals(3, root.findAll().size());
-		}
+		assertNotNull(projectTagFamilyRoot.create("bogus", user()));
+		assertEquals(3, projectTagFamilyRoot.findAll().size());
+		assertEquals(3, root.findAll().size());
 	}
 
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			int nProjectsBefore = root.findAll().size();
-			assertNotNull(root.create("test1234556", user()));
-			int nProjectsAfter = root.findAll().size();
-			assertEquals(nProjectsBefore + 1, nProjectsAfter);
-		}
+		TagFamilyRoot root = project().getTagFamilyRoot();
+		int nProjectsBefore = root.findAll().size();
+		assertNotNull(root.create("test1234556", user()));
+		int nProjectsAfter = root.findAll().size();
+		assertEquals(nProjectsBefore + 1, nProjectsAfter);
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			assertNotNull(root);
-			assertNotNull(root.findByName("colors"));
-		}
+		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
+		assertNotNull(root);
+		assertNotNull(root.findByName("colors"));
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() throws InterruptedException {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			TagFamily tagFamily = tagFamily("colors");
+		TagFamilyRoot root = project().getTagFamilyRoot();
+		TagFamily tagFamily = tagFamily("colors");
 
-			CountDownLatch latch = new CountDownLatch(1);
-			root.findByUuid(tagFamily.getUuid(), rh -> {
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		root.findByUuid(tagFamily.getUuid(), rh -> {
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = tagFamily("colors");
-			assertNotNull(tagFamily.getName());
-			assertEquals("colors", tagFamily.getName());
-			assertNotNull(tagFamily.getEditor());
-			assertNotNull(tagFamily.getCreator());
-		}
+		TagFamily tagFamily = tagFamily("colors");
+		assertNotNull(tagFamily.getName());
+		assertEquals("colors", tagFamily.getName());
+		assertNotNull(tagFamily.getEditor());
+		assertNotNull(tagFamily.getCreator());
 	}
 
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			TagFamily family = root.create("test", user());
-			TagFamily family2 = root.findByName(family.getName());
-			assertNotNull(family2);
-			assertEquals("test", family2.getName());
-			assertEquals(family.getUuid(), family2.getUuid());
-		}
+		TagFamilyRoot root = project().getTagFamilyRoot();
+		TagFamily family = root.create("test", user());
+		TagFamily family2 = root.findByName(family.getName());
+		assertNotNull(family2);
+		assertEquals("test", family2.getName());
+		assertEquals(family.getUuid(), family2.getUuid());
 	}
 
 	@Test
@@ -141,12 +127,9 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = tagFamily("colors");
-			tagFamily.setName("new Name");
-			assertEquals("new Name", tagFamily.getName());
-		}
-
+		TagFamily tagFamily = tagFamily("colors");
+		tagFamily.setName("new Name");
+		assertEquals("new Name", tagFamily.getName());
 	}
 
 	@Test
@@ -216,36 +199,32 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws InterruptedException {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			TagFamily tagFamily = root.create("test123", user());
-			assertNotNull(tagFamily);
-			String uuid = tagFamily.getUuid();
-			CountDownLatch latch = new CountDownLatch(2);
-			root.findByUuid(uuid, rh -> {
-				assertNotNull(rh.result());
-				latch.countDown();
-			});
-			tagFamily.delete();
-			// TODO check for attached nodes
-			meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-				assertNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		TagFamilyRoot root = project().getTagFamilyRoot();
+		TagFamily tagFamily = root.create("test123", user());
+		assertNotNull(tagFamily);
+		String uuid = tagFamily.getUuid();
+		CountDownLatch latch = new CountDownLatch(2);
+		root.findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+			latch.countDown();
+		});
+		tagFamily.delete();
+		// TODO check for attached nodes
+		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Trx tx = db.trx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			TagFamily tagFamily = root.create("test123", user());
-			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
-			user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
-			assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
-		}
+		TagFamilyRoot root = project().getTagFamilyRoot();
+		TagFamily tagFamily = root.create("test123", user());
+		assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
+		assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
 	}
 
 }

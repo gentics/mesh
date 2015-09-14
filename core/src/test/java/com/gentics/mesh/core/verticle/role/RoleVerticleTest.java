@@ -43,8 +43,6 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -83,69 +81,58 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		RoleResponse restRole = future.result();
 		test.assertRole(request, restRole);
-		try (Trx tx = db.trx()) {
-			assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
-		}
+		assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
 	}
 
 	@Test
 	public void testCreateRoleWithConflictingName() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
+		// Create first Role
+		String name = "new_role";
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName(name);
+		request.setGroupUuid(group().getUuid());
 
-			// Create first Role
-			String name = "new_role";
-			RoleCreateRequest request = new RoleCreateRequest();
-			request.setName(name);
-			request.setGroupUuid(group().getUuid());
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		assertSuccess(future);
 
-			Future<RoleResponse> future = getClient().createRole(request);
-			latchFor(future);
-			assertSuccess(future);
-
-			future = getClient().createRole(request);
-			latchFor(future);
-			expectException(future, CONFLICT, "role_conflicting_name");
-		}
+		future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, CONFLICT, "role_conflicting_name");
 	}
 
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
+		request.setGroupUuid(group().getUuid());
 
-			RoleCreateRequest request = new RoleCreateRequest();
-			request.setName("new_role");
-			request.setGroupUuid(group().getUuid());
+		Future<RoleResponse> createFuture = getClient().createRole(request);
+		latchFor(createFuture);
+		assertSuccess(createFuture);
 
-			Future<RoleResponse> createFuture = getClient().createRole(request);
-			latchFor(createFuture);
-			assertSuccess(createFuture);
+		RoleResponse restRole = createFuture.result();
+		test.assertRole(request, restRole);
 
-			RoleResponse restRole = createFuture.result();
-			test.assertRole(request, restRole);
-
-			Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
-			expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid() + "/" + restRole.getName());
-		}
-
+		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
+		latchFor(deleteFuture);
+		assertSuccess(deleteFuture);
+		expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid() + "/" + restRole.getName());
 	}
 
 	@Test
 	public void testCreateWithNoPermissionOnGroup() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
-			RoleCreateRequest request = new RoleCreateRequest();
-			request.setName("new_role");
-			request.setGroupUuid(group().getUuid());
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
+		request.setGroupUuid(group().getUuid());
 
-			// Add needed permission to group
-			role().revokePermissions(group(), CREATE_PERM);
+		// Add needed permission to group
+		role().revokePermissions(group(), CREATE_PERM);
 
-			Future<RoleResponse> future = getClient().createRole(request);
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
-		}
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
 	}
 
 	@Test
@@ -158,81 +145,61 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateRoleWithNoGroupId() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
-			RoleCreateRequest request = new RoleCreateRequest();
-			request.setName("new_role");
-			Future<RoleResponse> future = getClient().createRole(request);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "role_missing_parentgroup_field");
-		}
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "role_missing_parentgroup_field");
 	}
 
 	@Test
 	public void testCreateRoleWithNoName() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setGroupUuid(group().getUuid());
 
-			RoleCreateRequest request = new RoleCreateRequest();
-			request.setGroupUuid(group().getUuid());
-
-			Future<RoleResponse> future = getClient().createRole(request);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_name_must_be_set");
-		}
+		Future<RoleResponse> future = getClient().createRole(request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 	}
 
 	// Read tests
 
 	@Test
 	public void testReadOwnRoleByUUID() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Role role = role();
-			uuid = role.getUuid();
-			assertNotNull("The UUID of the role must not be null.", role.getUuid());
-		}
+		Role role = role();
+		String uuid = role.getUuid();
+		assertNotNull("The UUID of the role must not be null.", role.getUuid());
 
 		Future<RoleResponse> future = getClient().findRoleByUuid(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		RoleResponse restRole = future.result();
-		try (Trx tx = db.trx()) {
-			test.assertRole(role(), restRole);
-		}
+		test.assertRole(role(), restRole);
 	}
 
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		Role extraRole;
-		try (Trx tx = db.trx()) {
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			extraRole = roleRoot.create("extra role", group(), user());
-			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-			role().grantPermissions(extraRole, READ_PERM);
-			tx.success();
-		}
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
+		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
+		role().grantPermissions(extraRole, READ_PERM);
 
 		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		RoleResponse restRole = future.result();
-		try (Trx tx = db.trx()) {
-			test.assertRole(extraRole, restRole);
-		}
+		test.assertRole(extraRole, restRole);
 
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		Role extraRole;
-		try (Trx tx = db.trx()) {
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			extraRole = roleRoot.create("extra role", group(), user());
-			// Revoke read permission from the role
-			role().revokePermissions(extraRole, READ_PERM);
-			tx.success();
-		}
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
+		// Revoke read permission from the role
+		role().revokePermissions(extraRole, READ_PERM);
 
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 		Future<RoleResponse> future = getClient().findRoleByUuid(extraRole.getUuid());
@@ -243,14 +210,10 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Role role = role();
-			uuid = role.getUuid();
-			assertNotNull("The UUID of the role must not be null.", role.getUuid());
-			role.revokePermissions(role, READ_PERM);
-			tx.success();
-		}
+		Role role = role();
+		String uuid = role.getUuid();
+		assertNotNull("The UUID of the role must not be null.", role.getUuid());
+		role.revokePermissions(role, READ_PERM);
 		Future<RoleResponse> future = getClient().findRoleByUuid(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
@@ -263,23 +226,20 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		final int nRoles = 21;
 		String noPermRoleName;
 
-		try (Trx tx = db.trx()) {
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role noPermRole = roleRoot.create("no_perm_role", null, user());
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role noPermRole = roleRoot.create("no_perm_role", null, user());
 
-			role().grantPermissions(group(), READ_PERM);
+		role().grantPermissions(group(), READ_PERM);
 
-			// Create and save some roles
-			for (int i = 0; i < nRoles; i++) {
-				Role extraRole = roleRoot.create("extra role " + i, group(), user());
-				role().grantPermissions(extraRole, READ_PERM);
-			}
-			// Role with no permission
-			group().addRole(noPermRole);
-
-			noPermRoleName = noPermRole.getName();
-			tx.success();
+		// Create and save some roles
+		for (int i = 0; i < nRoles; i++) {
+			Role extraRole = roleRoot.create("extra role " + i, group(), user());
+			role().grantPermissions(extraRole, READ_PERM);
 		}
+		// Role with no permission
+		group().addRole(noPermRole);
+
+		noPermRoleName = noPermRole.getName();
 
 		// Test default paging parameters
 		Future<RoleListResponse> future = getClient().findRoles();
@@ -356,14 +316,10 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 
-		String roleUuid;
-		try (Trx tx = db.trx()) {
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role extraRole = roleRoot.create("extra role", group(), user());
-			roleUuid = extraRole.getUuid();
-			role().grantPermissions(extraRole, UPDATE_PERM);
-			tx.success();
-		}
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
+		String roleUuid = extraRole.getUuid();
+		role().grantPermissions(extraRole, UPDATE_PERM);
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
@@ -375,26 +331,20 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(roleUuid, restRole.getUuid());
 
 		// Check that the extra role was updated as expected
-		try (Trx tx = db.trx()) {
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			CountDownLatch latch = new CountDownLatch(1);
-			roleRoot.findByUuid(roleUuid, rh -> {
-				Role reloadedRole = rh.result();
-				assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		roleRoot.findByUuid(roleUuid, rh -> {
+			Role reloadedRole = rh.result();
+			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(role(), UPDATE_PERM);
-			uuid = role().getUuid();
-		}
+		role().revokePermissions(role(), UPDATE_PERM);
+		String uuid = role().getUuid();
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("New Name");
 
@@ -418,11 +368,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Role role = role();
-			uuid = role.getUuid();
-		}
+		Role role = role();
+		String uuid = role.getUuid();
 
 		RoleUpdateRequest restRole = new RoleUpdateRequest();
 		restRole.setName("renamed role");
@@ -432,25 +379,21 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
 		// Add the missing permission and try again
-		try (Trx tx = db.trx()) {
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			tx.success();
-		}
+		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 
 		future = getClient().updateRole(uuid, restRole);
 		latchFor(future);
 		assertSuccess(future);
 
 		// Check that the role was updated
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.roleRoot().findByUuid(uuid, rh -> {
-				Role reloadedRole = rh.result();
-				assertEquals(restRole.getName(), reloadedRole.getName());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.roleRoot().findByUuid(uuid, rh -> {
+			Role reloadedRole = rh.result();
+			reloadedRole.reload();
+			assertEquals(restRole.getName(), reloadedRole.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 	}
 
@@ -461,22 +404,17 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		String roleUuid;
 		String roleName;
-		try (Trx tx = db.trx()) {
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role extraRole = roleRoot.create("extra role", group(), user());
-			roleUuid = extraRole.getUuid();
-			roleName = extraRole.getName();
-			role().grantPermissions(extraRole, DELETE_PERM);
-			tx.success();
-		}
+		RoleRoot roleRoot = meshRoot().getRoleRoot();
+		Role extraRole = roleRoot.create("extra role", group(), user());
+		roleUuid = extraRole.getUuid();
+		roleName = extraRole.getName();
+		role().grantPermissions(extraRole, DELETE_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteRole(roleUuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_deleted", future, roleUuid + "/" + roleName);
-		try (Trx tx = db.trx()) {
-			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
-		}
+		assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 	}
 
 	@Test
@@ -485,9 +423,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteRole(role().getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", role().getUuid());
-		try (NonTrx tx = db.nonTrx()) {
-			assertElement(meshRoot().getRoleRoot(), role().getUuid(), true);
-		}
+		assertElement(meshRoot().getRoleRoot(), role().getUuid(), true);
 	}
 
 	@Test
@@ -549,7 +485,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 
 		int nJobs = 20;
-		//		CyclicBarrier barrier = prepareBarrier(1);
+		// CyclicBarrier barrier = prepareBarrier(1);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			RoleCreateRequest request = new RoleCreateRequest();
@@ -558,7 +494,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 			set.add(getClient().createRole(request));
 		}
 		validateFutures(set);
-		Thread.sleep(10000);
 	}
 
 	@Test

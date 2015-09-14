@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.Future;
 
@@ -35,65 +34,54 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = db.trx()) {
-			Schema schema = schemaContainer("folder").getSchema();
-			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-			numberFieldSchema.setName("numberField");
-			numberFieldSchema.setMin(10);
-			numberFieldSchema.setMax(1000);
-			numberFieldSchema.setRequired(true);
-			schema.addField(numberFieldSchema);
-			schemaContainer("folder").setSchema(schema);
-			tx.success();
-		}
+		Schema schema = schemaContainer("folder").getSchema();
+		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
+		numberFieldSchema.setName("numberField");
+		numberFieldSchema.setMin(10);
+		numberFieldSchema.setMax(1000);
+		numberFieldSchema.setRequired(true);
+		schema.addField(numberFieldSchema);
+		schemaContainer("folder").setSchema(schema);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = createNode("numberField", (Field) null);
-			NumberFieldImpl field = response.getField("numberField");
-			assertNotNull(field);
-			assertNull(field.getNumber());
-		}
+		NodeResponse response = createNode("numberField", (Field) null);
+		NumberFieldImpl field = response.getField("numberField");
+		assertNotNull(field);
+		assertNull(field.getNumber());
 	}
 
 	@Test
 	public void testCreateNodeWithWrongFieldType() {
-		try (Trx tx = db.trx()) {
-			String fieldKey = "numberField";
-			StringField field = new StringFieldImpl().setString("text");
+		String fieldKey = "numberField";
+		StringField field = new StringFieldImpl().setString("text");
 
-			Node node = folder("2015");
-			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-			nodeCreateRequest.setParentNodeUuid(node.getUuid());
-			nodeCreateRequest.setSchema(new SchemaReference("folder", null));
-			nodeCreateRequest.setLanguage("en");
-			if (fieldKey != null) {
-				nodeCreateRequest.getFields().put(fieldKey, field);
-			}
-
-			Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
-					new NodeRequestParameters().setLanguages("en"));
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_parse_request_json_error");
+		Node node = folder("2015");
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(node.getUuid());
+		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
+		nodeCreateRequest.setLanguage("en");
+		if (fieldKey != null) {
+			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
+
+		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
+				new NodeRequestParameters().setLanguages("en"));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
-			NumberFieldImpl field = response.getField("numberField");
-			assertEquals("42", field.getNumber());
-		}
-		try (Trx tx = db.trx()) {
-			NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
-			NumberFieldImpl field = response.getField("numberField");
-			assertEquals("43", field.getNumber());
-		}
+		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
+		NumberFieldImpl field = response.getField("numberField");
+		assertEquals("42", field.getNumber());
+		response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
+		field = response.getField("numberField");
+		assertEquals("43", field.getNumber());
 	}
 
 	@Test
@@ -107,23 +95,17 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() throws IOException {
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("2015");
+		Node node = folder("2015");
 
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-			NumberGraphField numberField = container.createNumber("numberField");
-			numberField.setNumber("100.9");
-			tx.success();
-		}
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		NumberGraphField numberField = container.createNumber("numberField");
+		numberField.setNumber("100.9");
 
-		try (Trx tx = db.trx()) {
-			NodeResponse response = readNode(node);
+		NodeResponse response = readNode(node);
 
-			NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
-			assertNotNull(deserializedNumberField);
-			assertEquals("100.9", deserializedNumberField.getNumber());
-		}
+		NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
+		assertNotNull(deserializedNumberField);
+		assertEquals("100.9", deserializedNumberField.getNumber());
 	}
 
 }

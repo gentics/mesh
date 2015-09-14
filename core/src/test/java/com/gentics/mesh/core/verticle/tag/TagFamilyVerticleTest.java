@@ -62,12 +62,8 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
-
-		TagFamily tagFamily;
-		try (Trx tx = db.trx()) {
-			tagFamily = project().getTagFamilyRoot().findAll().get(0);
-			assertNotNull(tagFamily);
-		}
+		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+		assertNotNull(tagFamily);
 
 		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid());
 		latchFor(future);
@@ -75,23 +71,17 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagFamilyResponse response = future.result();
 
 		assertNotNull(response);
-		try (Trx tx = db.trx()) {
-			assertEquals(tagFamily.getUuid(), response.getUuid());
-		}
+		assertEquals(tagFamily.getUuid(), response.getUuid());
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Role role = role();
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
-			uuid = tagFamily.getUuid();
-			assertNotNull(tagFamily);
-			role.revokePermissions(tagFamily, READ_PERM);
-			tx.success();
-		}
+		Role role = role();
+		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+		String uuid = tagFamily.getUuid();
+		assertNotNull(tagFamily);
+		role.revokePermissions(tagFamily, READ_PERM);
 
 		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
@@ -100,11 +90,8 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMultiple2() {
-		String uuid;
-		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = tagFamily("colors");
-			uuid = tagFamily.getUuid();
-		}
+		TagFamily tagFamily = tagFamily("colors");
+		String uuid = tagFamily.getUuid();
 		Future<TagListResponse> future = getClient().findTagsForTagFamilies(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
@@ -113,16 +100,12 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws UnknownHostException, InterruptedException {
-		final String noPermTagUUID;
-		try (Trx tx = db.trx()) {
-			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
-			noPermTagUUID = noPermTagFamily.getUuid();
-			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-			// noPermTag.addProject(project());
-			assertNotNull(noPermTagFamily.getUuid());
-			tx.success();
-		}
+		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
+		TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
+		String noPermTagUUID = noPermTagFamily.getUuid();
+		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
+		// noPermTag.addProject(project());
+		assertNotNull(noPermTagFamily.getUuid());
 
 		// Test default paging parameters
 		Future<TagFamilyListResponse> future = getClient().findTagFamilies(PROJECT_NAME);
