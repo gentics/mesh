@@ -9,7 +9,10 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
+import com.syncleus.ferma.DelegatingFramedGraph;
+import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 import io.vertx.core.logging.Logger;
@@ -19,13 +22,23 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(Neo4jDatabase.class);
 
-	private Neo4jThreadedTransactionalGraphWrapper wrapper;
 	private GraphDatabaseService graphDatabaseService;
+	private Neo4j2Graph neo4jBlueprintGraph;
 
 	@Override
 	public void stop() {
 		graphDatabaseService.shutdown();
 		Trx.setLocalGraph(null);
+	}
+
+	@Override
+	public FramedGraph startNonTransaction() {
+		return new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false);
+	}
+
+	@Override
+	public FramedTransactionalGraph startTransaction() {
+		return new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
 	}
 
 	private void registerShutdownHook() {
@@ -48,7 +61,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 		graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase(dbDir.getAbsolutePath());
 
 		// Setup neo4j blueprint implementation
-		Neo4j2Graph neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
+		neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);
 		registerShutdownHook();
 
 		// Add some indices
@@ -66,10 +79,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 		// graph.createKeyIndex("languageTag", Vertex.class);
 		// graph.createKeyIndex("name", Vertex.class);
 		// graph.createKeyIndex("key", Vertex.class);
-		// FramedTransactionalGraph framedGraph = new DelegatingFramedTransactionalGraph<Neo4j2Graph>(graph, true, false);
 
-		wrapper = new Neo4jThreadedTransactionalGraphWrapper(neo4jBlueprintGraph);
-		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 	}
 
 	public GraphDatabaseService getGraphDatabaseService() {
@@ -100,5 +110,5 @@ public class Neo4jDatabase extends AbstractDatabase {
 	public void restoreGraph(String backupFile) throws IOException {
 		throw new NotImplementedException();
 	}
-	
+
 }

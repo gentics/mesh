@@ -17,7 +17,10 @@ import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
-import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
+import com.syncleus.ferma.DelegatingFramedGraph;
+import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
@@ -29,7 +32,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
 	private OrientGraphFactory factory;
-	private OrientThreadedTransactionalGraphWrapper wrapper;
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
 	@Override
@@ -53,6 +55,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop");
 		} else {
+			// factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory());
 		}
 		// Add some indices
@@ -60,15 +63,21 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// memoryGraph.createKeyIndex("ferma_type", Vertex.class);
 		// memoryGraph.createKeyIndex("ferma_type", Edge.class);
 
-		// factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
-		// wrapper.setFactory(factory);
-		wrapper = new OrientThreadedTransactionalGraphWrapper(factory);
-		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 	}
 
 	@Override
 	public void reload(MeshElement element) {
 		((OrientVertex) element.getElement()).reload();
+	}
+
+	@Override
+	public FramedTransactionalGraph startTransaction() {
+		return new DelegatingFramedTransactionalGraph<>(factory.getTx(), true, false);
+	}
+
+	@Override
+	public FramedGraph startNonTransaction() {
+		return new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
 	}
 
 	@Override

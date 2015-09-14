@@ -7,18 +7,31 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
+import com.syncleus.ferma.DelegatingFramedGraph;
+import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 
 public class TitanDBDatabase extends AbstractDatabase {
 
-	ThreadedTransactionalGraphWrapper wrapper;
 	TitanGraph graph;
 
 	@Override
 	public void stop() {
 		graph.shutdown();
+	}
+
+	@Override
+	public FramedGraph startNonTransaction() {
+		return new DelegatingFramedGraph<>(graph, true, false);
+	}
+
+	@Override
+	public FramedTransactionalGraph startTransaction() {
+		return new DelegatingFramedTransactionalGraph<>(graph, true, false);
+
 	}
 
 	@Override
@@ -29,7 +42,6 @@ public class TitanDBDatabase extends AbstractDatabase {
 		// this.configuration = configuration;
 		Configuration configuration = getBerkleyDBConf(options);
 		graph = TitanFactory.open(configuration);
-		wrapper = new TitanDBThreadedTransactionalGraphWrapper(graph, configuration);
 
 		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
 
@@ -37,8 +49,6 @@ public class TitanDBDatabase extends AbstractDatabase {
 		// graphDb.createKeyIndex("name", Vertex.class);
 		// graphDb.createKeyIndex("ferma_type", Vertex.class);
 		// graphDb.createKeyIndex("ferma_type", Edge.class);
-
-		fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
 
 	}
 

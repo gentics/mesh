@@ -25,7 +25,8 @@ public class Trx implements AutoCloseable {
 	private static CyclicBarrier barrier;
 
 	public Trx(Database database) {
-		currentGraph = new DelegatingFramedTransactionalGraph<>(database.getFramedGraph().newTransaction(), true, false);
+		
+		currentGraph = database.startTransaction();
 		if (log.isDebugEnabled()) {
 			log.debug("Starting transaction {" + currentGraph.hashCode() + "}");
 		}

@@ -13,10 +13,9 @@ public class Neo4jDatabaseTest extends AbstractDBTest {
 	public void testDatabase() {
 		Neo4jDatabase db = new Neo4jDatabase();
 		db.init(new StorageOptions());
-		FramedThreadedTransactionalGraph fg = db.getFramedGraph();
 
 		try (Trx tx = db.trx()) {
-			addPersonWithFriends(fg, "test");
+			addPersonWithFriends(tx.getGraph(), "test");
 		}
 	}
 }

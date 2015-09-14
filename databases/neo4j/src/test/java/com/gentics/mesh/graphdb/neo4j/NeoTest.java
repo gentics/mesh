@@ -8,11 +8,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
-import com.gentics.mesh.graphdb.Neo4jThreadedTransactionalGraphWrapper;
-import com.gentics.mesh.graphdb.ThreadedTransactionalGraphWrapper;
-import com.syncleus.ferma.DelegatingFramedThreadedTransactionalGraph;
+import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 public class NeoTest {
@@ -21,8 +19,7 @@ public class NeoTest {
 		File dir = new File(getProperty("java.io.tmpdir"), "graph-db");
 		GraphDatabaseService db = new GraphDatabaseFactory().newEmbeddedDatabase(dir.getAbsolutePath());
 
-		ThreadedTransactionalGraphWrapper wrapper = new Neo4jThreadedTransactionalGraphWrapper(new Neo4j2Graph(db));
-		FramedThreadedTransactionalGraph fg = new DelegatingFramedThreadedTransactionalGraph<>(wrapper, true, false);
+		FramedTransactionalGraph fg = new DelegatingFramedTransactionalGraph<>(new Neo4j2Graph(db), true, false);
 
 		try (Transaction tx = db.beginTx()) {
 			db.createNode();

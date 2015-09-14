@@ -7,7 +7,6 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.Trx;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -17,12 +16,12 @@ public abstract class AbstractDatabase implements Database {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
 	protected StorageOptions options;
-	protected FramedThreadedTransactionalGraph fg;
+//	protected FramedThreadedTransactionalGraph fg;
 
-	@Override
-	public FramedThreadedTransactionalGraph getFramedGraph() {
-		return fg;
-	}
+//	@Override
+//	public FramedThreadedTransactionalGraph getFramedGraph() {
+//		return fg;
+//	}
 
 	@Override
 	public void clear() {
@@ -30,8 +29,8 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		try (Trx tx = new Trx(this)) {
-			getFramedGraph().e().removeAll();
-			getFramedGraph().v().removeAll();
+			tx.getGraph().e().removeAll();
+			tx.getGraph().v().removeAll();
 			tx.success();
 		}
 		if (log.isDebugEnabled()) {

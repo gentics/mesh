@@ -5,11 +5,14 @@ import java.io.IOException;
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.syncleus.ferma.FramedThreadedTransactionalGraph;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 
 public interface Database {
 
-	FramedThreadedTransactionalGraph getFramedGraph();
+	FramedTransactionalGraph startTransaction();
+
+	FramedGraph startNonTransaction();
 
 	/**
 	 * Stop the graph database.
