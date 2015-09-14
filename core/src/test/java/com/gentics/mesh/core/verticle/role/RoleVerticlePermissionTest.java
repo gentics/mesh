@@ -49,7 +49,6 @@ public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
-
 		// Add permission on own role
 		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));

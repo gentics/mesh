@@ -111,8 +111,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		Node node;
-		node = content("concorde");
+		Node node = content("concorde");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
