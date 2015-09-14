@@ -1,10 +1,5 @@
 package com.gentics.mesh.graphdb;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
@@ -17,17 +12,14 @@ public class Trx extends AbstractTrx implements AutoCloseable {
 
 	private boolean isSuccess = false;
 
-	private static boolean debug = false;
-	private static CyclicBarrier barrier;
-
 	public Trx(Database database) {
-
-		currentGraph = database.startTransaction();
+		// Start a new transaction and set the fields accordingly
+		setGraph(database.startTransaction());
 		if (log.isDebugEnabled()) {
-			log.debug("Starting transaction {" + currentGraph.hashCode() + "}");
+			log.debug("Started transaction {" + getGraph().hashCode() + "}");
 		}
-		oldLocalGraph = localGraph.get();
-		localGraph.set(currentGraph);
+		setOldGraph(getThreadLocalGraph());
+		setThreadLocalGraph(getGraph());
 	}
 
 	public void success() {
@@ -46,41 +38,16 @@ public class Trx extends AbstractTrx implements AutoCloseable {
 		} else {
 			rollback();
 		}
-		setLocalGraph(oldLocalGraph);
-	}
-
-	/**
-	 * This method is used for testing multithreading issues.
-	 */
-	private void handleDebug() {
-		if (debug && barrier != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Waiting on trx barrier release..");
-			}
-			try {
-				barrier.await(10, TimeUnit.SECONDS);
-				log.debug("Trx barrier released");
-			} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
-				log.error("Trx barrier failed", e);
-			}
-		}
-	}
-
-	public static void setBarrier(CyclicBarrier barrier) {
-		Trx.barrier = barrier;
-	}
-
-	public static void enableDebug() {
-		Trx.debug = true;
+		setThreadLocalGraph(getOldGraph());
 	}
 
 	private void commit() {
 		if (log.isDebugEnabled()) {
-			log.debug("Commiting graph {" + currentGraph.hashCode() + "}.");
+			log.debug("Commiting graph {" + getGraph().hashCode() + "}.");
 		}
 		long start = System.currentTimeMillis();
-		if (currentGraph instanceof FramedTransactionalGraph) {
-			((FramedTransactionalGraph) currentGraph).commit();
+		if (getGraph() instanceof FramedTransactionalGraph) {
+			((FramedTransactionalGraph) getGraph()).commit();
 		}
 		long duration = System.currentTimeMillis() - start;
 		if (log.isDebugEnabled()) {
@@ -90,14 +57,11 @@ public class Trx extends AbstractTrx implements AutoCloseable {
 
 	private void rollback() {
 		if (log.isDebugEnabled()) {
-			log.debug("Invoking rollback on graph {" + currentGraph.hashCode() + "}.");
+			log.debug("Invoking rollback on graph {" + getGraph().hashCode() + "}.");
 		}
-		if (currentGraph instanceof FramedTransactionalGraph) {
-			((FramedTransactionalGraph) currentGraph).rollback();
+		if (getGraph() instanceof FramedTransactionalGraph) {
+			((FramedTransactionalGraph) getGraph()).rollback();
 		}
 	}
 
-	public static void disableDebug() {
-		Trx.debug = false;
-	}
 }

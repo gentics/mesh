@@ -28,7 +28,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void stop() {
 		graphDatabaseService.shutdown();
-		Trx.setLocalGraph(null);
+		Trx.setThreadLocalGraph(null);
 	}
 
 	@Override

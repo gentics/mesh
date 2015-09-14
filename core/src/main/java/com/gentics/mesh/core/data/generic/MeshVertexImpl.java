@@ -86,7 +86,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public FramedGraph getGraph() {
-		return new DelegatingFramedGraph<>(Trx.getLocalGraph(), true, false);
+		return new DelegatingFramedGraph<>(Trx.getThreadLocalGraph(), true, false);
 	}
 
 	@Override

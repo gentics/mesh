@@ -31,7 +31,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public FramedGraph getGraph() {
-		return new DelegatingFramedGraph<>(Trx.getLocalGraph(), true, false);
+		return new DelegatingFramedGraph<>(Trx.getThreadLocalGraph(), true, false);
 	}
 
 	public MeshEdgeImpl getImpl() {

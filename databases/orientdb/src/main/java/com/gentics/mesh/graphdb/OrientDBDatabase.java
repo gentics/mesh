@@ -38,7 +38,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
-		Trx.setLocalGraph(null);
+		Trx.setThreadLocalGraph(null);
 	}
 
 	@Override
