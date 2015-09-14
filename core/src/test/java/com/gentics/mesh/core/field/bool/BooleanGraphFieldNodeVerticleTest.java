@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 
 public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
@@ -57,12 +58,12 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertTrue(field.getValue());
 		}
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			NodeResponse response = updateNode("booleanField", new BooleanFieldImpl().setValue(false));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertFalse(field.getValue());
@@ -72,7 +73,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			NodeResponse response = createNode("booleanField", (Field)null);
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertNotNull(field);
@@ -83,7 +84,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			NodeResponse response = createNode("booleanField", new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getField("booleanField");
 			assertTrue(field.getValue());

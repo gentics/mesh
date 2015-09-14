@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 
 public final class JsonUtil {
 
@@ -93,6 +94,7 @@ public final class JsonUtil {
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
 		module.addSerializer(FieldList.class, new FieldListSerializer());
 
+		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
 		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class,
 				new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class));

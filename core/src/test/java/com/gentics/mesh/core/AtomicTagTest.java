@@ -19,14 +19,14 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AtomicTagTest extends AbstractDBTest {
 
 	@Test
 	public void testTagCreation() throws MeshSchemaException, InterruptedException {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			MeshRoot meshRoot = boot.meshRoot();
 			User user = meshRoot.getUserRoot().create("test", null, null);
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();

@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NonTrx;
@@ -141,26 +142,34 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 						NodeReference reference = requestModel.getNodeReference();
 						if (reference != null) {
-							if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-								handler.handle(Future
-										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_incomplete_node_reference"))));
-								return;
+
+							if (reference instanceof NodeReferenceImpl) {
+								NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+								String referencedNodeUuid = basicReference.getUuid();
+								String projectName = basicReference.getProjectName();
+
+								if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
+									handler.handle(Future
+											.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_incomplete_node_reference"))));
+									return;
+								}
+
+								// TODO decide whether we need to check perms on the project as well
+								Project project = boot.projectRoot().findByName(projectName);
+								if (project == null) {
+									handler.handle(Future
+											.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_not_found", projectName))));
+									return;
+								}
+								Node node;
+								try (NonTrx tx2 = db.nonTrx()) {
+									node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								}
+								user.setReferencedNode(node);
+							} else {
+								//TODO handle user create using full node rest model.
 							}
 
-							String referencedNodeUuid = requestModel.getNodeReference().getUuid();
-							String projectName = requestModel.getNodeReference().getProjectName();
-							// TODO decide whether we need to check perms on the project as well
-							Project project = boot.projectRoot().findByName(projectName);
-							if (project == null) {
-								handler.handle(Future
-										.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_not_found", projectName))));
-								return;
-							}
-							Node node;
-							try (NonTrx tx2 = db.nonTrx()) {
-								node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-							}
-							user.setReferencedNode(node);
 						}
 						batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.success();

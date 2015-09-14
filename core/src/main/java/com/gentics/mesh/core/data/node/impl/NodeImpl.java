@@ -53,7 +53,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
@@ -218,7 +218,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 			restNode.setDisplayField(schema.getDisplayField());
 			if (getParentNode() != null) {
-				NodeReference parentNodeReference = new NodeReference();
+				NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
 				parentNodeReference.setUuid(getParentNode().getUuid());
 				parentNodeReference.setDisplayName(getParentNode().getDisplayName(ac));
 				restNode.setParentNode(parentNodeReference);

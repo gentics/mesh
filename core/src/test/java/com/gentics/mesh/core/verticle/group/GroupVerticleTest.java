@@ -286,29 +286,29 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		Group group = group();
-		assertNotNull("The UUID of the group must not be null.", group.getUuid());
+		try (NonTrx tx = db.nonTrx()) {
 
-		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		test.assertGroup(group, future.result());
+			Group group = group();
+			assertNotNull("The UUID of the group must not be null.", group.getUuid());
+
+			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			test.assertGroup(group, future.result());
+		}
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		Group group = group();
-
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
+			Group group = group();
 			role().revokePermissions(group, READ_PERM);
-			tx.success();
+			assertNotNull("The UUID of the group must not be null.", group.getUuid());
+			Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
+			latchFor(future);
+			expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 		}
-
-		assertNotNull("The UUID of the group must not be null.", group.getUuid());
-		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", group.getUuid());
 	}
 
 	@Test
@@ -324,19 +324,19 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
-		Group group = group();
+		try (NonTrx tx = db.nonTrx()) {
 
-		final String name = "New Name";
-		GroupUpdateRequest request = new GroupUpdateRequest();
-		request.setName(name);
+			Group group = group();
+			final String name = "New Name";
+			GroupUpdateRequest request = new GroupUpdateRequest();
+			request.setName(name);
 
-		Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		GroupResponse restGroup = future.result();
-		test.assertGroup(request, restGroup);
+			Future<GroupResponse> future = getClient().updateGroup(group.getUuid(), request);
+			latchFor(future);
+			assertSuccess(future);
+			GroupResponse restGroup = future.result();
+			test.assertGroup(request, restGroup);
 
-		try (Trx tx = db.trx()) {
 			boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
 				Group reloadedGroup = rh.result();
 				assertEquals("The group should have been updated", name, reloadedGroup.getName());
@@ -533,15 +533,17 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		int nJobs = 200;
-		Set<Future<GroupResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			log.debug("Invoking findGroupByUuid REST call");
-			set.add(getClient().findGroupByUuid(group().getUuid()));
-		}
-		for (Future<GroupResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
+		try (NonTrx tx = db.nonTrx()) {
+			int nJobs = 200;
+			Set<Future<GroupResponse>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				log.debug("Invoking findGroupByUuid REST call");
+				set.add(getClient().findGroupByUuid(group().getUuid()));
+			}
+			for (Future<GroupResponse> future : set) {
+				latchFor(future);
+				assertSuccess(future);
+			}
 		}
 	}
 

@@ -98,7 +98,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 
 			bootstrapInitializer.initMandatoryData();
 
@@ -132,7 +132,7 @@ public class DemoDataProvider {
 			log.info("Users:    " + users.size());
 			log.info("Groups:   " + groups.size());
 			log.info("Roles:    " + roles.size());
-			tx.success();
+//			tx.success();
 		}
 		updatePermissions();
 
@@ -140,9 +140,9 @@ public class DemoDataProvider {
 
 	private void updatePermissions() {
 
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
+//		try (Trx tx = db.trx()) {
 			Role role = userInfo.getRole();
-
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
@@ -158,7 +158,7 @@ public class DemoDataProvider {
 				}
 				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			}
-			tx.success();
+//			tx.success();
 		}
 		log.info("Added BasicPermissions to nodes");
 

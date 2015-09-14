@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -218,14 +219,24 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 		Node node = getReferencedNode();
 		if (node != null) {
-			NodeReference userNodeReference = new NodeReference();
-			userNodeReference.setUuid(node.getUuid());
-			if (node.getProject() != null) {
-				userNodeReference.setProjectName(node.getProject().getName());
+			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
+			if (expandReference) {
+				//TODO handle expanded form
+				handler.handle(ac.failedFuture(BAD_REQUEST, "Expanding of node references not yet implemented."));
+				node.transformToRest(ac, rh -> {
+					restUser.setNodeReference(rh.result());
+				});
+
 			} else {
-				// TODO handle this case
+				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+				userNodeReference.setUuid(node.getUuid());
+				if (node.getProject() != null) {
+					userNodeReference.setProjectName(node.getProject().getName());
+				} else {
+					// TODO handle this case
+				}
+				restUser.setNodeReference(userNodeReference);
 			}
-			restUser.setNodeReference(userNodeReference);
 		}
 		for (Group group : getGroups()) {
 			restUser.addGroup(group.getName());
@@ -342,22 +353,26 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			setLastEditedTimestamp(System.currentTimeMillis());
 			if (requestModel.getNodeReference() != null) {
 				NodeReference reference = requestModel.getNodeReference();
-				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-					handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
-					return;
-				} else {
-					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
-					String projectName = requestModel.getNodeReference().getProjectName();
-					/* TODO decide whether we need to check perms on the project as well */
-					Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
-					if (project == null) {
-						handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+				//TODO also handle full node response inside node reference field
+				if (reference instanceof NodeReferenceImpl) {
+					NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+					if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
+						handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
 						return;
 					} else {
-						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-						setReferencedNode(node);
-						batch = addIndexBatch(UPDATE_ACTION);
-						txUpdate.success();
+						String referencedNodeUuid = basicReference.getUuid();
+						String projectName = basicReference.getProjectName();
+						/* TODO decide whether we need to check perms on the project as well */
+						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
+						if (project == null) {
+							handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+							return;
+						} else {
+							Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+							setReferencedNode(node);
+							batch = addIndexBatch(UPDATE_ACTION);
+							txUpdate.success();
+						}
 					}
 				}
 			} else {

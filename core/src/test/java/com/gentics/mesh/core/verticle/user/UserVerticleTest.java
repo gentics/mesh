@@ -41,12 +41,13 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -69,35 +70,30 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (Trx tx = db.trx()) {
-			User user = user();
-			assertNotNull("The UUID of the user must not be null.", user.getUuid());
+		User user = user();
+		assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-			Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			UserResponse restUser = future.result();
+		Future<UserResponse> future = getClient().findUserByUuid(user.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse restUser = future.result();
 
-			test.assertUser(user, restUser);
-			// TODO assert groups
-			// TODO assert perms
-		}
+		test.assertUser(user, restUser);
+		// TODO assert groups
+		// TODO assert perms
 	}
 
 	@Test
 	public void testReadUserWithMultipleGroups() {
-		try (Trx tx = db.trx()) {
-			User user = user();
-			assertEquals(1, user.getGroups().size());
+		User user = user();
+		assertEquals(1, user.getGroups().size());
 
-			for (int i = 0; i < 10; i++) {
-				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
-				user().addGroup(extraGroup);
-			}
-
-			assertEquals(11, user().getGroups().size());
-			tx.success();
+		for (int i = 0; i < 10; i++) {
+			Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+			user().addGroup(extraGroup);
 		}
+
+		assertEquals(11, user().getGroups().size());
 		Future<UserResponse> future = getClient().findUserByUuid(user().getUuid());
 		latchFor(future);
 		assertSuccess(future);
@@ -137,13 +133,10 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
-		try (Trx tx = db.trx()) {
-			User user = user();
-			uuid = user.getUuid();
-			assertNotNull("The username of the user must not be null.", user.getUsername());
-			role().revokePermissions(user, READ_PERM);
-			tx.success();
-		}
+		User user = user();
+		uuid = user.getUuid();
+		assertNotNull("The username of the user must not be null.", user.getUsername());
+		role().revokePermissions(user, READ_PERM);
 
 		Future<UserResponse> future = getClient().findUserByUuid(uuid);
 		latchFor(future);
@@ -155,14 +148,11 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 
 		String username = "testuser_3";
-		try (Trx tx = db.trx()) {
-			UserRoot root = meshRoot().getUserRoot();
-			User user3 = root.create(username, group(), user());
-			user3.setLastname("should_not_be_listed");
-			user3.setFirstname("should_not_be_listed");
-			user3.setEmailAddress("should_not_be_listed");
-			tx.success();
-		}
+		UserRoot root = meshRoot().getUserRoot();
+		User user3 = root.create(username, group(), user());
+		user3.setLastname("should_not_be_listed");
+		user3.setFirstname("should_not_be_listed");
+		user3.setEmailAddress("should_not_be_listed");
 
 		// Test default paging parameters
 		Future<UserListResponse> future = getClient().findUsers();
@@ -269,15 +259,13 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = db.trx()) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
-			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
-			assertNotNull(reloadedUser);
-			assertEquals("Epic Stark", reloadedUser.getLastname());
-			assertEquals("Tony Awesome", reloadedUser.getFirstname());
-			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-			assertEquals("dummy_user_changed", reloadedUser.getUsername());
-		}
+		assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
+		User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+		assertNotNull(reloadedUser);
+		assertEquals("Epic Stark", reloadedUser.getLastname());
+		assertEquals("Tony Awesome", reloadedUser.getFirstname());
+		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+		assertEquals("dummy_user_changed", reloadedUser.getUsername());
 	}
 
 	@Test
@@ -302,7 +290,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		updateRequest.setLastname("Epic Stark");
 		updateRequest.setUsername("dummy_user_changed");
 
-		NodeReference userNodeReference = new NodeReference();
+		NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
 		userNodeReference.setProjectName(DemoDataProvider.PROJECT_NAME);
 		userNodeReference.setUuid(nodeUuid);
 		updateRequest.setNodeReference(userNodeReference);
@@ -312,37 +300,29 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 
-		try (Trx tx = db.trx()) {
-			assertNotNull(user().getReferencedNode());
-		}
-
+		assertNotNull(user().getReferencedNode());
 		assertNotNull(restUser.getNodeReference());
-		assertEquals(DemoDataProvider.PROJECT_NAME, restUser.getNodeReference().getProjectName());
+		assertEquals(DemoDataProvider.PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
 		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 
 		test.assertUser(updateRequest, restUser);
-		try (Trx tx = db.trx()) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
-			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
-			assertNotNull(reloadedUser);
-			assertEquals("Epic Stark", reloadedUser.getLastname());
-			assertEquals("Tony Awesome", reloadedUser.getFirstname());
-			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-			assertEquals("dummy_user_changed", reloadedUser.getUsername());
-			assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
-
-		}
+		assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
+		User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+		assertNotNull(reloadedUser);
+		assertEquals("Epic Stark", reloadedUser.getLastname());
+		assertEquals("Tony Awesome", reloadedUser.getFirstname());
+		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+		assertEquals("dummy_user_changed", reloadedUser.getUsername());
+		assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
 	}
 
 	@Test
 	public void testCreateUserWithNodeReference() {
 
 		Node node = folder("2015");
-		try (Trx tx = db.trx()) {
-			assertTrue(user().hasPermission(node, READ_PERM));
-		}
+		assertTrue(user().hasPermission(node, READ_PERM));
 
-		NodeReference reference = new NodeReference();
+		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
 		reference.setUuid(node.getUuid());
 
@@ -357,9 +337,24 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse response = future.result();
 		assertNotNull(response.getNodeReference());
-		assertNotNull(response.getNodeReference().getProjectName());
+		assertNotNull(((NodeReferenceImpl) response.getNodeReference()).getProjectName());
 		assertNotNull(response.getNodeReference().getUuid());
 
+	}
+
+	@Test
+	public void testReadUserWithExpandedNodeReference() {
+		Node node = folder("2015");
+
+		NodeReferenceImpl reference = new NodeReferenceImpl();
+		reference.setProjectName("bogus_name");
+		reference.setUuid(node.getUuid());
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(group().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
 	}
 
 	@Test
@@ -367,7 +362,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Node node = folder("2015");
 
-		NodeReference reference = new NodeReference();
+		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName("bogus_name");
 		reference.setUuid(node.getUuid());
 
@@ -385,7 +380,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateUserWithBogusUuidInNodeReference() {
 
-		NodeReference reference = new NodeReference();
+		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
 		reference.setUuid("bogus_uuid");
 
@@ -403,7 +398,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateUserWithMissingProjectNameInNodeReference() {
 
-		NodeReference reference = new NodeReference();
+		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setUuid("bogus_uuid");
 
 		UserCreateRequest newUser = new UserCreateRequest();
@@ -420,7 +415,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
-		NodeReference reference = new NodeReference();
+		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
@@ -447,24 +442,19 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		test.assertUser(updateRequest, restUser);
 
-		try (Trx tx = db.trx()) {
-			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
-			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
-			assertEquals(user.getUsername(), reloadedUser.getUsername());
-			assertEquals(user.getFirstname(), reloadedUser.getFirstname());
-			assertEquals(user.getLastname(), reloadedUser.getLastname());
-			assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
-		}
+		User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
+		assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+		assertEquals(user.getUsername(), reloadedUser.getUsername());
+		assertEquals(user.getFirstname(), reloadedUser.getFirstname());
+		assertEquals(user.getLastname(), reloadedUser.getLastname());
+		assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
 	}
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(user, UPDATE_PERM);
-			tx.success();
-		}
+		role().revokePermissions(user, UPDATE_PERM);
 
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setPassword("new_password");
@@ -472,12 +462,10 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		try (Trx tx = db.trx()) {
-			boot.userRoot().findByUuid(user.getUuid(), rh -> {
-				User reloadedUser = rh.result();
-				assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-			});
-		}
+		boot.userRoot().findByUuid(user.getUuid(), rh -> {
+			User reloadedUser = rh.result();
+			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+		});
 	}
 
 	@Test
@@ -485,10 +473,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		User user = user();
 		String oldHash = user.getPasswordHash();
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(user, UPDATE_PERM);
-			tx.success();
-		}
+		role().revokePermissions(user, UPDATE_PERM);
 		UserUpdateRequest updatedUser = new UserUpdateRequest();
 		updatedUser.setEmailAddress("n.user@spam.gentics.com");
 		updatedUser.setFirstname("Joe");
@@ -499,28 +484,23 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.userRoot().findByUuid(user.getUuid(), rh -> {
-				User reloadedUser = rh.result();
-				assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-				assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
-				assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
-				latch.countDown();
-			});
-			latch.await();
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.userRoot().findByUuid(user.getUuid(), rh -> {
+			User reloadedUser = rh.result();
+			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
+			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
+			latch.countDown();
+		});
+		latch.await();
 	}
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
 
 		// Create an user with a conflicting username
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			userRoot.create("existing_username", group(), user());
-			tx.success();
-		}
+		UserRoot userRoot = meshRoot().getUserRoot();
+		userRoot.create("existing_username", group(), user());
 
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("existing_username");
@@ -547,15 +527,12 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
-		try (Trx tx = db.trx()) {
 
-			// Create an user with a conflicting username
-			UserRoot userRoot = meshRoot().getUserRoot();
-			userRoot.create("existing_username", group(), user());
-			// Add update permission to group in order to create the user in that group
-			role().grantPermissions(group(), CREATE_PERM);
-			tx.success();
-		}
+		// Create an user with a conflicting username
+		UserRoot userRoot = meshRoot().getUserRoot();
+		userRoot.create("existing_username", group(), user());
+		// Add update permission to group in order to create the user in that group
+		role().grantPermissions(group(), CREATE_PERM);
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("existing_username");
 		newUser.setGroupUuid(group().getUuid());
@@ -642,15 +619,13 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserResponse restUser = future.result();
 		test.assertUser(request, restUser);
 
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.userRoot().findByUuid(restUser.getUuid(), rh -> {
-				User user = rh.result();
-				test.assertUser(user, restUser);
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.userRoot().findByUuid(restUser.getUuid(), rh -> {
+			User user = rh.result();
+			test.assertUser(user, restUser);
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 	}
 
@@ -789,6 +764,11 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteUser(null);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "null");
+	}
+
+	@Test
+	public void testReadOwnCreatedUser() {
+
 	}
 
 	@Test

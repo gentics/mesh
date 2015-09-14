@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -64,7 +65,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple() throws Exception {
 
 		String noPermTagUUID;
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
@@ -72,7 +73,6 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 			project().getTagRoot().addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			tx.success();
 		}
 
 		// Test default paging parameters
@@ -282,7 +282,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		String name;
 		String uuid;
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			Tag tag = tag("vehicle");
 			name = tag.getName();
 			uuid = tag.getUuid();
@@ -293,7 +293,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());
@@ -309,18 +309,17 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			role().revokePermissions(tag, DELETE_PERM);
-			tx.success();
 		}
 
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNotNull("The tag should not have been deleted", rh.result());
@@ -343,7 +342,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
 
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
 					meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
 			assertNotNull("The tag could not be found within the project.tagRoot node.",
@@ -359,18 +358,19 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
-		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		assertNotNull("We expect that a tag with the name already exists.", tag("red"));
-		tagCreateRequest.getFields().setName("red");
-		String tagFamilyName;
-		try (Trx tx = db.trx()) {
+		try (NonTrx tx = db.nonTrx()) {
+			TagCreateRequest tagCreateRequest = new TagCreateRequest();
+			assertNotNull("We expect that a tag with the name already exists.", tag("red"));
+			tagCreateRequest.getFields().setName("red");
+			String tagFamilyName;
+
 			TagFamily tagFamily = tagFamilies().get("colors");
 			tagFamilyName = tagFamily.getName();
 			tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+			latchFor(future);
+			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 		}
-		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
-		latchFor(future);
-		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 	}
 
 	@Test
@@ -423,7 +423,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 500;
 
-//		CyclicBarrier barrier = prepareBarrier(nJobs);
+		//		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
@@ -437,14 +437,17 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		int nJobs = 200;
-		Set<Future<TagResponse>> set = new HashSet<>();
-		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
-		}
-		for (Future<TagResponse> future : set) {
-			latchFor(future);
-			assertSuccess(future);
+		try (NonTrx tx = db.nonTrx()) {
+
+			int nJobs = 200;
+			Set<Future<TagResponse>> set = new HashSet<>();
+			for (int i = 0; i < nJobs; i++) {
+				set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
+			}
+			for (Future<TagResponse> future : set) {
+				latchFor(future);
+				assertSuccess(future);
+			}
 		}
 	}
 
