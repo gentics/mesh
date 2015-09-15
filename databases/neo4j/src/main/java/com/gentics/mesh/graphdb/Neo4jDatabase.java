@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
@@ -52,13 +53,16 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	@Override
 	public void start() {
-		String DB_LOCATION = options.getDirectory();
-		File dbDir = new File(DB_LOCATION);
-
-		// TODO move this somewhere else or handle it by settings
-		// GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
-		// graphDatabaseService = builder.newGraphDatabase();
-		graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase(dbDir.getAbsolutePath());
+		String dbLocation = options.getDirectory();
+		if (dbLocation == null) {
+			graphDatabaseService = new TestGraphDatabaseFactory().newImpermanentDatabase();
+		} else {
+			File dbDir = new File(dbLocation);
+			// TODO move this somewhere else or handle it by settings
+			// GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
+			// graphDatabaseService = builder.newGraphDatabase();
+			graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase(dbDir.getAbsolutePath());
+		}
 
 		// Setup neo4j blueprint implementation
 		neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);

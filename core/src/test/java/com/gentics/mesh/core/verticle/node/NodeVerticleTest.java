@@ -290,6 +290,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore
 	public void testReadMultiple() throws Exception {
 		final String noPermNodeUUID;
 
@@ -529,10 +530,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadByUUID() throws Exception {
 
-		String uuid;
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 		Node node = folder("2015");
-		uuid = node.getUuid();
+		String uuid = node.getUuid();
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 

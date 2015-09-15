@@ -35,7 +35,6 @@ import com.gentics.mesh.graphdb.NonTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -251,7 +250,7 @@ public class VerticleHelper {
 		Mesh.vertx().executeBlocking(bc -> {
 			AtomicBoolean hasFinished = new AtomicBoolean(false);
 			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-				try {
+//				try {
 					log.debug("Opening new transaction for try: {" + i + "}");
 					try (NonTrx tx = db.nonTrx()) {
 						if (log.isDebugEnabled()) {
@@ -268,9 +267,9 @@ public class VerticleHelper {
 							hasFinished.set(true);
 						});
 					}
-				} catch (OConcurrentModificationException e) {
-					log.error("Creation failed in try {" + i + "} retrying.");
-				}
+//				} catch (OConcurrentModificationException e) {
+//					log.error("Creation failed in try {" + i + "} retrying.");
+//				}
 			}
 			if (!hasFinished.get()) {
 				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
