@@ -10,6 +10,7 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedGraph;
@@ -29,12 +30,17 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void stop() {
 		graphDatabaseService.shutdown();
-		Trx.setThreadLocalGraph(null);
+		Database.setThreadLocalGraph(null);
 	}
 
 	@Override
 	public FramedGraph startNonTransaction() {
 		return new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false);
+	}
+	
+	@Override
+	public NoTrx noTrx() {
+		return new Neo4jNoTrx(this);
 	}
 
 	@Override
@@ -42,6 +48,11 @@ public class Neo4jDatabase extends AbstractDatabase {
 		return new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
 	}
 
+	@Override
+	public Trx trx() {
+		return new Neo4jTrx(this);
+	}
+	
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -263,7 +263,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		String name;
 		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			Tag tag = tag("vehicle");
 			name = tag.getName();
 			uuid = tag.getUuid();
@@ -274,7 +274,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNull("The tag should have been deleted", rh.result());
@@ -290,7 +290,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			role().revokePermissions(tag, DELETE_PERM);
@@ -300,7 +300,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			CountDownLatch latch = new CountDownLatch(1);
 			boot.tagRoot().findByUuid(uuid, rh -> {
 				assertNotNull("The tag should not have been deleted", rh.result());
@@ -323,7 +323,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
 
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
 					meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
 			assertNotNull("The tag could not be found within the project.tagRoot node.",
@@ -339,7 +339,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
 			assertNotNull("We expect that a tag with the name already exists.", tag("red"));
 			tagCreateRequest.getFields().setName("red");
@@ -418,7 +418,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 
 			int nJobs = 200;
 			Set<Future<TagResponse>> set = new HashSet<>();

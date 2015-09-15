@@ -49,7 +49,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
@@ -463,7 +463,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		Trx.disableDebug();
+//		Trx.disableDebug();
 		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
@@ -475,12 +475,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int nJobs = 3;
 		String uuid;
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			uuid = folder("2015").getUuid();
 		}
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		Trx.enableDebug();
-		Trx.setBarrier(barrier);
+//		Trx.enableDebug();
+//		Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteNode REST call");
@@ -508,7 +508,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		Trx.disableDebug();
+//		Trx.disableDebug();
 	}
 
 	@Test
@@ -524,7 +524,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		Trx.disableDebug();
+//		Trx.disableDebug();
 	}
 
 	@Test

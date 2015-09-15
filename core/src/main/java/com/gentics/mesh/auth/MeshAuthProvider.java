@@ -8,7 +8,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
@@ -42,7 +42,7 @@ public class MeshAuthProvider implements AuthProvider {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user;
-			try (NonTrx tx = db.nonTrx()) {
+			try (NoTrx tx = db.noTrx()) {
 				user = boot.userRoot().findMeshAuthUserByUsername(username);
 			}
 			if (user != null) {

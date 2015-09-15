@@ -43,7 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
@@ -98,7 +98,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 
 			bootstrapInitializer.initMandatoryData();
 
@@ -140,13 +140,13 @@ public class DemoDataProvider {
 
 	private void updatePermissions() {
 
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			Role role = userInfo.getRole();
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
 				// TODO typecheck? and verify how orient will behave
-				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+				if (role.getUuid().equals(vertex.getProperty("uuid"))) {
 					log.info("Skipping own role");
 					continue;
 				}

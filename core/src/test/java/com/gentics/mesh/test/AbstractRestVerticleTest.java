@@ -46,7 +46,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
@@ -71,7 +71,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	@Autowired
 	protected DummySearchProvider searchProvider;
 
-	protected NonTrx trx;
+	protected NoTrx trx;
 
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -93,7 +93,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			verticle.registerEndPoints();
 		}
 		client = new MeshRestClient("localhost", getPort());
-		trx = db.nonTrx();
+		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();
 	}

@@ -1,93 +1,61 @@
 package com.gentics.mesh.graphdb;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import com.syncleus.ferma.FramedGraph;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.FramedTransactionalGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class AbstractTrx {
-
-	private static CyclicBarrier barrier;
-
-	private static boolean debug = false;
+public abstract class AbstractTrx extends AbstractTrxBase implements Trx {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTrx.class);
 
-	/**
-	 * Thread local that is used to store references to the used graph.
-	 */
-	private static ThreadLocal<FramedGraph> threadLocalGraph = new ThreadLocal<>();
+	private boolean isSuccess = false;
 
-	/**
-	 * Any graph that was found within the thread local is stored here while the new graph is executing. This graph must be restored when the autoclosable.
-	 * closes.
-	 */
-	private FramedGraph oldGraph;
-
-	/**
-	 * Graph that is active within the scope of the autoclosable.
-	 */
-	private FramedGraph currentGraph;
-
-	public static void setThreadLocalGraph(FramedGraph graph) {
-		AbstractTrx.threadLocalGraph.set(graph);
+	public void success() {
+		isSuccess = true;
 	}
 
-	public static FramedGraph getFramedLocalGraph() {
-		return getThreadLocalGraph();
+	public void failure() {
+		isSuccess = false;
 	}
 
-	public static FramedGraph getThreadLocalGraph() {
-		return AbstractTrx.threadLocalGraph.get();
+	public boolean isSuccess() {
+		return isSuccess;
 	}
 
-	public FramedGraph getGraph() {
-		return currentGraph;
+	@Override
+	public void close() {
+//		handleDebug();
+		if (isSuccess()) {
+			commit();
+		} else {
+			rollback();
+		}
+		Database.setThreadLocalGraph(getOldGraph());
 	}
 
-	protected void setGraph(FramedGraph currentGraph) {
-		this.currentGraph = currentGraph;
-	}
-
-	protected void setOldGraph(FramedGraph oldGraph) {
-		this.oldGraph = oldGraph;
-	}
-
-	protected FramedGraph getOldGraph() {
-		return oldGraph;
-	}
-
-	/**
-	 * This method is used for testing multithreading issues.
-	 */
-	protected void handleDebug() {
-		if (debug && barrier != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Waiting on trx barrier release..");
-			}
-			try {
-				barrier.await(10, TimeUnit.SECONDS);
-				log.debug("Trx barrier released");
-			} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
-				log.error("Trx barrier failed", e);
-			}
+	protected void commit() {
+		if (log.isDebugEnabled()) {
+			log.debug("Commiting graph {" + getGraph().hashCode() + "}.");
+		}
+		long start = System.currentTimeMillis();
+		if (getGraph() instanceof FramedTransactionalGraph) {
+			((FramedTransactionalGraph) getGraph()).commit();
+		}
+		long duration = System.currentTimeMillis() - start;
+		if (log.isDebugEnabled()) {
+			log.debug("Comitting took: " + duration + " [ms]");
 		}
 	}
 
-	public static void setBarrier(CyclicBarrier barrier) {
-		AbstractTrx.barrier = barrier;
+	protected void rollback() {
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking rollback on graph {" + getGraph().hashCode() + "}.");
+		}
+		if (getGraph() instanceof FramedTransactionalGraph) {
+			((FramedTransactionalGraph) getGraph()).rollback();
+		}
 	}
 
-	public static void enableDebug() {
-		AbstractTrx.debug = true;
-	}
-
-	public static void disableDebug() {
-		AbstractTrx.debug = false;
-	}
 }

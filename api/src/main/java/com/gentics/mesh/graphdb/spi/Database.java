@@ -3,13 +3,25 @@ package com.gentics.mesh.graphdb.spi;
 import java.io.IOException;
 
 import com.gentics.mesh.etc.StorageOptions;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 public interface Database {
+
+	/**
+	 * Thread local that is used to store references to the used graph.
+	 */
+	public static ThreadLocal<FramedGraph> threadLocalGraph = new ThreadLocal<>();
+
+	public static void setThreadLocalGraph(FramedGraph graph) {
+		Database.threadLocalGraph.set(graph);
+	}
+	public static FramedGraph getThreadLocalGraph() {
+		return Database.threadLocalGraph.get();
+	}
 
 	FramedTransactionalGraph startTransaction();
 
@@ -59,7 +71,7 @@ public interface Database {
 	 * <pre>
 	 * {
 	 * 	&#64;code
-	 * 	try(NonTrx tx = db.nonTrx()) {
+	 * 	try(NoTrx tx = db.noTrx()) {
 	 * 	  // interact with graph db here
 	 *  }
 	 * }
@@ -67,7 +79,7 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	NonTrx nonTrx();
+	NoTrx noTrx();
 
 	/**
 	 * Initialize the database and store the settings.

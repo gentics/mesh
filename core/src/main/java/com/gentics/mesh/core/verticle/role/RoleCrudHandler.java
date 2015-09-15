@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
 
@@ -42,14 +42,14 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			createObject(ac, boot.roleRoot());
 		}
 	}
 
 	@Override
 	public void handleDelete(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			deleteObject(ac, "uuid", "role_deleted", boot.roleRoot());
 		}
 	}
@@ -57,7 +57,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(ActionContext ac) {
 		//		Mesh.vertx().executeBlocking(bc -> {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot());
 		}
 		//		} , false, rh -> {
@@ -69,20 +69,20 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleUpdate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			updateObject(ac, "uuid", boot.roleRoot());
 		}
 	}
 
 	@Override
 	public void handleReadList(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse());
 		}
 	}
 
 	public void handlePermissionUpdate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			if (StringUtils.isEmpty(roleUuid)) {

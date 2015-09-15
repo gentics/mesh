@@ -4,16 +4,16 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class AbstractBasicDBTest extends AbstractDBTest {
 
-	protected NonTrx tx;
+	protected NoTrx tx;
 
 	@Before
 	public void setup() throws Exception {
-		tx = db.nonTrx();
+		tx = db.noTrx();
 		setupData();
 	}
 

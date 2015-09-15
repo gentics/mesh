@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -252,14 +252,14 @@ public class VerticleHelper {
 			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
 //				try {
 					log.debug("Opening new transaction for try: {" + i + "}");
-					try (NonTrx tx = db.nonTrx()) {
+					try (NoTrx tx = db.noTrx()) {
 						if (log.isDebugEnabled()) {
 							log.debug("Invoking create on root vertex");
 						}
 						root.create(ac, rh -> {
 							if (hasSucceeded(ac, rh)) {
 								GenericVertex<?> vertex = rh.result();
-								try (NonTrx txRead = db.nonTrx()) {
+								try (NoTrx txRead = db.noTrx()) {
 									vertex.reload();
 									transformAndResponde(ac, vertex);
 								}

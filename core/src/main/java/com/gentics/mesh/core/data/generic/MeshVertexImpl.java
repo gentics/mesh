@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.DelegatingFramedGraph;
@@ -86,7 +86,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public FramedGraph getGraph() {
-		return new DelegatingFramedGraph<>(Trx.getThreadLocalGraph(), true, false);
+		return new DelegatingFramedGraph<>(Database.getThreadLocalGraph(), true, false);
 	}
 
 	@Override

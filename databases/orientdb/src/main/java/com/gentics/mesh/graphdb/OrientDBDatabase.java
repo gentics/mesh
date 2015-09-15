@@ -12,6 +12,7 @@ import java.util.Date;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
@@ -38,7 +39,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
-		Trx.setThreadLocalGraph(null);
+		Database.setThreadLocalGraph(null);
 	}
 
 	@Override
@@ -76,8 +77,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public Trx trx() {
+		return new OrientDBTrx(this);
+	}
+
+	@Override
 	public FramedGraph startNonTransaction() {
 		return new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
+	}
+
+	@Override
+	public NoTrx noTrx() {
+		return new OrientDBNoTrx(this);
 	}
 
 	@Override

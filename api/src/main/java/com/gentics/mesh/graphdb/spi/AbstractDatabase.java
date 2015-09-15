@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.etc.StorageOptions;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.logging.Logger;
@@ -23,7 +23,7 @@ public abstract class AbstractDatabase implements Database {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		try (Trx tx = new Trx(this)) {
+		try (Trx tx = trx()) {
 			tx.getGraph().e().removeAll();
 			tx.getGraph().v().removeAll();
 			tx.success();
@@ -59,12 +59,8 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public Trx trx() {
-		return new Trx(this);
-	}
+	abstract public Trx trx();
 
 	@Override
-	public NonTrx nonTrx() {
-		return new NonTrx(this);
-	}
+	abstract public NoTrx noTrx();
 }

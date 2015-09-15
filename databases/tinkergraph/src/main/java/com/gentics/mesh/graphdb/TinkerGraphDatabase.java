@@ -21,6 +21,18 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	public FramedGraph startNonTransaction() {
 		return new DelegatingFramedGraph<>(mockedGraph, true, false);
 	}
+	
+	@Override
+	public NoTrx noTrx() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public Trx trx() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public FramedTransactionalGraph startTransaction() {

@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -37,7 +37,7 @@ public class AuthUserTest extends AbstractDBTest {
 		MeshAuthUser requestUser = ac.getUser();
 		Language targetNode = english();
 		final CountDownLatch latch = new CountDownLatch(1);
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			requestUser.isAuthorised(targetNode, GraphPermission.READ_PERM, rh -> {
 				if (rh.failed()) {
 					rh.cause().printStackTrace();

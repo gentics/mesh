@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -116,7 +116,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_parentgroup_field"))));
 			return;
 		}
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			// Load the parent group for the user
 			loadObjectByUuid(ac, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -162,7 +162,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 									return;
 								}
 								Node node;
-								try (NonTrx tx2 = db.nonTrx()) {
+								try (NoTrx tx2 = db.noTrx()) {
 									node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
 								}
 								user.setReferencedNode(node);

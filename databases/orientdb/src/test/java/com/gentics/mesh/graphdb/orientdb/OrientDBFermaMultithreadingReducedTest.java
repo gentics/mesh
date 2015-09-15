@@ -5,8 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest {

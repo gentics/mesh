@@ -236,9 +236,9 @@ public class BootstrapInitializer {
 		// Check reference graph and finally create the node when it can't be found.
 		//		if (meshRoot == null) {
 		//			synchronized (BootstrapInitializer.class) {
-		MeshRoot foundMeshRoot = Trx.getFramedLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 		if (foundMeshRoot == null) {
-			foundMeshRoot = Trx.getFramedLocalGraph().addFramedVertex(MeshRootImpl.class);
+			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
 			if (log.isInfoEnabled()) {
 				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
 			}
@@ -443,7 +443,7 @@ public class BootstrapInitializer {
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 			initLanguages(languageRoot);
 
-			initPermissions(adminRole);
+			initPermissions(tx, adminRole);
 
 			schemaStorage.init();
 			tx.success();
@@ -451,15 +451,15 @@ public class BootstrapInitializer {
 
 	}
 
-	private void initPermissions(Role role) {
-		for (Vertex vertex : Trx.getFramedLocalGraph().getVertices()) {
+	private void initPermissions(Trx tx, Role role) {
+		for (Vertex vertex : tx.getGraph().getVertices()) {
 			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 			// TODO typecheck? and verify how orient will behave
 			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
 				log.info("Skipping own role");
 				continue;
 			}
-			MeshVertex meshVertex = Trx.getFramedLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+			MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			if (log.isTraceEnabled()) {
 				log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + role.getUuid() + "}");

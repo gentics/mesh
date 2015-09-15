@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -145,14 +145,13 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	@Override
 	public void delete() {
 		getElement().remove();
-		addIndexBatch(DELETE_ACTION);
 	}
 
 	@Override
 	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
