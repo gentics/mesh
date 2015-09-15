@@ -157,6 +157,7 @@ public abstract class AbstractDBTest {
 
 	public User user() {
 		User user = dataProvider.getUserInfo().getUser();
+		user.reload();
 		return user;
 	}
 
@@ -191,6 +192,7 @@ public abstract class AbstractDBTest {
 
 	public SchemaContainer getSchemaContainer() {
 		SchemaContainer container = dataProvider.getSchemaContainer("content");
+		container.reload();
 		return container;
 	}
 

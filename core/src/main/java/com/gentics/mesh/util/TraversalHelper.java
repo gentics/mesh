@@ -17,9 +17,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 /**
  * This class contains a collection of traversal methods that can be used for pagination and other traversals.
- * 
- * @author johannes2
- *
  */
 public final class TraversalHelper {
 
@@ -97,7 +94,7 @@ public final class TraversalHelper {
 
 	public static void printDebugVertices() {
 		for (VertexFrame frame : Database.getThreadLocalGraph().v()) {
-			System.out.println(frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name"));
+			System.out.println(frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}
 
 	}
