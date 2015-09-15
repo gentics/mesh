@@ -161,17 +161,22 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
 					Node node = rh.result();
-
-					// Check whether the container already contains a node field
-					// TODO check node permissions
-					if (graphNodeField == null) {
-						createNode(key, node);
+					if (node == null) {
+						log.error("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
+						//TODO we need to fail here - the node could not be found.
+						//throw new HttpStatusCodeErrorException(NOT_FOUND, ac.i18n("The field {, parameters))
 					} else {
-						// We can't update the graphNodeField since it is in
-						// fact an edge. We need to delete it and create a new
-						// one.
-						deleteField(key);
-						createNode(key, node);
+						// Check whether the container already contains a node field
+						// TODO check node permissions
+						if (graphNodeField == null) {
+							createNode(key, node);
+						} else {
+							// We can't update the graphNodeField since it is in
+							// fact an edge. We need to delete it and create a new
+							// one.
+							deleteField(key);
+							createNode(key, node);
+						}
 					}
 				});
 				break;
