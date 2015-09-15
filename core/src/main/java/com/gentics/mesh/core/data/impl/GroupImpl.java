@@ -145,7 +145,6 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	@Override
 	public void delete() {
 		getElement().remove();
-		addIndexBatch(DELETE_ACTION);
 	}
 
 	@Override
