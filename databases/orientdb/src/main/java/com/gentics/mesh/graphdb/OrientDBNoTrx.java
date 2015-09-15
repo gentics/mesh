@@ -10,7 +10,7 @@ public class OrientDBNoTrx extends AbstractNoTrx implements AutoCloseable {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBNoTrx.class);
 
 	public OrientDBNoTrx(Database database) {
-		init(database, database.startNonTransaction());
+		init(database, database.startNoTransaction());
 	}
 
 	@Override

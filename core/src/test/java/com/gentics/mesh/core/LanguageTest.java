@@ -15,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 

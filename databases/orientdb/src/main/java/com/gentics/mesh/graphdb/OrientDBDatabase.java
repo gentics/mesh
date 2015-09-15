@@ -82,7 +82,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNonTransaction() {
+	public FramedGraph startNoTransaction() {
 		return new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
 	}
 

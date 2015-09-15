@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.definition.CrudVerticleTestCases;
 import com.gentics.mesh.test.definition.MultithreadingTestCases;
 

@@ -18,7 +18,7 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNonTransaction() {
+	public FramedGraph startNoTransaction() {
 		return new DelegatingFramedGraph<>(mockedGraph, true, false);
 	}
 	

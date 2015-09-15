@@ -34,7 +34,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNonTransaction() {
+	public FramedGraph startNoTransaction() {
 		return new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false);
 	}
 	

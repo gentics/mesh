@@ -25,7 +25,7 @@ public interface Database {
 
 	FramedTransactionalGraph startTransaction();
 
-	FramedGraph startNonTransaction();
+	FramedGraph startNoTransaction();
 
 	/**
 	 * Stop the graph database.

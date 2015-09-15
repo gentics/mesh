@@ -17,7 +17,6 @@ import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
-import com.gentics.mesh.graphdb.Trx;
 
 public class MicroschemaGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 

@@ -79,10 +79,13 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testBatchCreation() {
 		for (int i = 0; i < 10; i++) {
+			System.out.println(i);
 			final String name = "test_" + i;
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
-			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+			GroupRoot root = meshRoot().getGroupRoot();
+			root.reload();
+			role().grantPermissions(root, CREATE_PERM);
 
 			Future<GroupResponse> future = getClient().createGroup(request);
 			latchFor(future);
