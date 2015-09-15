@@ -13,8 +13,8 @@ public class AbstractBasicDBTest extends AbstractDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		tx = db.noTrx();
 		setupData();
+		tx = db.noTrx();
 	}
 
 	@After

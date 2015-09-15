@@ -88,7 +88,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("group_conflicting_name"))));
+					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name", requestModel.getName()));
 					return;
 				}
 				Group group;

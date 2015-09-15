@@ -110,9 +110,11 @@ public class VerticleHelper {
 		if (batch == null) {
 			// TODO log
 			ac.fail(BAD_REQUEST, "indexing_not_possible");
+			return;
 		} else if (element == null) {
 			// TODO log
 			ac.fail(BAD_REQUEST, "element creation failed");
+			return;
 		} else {
 			SearchQueue searchQueue;
 			try (Trx txBatch = db.trx()) {
@@ -227,61 +229,61 @@ public class VerticleHelper {
 		ac.send(toJson(msg));
 	}
 
-	//	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
-	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-	//
-	//		root.create(ac, rh -> {
-	//			if (hasSucceeded(ac, rh)) {
-	//				GenericVertex<?> vertex = rh.result();
-	//				// Transform the vertex using a fresh transaction in order to start with a clean cache
-	//				try (Trx txi = db.trx()) {
-	//					vertex.reload();
-	//					transformAndResponde(ac, vertex);
-	//				}
-	//			}
-	//		});
-	//	}
-
 	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
-
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
-		final int RETRY_COUNT = 15;
-		Mesh.vertx().executeBlocking(bc -> {
-			AtomicBoolean hasFinished = new AtomicBoolean(false);
-			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-//				try {
-					log.debug("Opening new transaction for try: {" + i + "}");
-					try (NoTrx tx = db.noTrx()) {
-						if (log.isDebugEnabled()) {
-							log.debug("Invoking create on root vertex");
-						}
-						root.create(ac, rh -> {
-							if (hasSucceeded(ac, rh)) {
-								GenericVertex<?> vertex = rh.result();
-								try (NoTrx txRead = db.noTrx()) {
-									vertex.reload();
-									transformAndResponde(ac, vertex);
-								}
-							}
-							hasFinished.set(true);
-						});
-					}
-//				} catch (OConcurrentModificationException e) {
-//					log.error("Creation failed in try {" + i + "} retrying.");
-//				}
-			}
-			if (!hasFinished.get()) {
-				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
-				ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
-			}
-		} , false, rh -> {
-			if (rh.failed()) {
-				ac.fail(rh.cause());
+		root.create(ac, rh -> {
+			if (hasSucceeded(ac, rh)) {
+				GenericVertex<?> vertex = rh.result();
+				// Transform the vertex using a fresh transaction in order to start with a clean cache
+				try (Trx txi = db.trx()) {
+					vertex.reload();
+					transformAndResponde(ac, vertex);
+				}
 			}
 		});
-
 	}
+
+	//	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
+	//
+	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	//
+	//		final int RETRY_COUNT = 15;
+	//		Mesh.vertx().executeBlocking(bc -> {
+	//			AtomicBoolean hasFinished = new AtomicBoolean(false);
+	//			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
+	//				try {
+	//					log.debug("Opening new transaction for try: {" + i + "}");
+	//					try (NonTrx tx = db.nonTrx()) {
+	//						if (log.isDebugEnabled()) {
+	//							log.debug("Invoking create on root vertex");
+	//						}
+	//						root.create(ac, rh -> {
+	//							if (hasSucceeded(ac, rh)) {
+	//								GenericVertex<?> vertex = rh.result();
+	//								try (NonTrx txRead = db.nonTrx()) {
+	//									vertex.reload();
+	//									transformAndResponde(ac, vertex);
+	//								}
+	//							}
+	//							hasFinished.set(true);
+	//						});
+	//					}
+	//				} catch (OConcurrentModificationException e) {
+	//					log.error("Creation failed in try {" + i + "} retrying.");
+	//				}
+	//			}
+	//			if (!hasFinished.get()) {
+	//				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
+	//				ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
+	//			}
+	//		} , false, rh -> {
+	//			if (rh.failed()) {
+	//				ac.fail(rh.cause());
+	//			}
+	//		});
+	//
+	//	}
 
 	public static <T extends GenericVertex<?>> void updateObject(ActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
