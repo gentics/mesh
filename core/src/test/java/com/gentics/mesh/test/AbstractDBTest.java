@@ -99,11 +99,13 @@ public abstract class AbstractDBTest {
 
 	public Tag tag(String key) {
 		Tag tag = dataProvider.getTag(key);
+		tag.reload();
 		return tag;
 	}
 
 	public TagFamily tagFamily(String key) {
 		TagFamily family = dataProvider.getTagFamily(key);
+		family.reload();
 		return family;
 	}
 
@@ -115,11 +117,13 @@ public abstract class AbstractDBTest {
 
 	public Node content(String key) {
 		Node node = dataProvider.getContent(key);
+		node.reload();
 		return node;
 	}
 
 	public Node folder(String key) {
 		Node node = dataProvider.getFolder(key);
+		node.reload();
 		return node;
 	}
 
@@ -148,11 +152,15 @@ public abstract class AbstractDBTest {
 	}
 
 	public Language english() {
-		return dataProvider.getEnglish();
+		Language language = dataProvider.getEnglish();
+		language.reload();
+		return language;
 	}
 
 	public Language german() {
-		return dataProvider.getGerman();
+		Language language = dataProvider.getGerman();
+		language.reload();
+		return language;
 	}
 
 	public User user() {
@@ -183,6 +191,7 @@ public abstract class AbstractDBTest {
 
 	public Node content() {
 		Node content = dataProvider.getContent("news overview");
+		content.reload();
 		return content;
 	}
 
