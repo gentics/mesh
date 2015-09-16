@@ -10,11 +10,16 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 
 	private List<T> items = new ArrayList<>();
 
-//	private long totalCount;
+	//	private long totalCount;
 
 	@Override
 	public List<T> getItems() {
 		return items;
+	}
+
+	@Override
+	public void setItems(List<T> items) {
+		this.items = items;
 	}
 
 	@JsonIgnore
@@ -28,14 +33,13 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 		items.add(field);
 	}
 
-
-//	@Override
-//	public long getTotalCount() {
-//		return totalCount;
-//	}
-//
-//	@Override
-//	public void setTotalCount(long totalCount) {
-//		this.totalCount = totalCount;
-//	}
+	//	@Override
+	//	public long getTotalCount() {
+	//		return totalCount;
+	//	}
+	//
+	//	@Override
+	//	public void setTotalCount(long totalCount) {
+	//		this.totalCount = totalCount;
+	//	}
 }
