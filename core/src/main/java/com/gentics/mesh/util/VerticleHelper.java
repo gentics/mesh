@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -66,8 +67,8 @@ public class VerticleHelper {
 
 		// TODO i18n
 		if (batch == null) {
-			// TODO log
-			ac.fail(BAD_REQUEST, "indexing_not_possible");
+			log.error("Batch was not set. Can't process search index batch.");
+			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		} else {
 			SearchQueue searchQueue;
 			try (Trx txBatch = db.trx()) {
@@ -86,7 +87,7 @@ public class VerticleHelper {
 							searchQueue.add(batch);
 							tx.success();
 						}
-						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
+						handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
 					} else {
 						handler.handle(Future.succeededFuture());
 					}

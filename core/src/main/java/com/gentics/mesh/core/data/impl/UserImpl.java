@@ -245,13 +245,14 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					// TODO handle this case
 				}
 				restUser.setNodeReference(userNodeReference);
-				for (Group group : getGroups()) {
-					restUser.addGroup(group.getName());
-				}
-				handler.handle(Future.succeededFuture(restUser));
-			}
-		}
 
+			}
+		} else {
+			for (Group group : getGroups()) {
+				restUser.addGroup(group.getName());
+			}
+			handler.handle(Future.succeededFuture(restUser));
+		}
 		return this;
 	}
 
