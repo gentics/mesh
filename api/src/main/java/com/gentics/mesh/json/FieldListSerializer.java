@@ -12,11 +12,15 @@ public class FieldListSerializer extends JsonSerializer<FieldList> {
 
 	@Override
 	public void serialize(FieldList value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
-		gen.writeStartArray();
-		for (Object item : value.getItems()) {
-			gen.writeObject(item);
+		if (value == null || value.getItems() == null) {
+			gen.writeNull();
+		} else {
+			gen.writeStartArray();
+			for (Object item : value.getItems()) {
+				gen.writeObject(item);
+			}
+			gen.writeEndArray();
 		}
-		gen.writeEndArray();
 	}
 
 }

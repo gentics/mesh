@@ -62,10 +62,33 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
+	public void testCreateNodeWithNullFieldValue() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("string");
+			NodeResponse response = createNode("listField", (Field) null);
+			StringFieldListImpl nodeField = response.getField("listField");
+			assertNotNull(nodeField);
+			assertEquals(0, nodeField.getItems().size());
+		}
+	}
+
+	@Test
 	public void testCreateEmptyStringList() throws IOException {
 		try (Trx tx = db.trx()) {
 			setSchema("string");
 			StringFieldListImpl listField = new StringFieldListImpl();
+			NodeResponse response = createNode("listField", listField);
+			StringFieldListImpl listFromResponse = response.getField("listField");
+			assertEquals(0, listFromResponse.getItems().size());
+		}
+	}
+
+	@Test
+	public void testCreateNullStringList() throws IOException {
+		try (Trx tx = db.trx()) {
+			setSchema("string");
+			StringFieldListImpl listField = new StringFieldListImpl();
+			listField.setItems(null);
 			NodeResponse response = createNode("listField", listField);
 			StringFieldListImpl listFromResponse = response.getField("listField");
 			assertEquals(0, listFromResponse.getItems().size());

@@ -160,7 +160,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 					//TODO use  NodeFieldListItemDeserializer to deserialize the item in expanded form
 					NodeFieldListImpl nodeListField = new NodeFieldListImpl();
 					NodeFieldListItemDeserializer deser = new NodeFieldListItemDeserializer();
-					for(JsonNode node : jsonNode) {
+					for (JsonNode node : jsonNode) {
 						nodeListField.getItems().add(deser.deserialize(node, jsonParser, schemaStorage));
 					}
 					//NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
@@ -243,7 +243,9 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 	private <I, AT> void addBasicList(Map<String, Field> map, String fieldKey, Class<AT> clazzOfJsonArray, FieldList<I> list, Class<I> classOfItem,
 			I[] itemsArray) throws JsonProcessingException {
-		list.getItems().addAll((List<I>) Arrays.asList(itemsArray));
+		if (itemsArray != null) {
+			list.getItems().addAll((List<I>) Arrays.asList(itemsArray));
+		}
 		map.put(fieldKey, list);
 	}
 }

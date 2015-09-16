@@ -14,4 +14,6 @@ public interface FieldList<T> extends Field {
 
 	List<T> getItems();
 
+	void setItems(List<T> items);
+
 }
