@@ -110,7 +110,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
 		future = getClient().createGroup(request);
 		latchFor(future);
-		expectException(future, CONFLICT, "group_conflicting_name");
+		expectException(future, CONFLICT, "group_conflicting_name", name);
 	}
 
 	@Test

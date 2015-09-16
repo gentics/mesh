@@ -37,6 +37,7 @@ public final class MeshAssert {
 	}
 
 	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws InterruptedException {
+		root.reload();
 		CountDownLatch latch = new CountDownLatch(1);
 		root.findByUuid(uuid, rh -> {
 			if (exists) {

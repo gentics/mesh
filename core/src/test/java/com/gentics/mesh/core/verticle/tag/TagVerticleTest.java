@@ -170,6 +170,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		Tag tag = tag("vehicle");
 		String tagUuid = tag.getUuid();
 		String tagName = tag.getName();
+		assertNotNull(tag.getEditor());
 		Future<TagResponse> readTagFut = getClient().findTagByUuid(PROJECT_NAME, tagUuid);
 		latchFor(readTagFut);
 		assertSuccess(readTagFut);

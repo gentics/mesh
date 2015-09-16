@@ -414,6 +414,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_deleted", future, roleUuid + "/" + roleName);
+		meshRoot().getRoleRoot().reload();
 		assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 	}
 

@@ -135,11 +135,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		TagFamily tagFamily;
-		try (Trx tx = db.trx()) {
-			tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			tx.success();
-		}
+		TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 		testPermission(GraphPermission.READ_PERM, tagFamily);
 	}
 
@@ -147,10 +143,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() {
 		TagFamily tagFamily;
-		try (Trx tx = db.trx()) {
-			tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			tx.success();
-		}
+		tagFamily = project().getTagFamilyRoot().create("newProject", user());
 		testPermission(GraphPermission.DELETE_PERM, tagFamily);
 	}
 
@@ -158,10 +151,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() {
 		TagFamily tagFamily;
-		try (Trx tx = db.trx()) {
-			tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			tx.success();
-		}
+		tagFamily = project().getTagFamilyRoot().create("newProject", user());
 		testPermission(GraphPermission.UPDATE_PERM, tagFamily);
 
 	}
@@ -170,30 +160,25 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() {
 		TagFamily tagFamily;
-		try (Trx tx = db.trx()) {
-			tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			tx.success();
-		}
+		tagFamily = project().getTagFamilyRoot().create("newProject", user());
 		testPermission(GraphPermission.CREATE_PERM, tagFamily);
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws InterruptedException {
-		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = tagFamily("colors");
-			CountDownLatch latch = new CountDownLatch(1);
-			RoutingContext rc = getMockedRoutingContext("");
-			ActionContext ac = ActionContext.create(rc);
-			tagFamily.transformToRest(ac, rh -> {
-				assertNotNull(rh.result());
-				TagFamilyResponse response = rh.result();
-				assertEquals(tagFamily.getName(), response.getName());
-				assertEquals(tagFamily.getUuid(), response.getUuid());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		TagFamily tagFamily = tagFamily("colors");
+		CountDownLatch latch = new CountDownLatch(1);
+		RoutingContext rc = getMockedRoutingContext("");
+		ActionContext ac = ActionContext.create(rc);
+		tagFamily.transformToRest(ac, rh -> {
+			assertNotNull(rh.result());
+			TagFamilyResponse response = rh.result();
+			assertEquals(tagFamily.getName(), response.getName());
+			assertEquals(tagFamily.getUuid(), response.getUuid());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
