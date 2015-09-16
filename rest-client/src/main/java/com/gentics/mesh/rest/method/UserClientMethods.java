@@ -11,15 +11,15 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 public interface UserClientMethods {
 
-	Future<UserResponse> findUserByUuid(String uuid);
+	Future<UserResponse> findUserByUuid(String uuid, QueryParameterProvider... parameters);
 
-	Future<UserResponse> findUserByUsername(String username);
+	Future<UserResponse> findUserByUsername(String username, QueryParameterProvider... parameters);
 
 	Future<UserListResponse> findUsers(QueryParameterProvider... parameters);
 
-	Future<UserResponse> createUser(UserCreateRequest userCreateRequest);
+	Future<UserResponse> createUser(UserCreateRequest userCreateRequest, QueryParameterProvider... parameters);
 
-	Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest);
+	Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest, QueryParameterProvider... parameters);
 
 	Future<GenericMessageResponse> deleteUser(String uuid);
 

@@ -61,7 +61,6 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	@Deprecated
 	Trx trx();
 
 	/**

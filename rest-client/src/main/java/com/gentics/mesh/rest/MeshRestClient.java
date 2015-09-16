@@ -297,14 +297,14 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserResponse> findUserByUuid(String uuid) {
+	public Future<UserResponse> findUserByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/users/" + uuid, UserResponse.class);
+		return handleRequest(GET, "/users/" + uuid + getQuery(parameters), UserResponse.class);
 	}
 
 	@Override
-	public Future<UserResponse> findUserByUsername(String username) {
-		return handleRequest(GET, "/users/" + username, UserResponse.class);
+	public Future<UserResponse> findUserByUsername(String username, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/users/" + username + getQuery(parameters), UserResponse.class);
 	}
 
 	@Override
@@ -313,16 +313,16 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<UserResponse> createUser(UserCreateRequest userCreateRequest) {
+	public Future<UserResponse> createUser(UserCreateRequest userCreateRequest, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(userCreateRequest, "userCreateRequest must not be null");
-		return handleRequest(POST, "/users", UserResponse.class, userCreateRequest);
+		return handleRequest(POST, "/users" + getQuery(parameters), UserResponse.class, userCreateRequest);
 	}
 
 	@Override
-	public Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest) {
+	public Future<UserResponse> updateUser(String uuid, UserUpdateRequest userUpdateRequest, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(userUpdateRequest, "userUpdateRequest must not be null");
-		return handleRequest(PUT, "/users/" + uuid, UserResponse.class, userUpdateRequest);
+		return handleRequest(PUT, "/users/" + uuid + getQuery(parameters), UserResponse.class, userUpdateRequest);
 	}
 
 	@Override

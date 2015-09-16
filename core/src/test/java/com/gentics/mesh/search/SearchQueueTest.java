@@ -78,7 +78,7 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 			CountDownLatch latch = new CountDownLatch((int) size);
 			for (int i = 0; i <= size; i++) {
 				Runnable r = () -> {
-					int z = 0;
+//					int z = 0;
 					while (true) {
 						// try {
 						try (Trx txTake = db.trx()) {

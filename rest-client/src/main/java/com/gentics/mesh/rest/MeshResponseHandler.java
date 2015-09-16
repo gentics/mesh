@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 
 public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
@@ -57,7 +60,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					if (isSchemaClass(classOfT)) {
 						T restObj = JsonUtil.readSchema(json, classOfT);
 						future.complete(restObj);
-					} else if (isNodeClass(classOfT) || isNodeListClass(classOfT)) {
+					} else if (isNodeClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
 						T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
 						future.complete(restObj);
 					} else {
@@ -90,6 +93,14 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			handler.handle(response);
 		}
 
+	}
+
+	private boolean isUserClass(Class<T> clazz) {
+		if (clazz.isAssignableFrom(UserResponse.class) || clazz.isAssignableFrom(UserCreateRequest.class)
+				|| clazz.isAssignableFrom(UserUpdateRequest.class)) {
+			return true;
+		}
+		return false;
 	}
 
 	private boolean isNodeListClass(Class<?> clazz) {

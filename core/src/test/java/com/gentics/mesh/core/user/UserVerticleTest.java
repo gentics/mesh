@@ -41,6 +41,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -346,14 +348,27 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = folder("2015");
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName("bogus_name");
 		reference.setUuid(node.getUuid());
+		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
 		newUser.setGroupUuid(group().getUuid());
 		newUser.setPassword("test1234");
 		newUser.setNodeReference(reference);
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		assertSuccess(future);
+
+		Future<UserResponse> userResponseFuture = getClient().findUserByUuid(future.result().getUuid(),
+				new NodeRequestParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
+		latchFor(userResponseFuture);
+		assertSuccess(userResponseFuture);
+		UserResponse userResponse = userResponseFuture.result();
+		assertNotNull(userResponse);
+		assertNotNull(userResponse.getNodeReference());
+		assertEquals(node.getUuid(), userResponse.getNodeReference().getUuid());
+		assertEquals(NodeResponse.class, userResponse.getNodeReference().getClass());
 	}
 
 	@Test

@@ -9,8 +9,6 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 	@JsonProperty("allow")
 	private String[] allowedSchemas;
 
-	private String defaultUuid;
-
 	@Override
 	public String[] getAllowedSchemas() {
 		return allowedSchemas;
@@ -19,16 +17,6 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 	@Override
 	public void setAllowedSchemas(String[] allowedSchemas) {
 		this.allowedSchemas = allowedSchemas;
-	}
-
-	@Override
-	public String getUuid() {
-		return defaultUuid;
-	}
-
-	@Override
-	public void setUuid(String uuid) {
-		this.defaultUuid = uuid;
 	}
 
 	@Override

@@ -9,13 +9,27 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
 public class SchemaResponse extends SchemaImpl implements RestResponse {
 
-	private List<ProjectResponse> projects = new ArrayList<>();
-
 	private String uuid;
 
 	private String[] permissions = {};
 
+	private List<ProjectResponse> projects = new ArrayList<>();
+
 	public SchemaResponse() {
+	}
+
+	/**
+	 * Return the schema uuid.
+	 */
+	public String getUuid() {
+		return uuid;
+	}
+
+	/**
+	 * Set the schema uuid.
+	 */
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	public String[] getPermissions() {
@@ -26,20 +40,22 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 		this.permissions = permissions;
 	}
 
+	/**
+	 * Return a list of projects to which the schema was linked.
+	 * 
+	 * @return
+	 */
 	public List<ProjectResponse> getProjects() {
 		return projects;
 	}
 
+	/**
+	 * Set the list of project to which the schema is linked.
+	 * 
+	 * @param projects
+	 */
 	public void setProjects(List<ProjectResponse> projects) {
 		this.projects = projects;
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
-
-	public String getUuid() {
-		return uuid;
 	}
 
 }

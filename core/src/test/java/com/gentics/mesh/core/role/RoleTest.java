@@ -31,8 +31,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.TraversalHelper;
-
 import io.vertx.ext.web.RoutingContext;
 
 public class RoleTest extends AbstractBasicObjectTest {

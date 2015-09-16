@@ -122,6 +122,7 @@ public final class JsonUtil {
 	public static <T> T readNode(String json, Class<T> valueType, SchemaStorage schemaStorage)
 			throws IOException, JsonParseException, JsonMappingException {
 
+		// In order to deserialize the node it is mandatory to know the schema definition
 		InjectableValues injectedSchemaStorage = new InjectableValues() {
 
 			@Override

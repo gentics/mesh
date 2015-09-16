@@ -65,7 +65,6 @@ public class RestModelTest extends AbstractDBTest {
 		schema.setName("content");
 		schema.setDisplayField("title");
 		schema.setMeshVersion(Mesh.getVersion());
-		schema.setSchemaVersion("1.0.0");
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
