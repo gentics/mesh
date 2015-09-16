@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,7 +24,7 @@ public class DateGraphFieldNodeTest extends AbstractBasicDBTest {
 	private ServerSchemaStorage schemaStorage;
 
 	@Test
-	public void testDateFieldTransformation() throws IOException, InterruptedException {
+	public void testDateFieldTransformation() throws Exception {
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
 		DateFieldSchemaImpl dateFieldSchema = new DateFieldSchemaImpl();

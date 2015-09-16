@@ -36,7 +36,7 @@ public final class MeshAssert {
 				future.succeeded());
 	}
 
-	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws InterruptedException {
+	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
 		root.reload();
 		CountDownLatch latch = new CountDownLatch(1);
 		root.findByUuid(uuid, rh -> {
@@ -77,8 +77,8 @@ public final class MeshAssert {
 		}
 	}
 
-	public static void failingLatch(CountDownLatch latch) throws InterruptedException {
-		if (!latch.await(1, TimeUnit.SECONDS)) {
+	public static void failingLatch(CountDownLatch latch) throws Exception {
+		if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
 			fail("Latch timeout reached");
 		}
 	}

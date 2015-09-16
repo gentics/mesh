@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,7 +24,7 @@ public class HtmlGraphFieldNodeTest extends AbstractBasicDBTest {
 	private ServerSchemaStorage schemaStorage;
 
 	@Test
-	public void testHtmlFieldTransformation() throws IOException, InterruptedException {
+	public void testHtmlFieldTransformation() throws Exception {
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
 		HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();

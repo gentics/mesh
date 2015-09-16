@@ -44,7 +44,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() throws InterruptedException {
+	public void testDelete() throws Exception {
 		String uuid = project().getUuid();
 
 		Map<String, String> uuidToBeDeleted = new HashMap<>();
@@ -105,7 +105,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		CountDownLatch latch = new CountDownLatch(2);
 		meshRoot().getProjectRoot().findByUuid(project().getUuid(), rh -> {
 			assertNotNull(rh.result());
@@ -120,7 +120,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() throws InterruptedException {
+	public void testTransformation() throws Exception {
 		Project project = project();
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
@@ -137,7 +137,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws InterruptedException {
+	public void testCreateDelete() throws Exception {
 		Project project = meshRoot().getProjectRoot().create("newProject", user());
 		assertNotNull(project);
 		String uuid = project.getUuid();

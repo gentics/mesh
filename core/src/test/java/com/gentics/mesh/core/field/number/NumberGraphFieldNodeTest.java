@@ -57,6 +57,9 @@ public class NumberGraphFieldNodeTest extends AbstractDBTest {
 			assertNotNull(response);
 			NumberFieldImpl deserializedNumberField = response.getField("numberField");
 			assertEquals("100.9", deserializedNumberField.getNumber());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

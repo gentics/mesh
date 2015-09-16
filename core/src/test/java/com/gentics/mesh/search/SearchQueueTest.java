@@ -51,7 +51,7 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 	}
 
 	@Test
-	public void testQueueThreadSafety() throws InterruptedException {
+	public void testQueueThreadSafety() throws Exception {
 
 		SearchQueue searchQueue;
 

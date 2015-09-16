@@ -97,7 +97,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testConflicingGroupCreation() throws InterruptedException {
+	public void testConflicingGroupCreation() throws Exception {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);

@@ -463,7 +463,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-//		Trx.disableDebug();
+		//		Trx.disableDebug();
 		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
@@ -479,8 +479,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			uuid = folder("2015").getUuid();
 		}
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-//		Trx.enableDebug();
-//		Trx.setBarrier(barrier);
+		//		Trx.enableDebug();
+		//		Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteNode REST call");
@@ -508,7 +508,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-//		Trx.disableDebug();
+		//		Trx.disableDebug();
 	}
 
 	@Test
@@ -524,7 +524,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-//		Trx.disableDebug();
+		//		Trx.disableDebug();
 	}
 
 	@Test
@@ -616,13 +616,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
-		String uuid;
-		Node node;
 		final String newName = "english renamed name";
-		node = folder("2015");
-		uuid = node.getUuid();
+		Node node = folder("2015");
+		String uuid = node.getUuid();
 		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 
+		// Prepare the request
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("folder");
@@ -631,20 +630,23 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setLanguage("en");
 		request.setPublished(true);
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("en", "de");
 
+		// Update the node
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
 		assertSuccess(future);
+
 		NodeResponse restNode = future.result();
 		assertEquals("en", restNode.getLanguage());
 		StringField field = restNode.getField("name");
 		assertEquals(newName, field.getString());
 		assertNotNull(restNode);
 		assertTrue(restNode.isPublished());
-		assertEquals(newName, node.getGraphFieldContainer(english()).getString("name").getString());
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		container.reload();
+		assertEquals(newName, container.getString("name").getString());
 
 		assertEquals(1, searchProvider.getStoreEvents().size());
 

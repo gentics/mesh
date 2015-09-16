@@ -31,7 +31,7 @@ public class AuthUserTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testAuthorization() throws InterruptedException {
+	public void testAuthorization() throws Exception {
 		RoutingContext rc = getMockedRoutingContext("");
 		ActionContext ac = ActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();

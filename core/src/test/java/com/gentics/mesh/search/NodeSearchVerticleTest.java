@@ -147,7 +147,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
-	public void testDocumentCreation() throws InterruptedException, JSONException {
+	public void testDocumentCreation() throws Exception {
 		try (Trx tx = db.trx()) {
 			Node node = folder("2015");
 
@@ -213,7 +213,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
-	public void testDocumentUpdate() throws InterruptedException, JSONException {
+	public void testDocumentUpdate() throws Exception {
 		fullIndex();
 
 		String newString = "ABCDEFGHI";

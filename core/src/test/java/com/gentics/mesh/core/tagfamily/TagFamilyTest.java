@@ -76,7 +76,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily tagFamily = tagFamily("colors");
 
@@ -166,7 +166,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() throws InterruptedException {
+	public void testTransformation() throws Exception {
 		TagFamily tagFamily = tagFamily("colors");
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
@@ -183,7 +183,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws InterruptedException {
+	public void testCreateDelete() throws Exception {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily tagFamily = root.create("test123", user());
 		assertNotNull(tagFamily);

@@ -3,8 +3,6 @@ package com.gentics.mesh.core.field.list;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -36,7 +34,7 @@ public class GaphListFieldNodeTest extends AbstractBasicDBTest {
 	private ServerSchemaStorage schemaStorage;
 
 	@Test
-	public void testNodeListTransformation() throws IOException, InterruptedException {
+	public void testNodeListTransformation() throws Exception {
 		Node node = folder("2015");
 		Node newsNode = folder("news");
 

@@ -81,7 +81,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
-	public void testDocumentDeletion() throws InterruptedException, JSONException {
+	public void testDocumentDeletion() throws Exception {
 		Tag tag = tag("red");
 		String name = tag.getName();
 		String uuid = tag.getUuid();

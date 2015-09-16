@@ -205,7 +205,7 @@ public abstract class AbstractDBTest {
 		return container;
 	}
 
-	protected String getJson(Node node) throws InterruptedException {
+	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		ActionContext ac = ActionContext.create(rc);
 		CountDownLatch latch = new CountDownLatch(1);

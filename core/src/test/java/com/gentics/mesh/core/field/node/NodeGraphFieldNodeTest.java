@@ -3,8 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,7 +24,7 @@ public class NodeGraphFieldNodeTest extends AbstractBasicDBTest {
 	private ServerSchemaStorage schemaStorage;
 
 	@Test
-	public void testNodeFieldTransformation() throws IOException, InterruptedException {
+	public void testNodeFieldTransformation() throws Exception {
 		Node newsNode = folder("news");
 
 		Node node = folder("2015");

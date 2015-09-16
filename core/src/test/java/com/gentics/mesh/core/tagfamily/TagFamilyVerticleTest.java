@@ -245,7 +245,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testDeleteByUUID() throws UnknownHostException, InterruptedException {
+	public void testDeleteByUUID() throws Exception {
 		String uuid;
 		try (Trx tx = db.trx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
@@ -269,7 +269,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	public void testDeleteByUUIDWithNoPermission() throws UnknownHostException, InterruptedException {
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		TagFamily basicTagFamily;
 		try (Trx tx = db.trx()) {
 			basicTagFamily = tagFamily("basic");

@@ -86,7 +86,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
 		meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
@@ -98,7 +98,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() throws InterruptedException {
+	public void testDelete() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
 		getSchemaContainer().delete();
 
@@ -124,7 +124,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws MeshSchemaException, InterruptedException {
+	public void testCreateDelete() throws Exception {
 		Schema schema = new SchemaImpl();
 		schema.setDisplayField("name");
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());

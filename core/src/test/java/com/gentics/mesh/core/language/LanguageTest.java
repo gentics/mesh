@@ -64,7 +64,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		Language language = meshRoot().getLanguageRoot().findByName("German");
 
 		CountDownLatch latch = new CountDownLatch(2);

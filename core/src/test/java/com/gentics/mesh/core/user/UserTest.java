@@ -134,7 +134,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		String uuid = user().getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
 		boot.userRoot().findByUuid(uuid, rh -> {
@@ -147,7 +147,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() throws InterruptedException {
+	public void testTransformation() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		ActionContext ac = ActionContext.create(rc);
@@ -167,7 +167,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws InterruptedException {
+	public void testCreateDelete() throws Exception {
 		MeshRoot root = meshRoot();
 		User user = root.getUserRoot().create("Anton", null, user());
 		assertTrue(user.isEnabled());
@@ -330,7 +330,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreate() throws InterruptedException {
+	public void testCreate() throws Exception {
 		final String USERNAME = "test";
 		final String EMAIL = "joe@nowhere.org";
 		final String FIRSTNAME = "joe";

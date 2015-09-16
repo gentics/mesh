@@ -37,7 +37,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreate() throws InterruptedException {
+	public void testCreate() throws Exception {
 		String roleName = "test";
 		RoleRoot root = meshRoot().getRoleRoot();
 		Role createdRole = root.create(roleName, null, user());
@@ -227,7 +227,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() throws InterruptedException {
+	public void testTransformation() throws Exception {
 		Role role = role();
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
@@ -244,7 +244,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws InterruptedException {
+	public void testCreateDelete() throws Exception {
 		String roleName = "test";
 		RoleRoot root = meshRoot().getRoleRoot();
 
@@ -298,7 +298,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() throws InterruptedException {
+	public void testDelete() throws Exception {
 		Role role = role();
 		String uuid = role.getUuid();
 		role.delete();

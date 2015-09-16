@@ -67,7 +67,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
-	public void testNodeTaggging() throws InterruptedException {
+	public void testNodeTaggging() throws Exception {
 		// 1. Create the tag
 		TagFamily root = tagFamily("basic");
 		Tag tag = root.create(ENGLISH_NAME, project(), user());
@@ -113,7 +113,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
-	public void testNodeTagging() throws InterruptedException {
+	public void testNodeTagging() throws Exception {
 		final String TEST_TAG_NAME = "testTag";
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
@@ -219,7 +219,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		Tag tag = tag("car");
 		CountDownLatch latch = new CountDownLatch(2);
 		meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
@@ -235,7 +235,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreate() throws InterruptedException {
+	public void testCreate() throws Exception {
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
 		assertNotNull(tag);
@@ -284,7 +284,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws InterruptedException {
+	public void testCreateDelete() throws Exception {
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create("someTag", project(), user());
 		String uuid = tag.getUuid();
@@ -326,7 +326,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() throws InterruptedException {
+	public void testDelete() throws Exception {
 		Tag tag;
 		try (Trx tx = db.trx()) {
 			tag = tag("red");

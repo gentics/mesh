@@ -20,8 +20,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -160,7 +158,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testFindByUUID() throws InterruptedException {
+	public void testFindByUUID() throws Exception {
 		Node newsNode = content("news overview");
 		CountDownLatch latch = new CountDownLatch(1);
 		boot.nodeRoot().findByUuid(newsNode.getUuid(), rh -> {
@@ -174,7 +172,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() throws InterruptedException, JsonParseException, JsonMappingException, IOException {
+	public void testTransformation() throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		ActionContext ac = ActionContext.create(rc);
 		Node newsNode = content("concorde");

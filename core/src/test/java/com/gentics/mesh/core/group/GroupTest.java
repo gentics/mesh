@@ -99,7 +99,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() throws InterruptedException {
+	public void testTransformation() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		ActionContext ac = ActionContext.create(rc);
@@ -115,7 +115,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testCreateDelete() throws InterruptedException {
+	public void testCreateDelete() throws Exception {
 		Group group = meshRoot().getGroupRoot().create("newGroup", user());
 		assertNotNull(group);
 		String uuid = group.getUuid();
@@ -159,7 +159,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() throws InterruptedException {
+	public void testDelete() throws Exception {
 		Group group = meshRoot().getGroupRoot().create("newGroup", user());
 		assertNotNull(group);
 		assertEquals("newGroup", group.getName());

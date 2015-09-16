@@ -332,13 +332,9 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(roleUuid, restRole.getUuid());
 
 		// Check that the extra role was updated as expected
-		CountDownLatch latch = new CountDownLatch(1);
-		roleRoot.findByUuid(roleUuid, rh -> {
-			Role reloadedRole = rh.result();
-			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Role reloadedRole = roleRoot.findByUuidBlocking(roleUuid);
+		reloadedRole.reload();
+		assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 	}
 
 	@Test

@@ -1,42 +1,37 @@
 package com.gentics.mesh.core.data.service;
 
-import java.io.IOException;
-
-import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.util.InvalidArgumentException;
-
 public interface BasicObjectTestcases {
 
-	void testFindAllVisible() throws InvalidArgumentException;
+	void testFindAllVisible() throws Exception;
 
-	void testFindAll() throws InvalidArgumentException;
+	void testFindAll() throws Exception;
 
-	void testRootNode() throws MeshSchemaException;
+	void testRootNode() throws Exception;
 
-	void testFindByName() throws IOException;
+	void testFindByName() throws Exception;
 
-	void testFindByUUID() throws InterruptedException;
+	void testFindByUUID() throws Exception;
 
-	void testRead() throws IOException;
+	void testRead() throws Exception;
 
-	void testCreate() throws IOException, InterruptedException;
+	void testCreate() throws Exception;
 
-	void testDelete() throws InterruptedException;
+	void testDelete() throws Exception;
 
-	void testUpdate() throws IOException;
+	void testUpdate() throws Exception;
 
-	void testReadPermission() throws MeshSchemaException;
+	void testReadPermission() throws Exception;
 
-	void testDeletePermission() throws MeshSchemaException;
+	void testDeletePermission() throws Exception;
 
-	void testUpdatePermission() throws MeshSchemaException;
+	void testUpdatePermission() throws Exception;
 
-	void testCreatePermission() throws MeshSchemaException;
+	void testCreatePermission() throws Exception;
 
-	void testTransformation() throws IOException, InterruptedException;
+	void testTransformation() throws Exception;
 
-	void testCreateDelete() throws InterruptedException, MeshSchemaException;
+	void testCreateDelete() throws Exception;
 
-	void testCRUDPermissions() throws MeshSchemaException;
+	void testCRUDPermissions() throws Exception;
 
 }
