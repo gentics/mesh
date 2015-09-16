@@ -117,7 +117,7 @@ public class MeshImpl implements Mesh {
 			field.set(null, ctx);
 		} catch (Exception e) {
 			log.error("Could not set spring context", e);
-			System.exit(10);
+			throw new RuntimeException("Spring context setup failed");
 		}
 
 	}
