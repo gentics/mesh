@@ -29,6 +29,4 @@ public interface MeshVertex extends MeshElement {
 	 * @return
 	 */
 	MeshVertexImpl getImpl();
-
-	String getDatabaseVersion();
 }
