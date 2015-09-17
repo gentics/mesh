@@ -115,6 +115,7 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 
 		NodeResponse restNode = future.result();
 		assertFalse(test.containsTag(restNode, tag));
+		node.reload();
 		assertFalse(node.getTags().contains(tag));
 		// TODO check for properties of the nested tag
 

@@ -222,6 +222,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
 
 		CountDownLatch latch2 = new CountDownLatch(1);
+		meshRoot().getNodeRoot().reload();
 		meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
 			assertNull("The node should have been deleted.", rh2.result());
 			latch2.countDown();

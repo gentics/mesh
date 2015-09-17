@@ -80,12 +80,8 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
-		CountDownLatch latch = new CountDownLatch(1);
-		extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			assertNotNull("The schema should be added to the extra project", rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		extraProject.getSchemaContainerRoot().reload();
+		assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuidBlocking(schema.getUuid()));
 	}
 
 	@Test
@@ -124,6 +120,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName() == removedProjectName).findFirst().isPresent());
 
 		// Reload the schema and check for expected changes
+		project.getSchemaContainerRoot().reload();
 		assertFalse("The schema should not be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 	}
 

@@ -94,6 +94,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());
+		
 		assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 				targetNode.getUuid(), folder("deals").getParentNode().getUuid());
 

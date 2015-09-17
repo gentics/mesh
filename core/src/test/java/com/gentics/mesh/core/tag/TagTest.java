@@ -199,6 +199,8 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertEquals(tags().size() - 1, root.findAll().size());
 		root.removeTag(tag);
 		assertEquals(tags().size() - 1, root.findAll().size());
+		root.reload();
+		tag.reload();
 		root.addTag(tag);
 		assertEquals(tags().size(), root.findAll().size());
 		root.addTag(tag);
