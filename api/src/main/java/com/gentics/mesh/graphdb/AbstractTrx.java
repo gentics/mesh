@@ -26,7 +26,6 @@ public abstract class AbstractTrx extends AbstractTrxBase implements Trx {
 
 	@Override
 	public void close() {
-//		handleDebug();
 		if (isSuccess()) {
 			commit();
 		} else {

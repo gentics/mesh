@@ -90,6 +90,33 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testUploadTwiceToBinaryNode() throws IOException {
+		String contentType = "application/octet-stream";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
+
+		Node node;
+		try (Trx tx = db.trx()) {
+			node = folder("news");
+			prepareSchema(node, true, "");
+			tx.success();
+		}
+
+		try (Trx tx = db.trx()) {
+			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+			latchFor(future);
+			assertSuccess(future);
+		}
+		
+		try (Trx tx = db.trx()) {
+			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+			latchFor(future);
+			assertSuccess(future);
+		}
+
+	}
+
+	@Test
 	public void testUploadToNoBinaryNode() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;

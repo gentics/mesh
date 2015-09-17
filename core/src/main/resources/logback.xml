@@ -6,7 +6,7 @@
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] - %msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n</pattern>
 		</encoder>
 	</appender>
 	<logger name="com.gentics.mesh" level="INFO"/>

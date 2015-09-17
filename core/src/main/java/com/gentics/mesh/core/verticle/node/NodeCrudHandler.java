@@ -246,19 +246,46 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
 			if (tfc.succeeded()) {
 				File targetFolder = tfc.result();
-				String targetPath = new File(targetFolder, uuid + ".bin").getAbsolutePath();
+				File targetFile = new File(targetFolder, uuid + ".bin");
+				String targetPath = targetFile.getAbsolutePath();
 				if (log.isDebugEnabled()) {
 					log.debug("Moving file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
 				}
-
-				fileSystem.move(fileUpload.uploadedFileName(), targetPath, mh -> {
-					if (mh.succeeded()) {
-						handler.handle(Future.succeededFuture(hashSum.get()));
-					} else {
-						log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-						handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+				fileSystem.exists(targetPath, eh -> {
+					if (eh.failed()) {
+						handler.handle(Future.failedFuture(eh.cause()));
+						return;
 					}
+					if (eh.result()) {
+						fileSystem.delete(targetPath, dh -> {
+							if (dh.succeeded()) {
+								fileSystem.move(fileUpload.uploadedFileName(), targetPath, mh -> {
+									if (mh.succeeded()) {
+										handler.handle(Future.succeededFuture(hashSum.get()));
+									} else {
+										log.error("Failed to move file to {" + targetPath + "}", mh.cause());
+										handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+										return;
+									}
+								});
+							} else {
+								handler.handle(Future.failedFuture(eh.cause()));
+								return;
+							}
+						});
+					} else {
+						fileSystem.move(fileUpload.uploadedFileName(), targetPath, mh -> {
+							if (mh.succeeded()) {
+								handler.handle(Future.succeededFuture(hashSum.get()));
+							} else {
+								log.error("Failed to move file to {" + targetPath + "}", mh.cause());
+								handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+							}
+						});
+					}
+
 				});
+
 			} else {
 				handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
 			}

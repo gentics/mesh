@@ -19,6 +19,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -196,7 +197,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex node) {
-
+		//TODO FIXME refactor this code. The traversal is not fast
 		Set<GraphPermission> permissions = new HashSet<>();
 		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back().label()
 				.toSet();

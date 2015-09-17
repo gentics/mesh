@@ -130,7 +130,6 @@ public abstract class AbstractMeshRestClient
 		}
 
 		return handleRequest(method, path, classOfT, buffer, "application/json");
-
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT) {
@@ -142,7 +141,7 @@ public abstract class AbstractMeshRestClient
 		for (int i = 0; i < parameters.length; i++) {
 			QueryParameterProvider provider = parameters[i];
 			builder.append(provider.getQueryParameters());
-			if(i!=parameters.length-1) {
+			if (i != parameters.length - 1) {
 				builder.append("&");
 			}
 		}

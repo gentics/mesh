@@ -13,7 +13,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Ignore;
@@ -28,6 +33,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -37,7 +43,9 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
+import com.gentics.mesh.test.TestUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -313,6 +321,57 @@ public class NodeTest extends AbstractBasicObjectTest {
 			assertEquals(newUser.getUuid(), node.getCreator().getUuid());
 			// TODO update other fields
 		}
+	}
+
+	@Test
+	public void testUpdateMultithreaded() throws InterruptedException, BrokenBarrierException, TimeoutException {
+
+		CyclicBarrier barrier = new CyclicBarrier(3);
+		AtomicInteger integer = new AtomicInteger(0);
+		Node node = content();
+		TagFamily tagFamily = tagFamily("colors");
+		List<Thread> threads = new ArrayList<>();
+		for (int i = 1; i < 3; i++) {
+			System.out.println("Thread [" + i + "] Starting");
+			Thread t = TestUtil.run(() -> {
+				int n = integer.incrementAndGet();
+				for (int retry = 0; retry < 10; retry++) {
+					try {
+						try (Trx tx = db.trx()) {
+							Tag tag = tagFamily.create("bogus_" + n, project(), user());
+							node.addTag(tag);
+							tx.success();
+
+							if (retry == 0) {
+								try {
+									System.out.println("Thread [" + n + "] Waiting..");
+									barrier.await(10, TimeUnit.SECONDS);
+									System.out.println("Thread [" + n + "] Waited");
+								} catch (Exception e) {
+									System.out.println("Thread [" + n + "] Error handling - retry: " + retry);
+									e.printStackTrace();
+								}
+							}
+						}
+						System.out.println("Thread [" + n + "] Successful updated element - retry: " + retry);
+						break;
+					} catch (Exception e) {
+						System.out.println("Thread [" + n + "] Got exception.. - retry: " + retry);
+						e.printStackTrace();
+					} finally {
+					}
+
+				}
+			});
+			threads.add(t);
+		}
+		System.out.println("Waiting on lock");
+		barrier.await(2, TimeUnit.SECONDS);
+		for (Thread currentThread : threads) {
+			currentThread.join();
+		}
+		node.reload();
+		assertEquals(2, node.getTags().size());
 	}
 
 	@Test
