@@ -140,7 +140,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		}
 
 		// TODO assert entries
-		assertEquals(4, searchProvider.getStoreEvents().size());
+		assertEquals(2, searchProvider.getStoreEvents().size());
 	}
 
 }
