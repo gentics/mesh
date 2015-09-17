@@ -45,7 +45,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.test.TestUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -324,6 +323,59 @@ public class NodeTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testUpdateMultithreadedSimple() throws InterruptedException, BrokenBarrierException, TimeoutException {
+
+		for (int r = 0; r < 10; r++) {
+			CyclicBarrier barrier = new CyclicBarrier(3);
+			AtomicInteger integer = new AtomicInteger(0);
+//			TraversalHelper.printDebugVertices();
+
+			Node node = content();
+			ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
+			List<Thread> threads = new ArrayList<>();
+			for (int i = 1; i < 3; i++) {
+				System.out.println("Thread [" + i + "] Starting");
+				Thread t = TestUtil.run(() -> {
+					firstTry.set(true);
+					int n = integer.incrementAndGet();
+					db.trx(tx -> {
+						TagFamily tagFamily = tagFamily("colors");
+						project().getTagRoot().reload();
+						Tag tag = tagFamily.create("bogus_" + n, project(), user());
+						node.addTag(tag);
+						tx.success();
+						if (firstTry.get()) {
+							firstTry.set(false);
+							try {
+								System.out.println("Thread [" + n + "] Waiting..");
+								barrier.await(10, TimeUnit.SECONDS);
+								System.out.println("Thread [" + n + "] Waited");
+							} catch (Exception e) {
+								System.out.println("Thread [" + n + "] Error handling.");
+								e.printStackTrace();
+							}
+						}
+						System.out.println("Thread [" + n + "] Successful updated element.");
+					});
+				});
+				threads.add(t);
+			}
+
+			System.out.println("Waiting on lock");
+			barrier.await(2, TimeUnit.SECONDS);
+			for (Thread currentThread : threads) {
+				currentThread.join();
+			}
+			int r2 = r;
+			try (Trx tx = db.trx()) {
+				node.reload();
+				int expect = 2 * (r2 + 1);
+				assertEquals("Expected {" + expect + "} tags since this is the {" + r2 + "} run.", expect, node.getTags().size());
+			}
+		}
+	}
+
+	@Test
 	public void testUpdateMultithreaded() throws InterruptedException, BrokenBarrierException, TimeoutException {
 
 		CyclicBarrier barrier = new CyclicBarrier(3);
@@ -341,7 +393,6 @@ public class NodeTest extends AbstractBasicObjectTest {
 							Tag tag = tagFamily.create("bogus_" + n, project(), user());
 							node.addTag(tag);
 							tx.success();
-
 							if (retry == 0) {
 								try {
 									System.out.println("Thread [" + n + "] Waiting..");

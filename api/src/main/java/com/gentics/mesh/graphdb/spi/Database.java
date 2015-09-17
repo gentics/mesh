@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
@@ -19,6 +20,7 @@ public interface Database {
 	public static void setThreadLocalGraph(FramedGraph graph) {
 		Database.threadLocalGraph.set(graph);
 	}
+
 	public static FramedGraph getThreadLocalGraph() {
 		return Database.threadLocalGraph.get();
 	}
@@ -62,6 +64,8 @@ public interface Database {
 	 * @return
 	 */
 	Trx trx();
+
+	void trx(Consumer<Trx> tx);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic

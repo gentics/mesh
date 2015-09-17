@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
@@ -63,4 +64,19 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	abstract public NoTrx noTrx();
+
+	@Override
+	public void trx(Consumer<Trx> code) {
+		for (int retry = 0; retry < 100; retry++) {
+			try (Trx tx = trx()) {
+				code.accept(tx);
+				break;
+			} catch (RuntimeException e) {
+				log.error("Error while handling transaction. Retrying " + retry, e);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Retrying .. {" + retry + "}");
+			}
+		}
+	}
 }

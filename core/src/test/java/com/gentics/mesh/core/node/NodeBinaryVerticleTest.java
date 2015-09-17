@@ -107,7 +107,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		
+
 		try (Trx tx = db.trx()) {
 			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
 			latchFor(future);

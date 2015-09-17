@@ -71,6 +71,9 @@ public class VerticleHelper {
 			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		} else {
 			SearchQueue searchQueue;
+//			db.trx(()-> {
+//				
+//			});
 			try (Trx txBatch = db.trx()) {
 				searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();

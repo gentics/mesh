@@ -97,6 +97,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public void process(Handler<AsyncResult<Void>> handler) {
+
 		if (log.isDebugEnabled()) {
 			log.debug("Processing batch {" + getBatchId() + "}");
 			printDebug();
