@@ -239,6 +239,7 @@ public class BootstrapInitializer {
 		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 		if (foundMeshRoot == null) {
 			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
+			foundMeshRoot.setDatabaseVersion(Mesh.getVersion());
 			if (log.isInfoEnabled()) {
 				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
 			}

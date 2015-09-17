@@ -100,4 +100,6 @@ public interface MeshRoot extends MeshVertex {
 	 * @param resultHandler
 	 */
 	void resolvePathToElement(String pathToElement, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
+
+	void setDatabaseVersion(String version);
 }

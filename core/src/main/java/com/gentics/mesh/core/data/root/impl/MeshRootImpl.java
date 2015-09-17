@@ -46,6 +46,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
 
+	private static final String DATABASE_VERSION_PROPERTY_KEY = "databaseVersion";
+
 	private static MeshRoot instance;
 
 	private static UserRoot userRoot;
@@ -69,6 +71,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	public static void setInstance(MeshRoot meshRoot) {
 		instance = meshRoot;
+	}
+
+	@Override
+	public String getDatabaseVersion() {
+		return getProperty(DATABASE_VERSION_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setDatabaseVersion(String version) {
+		setProperty(DATABASE_VERSION_PROPERTY_KEY, version);
 	}
 
 	@Override
