@@ -39,11 +39,13 @@ import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.nesting.NodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
@@ -255,6 +257,12 @@ public final class MockingUtils {
 		StringGraphFieldList stringListField = mock(StringGraphFieldListImpl.class);
 		Mockito.<List<? extends StringGraphField>> when(stringListField.getList()).thenReturn(Arrays.asList(stringField, stringField, stringField));
 		when(container.getStringList("stringList")).thenReturn(stringListField);
+
+		// Boolean List Field
+		BooleanGraphFieldList booleanListField = mock(BooleanGraphFieldListImpl.class);
+		Mockito.<List<? extends BooleanGraphField>> when(booleanListField.getList())
+				.thenReturn(Arrays.asList(booleanField, booleanField, booleanField));
+		when(container.getBooleanList("booleanList")).thenReturn(booleanListField);
 
 		// Date List Field
 		DateGraphFieldList dateListField = mock(DateGraphFieldListImpl.class);

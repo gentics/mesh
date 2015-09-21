@@ -185,6 +185,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					fieldsMap.put(name, htmlField.getHTML());
 				}
 				break;
+			case BOOLEAN:
+				BooleanGraphField booleanField = container.getBoolean(name);
+				if (booleanField != null) {
+					fieldsMap.put(name, booleanField.getBoolean());
+				}
+				break;
 			case DATE:
 				DateGraphField dateField = container.getDate(name);
 				if (dateField != null) {

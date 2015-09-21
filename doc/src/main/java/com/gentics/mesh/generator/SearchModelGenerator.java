@@ -164,6 +164,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			throw new RuntimeException("Could not find event to handle");
 		}
 		Map<String, Object> outputMap = new TreeMap<>();
+		//System.out.println(new JSONObject(eventMap).toString(4));
 		flatten(eventMap, outputMap, null);
 		JSONObject json = new JSONObject(outputMap);
 		write(json, name);
@@ -188,7 +189,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 				flatten((Map<String, Object>) entry.getValue(), output, prefix + entry.getKey());
 			} else if (entry.getValue() instanceof List) {
 				output.put(currentKey, entry.getValue());
-			} else if (entry.getValue() instanceof String) {
+			} else {
 				output.put(currentKey, entry.getValue());
 			}
 		}
