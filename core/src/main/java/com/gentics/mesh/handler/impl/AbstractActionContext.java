@@ -31,16 +31,6 @@ public abstract class AbstractActionContext implements ActionContext {
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 	public static final String EXPANDED_FIELDNAMED_DATA_KEY = "expandedFieldnames";
 
-	private Map<String, Object> data;
-
-	@Override
-	public Map<String, Object> data() {
-		if (data == null) {
-			data = new HashMap<>();
-		}
-		return data;
-	}
-
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T get(String key) {
