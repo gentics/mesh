@@ -78,7 +78,7 @@ public class SearchRestHandler {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			builder = client.prepareSearch().setSource(searchQuery);
+			builder = client.prepareSearch().setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("search_query_not_parsable"), e));
 			return;
