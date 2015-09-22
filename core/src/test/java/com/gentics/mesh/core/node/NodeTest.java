@@ -45,6 +45,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.test.TestUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.ThreadUtils;
+import com.gentics.mesh.util.TraversalHelper;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -323,12 +325,68 @@ public class NodeTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testUpdateMultithreadedSimpleThreadUtils() throws InterruptedException, BrokenBarrierException, TimeoutException {
+
+		for (int r = 0; r < 10; r++) {
+			CyclicBarrier barrier = new CyclicBarrier(2);
+			AtomicInteger integer = new AtomicInteger(0);
+			//			TraversalHelper.printDebugVertices();
+			CountDownLatch latch = new CountDownLatch(2);
+			Node node = content();
+			ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
+
+			// Start two threads with a retry trx
+			for (int i = 1; i < 3; i++) {
+				final int threadNr = i;
+				System.out.println("Thread [" + threadNr + "] Starting");
+				ThreadUtils.executeBlocking(tx -> {
+					int n = integer.incrementAndGet();
+					TagFamily tagFamily = tagFamily("colors");
+					project().getTagRoot().reload();
+					Tag tag = tagFamily.create("bogus_" + threadNr, project(), user());
+					node.reload();
+					node.addTag(tag);
+					tx.success();
+
+					if (firstTry.get() == null) {
+						firstTry.set(true);
+						try {
+							System.out.println("Thread [" + threadNr + "] Waiting..");
+							barrier.await(10, TimeUnit.SECONDS);
+							System.out.println("Thread [" + threadNr + "] Waited");
+						} catch (Exception e) {
+							System.out.println("Thread [" + threadNr + "] Error handling.");
+							e.printStackTrace();
+						}
+					}
+
+				} , rh -> {
+					System.out.println("Thread [" + "?" + "] Successfulyl updated element.");
+					latch.countDown();
+				});
+
+				//				});
+				//				threads.add(t);
+			}
+
+			System.out.println("Waiting on lock");
+			latch.await();
+
+			try (Trx tx = db.trx()) {
+				int expect = 2 * (r + 1);
+				assertEquals("Expected {" + expect + "} tags since this is the " + r + "th run.", expect, content().getTags().size());
+			}
+		}
+
+	}
+
+	@Test
 	public void testUpdateMultithreadedSimple() throws InterruptedException, BrokenBarrierException, TimeoutException {
 
 		for (int r = 0; r < 10; r++) {
 			CyclicBarrier barrier = new CyclicBarrier(3);
 			AtomicInteger integer = new AtomicInteger(0);
-//			TraversalHelper.printDebugVertices();
+			//			TraversalHelper.printDebugVertices();
 
 			Node node = content();
 			ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
@@ -342,6 +400,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 						TagFamily tagFamily = tagFamily("colors");
 						project().getTagRoot().reload();
 						Tag tag = tagFamily.create("bogus_" + n, project(), user());
+						node.reload();
 						node.addTag(tag);
 						tx.success();
 						if (firstTry.get()) {
@@ -366,11 +425,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 			for (Thread currentThread : threads) {
 				currentThread.join();
 			}
-			int r2 = r;
 			try (Trx tx = db.trx()) {
-				node.reload();
-				int expect = 2 * (r2 + 1);
-				assertEquals("Expected {" + expect + "} tags since this is the {" + r2 + "} run.", expect, node.getTags().size());
+				int expect = 2 * (r + 1);
+				assertEquals("Expected {" + expect + "} tags since this is the {" + r + "} run.", expect, content().getTags().size());
 			}
 		}
 	}
@@ -378,51 +435,59 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testUpdateMultithreaded() throws InterruptedException, BrokenBarrierException, TimeoutException {
 
-		CyclicBarrier barrier = new CyclicBarrier(3);
-		AtomicInteger integer = new AtomicInteger(0);
-		Node node = content();
-		TagFamily tagFamily = tagFamily("colors");
-		List<Thread> threads = new ArrayList<>();
-		for (int i = 1; i < 3; i++) {
-			System.out.println("Thread [" + i + "] Starting");
-			Thread t = TestUtil.run(() -> {
-				int n = integer.incrementAndGet();
-				for (int retry = 0; retry < 10; retry++) {
-					try {
-						try (Trx tx = db.trx()) {
-							Tag tag = tagFamily.create("bogus_" + n, project(), user());
-							node.addTag(tag);
-							tx.success();
-							if (retry == 0) {
-								try {
-									System.out.println("Thread [" + n + "] Waiting..");
-									barrier.await(10, TimeUnit.SECONDS);
-									System.out.println("Thread [" + n + "] Waited");
-								} catch (Exception e) {
-									System.out.println("Thread [" + n + "] Error handling - retry: " + retry);
-									e.printStackTrace();
+		for (int r = 0; r < 10; r++) {
+//			TraversalHelper.printDebugVertices();
+			CyclicBarrier barrier = new CyclicBarrier(2);
+			AtomicInteger integer = new AtomicInteger(0);
+			Node node = content();
+			TagFamily tagFamily = tagFamily("colors");
+			List<Thread> threads = new ArrayList<>();
+			for (int i = 1; i < 3; i++) {
+				System.out.println("Thread [" + i + "] Starting");
+				Thread t = TestUtil.run(() -> {
+					int n = integer.incrementAndGet();
+					for (int retry = 0; retry < 20; retry++) {
+						try {
+							try (Trx tx = db.trx()) {
+								Tag tag = tagFamily.create("bogus_" + n, project(), user());
+								node.reload();
+								node.addTag(tag);
+								tx.success();
+								if (retry == 0) {
+									try {
+										System.out.println("Thread [" + n + "] Waiting..");
+										barrier.await(10, TimeUnit.SECONDS);
+										System.out.println("Thread [" + n + "] Waited");
+									} catch (Exception e) {
+										System.out.println("Thread [" + n + "] Error handling barrier timeout? - retry: " + retry);
+										//e.printStackTrace();
+									}
 								}
 							}
+							System.out.println("Thread [" + n + "] Successful updated element - retry: " + retry);
+							break;
+						} catch (Exception e) {
+							System.out.println("Thread [" + n + "] Got exception.. - retry: " + retry);
+							System.out.println(e.getClass().getName());
+							e.printStackTrace();
+						} finally {
 						}
-						System.out.println("Thread [" + n + "] Successful updated element - retry: " + retry);
-						break;
-					} catch (Exception e) {
-						System.out.println("Thread [" + n + "] Got exception.. - retry: " + retry);
-						e.printStackTrace();
-					} finally {
-					}
 
-				}
-			});
-			threads.add(t);
+					}
+				});
+				threads.add(t);
+			}
+			System.out.println("Waiting on lock");
+			//barrier.await(2, TimeUnit.SECONDS);
+			for (Thread currentThread : threads) {
+				currentThread.join();
+			}
+			Thread.sleep(1000);
+			try (Trx tx = db.trx()) {
+				int expect = 2 * (r + 1);
+				assertEquals("Expected {" + expect + "} tags since this is the {" + r + "} run.", expect, content().getTags().size());
+			}
 		}
-		System.out.println("Waiting on lock");
-		barrier.await(2, TimeUnit.SECONDS);
-		for (Thread currentThread : threads) {
-			currentThread.join();
-		}
-		node.reload();
-		assertEquals(2, node.getTags().size());
 	}
 
 	@Test

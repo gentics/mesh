@@ -71,7 +71,7 @@ public abstract class AbstractDatabase implements Database {
 			try (Trx tx = trx()) {
 				code.accept(tx);
 				break;
-			} catch (RuntimeException e) {
+			} catch (Exception e) {
 				log.error("Error while handling transaction. Retrying " + retry, e);
 			}
 			if (log.isDebugEnabled()) {
