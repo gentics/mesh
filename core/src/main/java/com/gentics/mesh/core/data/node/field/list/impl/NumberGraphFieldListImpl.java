@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements NumberGraphFieldList {
 
@@ -37,7 +37,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	}
 
 	@Override
-	public NumberFieldListImpl transformToRest(ActionContext ac, String fieldKey) {
+	public NumberFieldListImpl transformToRest(InternalActionContext ac, String fieldKey) {
 		NumberFieldListImpl restModel = new NumberFieldListImpl();
 		for (NumberGraphField item : getList()) {
 			restModel.add(item.getNumber());

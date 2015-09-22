@@ -3,7 +3,6 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertFalse;
@@ -12,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +28,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
+@SuppressWarnings("unused")
 public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired

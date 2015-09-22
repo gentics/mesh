@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -46,7 +46,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void create(ActionContext rc, Handler<AsyncResult<MicroschemaContainer>> handler) {
+	public void create(InternalActionContext rc, Handler<AsyncResult<MicroschemaContainer>> handler) {
 		throw new NotImplementedException();
 	}
 

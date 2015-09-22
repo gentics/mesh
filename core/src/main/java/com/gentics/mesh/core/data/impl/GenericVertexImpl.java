@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.Handler;
 
@@ -15,13 +15,13 @@ public class GenericVertexImpl extends AbstractGenericVertex {
 	}
 
 	@Override
-	public GenericVertex transformToRest(ActionContext rc, Handler handler) {
+	public GenericVertex transformToRest(InternalActionContext rc, Handler handler) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void update(ActionContext cc, Handler handler) {
+	public void update(InternalActionContext cc, Handler handler) {
 		// TODO Auto-generated method stub
 
 	}

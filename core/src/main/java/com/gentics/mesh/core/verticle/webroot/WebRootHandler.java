@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -33,7 +33,7 @@ public class WebRootHandler {
 	@Autowired
 	private Database db;
 
-	public void handleGetPath(ActionContext ac) {
+	public void handleGetPath(InternalActionContext ac) {
 
 		String path = ac.getParameter("param0");
 		String projectName = ac.getProject().getName();

@@ -43,7 +43,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -139,7 +139,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public Project transformToRest(ActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
+	public Project transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
 		ProjectResponse projectResponse = new ProjectResponse();
 		projectResponse.setName(getName());
 		projectResponse.setRootNodeUuid(getBaseNode().getUuid());
@@ -185,7 +185,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 

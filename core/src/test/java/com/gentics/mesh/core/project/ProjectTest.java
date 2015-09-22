@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -124,7 +124,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = project();
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		project.transformToRest(ac, rh -> {
 			assertNotNull(rh.result());
 			ProjectResponse response = rh.result();

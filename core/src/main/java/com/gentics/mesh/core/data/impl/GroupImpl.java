@@ -29,7 +29,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -110,7 +110,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	}
 
-	public Group transformToRest(ActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
+	public Group transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
 		GroupResponse restGroup = new GroupResponse();
 		fillRest(restGroup, ac);
 		restGroup.setName(getName());
@@ -147,7 +147,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		try (NoTrx tx = db.noTrx()) {

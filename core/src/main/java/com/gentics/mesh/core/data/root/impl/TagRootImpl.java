@@ -27,7 +27,7 @@ import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -78,7 +78,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<Tag>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<Tag>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		try (Trx tx = db.trx()) {
 

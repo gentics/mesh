@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -84,7 +84,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	}
 
 	@Override
-	public Role transformToRest(ActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
+	public Role transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
 
 		RoleResponse restRole = new RoleResponse();
 		restRole.setName(getName());
@@ -115,7 +115,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 

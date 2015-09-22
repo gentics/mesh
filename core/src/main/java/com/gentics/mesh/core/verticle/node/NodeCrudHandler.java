@@ -36,7 +36,8 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.HttpActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.VerticleHelper;
 
@@ -56,14 +57,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Override
-	public void handleCreate(ActionContext ac) {
+	public void handleCreate(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			createObject(ac, boot.meshRoot().getNodeRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(ActionContext ac) {
+	public void handleDelete(InternalActionContext ac) {
 		//		Mesh.vertx().executeBlocking(bc -> {
 		try (NoTrx tx = db.noTrx()) {
 			String uuid = ac.getParameter("uuid");
@@ -82,7 +83,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	@Override
-	public void handleUpdate(ActionContext ac) {
+	public void handleUpdate(InternalActionContext ac) {
 		//		Mesh.vertx().executeBlocking(bc -> {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
@@ -97,7 +98,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	@Override
-	public void handleRead(ActionContext ac) {
+	public void handleRead(InternalActionContext ac) {
 
 		//			Mesh.vertx().executeBlocking(bc -> {
 		try (NoTrx tx = db.noTrx()) {
@@ -112,14 +113,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	@Override
-	public void handleReadList(ActionContext ac) {
+	public void handleReadList(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getNodeRoot(), new NodeListResponse());
 		}
 	}
 
-	public void handleMove(ActionContext ac) {
+	public void handleMove(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			// Load the node that should be moved
@@ -150,7 +151,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	//TODO abstract rc away
 	public void handleDownload(RoutingContext rc) {
 		try (NoTrx tx = db.noTrx()) {
-			ActionContext ac = ActionContext.create(rc);
+			InternalActionContext ac = InternalActionContext.create(rc);
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -167,7 +168,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleUpload(HttpActionContext ac) {
+	public void handleUpload(InternalHttpActionContext ac) {
 
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
@@ -324,7 +325,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	}
 
-	public void handleReadChildren(ActionContext ac) {
+	public void handleReadChildren(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
@@ -341,7 +342,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void readTags(ActionContext ac) {
+	public void readTags(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
@@ -358,7 +359,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleAddTag(ActionContext ac) {
+	public void handleAddTag(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			if (project == null) {
@@ -384,7 +385,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleRemoveTag(ActionContext ac) {
+	public void handleRemoveTag(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -403,7 +404,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleReadField(ActionContext ac) {
+	public void handleReadField(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
@@ -412,7 +413,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleAddFieldItem(ActionContext ac) {
+	public void handleAddFieldItem(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -421,7 +422,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleUpdateField(ActionContext ac) {
+	public void handleUpdateField(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -430,7 +431,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleRemoveField(ActionContext ac) {
+	public void handleRemoveField(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -439,7 +440,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleRemoveFieldItem(ActionContext ac) {
+	public void handleRemoveFieldItem(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -448,7 +449,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleUpdateFieldItem(ActionContext ac) {
+	public void handleUpdateFieldItem(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -457,7 +458,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleReadFieldItem(ActionContext ac) {
+	public void handleReadFieldItem(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
@@ -466,7 +467,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleMoveFieldItem(ActionContext ac) {
+	public void handleMoveFieldItem(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {

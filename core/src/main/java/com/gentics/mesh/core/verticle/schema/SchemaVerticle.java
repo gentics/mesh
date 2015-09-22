@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -43,12 +43,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addSchemaProjectHandlers() {
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleAddProjectToSchema(ActionContext.create(rc));
+			crudHandler.handleAddProjectToSchema(InternalActionContext.create(rc));
 		});
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleRemoveProjectFromSchema(ActionContext.create(rc));
+			crudHandler.handleRemoveProjectFromSchema(InternalActionContext.create(rc));
 		});
 	}
 
@@ -56,7 +56,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleCreate(ActionContext.create(rc));
+			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
@@ -65,14 +65,14 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleUpdate(ActionContext.create(rc));
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleDelete(ActionContext.create(rc));
+			crudHandler.handleDelete(InternalActionContext.create(rc));
 		});
 	}
 
@@ -82,12 +82,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(ActionContext.create(rc));
+				crudHandler.handleRead(InternalActionContext.create(rc));
 			}
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleReadList(ActionContext.create(rc));
+			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 
 	}

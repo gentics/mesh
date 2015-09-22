@@ -9,33 +9,33 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 public class MicroschemaCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(ActionContext ac) {
+	public void handleCreate(InternalActionContext ac) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public void handleDelete(ActionContext ac) {
+	public void handleDelete(InternalActionContext ac) {
 		deleteObject(ac, "uuid", "group_deleted", boot.microschemaContainerRoot());
 	}
 
 	@Override
-	public void handleUpdate(ActionContext ac) {
+	public void handleUpdate(InternalActionContext ac) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public void handleRead(ActionContext ac) {
+	public void handleRead(InternalActionContext ac) {
 		loadTransformAndResponde(ac, "uuid", READ_PERM, boot.microschemaContainerRoot());
 	}
 
 	@Override
-	public void handleReadList(ActionContext ac) {
+	public void handleReadList(InternalActionContext ac) {
 		loadTransformAndResponde(ac, boot.microschemaContainerRoot(), new MicroschemaListResponse());
 	}
 

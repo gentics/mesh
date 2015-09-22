@@ -19,7 +19,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +47,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -213,7 +212,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public User transformToRest(ActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
+	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
 		UserResponse restUser = new UserResponse();
 		fillRest(restUser, ac);
 		restUser.setUsername(getUsername());
@@ -335,7 +334,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		UserUpdateRequest requestModel;
 		try {

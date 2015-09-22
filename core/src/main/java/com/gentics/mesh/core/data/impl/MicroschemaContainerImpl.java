@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -32,7 +32,7 @@ public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaR
 	}
 
 	@Override
-	public GenericVertex<MicroschemaResponse> transformToRest(ActionContext ac, Handler<AsyncResult<MicroschemaResponse>> handler) {
+	public GenericVertex<MicroschemaResponse> transformToRest(InternalActionContext ac, Handler<AsyncResult<MicroschemaResponse>> handler) {
 		MicroschemaResponse response = new MicroschemaResponse();
 		//fillRest(response, rc);
 		handler.handle(Future.succeededFuture(response));
@@ -45,7 +45,7 @@ public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaR
 	}
 
 	@Override
-	public void update(ActionContext rc, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext rc, Handler<AsyncResult<Void>> handler) {
 		throw new NotImplementedException();
 	}
 

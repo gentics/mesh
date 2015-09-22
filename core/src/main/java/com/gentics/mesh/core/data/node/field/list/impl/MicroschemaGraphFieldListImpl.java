@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldL
 import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public class MicroschemaGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicroschemaGraphField, MicroschemaFieldListImpl>
 		implements MicroschemaGraphFieldList {
@@ -22,7 +22,7 @@ public class MicroschemaGraphFieldListImpl extends AbstractReferencingGraphField
 	}
 
 	@Override
-	public MicroschemaFieldListImpl transformToRest(ActionContext ac, String fieldKey) {
+	public MicroschemaFieldListImpl transformToRest(InternalActionContext ac, String fieldKey) {
 		// TODO Auto-generated method stub
 		return null;
 	}

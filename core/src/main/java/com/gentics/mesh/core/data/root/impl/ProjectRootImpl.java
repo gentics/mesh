@@ -33,7 +33,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -142,7 +142,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<Project>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<Project>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		RouterStorage routerStorage = RouterStorage.getRouterStorage();
 		MeshRoot meshRoot = BootstrapInitializer.getBoot().meshRoot();

@@ -1,7 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
 import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
-import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -9,18 +8,19 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -30,16 +30,6 @@ public abstract class AbstractActionContext implements ActionContext {
 
 	public static final String QUERY_MAP_DATA_KEY = "queryMap";
 	public static final String EXPANDED_FIELDNAMED_DATA_KEY = "expandedFieldnames";
-
-	private Map<String, Object> data;
-
-	@Override
-	public Map<String, Object> data() {
-		if (data == null) {
-			data = new HashMap<>();
-		}
-		return data;
-	}
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -111,21 +101,6 @@ public abstract class AbstractActionContext implements ActionContext {
 		return (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
 	}
 
-	@Override
-	public List<String> getSelectedLanguageTags() {
-		List<String> languageTags = new ArrayList<>();
-		Map<String, String> queryPairs = splitQuery();
-		if (queryPairs == null) {
-			return new ArrayList<>();
-		}
-		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value != null) {
-			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
-		}
-		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
-		return languageTags;
-	}
-
 	public static Locale getLocale(String header) {
 		Locale bestMatchingLocale = I18NUtil.DEFAULT_LOCALE;
 		Double highesQ = 0.;
@@ -183,4 +158,18 @@ public abstract class AbstractActionContext implements ActionContext {
 		return bestMatchingLocale;
 	}
 
+	@Override
+	public <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nMessage, Throwable cause) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18n(i18nMessage), cause));
+	}
+
+	@Override
+	public <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18n(i18nKey, parameters)));
+	}
+
+	@Override
+	public String i18n(String i18nKey, String... parameters) {
+		return I18NUtil.get(this, i18nKey, parameters);
+	}
 }

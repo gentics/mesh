@@ -18,7 +18,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -92,7 +92,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<SchemaContainer>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<SchemaContainer>> handler) {
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 

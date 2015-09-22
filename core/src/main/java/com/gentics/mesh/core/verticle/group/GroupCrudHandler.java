@@ -24,48 +24,48 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 @Component
 public class GroupCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(ActionContext ac) {
+	public void handleCreate(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			createObject(ac, boot.groupRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(ActionContext ac) {
+	public void handleDelete(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			deleteObject(ac, "uuid", "group_deleted", boot.groupRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(ActionContext ac) {
+	public void handleUpdate(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			updateObject(ac, "uuid", boot.groupRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(ActionContext ac) {
+	public void handleRead(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.groupRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(ActionContext ac) {
+	public void handleReadList(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			loadTransformAndResponde(ac, boot.groupRoot(), new GroupListResponse());
 		}
 	}
 
-	public void handleGroupRolesList(ActionContext ac) {
+	public void handleGroupRolesList(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			PagingInfo pagingInfo = ac.getPagingInfo();
 			MeshAuthUser requestUser = ac.getUser();
@@ -80,7 +80,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleAddRoleToGroup(ActionContext ac) {
+	public void handleAddRoleToGroup(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
@@ -100,7 +100,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleRemoveRoleFromGroup(ActionContext ac) {
+	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
@@ -121,7 +121,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleGroupUserList(ActionContext ac) {
+	public void handleGroupUserList(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingInfo pagingInfo = ac.getPagingInfo();
@@ -141,7 +141,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleAddUserToGroup(ActionContext ac) {
+	public void handleAddUserToGroup(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
@@ -162,7 +162,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		}
 	}
 
-	public void handleRemoveUserFromGroup(ActionContext ac) {
+	public void handleRemoveUserFromGroup(InternalActionContext ac) {
 		try (NoTrx tx = db.noTrx()) {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {

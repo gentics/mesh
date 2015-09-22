@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -56,7 +56,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addTaggedNodesHandler() {
 		Route getRoute = route("/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			crudHandler.handleTaggedNodesList(ActionContext.create(rc));
+			crudHandler.handleTaggedNodesList(InternalActionContext.create(rc));
 		});
 	}
 
@@ -66,7 +66,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleUpdate(ActionContext.create(rc));
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 
 	}
@@ -77,7 +77,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleCreate(ActionContext.create(rc));
+			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
@@ -85,12 +85,12 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addReadHandler() {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleRead(ActionContext.create(rc));
+			crudHandler.handleRead(InternalActionContext.create(rc));
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			crudHandler.handleReadList(ActionContext.create(rc));
+			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 
 	}
@@ -99,7 +99,7 @@ public class TagVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleDelete(ActionContext.create(rc));
+			crudHandler.handleDelete(InternalActionContext.create(rc));
 		});
 	}
 

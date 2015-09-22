@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractDBTest;
 
 import io.vertx.ext.web.RoutingContext;
@@ -33,7 +33,7 @@ public class AuthUserTest extends AbstractDBTest {
 	@Test
 	public void testAuthorization() throws Exception {
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 		Language targetNode = english();
 		final CountDownLatch latch = new CountDownLatch(1);

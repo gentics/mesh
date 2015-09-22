@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl>implements StringGraphFieldList {
 
@@ -37,7 +37,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public StringFieldListImpl transformToRest(ActionContext ac, String fieldKey) {
+	public StringFieldListImpl transformToRest(InternalActionContext ac, String fieldKey) {
 		StringFieldListImpl restModel = new StringFieldListImpl();
 		for (StringGraphField item : getList()) {
 			restModel.add(item.getString());

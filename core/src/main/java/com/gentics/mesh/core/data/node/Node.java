@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
@@ -83,7 +83,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
-	Page<? extends Tag> getTags(ActionContext ac) throws InvalidArgumentException;
+	Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
 	void createLink(Node node);
 
@@ -241,9 +241,9 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param ac
 	 * @return
 	 */
-	String getDisplayName(ActionContext ac);
+	String getDisplayName(InternalActionContext ac);
 
-	NodeGraphFieldContainer findNextMatchingFieldContainer(ActionContext ac);
+	NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac);
 
 	/**
 	 * Return the file path for the binary file location of the node.
@@ -274,6 +274,6 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param resultHandler
 	 * @return
 	 */
-	void moveTo(ActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
+	void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
 
 }

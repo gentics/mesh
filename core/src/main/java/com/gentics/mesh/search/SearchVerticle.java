@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -64,7 +64,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			try {
-				searchHandler.handleSearch(ActionContext.create(rc), root, classOfRL);
+				searchHandler.handleSearch(InternalActionContext.create(rc), root, classOfRL);
 			} catch (Exception e) {
 				//fail(rc, "search_error_query");
 				rc.fail(e);

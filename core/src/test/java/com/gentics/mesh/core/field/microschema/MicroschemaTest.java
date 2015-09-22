@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -37,7 +37,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 
 		Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingInfo(1, 10));

@@ -35,7 +35,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -98,7 +98,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<User>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<User>> handler) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		UserCreateRequest requestModel;
@@ -128,7 +128,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 						Group parentGroup = rh.result();
 						if (findByUsername(requestModel.getUsername()) != null) {
 							String message = ac.i18n("user_conflicting_username");
-							handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, message)));
+							handler.handle(ac.failedFuture(CONFLICT, message));
 							return;
 						}
 						MeshAuthUser requestUser = ac.getUser();

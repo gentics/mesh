@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList>implements NodeGraphFieldList {
 
@@ -34,7 +34,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public NodeFieldList transformToRest(ActionContext ac, String fieldKey) {
+	public NodeFieldList transformToRest(InternalActionContext ac, String fieldKey) {
 		NodeFieldList restModel = new NodeFieldListImpl();
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey);
 		for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {

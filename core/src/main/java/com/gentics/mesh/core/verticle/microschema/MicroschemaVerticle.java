@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 @Scope("singleton")
@@ -44,31 +44,31 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(ActionContext.create(rc));
+				crudHandler.handleRead(InternalActionContext.create(rc));
 			}
 		});
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleReadList(ActionContext.create(rc));
+			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleDelete(ActionContext.create(rc));
+			crudHandler.handleDelete(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(ActionContext.create(rc));
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 
 	}
 
 	private void addCreateHandler() {
 		route().method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleCreate(ActionContext.create(rc));
+			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 
 	}

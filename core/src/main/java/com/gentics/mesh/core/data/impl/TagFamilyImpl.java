@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -120,7 +120,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public TagFamily transformToRest(ActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
+	public TagFamily transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
 		TagFamilyResponse response = new TagFamilyResponse();
 		response.setName(getName());
 
@@ -143,7 +143,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();

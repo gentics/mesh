@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
@@ -45,7 +45,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	}
 
 	@Override
-	public SchemaContainer transformToRest(ActionContext ac, Handler<AsyncResult<SchemaResponse>> handler) {
+	public SchemaContainer transformToRest(InternalActionContext ac, Handler<AsyncResult<SchemaResponse>> handler) {
 		try {
 			SchemaResponse schemaResponse = JsonUtil.readSchema(getJson(), SchemaResponse.class);
 			schemaResponse.setUuid(getUuid());
@@ -133,7 +133,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
 

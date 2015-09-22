@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -23,6 +23,6 @@ public interface TransformableNode<T extends RestModel> {
 	 *            Handler that is invoked when transformation failed or succeeded.
 	 * @return
 	 */
-	GenericVertex<T> transformToRest(ActionContext ac, Handler<AsyncResult<T>> handler);
+	GenericVertex<T> transformToRest(InternalActionContext ac, Handler<AsyncResult<T>> handler);
 
 }

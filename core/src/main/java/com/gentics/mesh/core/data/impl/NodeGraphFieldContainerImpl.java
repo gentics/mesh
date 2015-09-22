@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -333,7 +334,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Field getRestFieldFromGraph(ActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField) {
+	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:

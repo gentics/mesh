@@ -24,7 +24,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -72,7 +72,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<Group>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<Group>> handler) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 

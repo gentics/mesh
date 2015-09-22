@@ -28,9 +28,10 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+
 import io.vertx.ext.web.RoutingContext;
 
 public class RoleTest extends AbstractBasicObjectTest {
@@ -183,7 +184,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		role().grantPermissions(extraRole, READ_PERM);
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 		Page<? extends Role> roles = group().getRoles(requestUser, new PagingInfo(1, 10));
 		assertEquals(2, roles.getSize());
@@ -196,7 +197,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 		Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 5));
 		assertEquals(roles().size(), page.getTotalElements());
@@ -231,7 +232,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = role();
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		role.transformToRest(ac, rh -> {
 			RoleResponse restModel = rh.result();
 			assertNotNull(restModel);

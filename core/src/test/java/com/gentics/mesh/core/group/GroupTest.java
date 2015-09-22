@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -48,7 +48,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 19));
 
@@ -102,7 +102,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testTransformation() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		group().transformToRest(ac, rh -> {
 			GroupResponse response = rh.result();
 			assertNotNull(response);

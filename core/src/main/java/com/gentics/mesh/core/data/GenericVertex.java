@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -71,6 +71,6 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void setCreationTimestamp(long timestamp);
 
-	void update(ActionContext ac, Handler<AsyncResult<Void>> handler);
+	void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler);
 
 }

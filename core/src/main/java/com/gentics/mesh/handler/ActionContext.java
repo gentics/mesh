@@ -4,16 +4,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.gentics.mesh.api.common.PagingInfo;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.handler.impl.HttpActionContextImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -36,10 +32,6 @@ public interface ActionContext {
 	static ActionContext create(RoutingContext rc) {
 		return new HttpActionContextImpl(rc);
 	}
-
-	Project getProject();
-
-	MeshAuthUser getUser();
 
 	/**
 	 * Return the request parameter with the given name.
@@ -99,21 +91,6 @@ public interface ActionContext {
 	 */
 	void fail(Throwable cause);
 
-	/**
-	 * Extracts the lang parameter values from the query.
-	 * 
-	 * @return List of languages. List can be empty.
-	 */
-	List<String> getSelectedLanguageTags();
-
-	/**
-	 * Extract the paging information from the request parameters. The paging information contains information about the number of the page that is currently
-	 * requested and the amount of items that should be included in a single page.
-	 * 
-	 * @return Paging information
-	 */
-	PagingInfo getPagingInfo();
-
 	<T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException;
 
 	String getBodyAsString();
@@ -121,8 +98,6 @@ public interface ActionContext {
 	Locale getLocale();
 
 	List<String> getExpandedFieldnames();
-
-	void setUser(User user);
 
 	/**
 	 * Perform a logout.
