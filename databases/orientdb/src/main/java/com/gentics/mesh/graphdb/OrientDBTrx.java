@@ -9,7 +9,7 @@ public class OrientDBTrx extends AbstractTrx {
 
 	public OrientDBTrx(Database database) {
 		FramedTransactionalGraph txGraph = database.startTransaction();
-		((OrientGraph)((DelegatingFramedTransactionalGraph)txGraph).getBaseGraph()).getRawGraph().activateOnCurrentThread();
+		//((OrientGraph)((DelegatingFramedTransactionalGraph)txGraph).getBaseGraph()).getRawGraph().activateOnCurrentThread();
 		init(database, txGraph);
 	}
 
