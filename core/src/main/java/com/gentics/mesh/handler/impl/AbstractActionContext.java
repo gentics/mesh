@@ -33,7 +33,8 @@ public abstract class AbstractActionContext implements ActionContext {
 
 	private Map<String, Object> data;
 
-	private Map<String, Object> getData() {
+	@Override
+	public Map<String, Object> data() {
 		if (data == null) {
 			data = new HashMap<>();
 		}
@@ -43,13 +44,13 @@ public abstract class AbstractActionContext implements ActionContext {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T get(String key) {
-		Object obj = getData().get(key);
+		Object obj = data().get(key);
 		return (T) obj;
 	}
 
 	@Override
 	public ActionContext put(String key, Object obj) {
-		getData().put(key, obj);
+		data().put(key, obj);
 		return this;
 	}
 
