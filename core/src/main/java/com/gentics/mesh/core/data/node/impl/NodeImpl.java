@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -196,77 +197,84 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 
-		ObservableFuture<NodeResponse> observableFuture = RxHelper.observableFuture();
-		observableFuture.subscribe(response -> {
-			handler.handle(Future.succeededFuture(response));
-		});
-		
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
+
 		NodeResponse restNode = new NodeResponse();
 		fillRest(restNode, ac);
 
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
+			handler.handle(ac.failedFuture(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
 		}
 		restNode.setPublished(isPublished());
 
 		try {
 			Schema schema = container.getSchema();
 			if (schema == null) {
-				throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found.");
+				handler.handle(ac.failedFuture(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
+			} else {
+				restNode.setDisplayField(schema.getDisplayField());
+				// Load the children
+				if (schema.isFolder()) {
+					// //TODO handle uuid
+					// //TODO handle expand
+					List<String> children = new ArrayList<>();
+					// //TODO check permissions
+					for (Node child : getChildren()) {
+						children.add(child.getUuid());
+					}
+					restNode.setContainer(true);
+					restNode.setChildren(children);
+				}
+				if (schema.isBinary()) {
+					restNode.setFileName(getBinaryFileName());
+					BinaryProperties binaryProperties = new BinaryProperties();
+					binaryProperties.setMimeType(getBinaryContentType());
+					binaryProperties.setFileSize(getBinaryFileSize());
+					binaryProperties.setSha512sum(getBinarySHA512Sum());
+					// TODO determine whether file is an image
+					// binaryProperties.setDpi(getImageDpi());
+					getBinaryImageDPI();
+					getBinaryImageHeight();
+					getBinaryImageWidth();
+					// binaryProperties.setHeight(getImageHeight());
+					// binaryProperties.setWidth(getImageWidth());
+					restNode.setBinaryProperties(binaryProperties);
+				}
 			}
-			/* Load the schema information */
+
+			// Schema reference
 			SchemaContainer schemaContainer = getSchemaContainer();
 			if (schemaContainer != null) {
+				ObservableFuture<Void> obsSchemaReference = RxHelper.observableFuture();
+				futures.add(obsSchemaReference);
 				schemaContainer.transformToReference(ac, rh -> {
-					//TODO check for failure and null
-					restNode.setSchema(rh.result());
+					if (rh.succeeded()) {
+						restNode.setSchema(rh.result());
+						obsSchemaReference.toHandler().handle(Future.succeededFuture());
+					} else {
+						obsSchemaReference.toHandler().handle(Future.failedFuture(rh.cause()));
+					}
 				});
-
 			}
 
-			restNode.setDisplayField(schema.getDisplayField());
-	
+			// Parent node reference
 			Node parentNode = getParentNode();
 			if (parentNode != null) {
-				ObservableFuture<NodeReferenceImpl> obsParentNodeReference = RxHelper.observableFuture();
-				obsParentNodeReference.subscribe(nodeReferenceImpl-> {
-					restNode.setParentNode(nodeReferenceImpl);
+				ObservableFuture<Void> obsParentNodeReference = RxHelper.observableFuture();
+				futures.add(obsParentNodeReference);
+				parentNode.transformToReference(ac, rh -> {
+					if (rh.succeeded()) {
+						restNode.setParentNode(rh.result());
+						obsParentNodeReference.toHandler().handle(Future.succeededFuture());
+					} else {
+						obsParentNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
+					}
 				});
-				parentNode.transformToReference(ac, obsParentNodeReference.toHandler());
-			} 
-
-			/* Load the children */
-			if (getSchema().isFolder()) {
-				// //TODO handle uuid
-				// //TODO handle expand
-				List<String> children = new ArrayList<>();
-				// //TODO check permissions
-				for (Node child : getChildren()) {
-					children.add(child.getUuid());
-				}
-				restNode.setContainer(true);
-				restNode.setChildren(children);
 			}
 
 			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
-
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
-			if (schema.isBinary()) {
-				restNode.setFileName(getBinaryFileName());
-				BinaryProperties binaryProperties = new BinaryProperties();
-				binaryProperties.setMimeType(getBinaryContentType());
-				binaryProperties.setFileSize(getBinaryFileSize());
-				binaryProperties.setSha512sum(getBinarySHA512Sum());
-				// TODO determine whether file is an image
-				// binaryProperties.setDpi(getImageDpi());
-				getBinaryImageDPI();
-				getBinaryImageHeight();
-				getBinaryImageWidth();
-				// binaryProperties.setHeight(getImageHeight());
-				// binaryProperties.setWidth(getImageWidth());
-				restNode.setBinaryProperties(binaryProperties);
-			}
 
 			if (fieldContainer == null) {
 				List<String> languageTags = ac.getSelectedLanguageTags();
@@ -283,8 +291,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 							expandField);
 					if (fieldEntry.isRequired() && restField == null) {
 						/* TODO i18n */
-						throw new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
-								+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+						handler.handle(ac.failedFuture(BAD_REQUEST, "The field {" + fieldEntry.getName()
+								+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
 					}
 					if (restField == null) {
 						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
@@ -294,7 +302,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				}
 			}
 
-			// try {
+			// Tags
 			for (Tag tag : getTags(ac)) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
@@ -310,14 +318,15 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 		} catch (InvalidArgumentException e) {
 			// TODO i18n
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
+			handler.handle(ac.failedFuture(BAD_REQUEST, "Could not transform tags"));
 		}
 
-		// } catch (IOException e) {
-		// // TODO i18n
-		// throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
-		// }
-
+		Observable.merge(futures).subscribe(item -> {
+		} , error -> {
+			handler.handle(Future.failedFuture(error));
+		} , () -> {
+			handler.handle(Future.succeededFuture(restNode));
+		});
 		return this;
 
 	}
@@ -327,7 +336,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
-		//TODO add schema information
+		// TODO add schema information
 		handler.handle(Future.succeededFuture(nodeReference));
 		return this;
 	}
