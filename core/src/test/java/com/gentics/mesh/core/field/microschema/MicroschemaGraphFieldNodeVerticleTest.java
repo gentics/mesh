@@ -17,7 +17,6 @@ import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
-import com.gentics.mesh.graphdb.Trx;
 
 public class MicroschemaGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
@@ -35,12 +34,10 @@ public class MicroschemaGraphFieldNodeVerticleTest extends AbstractGraphFieldNod
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = createNode("microschemaField", (Field) null);
-			MicroschemaField field = response.getField("microschemaField");
-			assertNotNull(field);
-			assertNull(field.getFields());
-		}
+		NodeResponse response = createNode("microschemaField", (Field) null);
+		MicroschemaField field = response.getField("microschemaField");
+		assertNotNull(field);
+		assertNull(field.getFields());
 	}
 
 	@Ignore("Not yet implemented")

@@ -36,7 +36,8 @@ public final class MeshAssert {
 				future.succeeded());
 	}
 
-	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws InterruptedException {
+	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
+		root.reload();
 		CountDownLatch latch = new CountDownLatch(1);
 		root.findByUuid(uuid, rh -> {
 			if (exists) {
@@ -76,14 +77,14 @@ public final class MeshAssert {
 		}
 	}
 
-	public static void failingLatch(CountDownLatch latch) throws InterruptedException {
-		if (!latch.await(1, TimeUnit.SECONDS)) {
+	public static void failingLatch(CountDownLatch latch) throws Exception {
+		if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
 			fail("Latch timeout reached");
 		}
 	}
 
 	public static void assertDeleted(Map<String, String> uuidToBeDeleted) {
-		try (Trx tx = new Trx(MeshSpringConfiguration.getMeshSpringConfiguration().database())) {
+		try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
 			for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
 				assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}",
 						tx.getGraph().v().has("uuid", entry.getValue()).hasNext());

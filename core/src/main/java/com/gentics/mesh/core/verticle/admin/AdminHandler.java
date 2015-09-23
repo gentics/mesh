@@ -22,6 +22,7 @@ public class AdminHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	public void handleStatus(RoutingContext rc) {
+		//TODO refactor and send a json response
 		rc.response().setStatusCode(200);
 		rc.response().end("OK");
 	}

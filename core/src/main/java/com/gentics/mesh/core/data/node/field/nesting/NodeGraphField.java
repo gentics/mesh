@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.node.field.nesting;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public interface NodeGraphField extends ListableReferencingGraphField, MicroschemaListableGraphField {
 
@@ -14,6 +14,6 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	 */
 	Node getNode();
 
-	Field transformToRest(ActionContext ac, String fieldKey);
+	Field transformToRest(InternalActionContext ac, String fieldKey);
 
 }

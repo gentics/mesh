@@ -141,7 +141,7 @@ public class RestAssert {
 		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
 		assertNotNull("Creator field was not set in the rest response.", model.getCreator());
 		assertNotNull("Editor field was not set in the rest response.", model.getEditor());
-
+		assertNotNull("The editor of the graph node was not set.", node.getEditor());
 		assertEquals(node.getEditor().getUsername(), model.getEditor().getName());
 		assertEquals(node.getEditor().getUuid(), model.getEditor().getUuid());
 		assertEquals(node.getCreator().getUsername(), model.getCreator().getName());

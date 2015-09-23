@@ -10,16 +10,13 @@ import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 /**
  * This class contains a collection of traversal methods that can be used for pagination and other traversals.
- * 
- * @author johannes2
- *
  */
 public final class TraversalHelper {
 
@@ -96,8 +93,8 @@ public final class TraversalHelper {
 	}
 
 	public static void printDebugVertices() {
-		for (VertexFrame frame : Trx.getFramedLocalGraph().v()) {
-			System.out.println(frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name"));
+		for (VertexFrame frame : Database.getThreadLocalGraph().v()) {
+			System.out.println(frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}
 
 	}

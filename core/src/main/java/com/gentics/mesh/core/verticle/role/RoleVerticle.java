@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 @Scope("singleton")
@@ -39,38 +39,38 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addPermissionHandler() {
 		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).handler(rc -> {
-			crudHandler.handlePermissionUpdate(ActionContext.create(rc));
+			crudHandler.handlePermissionUpdate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			crudHandler.handleDelete(ActionContext.create(rc));
+			crudHandler.handleDelete(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(ActionContext.create(rc));
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).handler(rc -> {
-			crudHandler.handleRead(ActionContext.create(rc));
+			crudHandler.handleRead(InternalActionContext.create(rc));
 		});
 
 		/*
 		 * List all roles when no parameter was specified
 		 */
 		route("/").method(GET).handler(rc -> {
-			crudHandler.handleReadList(ActionContext.create(rc));
+			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addCreateHandler() {
 		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleCreate(ActionContext.create(rc));
+			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 }

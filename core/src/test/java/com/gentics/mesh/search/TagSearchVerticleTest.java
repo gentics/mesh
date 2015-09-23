@@ -18,8 +18,7 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.Future;
@@ -50,7 +49,6 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
-
 	}
 
 	@Test
@@ -67,7 +65,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 		updateTag(PROJECT_NAME, tag.getUuid(), newName + "2");
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			assertEquals(newName + "2", tag.getName());
 			assertEquals(0, meshRoot().getSearchQueue().getSize());
 		}
@@ -83,20 +81,16 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
-	public void testDocumentDeletion() throws InterruptedException, JSONException {
-		String name;
-		String uuid;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("red");
-			name = tag.getName();
-			uuid = tag.getUuid();
-			// Add the tag to the index
-			CountDownLatch latch = new CountDownLatch(1);
-			tagIndexHandler.store(tag, Tag.TYPE, rh -> {
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+	public void testDocumentDeletion() throws Exception {
+		Tag tag = tag("red");
+		String name = tag.getName();
+		String uuid = tag.getUuid();
+		// Add the tag to the index
+		CountDownLatch latch = new CountDownLatch(1);
+		tagIndexHandler.store(tag, Tag.TYPE, rh -> {
+			latch.countDown();
+		});
+		failingLatch(latch);
 		searchProvider.refreshIndex();
 
 		// 1. Verify that the tag is indexed

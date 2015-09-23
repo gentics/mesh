@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -37,14 +38,17 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -192,7 +196,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex node) {
-
+		//TODO FIXME refactor this code. The traversal is not fast
 		Set<GraphPermission> permissions = new HashSet<>();
 		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back().label()
 				.toSet();
@@ -208,7 +212,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public User transformToRest(ActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
+	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
 		UserResponse restUser = new UserResponse();
 		fillRest(restUser, ac);
 		restUser.setUsername(getUsername());
@@ -218,19 +222,41 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 		Node node = getReferencedNode();
 		if (node != null) {
-			NodeReference userNodeReference = new NodeReference();
-			userNodeReference.setUuid(node.getUuid());
-			if (node.getProject() != null) {
-				userNodeReference.setProjectName(node.getProject().getName());
+			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
+			if (expandReference) {
+				//				//TODO handle expanded form
+				//				handler.handle(ac.failedFuture(BAD_REQUEST, "Expanding of node references not yet implemented."));
+				//				return;
+				node.transformToRest(ac, rh -> {
+					restUser.setNodeReference(rh.result());
+					for (Group group : getGroups()) {
+						restUser.addGroup(group.getName());
+					}
+					handler.handle(Future.succeededFuture(restUser));
+				});
+
 			} else {
-				// TODO handle this case
+				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+				userNodeReference.setUuid(node.getUuid());
+				if (node.getProject() != null) {
+					userNodeReference.setProjectName(node.getProject().getName());
+				} else {
+					log.error("Project of node is null. Can't set project field of user nodeReference.");
+					// TODO handle this case
+				}
+				restUser.setNodeReference(userNodeReference);
+				for (Group group : getGroups()) {
+					restUser.addGroup(group.getName());
+				}
+				handler.handle(Future.succeededFuture(restUser));
+
 			}
-			restUser.setNodeReference(userNodeReference);
+		} else {
+			for (Group group : getGroups()) {
+				restUser.addGroup(group.getName());
+			}
+			handler.handle(Future.succeededFuture(restUser));
 		}
-		for (Group group : getGroups()) {
-			restUser.addGroup(group.getName());
-		}
-		handler.handle(Future.succeededFuture(restUser));
 		return this;
 	}
 
@@ -308,64 +334,73 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
-		SearchQueueBatch batch = null;
-		try (Trx txUpdate = db.trx()) {
+		UserUpdateRequest requestModel;
+		try {
+			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			SearchQueueBatch batch = null;
+			try (Trx txUpdate = db.trx()) {
 
-			if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
-				if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-					handler.handle(ac.failedFuture(CONFLICT, "user_conflicting_username"));
-					return;
-				}
-				setUsername(requestModel.getUsername());
-			}
-
-			if (!isEmpty(requestModel.getFirstname()) && !getFirstname().equals(requestModel.getFirstname())) {
-				setFirstname(requestModel.getFirstname());
-			}
-
-			if (!isEmpty(requestModel.getLastname()) && !getLastname().equals(requestModel.getLastname())) {
-				setLastname(requestModel.getLastname());
-			}
-
-			if (!isEmpty(requestModel.getEmailAddress()) && !getEmailAddress().equals(requestModel.getEmailAddress())) {
-				setEmailAddress(requestModel.getEmailAddress());
-			}
-
-			if (!isEmpty(requestModel.getPassword())) {
-				setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
-			}
-
-			setEditor(ac.getUser());
-			setLastEditedTimestamp(System.currentTimeMillis());
-			if (requestModel.getNodeReference() != null) {
-				NodeReference reference = requestModel.getNodeReference();
-				if (isEmpty(reference.getProjectName()) || isEmpty(reference.getUuid())) {
-					handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
-					return;
-				} else {
-					String referencedNodeUuid = requestModel.getNodeReference().getUuid();
-					String projectName = requestModel.getNodeReference().getProjectName();
-					/* TODO decide whether we need to check perms on the project as well */
-					Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
-					if (project == null) {
-						handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
+					if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
+						handler.handle(ac.failedFuture(CONFLICT, "user_conflicting_username"));
 						return;
-					} else {
-						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-						setReferencedNode(node);
-						batch = addIndexBatch(UPDATE_ACTION);
-						txUpdate.success();
 					}
+					setUsername(requestModel.getUsername());
 				}
-			} else {
-				batch = addIndexBatch(UPDATE_ACTION);
-				txUpdate.success();
+
+				if (!isEmpty(requestModel.getFirstname()) && !getFirstname().equals(requestModel.getFirstname())) {
+					setFirstname(requestModel.getFirstname());
+				}
+
+				if (!isEmpty(requestModel.getLastname()) && !getLastname().equals(requestModel.getLastname())) {
+					setLastname(requestModel.getLastname());
+				}
+
+				if (!isEmpty(requestModel.getEmailAddress()) && !getEmailAddress().equals(requestModel.getEmailAddress())) {
+					setEmailAddress(requestModel.getEmailAddress());
+				}
+
+				if (!isEmpty(requestModel.getPassword())) {
+					setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+				}
+
+				setEditor(ac.getUser());
+				setLastEditedTimestamp(System.currentTimeMillis());
+				if (requestModel.getNodeReference() != null) {
+					NodeReference reference = requestModel.getNodeReference();
+					//TODO also handle full node response inside node reference field
+					if (reference instanceof NodeReferenceImpl) {
+						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
+							handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
+							return;
+						} else {
+							String referencedNodeUuid = basicReference.getUuid();
+							String projectName = basicReference.getProjectName();
+							/* TODO decide whether we need to check perms on the project as well */
+							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
+							if (project == null) {
+								handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+								return;
+							} else {
+								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								setReferencedNode(node);
+								batch = addIndexBatch(UPDATE_ACTION);
+								txUpdate.success();
+							}
+						}
+					}
+				} else {
+					batch = addIndexBatch(UPDATE_ACTION);
+					txUpdate.success();
+				}
 			}
+			processOrFail2(ac, batch, handler);
+		} catch (IOException e) {
+			handler.handle(Future.failedFuture(e));
 		}
-		processOrFail2(ac, batch, handler);
 
 	}
 

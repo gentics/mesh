@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
@@ -67,7 +67,7 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 * @param ac
 	 * @param handler
 	 */
-	void create(ActionContext rc, Handler<AsyncResult<T>> handler);
+	void create(InternalActionContext rc, Handler<AsyncResult<T>> handler);
 
 	T findByUuidBlocking(String uuid);
 

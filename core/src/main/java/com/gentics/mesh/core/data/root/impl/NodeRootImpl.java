@@ -38,9 +38,10 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -115,13 +116,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<Node>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<Node>> handler) {
 
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
-		try (Trx tx = db.trx()) {
+		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 

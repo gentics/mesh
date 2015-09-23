@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
@@ -83,14 +83,24 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
-	Page<? extends Tag> getTags(ActionContext ac) throws InvalidArgumentException;
+	Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
 	void createLink(Node node);
 
 	List<String> getAvailableLanguageNames();
 
+	/**
+	 * Return the project of the node.
+	 * 
+	 * @return
+	 */
 	Project getProject();
 
+	/**
+	 * Set the project of the node.
+	 * 
+	 * @param project
+	 */
 	void setProject(Project project);
 
 	/**
@@ -101,24 +111,49 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	List<? extends Node> getChildren();
 
 	/**
-	 * Returns the parentnode of this node.
+	 * Returns the parent node of this node.
 	 * 
 	 * @return
 	 */
 	Node getParentNode();
 
+	/**
+	 * Set the parent node of this node
+	 * 
+	 * @param parentNode
+	 */
 	void setParentNode(Node parentNode);
 
 	Node create(User creator, SchemaContainer schemaContainer, Project project);
 
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
 
-	void setBinaryFileName(String filenName);
-
+	/**
+	 * Return the binary filename.
+	 * 
+	 * @return
+	 */
 	String getBinaryFileName();
 
+	/**
+	 * Set the binary filename.
+	 * 
+	 * @param filenName
+	 */
+	void setBinaryFileName(String filenName);
+
+	/**
+	 * Return the binary content type of the node.
+	 * 
+	 * @return
+	 */
 	String getBinaryContentType();
 
+	/**
+	 * Set the binary content type of the node.
+	 * 
+	 * @param contentType
+	 */
 	void setBinaryContentType(String contentType);
 
 	/**
@@ -142,14 +177,39 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	long getBinaryFileSize();
 
+	/**
+	 * Set the binary SHA 512 checksum.
+	 * 
+	 * @param sha512HashSum
+	 */
 	void setBinarySHA512Sum(String sha512HashSum);
 
+	/**
+	 * Return the binary SHA 512 checksum.
+	 * 
+	 * @return
+	 */
 	String getBinarySHA512Sum();
 
+	/**
+	 * Set the binary image DPI.
+	 * 
+	 * @param dpi
+	 */
 	void setBinaryImageDPI(Integer dpi);
 
+	/**
+	 * Return the binary image DPI.
+	 * 
+	 * @return
+	 */
 	Integer getBinaryImageDPI();
 
+	/**
+	 * Return the binary image height.
+	 * 
+	 * @return
+	 */
 	Integer getBinaryImageHeight();
 
 	void setBinaryImageWidth(Integer width);
@@ -181,14 +241,29 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param ac
 	 * @return
 	 */
-	String getDisplayName(ActionContext ac);
+	String getDisplayName(InternalActionContext ac);
 
-	NodeGraphFieldContainer findNextMatchingFieldContainer(ActionContext ac);
+	NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac);
 
+	/**
+	 * Return the file path for the binary file location of the node.
+	 * 
+	 * @return
+	 */
 	String getFilePath();
 
+	/**
+	 * Set the published flag.
+	 * 
+	 * @param published
+	 */
 	void setPublished(boolean published);
 
+	/**
+	 * Return the published flag state.
+	 * 
+	 * @return
+	 */
 	boolean isPublished();
 
 	/**
@@ -199,6 +274,6 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param resultHandler
 	 * @return
 	 */
-	void moveTo(ActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
+	void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
 
 }

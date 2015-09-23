@@ -55,7 +55,6 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest {
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());
-
 	}
 
 	@Test
@@ -76,7 +75,6 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest {
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
-
 	}
 
 }

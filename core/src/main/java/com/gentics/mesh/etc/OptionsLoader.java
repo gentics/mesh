@@ -86,9 +86,8 @@ public final class OptionsLoader {
 			return mapper.readValue(ins, MeshOptions.class);
 		} catch (IOException e) {
 			log.error("Could not parse configuration.", e);
+			throw new RuntimeException("Could not parse options file", e);
 		}
-		System.exit(1);
-		return null;
 	}
 
 }

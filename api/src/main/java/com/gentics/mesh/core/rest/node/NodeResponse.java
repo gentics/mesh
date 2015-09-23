@@ -14,8 +14,9 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 
-public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem {
+public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem, NodeReference {
 
 	private String language;
 
@@ -25,7 +26,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	private String version;
 
-	private NodeReference parentNode;
+	private NodeReferenceImpl parentNode;
 
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
 
@@ -58,11 +59,11 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * 
 	 * @return
 	 */
-	public NodeReference getParentNode() {
+	public NodeReferenceImpl getParentNode() {
 		return parentNode;
 	}
 
-	public void setParentNode(NodeReference parentNode) {
+	public void setParentNode(NodeReferenceImpl parentNode) {
 		this.parentNode = parentNode;
 	}
 

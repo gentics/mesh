@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.HttpActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.InternalHttpActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -51,37 +51,37 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private void addFieldHandlers() {
 		route("/:uuid/fields/:fieldName").method(GET).handler(rc -> {
-			crudHandler.handleReadField(ActionContext.create(rc));
+			crudHandler.handleReadField(InternalActionContext.create(rc));
 		});
 
 		route("/:uuid/fields/:fieldName").method(PUT).handler(rc -> {
-			crudHandler.handleUpdateField(ActionContext.create(rc));
+			crudHandler.handleUpdateField(InternalActionContext.create(rc));
 		});
 
 		route("/:uuid/fields/:fieldName").method(DELETE).handler(rc -> {
-			crudHandler.handleRemoveField(ActionContext.create(rc));
+			crudHandler.handleRemoveField(InternalActionContext.create(rc));
 		});
 
 		// List methods
 
 		route("/:uuid/fields/:fieldName").method(POST).handler(rc -> {
-			crudHandler.handleAddFieldItem(ActionContext.create(rc));
+			crudHandler.handleAddFieldItem(InternalActionContext.create(rc));
 		});
 
 		route("/:uuid/fields/:fieldName/:itemIndex").method(DELETE).handler(rc -> {
-			crudHandler.handleRemoveFieldItem(ActionContext.create(rc));
+			crudHandler.handleRemoveFieldItem(InternalActionContext.create(rc));
 		});
 
 		route("/:uuid/fields/:fieldName/:itemIndex").method(GET).handler(rc -> {
-			crudHandler.handleReadFieldItem(ActionContext.create(rc));
+			crudHandler.handleReadFieldItem(InternalActionContext.create(rc));
 		});
 
 		route("/:uuid/fields/:fieldName/:itemIndex").method(PUT).handler(rc -> {
-			crudHandler.handleUpdateFieldItem(ActionContext.create(rc));
+			crudHandler.handleUpdateFieldItem(InternalActionContext.create(rc));
 		});
 
 		route("/:uuid/fields/:fieldName/:itemIndex/move/:newItemIndex").method(POST).handler(rc -> {
-			crudHandler.handleMoveFieldItem(ActionContext.create(rc));
+			crudHandler.handleMoveFieldItem(InternalActionContext.create(rc));
 		});
 
 		//TODO copy?
@@ -99,14 +99,14 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private void addFileuploadHandler() {
 		route("/:uuid/bin").method(POST).method(PUT).handler(rc -> {
-			crudHandler.handleUpload(HttpActionContext.create(rc));
+			crudHandler.handleUpload(InternalHttpActionContext.create(rc));
 		});
 	}
 
 	private void addMoveHandler() {
 		Route route = route("/:uuid/moveTo/:toUuid").method(PUT).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleMove(ActionContext.create(rc));
+			crudHandler.handleMove(InternalActionContext.create(rc));
 		});
 
 	}
@@ -114,7 +114,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			crudHandler.handleReadChildren(ActionContext.create(rc));
+			crudHandler.handleReadChildren(InternalActionContext.create(rc));
 		});
 	}
 
@@ -122,18 +122,18 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			crudHandler.readTags(ActionContext.create(rc));
+			crudHandler.readTags(InternalActionContext.create(rc));
 		});
 
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
-			crudHandler.handleAddTag(ActionContext.create(rc));
+			crudHandler.handleAddTag(InternalActionContext.create(rc));
 		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			crudHandler.handleRemoveTag(ActionContext.create(rc));
+			crudHandler.handleRemoveTag(InternalActionContext.create(rc));
 		});
 	}
 
@@ -142,7 +142,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleCreate(ActionContext.create(rc));
+			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
@@ -157,13 +157,13 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(ActionContext.create(rc));
+				crudHandler.handleRead(InternalActionContext.create(rc));
 			}
 		});
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			crudHandler.handleReadList(ActionContext.create(rc));
+			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 
 	}
@@ -172,7 +172,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleDelete(ActionContext.create(rc));
+			crudHandler.handleDelete(InternalActionContext.create(rc));
 		});
 	}
 
@@ -185,7 +185,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleUpdate(ActionContext.create(rc));
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 	}
 }

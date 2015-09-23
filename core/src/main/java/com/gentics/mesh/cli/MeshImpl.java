@@ -73,6 +73,7 @@ public class MeshImpl implements Mesh {
 			VertxOptions options = new VertxOptions();
 			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
 			//TODO configure worker pool size
+			//options.setWorkerPoolSize(16);
 			options.setWorkerPoolSize(1);
 			vertx = Vertx.vertx(options);
 		}
@@ -117,7 +118,7 @@ public class MeshImpl implements Mesh {
 			field.set(null, ctx);
 		} catch (Exception e) {
 			log.error("Could not set spring context", e);
-			System.exit(10);
+			throw new RuntimeException("Spring context setup failed");
 		}
 
 	}

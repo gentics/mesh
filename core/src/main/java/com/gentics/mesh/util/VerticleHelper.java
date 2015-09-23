@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,6 +31,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -41,7 +43,7 @@ public class VerticleHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(ActionContext ac, RootVertex<T> root,
+	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(InternalActionContext ac, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
 		loadObjects(ac, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -66,10 +68,13 @@ public class VerticleHelper {
 
 		// TODO i18n
 		if (batch == null) {
-			// TODO log
-			ac.fail(BAD_REQUEST, "indexing_not_possible");
+			log.error("Batch was not set. Can't process search index batch.");
+			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		} else {
 			SearchQueue searchQueue;
+//			db.trx(()-> {
+//				
+//			});
 			try (Trx txBatch = db.trx()) {
 				searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();
@@ -86,7 +91,7 @@ public class VerticleHelper {
 							searchQueue.add(batch);
 							tx.success();
 						}
-						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
+						handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
 					} else {
 						handler.handle(Future.succeededFuture());
 					}
@@ -95,7 +100,7 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(ActionContext ac,
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(InternalActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
 
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
@@ -139,7 +144,7 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(ActionContext ac,
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		PagingInfo pagingInfo = ac.getPagingInfo();
 		MeshAuthUser requestUser = ac.getUser();
@@ -161,7 +166,7 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(ActionContext ac, String uuidParameterName,
+	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root) {
 		loadAndTransform(ac, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -170,7 +175,7 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(ActionContext ac,
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(InternalActionContext ac,
 			Page<T> page, RL listResponse) {
 		transformPage(ac, page, th -> {
 			if (hasSucceeded(ac, th)) {
@@ -179,7 +184,7 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(ActionContext ac,
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(InternalActionContext ac,
 			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		for (T node : page) {
 			node.transformToRest(ac, rh -> {
@@ -190,7 +195,7 @@ public class VerticleHelper {
 		handler.handle(Future.succeededFuture(listResponse));
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(ActionContext ac, String uuidParameterName,
+	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		loadObject(ac, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -210,7 +215,7 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends RestModel> void transformAndResponde(ActionContext ac, GenericVertex<T> node) {
+	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> node) {
 		node.transformToRest(ac, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()));
@@ -224,7 +229,7 @@ public class VerticleHelper {
 		ac.send(toJson(msg));
 	}
 
-	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> void createObject(InternalActionContext ac, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		root.create(ac, rh -> {
@@ -280,7 +285,7 @@ public class VerticleHelper {
 	//
 	//	}
 
-	public static <T extends GenericVertex<?>> void updateObject(ActionContext ac, String uuidParameterName, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -300,7 +305,7 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(ActionContext ac, String uuidParameterName, String i18nMessageKey,
+	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
@@ -328,7 +333,7 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<?>> void loadObject(ActionContext ac, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
+	public static <T extends GenericVertex<?>> void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 
 		String uuid = ac.getParameter(uuidParameterName);
@@ -350,7 +355,7 @@ public class VerticleHelper {
 	 * @param root
 	 * @return
 	 */
-	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(ActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root) {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {
@@ -370,7 +375,7 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<?>> void loadObjectByUuid(ActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
+	public static <T extends GenericVertex<?>> void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
@@ -408,7 +413,7 @@ public class VerticleHelper {
 		}
 	}
 
-	public static boolean hasSucceeded(ActionContext ac, AsyncResult<?> result) {
+	public static boolean hasSucceeded(InternalActionContext ac, AsyncResult<?> result) {
 		if (result.failed()) {
 			ac.fail(result.cause());
 			return false;

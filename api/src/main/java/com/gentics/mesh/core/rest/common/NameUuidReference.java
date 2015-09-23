@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.common;
 
-public class NameUuidReference {
+public class NameUuidReference<T> {
 
 	private String name;
 	private String uuid;
@@ -17,15 +17,17 @@ public class NameUuidReference {
 		return name;
 	}
 
-	public void setName(String name) {
+	public T setName(String name) {
 		this.name = name;
+		return (T) this;
 	}
 
 	public String getUuid() {
 		return uuid;
 	}
 
-	public void setUuid(String uuid) {
+	public T setUuid(String uuid) {
 		this.uuid = uuid;
+		return (T) this;
 	}
 }

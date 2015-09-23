@@ -2,11 +2,12 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.etc.StorageOptions;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.logging.Logger;
@@ -23,7 +24,7 @@ public abstract class AbstractDatabase implements Database {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		try (Trx tx = new Trx(this)) {
+		try (Trx tx = trx()) {
 			tx.getGraph().e().removeAll();
 			tx.getGraph().v().removeAll();
 			tx.success();
@@ -59,12 +60,23 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public Trx trx() {
-		return new Trx(this);
-	}
+	abstract public Trx trx();
 
 	@Override
-	public NonTrx nonTrx() {
-		return new NonTrx(this);
+	abstract public NoTrx noTrx();
+
+	@Override
+	public void trx(Consumer<Trx> code) {
+		for (int retry = 0; retry < 100; retry++) {
+			try (Trx tx = trx()) {
+				code.accept(tx);
+				break;
+			} catch (Exception e) {
+				log.error("Error while handling transaction. Retrying " + retry, e);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Retrying .. {" + retry + "}");
+			}
+		}
 	}
 }

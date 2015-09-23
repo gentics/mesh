@@ -69,7 +69,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -401,7 +401,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
-		NodeReference parentNodeReference = new NodeReference();
+		NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
@@ -442,7 +442,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
-		NodeReference parentNodeReference = new NodeReference();
+		NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
@@ -611,7 +611,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user.setUsername("jdoe42");
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
-		NodeReference reference = new NodeReference();
+		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName("dummy");
 		reference.setUuid(randomUUID());
 		user.setNodeReference(reference);

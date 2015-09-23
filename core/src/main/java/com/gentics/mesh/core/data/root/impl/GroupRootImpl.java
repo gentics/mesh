@@ -18,14 +18,13 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -73,7 +72,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<Group>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<Group>> handler) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
@@ -84,7 +83,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
-		try (NonTrx tx = db.nonTrx()) {
+		try (NoTrx tx = db.noTrx()) {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {

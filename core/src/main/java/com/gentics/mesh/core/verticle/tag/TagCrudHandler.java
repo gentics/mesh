@@ -19,51 +19,51 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleCreate(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			createObject(ac, boot.tagRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleDelete(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			deleteObject(ac, "uuid", "tag_deleted", ac.getProject().getTagRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleUpdate(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			updateObject(ac, "uuid", ac.getProject().getTagRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleRead(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getTagRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleReadList(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getTagRoot(), new TagListResponse());
 		}
 	}
 
-	public void handleTaggedNodesList(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleTaggedNodesList(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getTagRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {

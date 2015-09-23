@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -48,7 +49,7 @@ public class SearchRestHandler {
 	@Autowired
 	private Database db;
 
-	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(ActionContext ac,
+	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(InternalActionContext ac,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 

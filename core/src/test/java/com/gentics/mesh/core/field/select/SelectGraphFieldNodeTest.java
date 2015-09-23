@@ -3,8 +3,6 @@ package com.gentics.mesh.core.field.select;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,7 +32,7 @@ public class SelectGraphFieldNodeTest extends AbstractDBTest {
 
 	@Test
 	@Ignore("Not yet implemented")
-	public void testSelectFieldTransformation() throws IOException, InterruptedException {
+	public void testSelectFieldTransformation() throws Exception {
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
 		SelectFieldSchema selectFieldSchema = new SelectFieldSchemaImpl();

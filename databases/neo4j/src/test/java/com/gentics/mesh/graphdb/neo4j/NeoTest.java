@@ -4,6 +4,7 @@ import static java.lang.System.getProperty;
 
 import java.io.File;
 
+import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -15,7 +16,8 @@ import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 public class NeoTest {
 
-	public static void main(String[] args) {
+	@Test
+	public void testNeo4j() {
 		File dir = new File(getProperty("java.io.tmpdir"), "graph-db");
 		GraphDatabaseService db = new GraphDatabaseFactory().newEmbeddedDatabase(dir.getAbsolutePath());
 

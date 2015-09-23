@@ -2,12 +2,13 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
 
@@ -39,7 +40,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
-	protected void fillRest(AbstractGenericNodeRestModel model, ActionContext ac) {
+	protected void fillRest(AbstractGenericNodeRestModel model, InternalActionContext ac) {
 
 		model.setUuid(getUuid());
 

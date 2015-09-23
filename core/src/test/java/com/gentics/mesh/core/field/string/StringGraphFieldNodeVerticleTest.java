@@ -19,32 +19,26 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.Trx;
 
 public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Trx tx = db.trx()) {
-			Schema schema = schemaContainer("folder").getSchema();
-			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
-			stringFieldSchema.setName("stringField");
-			stringFieldSchema.setLabel("Some label");
-			schema.addField(stringFieldSchema);
-			schemaContainer("folder").setSchema(schema);
-			tx.success();
-		}
+		Schema schema = schemaContainer("folder").getSchema();
+		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
+		stringFieldSchema.setName("stringField");
+		stringFieldSchema.setLabel("Some label");
+		schema.addField(stringFieldSchema);
+		schemaContainer("folder").setSchema(schema);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Trx tx = db.trx()) {
-			NodeResponse response = createNode(null, (Field) null);
-			StringFieldImpl stringField = response.getField("stringField");
-			assertNotNull(stringField);
-			assertNull(stringField.getString());
-		}
+		NodeResponse response = createNode(null, (Field) null);
+		StringFieldImpl stringField = response.getField("stringField");
+		assertNotNull(stringField);
+		assertNull(stringField.getString());
 	}
 
 	@Test
@@ -70,19 +64,13 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("2015");
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-			StringGraphField stringField = container.createString("stringField");
-			stringField.setString("someString");
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			NodeResponse response = readNode(node);
-			StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
-			assertNotNull(deserializedStringField);
-			assertEquals("someString", deserializedStringField.getString());
-		}
+		Node node = folder("2015");
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		StringGraphField stringField = container.createString("stringField");
+		stringField.setString("someString");
+		NodeResponse response = readNode(node);
+		StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
+		assertNotNull(deserializedStringField);
+		assertEquals("someString", deserializedStringField.getString());
 	}
 }

@@ -59,7 +59,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 
 	@Test
 	@Override
-	public void testDocumentCreation() throws InterruptedException, JSONException {
+	public void testDocumentCreation() throws Exception {
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
 

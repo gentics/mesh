@@ -53,12 +53,12 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -192,7 +192,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public Node transformToRest(ActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
+	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 
 		NodeResponse restNode = new NodeResponse();
 		fillRest(restNode, ac);
@@ -217,11 +217,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			restNode.setDisplayField(schema.getDisplayField());
-			if (getParentNode() != null) {
-				NodeReference parentNodeReference = new NodeReference();
-				parentNodeReference.setUuid(getParentNode().getUuid());
-				parentNodeReference.setDisplayName(getParentNode().getDisplayName(ac));
+			Node parentNode = getParentNode();
+			if (parentNode != null) {
+				NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
+				parentNodeReference.setUuid(parentNode.getUuid());
+				parentNodeReference.setDisplayName(parentNode.getDisplayName(ac));
+				//TODO add schema information
 				restNode.setParentNode(parentNodeReference);
+				
 			}
 
 			/* Load the children */
@@ -312,7 +315,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findNextMatchingFieldContainer(ActionContext ac) {
+	public NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac) {
 		NodeGraphFieldContainer fieldContainer = null;
 		List<String> languageTags = ac.getSelectedLanguageTags();
 		for (String languageTag : languageTags) {
@@ -445,7 +448,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(ActionContext ac) throws InvalidArgumentException {
+	public Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException {
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
@@ -482,7 +485,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public String getDisplayName(ActionContext ac) {
+	public String getDisplayName(InternalActionContext ac) {
 		String displayFieldName = null;
 		try {
 			GraphFieldContainer container = findNextMatchingFieldContainer(ac);
@@ -510,7 +513,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public void update(ActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 		SearchQueueBatch batch;
 		try {
@@ -550,7 +553,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public void moveTo(ActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
+	public void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		// TODO should we add a guard that terminates this loop when it runs to long?

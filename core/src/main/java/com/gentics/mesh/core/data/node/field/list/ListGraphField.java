@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public interface ListGraphField<T extends ListableGraphField, RM extends Field> extends MicroschemaListableGraphField, MeshVertex {
 
@@ -57,6 +57,6 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field> 
 	 * @param fieldKey
 	 * @return
 	 */
-	RM transformToRest(ActionContext ac, String fieldKey);
+	RM transformToRest(InternalActionContext ac, String fieldKey);
 
 }

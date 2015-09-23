@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
@@ -32,7 +32,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public Field transformToRest(ActionContext ac, String fieldKey) {
+	public Field transformToRest(InternalActionContext ac, String fieldKey) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey);

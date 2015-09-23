@@ -17,47 +17,47 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(ActionContext ac) {
+	public void handleCreate(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			createObject(ac, boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(ActionContext ac) {
+	public void handleDelete(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			deleteObject(ac, "uuid", "schema_deleted", boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(ActionContext ac) {
+	public void handleUpdate(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			updateObject(ac, "uuid", boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(ActionContext ac) {
+	public void handleRead(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.schemaContainerRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(ActionContext ac) {
+	public void handleReadList(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			loadTransformAndResponde(ac, boot.schemaContainerRoot(), new SchemaListResponse());
 		}
 	}
 
-	public void handleAddProjectToSchema(ActionContext ac) {
+	public void handleAddProjectToSchema(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -78,7 +78,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	}
 
-	public void handleRemoveProjectFromSchema(ActionContext ac) {
+	public void handleRemoveProjectFromSchema(InternalActionContext ac) {
 		try (Trx tx = db.trx()) {
 			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {

@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 /**
  * A node field container is a aggregation node that holds localized fields.
@@ -23,7 +24,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, Microschem
 	 * @param expandField
 	 * @return
 	 */
-	Field getRestFieldFromGraph(ActionContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField);
+	Field getRestFieldFromGraph(InternalActionContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.

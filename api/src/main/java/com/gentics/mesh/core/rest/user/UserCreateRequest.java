@@ -20,7 +20,7 @@ public class UserCreateRequest extends UserUpdateRequest {
 	}
 
 	/**
-	 * Set the group uuid for the group to which the user should be assigned
+	 * Set the group uuid for the group to which the user should be assigned.
 	 * 
 	 * @param groupUuid
 	 */

@@ -43,8 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -98,7 +97,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup(int multiplicator) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		try (Trx tx = db.trx()) {
+		try (NoTrx tx = db.noTrx()) {
 
 			bootstrapInitializer.initMandatoryData();
 
@@ -132,7 +131,7 @@ public class DemoDataProvider {
 			log.info("Users:    " + users.size());
 			log.info("Groups:   " + groups.size());
 			log.info("Roles:    " + roles.size());
-			tx.success();
+//			tx.success();
 		}
 		updatePermissions();
 
@@ -140,14 +139,13 @@ public class DemoDataProvider {
 
 	private void updatePermissions() {
 
-		try (Trx tx = db.trx()) {
+		try (NoTrx tx = db.noTrx()) {
 			Role role = userInfo.getRole();
-
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 
 				// TODO typecheck? and verify how orient will behave
-				if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+				if (role.getUuid().equals(vertex.getProperty("uuid"))) {
 					log.info("Skipping own role");
 					continue;
 				}
@@ -158,7 +156,6 @@ public class DemoDataProvider {
 				}
 				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			}
-			tx.success();
 		}
 		log.info("Added BasicPermissions to nodes");
 
@@ -449,7 +446,6 @@ public class DemoDataProvider {
 		schema.setName("blogpost");
 		schema.setDisplayField("title");
 		schema.setMeshVersion(Mesh.getVersion());
-		schema.setSchemaVersion("1.0.0");
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.generic;
 
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.DelegatingFramedGraph;
@@ -31,7 +31,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public FramedGraph getGraph() {
-		return new DelegatingFramedGraph<>(Trx.getThreadLocalGraph(), true, false);
+		return new DelegatingFramedGraph<>(Database.getThreadLocalGraph(), true, false);
 	}
 
 	public MeshEdgeImpl getImpl() {

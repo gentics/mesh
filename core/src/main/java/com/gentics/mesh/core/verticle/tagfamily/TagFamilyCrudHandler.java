@@ -20,50 +20,50 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NonTrx;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
-	public void handleCreate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleCreate(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			createObject(ac, ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
-	public void handleDelete(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleDelete(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			deleteObject(ac, "uuid", "tagfamily_deleted", ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
-	public void handleUpdate(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleUpdate(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			updateObject(ac, "uuid", ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
-	public void handleRead(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleRead(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot());
 		}
 	}
 
 	@Override
-	public void handleReadList(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleReadList(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getTagFamilyRoot(), new TagFamilyListResponse());
 		}
 	}
 
-	public void handleReadTagList(ActionContext ac) {
-		try (NonTrx tx = db.nonTrx()) {
+	public void handleReadTagList(InternalActionContext ac) {
+		try (NoTrx tx = db.noTrx()) {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingInfo pagingInfo = ac.getPagingInfo();

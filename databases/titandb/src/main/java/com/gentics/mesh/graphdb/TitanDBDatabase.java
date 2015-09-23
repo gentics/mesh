@@ -24,14 +24,24 @@ public class TitanDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNonTransaction() {
+	public FramedGraph startNoTransaction() {
 		return new DelegatingFramedGraph<>(graph, true, false);
+	}
+
+	@Override
+	public NoTrx noTrx() {
+		return new TitanDBNoTrx(this);
 	}
 
 	@Override
 	public FramedTransactionalGraph startTransaction() {
 		return new DelegatingFramedTransactionalGraph<>(graph, true, false);
 
+	}
+
+	@Override
+	public Trx trx() {
+		return new TitanDBTrx(this);
 	}
 
 	@Override

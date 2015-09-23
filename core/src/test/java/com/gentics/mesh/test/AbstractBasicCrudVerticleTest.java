@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.definition.CrudVerticleTestCases;
 import com.gentics.mesh.test.definition.MultithreadingTestCases;
 
@@ -34,7 +33,7 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 		}
 		assertTrue(foundDelete);
 
-		Trx.disableDebug();
+//		Trx.disableDebug();
 		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 	}
 
@@ -43,7 +42,7 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 			latchFor(future);
 			assertSuccess(future);
 		}
-		Trx.disableDebug();
+//		Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -70,7 +69,7 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-		Trx.disableDebug();
+//		Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -78,9 +77,9 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 	}
 
 	protected CyclicBarrier prepareBarrier(int nJobs) {
-		Trx.enableDebug();
+//		Trx.enableDebug();
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		Trx.setBarrier(barrier);
+//		Trx.setBarrier(barrier);
 		return barrier;
 	}
 }

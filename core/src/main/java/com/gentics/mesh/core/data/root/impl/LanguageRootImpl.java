@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -45,7 +45,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	}
 
 	@Override
-	public void create(ActionContext rc, Handler<AsyncResult<Language>> handler) {
+	public void create(InternalActionContext rc, Handler<AsyncResult<Language>> handler) {
 		throw new NotImplementedException("Languages can be created using REST");
 	}
 

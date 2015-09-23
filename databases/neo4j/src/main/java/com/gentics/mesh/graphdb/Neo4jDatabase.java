@@ -6,9 +6,11 @@ import java.io.IOException;
 import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.test.TestGraphDatabaseFactory;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedGraph;
@@ -28,12 +30,17 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void stop() {
 		graphDatabaseService.shutdown();
-		Trx.setThreadLocalGraph(null);
+		Database.setThreadLocalGraph(null);
 	}
 
 	@Override
-	public FramedGraph startNonTransaction() {
+	public FramedGraph startNoTransaction() {
 		return new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false);
+	}
+	
+	@Override
+	public NoTrx noTrx() {
+		return new Neo4jNoTrx(this);
 	}
 
 	@Override
@@ -41,6 +48,11 @@ public class Neo4jDatabase extends AbstractDatabase {
 		return new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
 	}
 
+	@Override
+	public Trx trx() {
+		return new Neo4jTrx(this);
+	}
+	
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -52,13 +64,16 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	@Override
 	public void start() {
-		String DB_LOCATION = options.getDirectory();
-		File dbDir = new File(DB_LOCATION);
-
-		// TODO move this somewhere else or handle it by settings
-		// GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
-		// graphDatabaseService = builder.newGraphDatabase();
-		graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase(dbDir.getAbsolutePath());
+		String dbLocation = options.getDirectory();
+		if (dbLocation == null) {
+			graphDatabaseService = new TestGraphDatabaseFactory().newImpermanentDatabase();
+		} else {
+			File dbDir = new File(dbLocation);
+			// TODO move this somewhere else or handle it by settings
+			// GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder(dbDir.getAbsolutePath());
+			// graphDatabaseService = builder.newGraphDatabase();
+			graphDatabaseService = new GraphDatabaseFactory().newEmbeddedDatabase(dbDir.getAbsolutePath());
+		}
 
 		// Setup neo4j blueprint implementation
 		neo4jBlueprintGraph = new Neo4j2Graph(graphDatabaseService);

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -41,40 +41,40 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addReadTagsHandler() {
 		Route route = route("/:tagFamilyUuid/tags").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleReadTagList(ActionContext.create(rc));
+			crudHandler.handleReadTagList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addDeleteHandler() {
 		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			crudHandler.handleDelete(ActionContext.create(rc));
+			crudHandler.handleDelete(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addReadHandler() {
 		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		readRoute.handler(rc -> {
-			crudHandler.handleRead(ActionContext.create(rc));
+			crudHandler.handleRead(InternalActionContext.create(rc));
 		});
 
 		Route readAllRoute = route().method(GET).produces(APPLICATION_JSON);
 		readAllRoute.handler(rc -> {
-			crudHandler.handleReadList(ActionContext.create(rc));
+			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addCreateHandler() {
 		Route createRoute = route().method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createRoute.handler(rc -> {
-			crudHandler.handleCreate(ActionContext.create(rc));
+			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addUpdateHandler() {
 		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		updateRoute.handler(rc -> {
-			crudHandler.handleUpdate(ActionContext.create(rc));
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 	}
 }

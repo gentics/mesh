@@ -18,7 +18,6 @@ public class SchemaImpl implements RestModel, Schema {
 	private boolean binary = false;
 	private boolean folder = false;
 	private String meshVersion;
-	private String schemaVersion;
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
@@ -74,16 +73,6 @@ public class SchemaImpl implements RestModel, Schema {
 	@Override
 	public List<FieldSchema> getFields() {
 		return fields;
-	}
-
-	@Override
-	public String getSchemaVersion() {
-		return schemaVersion;
-	}
-
-	@Override
-	public void setSchemaVersion(String version) {
-		schemaVersion = version;
 	}
 
 	@Override

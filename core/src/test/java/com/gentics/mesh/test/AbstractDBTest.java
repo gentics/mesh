@@ -39,7 +39,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestAssert;
 
@@ -119,7 +119,6 @@ public abstract class AbstractDBTest {
 		Node node = dataProvider.getContent(key);
 		node.reload();
 		return node;
-
 	}
 
 	public Node folder(String key) {
@@ -153,11 +152,15 @@ public abstract class AbstractDBTest {
 	}
 
 	public Language english() {
-		return dataProvider.getEnglish();
+		Language language = dataProvider.getEnglish();
+		language.reload();
+		return language;
 	}
 
 	public Language german() {
-		return dataProvider.getGerman();
+		Language language = dataProvider.getGerman();
+		language.reload();
+		return language;
 	}
 
 	public User user() {
@@ -202,9 +205,9 @@ public abstract class AbstractDBTest {
 		return container;
 	}
 
-	protected String getJson(Node node) throws InterruptedException {
+	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
-		ActionContext ac = ActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> reference = new AtomicReference<>();
 		node.transformToRest(ac, rh -> {

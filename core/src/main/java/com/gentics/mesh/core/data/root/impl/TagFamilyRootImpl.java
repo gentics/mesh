@@ -17,13 +17,12 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -47,7 +46,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 	@Override
 	public TagFamily create(String name, User creator) {
-
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);
@@ -83,7 +81,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 	}
 
 	@Override
-	public void create(ActionContext ac, Handler<AsyncResult<TagFamily>> handler) {
+	public void create(InternalActionContext ac, Handler<AsyncResult<TagFamily>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		try (Trx tx = db.trx()) {
@@ -92,10 +90,10 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 			String name = requestModel.getName();
 			if (StringUtils.isEmpty(name)) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tagfamily_name_not_set"))));
+				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
 			} else {
 				if (findByName(name) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("tagfamily_conflicting_name", name))));
+					handler.handle(ac.failedFuture(CONFLICT, ac.i18n("tagfamily_conflicting_name", name)));
 					return;
 				}
 
