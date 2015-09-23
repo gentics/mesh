@@ -226,7 +226,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					case "date":
 						DateGraphFieldList graphDateList = container.getDateList(fieldSchema.getName());
 						if (graphDateList != null) {
-							List<String> dateItems = new ArrayList<>();
+							List<Long> dateItems = new ArrayList<>();
 							for (DateGraphField listItem : graphDateList.getList()) {
 								dateItems.add(listItem.getDate());
 							}

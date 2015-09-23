@@ -5,17 +5,15 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 
 public class DateFieldImpl implements DateField {
 
-	private String date;
-
-	//TODO: decide on any special config properties for date type. TODO: Maybe a default timeframe would be useful.
+	private Long date;
 
 	@Override
-	public String getDate() {
+	public Long getDate() {
 		return date;
 	}
 
 	@Override
-	public DateField setDate(String date) {
+	public DateField setDate(Long date) {
 		this.date = date;
 		return this;
 	}

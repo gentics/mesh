@@ -139,11 +139,11 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			break;
 		case DATE:
 			DateField dateField = new DateFieldImpl();
-			if (!jsonNode.isNull() && jsonNode.isTextual()) {
-				dateField.setDate(jsonNode.textValue());
+			if (!jsonNode.isNull() && jsonNode.isNumber()) {
+				dateField.setDate(jsonNode.numberValue().longValue());
 			}
-			if (!jsonNode.isNull() && !jsonNode.isTextual()) {
-				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a text value. The value was {" + jsonNode.asText() + "}");
+			if (!jsonNode.isNull() && !jsonNode.isNumber()) {
+				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
 			}
 			map.put(fieldKey, dateField);
 			break;
@@ -195,8 +195,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 					addBasicList(map, fieldKey, String[].class, new HtmlFieldListImpl(), String.class, itemsHtmlArray);
 					break;
 				case "date":
-					String[] itemsDateArray = oc.treeToValue(jsonNode, String[].class);
-					addBasicList(map, fieldKey, String[].class, new DateFieldListImpl(), String.class, itemsDateArray);
+					Long[] itemsDateArray = oc.treeToValue(jsonNode, Long[].class);
+					addBasicList(map, fieldKey, Long[].class, new DateFieldListImpl(), Long.class, itemsDateArray);
 					break;
 				case "number":
 					String[] itemsNumberArray = oc.treeToValue(jsonNode, String[].class);

@@ -10,7 +10,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl>implements DateGraphFieldList {
 
 	@Override
-	public DateGraphField createDate(String date) {
+	public DateGraphField createDate(Long date) {
 		DateGraphField field = createField();
 		field.setDate(date);
 		return field;

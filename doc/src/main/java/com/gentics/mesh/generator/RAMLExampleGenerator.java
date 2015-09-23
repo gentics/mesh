@@ -429,7 +429,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -477,7 +477,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -496,7 +496,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));

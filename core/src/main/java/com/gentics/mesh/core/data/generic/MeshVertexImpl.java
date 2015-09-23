@@ -104,5 +104,10 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public void reload() {
 		MeshSpringConfiguration.getMeshSpringConfiguration().database().reload(this);
 	}
+	
+	@Override
+	public <T> T load() {
+		return (T) Database.getThreadLocalGraph().getFramedVertexExplicit(getClass(), getId());
+	}
 
 }

@@ -10,13 +10,13 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 	 * 
 	 * @param date
 	 */
-	void setDate(String date);
+	void setDate(Long date);
 
 	/**
 	 * Return the date which is stored in the field.
 	 * 
 	 * @return
 	 */
-	String getDate();
+	Long getDate();
 
 }

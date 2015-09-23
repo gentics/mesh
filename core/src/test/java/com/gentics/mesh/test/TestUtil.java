@@ -3,6 +3,8 @@ package com.gentics.mesh.test;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 public final class TestUtil {
 
@@ -25,6 +27,14 @@ public final class TestUtil {
 		Thread thread = new Thread(runnable);
 		thread.start();
 		return thread;
+	}
+
+	public static void waitFor(CyclicBarrier barrier) {
+		try {
+			barrier.await(10, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

@@ -68,7 +68,7 @@ public class BasicFieldSerializer<T extends Field> extends JsonSerializer<T> {
 				if (dateField.getDate() == null) {
 					gen.writeNull();
 				} else {
-					gen.writeString(dateField.getDate());
+					gen.writeNumber(dateField.getDate());
 				}
 				break;
 			//			case NODE:

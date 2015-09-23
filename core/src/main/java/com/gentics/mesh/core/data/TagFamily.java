@@ -64,4 +64,5 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 * @return Found tag or null when no matching tag could be found.
 	 */
 	Tag findTagByName(String name);
+
 }

@@ -13,7 +13,7 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 	 * @param key
 	 * @return
 	 */
-	DateGraphField createDate(String key);
+	DateGraphField createDate(Long date);
 
 	/**
 	 * Return the date field at the given index of the list.

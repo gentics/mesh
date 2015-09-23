@@ -16,12 +16,13 @@ public class DateGraphFieldTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testSimpleDate() {
+		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		assertNull(container.getProperty("test-date"));
-		field.setDate("dummyDate");
-		assertEquals("dummyDate", container.getProperty("test-date"));
+		field.setDate(nowEpoch);
+		assertEquals(nowEpoch, Long.valueOf(container.getProperty("test-date")));
 		assertEquals(3, container.getPropertyKeys().size());
 		field.setDate(null);
 		assertNull(container.getProperty("test-date"));
@@ -29,11 +30,12 @@ public class DateGraphFieldTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testDateField() {
+		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		DateGraphField dateField = container.createDate("dateField");
 		assertEquals("dateField", dateField.getFieldKey());
-		dateField.setDate("dummyDate");
-		assertEquals("dummyDate", dateField.getDate());
+		dateField.setDate(nowEpoch);
+		assertEquals(nowEpoch, Long.valueOf(dateField.getDate()));
 		StringGraphField bogusField1 = container.getString("bogus");
 		assertNull(bogusField1);
 		DateGraphField reloadedDateField = container.getDate("dateField");

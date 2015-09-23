@@ -36,16 +36,16 @@ public class DateGraphFieldNodeTest extends AbstractBasicDBTest {
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		DateGraphField field = container.createDate("dateField");
-		field.setDate("01.01.1971");
+		field.setDate(1337L);
 
 		String json = getJson(node);
-		assertTrue("The json should contain the date but it did not.{" + json + "}", json.indexOf("1971") > 1);
+		assertTrue("The json should contain the date but it did not.{" + json + "}", json.indexOf("1337") > 1);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
 
 		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getField("dateField", DateFieldImpl.class);
 		assertNotNull(deserializedNodeField);
-		assertEquals("01.01.1971", deserializedNodeField.getDate());
+		assertEquals(1337L, deserializedNodeField.getDate().longValue());
 	}
 }

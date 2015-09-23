@@ -19,6 +19,8 @@ public abstract class AbstractDatabase implements Database {
 
 	protected StorageOptions options;
 
+	private int maxRetry = 25;
+
 	@Override
 	public void clear() {
 		if (log.isDebugEnabled()) {
@@ -37,6 +39,10 @@ public abstract class AbstractDatabase implements Database {
 	@Override
 	public void init(StorageOptions options) {
 		this.options = options;
+		if (options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
+			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
+			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
+		}
 		start();
 	}
 
@@ -67,7 +73,7 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public void trx(Consumer<Trx> code) {
-		for (int retry = 0; retry < 100; retry++) {
+		for (int retry = 0; retry < maxRetry; retry++) {
 			try (Trx tx = trx()) {
 				code.accept(tx);
 				break;

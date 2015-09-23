@@ -49,7 +49,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.test.TestUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.ThreadUtils;
+import com.gentics.mesh.util.ThreadUtil;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -329,54 +329,51 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testUpdateMultithreadedSimpleThreadUtils() throws InterruptedException, BrokenBarrierException, TimeoutException {
+		final int nThreads = 10;
+		final int nRuns = 200;
 
-		for (int r = 0; r < 10; r++) {
-			CyclicBarrier barrier = new CyclicBarrier(2);
-			AtomicInteger integer = new AtomicInteger(0);
-			//			TraversalHelper.printDebugVertices();
-			CountDownLatch latch = new CountDownLatch(2);
+		TagFamily tagFamily = tagFamily("colors");
+
+		for (int r = 0; r < nRuns; r++) {
+			final int currentRun = r;
+			CountDownLatch latch = new CountDownLatch(nThreads);
 			Node node = content();
-			ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
 
 			// Start two threads with a retry trx
-			for (int i = 1; i < 3; i++) {
-				final int threadNr = i;
-				System.out.println("Thread [" + threadNr + "] Starting");
-				ThreadUtils.executeBlocking(tx -> {
-					int n = integer.incrementAndGet();
-					TagFamily tagFamily = tagFamily("colors");
-					project().getTagRoot().reload();
-					Tag tag = tagFamily.create("bogus_" + threadNr, project(), user());
-					node.reload();
-					node.addTag(tag);
-					tx.success();
-
-					if (firstTry.get() == null) {
-						firstTry.set(true);
-						try {
-							System.out.println("Thread [" + threadNr + "] Waiting..");
-							barrier.await(10, TimeUnit.SECONDS);
-							System.out.println("Thread [" + threadNr + "] Waited");
-						} catch (Exception e) {
-							System.out.println("Thread [" + threadNr + "] Error handling.");
-							e.printStackTrace();
-						}
+			for (int i = 0; i < nThreads; i++) {
+				final int threadNo = i;
+				System.out.println("Thread [" + threadNo + "] Starting");
+				ThreadUtil.executeBlocking(tx -> {
+					//Load the elements again
+					//waitFor(barrier);
+					try {
+						Thread.sleep(200);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
+					TagFamily cTagFamily = tagFamily.load();
+					Project cProject = project().load();
+					Node cNode = node.load();
+					User cUser = user().load();
+
+					Tag tag = cTagFamily.create("bogus_" + threadNo + "_" + currentRun, cProject, cUser);
+					cNode.addTag(tag);
+
+					tx.success();
 
 				} , rh -> {
 					System.out.println("Thread [" + "?" + "] Successfulyl updated element.");
 					latch.countDown();
 				});
 
-				//				});
-				//				threads.add(t);
 			}
 
 			System.out.println("Waiting on lock");
 			latch.await();
 
 			try (Trx tx = db.trx()) {
-				int expect = 2 * (r + 1);
+				int expect = nThreads * (r + 1);
 				assertEquals("Expected {" + expect + "} tags since this is the " + r + "th run.", expect, content().getTags().size());
 			}
 		}
@@ -386,25 +383,32 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testUpdateMultithreadedSimple() throws InterruptedException, BrokenBarrierException, TimeoutException {
 
-		for (int r = 0; r < 10; r++) {
-			CyclicBarrier barrier = new CyclicBarrier(3);
-			AtomicInteger integer = new AtomicInteger(0);
-			//			TraversalHelper.printDebugVertices();
+		final int nThreads = 10;
+		final int nRuns = 20;
 
+		for (int r = 0; r < nRuns; r++) {
+			CyclicBarrier barrier = new CyclicBarrier(nThreads);
+			AtomicInteger integer = new AtomicInteger(0);
+
+			TagFamily tagFamily = tagFamily("colors");
 			Node node = content();
+
 			ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
 			List<Thread> threads = new ArrayList<>();
-			for (int i = 1; i < 3; i++) {
+			for (int i = 1; i < nThreads; i++) {
 				System.out.println("Thread [" + i + "] Starting");
 				Thread t = TestUtil.run(() -> {
 					firstTry.set(true);
 					int n = integer.incrementAndGet();
 					db.trx(tx -> {
-						TagFamily tagFamily = tagFamily("colors");
-						project().getTagRoot().reload();
-						Tag tag = tagFamily.create("bogus_" + n, project(), user());
-						node.reload();
-						node.addTag(tag);
+						//Load the elements again
+						TagFamily cTagFamily = tagFamily.load();
+						Project cProject = project().load();
+						Node cNode = node.load();
+						User cUser = user().load();
+
+						Tag tag = cTagFamily.create("bogus_" + n, cProject, cUser);
+						cNode.addTag(tag);
 						tx.success();
 						if (firstTry.get()) {
 							firstTry.set(false);
@@ -424,13 +428,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 			}
 
 			System.out.println("Waiting on lock");
-			barrier.await(2, TimeUnit.SECONDS);
 			for (Thread currentThread : threads) {
 				currentThread.join();
 			}
 			try (Trx tx = db.trx()) {
-				int expect = 2 * (r + 1);
-				assertEquals("Expected {" + expect + "} tags since this is the {" + r + "} run.", expect, content().getTags().size());
+				int expect = nThreads * (r + 1);
+				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}", expect, content().getTags().size());
 			}
 		}
 	}
@@ -438,7 +441,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testUpdateMultithreaded() throws InterruptedException, BrokenBarrierException, TimeoutException {
 
-		final int nThreads = 2;
+		final int nThreads = 10;
 		final int nRuns = 20;
 		final int maxRetry = 20;
 
@@ -462,11 +465,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
 							try (Trx tx = db.trx()) {
-								//Load used elements
-								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getImpl().getId());
-								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
-								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
-								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getImpl().getId());
+
 								if (retry == 0) {
 									try {
 										System.out.println("Thread [" + threadNo + "] Waiting..");
@@ -477,6 +476,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 										//e.printStackTrace();
 									}
 								}
+								//Load used elements
+								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getImpl().getId());
+								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
+								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
+								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getImpl().getId());
+
 								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, reloadedProject, reloadedUser);
 								// Reload the node
 								reloadedNode.addTag(tag);
@@ -513,7 +518,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			try (Trx tx = db.trx()) {
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
-//				node.reload();
+				//				node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect, reloadedNode.getTags().size());
 			}
 		}

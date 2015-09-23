@@ -267,7 +267,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					} else {
 						graphDateFieldList.removeAll();
 					}
-					for (String item : dateList.getItems()) {
+					for (Long item : dateList.getItems()) {
 						graphDateFieldList.createDate(item);
 					}
 				} else if (restField instanceof MicroschemaFieldListImpl) {

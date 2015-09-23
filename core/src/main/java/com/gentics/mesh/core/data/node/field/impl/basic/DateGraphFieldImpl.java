@@ -13,12 +13,21 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField>implements 
 		super(fieldKey, parentContainer);
 	}
 
-	public void setDate(String date) {
-		setFieldProperty("date", date);
+	public void setDate(Long date) {
+		if (date == null) {
+			setFieldProperty("date", null);
+		} else {
+			setFieldProperty("date", String.valueOf(date));
+		}
 	}
 
-	public String getDate() {
-		return getFieldProperty("date");
+	public Long getDate() {
+		String value = getFieldProperty("date");
+		if (value == null) {
+			return null;
+		} else {
+			return Long.valueOf(value);
+		}
 	}
 
 	@Override

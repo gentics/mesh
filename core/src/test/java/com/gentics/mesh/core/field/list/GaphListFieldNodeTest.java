@@ -87,8 +87,8 @@ public class GaphListFieldNodeTest extends AbstractBasicDBTest {
 		numberList.createNumber("1.11");
 
 		DateGraphFieldList dateList = container.createDateList("dateList");
-		dateList.createDate("01.01.1971");
-		dateList.createDate("01.01.1972");
+		dateList.createDate(1L);
+		dateList.createDate(2L);
 
 		StringGraphFieldList stringList = container.createStringList("stringList");
 		stringList.createString("dummyString1");
