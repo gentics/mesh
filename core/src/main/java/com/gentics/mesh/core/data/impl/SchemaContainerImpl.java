@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
@@ -71,6 +72,15 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}
+		return this;
+	}
+	
+	@Override
+	public SchemaContainer transformToReference(InternalActionContext ac, Handler<AsyncResult<SchemaReference>> handler) {
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName(getSchema().getName());
+		schemaReference.setUuid(getUuid());
+		handler.handle(Future.succeededFuture(schemaReference));
 		return this;
 	}
 

@@ -60,7 +60,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@After
-	public void cleanUp() throws IOException {
+	public void cleanup() throws IOException {
 		FileUtils.deleteDirectory(new File(uploads));
 		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
 

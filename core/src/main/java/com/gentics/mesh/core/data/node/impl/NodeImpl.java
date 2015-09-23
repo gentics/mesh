@@ -50,7 +50,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -71,6 +70,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements Node {
 
@@ -194,6 +196,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 
+		ObservableFuture<NodeResponse> observableFuture = RxHelper.observableFuture();
+		observableFuture.subscribe(response -> {
+			handler.handle(Future.succeededFuture(response));
+		});
+		
 		NodeResponse restNode = new NodeResponse();
 		fillRest(restNode, ac);
 
@@ -209,23 +216,25 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found.");
 			}
 			/* Load the schema information */
-			if (getSchemaContainer() != null) {
-				SchemaReference schemaReference = new SchemaReference();
-				schemaReference.setName(getSchema().getName());
-				schemaReference.setUuid(getSchemaContainer().getUuid());
-				restNode.setSchema(schemaReference);
+			SchemaContainer schemaContainer = getSchemaContainer();
+			if (schemaContainer != null) {
+				schemaContainer.transformToReference(ac, rh -> {
+					//TODO check for failure and null
+					restNode.setSchema(rh.result());
+				});
+
 			}
 
 			restNode.setDisplayField(schema.getDisplayField());
+	
 			Node parentNode = getParentNode();
 			if (parentNode != null) {
-				NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
-				parentNodeReference.setUuid(parentNode.getUuid());
-				parentNodeReference.setDisplayName(parentNode.getDisplayName(ac));
-				//TODO add schema information
-				restNode.setParentNode(parentNodeReference);
-				
-			}
+				ObservableFuture<NodeReferenceImpl> obsParentNodeReference = RxHelper.observableFuture();
+				obsParentNodeReference.subscribe(nodeReferenceImpl-> {
+					restNode.setParentNode(nodeReferenceImpl);
+				});
+				parentNode.transformToReference(ac, obsParentNodeReference.toHandler());
+			} 
 
 			/* Load the children */
 			if (getSchema().isFolder()) {
@@ -304,7 +313,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
 		}
 
-		handler.handle(Future.succeededFuture(restNode));
 		// } catch (IOException e) {
 		// // TODO i18n
 		// throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
@@ -312,6 +320,16 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 		return this;
 
+	}
+
+	@Override
+	public Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler) {
+		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
+		nodeReference.setUuid(getUuid());
+		nodeReference.setDisplayName(getDisplayName(ac));
+		//TODO add schema information
+		handler.handle(Future.succeededFuture(nodeReference));
+		return this;
 	}
 
 	@Override
@@ -553,7 +571,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
+	public Node moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 
 		// TODO should we add a guard that terminates this loop when it runs to long?
@@ -562,7 +580,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
 				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
-				return;
+				return this;
 			}
 			parent = parent.getParentNode();
 		}
@@ -570,22 +588,22 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		try {
 			if (!targetNode.getSchema().isFolder()) {
 				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
-				return;
+				return this;
 			}
 		} catch (Exception e) {
 			log.error("Could not load schema for target node during move action", e);
 			// TODO maybe add better i18n error
 			handler.handle(ac.failedFuture(BAD_REQUEST, "error"));
-			return;
+			return this;
 		}
 
 		if (getUuid().equals(targetNode.getUuid())) {
 			handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_same_nodes"));
-			return;
+			return this;
 		}
 
 		// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
-		SearchQueueBatch batch ;
+		SearchQueueBatch batch;
 		try (Trx txMove = db.trx()) {
 			setParentNode(targetNode);
 			setEditor(ac.getUser());
@@ -596,7 +614,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			txMove.success();
 		}
 		processOrFail2(ac, batch, handler);
-
+		return this;
 	}
 
 	@Override

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -271,9 +272,17 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @param ac
 	 * @param targetNode
-	 * @param resultHandler
+	 * @param handler
 	 * @return
 	 */
-	void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
+	Node moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler);
+
+	/**
+	 * Transform the node into a node reference rest model.
+	 * 
+	 * @param ac
+	 * @param handler
+	 */
+	Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler);
 
 }

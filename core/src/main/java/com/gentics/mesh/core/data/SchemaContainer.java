@@ -5,7 +5,12 @@ import java.util.List;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.handler.InternalActionContext;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedVertex {
 
@@ -18,5 +23,7 @@ public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedVer
 	SchemaContainerImpl getImpl();
 
 	List<? extends Node> getNodes();
+
+	SchemaContainer transformToReference(InternalActionContext ac, Handler<AsyncResult<SchemaReference>> handler);
 
 }
