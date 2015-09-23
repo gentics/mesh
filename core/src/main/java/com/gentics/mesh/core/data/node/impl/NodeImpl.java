@@ -217,11 +217,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 
 			restNode.setDisplayField(schema.getDisplayField());
-			if (getParentNode() != null) {
+			Node parentNode = getParentNode();
+			if (parentNode != null) {
 				NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
-				parentNodeReference.setUuid(getParentNode().getUuid());
-				parentNodeReference.setDisplayName(getParentNode().getDisplayName(ac));
+				parentNodeReference.setUuid(parentNode.getUuid());
+				parentNodeReference.setDisplayName(parentNode.getDisplayName(ac));
+				//TODO add schema information
 				restNode.setParentNode(parentNodeReference);
+				
 			}
 
 			/* Load the children */

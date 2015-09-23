@@ -438,14 +438,16 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testUpdateMultithreaded() throws InterruptedException, BrokenBarrierException, TimeoutException {
 
-		final int nThreads = 10;
+		final int nThreads = 2;
 		final int nRuns = 20;
 		final int maxRetry = 20;
 
 		for (int r = 0; r < nRuns; r++) {
+			final int currentRun = r;
+			System.out.println("\n\n\n\n");
 			//			TraversalHelper.printDebugVertices();
-			CyclicBarrier barrier = new CyclicBarrier(nThreads);
-			AtomicInteger integer = new AtomicInteger(0);
+			CyclicBarrier barrierA = new CyclicBarrier(nThreads);
+			CyclicBarrier barrierB = new CyclicBarrier(nThreads);
 			Node node = content();
 			TagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
@@ -453,9 +455,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 			User user = user();
 
 			for (int i = 0; i < nThreads; i++) {
-				System.out.println("Thread [" + i + "] Starting");
+				final int threadNo = i;
+				System.out.println("Thread [" + threadNo + "] Starting");
 				Thread t = TestUtil.run(() -> {
-					int n = integer.incrementAndGet();
+
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
 							try (Trx tx = db.trx()) {
@@ -464,28 +467,37 @@ public class NodeTest extends AbstractBasicObjectTest {
 								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
 								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getImpl().getId());
-
-								Tag tag = reloadedTagFamily.create("bogus_" + n, reloadedProject, reloadedUser);
+								if (retry == 0) {
+									try {
+										System.out.println("Thread [" + threadNo + "] Waiting..");
+										barrierA.await(10, TimeUnit.SECONDS);
+										System.out.println("Thread [" + threadNo + "] Waited");
+									} catch (Exception e) {
+										System.out.println("Thread [" + threadNo + "] Error handling barrier timeout? - retry: " + retry);
+										//e.printStackTrace();
+									}
+								}
+								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, reloadedProject, reloadedUser);
 								// Reload the node
 								reloadedNode.addTag(tag);
 								tx.success();
 								if (retry == 0) {
 									try {
-										System.out.println("Thread [" + n + "] Waiting..");
-										barrier.await(10, TimeUnit.SECONDS);
-										System.out.println("Thread [" + n + "] Waited");
+										System.out.println("Thread [" + threadNo + "] Waiting..");
+										barrierB.await(10, TimeUnit.SECONDS);
+										System.out.println("Thread [" + threadNo + "] Waited");
 									} catch (Exception e) {
-										System.out.println("Thread [" + n + "] Error handling barrier timeout? - retry: " + retry);
+										System.out.println("Thread [" + threadNo + "] Error handling barrier timeout? - retry: " + retry);
 										//e.printStackTrace();
 									}
 								}
 							}
-							System.out.println("Thread [" + n + "] Successful updated element - retry: " + retry);
+							System.out.println("Thread [" + threadNo + "] Successful updated element - retry: " + retry);
 							break;
 						} catch (Exception e) {
 
 							//trx.rollback();
-							System.out.println("Thread [" + n + "] Got exception {" + e.getClass().getName() + "}  - retry: " + retry);
+							System.out.println("Thread [" + threadNo + "] Got exception {" + e.getClass().getName() + "}  - retry: " + retry);
 							e.printStackTrace();
 						}
 					}
@@ -497,12 +509,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 			for (Thread currentThread : threads) {
 				currentThread.join();
 			}
-//			Thread.sleep(1000);
+			//			Thread.sleep(1000);
 			try (Trx tx = db.trx()) {
 				int expect = nThreads * (r + 1);
-//				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
-				node.reload();
-				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect, node.getTags().size());
+				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
+//				node.reload();
+				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect, reloadedNode.getTags().size());
 			}
 		}
 	}
