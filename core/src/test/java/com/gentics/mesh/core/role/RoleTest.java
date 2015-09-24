@@ -80,9 +80,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testIsPermitted() throws Exception {
 		User user = user();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		int nRuns = 2000;
 		for (int i = 0; i < nRuns; i++) {
-			user.hasPermission(folder("news"), READ_PERM);
+			user.hasPermission(ac, folder("news"), READ_PERM);
 		}
 	}
 
@@ -126,9 +127,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 		role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		InternalActionContext ac = getMockedInternalActionContext("");
 		User user = user();
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				user.hasPermission(meshRoot().getGroupRoot(), CREATE_PERM));
+				user.hasPermission(ac, meshRoot().getGroupRoot(), CREATE_PERM));
 	}
 
 	@Test
@@ -271,10 +273,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		Role role = root.getRoleRoot().create("SuperUser", null, user());
-		assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
-		assertTrue(user().hasPermission(role, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 	}
 
 	@Test

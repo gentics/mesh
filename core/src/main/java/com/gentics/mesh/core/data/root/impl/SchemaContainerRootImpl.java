@@ -103,7 +103,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_name"))));
 				return;
 			}
-			if (requestUser.hasPermission(this, CREATE_PERM)) {
+			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 				SchemaContainer container;
 				try (Trx txCreate = db.trx()) {
 					requestUser.reload();

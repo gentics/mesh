@@ -158,7 +158,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 			return;
 		}
 		try (Trx tx = db.trx()) {
-			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
+			if (requestUser.hasPermission(ac, boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
 					return;

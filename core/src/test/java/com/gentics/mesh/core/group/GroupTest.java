@@ -133,10 +133,11 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		User user = user();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		Group group = root.getGroupRoot().create("newGroup", user);
-		assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
+		assertFalse(user.hasPermission(ac, group, GraphPermission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
-		assertTrue(user.hasPermission(group, GraphPermission.CREATE_PERM));
+		assertTrue(user.hasPermission(ac, group, GraphPermission.CREATE_PERM));
 	}
 
 	@Test

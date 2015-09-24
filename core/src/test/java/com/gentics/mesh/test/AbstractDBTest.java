@@ -220,6 +220,11 @@ public abstract class AbstractDBTest {
 		return reference.get();
 	}
 
+	protected InternalActionContext getMockedInternalActionContext(String query) {
+		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query));
+		return ac;
+	}
+
 	protected RoutingContext getMockedRoutingContext(String query) {
 		try (Trx tx = db.trx()) {
 			User user = dataProvider.getUserInfo().getUser();

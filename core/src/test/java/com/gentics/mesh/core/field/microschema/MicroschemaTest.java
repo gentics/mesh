@@ -153,10 +153,11 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		MicroschemaContainer container = root.create("newContainer", user());
-		assertFalse(user().hasPermission(container, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, container, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, container);
-		assertTrue(user().hasPermission(container, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermission(ac, container, GraphPermission.CREATE_PERM));
 	}
 
 }

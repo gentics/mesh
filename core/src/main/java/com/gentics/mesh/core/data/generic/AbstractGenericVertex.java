@@ -46,14 +46,18 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 		User creator = getCreator();
 		if (creator != null) {
-			model.setCreator(creator.transformToUserReference());
+			creator.transformToUserReference(rh -> {
+				model.setCreator(rh.result());
+			});
 		} else {
 			// TODO throw error and log something
 		}
 
 		User editor = getEditor();
 		if (editor != null) {
-			model.setEditor(editor.transformToUserReference());
+			editor.transformToUserReference(rh -> {
+				model.setEditor(rh.result());
+			});
 		} else {
 			// TODO throw error and log something
 		}

@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -98,29 +97,14 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	@Override
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 		TagResponse restTag = new TagResponse();
-
-		restTag.setPermissions(ac.getUser().getPermissionNames(ac, this));
-		restTag.setUuid(getUuid());
-
+		fillRest(restTag, ac);
 		TagFamily tagFamily = getTagFamily();
-
 		if (tagFamily != null) {
 			TagFamilyReference tagFamilyReference = new TagFamilyReference();
 			tagFamilyReference.setName(tagFamily.getName());
 			tagFamilyReference.setUuid(tagFamily.getUuid());
 			restTag.setTagFamilyReference(tagFamilyReference);
 		}
-
-		User creator = getCreator();
-		if (creator != null) {
-			restTag.setCreator(creator.transformToUserReference());
-		}
-
-		User editor = getEditor();
-		if (editor != null) {
-			restTag.setEditor(editor.transformToUserReference());
-		}
-
 		restTag.getFields().setName(getName());
 		resultHandler.handle(Future.succeededFuture(restTag));
 		return this;

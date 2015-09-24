@@ -97,7 +97,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 					return;
 				}
 
-				if (requestUser.hasPermission(this, CREATE_PERM)) {
+				if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 					TagFamily tagFamily = null;
 					SearchQueueBatch batch;
 					try (Trx txCreate = db.trx()) {

@@ -73,12 +73,12 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 
-	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
-		final MeshAuthUserImpl user = this;
-		//Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
-		resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permission)));
-		return this;
-	}
+//	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+//		final MeshAuthUserImpl user = this;
+//		//Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
+//		resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permission)));
+//		return this;
+//	}
 
 	@Override
 	public User clearCache() {

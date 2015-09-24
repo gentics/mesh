@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.BooleanUtils;
 
@@ -49,6 +50,10 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -196,19 +201,86 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
-		//TODO FIXME refactor this code. The traversal is not fast
-		Set<GraphPermission> permissions = new HashSet<>();
-		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back().label()
-				.toSet();
-		for (String label : labels) {
-			permissions.add(GraphPermission.valueOfLabel(label));
-		}
-		return permissions;
+		String mapKey = "permissions:" + node.getUuid();
+		ac.data().computeIfAbsent(mapKey, key -> {
+			Set<GraphPermission> graphPermissions = new HashSet<>();
+			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
+			groups.forEach(group -> {
+				Iterable<Vertex> roles = group.getVertices(Direction.IN, HAS_ROLE);
+				roles.forEach(role -> {
+					Iterable<Edge> permissions = role.getEdges(Direction.OUT, GraphPermission.labels());
+					permissions.forEach(permission -> {
+						if (node.getImpl().getId().equals(permission.getVertex(Direction.IN).getId())) {
+							graphPermissions.add(GraphPermission.valueOfLabel(permission.getLabel()));
+						}
+					});
+				});
+			});
+			return graphPermissions;
+		});
+		//	Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back()
+		//			.label().toSet();
+		//	or (String label : labels) {
+		//		graphPermissions.add(GraphPermission.valueOfLabel(label));
+		//	}
+		return (Set<GraphPermission>) ac.data().get(mapKey);
 	}
 
 	@Override
-	public boolean hasPermission(MeshVertex node, GraphPermission permission) {
-		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+	public boolean hasPermission(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
+
+		if (log.isTraceEnabled()) {
+			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
+		}
+		String mapKey = "permission:" + permission.label() + ":" + node.getUuid();
+		ac.data().computeIfAbsent(mapKey, key -> {
+			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
+			for (Vertex group : groups) {
+				if (log.isTraceEnabled()) {
+					log.trace("Group: " + group.getProperty("name") + " - uuid: " + group.getProperty("uuid") + " - type: "
+							+ group.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
+				}
+				Iterable<Vertex> roles = group.getVertices(Direction.IN, HAS_ROLE);
+				for (Vertex role : roles) {
+					if (log.isTraceEnabled()) {
+						log.trace("Role: " + role.getProperty("name") + " - uuid: " + role.getProperty("uuid") + " - type: "
+								+ role.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
+					}
+					Iterable<Edge> permissions = role.getEdges(Direction.OUT, permission.label());
+					for (Edge permissionEdge : permissions) {
+						if (log.isTraceEnabled()) {
+							log.trace("Permission Edge: " + permissionEdge.getProperty("uuid") + " - label: " + permissionEdge.getLabel()
+									+ " - type: " + permissionEdge.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " from: "
+									+ permissionEdge.getVertex(Direction.OUT).getProperty("uuid") + " to: "
+									+ permissionEdge.getVertex(Direction.IN).getProperty("uuid"));
+						}
+
+						if (node.getImpl().getId().equals(permissionEdge.getVertex(Direction.IN).getId())) {
+							if (log.isTraceEnabled()) {
+								log.trace("Found edge to specified node. User has permission.");
+							}
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		});
+		//return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+		return (boolean) ac.data().get(mapKey);
+
+	}
+
+	@Override
+	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
+		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		db.asyncNoTrx(noTrx -> {
+			//noTrx.
+			//TODO call hasPermission?
+		} , rh -> {
+			handler.handle(Future.succeededFuture());
+		});
+		return this;
 	}
 
 	@Override
@@ -261,11 +333,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public UserReference transformToUserReference() {
+	public User transformToUserReference(Handler<AsyncResult<UserReference>> handler) {
 		UserReference reference = new UserReference();
 		reference.setName(getUsername());
 		reference.setUuid(getUuid());
-		return reference;
+		handler.handle(Future.succeededFuture(reference));
+		return this;
 	}
 
 	@Override

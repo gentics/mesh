@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -321,7 +322,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateUserWithNodeReference() {
 
 		Node node = folder("2015");
-		assertTrue(user().hasPermission(node, READ_PERM));
+		InternalActionContext ac = getMockedInternalActionContext("");
+		assertTrue(user().hasPermission(ac, node, READ_PERM));
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);

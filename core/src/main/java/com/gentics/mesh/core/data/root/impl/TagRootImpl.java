@@ -118,7 +118,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			}
 
 			MeshAuthUser requestUser = ac.getUser();
-			if (!requestUser.hasPermission(tagFamily, CREATE_PERM)) {
+			if (!requestUser.hasPermission(ac, tagFamily, CREATE_PERM)) {
 				throw new InvalidPermissionException(ac.i18n("error_missing_perm", tagFamily.getUuid()));
 			}
 

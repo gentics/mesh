@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "user";
@@ -105,7 +108,9 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	void setReferencedNode(Node node);
 
-	boolean hasPermission(MeshVertex vertex, GraphPermission permission);
+	boolean hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
+
+	User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler);
 
 	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
 
@@ -172,9 +177,10 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	/**
 	 * Return a user reference object for the user.
 	 * 
-	 * @return
+	 * @param handler
+	 * @return Fluent API
 	 */
-	UserReference transformToUserReference();
+	User transformToUserReference(Handler<AsyncResult<UserReference>> handler);
 
 	List<? extends GenericVertexImpl> getEditedElements();
 

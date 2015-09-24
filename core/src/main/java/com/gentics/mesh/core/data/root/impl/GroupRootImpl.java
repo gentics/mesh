@@ -85,7 +85,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		}
 		try (NoTrx tx = db.noTrx()) {
 			MeshRoot root = boot.meshRoot();
-			if (requestUser.hasPermission(this, CREATE_PERM)) {
+			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {
 					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name", requestModel.getName()));
 					return;

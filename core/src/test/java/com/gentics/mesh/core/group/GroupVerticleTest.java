@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -158,13 +159,14 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateGroupWithNoPerm() throws Exception {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		request.setName(name);
 		String rootUuid;
 		GroupRoot root = meshRoot().getGroupRoot();
 		rootUuid = root.getUuid();
 		role().revokePermissions(root, CREATE_PERM);
 		User user = user();
-		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(ac, root, CREATE_PERM));
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);

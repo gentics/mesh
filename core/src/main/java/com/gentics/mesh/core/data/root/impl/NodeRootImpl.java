@@ -195,7 +195,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
-					if (requestUser.hasPermission(containerByName, READ_PERM)) {
+					if (requestUser.hasPermission(ac, containerByName, READ_PERM)) {
 						containerFoundHandler.handle(Future.succeededFuture(containerByName));
 					} else {
 						handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", containerByName.getUuid()))));

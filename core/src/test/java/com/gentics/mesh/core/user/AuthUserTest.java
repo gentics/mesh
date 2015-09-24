@@ -38,7 +38,7 @@ public class AuthUserTest extends AbstractDBTest {
 		Language targetNode = english();
 		final CountDownLatch latch = new CountDownLatch(1);
 		try (NoTrx tx = db.noTrx()) {
-			requestUser.isAuthorised(targetNode, GraphPermission.READ_PERM, rh -> {
+			requestUser.hasPermission(ac,targetNode, GraphPermission.READ_PERM, rh -> {
 				if (rh.failed()) {
 					rh.cause().printStackTrace();
 					fail(rh.cause().getMessage());
@@ -50,7 +50,7 @@ public class AuthUserTest extends AbstractDBTest {
 
 			info.getRole().revokePermissions(targetNode, GraphPermission.READ_PERM);
 			final CountDownLatch latch2 = new CountDownLatch(1);
-			requestUser.isAuthorised(targetNode, GraphPermission.READ_PERM, rh -> {
+			requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
 				if (rh.failed()) {
 					rh.cause().printStackTrace();
 					fail(rh.cause().getMessage());

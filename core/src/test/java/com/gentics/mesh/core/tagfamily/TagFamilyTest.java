@@ -206,10 +206,11 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		TagFamilyRoot root = project().getTagFamilyRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		TagFamily tagFamily = root.create("test123", user());
-		assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
-		assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
 	}
 
 }

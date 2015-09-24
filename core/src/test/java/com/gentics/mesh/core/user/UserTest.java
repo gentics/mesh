@@ -56,7 +56,8 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testHasPermission() {
-		assertTrue(user().hasPermission(english(), READ_PERM));
+		InternalActionContext ac = getMockedInternalActionContext("");
+		assertTrue(user().hasPermission(ac, english(), READ_PERM));
 	}
 
 	@Test
@@ -108,10 +109,17 @@ public class UserTest extends AbstractBasicObjectTest {
 		String[] perms = { "create", "update", "delete", "read" };
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		String[] loadedPerms = user().getPermissionNames(ac, language);
-		Arrays.sort(perms);
-		Arrays.sort(loadedPerms);
-		assertArrayEquals("Permissions do not match", perms, loadedPerms);
+		long start = System.currentTimeMillis();
+		int nChecks = 10000;
+		for (int i = 0; i < nChecks; i++) {
+			String[] loadedPerms = user().getPermissionNames(ac, language);
+			Arrays.sort(perms);
+			Arrays.sort(loadedPerms);
+			assertArrayEquals("Permissions do not match", perms, loadedPerms);
+			assertNotNull(ac.data().get("permissions:" + language.getUuid()));
+		}
+		System.out.println("Duration: " + (System.currentTimeMillis() - start));
+		System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
 	}
 
 	@Test
@@ -191,10 +199,12 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		User user = user();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		User newUser = root.getUserRoot().create("Anton", null, user());
-		assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+		assertFalse(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
-		assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+		ac.data().clear();
+		assertTrue(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
 	}
 
 	@Test
@@ -209,6 +219,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		Role roleWithAllPerm;
 		Role roleWithNoPerm;
 		Role roleWithCreatePerm;
+
+		InternalActionContext ac = getMockedInternalActionContext("");
 
 		try (Trx tx = db.trx()) {
 			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
@@ -237,13 +249,14 @@ public class UserTest extends AbstractBasicObjectTest {
 			user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
 			tx.success();
 		}
-
+		ac.data().clear();
 		try (Trx tx = db.trx()) {
+			newUser.reload();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
 						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
 								+ perm.name() + "}",
-						newUser.hasPermission(targetNode, perm));
+						newUser.hasPermission(ac, targetNode, perm));
 			}
 
 			// roleWithAllPerm

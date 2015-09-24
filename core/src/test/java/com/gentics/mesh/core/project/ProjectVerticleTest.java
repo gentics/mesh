@@ -40,10 +40,12 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
+import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
@@ -74,6 +76,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertProject(request, restProject);
 		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
 		CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<Project> reference = new AtomicReference<>();
 		meshRoot().getProjectRoot().findByUuid(restProject.getUuid(), rh -> {
@@ -83,11 +87,11 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		failingLatch(latch);
 		Project project = reference.get();
 		assertNotNull(project);
-		assertTrue(user().hasPermission(project, CREATE_PERM));
-		assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
-		assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
-		assertTrue(user().hasPermission(project.getTagRoot(), CREATE_PERM));
-		assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project, CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getBaseNode(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getTagFamilyRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getTagRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getNodeRoot(), CREATE_PERM));
 	}
 
 	@Test

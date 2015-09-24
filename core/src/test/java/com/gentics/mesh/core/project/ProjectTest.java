@@ -159,10 +159,11 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		Project project = root.getProjectRoot().create("TestProject", user());
-		assertFalse(user().hasPermission(project, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
-		assertTrue(user().hasPermission(project, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
 	}
 
 	@Test

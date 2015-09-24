@@ -116,7 +116,7 @@ public class SearchRestHandler {
 						return new ArrayList<T>();
 					} , (x, y) -> {
 						// Check permissions
-						if (y != null && requestUser.hasPermission(y, GraphPermission.READ_PERM)) {
+						if (y != null && requestUser.hasPermission(ac, y, GraphPermission.READ_PERM)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {

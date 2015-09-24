@@ -365,7 +365,7 @@ public class VerticleHelper {
 				throw new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid));
 			} else {
 				MeshAuthUser requestUser = ac.getUser();
-				if (requestUser.hasPermission(object, perm)) {
+				if (requestUser.hasPermission(ac, object, perm)) {
 					return object;
 				} else {
 					throw new InvalidPermissionException(ac.i18n("error_missing_perm", object.getUuid()));
@@ -401,7 +401,7 @@ public class VerticleHelper {
 							handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
 						} else {
 							MeshAuthUser requestUser = ac.getUser();
-							if (requestUser.hasPermission(node, perm)) {
+							if (requestUser.hasPermission(ac, node, perm)) {
 								handler.handle(Future.succeededFuture(node));
 							} else {
 								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
