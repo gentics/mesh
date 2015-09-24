@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
@@ -11,6 +12,7 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -71,12 +73,15 @@ public abstract class AbstractDatabase implements Database {
 	abstract public Trx trx();
 
 	@Override
-	public Database trx(Handler<Trx> transactionCodeHandler) {
+	public <T> Database trx(Consumer<Future<T>> code, Future<T> future) {
 		for (int retry = 0; retry < maxRetry; retry++) {
 			try (Trx tx = trx()) {
-				transactionCodeHandler.handle(tx);
+				code.accept(future);
+				if (future.failed()) {
+					tx.failure();
+				}
 				break;
-				//TODO maybe we should only retry OConcurrentExceptions?
+				// TODO maybe we should only retry OConcurrentExceptions?
 			} catch (Exception e) {
 				log.error("Error while handling transaction. Retrying " + retry, e);
 			}
@@ -88,10 +93,15 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Database asyncTrx(Handler<Trx> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Database asyncTrx(Consumer<Future<T>> transactionCode, Handler<AsyncResult<T>> resultHandler) {
+		Future<T> future = Future.future();
 		Mesh.vertx().executeBlocking(bh -> {
-			trx(transactionCodeHandler);
-			bh.complete();
+			trx(transactionCode, future);
+			if (future.succeeded()) {
+				bh.complete(future.result());
+			} else {
+				bh.fail(future.cause());
+			}
 		} , false, resultHandler);
 		return this;
 	}
@@ -101,18 +111,18 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public Database noTrx(Handler<NoTrx> transactionCodeHandler) {
-		//		for (int retry = 0; retry < maxRetry; retry++) {
+		// for (int retry = 0; retry < maxRetry; retry++) {
 		try (NoTrx noTx = noTrx()) {
 			transactionCodeHandler.handle(noTx);
-			//TODO maybe we should only retry OConcurrentExceptions?
+			// TODO maybe we should only retry OConcurrentExceptions?
 		} catch (Exception e) {
 			log.error("Error while handling no-transaction.", e);
 			throw e;
 		}
-		//			if (log.isDebugEnabled()) {
-		//				log.debug("Retrying .. {" + retry + "}");
-		//			}
-		//		}
+		// if (log.isDebugEnabled()) {
+		// log.debug("Retrying .. {" + retry + "}");
+		// }
+		// }
 		return this;
 	}
 

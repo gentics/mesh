@@ -30,10 +30,63 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.test.TestUtil;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 
 public class TrxTest extends AbstractBasicDBTest {
+
+	@Test
+	public void testAsyncTestErrorHandling() throws Exception {
+		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
+		db.asyncTrx(trx -> {
+			trx.fail("blub");
+		} , rh -> {
+			fut.complete(rh);
+		});
+
+		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
+		assertTrue(result.failed());
+		assertNotNull(result.cause());
+		assertEquals("blub", result.cause().getMessage());
+	}
+
+	@Test
+	public void testAsyncTestSuccessHandling() throws Exception {
+		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
+		db.asyncTrx(trx -> {
+			trx.complete("test");
+		} , rh -> {
+			fut.complete(rh);
+		});
+		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
+		assertTrue(result.succeeded());
+		assertNull(result.cause());
+		assertEquals("test", result.result());
+	}
+
+	@Test
+	public void testAsyncTrxRetryHandling() throws Exception {
+		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
+		AtomicInteger e = new AtomicInteger(0);
+		db.asyncTrx(trx -> {
+			e.incrementAndGet();
+			if (e.get() == 1) {
+				String msg = "Cannot UPDATE the record #13:8 because the version is not the latest. Probably you are updating an old record or it has been modified by another user (db=v7 your=v6)";
+				// "test #9:1 blub adsd"
+				throw new OConcurrentModificationException(msg);
+			} else {
+				trx.complete("OK");
+			}
+		} , rh -> {
+			fut.complete(rh);
+		});
+		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
+		assertEquals(2, e.get());
+		assertEquals("OK", result.result());
+		assertTrue(result.succeeded());
+		assertNull(result.cause());
+	}
 
 	@Test
 	public void testConcurrentUpdate() throws InterruptedException, BrokenBarrierException, TimeoutException {
@@ -54,8 +107,9 @@ public class TrxTest extends AbstractBasicDBTest {
 				db.asyncTrx(trx -> {
 					Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
 					node.addTag(tag);
-					trx.success();
+					trx.complete(tag);
 				} , rh -> {
+					assertEquals(Tag.class, rh.result().getClass());
 					latch.countDown();
 				});
 			}
@@ -151,7 +205,7 @@ public class TrxTest extends AbstractBasicDBTest {
 	public void testAsyncTrxFailed() throws Throwable {
 		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
 		db.asyncTrx(trx -> {
-			trx.failure();
+			trx.failed();
 		} , rh -> {
 			cf.complete(rh);
 		});
@@ -182,64 +236,64 @@ public class TrxTest extends AbstractBasicDBTest {
 		throw cf.get();
 	}
 
-	@Test
-	@Ignore
-	public void testUpdateMultithreadedSimple() throws InterruptedException, BrokenBarrierException, TimeoutException {
-
-		final int nThreads = 10;
-		final int nRuns = 20;
-
-		for (int r = 0; r < nRuns; r++) {
-			CyclicBarrier barrier = new CyclicBarrier(nThreads);
-			AtomicInteger integer = new AtomicInteger(0);
-
-			TagFamily tagFamily = tagFamily("colors");
-			Node node = content();
-
-			ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
-			List<Thread> threads = new ArrayList<>();
-			for (int i = 1; i < nThreads; i++) {
-				System.out.println("Thread [" + i + "] Starting");
-				Thread t = TestUtil.run(() -> {
-					firstTry.set(true);
-					int n = integer.incrementAndGet();
-					db.trx(tx -> {
-						//Load the elements again
-						TagFamily cTagFamily = tagFamily.load();
-						Project cProject = project().load();
-						Node cNode = node.load();
-						User cUser = user().load();
-
-						Tag tag = cTagFamily.create("bogus_" + n, cProject, cUser);
-						cNode.addTag(tag);
-						tx.success();
-						if (firstTry.get()) {
-							firstTry.set(false);
-							try {
-								System.out.println("Thread [" + n + "] Waiting..");
-								barrier.await(10, TimeUnit.SECONDS);
-								System.out.println("Thread [" + n + "] Waited");
-							} catch (Exception e) {
-								System.out.println("Thread [" + n + "] Error handling.");
-								e.printStackTrace();
-							}
-						}
-						System.out.println("Thread [" + n + "] Successful updated element.");
-					});
-				});
-				threads.add(t);
-			}
-
-			System.out.println("Waiting on lock");
-			for (Thread currentThread : threads) {
-				currentThread.join();
-			}
-			try (Trx tx = db.trx()) {
-				int expect = nThreads * (r + 1);
-				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}", expect, content().getTags().size());
-			}
-		}
-	}
+	// @Test
+	// @Ignore
+	// public void testUpdateMultithreadedSimple() throws InterruptedException, BrokenBarrierException, TimeoutException {
+	//
+	// final int nThreads = 10;
+	// final int nRuns = 20;
+	//
+	// for (int r = 0; r < nRuns; r++) {
+	// CyclicBarrier barrier = new CyclicBarrier(nThreads);
+	// AtomicInteger integer = new AtomicInteger(0);
+	//
+	// TagFamily tagFamily = tagFamily("colors");
+	// Node node = content();
+	//
+	// ThreadLocal<Boolean> firstTry = new ThreadLocal<>();
+	// List<Thread> threads = new ArrayList<>();
+	// for (int i = 1; i < nThreads; i++) {
+	// System.out.println("Thread [" + i + "] Starting");
+	// Thread t = TestUtil.run(() -> {
+	// firstTry.set(true);
+	// int n = integer.incrementAndGet();
+	// db.trx(tx -> {
+	// // Load the elements again
+	// TagFamily cTagFamily = tagFamily.load();
+	// Project cProject = project().load();
+	// Node cNode = node.load();
+	// User cUser = user().load();
+	//
+	// Tag tag = cTagFamily.create("bogus_" + n, cProject, cUser);
+	// cNode.addTag(tag);
+	// tx.complete();
+	// if (firstTry.get()) {
+	// firstTry.set(false);
+	// try {
+	// System.out.println("Thread [" + n + "] Waiting..");
+	// barrier.await(10, TimeUnit.SECONDS);
+	// System.out.println("Thread [" + n + "] Waited");
+	// } catch (Exception e) {
+	// System.out.println("Thread [" + n + "] Error handling.");
+	// e.printStackTrace();
+	// }
+	// }
+	// System.out.println("Thread [" + n + "] Successful updated element.");
+	// });
+	// });
+	// threads.add(t);
+	// }
+	//
+	// System.out.println("Waiting on lock");
+	// for (Thread currentThread : threads) {
+	// currentThread.join();
+	// }
+	// try (Trx tx = db.trx()) {
+	// int expect = nThreads * (r + 1);
+	// assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}", expect, content().getTags().size());
+	// }
+	// }
+	// }
 
 	@Test
 	@Ignore
@@ -252,7 +306,7 @@ public class TrxTest extends AbstractBasicDBTest {
 		for (int r = 0; r < nRuns; r++) {
 			final int currentRun = r;
 			System.out.println("\n\n\n\n");
-			//			TraversalHelper.printDebugVertices();
+			// TraversalHelper.printDebugVertices();
 			CyclicBarrier barrierA = new CyclicBarrier(nThreads);
 			CyclicBarrier barrierB = new CyclicBarrier(nThreads);
 			Node node = content();
@@ -277,10 +331,10 @@ public class TrxTest extends AbstractBasicDBTest {
 										System.out.println("Thread [" + threadNo + "] Waited");
 									} catch (Exception e) {
 										System.out.println("Thread [" + threadNo + "] Error handling barrier timeout? - retry: " + retry);
-										//e.printStackTrace();
+										// e.printStackTrace();
 									}
 								}
-								//Load used elements
+								// Load used elements
 								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getImpl().getId());
 								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
 								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
@@ -297,7 +351,7 @@ public class TrxTest extends AbstractBasicDBTest {
 										System.out.println("Thread [" + threadNo + "] Waited");
 									} catch (Exception e) {
 										System.out.println("Thread [" + threadNo + "] Error handling barrier timeout? - retry: " + retry);
-										//e.printStackTrace();
+										// e.printStackTrace();
 									}
 								}
 							}
@@ -305,7 +359,7 @@ public class TrxTest extends AbstractBasicDBTest {
 							break;
 						} catch (Exception e) {
 
-							//trx.rollback();
+							// trx.rollback();
 							System.out.println("Thread [" + threadNo + "] Got exception {" + e.getClass().getName() + "}  - retry: " + retry);
 							e.printStackTrace();
 						}
@@ -314,15 +368,15 @@ public class TrxTest extends AbstractBasicDBTest {
 				threads.add(t);
 			}
 			System.out.println("Waiting on lock");
-			//barrier.await(2, TimeUnit.SECONDS);
+			// barrier.await(2, TimeUnit.SECONDS);
 			for (Thread currentThread : threads) {
 				currentThread.join();
 			}
-			//			Thread.sleep(1000);
+			// Thread.sleep(1000);
 			try (Trx tx = db.trx()) {
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getImpl().getId());
-				//				node.reload();
+				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect, reloadedNode.getTags().size());
 			}
 		}
