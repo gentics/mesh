@@ -207,6 +207,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		assertFalse(user().hasPermission(ac, node, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
+		ac.data().clear();
 		assertTrue(user().hasPermission(ac, node, GraphPermission.CREATE_PERM));
 	}
 
