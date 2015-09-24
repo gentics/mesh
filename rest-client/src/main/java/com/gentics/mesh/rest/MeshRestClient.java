@@ -60,6 +60,8 @@ import io.vertx.core.http.HttpMethod;
 
 public class MeshRestClient extends AbstractMeshRestClient {
 
+	private static Vertx vertx;
+
 	public MeshRestClient(String host) {
 		this(host, DEFAULT_PORT);
 	}
@@ -68,7 +70,10 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);
-		client = Vertx.vertx().createHttpClient(options);
+		if (vertx == null) {
+			vertx = Vertx.vertx();
+		}
+		client = vertx.createHttpClient(options);
 	}
 
 	@Override
