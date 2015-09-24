@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -51,7 +52,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
@@ -68,7 +68,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);
-		client = Vertx.vertx().createHttpClient(options);
+		client = Mesh.vertx().createHttpClient(options);
 	}
 
 	@Override

@@ -1,6 +1,9 @@
 package com.gentics.mesh.graphdb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.test.TestUtil;
 
@@ -64,6 +68,83 @@ public class TrxTest extends AbstractBasicDBTest {
 				assertEquals("Expected {" + expect + "} tags since this is the " + r + "th run.", expect, content().getTags().size());
 			}
 		}
+	}
+
+	@Test
+	public void testTransaction() throws InterruptedException {
+		AtomicInteger i = new AtomicInteger(0);
+
+		UserRoot root;
+		try (Trx tx = db.trx()) {
+			root = meshRoot().getUserRoot();
+		}
+		int e = i.incrementAndGet();
+		try (Trx tx = db.trx()) {
+			assertNotNull(root.create("testuser" + e, group(), user()));
+			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
+			tx.success();
+		}
+		try (Trx tx = db.trx()) {
+			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
+		}
+		int u = i.incrementAndGet();
+		Runnable task = () -> {
+			try (Trx tx = db.trx()) {
+				assertNotNull(root.create("testuser" + u, group(), user()));
+				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
+				tx.failure();
+			}
+			assertNull(boot.userRoot().findByUsername("testuser" + u));
+
+		};
+		Thread t = new Thread(task);
+		t.start();
+		t.join();
+		try (Trx tx = db.trx()) {
+			assertNull(boot.userRoot().findByUsername("testuser" + u));
+			System.out.println("RUN: " + i.get());
+		}
+
+	}
+
+	@Test
+	public void testMultiThreadedModifications() throws InterruptedException {
+		User user = user();
+
+		Runnable task2 = () -> {
+			try (Trx tx = db.trx()) {
+				user.setUsername("test2");
+				assertNotNull(boot.userRoot().findByUsername("test2"));
+				tx.success();
+			}
+			assertNotNull(boot.userRoot().findByUsername("test2"));
+
+			Runnable task = () -> {
+				try (Trx tx = db.trx()) {
+					user.setUsername("test3");
+					assertNotNull(boot.userRoot().findByUsername("test3"));
+					tx.failure();
+				}
+				assertNotNull(boot.userRoot().findByUsername("test2"));
+				assertNull(boot.userRoot().findByUsername("test3"));
+
+			};
+			Thread t = new Thread(task);
+			t.start();
+			try {
+				t.join();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		};
+		Thread t2 = new Thread(task2);
+		t2.start();
+		t2.join();
+		try (Trx tx = db.trx()) {
+			assertNull(boot.userRoot().findByUsername("test3"));
+			assertNotNull(boot.userRoot().findByUsername("test2"));
+		}
+
 	}
 
 	@Test

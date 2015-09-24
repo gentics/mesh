@@ -20,6 +20,7 @@ import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
