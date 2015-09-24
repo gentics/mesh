@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.function.Consumer;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
@@ -24,6 +25,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -68,7 +70,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(MeshElement element) {
-		((OrientVertex) element.getElement()).reload();
+		((OrientVertex) ((WrappedVertex) element.getElement()).getBaseElement()).reload();
+		//((OrientVertex) element.getElement()).reload();
 	}
 
 	@Override

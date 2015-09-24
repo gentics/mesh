@@ -57,7 +57,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		} else {
 			// TODO throw error and log something
 		}
-		model.setPermissions(ac.getUser().getPermissionNames(this));
+		model.setPermissions(ac.getUser().getPermissionNames(ac, this));
 
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());

@@ -49,7 +49,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.test.TestUtil;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.ThreadUtil;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -343,7 +342,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			for (int i = 0; i < nThreads; i++) {
 				final int threadNo = i;
 				System.out.println("Thread [" + threadNo + "] Starting");
-				ThreadUtil.executeBlocking(tx -> {
+				db.asyncTrx(trx -> {
 					//Load the elements again
 					//waitFor(barrier);
 					try {
@@ -352,20 +351,27 @@ public class NodeTest extends AbstractBasicObjectTest {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					TagFamily cTagFamily = tagFamily.load();
-					Project cProject = project().load();
-					Node cNode = node.load();
-					User cUser = user().load();
+					//TagFamily cTagFamily = tagFamily.load();
+//					Project cProject = project().load();
+//					Node cNode = node.load();
+//					User cUser = user().load();
 
-					Tag tag = cTagFamily.create("bogus_" + threadNo + "_" + currentRun, cProject, cUser);
-					cNode.addTag(tag);
+					Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
+					node.addTag(tag);
 
-					tx.success();
-
-				} , rh -> {
-					System.out.println("Thread [" + "?" + "] Successfulyl updated element.");
-					latch.countDown();
+					trx.success();
+				}, rh -> {
+					
 				});
+				
+//
+//				ThreadUtil.executeBlocking(tx -> {
+//		
+//
+//				} , rh -> {
+//					System.out.println("Thread [" + "?" + "] Successfulyl updated element.");
+//					latch.countDown();
+//				});
 
 			}
 

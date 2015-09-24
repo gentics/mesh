@@ -106,7 +106,9 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testGetPermissions() {
 		Language language = english();
 		String[] perms = { "create", "update", "delete", "read" };
-		String[] loadedPerms = user().getPermissionNames(language);
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		String[] loadedPerms = user().getPermissionNames(ac, language);
 		Arrays.sort(perms);
 		Arrays.sort(loadedPerms);
 		assertArrayEquals("Permissions do not match", perms, loadedPerms);

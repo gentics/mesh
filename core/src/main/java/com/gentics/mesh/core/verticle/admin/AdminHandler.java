@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.handler.ActionContext;
 

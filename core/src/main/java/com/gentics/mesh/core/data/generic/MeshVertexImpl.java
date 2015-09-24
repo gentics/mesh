@@ -17,14 +17,25 @@ import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
+
+	private Object id;
+	public ThreadLocal<Vertex> threadLocalElement = ThreadLocal.withInitial(() -> getGraph().getVertex(id));
 
 	@Override
 	protected void init() {
 		super.init();
 		setProperty("uuid", UUIDUtil.randomUUID());
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element) {
+		super.init(graph, element);
+		this.id = element.getId();
 	}
 
 	/**
@@ -101,10 +112,21 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
+	public Vertex getElement() {
+		Vertex vertex = threadLocalElement.get();
+
+		// Unwrapp wrapped vertices
+		if (vertex instanceof WrappedElement) {
+			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+		}
+		return vertex;
+	}
+
+	@Override
 	public void reload() {
 		MeshSpringConfiguration.getMeshSpringConfiguration().database().reload(this);
 	}
-	
+
 	@Override
 	public <T> T load() {
 		return (T) Database.getThreadLocalGraph().getFramedVertexExplicit(getClass(), getId());

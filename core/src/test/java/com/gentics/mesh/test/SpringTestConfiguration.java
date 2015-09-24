@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
 
 @Configuration
@@ -27,11 +28,12 @@ public class SpringTestConfiguration {
 
 	@PostConstruct
 	public void setup() {
+		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
-		Mesh.initalize(options);
+		Mesh.mesh(options);
 	}
 
 }

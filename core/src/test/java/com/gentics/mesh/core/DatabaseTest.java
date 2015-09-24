@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractDBTest;

@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.handler.InternalActionContext;
 
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
 
@@ -106,9 +107,9 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 
 	boolean hasPermission(MeshVertex vertex, GraphPermission permission);
 
-	String[] getPermissionNames(MeshVertex vertex);
+	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
 
-	Set<GraphPermission> getPermissions(MeshVertex node);
+	Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used

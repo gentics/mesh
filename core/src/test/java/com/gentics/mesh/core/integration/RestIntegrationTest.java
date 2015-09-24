@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
 public class RestIntegrationTest extends AbstractIntegrationTest {
@@ -17,7 +17,7 @@ public class RestIntegrationTest extends AbstractIntegrationTest {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 		final CountDownLatch latch = new CountDownLatch(1);
 
-		final Mesh mesh = Mesh.initalize();
+		final Mesh mesh = Mesh.mesh();
 		mesh.setCustomLoader((vertx) -> {
 			vertx.eventBus().consumer("mesh-startup-complete", mh -> {
 				latch.countDown();

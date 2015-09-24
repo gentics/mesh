@@ -184,8 +184,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public String[] getPermissionNames(MeshVertex node) {
-		Set<GraphPermission> permissions = getPermissions(node);
+	public String[] getPermissionNames(InternalActionContext ac, MeshVertex node) {
+		Set<GraphPermission> permissions = getPermissions(ac, node);
 		String[] strings = new String[permissions.size()];
 		Iterator<GraphPermission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
@@ -195,7 +195,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(MeshVertex node) {
+	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
 		//TODO FIXME refactor this code. The traversal is not fast
 		Set<GraphPermission> permissions = new HashSet<>();
 		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back().label()

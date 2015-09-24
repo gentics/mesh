@@ -1,6 +1,6 @@
 package com.gentics.mesh.etc.config;
 
-import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang.BooleanUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

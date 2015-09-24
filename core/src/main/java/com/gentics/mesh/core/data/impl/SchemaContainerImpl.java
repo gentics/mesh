@@ -66,7 +66,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 				};
 			});
 
-			schemaResponse.setPermissions(ac.getUser().getPermissionNames(this));
+			schemaResponse.setPermissions(ac.getUser().getPermissionNames(ac, this));
 
 			handler.handle(Future.succeededFuture(schemaResponse));
 		} catch (IOException e) {

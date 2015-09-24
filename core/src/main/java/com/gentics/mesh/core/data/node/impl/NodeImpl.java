@@ -19,9 +19,9 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
@@ -321,11 +321,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			handler.handle(ac.failedFuture(BAD_REQUEST, "Could not transform tags"));
 		}
 
-		Observable.merge(futures).subscribe(item -> {
+		Observable.merge(futures).last().subscribe(lastItem -> {
+			handler.handle(Future.succeededFuture(restNode));
 		} , error -> {
 			handler.handle(Future.failedFuture(error));
-		} , () -> {
-			handler.handle(Future.succeededFuture(restNode));
 		});
 		return this;
 
@@ -336,7 +335,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
-		// TODO add schema information
+		getSchemaContainer().transformToReference(ac, rh -> {
+			nodeReference.setSchema(rh.result());	
+		});
 		handler.handle(Future.succeededFuture(nodeReference));
 		return this;
 	}

@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc;
+package com.gentics.mesh.etc.config;
 
 import io.vertx.core.json.JsonObject;
 

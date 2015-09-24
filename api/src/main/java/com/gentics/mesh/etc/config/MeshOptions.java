@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.etc.ElasticSearchOptions;
-import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.StorageOptions;
 
 import io.vertx.ext.mail.MailConfig;

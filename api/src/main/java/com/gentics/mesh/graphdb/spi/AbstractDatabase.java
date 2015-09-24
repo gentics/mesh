@@ -6,10 +6,13 @@ import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -72,6 +75,12 @@ public abstract class AbstractDatabase implements Database {
 	abstract public NoTrx noTrx();
 
 	@Override
+	public <T> void asyncNoTrx(Consumer<NoTrx> noTrx, Handler<AsyncResult<T>> resultHandler) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void trx(Consumer<Trx> code) {
 		for (int retry = 0; retry < maxRetry; retry++) {
 			try (Trx tx = trx()) {
@@ -84,5 +93,17 @@ public abstract class AbstractDatabase implements Database {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 		}
+	}
+
+	@Override
+	public <T> void asyncTrx(Consumer<Trx> trx, Handler<AsyncResult<T>> resultHandler) {
+		Handler<AsyncResult<T>> wrappingHandler = e -> {
+			resultHandler.handle(e);
+		};
+
+		Mesh.vertx().executeBlocking(bh -> {
+			trx(trx);
+			bh.complete();
+		} , false, wrappingHandler);
 	}
 }

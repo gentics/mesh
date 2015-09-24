@@ -2,14 +2,15 @@ package com.gentics.mesh.cli;
 
 import java.util.Objects;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.impl.MeshFactoryImpl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -51,6 +52,10 @@ public class MeshImpl implements Mesh {
 		Objects.requireNonNull(vertx, "Please specify a vertx instance.");
 		this.options = options;
 		this.vertx = vertx;
+	}
+
+	public MeshImpl() {
+		// TODO Auto-generated constructor stub
 	}
 
 	public static MeshImpl create(MeshOptions options) {
@@ -131,16 +136,16 @@ public class MeshImpl implements Mesh {
 		});
 	}
 
-	/**
-	 * Handle command line arguments.
-	 * 
-	 * @param args
-	 * @throws ParseException
-	 */
-	@Override
-	public void handleArguments(String[] args) throws ParseException {
-		// TODO Not yet implemented
-	}
+//	/**
+//	 * Handle command line arguments.
+//	 * 
+//	 * @param args
+//	 * @throws ParseException
+//	 */
+//	@Override
+//	public void handleArguments(String[] args) throws ParseException {
+//		// TODO Not yet implemented
+//	}
 
 	private void dontExit() {
 		while (true) {
@@ -193,6 +198,7 @@ public class MeshImpl implements Mesh {
 		//Orientdb has a dedicated shutdown hook
 		MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().stop();
 		getVertx().close();
+		MeshFactoryImpl.clear();
 	}
 
 }

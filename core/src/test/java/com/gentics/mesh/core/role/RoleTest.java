@@ -158,10 +158,12 @@ public class RoleTest extends AbstractBasicObjectTest {
 			role.grantPermissions(parentNode, CREATE_PERM);
 		}
 
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
 		Node node = parentNode.create(user(), getSchemaContainer(), project());
-		assertEquals(0, requestUser.getPermissions(node).size());
+		assertEquals(0, requestUser.getPermissions(ac, node).size());
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-		assertEquals(4, requestUser.getPermissions(node).size());
+		assertEquals(4, requestUser.getPermissions(ac, node).size());
 
 		for (Role role : roles().values()) {
 			for (GraphPermission permission : GraphPermission.values()) {

@@ -99,7 +99,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 		TagResponse restTag = new TagResponse();
 
-		restTag.setPermissions(ac.getUser().getPermissionNames(this));
+		restTag.setPermissions(ac.getUser().getPermissionNames(ac, this));
 		restTag.setUuid(getUuid());
 
 		TagFamily tagFamily = getTagFamily();

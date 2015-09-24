@@ -10,6 +10,9 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 public interface Database {
 
 	/**
@@ -67,6 +70,8 @@ public interface Database {
 
 	void trx(Consumer<Trx> tx);
 
+	<T> void asyncTrx(Consumer<Trx> trx, Handler<AsyncResult<T>> resultHandler);
+
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
 	 * and no rollback can be performed. This object should be used within a try-with-resource block.
@@ -83,6 +88,8 @@ public interface Database {
 	 * @return
 	 */
 	NoTrx noTrx();
+
+	<T> void asyncNoTrx(Consumer<NoTrx> noTrx, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Initialize the database and store the settings.
