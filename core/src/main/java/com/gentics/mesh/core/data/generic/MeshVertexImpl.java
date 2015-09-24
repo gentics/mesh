@@ -125,7 +125,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public void reload() {
-		MeshSpringConfiguration.getMeshSpringConfiguration().database().reload(this);
+		MeshSpringConfiguration.getInstance().database().reload(this);
 	}
 
 	@Override

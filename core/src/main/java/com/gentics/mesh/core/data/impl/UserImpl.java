@@ -11,7 +11,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
+import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -273,7 +273,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
 			//noTrx.
 			//TODO call hasPermission?
@@ -403,12 +403,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	 */
 	@Override
 	public void setPassword(String password) {
-		setPasswordHash(getMeshSpringConfiguration().passwordEncoder().encode(password));
+		setPasswordHash(getInstance().passwordEncoder().encode(password));
 	}
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		UserUpdateRequest requestModel;
 		try {
 			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
@@ -436,7 +436,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				}
 
 				if (!isEmpty(requestModel.getPassword())) {
-					setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+					setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 				}
 
 				setEditor(ac.getUser());

@@ -84,7 +84,7 @@ public final class MeshAssert {
 	}
 
 	public static void assertDeleted(Map<String, String> uuidToBeDeleted) {
-		try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+		try (Trx tx = MeshSpringConfiguration.getInstance().database().trx()) {
 			for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
 				assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}",
 						tx.getGraph().v().has("uuid", entry.getValue()).hasNext());

@@ -45,7 +45,7 @@ public class MeshSpringConfiguration {
 		instance = this;
 	}
 
-	public static MeshSpringConfiguration getMeshSpringConfiguration() {
+	public static MeshSpringConfiguration getInstance() {
 		return instance;
 	}
 

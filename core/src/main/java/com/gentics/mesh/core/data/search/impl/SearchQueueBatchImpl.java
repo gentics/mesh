@@ -116,7 +116,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			log.error("Could not process batch {" + getBatchId() + "}.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getMeshSpringConfiguration();
+			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 			SearchProvider provider = springConfiguration.searchProvider();
 			Database db = springConfiguration.database();
 			// We successfully finished this batch. Delete it.

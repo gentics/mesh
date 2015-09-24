@@ -186,7 +186,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		SearchQueueBatch batch;

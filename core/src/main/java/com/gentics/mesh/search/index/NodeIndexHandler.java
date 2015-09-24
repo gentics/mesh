@@ -121,7 +121,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while storing node document.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 
@@ -161,7 +161,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while updating node document.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 	}

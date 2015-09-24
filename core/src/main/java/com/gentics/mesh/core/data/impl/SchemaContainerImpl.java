@@ -144,7 +144,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
 
 		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);

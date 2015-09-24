@@ -79,7 +79,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<Tag>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		try (Trx tx = db.trx()) {
 
 			Project project = ac.getProject();

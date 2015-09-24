@@ -21,7 +21,7 @@ public class AbstractTrxBase {
 	 */
 	private FramedGraph currentGraph;
 
-	protected void init(Database database, FramedGraph transactionalGraph) {
+	protected void init(FramedGraph transactionalGraph) {
 		setGraph(transactionalGraph);
 		if (log.isDebugEnabled()) {
 			log.debug("Started transaction {" + getGraph().hashCode() + "}");

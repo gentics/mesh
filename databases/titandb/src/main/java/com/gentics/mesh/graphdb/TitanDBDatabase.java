@@ -9,8 +9,6 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 
@@ -24,24 +22,13 @@ public class TitanDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(graph, true, false);
-	}
-
-	@Override
 	public NoTrx noTrx() {
-		return new TitanDBNoTrx(this);
-	}
-
-	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(graph, true, false);
-
+		return new TitanDBNoTrx(new DelegatingFramedGraph<>(graph, true, false));
 	}
 
 	@Override
 	public Trx trx() {
-		return new TitanDBTrx(this);
+		return new TitanDBTrx(new DelegatingFramedTransactionalGraph<>(graph, true, false));
 	}
 
 	@Override

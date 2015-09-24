@@ -63,7 +63,7 @@ public class VerticleHelper {
 	// TODO merge with prev method
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		// TODO i18n
@@ -82,7 +82,7 @@ public class VerticleHelper {
 				txBatch.success();
 			}
 
-			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+			try (Trx txBatch = MeshSpringConfiguration.getInstance().database().trx()) {
 				batch.process(rh -> {
 					if (rh.failed()) {
 						try (Trx tx = db.trx()) {
@@ -103,7 +103,7 @@ public class VerticleHelper {
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(InternalActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
 
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		// TODO i18n
@@ -230,7 +230,7 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<?>> void createObject(InternalActionContext ac, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		root.create(ac, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -286,7 +286,7 @@ public class VerticleHelper {
 	//	}
 
 	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
@@ -307,7 +307,7 @@ public class VerticleHelper {
 
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName, String i18nMessageKey,
 			RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		loadObject(ac, uuidParameterName, DELETE_PERM, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -392,7 +392,7 @@ public class VerticleHelper {
 			// }
 			// }
 			root.findByUuid(uuid, rh -> {
-				try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+				try (Trx tx = MeshSpringConfiguration.getInstance().database().trx()) {
 					if (rh.failed()) {
 						handler.handle(Future.failedFuture(rh.cause()));
 					} else {

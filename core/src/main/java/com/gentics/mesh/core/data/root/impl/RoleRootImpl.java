@@ -79,7 +79,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 	public void create(InternalActionContext ac, Handler<AsyncResult<Role>> handler) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		MeshAuthUser requestUser = ac.getUser();

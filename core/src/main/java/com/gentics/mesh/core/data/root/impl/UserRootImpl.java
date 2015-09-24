@@ -100,7 +100,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<User>> handler) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		UserCreateRequest requestModel;
 		try {
 			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getSchemaStorage());
@@ -142,7 +142,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 							user.setLastname(requestModel.getLastname());
 							user.setEmailAddress(requestModel.getEmailAddress());
 							user.setPasswordHash(
-									MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+									MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 							user.addGroup(parentGroup);
 							requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 							NodeReference reference = requestModel.getNodeReference();

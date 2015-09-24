@@ -13,8 +13,6 @@ import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 import io.vertx.core.logging.Logger;
@@ -34,25 +32,15 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false);
-	}
-	
-	@Override
 	public NoTrx noTrx() {
-		return new Neo4jNoTrx(this);
-	}
-
-	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
+		return new Neo4jNoTrx(new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false));
 	}
 
 	@Override
 	public Trx trx() {
-		return new Neo4jTrx(this);
+		return new Neo4jTrx(new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false));
 	}
-	
+
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

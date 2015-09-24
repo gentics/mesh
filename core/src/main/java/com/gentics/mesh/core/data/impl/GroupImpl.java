@@ -148,7 +148,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		try (NoTrx tx = db.noTrx()) {
 

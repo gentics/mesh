@@ -54,10 +54,6 @@ public class MeshImpl implements Mesh {
 		this.vertx = vertx;
 	}
 
-	public MeshImpl() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public static MeshImpl create(MeshOptions options) {
 		if (instance == null) {
 			instance = new MeshImpl(options);
@@ -196,7 +192,7 @@ public class MeshImpl implements Mesh {
 	public void shutdown() {
 		log.info("Mesh shutting down...");
 		//Orientdb has a dedicated shutdown hook
-		MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().stop();
+		MeshSpringConfiguration.getInstance().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
 	}

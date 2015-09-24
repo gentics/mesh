@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.function.Consumer;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
@@ -21,11 +20,8 @@ import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -58,8 +54,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop");
 		} else {
-			// factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
-			factory = new OrientGraphFactory("plocal:" + options.getDirectory());
+			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);
@@ -70,28 +65,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void reload(MeshElement element) {
-		//((OrientVertex) ((WrappedVertex) element.getElement()).getBaseElement()).reload();
 		((OrientVertex) element.getElement()).reload();
 	}
 
 	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(factory.getTx(), true, false);
-	}
-
-	@Override
+	@Deprecated
 	public Trx trx() {
-		return new OrientDBTrx(this);
+		return new OrientDBTrx(new DelegatingFramedTransactionalGraph<>(factory.getTx(), true, false));
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
-	}
-
-	@Override
+	@Deprecated
 	public NoTrx noTrx() {
-		return new OrientDBNoTrx(this);
+		return new OrientDBNoTrx(new DelegatingFramedGraph<>(factory.getNoTx(), true, false));
 	}
 
 	@Override

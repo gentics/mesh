@@ -1,10 +1,10 @@
 package com.gentics.mesh.graphdb;
 
-import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.FramedGraph;
 
 public class TitanDBNoTrx extends AbstractNoTrx {
 
-	public TitanDBNoTrx(Database database) {
+	public TitanDBNoTrx(FramedGraph transaction) {
 		// TODO Auto-generated constructor stub
 	}
 

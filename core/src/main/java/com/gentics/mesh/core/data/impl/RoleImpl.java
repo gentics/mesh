@@ -117,7 +117,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {

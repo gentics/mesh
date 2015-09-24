@@ -118,7 +118,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<Node>> handler) {
 
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 

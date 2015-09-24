@@ -1,16 +1,15 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 public interface Database {
@@ -27,10 +26,6 @@ public interface Database {
 	public static FramedGraph getThreadLocalGraph() {
 		return Database.threadLocalGraph.get();
 	}
-
-	FramedTransactionalGraph startTransaction();
-
-	FramedGraph startNoTransaction();
 
 	/**
 	 * Stop the graph database.
@@ -68,9 +63,9 @@ public interface Database {
 	 */
 	Trx trx();
 
-	void trx(Consumer<Trx> tx);
+	Database trx(Handler<Trx> transactionCodeHandler);
 
-	<T> void asyncTrx(Consumer<Trx> trx, Handler<AsyncResult<T>> resultHandler);
+	<T> Database asyncTrx(Handler<Trx> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -89,7 +84,9 @@ public interface Database {
 	 */
 	NoTrx noTrx();
 
-	<T> void asyncNoTrx(Consumer<NoTrx> noTrx, Handler<AsyncResult<T>> resultHandler);
+	Database noTrx(Handler<NoTrx> transactionCodeHandler);
+
+	<T> Database asyncNoTrx(Handler<NoTrx> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Initialize the database and store the settings.

@@ -151,7 +151,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		SearchQueueBatch batch = null;
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);

@@ -82,7 +82,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<TagFamily>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try (Trx tx = db.trx()) {
 			MeshAuthUser requestUser = ac.getUser();

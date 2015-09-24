@@ -143,7 +143,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<Project>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		RouterStorage routerStorage = RouterStorage.getRouterStorage();
 		MeshRoot meshRoot = BootstrapInitializer.getBoot().meshRoot();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();

@@ -6,8 +6,6 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 
 public class TinkerGraphDatabase extends AbstractDatabase {
 
@@ -18,25 +16,13 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(mockedGraph, true, false);
-	}
-	
-	@Override
 	public NoTrx noTrx() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public Trx trx() {
-		// TODO Auto-generated method stub
-		return null;
+		return new TinkergraphNoTrx(new DelegatingFramedGraph<>(mockedGraph, true, false));
 	}
 
 	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(mockedGraph, true, false);
+	public Trx trx() {
+		return new TinkergraphTrx(new DelegatingFramedTransactionalGraph<>(mockedGraph, true, false));
 	}
 
 	@Override

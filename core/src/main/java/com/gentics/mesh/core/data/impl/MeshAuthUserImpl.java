@@ -30,7 +30,7 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 	@Override
 	public JsonObject principal() {
 		JsonObject user = new JsonObject();
-		try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+		try (Trx tx = MeshSpringConfiguration.getInstance().database().trx()) {
 			user.put("uuid", getUuid());
 			user.put("username", getUsername());
 			user.put("firstname", getFirstname());

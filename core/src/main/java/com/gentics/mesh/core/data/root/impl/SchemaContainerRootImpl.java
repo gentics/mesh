@@ -94,7 +94,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<SchemaContainer>> handler) {
 		MeshAuthUser requestUser = ac.getUser();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		SchemaCreateRequest schema;
 		try {

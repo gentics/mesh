@@ -76,7 +76,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {

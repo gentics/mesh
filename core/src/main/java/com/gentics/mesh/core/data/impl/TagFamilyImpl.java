@@ -146,7 +146,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {

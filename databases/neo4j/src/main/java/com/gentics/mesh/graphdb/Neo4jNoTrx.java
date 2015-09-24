@@ -6,8 +6,8 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 
 public class Neo4jNoTrx extends AbstractNoTrx {
 
-	public Neo4jNoTrx(Database database) {
-		init(database, database.startTransaction());
+	public Neo4jNoTrx(FramedGraph noTransaction) {
+		init(noTransaction);
 	}
 
 	@Override

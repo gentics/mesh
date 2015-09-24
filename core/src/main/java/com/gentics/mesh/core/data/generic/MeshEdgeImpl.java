@@ -40,7 +40,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public void reload() {
-		MeshSpringConfiguration.getMeshSpringConfiguration().database().reload(this);
+		MeshSpringConfiguration.getInstance().database().reload(this);
 	}
 
 }
