@@ -41,7 +41,6 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -121,11 +120,16 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 
 	@Override
 	public TagFamily transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
-		TagFamilyResponse response = new TagFamilyResponse();
-		response.setName(getName());
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			TagFamilyResponse response = new TagFamilyResponse();
+			response.setName(getName());
 
-		fillRest(response, ac);
-		handler.handle(Future.succeededFuture(response));
+			fillRest(response, ac);
+			tc.complete(response);
+		} , (AsyncResult<TagFamilyResponse> rh) -> {
+			handler.handle(rh);
+		});
 		return this;
 	}
 

@@ -46,7 +46,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -140,11 +139,16 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 
 	@Override
 	public Project transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
-		ProjectResponse projectResponse = new ProjectResponse();
-		projectResponse.setName(getName());
-		projectResponse.setRootNodeUuid(getBaseNode().getUuid());
-		fillRest(projectResponse, ac);
-		handler.handle(Future.succeededFuture(projectResponse));
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			ProjectResponse projectResponse = new ProjectResponse();
+			projectResponse.setName(getName());
+			projectResponse.setRootNodeUuid(getBaseNode().getUuid());
+			fillRest(projectResponse, ac);
+			tc.complete(projectResponse);
+		} , (AsyncResult<ProjectResponse> rh) -> {
+			handler.handle(rh);
+		});
 		return this;
 	}
 

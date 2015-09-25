@@ -96,17 +96,24 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
-		TagResponse restTag = new TagResponse();
-		fillRest(restTag, ac);
-		TagFamily tagFamily = getTagFamily();
-		if (tagFamily != null) {
-			TagFamilyReference tagFamilyReference = new TagFamilyReference();
-			tagFamilyReference.setName(tagFamily.getName());
-			tagFamilyReference.setUuid(tagFamily.getUuid());
-			restTag.setTagFamilyReference(tagFamilyReference);
-		}
-		restTag.getFields().setName(getName());
-		resultHandler.handle(Future.succeededFuture(restTag));
+
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			TagResponse restTag = new TagResponse();
+			fillRest(restTag, ac);
+			TagFamily tagFamily = getTagFamily();
+			if (tagFamily != null) {
+				TagFamilyReference tagFamilyReference = new TagFamilyReference();
+				tagFamilyReference.setName(tagFamily.getName());
+				tagFamilyReference.setUuid(tagFamily.getUuid());
+				restTag.setTagFamilyReference(tagFamilyReference);
+			}
+			restTag.getFields().setName(getName());
+			tc.complete(restTag);
+		} , (AsyncResult<TagResponse> rh) -> {
+			resultHandler.handle(rh);
+		});
+
 		return this;
 	}
 
