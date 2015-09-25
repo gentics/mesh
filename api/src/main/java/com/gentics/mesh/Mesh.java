@@ -24,32 +24,6 @@ public interface Mesh {
 		return factory.mesh(options);
 	}
 
-	//	/**
-	//	 * Initializes the mesh instance using default options.
-	//	 *
-	//	 * @return the instance
-	//	 */
-	//	static Mesh initalize() {
-	//		return MeshImpl.create(OptionsLoader.createOrloadOptions());
-	//	}
-	//
-	//	/**
-	//	 * Initializes the mesh instance using the given options.
-	//	 * 
-	//	 * @param options
-	//	 * @return
-	//	 */
-	//	static Mesh initalize(MeshOptions options) {
-	//		return MeshImpl.create(options);
-	//	}
-	//
-	//	public static void main(String[] args) throws Exception {
-	//		// TODO errors should be handled by a logger
-	//		Mesh mesh = Mesh.initalize();
-	//		mesh.handleArguments(args);
-	//		mesh.run();
-	//	}
-
 	static String getVersion() {
 		try {
 			Properties buildProperties = new Properties();
@@ -72,8 +46,6 @@ public interface Mesh {
 	void setCustomLoader(MeshCustomLoader<Vertx> verticleLoader);
 
 	MeshOptions getOptions();
-
-	//void handleArguments(String[] args) throws ParseException;
 
 	void run() throws Exception;
 

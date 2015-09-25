@@ -92,7 +92,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			verticle.start();
 			verticle.registerEndPoints();
 		}
-		client = new MeshRestClient("localhost", getPort());
+		client = new MeshRestClient("localhost", getPort(), vertx);
 		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();

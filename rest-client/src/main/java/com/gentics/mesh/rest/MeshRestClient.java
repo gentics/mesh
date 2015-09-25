@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -52,6 +51,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
@@ -60,15 +60,16 @@ import io.vertx.core.http.HttpMethod;
 
 public class MeshRestClient extends AbstractMeshRestClient {
 
-	public MeshRestClient(String host) {
-		this(host, DEFAULT_PORT);
+	public MeshRestClient(String host, Vertx vertx) {
+		this(host, DEFAULT_PORT, vertx);
 	}
 
-	public MeshRestClient(String host, int port) {
+	public MeshRestClient(String host, int port, Vertx vertx) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);
-		client = Mesh.vertx().createHttpClient(options);
+		//TODO refactor and use a static instance?
+		this.client = vertx.createHttpClient(options);
 	}
 
 	@Override

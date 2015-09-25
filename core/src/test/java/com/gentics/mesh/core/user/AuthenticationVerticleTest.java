@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -43,7 +44,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		String username = user.getUsername();
 		String uuid = user.getUuid();
 
-		MeshRestClient client = new MeshRestClient("localhost", getPort());
+		MeshRestClient client = new MeshRestClient("localhost", getPort(), Mesh.vertx());
 		client.setLogin(username, password());
 		Future<GenericMessageResponse> future = client.login();
 		latchFor(future);
