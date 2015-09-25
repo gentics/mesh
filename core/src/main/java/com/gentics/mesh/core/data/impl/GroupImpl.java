@@ -109,31 +109,35 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	}
 
 	public Group transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
-		GroupResponse restGroup = new GroupResponse();
-		fillRest(restGroup, ac);
-		restGroup.setName(getName());
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			GroupResponse restGroup = new GroupResponse();
+			fillRest(restGroup, ac);
+			restGroup.setName(getName());
 
-		// for (User user : group.getUsers()) {
-		// String name = user.getUsername();
-		// if (name != null) {
-		// restGroup.getUsers().add(name);
-		// }
-		// Collections.sort(restGroup.getUsers());
+			// for (User user : group.getUsers()) {
+			// String name = user.getUsername();
+			// if (name != null) {
+			// restGroup.getUsers().add(name);
+			// }
+			// Collections.sort(restGroup.getUsers());
 
-		for (Role role : getRoles()) {
-			String name = role.getName();
-			if (name != null) {
-				restGroup.getRoles().add(name);
+			for (Role role : getRoles()) {
+				String name = role.getName();
+				if (name != null) {
+					restGroup.getRoles().add(name);
+				}
 			}
-		}
 
-		// // Set<Group> children = groupRepository.findChildren(group);
-		// Set<Group> children = group.getGroups();
-		// for (Group childGroup : children) {
-		// restGroup.getGroups().add(childGroup.getName());
-		// }
-
-		handler.handle(Future.succeededFuture(restGroup));
+			// // Set<Group> children = groupRepository.findChildren(group);
+			// Set<Group> children = group.getGroups();
+			// for (Group childGroup : children) {
+			// restGroup.getGroups().add(childGroup.getName());
+			// }
+			tc.complete(restGroup);
+		} , (AsyncResult<GroupResponse> rh) -> {
+			handler.handle(rh);
+		});
 
 		return this;
 

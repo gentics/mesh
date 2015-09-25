@@ -31,7 +31,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
@@ -86,18 +85,21 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public Role transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
 
-		RoleResponse restRole = new RoleResponse();
-		restRole.setName(getName());
-		fillRest(restRole, ac);
-
-		for (Group group : getGroups()) {
-			GroupResponse restGroup = new GroupResponse();
-			restGroup.setName(group.getName());
-			restGroup.setUuid(group.getUuid());
-			restRole.getGroups().add(restGroup);
-		}
-
-		handler.handle(Future.succeededFuture(restRole));
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			RoleResponse restRole = new RoleResponse();
+			restRole.setName(getName());
+			fillRest(restRole, ac);
+			for (Group group : getGroups()) {
+				GroupResponse restGroup = new GroupResponse();
+				restGroup.setName(group.getName());
+				restGroup.setUuid(group.getUuid());
+				restRole.getGroups().add(restGroup);
+			}
+			tc.complete(restRole);
+		} , (AsyncResult<RoleResponse> rh) -> {
+			handler.handle(rh);
+		});
 		return this;
 	}
 
