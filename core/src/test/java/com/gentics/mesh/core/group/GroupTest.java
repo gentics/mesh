@@ -137,6 +137,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 		Group group = root.getGroupRoot().create("newGroup", user);
 		assertFalse(user.hasPermission(ac, group, GraphPermission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
+		ac.data().clear();
 		assertTrue(user.hasPermission(ac, group, GraphPermission.CREATE_PERM));
 	}
 

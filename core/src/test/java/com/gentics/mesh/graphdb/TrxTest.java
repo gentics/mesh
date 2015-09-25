@@ -1,6 +1,8 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +26,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
+import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -89,13 +92,13 @@ public class TrxTest extends AbstractBasicDBTest {
 	}
 
 	@Test
-	public void testConcurrentUpdate() throws InterruptedException, BrokenBarrierException, TimeoutException {
+	public void testConcurrentUpdate() throws Exception {
 		final int nThreads = 10;
 		final int nRuns = 200;
 
 		TagFamily tagFamily = tagFamily("colors");
 
-		for (int r = 0; r < nRuns; r++) {
+		for (int r = 1; r <= nRuns; r++) {
 			final int currentRun = r;
 			CountDownLatch latch = new CountDownLatch(nThreads);
 			Node node = content();
@@ -109,16 +112,16 @@ public class TrxTest extends AbstractBasicDBTest {
 					node.addTag(tag);
 					trx.complete(tag);
 				} , rh -> {
-					assertEquals(Tag.class, rh.result().getClass());
+					assertEquals(TagImpl.class, rh.result().getClass());
 					latch.countDown();
 				});
 			}
 
 			System.out.println("Waiting on lock");
-			latch.await();
+			failingLatch(latch);
 
 			try (Trx tx = db.trx()) {
-				int expect = nThreads * (r + 1);
+				int expect = nThreads * r;
 				assertEquals("Expected {" + expect + "} tags since this is the " + r + "th run.", expect, content().getTags().size());
 			}
 		}
@@ -209,7 +212,7 @@ public class TrxTest extends AbstractBasicDBTest {
 		} , rh -> {
 			cf.complete(rh);
 		});
-		assertTrue(cf.get().succeeded());
+		assertFalse(cf.get().succeeded());
 	}
 
 	@Test(expected = RuntimeException.class)
@@ -234,6 +237,17 @@ public class TrxTest extends AbstractBasicDBTest {
 		});
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
+	}
+
+	@Test
+	public void testAsyncNoTrxSuccess() throws Throwable {
+		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
+		db.asyncNoTrx(noTrx -> {
+			noTrx.complete("OK");
+		} , rh -> {
+			cf.complete(rh);
+		});
+		assertEquals("OK", cf.get().result());
 	}
 
 	// @Test

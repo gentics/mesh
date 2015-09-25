@@ -11,14 +11,10 @@ import com.gentics.mesh.handler.HttpActionContext;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
 public class HttpActionContextImpl extends AbstractActionContext implements HttpActionContext {
-
-	private static final Logger log = LoggerFactory.getLogger(HttpActionContextImpl.class);
 
 	private static final String LOCALE_MAP_DATA_KEY = "locale";
 

@@ -2,7 +2,6 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
@@ -70,33 +69,41 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
+	@Deprecated
 	abstract public Trx trx();
 
 	@Override
-	public <T> Database trx(Consumer<Future<T>> code, Future<T> future) {
+	public <T> Future<T> trx(Handler<Future<T>> tcHandler) {
+		Future<T> future = Future.future();
 		for (int retry = 0; retry < maxRetry; retry++) {
 			try (Trx tx = trx()) {
-				code.accept(future);
+				tcHandler.handle(future);
 				if (future.failed()) {
 					tx.failure();
+				} else {
+					tx.success();
 				}
 				break;
 				// TODO maybe we should only retry OConcurrentExceptions?
 			} catch (Exception e) {
 				log.error("Error while handling transaction. Retrying " + retry, e);
+				// Reset the future
+				future = Future.future();
+			}
+			if (future.isComplete()) {
+				break;
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 		}
-		return this;
+		return future;
 	}
 
 	@Override
-	public <T> Database asyncTrx(Consumer<Future<T>> transactionCode, Handler<AsyncResult<T>> resultHandler) {
-		Future<T> future = Future.future();
+	public <T> Database asyncTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-			trx(transactionCode, future);
+			Future<T> future = trx(tcHandler);
 			if (future.succeeded()) {
 				bh.complete(future.result());
 			} else {
@@ -107,30 +114,31 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
+	@Deprecated
 	abstract public NoTrx noTrx();
 
 	@Override
-	public Database noTrx(Handler<NoTrx> transactionCodeHandler) {
-		// for (int retry = 0; retry < maxRetry; retry++) {
+	public <T> Future<T> noTrx(Handler<Future<T>> tcHandler) {
+		Future<T> future = Future.future();
 		try (NoTrx noTx = noTrx()) {
-			transactionCodeHandler.handle(noTx);
+			tcHandler.handle(future);
 			// TODO maybe we should only retry OConcurrentExceptions?
 		} catch (Exception e) {
 			log.error("Error while handling no-transaction.", e);
-			throw e;
+			return Future.failedFuture(e);
 		}
-		// if (log.isDebugEnabled()) {
-		// log.debug("Retrying .. {" + retry + "}");
-		// }
-		// }
-		return this;
+		return future;
 	}
 
 	@Override
-	public <T> Database asyncNoTrx(Handler<NoTrx> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-			noTrx(transactionCodeHandler);
-			bh.complete();
+			Future<T> future = noTrx(transactionCodeHandler);
+			if (future.succeeded()) {
+				bh.complete(future.result());
+			} else {
+				bh.fail(future.cause());
+			}
 		} , false, resultHandler);
 		return this;
 	}

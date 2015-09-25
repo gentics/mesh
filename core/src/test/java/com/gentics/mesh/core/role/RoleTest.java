@@ -165,6 +165,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Node node = parentNode.create(user(), getSchemaContainer(), project());
 		assertEquals(0, requestUser.getPermissions(ac, node).size());
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+		ac.data().clear();
 		assertEquals(4, requestUser.getPermissions(ac, node).size());
 
 		for (Role role : roles().values()) {
@@ -277,6 +278,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = root.getRoleRoot().create("SuperUser", null, user());
 		assertFalse(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
+		ac.data().clear();
 		assertTrue(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 	}
 

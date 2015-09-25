@@ -201,7 +201,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		NodeResponse restNode = new NodeResponse();
 
 		//TODO use notrx here
-		db.asyncTrx(trx-> {
+		db.asyncNoTrx(trx-> {
 			fillRest(restNode, ac);
 			//trx.failure();
 			SchemaContainer container = getSchemaContainer();

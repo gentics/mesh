@@ -1,7 +1,6 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
@@ -64,9 +63,9 @@ public interface Database {
 	 */
 	Trx trx();
 
-	<T> Database trx(Consumer<Future<T>> code, Future<T> future);
+	<T> Future<T> trx(Handler<Future<T>> code);
 
-	<T> Database asyncTrx(Consumer<Future<T>> transactionCode, Handler<AsyncResult<T>> resultHandler);
+	<T> Database asyncTrx(Handler<Future<T>> transactionCode, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -85,9 +84,9 @@ public interface Database {
 	 */
 	NoTrx noTrx();
 
-	Database noTrx(Handler<NoTrx> transactionCodeHandler);
+	<T> Future<T> noTrx(Handler<Future<T>> transactionCodeHandler);
 
-	<T> Database asyncNoTrx(Handler<NoTrx> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Initialize the database and store the settings.
