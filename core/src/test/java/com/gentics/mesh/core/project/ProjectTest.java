@@ -163,6 +163,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = root.getProjectRoot().create("TestProject", user());
 		assertFalse(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
+		ac.data().clear();
 		assertTrue(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
 	}
 
