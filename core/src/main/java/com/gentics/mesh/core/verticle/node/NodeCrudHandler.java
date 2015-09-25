@@ -33,7 +33,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -58,15 +57,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.meshRoot().getNodeRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		//		Mesh.vertx().executeBlocking(bc -> {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			String uuid = ac.getParameter("uuid");
 			Project project = ac.getProject();
 			if (project.getBaseNode().getUuid().equals(uuid)) {
@@ -74,54 +72,35 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			} else {
 				deleteObject(ac, "uuid", "node_deleted", ac.getProject().getNodeRoot());
 			}
-		}
-		//		} , false, rh -> {
-		//			if (rh.failed()) {
-		//				rc.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, rh.cause().getMessage()));
-		//			}
-		//		});
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		//		Mesh.vertx().executeBlocking(bc -> {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			updateObject(ac, "uuid", project.getNodeRoot());
-		}
-		//		} , false, rh -> {
-		//			if (rh.failed()) {
-		//				rh.cause().printStackTrace();
-		//			}
-		//		});
-
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-
-		//			Mesh.vertx().executeBlocking(bc -> {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getNodeRoot());
-		}
-		//			} , false, rh -> {
-		//				if (rh.failed()) {
-		//					rh.cause().printStackTrace();
-		//				}
-		//			});
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getNodeRoot(), new NodeListResponse());
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleMove(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
 			String uuid = ac.getParameter("uuid");
@@ -145,13 +124,13 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					});
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	//TODO abstract rc away
 	public void handleDownload(RoutingContext rc) {
-		try (NoTrx tx = db.noTrx()) {
-			InternalActionContext ac = InternalActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -165,12 +144,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					});
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleUpload(InternalHttpActionContext ac) {
-
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
@@ -234,7 +212,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	private void hashAndMoveBinaryFile(ActionContext ac, FileUpload fileUpload, String uuid, String segmentedPath,
@@ -326,7 +304,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	}
 
 	public void handleReadChildren(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -339,11 +317,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					}
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void readTags(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -356,11 +334,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					}
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleAddTag(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			if (project == null) {
 				ac.fail(BAD_REQUEST, "Project not found");
@@ -382,11 +360,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					}
 				});
 			}
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleRemoveTag(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 				loadObject(ac, "tagUuid", READ_PERM, project.getTagRoot(), srh -> {
@@ -401,78 +379,78 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					}
 				});
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleReadField(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleAddFieldItem(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleUpdateField(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleRemoveField(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
 
 			});
-		}
+		} , ac.errorHandler());
 	}
 }

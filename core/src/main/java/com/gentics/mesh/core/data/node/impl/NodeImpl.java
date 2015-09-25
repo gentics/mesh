@@ -198,22 +198,22 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Set<ObservableFuture<Void>> futures = new HashSet<>();
-		NodeResponse restNode = new NodeResponse();
 
 		//TODO use notrx here
-		db.asyncNoTrx(trx-> {
+		db.asyncNoTrx(trx -> {
+			NodeResponse restNode = new NodeResponse();
 			fillRest(restNode, ac);
 			//trx.failure();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
+				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
 			}
 			restNode.setPublished(isPublished());
 
 			try {
 				Schema schema = container.getSchema();
 				if (schema == null) {
-					handler.handle(ac.failedFuture(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
+					trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
 				} else {
 					restNode.setDisplayField(schema.getDisplayField());
 					// Load the children
@@ -289,11 +289,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					List<String> fieldsToExpand = ac.getExpandedFieldnames();
 					for (FieldSchema fieldEntry : schema.getFields()) {
 						boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
-						com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry,
-								expandField);
+						com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(),
+								fieldEntry, expandField);
 						if (fieldEntry.isRequired() && restField == null) {
 							/* TODO i18n */
-							handler.handle(ac.failedFuture(BAD_REQUEST, "The field {" + fieldEntry.getName()
+							trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
 									+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
 						}
 						if (restField == null) {
@@ -320,16 +320,18 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				}
 			} catch (InvalidArgumentException e) {
 				// TODO i18n
-				handler.handle(ac.failedFuture(BAD_REQUEST, "Could not transform tags"));
+				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
 			}
-		}, rh -> {
 			Observable.merge(futures).last().subscribe(lastItem -> {
-				handler.handle(Future.succeededFuture(restNode));
+				trx.complete(restNode);
 			} , error -> {
-				handler.handle(Future.failedFuture(error));
+				trx.fail(error);
 			});
+
+		} , (AsyncResult<NodeResponse> rh) -> {
+			handler.handle(rh);
 		});
-		
+
 		return this;
 
 	}

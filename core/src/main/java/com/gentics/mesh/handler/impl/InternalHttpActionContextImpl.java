@@ -21,6 +21,8 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -84,6 +86,16 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	@Override
 	public void setUser(User user) {
 		getRoutingContext().setUser(user);
+	}
+
+	@Override
+	public <T> Handler<AsyncResult<T>> errorHandler() {
+		Handler<AsyncResult<T>> handler = t -> {
+			if(t.failed()) {
+				fail(t.cause());
+			}
+		};
+		return handler;
 	}
 
 	@Override

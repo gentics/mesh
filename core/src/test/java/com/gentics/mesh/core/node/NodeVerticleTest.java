@@ -50,7 +50,6 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -475,10 +474,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;
-		String uuid;
-		try (NoTrx tx = db.noTrx()) {
-			uuid = folder("2015").getUuid();
-		}
+		String uuid = folder("2015").getUuid();
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		//		Trx.enableDebug();
 		//		Trx.setBarrier(barrier);

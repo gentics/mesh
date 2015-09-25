@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
@@ -27,43 +26,43 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.tagRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			deleteObject(ac, "uuid", "tag_deleted", ac.getProject().getTagRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			updateObject(ac, "uuid", ac.getProject().getTagRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getTagRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getTagRoot(), new TagListResponse());
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleTaggedNodesList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getTagRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -78,7 +77,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 					}
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 }

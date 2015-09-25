@@ -6,6 +6,9 @@ import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -38,6 +41,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class VerticleHelper {
 
@@ -72,9 +78,9 @@ public class VerticleHelper {
 			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		} else {
 			SearchQueue searchQueue;
-//			db.trx(()-> {
-//				
-//			});
+			//			db.trx(()-> {
+			//				
+			//			});
 			try (Trx txBatch = db.trx()) {
 				searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();
@@ -100,8 +106,8 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(InternalActionContext ac,
-			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(
+			InternalActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -149,18 +155,31 @@ public class VerticleHelper {
 		PagingInfo pagingInfo = ac.getPagingInfo();
 		MeshAuthUser requestUser = ac.getUser();
 		try {
-
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
+			List<ObservableFuture<TR>> futures = new ArrayList<>();
 			for (T node : page) {
-				node.transformToRest(ac, rh -> {
-					if (hasSucceeded(ac, rh)) {
-						listResponse.getData().add(rh.result());
-					}
-					// TODO handle async issue
-				});
+				ObservableFuture<TR> obs = RxHelper.observableFuture();
+				futures.add(obs);
+				node.transformToRest(ac, obs.toHandler());
+				//rh -> {
+				//					if (rh.succeeded()) {
+				//						listResponse.getData().add(rh.result());
+				//					} else {
+				//						handler.handle(Future.failedFuture(rh.cause()));
+				//					}
+				//					// TODO handle async issue
+				//				});
 			}
-			setPaging(listResponse, page);
-			handler.handle(Future.succeededFuture(listResponse));
+			Observable.merge(futures).collect(() -> {
+				return listResponse;
+			} , (list, restElement) -> {
+				list.getData().add(restElement);
+			}).subscribe(list -> {
+				setPaging(listResponse, page);
+				handler.handle(Future.succeededFuture(listResponse));
+			} , error -> {
+				handler.handle(Future.failedFuture(error));
+			});
 		} catch (InvalidArgumentException e) {
 			handler.handle(Future.failedFuture(e));
 		}
@@ -175,8 +194,8 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(InternalActionContext ac,
-			Page<T> page, RL listResponse) {
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
+			InternalActionContext ac, Page<T> page, RL listResponse) {
 		transformPage(ac, page, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()));
@@ -184,8 +203,8 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(InternalActionContext ac,
-			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(
+			InternalActionContext ac, Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		for (T node : page) {
 			node.transformToRest(ac, rh -> {
 				listResponse.getData().add(rh.result());
@@ -305,8 +324,8 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName, String i18nMessageKey,
-			RootVertex<T> root) {
+	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName,
+			String i18nMessageKey, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		loadObject(ac, uuidParameterName, DELETE_PERM, root, rh -> {
@@ -333,8 +352,8 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<?>> void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
-			Handler<AsyncResult<T>> handler) {
+	public static <T extends GenericVertex<?>> void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm,
+			RootVertex<T> root, Handler<AsyncResult<T>> handler) {
 
 		String uuid = ac.getParameter(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
@@ -355,7 +374,8 @@ public class VerticleHelper {
 	 * @param root
 	 * @return
 	 */
-	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm,
+			RootVertex<T> root) {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -39,7 +40,6 @@ import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -157,35 +157,35 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						return;
 					}
 
-					Node node;
-					SearchQueueBatch batch;
-					try (Trx txCreate = db.trx()) {
+					db.blockingTrx(tc -> {
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node
 						Node parentNode = loadObjectByUuidBlocking(ac, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot());
-						node = parentNode.create(requestUser, schemaContainer, project);
+						Node node = parentNode.create(requestUser, schemaContainer, project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							handler.handle(Future.failedFuture(
-									new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage()))));
-							txCreate.failure();
+							tc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage())));
 							return;
 						}
 						try {
 							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
 							container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 						} catch (Exception e) {
-							handler.handle(Future.failedFuture(e));
-							txCreate.failure();
+							tc.fail(e);
 							return;
 						}
-						batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-						txCreate.success();
-					}
-					processOrFail(ac, batch, handler, node);
+						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						tc.complete(Tuple.tuple(batch, node));
+					} , (AsyncResult<Tuple<SearchQueueBatch, Node>> rhb) -> {
+						if (rhb.failed()) {
+							handler.handle(Future.failedFuture(rhb.cause()));
+						} else {
+							processOrFail(ac, rhb.result().v1(), handler, rhb.result().v2());
+						}
+					});
 				} catch (Exception e) {
 					handler.handle(Future.failedFuture(e));
 					return;

@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractDBTest;
 
@@ -37,29 +36,27 @@ public class AuthUserTest extends AbstractDBTest {
 		MeshAuthUser requestUser = ac.getUser();
 		Language targetNode = english();
 		final CountDownLatch latch = new CountDownLatch(1);
-		try (NoTrx tx = db.noTrx()) {
-			requestUser.hasPermission(ac,targetNode, GraphPermission.READ_PERM, rh -> {
-				if (rh.failed()) {
-					rh.cause().printStackTrace();
-					fail(rh.cause().getMessage());
-				}
-				assertTrue(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
+		requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
+			if (rh.failed()) {
+				rh.cause().printStackTrace();
+				fail(rh.cause().getMessage());
+			}
+			assertTrue(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 
-			info.getRole().revokePermissions(targetNode, GraphPermission.READ_PERM);
-			final CountDownLatch latch2 = new CountDownLatch(1);
-			requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
-				if (rh.failed()) {
-					rh.cause().printStackTrace();
-					fail(rh.cause().getMessage());
-				}
-				assertFalse(rh.result());
-				latch2.countDown();
-			});
-			failingLatch(latch2);
-		}
+		info.getRole().revokePermissions(targetNode, GraphPermission.READ_PERM);
+		final CountDownLatch latch2 = new CountDownLatch(1);
+		requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
+			if (rh.failed()) {
+				rh.cause().printStackTrace();
+				fail(rh.cause().getMessage());
+			}
+			assertFalse(rh.result());
+			latch2.countDown();
+		});
+		failingLatch(latch2);
 
 	}
 

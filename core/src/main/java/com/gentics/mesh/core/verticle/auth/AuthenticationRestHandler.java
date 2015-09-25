@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -20,10 +19,10 @@ import io.vertx.ext.auth.User;
 public class AuthenticationRestHandler extends AbstractHandler {
 
 	public void handleMe(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			MeshAuthUser requestUser = ac.getUser();
 			transformAndResponde(ac, requestUser);
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleLogin(InternalActionContext ac) {

@@ -263,53 +263,42 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String name;
-		String uuid;
-		try (NoTrx tx = db.noTrx()) {
-			Tag tag = tag("vehicle");
-			name = tag.getName();
-			uuid = tag.getUuid();
-		}
+		Tag tag = tag("vehicle");
+		String name = tag.getName();
+		String uuid = tag.getUuid();
 
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		try (NoTrx tx = db.noTrx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.tagRoot().findByUuid(uuid, rh -> {
-				assertNull("The tag should have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-			Project project = boot.projectRoot().findByName(PROJECT_NAME);
-			assertNotNull(project);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.tagRoot().findByUuid(uuid, rh -> {
+			assertNull("The tag should have been deleted", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
+		Project project = boot.projectRoot().findByName(PROJECT_NAME);
+		assertNotNull(project);
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		String uuid;
-		try (NoTrx tx = db.noTrx()) {
-			Tag tag = tag("vehicle");
-			uuid = tag.getUuid();
-			role().revokePermissions(tag, DELETE_PERM);
-		}
+		Tag tag = tag("vehicle");
+		String uuid = tag.getUuid();
+		role().revokePermissions(tag, DELETE_PERM);
 
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (NoTrx tx = db.noTrx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.tagRoot().findByUuid(uuid, rh -> {
-				assertNotNull("The tag should not have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.tagRoot().findByUuid(uuid, rh -> {
+			assertNotNull("The tag should not have been deleted", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
@@ -325,12 +314,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
 
-		try (NoTrx tx = db.noTrx()) {
-			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
-					meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
-			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuidBlocking(future.result().getUuid()));
-		}
+		assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
+				meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
+		assertNotNull("The tag could not be found within the project.tagRoot node.",
+				project().getTagRoot().findByUuidBlocking(future.result().getUuid()));
 
 		future = getClient().findTagByUuid(PROJECT_NAME, future.result().getUuid());
 		latchFor(future);
@@ -341,19 +328,17 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
-		try (NoTrx tx = db.noTrx()) {
-			TagCreateRequest tagCreateRequest = new TagCreateRequest();
-			assertNotNull("We expect that a tag with the name already exists.", tag("red"));
-			tagCreateRequest.getFields().setName("red");
-			String tagFamilyName;
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		assertNotNull("We expect that a tag with the name already exists.", tag("red"));
+		tagCreateRequest.getFields().setName("red");
+		String tagFamilyName;
 
-			TagFamily tagFamily = tagFamilies().get("colors");
-			tagFamilyName = tagFamily.getName();
-			tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
-			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
-			latchFor(future);
-			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
-		}
+		TagFamily tagFamily = tagFamilies().get("colors");
+		tagFamilyName = tagFamily.getName();
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 	}
 
 	@Test

@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
@@ -28,42 +27,42 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			createObject(ac, ac.getProject().getTagFamilyRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			deleteObject(ac, "uuid", "tagfamily_deleted", ac.getProject().getTagFamilyRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			updateObject(ac, "uuid", ac.getProject().getTagFamilyRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			Project project = ac.getProject();
 			loadTransformAndResponde(ac, project.getTagFamilyRoot(), new TagFamilyListResponse());
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleReadTagList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingInfo pagingInfo = ac.getPagingInfo();
@@ -80,6 +79,6 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 					}
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 }

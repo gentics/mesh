@@ -198,9 +198,10 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
 		String mapKey = "permissions:" + node.getUuid();
-		ac.data().computeIfAbsent(mapKey, key -> {
+		return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
 			Set<GraphPermission> graphPermissions = new HashSet<>();
 			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
 			groups.forEach(group -> {
@@ -221,7 +222,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		//	or (String label : labels) {
 		//		graphPermissions.add(GraphPermission.valueOfLabel(label));
 		//	}
-		return (Set<GraphPermission>) ac.data().get(mapKey);
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
 		String mapKey = "permission:" + permission.label() + ":" + node.getUuid();
-		ac.data().computeIfAbsent(mapKey, key -> {
+		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
 			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
 			for (Vertex group : groups) {
 				if (log.isTraceEnabled()) {
@@ -265,7 +265,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			return false;
 		});
 		//return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
-		return (boolean) ac.data().get(mapKey);
 
 	}
 

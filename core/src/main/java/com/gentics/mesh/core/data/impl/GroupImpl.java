@@ -26,8 +26,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -150,8 +148,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		try (NoTrx tx = db.noTrx()) {
-
+		db.noTrx(trc -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
@@ -165,16 +162,22 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name"));
 					return;
 				}
-				SearchQueueBatch batch;
-				try (Trx txUpdate = db.trx()) {
+
+				db.blockingTrx(tc -> {
 					setName(requestModel.getName());
-					batch = addIndexBatch(UPDATE_ACTION);
-					txUpdate.success();
-				}
-				processOrFail2(ac, batch, handler);
+					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+					tc.complete(batch);
+				} , (AsyncResult<SearchQueueBatch> rh) -> {
+					if (rh.failed()) {
+						handler.handle(Future.failedFuture(rh.cause()));
+					} else {
+						processOrFail2(ac, rh.result(), handler);
+					}
+				});
 
 			}
-		}
+		});
+
 	}
 
 	@Override

@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -42,47 +41,41 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.roleRoot());
-		}
+		},ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			deleteObject(ac, "uuid", "role_deleted", boot.roleRoot());
-		}
+		},ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		//		Mesh.vertx().executeBlocking(bc -> {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot());
-		}
-		//		} , false, rh -> {
-		//			if (rh.failed()) {
-		//				rc.fail(rh.cause());
-		//			}
-		//		});
+		},ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			updateObject(ac, "uuid", boot.roleRoot());
-		}
+		},ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse());
-		}
+		},ac.errorHandler());
 	}
 
 	public void handlePermissionUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			if (StringUtils.isEmpty(roleUuid)) {
@@ -144,6 +137,6 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 					}
 				});
 			}
-		}
+		},ac.errorHandler());
 	}
 }

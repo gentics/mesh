@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
@@ -73,6 +74,7 @@ public abstract class AbstractDatabase implements Database {
 	abstract public Trx trx();
 
 	@Override
+	@Deprecated
 	public <T> Future<T> trx(Handler<Future<T>> tcHandler) {
 		Future<T> future = Future.future();
 		for (int retry = 0; retry < maxRetry; retry++) {
@@ -98,6 +100,12 @@ public abstract class AbstractDatabase implements Database {
 			}
 		}
 		return future;
+	}
+
+	@Override
+	public <T> Database blockingTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
+		resultHandler.handle(trx(tcHandler));
+		return this;
 	}
 
 	@Override
@@ -127,8 +135,25 @@ public abstract class AbstractDatabase implements Database {
 			log.error("Error while handling no-transaction.", e);
 			return Future.failedFuture(e);
 		}
+		if (!future.isComplete()) {
+			future.complete();
+		}
 		return future;
 	}
+
+	//	@Override
+	//	public Database asyncNoTrx(Consumer<NoTrx> transactionCode) {
+	//		Mesh.vertx().executeBlocking(bh -> {
+	//			try (NoTrx noTx = noTrx()) {
+	//				transactionCode.accept(noTx);
+	//			}
+	//		} , false, rh -> {
+	//			if (rh.failed()) {
+	//				throw rh.cause();
+	//			}
+	//		});
+	//		return this;
+	//	}
 
 	@Override
 	public <T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {

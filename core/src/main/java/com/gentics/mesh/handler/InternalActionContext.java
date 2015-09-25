@@ -7,6 +7,8 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
@@ -36,5 +38,7 @@ public interface InternalActionContext extends ActionContext {
 	 * @return Paging information
 	 */
 	PagingInfo getPagingInfo();
+
+	public <T> Handler<AsyncResult<T>> errorHandler();
 
 }
