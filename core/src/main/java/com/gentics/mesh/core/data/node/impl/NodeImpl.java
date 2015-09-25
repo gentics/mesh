@@ -199,11 +199,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-		//TODO use notrx here
 		db.asyncNoTrx(trx -> {
 			NodeResponse restNode = new NodeResponse();
 			fillRest(restNode, ac);
-			//trx.failure();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
 				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
@@ -295,6 +293,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 							/* TODO i18n */
 							trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
 									+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
+							return;
 						}
 						if (restField == null) {
 							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
@@ -321,6 +320,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			} catch (InvalidArgumentException e) {
 				// TODO i18n
 				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
+				return;
 			}
 			Observable.merge(futures).last().subscribe(lastItem -> {
 				trx.complete(restNode);
@@ -355,6 +355,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		for (String languageTag : languageTags) {
 			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
+//				MeshRootImpl.getInstance().getLanguageRoot().reload();
+//				Language lan  =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
+//				System.out.println(lan);
 				throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", languageTag));
 			}
 			fieldContainer = getGraphFieldContainer(language);

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -58,6 +59,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
 
@@ -282,50 +286,61 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
-		UserResponse restUser = new UserResponse();
-		fillRest(restUser, ac);
-		restUser.setUsername(getUsername());
-		restUser.setEmailAddress(getEmailAddress());
-		restUser.setFirstname(getFirstname());
-		restUser.setLastname(getLastname());
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-		Node node = getReferencedNode();
-		if (node != null) {
-			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
-			if (expandReference) {
-				//				//TODO handle expanded form
-				//				handler.handle(ac.failedFuture(BAD_REQUEST, "Expanding of node references not yet implemented."));
-				//				return;
-				node.transformToRest(ac, rh -> {
-					restUser.setNodeReference(rh.result());
-					for (Group group : getGroups()) {
-						restUser.addGroup(group.getName());
-					}
-					handler.handle(Future.succeededFuture(restUser));
-				});
+		db.asyncNoTrx(tc -> {
+			UserResponse restUser = new UserResponse();
+			fillRest(restUser, ac);
+			restUser.setUsername(getUsername());
+			restUser.setEmailAddress(getEmailAddress());
+			restUser.setFirstname(getFirstname());
+			restUser.setLastname(getLastname());
 
-			} else {
-				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-				userNodeReference.setUuid(node.getUuid());
-				if (node.getProject() != null) {
-					userNodeReference.setProjectName(node.getProject().getName());
+			Node node = getReferencedNode();
+			if (node != null) {
+				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
+				ObservableFuture<Void> obsNodeReference = RxHelper.observableFuture();
+				futures.add(obsNodeReference);
+				if (expandReference) {
+					node.transformToRest(ac, rh -> {
+						if (rh.succeeded()) {
+							restUser.setNodeReference(rh.result());
+							obsNodeReference.toHandler().handle(Future.succeededFuture());
+						} else {
+							obsNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
+						}
+					});
 				} else {
-					log.error("Project of node is null. Can't set project field of user nodeReference.");
-					// TODO handle this case
+					NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+					userNodeReference.setUuid(node.getUuid());
+					if (node.getProject() != null) {
+						userNodeReference.setProjectName(node.getProject().getName());
+					} else {
+						log.error("Project of node is null. Can't set project field of user nodeReference.");
+						// TODO handle this case
+					}
+					restUser.setNodeReference(userNodeReference);
+					obsNodeReference.toHandler().handle(Future.succeededFuture());
 				}
-				restUser.setNodeReference(userNodeReference);
-				for (Group group : getGroups()) {
-					restUser.addGroup(group.getName());
-				}
-				handler.handle(Future.succeededFuture(restUser));
 
 			}
-		} else {
 			for (Group group : getGroups()) {
 				restUser.addGroup(group.getName());
 			}
-			handler.handle(Future.succeededFuture(restUser));
-		}
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			obsFieldSet.toHandler().handle(Future.succeededFuture());
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				tc.complete(restUser);
+			} , error -> {
+				tc.fail(error);
+			});
+
+		} , (AsyncResult<UserResponse> rh) -> {
+			handler.handle(rh);
+		});
+
 		return this;
 	}
 

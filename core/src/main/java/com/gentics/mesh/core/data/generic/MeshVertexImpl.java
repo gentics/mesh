@@ -116,7 +116,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public Vertex getElement() {
 		Element vertex = threadLocalElement.get();
 
-		// Unwrapp wrapped vertices
+		// Unwrap wrapped vertices
 		if (vertex instanceof WrappedElement) {
 			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
 		}
