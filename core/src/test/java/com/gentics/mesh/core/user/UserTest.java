@@ -222,90 +222,82 @@ public class UserTest extends AbstractBasicObjectTest {
 
 		InternalActionContext ac = getMockedInternalActionContext("");
 
-		try (Trx tx = db.trx()) {
-			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
-			newUser = meshRoot().getUserRoot().create("Anton", newGroup, user());
+		Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
+		newUser = meshRoot().getUserRoot().create("Anton", newGroup, user());
 
-			// Create test roles
-			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
-			roleWithDeletePerm.grantPermissions(sourceNode, DELETE_PERM);
+		// Create test roles
+		roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
+		roleWithDeletePerm.grantPermissions(sourceNode, DELETE_PERM);
 
-			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newGroup, newUser);
-			roleWithReadPerm.grantPermissions(sourceNode, READ_PERM);
+		roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newGroup, newUser);
+		roleWithReadPerm.grantPermissions(sourceNode, READ_PERM);
 
-			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newGroup, newUser);
-			roleWithUpdatePerm.grantPermissions(sourceNode, UPDATE_PERM);
+		roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newGroup, newUser);
+		roleWithUpdatePerm.grantPermissions(sourceNode, UPDATE_PERM);
 
-			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newGroup, newUser);
-			roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM);
+		roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newGroup, newUser);
+		roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM);
 
-			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newGroup, newUser);
-			roleWithCreatePerm.grantPermissions(sourceNode, CREATE_PERM);
+		roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newGroup, newUser);
+		roleWithCreatePerm.grantPermissions(sourceNode, CREATE_PERM);
 
-			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newGroup, newUser);
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
-			tx.success();
-		}
+		roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newGroup, newUser);
+		user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
 		ac.data().clear();
-		try (Trx tx = db.trx()) {
-			newUser.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue(
-						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
-								+ perm.name() + "}",
-						newUser.hasPermission(ac, targetNode, perm));
-			}
-
-			// roleWithAllPerm
-			roleWithAllPerm.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}",
-						roleWithAllPerm.hasPermission(perm, targetNode));
-			}
-
-			// roleWithNoPerm
-			roleWithNoPerm.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertFalse(
-						"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
-								+ perm.name() + "}",
-						roleWithNoPerm.hasPermission(perm, targetNode));
-			}
-
-			// roleWithDeletePerm
-			roleWithDeletePerm.reload();
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(CREATE_PERM, targetNode));
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(READ_PERM, targetNode));
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(UPDATE_PERM, targetNode));
-			assertTrue("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithReadPerm
-			roleWithReadPerm.reload();
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(CREATE_PERM, targetNode));
-			assertTrue("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(READ_PERM, targetNode));
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(UPDATE_PERM, targetNode));
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithUpdatePerm
-			roleWithUpdatePerm.reload();
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(CREATE_PERM, targetNode));
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
-			assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithCreatePerm
-			roleWithCreatePerm.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue(
-						"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
-								+ perm.name() + "}",
-						roleWithCreatePerm.hasPermission(perm, targetNode));
-			}
-
+		newUser.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertTrue(
+					"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
+							+ perm.name() + "}",
+					newUser.hasPermission(ac, targetNode, perm));
 		}
+
+		// roleWithAllPerm
+		roleWithAllPerm.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}",
+					roleWithAllPerm.hasPermission(perm, targetNode));
+		}
+
+		// roleWithNoPerm
+		roleWithNoPerm.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertFalse(
+					"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
+							+ perm.name() + "}",
+					roleWithNoPerm.hasPermission(perm, targetNode));
+		}
+
+		// roleWithDeletePerm
+		roleWithDeletePerm.reload();
+		assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(CREATE_PERM, targetNode));
+		assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(READ_PERM, targetNode));
+		assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(UPDATE_PERM, targetNode));
+		assertTrue("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(DELETE_PERM, targetNode));
+
+		// roleWithReadPerm
+		roleWithReadPerm.reload();
+		assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(CREATE_PERM, targetNode));
+		assertTrue("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(READ_PERM, targetNode));
+		assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(UPDATE_PERM, targetNode));
+		assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(DELETE_PERM, targetNode));
+
+		// roleWithUpdatePerm
+		roleWithUpdatePerm.reload();
+		assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(CREATE_PERM, targetNode));
+		assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
+		assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
+		assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
+
+		// roleWithCreatePerm
+		roleWithCreatePerm.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertTrue(
+					"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
+							+ perm.name() + "}",
+					roleWithCreatePerm.hasPermission(perm, targetNode));
+		}
+
 	}
 
 	@Test

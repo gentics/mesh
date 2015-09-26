@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -41,6 +40,7 @@ import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -164,13 +164,17 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 						handler.handle(ac.failedFuture(CONFLICT, "tagfamily_conflicting_name", newName));
 						return;
 					}
-					SearchQueueBatch batch;
-					try (Trx txUpdate = db.trx()) {
+					db.blockingTrx(txUpdate -> {
 						tagFamily.setName(newName);
-						batch = addIndexBatch(UPDATE_ACTION);
-						txUpdate.success();
-					}
-					processOrFail2(ac, batch, handler);
+						SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+						txUpdate.complete(batch);
+					} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+						if (txUpdated.failed()) {
+							handler.handle(Future.failedFuture(txUpdated.cause()));
+						} else {
+							processOrFail2(ac, txUpdated.result(), handler);
+						}
+					});
 				}
 			});
 		}

@@ -269,10 +269,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "schema_conflicting_name", name);
-		try (Trx tx = db.trx()) {
-			schema.reload();
-			assertEquals("The name of the schema was updated", originalSchemaName, schema.getName());
-		}
+		schema.reload();
+		assertEquals("The name of the schema was updated", originalSchemaName, schema.getName());
 
 	}
 

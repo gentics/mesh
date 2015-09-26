@@ -167,10 +167,15 @@ public class BootstrapInitializer {
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		try (Trx tx = db.trx()) {
-			initProjects();
-		}
-		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
+		db.asyncNoTrx(tc -> {
+			try {
+				initProjects();
+			} catch (Exception e) {
+				tc.fail(e);
+			}
+		} , completed -> {
+			Mesh.vertx().eventBus().send("mesh-startup-complete", true);
+		});
 
 	}
 

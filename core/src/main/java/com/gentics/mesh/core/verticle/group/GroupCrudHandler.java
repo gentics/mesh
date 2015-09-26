@@ -22,9 +22,11 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 
 @Component
 public class GroupCrudHandler extends AbstractCrudHandler {
@@ -87,11 +89,16 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							try (Trx txAdd = db.trx()) {
+							db.blockingTrx(txAdd -> {
 								group.addRole(role);
-								txAdd.success();
-							}
-							transformAndResponde(ac, group);
+								txAdd.complete(group);
+							} , (AsyncResult<Group> txAdded) -> {
+								if (txAdded.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
+								} else {
+									transformAndResponde(ac, txAdded.result());
+								}
+							});
 						}
 					});
 				}
@@ -108,11 +115,16 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							try (Trx txRemove = db.trx()) {
+							db.blockingTrx(txRemove -> {
 								group.removeRole(role);
-								txRemove.success();
-							}
-							transformAndResponde(ac, group);
+								txRemove.complete(group);
+							} , (AsyncResult<Group> txAdded) -> {
+								if (txAdded.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
+								} else {
+									transformAndResponde(ac, group);
+								}
+							});
 						}
 					});
 				}
@@ -147,14 +159,18 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							try (Trx txAdd = db.trx()) {
+							db.blockingTrx(tcAdd -> {
 								Group group = grh.result();
 								User user = urh.result();
 								group.addUser(user);
-								txAdd.success();
-							}
-							Group group = grh.result();
-							transformAndResponde(ac, group);
+								tcAdd.complete(group);
+							} , (AsyncResult<Group> addHandler) -> {
+								if (addHandler.failed()) {
+									ac.fail(addHandler.cause());
+								} else {
+									transformAndResponde(ac, addHandler.result());
+								}
+							});
 						}
 					});
 				}
@@ -168,14 +184,18 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							try (Trx txRemove = db.trx()) {
+							db.blockingTrx(tcRemove -> {
 								Group group = grh.result();
 								User user = urh.result();
 								group.removeUser(user);
-								txRemove.success();
-							}
-							Group group = grh.result();
-							transformAndResponde(ac, group);
+								tcRemove.complete(group);
+							} , (AsyncResult<Group> rh) -> {
+								if (rh.failed()) {
+									ac.fail(rh.cause());
+								} else {
+									transformAndResponde(ac, rh.result());
+								}
+							});
 						}
 					});
 				}

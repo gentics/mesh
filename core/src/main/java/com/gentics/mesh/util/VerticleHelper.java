@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -77,32 +78,34 @@ public class VerticleHelper {
 			log.error("Batch was not set. Can't process search index batch.");
 			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		} else {
-			SearchQueue searchQueue;
-			// db.trx(()-> {
-			//
-			// });
-			try (Trx txBatch = db.trx()) {
-				searchQueue = boot.meshRoot().getSearchQueue();
+			db.blockingTrx(tc -> {
+				SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();
 				searchQueue.remove(batch);
-				txBatch.success();
-			}
-
-			try (Trx txBatch = MeshSpringConfiguration.getInstance().database().trx()) {
-				batch.process(rh -> {
-					if (rh.failed()) {
-						try (Trx tx = db.trx()) {
-							batch.reload();
-							log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
-							searchQueue.add(batch);
-							tx.success();
-						}
-						handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
-					} else {
-						handler.handle(Future.succeededFuture());
+				tc.complete(searchQueue);
+			} , sqrh -> {
+				if (sqrh.failed()) {
+					handler.handle(Future.failedFuture(sqrh.cause()));
+				} else {
+					try (Trx txBatch = MeshSpringConfiguration.getInstance().database().trx()) {
+						batch.process(rh -> {
+							if (rh.failed()) {
+								try (Trx tx = db.trx()) {
+									SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+									batch.reload();
+									log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
+									searchQueue.add(batch);
+									tx.success();
+								}
+								handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
+							} else {
+								handler.handle(Future.succeededFuture());
+							}
+						});
 					}
-				});
-			}
+				}
+			});
+
 		}
 	}
 
@@ -129,27 +132,30 @@ public class VerticleHelper {
 				searchQueue.remove(batch);
 				tc.complete();
 			} , rh -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					try (Trx txBatch = db.trx()) {
+						batch.process(bh -> {
+							if (bh.failed()) {
+								log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
+										+ element.getType() + "}.", bh.cause());
+								try (Trx tx = db.trx()) {
+									SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+									log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
+									searchQueue.add(batch);
+									tx.success();
+								}
+								ac.fail(BAD_REQUEST, "search_index_batch_process_failed", bh.cause());
 
+							} else {
+								handler.handle(Future.succeededFuture(element));
+							}
+						});
+					}
+				}
 			});
 
-			try (Trx txBatch = db.trx()) {
-				batch.process(rh -> {
-					if (rh.failed()) {
-						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
-								+ element.getType() + "}.", rh.cause());
-						try (Trx tx = db.trx()) {
-							SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-							log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
-							searchQueue.add(batch);
-							tx.success();
-						}
-						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
-
-					} else {
-						handler.handle(Future.succeededFuture(element));
-					}
-				});
-			}
 		}
 	}
 
@@ -258,54 +264,13 @@ public class VerticleHelper {
 			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx txi = db.trx()) {
+				db.noTrx(noTx -> {
 					vertex.reload();
 					transformAndResponde(ac, vertex);
-				}
+				});
 			}
 		});
 	}
-
-	// public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
-	//
-	// Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-	//
-	// final int RETRY_COUNT = 15;
-	// Mesh.vertx().executeBlocking(bc -> {
-	// AtomicBoolean hasFinished = new AtomicBoolean(false);
-	// for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-	// try {
-	// log.debug("Opening new transaction for try: {" + i + "}");
-	// try (NonTrx tx = db.nonTrx()) {
-	// if (log.isDebugEnabled()) {
-	// log.debug("Invoking create on root vertex");
-	// }
-	// root.create(ac, rh -> {
-	// if (hasSucceeded(ac, rh)) {
-	// GenericVertex<?> vertex = rh.result();
-	// try (NonTrx txRead = db.nonTrx()) {
-	// vertex.reload();
-	// transformAndResponde(ac, vertex);
-	// }
-	// }
-	// hasFinished.set(true);
-	// });
-	// }
-	// } catch (OConcurrentModificationException e) {
-	// log.error("Creation failed in try {" + i + "} retrying.");
-	// }
-	// }
-	// if (!hasFinished.get()) {
-	// log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
-	// ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
-	// }
-	// } , false, rh -> {
-	// if (rh.failed()) {
-	// ac.fail(rh.cause());
-	// }
-	// });
-	//
-	// }
 
 	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -317,10 +282,10 @@ public class VerticleHelper {
 						ac.fail(rh2.cause());
 					} else {
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
-						try (Trx txi = db.trx()) {
+						db.noTrx(noTx -> {
 							vertex.reload();
 							transformAndResponde(ac, vertex);
-						}
+						});
 					}
 				});
 			}
@@ -339,17 +304,24 @@ public class VerticleHelper {
 				if (vertex instanceof NamedVertex) {
 					name = ((NamedVertex) vertex).getName();
 				}
-				SearchQueueBatch batch = null;
-				try (Trx txDelete = db.trx()) {
-					if (vertex instanceof IndexedVertex) {
-						batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
-					}
+				final String objectName = name;
+				db.blockingTrx(txDelete -> {
 					vertex.delete();
-					txDelete.success();
-				}
-				String id = name != null ? uuid + "/" + name : uuid;
-				VerticleHelper.processOrFail2(ac, batch, brh -> {
-					ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+					if (vertex instanceof IndexedVertex) {
+						SearchQueueBatch batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+						txDelete.complete(batch);
+					} else {
+						txDelete.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not determine object name"));
+					}
+				} , (AsyncResult<SearchQueueBatch> txDeleted) -> {
+					if (txDeleted.failed()) {
+						ac.errorHandler().handle(Future.failedFuture(txDeleted.cause()));
+					} else {
+						String id = objectName != null ? uuid + "/" + objectName : uuid;
+						VerticleHelper.processOrFail2(ac, txDeleted.result(), brh -> {
+							ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+						});
+					}
 				});
 			}
 		});

@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -98,7 +97,6 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	@Override
 	public void process(Handler<AsyncResult<Void>> handler) {
 
-		
 		if (log.isDebugEnabled()) {
 			log.debug("Processing batch {" + getBatchId() + "}");
 			printDebug();
@@ -118,20 +116,26 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
 			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
-			SearchProvider provider = springConfiguration.searchProvider();
 			Database db = springConfiguration.database();
 			// We successfully finished this batch. Delete it.
-			try (Trx txDelete = db.trx()) {
+			db.blockingTrx(tcDelete -> {
 				reload();
 				delete();
-				txDelete.success();
-			}
-			if (provider != null) {
-				provider.refreshIndex();
-			} else {
-				log.error("Could not refresh index since the elastic search provider has not been initalized");
-			}
-			handler.handle(Future.succeededFuture());
+				tcDelete.complete();
+			} , rhDelete -> {
+				if (rhDelete.failed()) {
+					handler.handle(Future.failedFuture(rhDelete.cause()));
+				} else {
+					SearchProvider provider = springConfiguration.searchProvider();
+					if (provider != null) {
+						provider.refreshIndex();
+					} else {
+						log.error("Could not refresh index since the elastic search provider has not been initalized");
+					}
+					handler.handle(Future.succeededFuture());
+				}
+			});
+
 		});
 	}
 

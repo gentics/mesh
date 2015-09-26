@@ -33,7 +33,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -265,52 +264,41 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testDelete() {
 		Map<String, String> uuidToBeDeleted = new HashMap<>();
 		String uuid;
-		try (Trx tx = db.trx()) {
-			Node node = folder("news");
-			for (GraphFieldContainer container : node.getGraphFieldContainers()) {
-				uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
-			}
-
-			// Add subfolders
-			uuidToBeDeleted.put("folder-2015", folder("2015").getUuid());
-			uuidToBeDeleted.put("folder-2014", folder("2014").getUuid());
-
-			uuid = node.getUuid();
-			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-				assertNotNull(rh.result());
-			});
-			node.delete();
-			tx.success();
+		Node node = folder("news");
+		for (GraphFieldContainer container : node.getGraphFieldContainers()) {
+			uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
 		}
 
-		try (Trx tx = db.trx()) {
-			// TODO check for attached subnodes
-			meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-				assertNull(rh.result());
-			});
+		// Add subfolders
+		uuidToBeDeleted.put("folder-2015", folder("2015").getUuid());
+		uuidToBeDeleted.put("folder-2014", folder("2014").getUuid());
 
-			assertDeleted(uuidToBeDeleted);
-		}
+		uuid = node.getUuid();
+		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+		});
+		node.delete();
+
+		// TODO check for attached subnodes
+		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
+			assertNull(rh.result());
+		});
+
+		assertDeleted(uuidToBeDeleted);
 	}
 
 	@Test
 	@Override
 	public void testUpdate() {
-		User newUser;
-		try (Trx tx = db.trx()) {
-			Node node = content();
-			newUser = meshRoot().getUserRoot().create("newUser", group(), user());
-			assertEquals(user().getUuid(), node.getCreator().getUuid());
-			System.out.println(newUser.getUuid());
-			node.setCreator(newUser);
-			System.out.println(node.getCreator().getUuid());
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			Node node = content();
-			assertEquals(newUser.getUuid(), node.getCreator().getUuid());
-			// TODO update other fields
-		}
+		Node node = content();
+		User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
+		assertEquals(user().getUuid(), node.getCreator().getUuid());
+		System.out.println(newUser.getUuid());
+		node.setCreator(newUser);
+		System.out.println(node.getCreator().getUuid());
+
+		assertEquals(newUser.getUuid(), node.getCreator().getUuid());
+		// TODO update other fields
 	}
 
 	@Test

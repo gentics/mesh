@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -53,11 +52,8 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		uuidToBeDeleted.put("project.schemaContainerRoot", project().getSchemaContainerRoot().getUuid());
 		uuidToBeDeleted.put("project.nodeRoot", project().getNodeRoot().getUuid());
 
-		try (Trx txDelete = db.trx()) {
-			Project project = project();
-			project.delete();
-			txDelete.success();
-		}
+		Project project = project();
+		project.delete();
 
 		CountDownLatch latch = new CountDownLatch(1);
 		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {

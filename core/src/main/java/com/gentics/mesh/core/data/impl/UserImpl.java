@@ -45,7 +45,6 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -221,11 +220,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			});
 			return graphPermissions;
 		});
-		//	Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back()
-		//			.label().toSet();
-		//	or (String label : labels) {
-		//		graphPermissions.add(GraphPermission.valueOfLabel(label));
-		//	}
+		// Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back()
+		// .label().toSet();
+		// or (String label : labels) {
+		// graphPermissions.add(GraphPermission.valueOfLabel(label));
+		// }
 	}
 
 	@Override
@@ -268,7 +267,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			}
 			return false;
 		});
-		//return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+		// return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 
 	}
 
@@ -276,8 +275,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
-			//noTrx.
-			//TODO call hasPermission?
+			// noTrx.
+			// TODO call hasPermission?
 		} , rh -> {
 			handler.handle(Future.succeededFuture());
 		});
@@ -424,9 +423,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		UserUpdateRequest requestModel;
 		try {
 			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
-			SearchQueueBatch batch = null;
-			try (Trx txUpdate = db.trx()) {
-
+			db.blockingTrx(txUpdate -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 					if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
 						handler.handle(ac.failedFuture(CONFLICT, "user_conflicting_username"));
@@ -455,7 +452,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				setLastEditedTimestamp(System.currentTimeMillis());
 				if (requestModel.getNodeReference() != null) {
 					NodeReference reference = requestModel.getNodeReference();
-					//TODO also handle full node response inside node reference field
+					// TODO also handle full node response inside node reference field
 					if (reference instanceof NodeReferenceImpl) {
 						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
 						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
@@ -472,17 +469,23 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 							} else {
 								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
 								setReferencedNode(node);
-								batch = addIndexBatch(UPDATE_ACTION);
-								txUpdate.success();
+								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+								txUpdate.complete(batch);
 							}
 						}
 					}
 				} else {
-					batch = addIndexBatch(UPDATE_ACTION);
-					txUpdate.success();
+					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+					txUpdate.complete(batch);
 				}
-			}
-			processOrFail2(ac, batch, handler);
+			} , (AsyncResult<SearchQueueBatch> userUpdated) -> {
+				if (userUpdated.failed()) {
+					handler.handle(Future.failedFuture(userUpdated.cause()));
+				} else {
+					processOrFail2(ac, userUpdated.result(), handler);
+				}
+			});
+
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}
@@ -491,12 +494,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		//		for (GenericVertex<?> element : getCreatedElements()) {
-		//			batch.addEntry(element, UPDATE_ACTION);
-		//		}
-		//		for (GenericVertex<?> element : getEditedElements()) {
-		//			batch.addEntry(element, UPDATE_ACTION);
-		//		}
+		// for (GenericVertex<?> element : getCreatedElements()) {
+		// batch.addEntry(element, UPDATE_ACTION);
+		// }
+		// for (GenericVertex<?> element : getEditedElements()) {
+		// batch.addEntry(element, UPDATE_ACTION);
+		// }
 	}
 
 }

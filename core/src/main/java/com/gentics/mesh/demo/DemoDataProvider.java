@@ -43,7 +43,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -98,40 +97,46 @@ public class DemoDataProvider {
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
-		try (NoTrx tx = db.noTrx()) {
-			bootstrapInitializer.initMandatoryData();
-			schemaContainers.clear();
-			tagFamilies.clear();
-			contents.clear();
-			folders.clear();
-			tags.clear();
-			users.clear();
-			roles.clear();
-			groups.clear();
 
-			root = rootService.meshRoot();
-			english = rootService.languageRoot().findByLanguageTag("en");
-			german = rootService.languageRoot().findByLanguageTag("de");
+		db.noTrx(noTrx -> {
+			try {
 
-			addBootstrappedData();
-			addUserGroupRoleProject();
-			addSchemaContainers();
-			addTagFamilies();
-			addTags();
-			addFolderStructure();
-			addContents();
+				bootstrapInitializer.initMandatoryData();
+				schemaContainers.clear();
+				tagFamilies.clear();
+				contents.clear();
+				folders.clear();
+				tags.clear();
+				users.clear();
+				roles.clear();
+				groups.clear();
 
-			log.info("Nodes:    " + getNodeCount());
-			log.info("Folders:  " + folders.size());
-			log.info("Contents: " + contents.size());
-			log.info("Tags:     " + tags.size());
-			log.info("Schemas: " + schemaContainers.size());
-			log.info("TagFamilies: " + tagFamilies.size());
-			log.info("Users:    " + users.size());
-			log.info("Groups:   " + groups.size());
-			log.info("Roles:    " + roles.size());
-			// tx.success();
-		}
+				root = rootService.meshRoot();
+				english = rootService.languageRoot().findByLanguageTag("en");
+				german = rootService.languageRoot().findByLanguageTag("de");
+
+				addBootstrappedData();
+				addUserGroupRoleProject();
+				addSchemaContainers();
+
+				addTagFamilies();
+				addTags();
+				addFolderStructure();
+				addContents();
+
+				log.info("Nodes:    " + getNodeCount());
+				log.info("Folders:  " + folders.size());
+				log.info("Contents: " + contents.size());
+				log.info("Tags:     " + tags.size());
+				log.info("Schemas: " + schemaContainers.size());
+				log.info("TagFamilies: " + tagFamilies.size());
+				log.info("Users:    " + users.size());
+				log.info("Groups:   " + groups.size());
+				log.info("Roles:    " + roles.size());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
 		updatePermissions();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Setup took: {" + duration + "}");

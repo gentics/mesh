@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -112,16 +111,11 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() {
 		Map<String, String> uuidToBeDeleted = new HashMap<>();
-		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = tagFamily("colors");
-			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
-			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
-			tagFamily.delete();
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			assertDeleted(uuidToBeDeleted);
-		}
+		TagFamily tagFamily = tagFamily("colors");
+		uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
+		uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
+		tagFamily.delete();
+		assertDeleted(uuidToBeDeleted);
 	}
 
 	@Test

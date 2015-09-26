@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -98,20 +98,23 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			return;
 		}
 
-		//TODO use blocking code here
+		// TODO use blocking code here
 		loadObjectByUuid(ac, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
 			if (rh.succeeded()) {
-				Group parentGroup = rh.result();
-				Role role = null;
-				SearchQueueBatch batch;
-				try (Trx txCreate = db.trx()) {
+				db.blockingTrx(txCreate -> {
+					Group parentGroup = rh.result();
 					requestUser.reload();
-					role = create(requestModel.getName(), parentGroup, requestUser);
+					Role role = create(requestModel.getName(), parentGroup, requestUser);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
-					batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-					txCreate.success();
-				}
-				processOrFail(ac, batch, handler, role);
+					SearchQueueBatch batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					txCreate.complete(Tuple.tuple(batch, role));
+				} , (AsyncResult<Tuple<SearchQueueBatch, Role>> txCreated) -> {
+					if (txCreated.failed()) {
+						handler.handle(Future.failedFuture(txCreated.cause()));
+					} else {
+						processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+					}
+				});
 				return;
 			} else {
 				if (rh.cause() != null) {

@@ -81,26 +81,24 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<Tag>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		try (Trx tx = db.trx()) {
-
+		db.noTrx(noTx -> {
 			Project project = ac.getProject();
 			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 			String tagName = requestModel.getFields().getName();
 			if (StringUtils.isEmpty(tagName)) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_name_not_set"))));
+				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tag_name_not_set")));
 				return;
 			}
 
 			TagFamilyReference reference = requestModel.getTagFamilyReference();
 			if (reference == null) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set"))));
+				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set")));
 				return;
 			}
 			boolean hasName = !isEmpty(reference.getName());
 			boolean hasUuid = !isEmpty(reference.getUuid());
 			if (!hasUuid && !hasName) {
-				handler.handle(
-						Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing"))));
+				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing")));
 				return;
 			}
 
@@ -124,8 +122,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			}
 
 			if (tagFamily.findTagByName(tagName) != null) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-						ac.i18n("tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
+				handler.handle(ac.failedFuture(CONFLICT, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()));
 				return;
 			}
 			final TagFamily foundFamily = tagFamily;
@@ -147,9 +144,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 					processOrFail(ac, rh.result().v1(), handler, rh.result().v2());
 				}
 			});
-
-		}
-
+		});
 	}
 
 }

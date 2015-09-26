@@ -43,8 +43,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -209,13 +207,9 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateTagWithConflictingName() {
-		String uuid;
-		String tagFamilyName;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("red");
-			uuid = tag.getUuid();
-			tagFamilyName = tag.getTagFamily().getName();
-		}
+		Tag tag = tag("red");
+		String uuid = tag.getUuid();
+		String tagFamilyName = tag.getTagFamily().getName();
 
 		final String newName = "green";
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -233,15 +227,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 
-		String tagName;
-		String tagUuid;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("vehicle");
-			tagName = tag.getName();
-			tagUuid = tag.getUuid();
-			role().revokePermissions(tag, UPDATE_PERM);
-			tx.success();
-		}
+		Tag tag = tag("vehicle");
+		String tagName = tag.getName();
+		String tagUuid = tag.getUuid();
+		role().revokePermissions(tag, UPDATE_PERM);
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -404,17 +393,14 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTrx tx = db.noTrx()) {
-
-			int nJobs = 200;
-			Set<Future<TagResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
-			}
-			for (Future<TagResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+		int nJobs = 200;
+		Set<Future<TagResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
+		}
+		for (Future<TagResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 

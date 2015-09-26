@@ -50,7 +50,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -687,9 +686,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		UserResponse restUser = createFuture.result();
 
-		try (Trx tx = db.trx()) {
-			test.assertUser(newUser, restUser);
-		}
+		test.assertUser(newUser, restUser);
 
 		Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid());
 		latchFor(readFuture);
@@ -724,13 +721,11 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		try (Trx tx = db.trx()) {
-			boot.userRoot().findByUuid(uuid, rh -> {
-				User loadedUser = rh.result();
-				assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
-				assertFalse(loadedUser.isEnabled());
-			});
-		}
+		boot.userRoot().findByUuid(uuid, rh -> {
+			User loadedUser = rh.result();
+			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
+			assertFalse(loadedUser.isEnabled());
+		});
 	}
 
 	@Test
@@ -752,27 +747,21 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
-		String uuid;
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create("extraUser", group(), user());
-			uuid = user.getUuid();
-			assertNotNull(uuid);
-			role().grantPermissions(user, UPDATE_PERM);
-			role().grantPermissions(user, CREATE_PERM);
-			role().grantPermissions(user, READ_PERM);
-			tx.success();
-		}
+		UserRoot userRoot = meshRoot().getUserRoot();
+		User user = userRoot.create("extraUser", group(), user());
+		String uuid = user.getUuid();
+		assertNotNull(uuid);
+		role().grantPermissions(user, UPDATE_PERM);
+		role().grantPermissions(user, CREATE_PERM);
+		role().grantPermissions(user, READ_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			userRoot.findByUuid(uuid, rh -> {
-				assertNotNull("The user should not have been deleted", rh.result());
-			});
-		}
+		userRoot = meshRoot().getUserRoot();
+		userRoot.findByUuid(uuid, rh -> {
+			assertNotNull("The user should not have been deleted", rh.result());
+		});
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -792,39 +781,30 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid;
 		String name = "extraUser";
 		User extraUser;
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			extraUser = userRoot.create(name, group(), user());
-			uuid = extraUser.getUuid();
-			role().grantPermissions(extraUser, DELETE_PERM);
-			tx.success();
-		}
+		UserRoot userRoot = meshRoot().getUserRoot();
+		extraUser = userRoot.create(name, group(), user());
+		uuid = extraUser.getUuid();
+		role().grantPermissions(extraUser, DELETE_PERM);
 
-		try (Trx tx = db.trx()) {
-			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
-			UserRoot userRoot = meshRoot().getUserRoot();
-			userRoot.findByUuid(uuid, rh -> {
-				User user = rh.result();
-				assertEquals(1, user.getGroups().size());
-			});
-		}
+		assertTrue(role().hasPermission(DELETE_PERM, extraUser));
+
+		userRoot.findByUuid(uuid, rh -> {
+			User user = rh.result();
+			assertEquals(1, user.getGroups().size());
+		});
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-
-			// Check whether the user was correctly disabled
-			userRoot.findByUuid(uuid, rh -> {
-				User user2 = rh.result();
-				assertNotNull(user2);
-				assertEquals(0, user2.getGroups().size());
-				assertFalse("The user should have been disabled", user2.isEnabled());
-			});
-		}
+		// Check whether the user was correctly disabled
+		userRoot.findByUuid(uuid, rh -> {
+			User user2 = rh.result();
+			assertNotNull(user2);
+			assertEquals(0, user2.getGroups().size());
+			assertFalse("The user should have been disabled", user2.isEnabled());
+		});
 	}
 
 	@Test

@@ -26,11 +26,11 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
@@ -127,13 +127,18 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 				handler.handle(ac.failedFuture(CONFLICT, "role_conflicting_name"));
 				return;
 			}
-			SearchQueueBatch batch;
-			try (Trx txUpdate = db.trx()) {
+
+			db.blockingTrx(tc -> {
 				setName(requestModel.getName());
-				batch = addIndexBatch(UPDATE_ACTION);
-				txUpdate.success();
-			}
-			processOrFail2(ac, batch, handler);
+				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+				tc.complete(batch);
+			} , (AsyncResult<SearchQueueBatch> rh) -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					processOrFail2(ac, rh.result(), handler);
+				}
+			});
 		}
 
 	}

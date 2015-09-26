@@ -25,12 +25,14 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -43,35 +45,35 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	public void handleCreate(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.roleRoot());
-		},ac.errorHandler());
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			deleteObject(ac, "uuid", "role_deleted", boot.roleRoot());
-		},ac.errorHandler());
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot());
-		},ac.errorHandler());
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			updateObject(ac, "uuid", boot.roleRoot());
-		},ac.errorHandler());
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse());
-		},ac.errorHandler());
+		} , ac.errorHandler());
 	}
 
 	public void handlePermissionUpdate(InternalActionContext ac) {
@@ -89,15 +91,15 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 				// 1. Load the role that should be used
 				loadObjectByUuid(ac, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
 					if (hasSucceeded(ac, rh)) {
-						Role role = rh.result();
+
 						RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
-						//2. Resolve the path to element that is targeted
+						// 2. Resolve the path to element that is targeted
 						MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
 							if (hasSucceeded(ac, vertex)) {
 								MeshVertex targetElement = vertex.result();
 
 								// Prepare the sets for revoke and grant actions
-								try (Trx txUpdate = db.trx()) {
+								db.blockingTrx(txUpdate -> {
 									Set<GraphPermission> permissionsToGrant = new HashSet<>();
 									Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 									permissionsToRevoke.add(CREATE_PERM);
@@ -107,8 +109,9 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 									for (String permName : requestModel.getPermissions()) {
 										GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
 										if (permission == null) {
-											txUpdate.failure();
-											ac.fail(BAD_REQUEST, "role_error_permission_name_unknown", permName);
+											txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
+													ac.i18n("role_error_permission_name_unknown", permName)));
+											return;
 										}
 										if (log.isDebugEnabled()) {
 											log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
@@ -126,17 +129,24 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 									}
 
 									// 3. Apply the permission actions
+									Role role = rh.result();
 									targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
 											permissionsToRevoke);
-									txUpdate.success();
-								}
-								ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))));
+									txUpdate.complete(role);
+								} , (AsyncResult<Role> txUpdated) -> {
+									if (txUpdated.failed()) {
+										ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
+									} else {
+										Role role = txUpdated.result();
+										ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))));
+									}
+								});
 							}
 						});
 
 					}
 				});
 			}
-		},ac.errorHandler());
+		} , ac.errorHandler());
 	}
 }

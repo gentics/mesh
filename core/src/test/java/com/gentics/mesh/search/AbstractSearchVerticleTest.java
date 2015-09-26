@@ -60,14 +60,12 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	}
 
 	protected void fullIndex() throws InterruptedException {
-		try (Trx tx = db.trx()) {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.meshRoot().getSearchQueue().processAll(rh -> {
-				latch.countDown();
-			});
-			failingLatch(latch, 30);
-		}
+		boot.meshRoot().getSearchQueue().addFullIndex();
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.meshRoot().getSearchQueue().processAll(rh -> {
+			latch.countDown();
+		});
+		failingLatch(latch, 30);
 	}
 
 	abstract public void testDocumentDeletion() throws Exception;

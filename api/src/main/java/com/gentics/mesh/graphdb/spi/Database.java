@@ -83,12 +83,11 @@ public interface Database {
 	 * 
 	 * @return
 	 */
-	@Deprecated
 	NoTrx noTrx();
 
 	<T> Future<T> noTrx(Handler<Future<T>> transactionCodeHandler);
 
-	//Database asyncNoTrx(Consumer<NoTrx> transactionCode);
+	// Database asyncNoTrx(Consumer<NoTrx> transactionCode);
 
 	<T> Database blockingTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler);
 
@@ -139,7 +138,5 @@ public interface Database {
 	 * @throws IOException
 	 */
 	void restoreGraph(String backupFile) throws IOException;
-
-	
 
 }

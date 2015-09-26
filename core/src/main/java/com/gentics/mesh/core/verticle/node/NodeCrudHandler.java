@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
@@ -127,7 +128,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		} , ac.errorHandler());
 	}
 
-	//TODO abstract rc away
+	// TODO abstract rc away
 	public void handleDownload(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrx(tc -> {
@@ -183,8 +184,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 										if (fh.failed()) {
 											ac.fail(fh.cause());
 										} else {
-											SearchQueueBatch batch;
-											try (Trx txUpdate = db.trx()) {
+											db.blockingTrx(txUpdate -> {
 												node.setBinaryFileName(fileName);
 												node.setBinaryFileSize(ul.size());
 												node.setBinaryContentType(contentType);
@@ -192,13 +192,18 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 												// node.setBinaryImageDPI(dpi);
 												// node.setBinaryImageHeight(heigth);
 												// node.setBinaryImageWidth(width);
-												batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
-												txUpdate.success();
-											}
-											VerticleHelper.processOrFail(ac, batch, ch -> {
-												ac.send(toJson(
-														new GenericMessageResponse(ac.i18n("node_binary_field_updated", ch.result().getUuid()))));
-											} , node);
+												SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+												txUpdate.complete(Tuple.tuple(batch, node));
+											} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txUpdated) -> {
+												if (txUpdated.failed()) {
+													ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
+												} else {
+													VerticleHelper.processOrFail(ac, txUpdated.result().v1(), ch -> {
+														ac.send(toJson(new GenericMessageResponse(
+																ac.i18n("node_binary_field_updated", ch.result().getUuid()))));
+													} , txUpdated.result().v2());
+												}
+											});
 
 										}
 									});
@@ -350,11 +355,17 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						loadObject(ac, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
 							if (hasSucceeded(ac, th)) {
 								Tag tag = th.result();
-								try (Trx txAdd = db.trx()) {
+								db.blockingTrx(txAdd -> {
 									node.addTag(tag);
-									txAdd.success();
-								}
-								transformAndResponde(ac, node);
+									txAdd.complete(node);
+								} , (AsyncResult<Node> txAdded) -> {
+									if (txAdded.failed()) {
+										ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
+									} else {
+										transformAndResponde(ac, txAdded.result());
+									}
+								});
+
 							}
 						});
 					}
@@ -371,11 +382,16 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (hasSucceeded(ac, srh) && hasSucceeded(ac, rh)) {
 						Node node = rh.result();
 						Tag tag = srh.result();
-						try (Trx txRemove = db.trx()) {
+						db.blockingTrx(txRemove -> {
 							node.removeTag(tag);
-							txRemove.success();
-						}
-						transformAndResponde(ac, node);
+							txRemove.complete(node);
+						} , (AsyncResult<Node> txRemoved) -> {
+							if (txRemoved.failed()) {
+								ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
+							} else {
+								transformAndResponde(ac, txRemoved.result());
+							}
+						});
 					}
 				});
 			});

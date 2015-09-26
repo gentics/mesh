@@ -355,9 +355,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		for (String languageTag : languageTags) {
 			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
-//				MeshRootImpl.getInstance().getLanguageRoot().reload();
-//				Language lan  =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
-//				System.out.println(lan);
+				// MeshRootImpl.getInstance().getLanguageRoot().reload();
+				// Language lan =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
+				// System.out.println(lan);
 				throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", languageTag));
 			}
 			fieldContainer = getGraphFieldContainer(language);
@@ -622,17 +622,21 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		}
 
 		// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
-		SearchQueueBatch batch;
-		try (Trx txMove = db.trx()) {
+		db.blockingTrx(txMove -> {
 			setParentNode(targetNode);
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			targetNode.setEditor(ac.getUser());
 			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
-			batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
-			txMove.success();
-		}
-		processOrFail2(ac, batch, handler);
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			txMove.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txMoved) -> {
+			if (txMoved.failed()) {
+				handler.handle(Future.failedFuture(txMoved.cause()));
+			} else {
+				processOrFail2(ac, txMoved.result(), handler);
+			}
+		});
 		return this;
 	}
 

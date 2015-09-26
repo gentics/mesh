@@ -42,7 +42,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -220,18 +219,13 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateWithoutPerm() {
-		try (Trx tx = db.trx()) {
-			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
-			tx.success();
-		}
+		role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("SuperDoll");
 		Future<TagFamilyResponse> future = getClient().createTagFamily(PROJECT_NAME, request);
 		latchFor(future);
 
-		try (Trx tx = db.trx()) {
-			expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
-		}
+		expectException(future, FORBIDDEN, "error_missing_perm", project().getTagFamilyRoot().getUuid());
 	}
 
 	@Test
@@ -247,50 +241,36 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		String uuid;
-		try (Trx tx = db.trx()) {
-			TagFamily basicTagFamily = tagFamily("basic");
-			uuid = basicTagFamily.getUuid();
-			CountDownLatch latch = new CountDownLatch(1);
-			project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-				assertNotNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		TagFamily basicTagFamily = tagFamily("basic");
+		uuid = basicTagFamily.getUuid();
+		CountDownLatch latch = new CountDownLatch(1);
+		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
+			assertNotNull(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
-		try (Trx tx = db.trx()) {
-			assertElement(project().getTagFamilyRoot(), uuid, false);
-		}
+		assertElement(project().getTagFamilyRoot(), uuid, false);
 
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		TagFamily basicTagFamily;
-		try (Trx tx = db.trx()) {
-			basicTagFamily = tagFamily("basic");
-			Role role = role();
-			role.revokePermissions(basicTagFamily, DELETE_PERM);
-			tx.success();
-		}
+		TagFamily basicTagFamily = tagFamily("basic");
+		Role role = role();
+		role.revokePermissions(basicTagFamily, DELETE_PERM);
 
-		try (Trx tx = db.trx()) {
-			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
-		}
+		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
-		}
+		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
 
-		try (Trx tx = db.trx()) {
-			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
-		}
+		assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
 	}
 
@@ -300,24 +280,18 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName(newName);
 
-		try (Trx tx = db.trx()) {
-			Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request);
-			latchFor(future);
-			expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
-		}
+		Future<TagFamilyResponse> future = getClient().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
 	}
 
 	@Test
 	@Override
 	public void testUpdate() throws UnknownHostException, InterruptedException {
 
-		String uuid;
-		String name;
-		try (Trx tx = db.trx()) {
-			TagFamily tagFamily = tagFamily("basic");
-			uuid = tagFamily.getUuid();
-			name = tagFamily.getName();
-		}
+		TagFamily tagFamily = tagFamily("basic");
+		String uuid = tagFamily.getUuid();
+		String name = tagFamily.getName();
 
 		// 1. Read the current tagfamily
 		Future<TagFamilyResponse> readTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
@@ -341,9 +315,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagFamilyResponse tagFamily2 = updatedTagFut.result();
-		try (Trx tx = db.trx()) {
-			test.assertTagFamily(tagFamily("basic"), tagFamily2);
-		}
+		test.assertTagFamily(tagFamily("basic"), tagFamily2);
 
 		// 4. read the tag again and verify that it was changed
 		Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
@@ -351,9 +323,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(reloadedTagFut);
 		TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
 		assertEquals(request.getName(), reloadedTagFamily.getName());
-		try (Trx tx = db.trx()) {
-			test.assertTagFamily(tagFamily("basic"), reloadedTagFamily);
-		}
+		test.assertTagFamily(tagFamily("basic"), reloadedTagFamily);
 
 	}
 
@@ -371,16 +341,10 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() {
-		String uuid;
-		String name;
-		TagFamily tagFamily;
-		try (Trx tx = db.trx()) {
-			tagFamily = tagFamily("basic");
-			uuid = tagFamily.getUuid();
-			name = tagFamily.getName();
-			role().revokePermissions(tagFamily, UPDATE_PERM);
-			tx.success();
-		}
+		TagFamily tagFamily = tagFamily("basic");
+		String uuid = tagFamily.getUuid();
+		String name = tagFamily.getName();
+		role().revokePermissions(tagFamily, UPDATE_PERM);
 
 		// Update the tagfamily
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
@@ -390,9 +354,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Trx tx = db.trx()) {
-			assertEquals(name, tagFamily.getName());
-		}
+		assertEquals(name, tagFamily.getName());
 	}
 
 	@Test

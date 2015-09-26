@@ -2,7 +2,6 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 
@@ -71,10 +70,6 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	@Deprecated
-	abstract public Trx trx();
-
-	@Override
-	@Deprecated
 	public <T> Future<T> trx(Handler<Future<T>> tcHandler) {
 		Future<T> future = Future.future();
 		for (int retry = 0; retry < maxRetry; retry++) {
@@ -121,9 +116,7 @@ public abstract class AbstractDatabase implements Database {
 		return this;
 	}
 
-	@Override
-	@Deprecated
-	abstract public NoTrx noTrx();
+	
 
 	@Override
 	public <T> Future<T> noTrx(Handler<Future<T>> tcHandler) {

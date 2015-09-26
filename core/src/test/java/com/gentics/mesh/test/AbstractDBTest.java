@@ -226,23 +226,22 @@ public abstract class AbstractDBTest {
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {
-		try (Trx tx = db.trx()) {
-			User user = dataProvider.getUserInfo().getUser();
-			Map<String, Object> map = new HashMap<>();
-			RoutingContext rc = mock(RoutingContext.class);
-			Session session = mock(Session.class);
-			HttpServerRequest request = mock(HttpServerRequest.class);
-			when(request.query()).thenReturn(query);
+		User user = dataProvider.getUserInfo().getUser();
+		Map<String, Object> map = new HashMap<>();
+		RoutingContext rc = mock(RoutingContext.class);
+		Session session = mock(Session.class);
+		HttpServerRequest request = mock(HttpServerRequest.class);
+		when(request.query()).thenReturn(query);
 
-			MeshAuthUserImpl requestUser = tx.getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
-			when(rc.data()).thenReturn(map);
-			when(rc.request()).thenReturn(request);
-			when(rc.session()).thenReturn(session);
-			JsonObject principal = new JsonObject();
-			principal.put("uuid", user.getUuid());
-			when(rc.user()).thenReturn(requestUser);
-			return rc;
-		}
+		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+		when(rc.data()).thenReturn(map);
+		when(rc.request()).thenReturn(request);
+		when(rc.session()).thenReturn(session);
+		JsonObject principal = new JsonObject();
+		principal.put("uuid", user.getUuid());
+		when(rc.user()).thenReturn(requestUser);
+		return rc;
+
 	}
 
 }

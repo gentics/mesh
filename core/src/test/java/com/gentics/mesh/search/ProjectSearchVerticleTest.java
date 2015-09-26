@@ -16,7 +16,6 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.Future;
@@ -62,11 +61,7 @@ public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
-
-		try (Trx txUpdate = db.trx()) {
-			MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
-		}
-
+		MeshAssert.assertElement(boot.projectRoot(), project.getUuid(), true);
 		Future<ProjectListResponse> future = getClient().searchProjects(getSimpleTermQuery("name", newName),
 				new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
