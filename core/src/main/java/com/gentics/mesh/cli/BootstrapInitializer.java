@@ -162,6 +162,7 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 		initMandatoryData();
+		initPermissions();
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
@@ -235,8 +236,6 @@ public class BootstrapInitializer {
 
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
-		//		if (meshRoot == null) {
-		//			synchronized (BootstrapInitializer.class) {
 		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 		if (foundMeshRoot == null) {
 			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
@@ -245,12 +244,7 @@ public class BootstrapInitializer {
 				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
 			}
 		}
-		//				else {
-		//					meshRoot = foundMeshRoot;
-		//				}
-		//			}
 		return foundMeshRoot;
-		//		}
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {
@@ -442,27 +436,29 @@ public class BootstrapInitializer {
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 			initLanguages(languageRoot);
 
-			initPermissions(tx, adminRole);
-
 			schemaStorage.init();
 			tx.success();
 		}
 
 	}
 
-	private void initPermissions(Trx tx, Role role) {
-		for (Vertex vertex : tx.getGraph().getVertices()) {
-			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-			// TODO typecheck? and verify how orient will behave
-			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-				log.info("Skipping own role");
-				continue;
+	public void initPermissions() {
+		try (Trx tx = db.trx()) {
+			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
+			for (Vertex vertex : tx.getGraph().getVertices()) {
+				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+				// TODO typecheck? and verify how orient will behave
+				if (adminRole.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+					log.info("Skipping own role");
+					continue;
+				}
+				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				adminRole.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+				if (log.isTraceEnabled()) {
+					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");
+				}
 			}
-			MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-			if (log.isTraceEnabled()) {
-				log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + role.getUuid() + "}");
-			}
+			tx.success();
 		}
 	}
 

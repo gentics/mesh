@@ -312,6 +312,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.READ_PERM));
 		assertFalse(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
+		ac.data().clear();
 		assertTrue(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
 	}
 

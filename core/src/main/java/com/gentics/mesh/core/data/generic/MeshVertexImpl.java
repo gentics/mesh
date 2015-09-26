@@ -58,7 +58,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@SuppressWarnings("unchecked")
 	public Object getId() {
-		return getElement().getId();
+		return id;
+		//return getElement().getId();
 	}
 
 	public void setLinkInTo(VertexFrame vertex, String... labels) {
@@ -128,9 +129,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		MeshSpringConfiguration.getInstance().database().reload(this);
 	}
 
-	@Override
-	public <T> T load() {
-		return (T) Database.getThreadLocalGraph().getFramedVertexExplicit(getClass(), getId());
-	}
+//	@Override
+//	public <T> T load() {
+//		return (T) Database.getThreadLocalGraph().getFramedVertexExplicit(getClass(), getId());
+//	}
 
 }

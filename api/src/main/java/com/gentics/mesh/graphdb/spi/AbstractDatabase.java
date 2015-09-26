@@ -43,7 +43,7 @@ public abstract class AbstractDatabase implements Database {
 	@Override
 	public void init(StorageOptions options) {
 		this.options = options;
-		if (options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
+		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
@@ -141,19 +141,19 @@ public abstract class AbstractDatabase implements Database {
 		return future;
 	}
 
-	//	@Override
-	//	public Database asyncNoTrx(Consumer<NoTrx> transactionCode) {
-	//		Mesh.vertx().executeBlocking(bh -> {
-	//			try (NoTrx noTx = noTrx()) {
-	//				transactionCode.accept(noTx);
-	//			}
-	//		} , false, rh -> {
-	//			if (rh.failed()) {
-	//				throw rh.cause();
-	//			}
-	//		});
-	//		return this;
-	//	}
+	// @Override
+	// public Database asyncNoTrx(Consumer<NoTrx> transactionCode) {
+	// Mesh.vertx().executeBlocking(bh -> {
+	// try (NoTrx noTx = noTrx()) {
+	// transactionCode.accept(noTx);
+	// }
+	// } , false, rh -> {
+	// if (rh.failed()) {
+	// throw rh.cause();
+	// }
+	// });
+	// return this;
+	// }
 
 	@Override
 	public <T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {

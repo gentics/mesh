@@ -360,9 +360,8 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
-		int nJobs = 10;
+		int nJobs = 100;
 		String uuid = tag("red").getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();

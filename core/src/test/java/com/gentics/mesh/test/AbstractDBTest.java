@@ -78,8 +78,8 @@ public abstract class AbstractDBTest {
 		JsonUtil.debugMode = true;
 	}
 
-	public void setupData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		dataProvider.setup(1);
+	public void setupData() throws Exception {
+		dataProvider.setup();
 	}
 
 	public SchemaContainer schemaContainer(String key) {

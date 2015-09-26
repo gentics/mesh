@@ -30,5 +30,5 @@ public interface MeshVertex extends MeshElement {
 	 */
 	MeshVertexImpl getImpl();
 
-	<T> T load();
+//	<T> T load();
 }

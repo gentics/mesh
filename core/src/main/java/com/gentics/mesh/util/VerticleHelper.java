@@ -78,9 +78,9 @@ public class VerticleHelper {
 			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		} else {
 			SearchQueue searchQueue;
-			//			db.trx(()-> {
-			//				
-			//			});
+			// db.trx(()-> {
+			//
+			// });
 			try (Trx txBatch = db.trx()) {
 				searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();
@@ -122,13 +122,15 @@ public class VerticleHelper {
 			ac.fail(BAD_REQUEST, "element creation failed");
 			return;
 		} else {
-			SearchQueue searchQueue;
-			try (Trx txBatch = db.trx()) {
-				searchQueue = boot.meshRoot().getSearchQueue();
+
+			db.blockingTrx(tc -> {
+				SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 				searchQueue.reload();
 				searchQueue.remove(batch);
-				txBatch.success();
-			}
+				tc.complete();
+			} , rh -> {
+
+			});
 
 			try (Trx txBatch = db.trx()) {
 				batch.process(rh -> {
@@ -136,6 +138,7 @@ public class VerticleHelper {
 						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
 								+ element.getType() + "}.", rh.cause());
 						try (Trx tx = db.trx()) {
+							SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 							log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
 							searchQueue.add(batch);
 							tx.success();
@@ -161,14 +164,14 @@ public class VerticleHelper {
 				ObservableFuture<TR> obs = RxHelper.observableFuture();
 				futures.add(obs);
 				node.transformToRest(ac, obs.toHandler());
-				//rh -> {
-				//					if (rh.succeeded()) {
-				//						listResponse.getData().add(rh.result());
-				//					} else {
-				//						handler.handle(Future.failedFuture(rh.cause()));
-				//					}
-				//					// TODO handle async issue
-				//				});
+				// rh -> {
+				// if (rh.succeeded()) {
+				// listResponse.getData().add(rh.result());
+				// } else {
+				// handler.handle(Future.failedFuture(rh.cause()));
+				// }
+				// // TODO handle async issue
+				// });
 			}
 			Observable.merge(futures).collect(() -> {
 				return listResponse;
@@ -263,46 +266,46 @@ public class VerticleHelper {
 		});
 	}
 
-	//	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
+	// public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
 	//
-	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	// Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
 	//
-	//		final int RETRY_COUNT = 15;
-	//		Mesh.vertx().executeBlocking(bc -> {
-	//			AtomicBoolean hasFinished = new AtomicBoolean(false);
-	//			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-	//				try {
-	//					log.debug("Opening new transaction for try: {" + i + "}");
-	//					try (NonTrx tx = db.nonTrx()) {
-	//						if (log.isDebugEnabled()) {
-	//							log.debug("Invoking create on root vertex");
-	//						}
-	//						root.create(ac, rh -> {
-	//							if (hasSucceeded(ac, rh)) {
-	//								GenericVertex<?> vertex = rh.result();
-	//								try (NonTrx txRead = db.nonTrx()) {
-	//									vertex.reload();
-	//									transformAndResponde(ac, vertex);
-	//								}
-	//							}
-	//							hasFinished.set(true);
-	//						});
-	//					}
-	//				} catch (OConcurrentModificationException e) {
-	//					log.error("Creation failed in try {" + i + "} retrying.");
-	//				}
-	//			}
-	//			if (!hasFinished.get()) {
-	//				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
-	//				ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
-	//			}
-	//		} , false, rh -> {
-	//			if (rh.failed()) {
-	//				ac.fail(rh.cause());
-	//			}
-	//		});
+	// final int RETRY_COUNT = 15;
+	// Mesh.vertx().executeBlocking(bc -> {
+	// AtomicBoolean hasFinished = new AtomicBoolean(false);
+	// for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
+	// try {
+	// log.debug("Opening new transaction for try: {" + i + "}");
+	// try (NonTrx tx = db.nonTrx()) {
+	// if (log.isDebugEnabled()) {
+	// log.debug("Invoking create on root vertex");
+	// }
+	// root.create(ac, rh -> {
+	// if (hasSucceeded(ac, rh)) {
+	// GenericVertex<?> vertex = rh.result();
+	// try (NonTrx txRead = db.nonTrx()) {
+	// vertex.reload();
+	// transformAndResponde(ac, vertex);
+	// }
+	// }
+	// hasFinished.set(true);
+	// });
+	// }
+	// } catch (OConcurrentModificationException e) {
+	// log.error("Creation failed in try {" + i + "} retrying.");
+	// }
+	// }
+	// if (!hasFinished.get()) {
+	// log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
+	// ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
+	// }
+	// } , false, rh -> {
+	// if (rh.failed()) {
+	// ac.fail(rh.cause());
+	// }
+	// });
 	//
-	//	}
+	// }
 
 	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -412,10 +415,10 @@ public class VerticleHelper {
 			// }
 			// }
 			root.findByUuid(uuid, rh -> {
-				try (Trx tx = MeshSpringConfiguration.getInstance().database().trx()) {
-					if (rh.failed()) {
-						handler.handle(Future.failedFuture(rh.cause()));
-					} else {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					MeshSpringConfiguration.getInstance().database().noTrx(tc -> {
 						T node = rh.result();
 						if (node == null) {
 							handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
@@ -427,7 +430,7 @@ public class VerticleHelper {
 								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
 							}
 						}
-					}
+					});
 				}
 			});
 		}

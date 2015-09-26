@@ -306,8 +306,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertEquals(0, future.result().getData().size());
 		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
-		assertEquals(2, future.result().getMetainfo().getPageCount());
-		assertEquals(30, future.result().getMetainfo().getTotalCount());
+		assertEquals(1, future.result().getMetainfo().getPageCount());
+		assertEquals(25, future.result().getMetainfo().getTotalCount());
 		assertEquals(25, future.result().getMetainfo().getPerPage());
 	}
 

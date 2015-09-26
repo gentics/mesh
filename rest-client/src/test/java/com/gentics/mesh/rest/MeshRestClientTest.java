@@ -4,20 +4,21 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.node.NodeRequestParameters;
+
+import io.vertx.core.Vertx;
 
 public class MeshRestClientTest {
 
 	@Test
 	public void testRestClient() {
-		MeshRestClient client = new MeshRestClient("localhost", 8080, Mesh.vertx());
+		MeshRestClient client = new MeshRestClient("localhost", 8080, Vertx.vertx());
 		client.close();
 	}
 
 	@Test
 	public void testParameterHandling() {
-		MeshRestClient client = new MeshRestClient("localhost", 8080, Mesh.vertx());
+		MeshRestClient client = new MeshRestClient("localhost", 8080, Vertx.vertx());
 		NodeRequestParameters parameters1 = new NodeRequestParameters();
 		parameters1.setLanguages("en");
 

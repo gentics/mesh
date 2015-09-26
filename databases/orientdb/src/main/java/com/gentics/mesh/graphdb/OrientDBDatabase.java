@@ -18,8 +18,7 @@ import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
-import com.syncleus.ferma.DelegatingFramedGraph;
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
@@ -42,9 +41,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void clear() {
-		factory.getNoTx().getVertices().forEach(v -> {
-			v.remove();
-		});
+		for (int i = 0; i < 10; i++) {
+			try {
+				factory.getNoTx().getVertices().forEach(v -> {
+					v.remove();
+				});
+				break;
+			} catch (OConcurrentModificationException e) {
+				log.error("Error while clearing graph.");
+			}
+		}
 	}
 
 	@Override
@@ -71,13 +77,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Trx trx() {
-		return new OrientDBTrx(new DelegatingFramedTransactionalGraph<>(factory.getTx(), true, false));
+		return new OrientDBTrx(factory);
 	}
 
 	@Override
 	@Deprecated
 	public NoTrx noTrx() {
-		return new OrientDBNoTrx(new DelegatingFramedGraph<>(factory.getNoTx(), true, false));
+		return new OrientDBNoTrx(factory);
 	}
 
 	@Override

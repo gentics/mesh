@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -127,22 +128,25 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 						ac.i18n("tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()))));
 				return;
 			}
-			Tag newTag;
-			SearchQueueBatch batch;
-			try (Trx txCreate = db.trx()) {
+			final TagFamily foundFamily = tagFamily;
+			db.blockingTrx(tc -> {
 				requestUser.reload();
-				tagFamily.reload();
+				// tagFamily.reload();
 				project.reload();
-
-				newTag = tagFamily.create(requestModel.getFields().getName(), project, requestUser);
+				Tag newTag = foundFamily.create(requestModel.getFields().getName(), project, requestUser);
 				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
 				project.getTagRoot().addTag(newTag);
 
-				batch = newTag.addIndexBatch(CREATE_ACTION);
-				txCreate.success();
-			}
-			processOrFail(ac, batch, handler, newTag);
+				SearchQueueBatch batch = newTag.addIndexBatch(CREATE_ACTION);
+				tc.complete(Tuple.tuple(batch, newTag));
+			} , (AsyncResult<Tuple<SearchQueueBatch, Tag>> rh) -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					processOrFail(ac, rh.result().v1(), handler, rh.result().v2());
+				}
+			});
 
 		}
 
