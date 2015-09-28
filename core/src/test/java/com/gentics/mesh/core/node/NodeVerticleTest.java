@@ -285,7 +285,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(24, restResponse.getData().size());
+		assertEquals(getNodeCount(), restResponse.getData().size());
 	}
 
 	@Test
@@ -463,7 +463,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
@@ -476,8 +476,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nJobs = 3;
 		String uuid = folder("2015").getUuid();
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		//		Trx.enableDebug();
-		//		Trx.setBarrier(barrier);
+		// Trx.enableDebug();
+		// Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteNode REST call");
@@ -505,7 +505,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 	}
 
 	@Test
@@ -521,7 +521,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 	}
 
 	@Test

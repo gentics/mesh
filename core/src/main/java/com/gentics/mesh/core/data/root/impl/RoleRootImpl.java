@@ -88,6 +88,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			return;
 		}
 
+		// TODO disable this check. It should be possible to create a role without specifying the group uuid.
 		if (StringUtils.isEmpty(requestModel.getGroupUuid())) {
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("role_missing_parentgroup_field"))));
 			return;

@@ -217,6 +217,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		RoleCreateRequest roleCreate = new RoleCreateRequest();
 		roleCreate.setName("super editors");
+		roleCreate.setGroupUuid(randomUUID());
 		write(roleCreate);
 
 		RolePermissionRequest rolePermission = new RolePermissionRequest();
