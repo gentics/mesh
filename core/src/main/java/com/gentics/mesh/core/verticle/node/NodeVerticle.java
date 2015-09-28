@@ -84,10 +84,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			crudHandler.handleMoveFieldItem(InternalActionContext.create(rc));
 		});
 
-		//TODO copy?
-		//		route("/:uuid/fields/:fieldName/:itemIndex/copy/:newItemIndex").method(POST).handler(rc -> {
-		//			crudHandler.handleMoveFieldItem(ActionContext.create(rc));
-		//		});
+		// TODO copy?
+		// route("/:uuid/fields/:fieldName/:itemIndex/copy/:newItemIndex").method(POST).handler(rc -> {
+		// crudHandler.handleMoveFieldItem(ActionContext.create(rc));
+		// });
 
 	}
 
@@ -125,7 +125,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			crudHandler.readTags(InternalActionContext.create(rc));
 		});
 
-		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
+		Route postRoute = route("/:uuid/tags/:tagUuid").method(PUT).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			crudHandler.handleAddTag(InternalActionContext.create(rc));
 		});
@@ -153,7 +153,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			//TODO move if back into verticle 
+			// TODO move if back into verticle
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {

@@ -46,7 +46,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			crudHandler.handleGroupRolesList(InternalActionContext.create(rc));
 		});
 
-		route("/:groupUuid/roles/:roleUuid").method(POST).produces(APPLICATION_JSON).handler(rc -> {
+		route("/:groupUuid/roles/:roleUuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleAddRoleToGroup(InternalActionContext.create(rc));
 		});
 
@@ -60,7 +60,7 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			crudHandler.handleGroupUserList(InternalActionContext.create(rc));
 		});
 
-		Route route = route("/:groupUuid/users/:userUuid").method(POST).produces(APPLICATION_JSON);
+		Route route = route("/:groupUuid/users/:userUuid").method(PUT).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			crudHandler.handleAddUserToGroup(InternalActionContext.create(rc));
 		});

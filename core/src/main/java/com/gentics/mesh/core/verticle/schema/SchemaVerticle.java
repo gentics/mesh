@@ -41,7 +41,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSchemaProjectHandlers() {
-		Route route = route("/:schemaUuid/projects/:projectUuid").method(POST).produces(APPLICATION_JSON);
+		Route route = route("/:schemaUuid/projects/:projectUuid").method(PUT).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			crudHandler.handleAddProjectToSchema(InternalActionContext.create(rc));
 		});
@@ -52,15 +52,12 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		});
 	}
 
-	// TODO set creator
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}
-
-	// TODO update modification timestamps
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
