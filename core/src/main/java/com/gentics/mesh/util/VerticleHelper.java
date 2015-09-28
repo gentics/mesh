@@ -306,9 +306,9 @@ public class VerticleHelper {
 				}
 				final String objectName = name;
 				db.blockingTrx(txDelete -> {
-					vertex.delete();
 					if (vertex instanceof IndexedVertex) {
 						SearchQueueBatch batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+						vertex.delete();
 						txDelete.complete(batch);
 					} else {
 						txDelete.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not determine object name"));
