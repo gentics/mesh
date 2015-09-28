@@ -14,6 +14,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -162,18 +163,21 @@ public class UserTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<UserResponse> cf = new CompletableFuture<>();
 		user().transformToRest(ac, rh -> {
-			UserResponse restUser = rh.result();
-			assertNotNull(restUser);
-			assertEquals(user().getUsername(), restUser.getUsername());
-			assertEquals(user().getUuid(), restUser.getUuid());
-			assertEquals(user().getLastname(), restUser.getLastname());
-			assertEquals(user().getFirstname(), restUser.getFirstname());
-			assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
-			assertEquals(1, restUser.getGroups().size());
+			cf.complete(rh.result());
+
 			latch.countDown();
 		});
 		failingLatch(latch);
+		UserResponse restUser = cf.get();
+		assertNotNull(restUser);
+		assertEquals(user().getUsername(), restUser.getUsername());
+		assertEquals(user().getUuid(), restUser.getUuid());
+		assertEquals(user().getLastname(), restUser.getLastname());
+		assertEquals(user().getFirstname(), restUser.getFirstname());
+		assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
+		assertEquals(1, restUser.getGroups().size());
 	}
 
 	@Test

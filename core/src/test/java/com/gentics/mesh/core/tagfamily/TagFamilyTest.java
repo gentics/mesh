@@ -214,6 +214,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = root.create("test123", user());
 		assertFalse(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
+		ac.data().clear();
 		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
 	}
 

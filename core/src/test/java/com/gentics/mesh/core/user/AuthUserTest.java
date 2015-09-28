@@ -7,27 +7,17 @@ import static org.junit.Assert.fail;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.demo.UserInfo;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.handler.InternalActionContext;
-import com.gentics.mesh.test.AbstractDBTest;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class AuthUserTest extends AbstractDBTest {
-
-	protected UserInfo info;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-		info = getUserInfo();
-	}
+public class AuthUserTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testAuthorization() throws Exception {
@@ -46,7 +36,8 @@ public class AuthUserTest extends AbstractDBTest {
 		});
 		failingLatch(latch);
 
-		info.getRole().revokePermissions(targetNode, GraphPermission.READ_PERM);
+		role().revokePermissions(targetNode, GraphPermission.READ_PERM);
+		ac.data().clear();
 		final CountDownLatch latch2 = new CountDownLatch(1);
 		requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
 			if (rh.failed()) {

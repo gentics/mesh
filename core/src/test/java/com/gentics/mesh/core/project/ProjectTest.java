@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -121,14 +122,16 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<ProjectResponse> cf = new CompletableFuture<>();
 		project.transformToRest(ac, rh -> {
-			assertNotNull(rh.result());
-			ProjectResponse response = rh.result();
-			assertEquals(project.getName(), response.getName());
-			assertEquals(project.getUuid(), response.getUuid());
+			cf.complete(rh.result());
 			latch.countDown();
 		});
 		failingLatch(latch);
+		assertNotNull(cf.get());
+		ProjectResponse response = cf.get();
+		assertEquals(project.getName(), response.getName());
+		assertEquals(project.getUuid(), response.getUuid());
 	}
 
 	@Test

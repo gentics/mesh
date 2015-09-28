@@ -275,8 +275,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
-			// noTrx.
-			// TODO call hasPermission?
+			boolean result = hasPermission(ac, vertex, permission);
+			handler.handle(Future.succeededFuture(result));
 		} , rh -> {
 			handler.handle(Future.succeededFuture());
 		});
