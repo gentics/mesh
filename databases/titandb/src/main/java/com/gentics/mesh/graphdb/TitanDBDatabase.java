@@ -12,6 +12,9 @@ import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class TitanDBDatabase extends AbstractDatabase {
 
 	TitanGraph graph;

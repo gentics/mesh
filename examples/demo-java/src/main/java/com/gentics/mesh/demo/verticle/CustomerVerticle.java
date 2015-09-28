@@ -42,7 +42,7 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		demoDataProvider.setup(1);
+		demoDataProvider.setup();
 
 		vertx.eventBus().consumer("mesh-startup-complete", mh -> {
 
