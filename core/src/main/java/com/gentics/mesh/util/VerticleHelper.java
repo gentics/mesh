@@ -7,7 +7,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +33,6 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -214,13 +215,25 @@ public class VerticleHelper {
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(
 			InternalActionContext ac, Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+		Set<ObservableFuture<TR>> futures = new HashSet<>();
+
 		for (T node : page) {
-			node.transformToRest(ac, rh -> {
-				listResponse.getData().add(rh.result());
-			});
+			ObservableFuture<TR> obs = RxHelper.observableFuture();
+			futures.add(obs);
+			node.transformToRest(ac, obs.toHandler());
 		}
-		setPaging(listResponse, page);
-		handler.handle(Future.succeededFuture(listResponse));
+
+		// Wait for all async processes to complete
+		Observable.merge(futures).collect(() -> {
+			return listResponse.getData();
+		} , (x, y) -> {
+			x.add(y);
+		}).subscribe(list -> {
+			setPaging(listResponse, page);
+			handler.handle(Future.succeededFuture(listResponse));
+		} , error -> {
+			handler.handle(Future.failedFuture(error));
+		});
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,

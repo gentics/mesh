@@ -327,9 +327,13 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			for (Group group : getGroups()) {
 				restUser.addGroup(group.getName());
 			}
+
+			// Prevent errors in which no futures have been added
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
 			obsFieldSet.toHandler().handle(Future.succeededFuture());
+
+			// Wait for all async processes to complete
 			Observable.merge(futures).last().subscribe(lastItem -> {
 				tc.complete(restUser);
 			} , error -> {

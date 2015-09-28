@@ -137,12 +137,10 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingInfo pagingInfo = ac.getPagingInfo();
 			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-
 				if (hasSucceeded(ac, grh)) {
-					Group group = grh.result();
-					Page<? extends User> userPage;
 					try {
-						userPage = group.getVisibleUsers(requestUser, pagingInfo);
+						Group group = grh.result();
+						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 						transformAndResponde(ac, userPage, new UserListResponse());
 					} catch (Exception e) {
 						ac.fail(e);
