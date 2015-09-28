@@ -35,6 +35,12 @@ public class TitanDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public <T> Future<T> trx(Handler<Future<T>> code) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public void start() {
 
 		// Configuration configuration

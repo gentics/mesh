@@ -10,6 +10,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -22,6 +23,8 @@ import com.orientechnologies.orient.core.exception.OConcurrentModificationExcept
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -31,12 +34,23 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientGraphFactory factory;
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
+	private int maxRetry = 25;
 
 	@Override
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
 		Database.setThreadLocalGraph(null);
+	}
+
+	@Override
+	public void init(StorageOptions options) {
+		this.options = options;
+		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
+			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
+			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
+		}
+		start();
 	}
 
 	@Override
@@ -78,6 +92,34 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Deprecated
 	public Trx trx() {
 		return new OrientDBTrx(factory);
+	}
+
+	@Override
+	@Deprecated
+	public <T> Future<T> trx(Handler<Future<T>> tcHandler) {
+		Future<T> future = Future.future();
+		for (int retry = 0; retry < maxRetry; retry++) {
+			try (Trx tx = trx()) {
+				tcHandler.handle(future);
+				if (future.succeeded()) {
+					tx.success();
+				} else {
+					tx.failure();
+				}
+				break;
+			} catch (OConcurrentModificationException e) {
+				log.error("Error while handling transaction. Retrying " + retry, e);
+				// Reset the future
+				future = Future.future();
+			}
+			if (future.isComplete()) {
+				break;
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Retrying .. {" + retry + "}");
+			}
+		}
+		return future;
 	}
 
 	@Override

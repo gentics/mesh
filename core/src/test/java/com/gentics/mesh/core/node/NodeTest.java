@@ -2,6 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.tools.ant.taskdefs.WaitFor;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.MeshAssert;
 
+import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
 public class NodeTest extends AbstractBasicObjectTest {
@@ -261,7 +265,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testDelete() {
+	public void testDelete() throws Exception {
 		Map<String, String> uuidToBeDeleted = new HashMap<>();
 		String uuid;
 		Node node = folder("news");
@@ -274,15 +278,15 @@ public class NodeTest extends AbstractBasicObjectTest {
 		uuidToBeDeleted.put("folder-2014", folder("2014").getUuid());
 
 		uuid = node.getUuid();
-		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
+		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
+		Future<Void> future = db.trx(tc -> {
+			node.delete();
+			tc.complete();
 		});
-		node.delete();
+		latchFor(future);
 
 		// TODO check for attached subnodes
-		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-		});
+		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
 
 		assertDeleted(uuidToBeDeleted);
 	}
@@ -291,14 +295,18 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdate() {
 		Node node = content();
-		User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
-		assertEquals(user().getUuid(), node.getCreator().getUuid());
-		System.out.println(newUser.getUuid());
-		node.setCreator(newUser);
-		System.out.println(node.getCreator().getUuid());
+		Future<Void> future = db.trx(tx -> {
+			User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
+			assertEquals(user().getUuid(), node.getCreator().getUuid());
+			System.out.println(newUser.getUuid());
+			node.setCreator(newUser);
+			System.out.println(node.getCreator().getUuid());
 
-		assertEquals(newUser.getUuid(), node.getCreator().getUuid());
-		// TODO update other fields
+			assertEquals(newUser.getUuid(), node.getCreator().getUuid());
+			// TODO update other fields
+			tx.complete();
+		});
+		latchFor(future);
 	}
 
 	@Test

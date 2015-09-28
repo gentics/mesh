@@ -22,8 +22,6 @@ public abstract class AbstractDatabase implements Database {
 
 	protected StorageOptions options;
 
-	private int maxRetry = 25;
-
 	@Override
 	public void clear() {
 		if (log.isDebugEnabled()) {
@@ -42,10 +40,6 @@ public abstract class AbstractDatabase implements Database {
 	@Override
 	public void init(StorageOptions options) {
 		this.options = options;
-		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
-			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
-		}
 		start();
 	}
 
@@ -69,35 +63,6 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	@Deprecated
-	public <T> Future<T> trx(Handler<Future<T>> tcHandler) {
-		Future<T> future = Future.future();
-		for (int retry = 0; retry < maxRetry; retry++) {
-			try (Trx tx = trx()) {
-				tcHandler.handle(future);
-				if (future.failed()) {
-					tx.failure();
-				} else {
-					tx.success();
-				}
-				break;
-				// TODO maybe we should only retry OConcurrentExceptions?
-			} catch (Exception e) {
-				log.error("Error while handling transaction. Retrying " + retry, e);
-				// Reset the future
-				future = Future.future();
-			}
-			if (future.isComplete()) {
-				break;
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Retrying .. {" + retry + "}");
-			}
-		}
-		return future;
-	}
-
-	@Override
 	public <T> Database blockingTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
 		resultHandler.handle(trx(tcHandler));
 		return this;
@@ -115,8 +80,6 @@ public abstract class AbstractDatabase implements Database {
 		} , false, resultHandler);
 		return this;
 	}
-
-	
 
 	@Override
 	public <T> Future<T> noTrx(Handler<Future<T>> tcHandler) {
