@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,22 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.link.LinkReplacer;
 import com.gentics.mesh.core.link.LinkResolver;
 import com.gentics.mesh.core.link.LinkResolverFactory;
-import com.gentics.mesh.test.AbstractDBTest;
 
-public class LinkRendererTest extends AbstractDBTest {
+public class LinkRendererTest extends AbstractBasicDBTest {
 
 	final String content = "some bla START<a href=\"${Page(2)}\">Test</a>   dasasdg <a href=\"${Page(3)}\">Test</a>DEN";
 
 	@Autowired
 	private LinkResolverFactory<LinkResolver> resolverFactory;
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {

@@ -77,8 +77,8 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		Node sourceNode = folder("deals");
 		Node targetNode = folder("2015");
 		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-
 		role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+
 		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
@@ -94,7 +94,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());
-		
+
 		assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 				targetNode.getUuid(), folder("deals").getParentNode().getUuid());
 

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,11 +30,11 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -368,12 +369,16 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		User user = user();
-		assertEquals(1, user.getGroups().size());
-		assertTrue(user.isEnabled());
-		user.delete();
-		assertFalse(user.isEnabled());
-		assertEquals(0, user.getGroups().size());
+		Future<Void> future = db.trx(trx -> {
+			User user = user();
+			assertEquals(1, user.getGroups().size());
+			assertTrue(user.isEnabled());
+			user.delete();
+			assertFalse(user.isEnabled());
+			assertEquals(0, user.getGroups().size());
+			trx.complete();
+		});
+		latchFor(future);
 	}
 
 	@Test

@@ -122,7 +122,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									transformAndResponde(ac, group);
+									transformAndResponde(ac, txAdded.result());
 								}
 							});
 						}

@@ -33,7 +33,7 @@ public interface Database {
 	void stop();
 
 	/**
-	 * Star the graph database.
+	 * Start the graph database.
 	 */
 	void start();
 
@@ -66,6 +66,14 @@ public interface Database {
 
 	<T> Future<T> trx(Handler<Future<T>> code);
 
+	/**
+	 * Asynchronously execute the transactionCodeHandler within the scope of a transaction and invoke the result handler after the transaction code handler
+	 * finishes or fails.
+	 * 
+	 * @param transactionCode
+	 * @param resultHandler
+	 * @return
+	 */
 	<T> Database asyncTrx(Handler<Future<T>> transactionCode, Handler<AsyncResult<T>> resultHandler);
 
 	/**
@@ -87,10 +95,16 @@ public interface Database {
 
 	<T> Future<T> noTrx(Handler<Future<T>> transactionCodeHandler);
 
-	// Database asyncNoTrx(Consumer<NoTrx> transactionCode);
-
 	<T> Database blockingTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler);
 
+	/**
+	 * Asynchronously execute the transactionCodeHandler within the scope of a non transaction and invoke the result handler after the transaction code handler
+	 * finishes.
+	 * 
+	 * @param transactionCodeHandler
+	 * @param resultHandler
+	 * @return
+	 */
 	<T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
