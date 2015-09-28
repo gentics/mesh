@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -206,11 +207,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 		MeshAuthUser requestUser = ac.getUser();
 		Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 5));
 		assertEquals(roles().size(), page.getTotalElements());
-		assertEquals(5, page.getSize());
+		assertEquals(4, page.getSize());
 
 		page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 15));
 		assertEquals(roles().size(), page.getTotalElements());
-		assertEquals(9, page.getSize());
+		assertEquals(4, page.getSize());
 	}
 
 	@Test
@@ -238,14 +239,18 @@ public class RoleTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<RoleResponse> cf = new CompletableFuture<>();
 		role.transformToRest(ac, rh -> {
-			RoleResponse restModel = rh.result();
-			assertNotNull(restModel);
-			assertEquals(role.getName(), restModel.getName());
-			assertEquals(role.getUuid(), restModel.getUuid());
+			cf.complete(rh.result());
 			latch.countDown();
 		});
+
 		failingLatch(latch);
+		RoleResponse restModel = cf.get();
+		assertNotNull(restModel);
+		assertEquals(role.getName(), restModel.getName());
+		assertEquals(role.getUuid(), restModel.getUuid());
+
 	}
 
 	@Test

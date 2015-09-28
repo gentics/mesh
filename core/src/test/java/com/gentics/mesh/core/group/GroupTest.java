@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -103,14 +104,18 @@ public class GroupTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+
+		CompletableFuture<GroupResponse> cf = new CompletableFuture<>();
 		group().transformToRest(ac, rh -> {
-			GroupResponse response = rh.result();
-			assertNotNull(response);
-			assertEquals(group().getUuid(), response.getUuid());
-			assertEquals(group().getName(), response.getName());
+			cf.complete(rh.result());
 			latch.countDown();
 		});
+
 		failingLatch(latch);
+		GroupResponse response = cf.get();
+		assertNotNull(response);
+		assertEquals(group().getUuid(), response.getUuid());
+		assertEquals(group().getName(), response.getName());
 	}
 
 	@Test
