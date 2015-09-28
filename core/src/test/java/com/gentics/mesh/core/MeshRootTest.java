@@ -9,20 +9,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 
-public class MeshRootTest extends AbstractDBTest {
-
-	@Before
-	public void setup() throws Exception {
-		setupData();
-	}
+public class MeshRootTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testResolvePath() throws InterruptedException {
