@@ -32,8 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -126,29 +125,31 @@ public class RestModelTest extends AbstractDBTest {
 	@Test
 	public void testNodeList() throws Exception {
 		setupData();
-		Schema folderSchema = schemaContainer("folder").getSchema();
-		Schema contentSchema = schemaContainer("content").getSchema();
+		try (NoTrx noTx = db.noTrx()) {
+			Schema folderSchema = schemaContainer("folder").getSchema();
+			Schema contentSchema = schemaContainer("content").getSchema();
 
-		NodeResponse folder = new NodeResponse();
-		folder.setSchema(new SchemaReference(folderSchema.getName(), null));
-		folder.getFields().put("name", FieldUtil.createStringField("folder name"));
-		// folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
+			NodeResponse folder = new NodeResponse();
+			folder.setSchema(new SchemaReference(folderSchema.getName(), null));
+			folder.getFields().put("name", FieldUtil.createStringField("folder name"));
+			// folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
 
-		NodeResponse content = new NodeResponse();
-		content.setSchema(new SchemaReference(contentSchema.getName(), null));
-		content.getFields().put("name", FieldUtil.createStringField("content name"));
-		content.getFields().put("content", FieldUtil.createStringField("some content"));
+			NodeResponse content = new NodeResponse();
+			content.setSchema(new SchemaReference(contentSchema.getName(), null));
+			content.getFields().put("name", FieldUtil.createStringField("content name"));
+			content.getFields().put("content", FieldUtil.createStringField("some content"));
 
-		SchemaStorage storage = new ClientSchemaStorage();
-		storage.addSchema(folderSchema);
-		storage.addSchema(contentSchema);
+			SchemaStorage storage = new ClientSchemaStorage();
+			storage.addSchema(folderSchema);
+			storage.addSchema(contentSchema);
 
-		NodeListResponse list = new NodeListResponse();
-		list.getData().add(folder);
-		list.getData().add(content);
-		String json = JsonUtil.toJson(list);
-		NodeListResponse deserializedList = JsonUtil.readNode(json, NodeListResponse.class, storage);
-		assertNotNull(deserializedList);
+			NodeListResponse list = new NodeListResponse();
+			list.getData().add(folder);
+			list.getData().add(content);
+			String json = JsonUtil.toJson(list);
+			NodeListResponse deserializedList = JsonUtil.readNode(json, NodeListResponse.class, storage);
+			assertNotNull(deserializedList);
+		}
 	}
 
 	@Test

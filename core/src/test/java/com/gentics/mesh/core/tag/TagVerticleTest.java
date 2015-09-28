@@ -377,7 +377,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 500;
+		int nJobs = 200;
 
 		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();

@@ -61,17 +61,12 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 		}
 
 		long size = searchQueue.getSize();
-		assertNotNull(batch);
-		assertEquals(size - 1, searchQueue.getSize());
-
-		size = searchQueue.getSize();
 		System.out.println("Size: " + size);
+
 		CountDownLatch latch = new CountDownLatch((int) size);
 		for (int i = 0; i <= size; i++) {
 			Runnable r = () -> {
-				// int z = 0;
 				while (true) {
-					// try {
 					try (Trx txTake = db.trx()) {
 						try {
 							SearchQueueBatch currentBatch = searchQueue.take();
@@ -84,10 +79,6 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 					System.out.println("Got the element");
 					latch.countDown();
 					break;
-					// } catch (OConcurrentModificationException e) {
-					// System.out.println("Got it - Try: " + z + " Size: " + searchQueue.getSize());
-					// z++;
-					// }
 				}
 			};
 			Thread t = new Thread(r);

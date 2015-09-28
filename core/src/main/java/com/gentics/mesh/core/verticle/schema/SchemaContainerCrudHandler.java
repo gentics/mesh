@@ -16,10 +16,10 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
@@ -123,12 +123,13 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 							Project project = rh.result();
 							db.blockingTrx(tcRemove -> {
 								project.getSchemaContainerRoot().removeSchemaContainer(schema);
-								tc.complete();
-							} , rhRemove -> {
-								if (rhRemove.failed()) {
-									ac.errorHandler().handle(rhRemove);
+								tcRemove.complete(schema);
+							} , (AsyncResult<SchemaContainer> schemaRemoved) -> {
+								if (schemaRemoved.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(schemaRemoved.cause()));
+								} else {
+									transformAndResponde(ac, schemaRemoved.result());
 								}
-								transformAndResponde(ac, schema);
 							});
 						}
 					});

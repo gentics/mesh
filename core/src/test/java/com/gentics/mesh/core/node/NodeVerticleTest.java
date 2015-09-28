@@ -412,6 +412,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			set.add(getClient().createNode(PROJECT_NAME, request));
 		}
 
+		// Check each call response
 		Set<String> uuids = new HashSet<>();
 		for (Future<NodeResponse> future : set) {
 			latchFor(future);

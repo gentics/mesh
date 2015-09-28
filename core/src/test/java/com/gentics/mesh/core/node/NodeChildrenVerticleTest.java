@@ -95,7 +95,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		Node node = folder("2015");
+		Node node = folder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
@@ -105,7 +105,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
-		int nChildren = 4;
+		int nChildren = 2;
 		assertTrue("The node should have more than {" + nChildren + "} children. But it got {" + restNode.getChildren().size() + "}",
 				restNode.getChildren().size() > nChildren);
 	}

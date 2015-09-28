@@ -28,7 +28,6 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-@SuppressWarnings("unused")
 public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
@@ -116,7 +115,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		test.assertSchema(schema, restSchema);
 
 		final String removedProjectName = project.getName();
-		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName() == removedProjectName).findFirst().isPresent());
+		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName().equals(removedProjectName)).findFirst().isPresent());
 
 		// Reload the schema and check for expected changes
 		project.getSchemaContainerRoot().reload();
