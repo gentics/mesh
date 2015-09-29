@@ -34,7 +34,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
@@ -134,16 +133,21 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-				if (hasSucceeded(ac, rh)) {
-					Node node = rh.result();
-					node.getBinaryFileBuffer().setHandler(bh -> {
-						rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(node.getBinaryFileSize()));
-						rc.response().putHeader(HttpHeaders.CONTENT_TYPE, node.getBinaryContentType());
-						// TODO encode filename?
-						rc.response().putHeader("content-disposition", "attachment; filename=" + node.getBinaryFileName());
-						rc.response().end(bh.result());
-					});
-				}
+				db.noTrx(noTx -> {
+					if (hasSucceeded(ac, rh)) {
+						Node node = rh.result();
+						String contentLength = String.valueOf(node.getBinaryFileSize());
+						String fileName = node.getBinaryFileName();
+						String contentType = node.getBinaryContentType();
+						node.getBinaryFileBuffer().setHandler(bh -> {
+							rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
+							rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+							// TODO encode filename?
+							rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
+							rc.response().end(bh.result());
+						});
+					}
+				});
 			});
 		} , ac.errorHandler());
 	}

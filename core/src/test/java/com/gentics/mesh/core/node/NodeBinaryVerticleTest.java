@@ -42,9 +42,6 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
-	final String uploads = "target/testuploads";
-	final String targetTmpDir = "target/tmp";
-
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
@@ -54,20 +51,22 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Before
 	public void setup() throws IOException {
-		FileUtils.deleteDirectory(new File(uploads));
-		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
-		Mesh.mesh().getOptions().getUploadOptions().setTempDirectory(targetTmpDir);
+		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
+		FileUtils.deleteDirectory(uploadDir);
+		uploadDir.mkdirs();
+
+		File tempDir = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
+		FileUtils.deleteDirectory(tempDir);
+		tempDir.mkdirs();
+
+		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 	}
 
 	@After
 	public void cleanup() throws Exception {
 		super.cleanup();
-		FileUtils.deleteDirectory(new File(uploads));
-		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
-
-		FileUtils.deleteDirectory(new File(uploads));
-		FileUtils.deleteDirectory(new File(targetTmpDir));
-		FileUtils.deleteDirectory(new File("file-uploads"));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 	}
 
 	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
@@ -200,6 +199,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
 
+		node.reload();
 		assertEquals(fileName, node.getBinaryFileName());
 
 		Future<NodeResponse> responseFuture = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
