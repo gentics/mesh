@@ -56,6 +56,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			options.setPemKeyCertOptions(keyOptions);
 		}
 
+		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}" );
 		server = vertx.createHttpServer(options);
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen();
