@@ -70,7 +70,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	private void failOnMissingMandatoryField(GraphField field, Field restField, FieldSchema schema, String key) throws MeshSchemaException {
 		if (field == null && schema.isRequired() && restField == null) {
-			throw new MeshSchemaException("Could not find value for required schema field with key {" + key + "}");
+			throw new MeshSchemaException("Could not find mandatory value within rest request for field with key {" + key + "} of schema {"
+					+ schema.getName() + "}. The value was not yet set for the node.");
 		}
 	}
 
@@ -281,14 +282,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				break;
 			case SELECT:
-//				SelectField restSelectField = (SelectFieldImpl) restField;
-//				com.gentics.mesh.core.data.node.field.nesting.SelectGraphField<ListableGraphField> selectField = createSelect(key);
+				//				SelectField restSelectField = (SelectFieldImpl) restField;
+				//				com.gentics.mesh.core.data.node.field.nesting.SelectGraphField<ListableGraphField> selectField = createSelect(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;
 			case MICROSCHEMA:
-//				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) restField;
-//				MicroschemaGraphField microschemaField = createMicroschema(key);
+				//				com.gentics.mesh.core.rest.node.field.MicroschemaField restMicroschemaField = (com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl) restField;
+				//				MicroschemaGraphField microschemaField = createMicroschema(key);
 				// TODO impl
 				throw new NotImplementedException();
 				// break;

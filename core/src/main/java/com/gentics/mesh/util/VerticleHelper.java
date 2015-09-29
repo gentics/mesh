@@ -33,7 +33,6 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -377,17 +376,6 @@ public class VerticleHelper {
 		if (root == null) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
 		} else {
-			// try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-			// root.reload();
-			// User user = getUser(rc);
-			// user.reload();
-			// T element = root.findByUuidBlocking(uuid);
-			// if (user.hasPermission(element, perm)) {
-			// System.out.println("JOW" + element.getUuid());
-			// } else {
-			// System.out.println("NÖ" + element.getUuid());
-			// }
-			// }
 			root.findByUuid(uuid, rh -> {
 				if (rh.failed()) {
 					handler.handle(Future.failedFuture(rh.cause()));
