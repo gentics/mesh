@@ -108,7 +108,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 				break;
 			} catch (OConcurrentModificationException e) {
-				log.error("Error while handling transaction. Retrying " + retry, e);
+				if (log.isTraceEnabled()) {
+					log.trace("Error while handling transaction. Retrying " + retry, e);
+				}
 				// Reset the future
 				future = Future.future();
 			}

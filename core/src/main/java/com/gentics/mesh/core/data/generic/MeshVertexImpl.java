@@ -25,7 +25,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
-	public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex)getGraph().getVertex(id)).getBaseElement());
+	public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
 	@Override
 	protected void init() {
@@ -117,21 +117,16 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public Vertex getElement() {
 		Element vertex = threadLocalElement.get();
 
-		// Unwrap wrapped vertices
+		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {
 			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
 		}
-		return (Vertex)vertex;
+		return (Vertex) vertex;
 	}
 
 	@Override
 	public void reload() {
 		MeshSpringConfiguration.getInstance().database().reload(this);
 	}
-
-//	@Override
-//	public <T> T load() {
-//		return (T) Database.getThreadLocalGraph().getFramedVertexExplicit(getClass(), getId());
-//	}
 
 }
