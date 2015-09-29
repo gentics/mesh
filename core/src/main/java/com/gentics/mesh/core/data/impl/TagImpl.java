@@ -160,10 +160,9 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		SearchQueueBatch batch = null;
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
-		try (Trx txUpdate = db.trx()) {
+		db.blockingTrx(txUpdate -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {
 				// Check whether a uuid was specified and whether the tag family changed
@@ -176,16 +175,14 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "tag_name_not_set"));
-				txUpdate.failure();
+				txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_name_not_set")));
 				return;
 			} else {
 				TagFamily tagFamily = getTagFamily();
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-							ac.i18n("tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName()))));
-					txUpdate.failure();
+					txUpdate.fail(new HttpStatusCodeErrorException(CONFLICT,
+							ac.i18n("tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
 					return;
 				}
 				setEditor(ac.getUser());
@@ -195,10 +192,15 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 					// TODO update the tagfamily
 				}
 			}
-			batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.success();
-		}
-		processOrFail2(ac, batch, handler);
+			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+			txUpdate.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+			if (txUpdated.failed()) {
+				handler.handle(Future.failedFuture(txUpdated.cause()));
+			} else {
+				processOrFail2(ac, txUpdated.result(), handler);
+			}
+		});
 
 	}
 

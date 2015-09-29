@@ -17,6 +17,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 
 import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.rx.java.ObservableHandler;
+import io.vertx.rx.java.RxHelper;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -50,6 +53,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addFieldHandlers() {
+
 		route("/:uuid/fields/:fieldName").method(GET).handler(rc -> {
 			crudHandler.handleReadField(InternalActionContext.create(rc));
 		});

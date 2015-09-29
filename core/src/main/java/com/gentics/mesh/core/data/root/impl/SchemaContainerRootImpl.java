@@ -104,14 +104,24 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				return;
 			}
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
-				SchemaContainer container;
-				try (Trx txCreate = db.trx()) {
-					requestUser.reload();
-					container = create(schema, requestUser);
-					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					txCreate.success();
-				}
-				handler.handle(Future.succeededFuture(container));
+
+				db.blockingTrx(txCreate -> {
+
+					try {
+						requestUser.reload();
+						SchemaContainer container = create(schema, requestUser);
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+						txCreate.complete(container);
+					} catch (Exception e) {
+						txCreate.fail(e);
+					}
+				} , (AsyncResult<SchemaContainer> txCreated) -> {
+					if (txCreated.failed()) {
+						handler.handle(Future.failedFuture(txCreated.cause()));
+					} else {
+						handler.handle(Future.succeededFuture(txCreated.result()));
+					}
+				});
 			}
 		} catch (Exception e1) {
 			handler.handle(Future.failedFuture(e1));

@@ -71,89 +71,78 @@ public class VerticleHelper {
 	// TODO merge with prev method
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler) {
+
+		processBatch(ac, batch, rh -> {
+			if (rh.failed()) {
+				handler.handle(Future.failedFuture(rh.cause()));
+			} else {
+				handler.handle(Future.succeededFuture());
+			}
+		});
+	}
+
+	public static <T> void processBatch(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<Future<T>>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
-		// TODO i18n
 		if (batch == null) {
+			// TODO i18n
 			log.error("Batch was not set. Can't process search index batch.");
 			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
-		} else {
-			db.blockingTrx(tc -> {
-				SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-				searchQueue.reload();
-				searchQueue.remove(batch);
-				tc.complete(searchQueue);
-			} , sqrh -> {
-				if (sqrh.failed()) {
-					handler.handle(Future.failedFuture(sqrh.cause()));
-				} else {
-					try (Trx txBatch = MeshSpringConfiguration.getInstance().database().trx()) {
-						batch.process(rh -> {
-							if (rh.failed()) {
-								try (Trx tx = db.trx()) {
-									SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-									batch.reload();
-									log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
-									searchQueue.add(batch);
-									tx.success();
-								}
-								handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
-							} else {
-								handler.handle(Future.succeededFuture());
-							}
-						});
-					}
-				}
-			});
-
 		}
+
+		// 1. Remove the batch from the queue
+		db.blockingTrx(tc -> {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			searchQueue.reload();
+			searchQueue.remove(batch);
+			tc.complete(searchQueue);
+		} , sqrh -> {
+			if (sqrh.failed()) {
+				handler.handle(Future.failedFuture(sqrh.cause()));
+			} else {
+				// 2. Process the batch
+				db.noTrx(txProcess -> {
+					batch.process(rh -> {
+						// 3. Add the batch back to the queue when an error occurs
+						if (rh.failed()) {
+							db.blockingTrx(txAddBack -> {
+								SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+								batch.reload();
+								log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
+								searchQueue.add(batch);
+								txAddBack.complete(batch);
+							} , txAddedBack -> {
+								if (txAddedBack.failed()) {
+									log.error("Failed to add batch {" + batch.getBatchId() + "} batck to search queue.", txAddedBack.cause());
+								}
+							});
+							// Inform the caller that processing failed
+							handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
+						} else {
+							// Inform the caller that processing completed
+							handler.handle(Future.succeededFuture());
+						}
+					});
+				});
+			}
+		});
 	}
 
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(
 			InternalActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
 
-		Database db = MeshSpringConfiguration.getInstance().database();
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-
-		// TODO i18n
-		if (batch == null) {
+		if (element == null) {
 			// TODO log
-			ac.fail(BAD_REQUEST, "indexing_not_possible");
-			return;
-		} else if (element == null) {
-			// TODO log
+			// TODO i18n
 			ac.fail(BAD_REQUEST, "element creation failed");
 			return;
 		} else {
-
-			db.blockingTrx(tc -> {
-				SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-				searchQueue.reload();
-				searchQueue.remove(batch);
-				tc.complete();
-			} , rh -> {
+			processBatch(ac, batch, rh -> {
 				if (rh.failed()) {
 					handler.handle(Future.failedFuture(rh.cause()));
 				} else {
-					try (Trx txBatch = db.trx()) {
-						batch.process(bh -> {
-							if (bh.failed()) {
-								log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
-										+ element.getType() + "}.", bh.cause());
-								try (Trx tx = db.trx()) {
-									SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-									log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
-									searchQueue.add(batch);
-									tx.success();
-								}
-								ac.fail(BAD_REQUEST, "search_index_batch_process_failed", bh.cause());
-
-							} else {
-								handler.handle(Future.succeededFuture(element));
-							}
-						});
-					}
+					handler.handle(Future.succeededFuture(element));
 				}
 			});
 

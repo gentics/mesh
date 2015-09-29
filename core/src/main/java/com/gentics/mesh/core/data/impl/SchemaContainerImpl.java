@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -74,7 +73,7 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 		}
 		return this;
 	}
-	
+
 	@Override
 	public SchemaContainer transformToReference(InternalActionContext ac, Handler<AsyncResult<SchemaReference>> handler) {
 		SchemaReference schemaReference = new SchemaReference();
@@ -159,16 +158,20 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			return;
 		}
 
-		SearchQueueBatch batch;
-		try (Trx txUpdate = db.trx()) {
+		db.blockingTrx(txUpdate -> {
 			if (!getName().equals(requestModel.getName())) {
 				setName(requestModel.getName());
 			}
 			setSchema(requestModel);
-			batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.success();
-		}
-		processOrFail2(ac, batch, handler);
+			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+			txUpdate.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+			if (txUpdated.failed()) {
+				handler.handle(Future.failedFuture(txUpdated.cause()));
+			} else {
+				processOrFail2(ac, txUpdated.result(), handler);
+			}
+		});
 
 	}
 

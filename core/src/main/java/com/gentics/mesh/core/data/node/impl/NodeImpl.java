@@ -56,7 +56,6 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -552,17 +551,16 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		SearchQueueBatch batch;
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_set"));
 				return;
 			}
-			try (Trx txUpdate = db.trx()) {
+			db.blockingTrx(txUpdate -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
-					handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
+					txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", requestModel.getLanguage())));
 					return;
 				}
 
@@ -576,13 +574,19 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
-					handler.handle(ac.failedFuture(BAD_REQUEST, e.getMessage()));
-					txUpdate.failure();
+					txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "node_update_failed", e));
+					return;
 				}
-				batch = addIndexBatch(UPDATE_ACTION);
-				txUpdate.success();
-			}
-			processOrFail2(ac, batch, handler);
+				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+				txUpdate.complete(batch);
+			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+				if (txUpdated.failed()) {
+					handler.handle(Future.failedFuture(txUpdated.cause()));
+				} else {
+					processOrFail2(ac, txUpdated.result(), handler);
+				}
+			});
+
 		} catch (IOException e1) {
 			log.error(e1);
 			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage(), e1));

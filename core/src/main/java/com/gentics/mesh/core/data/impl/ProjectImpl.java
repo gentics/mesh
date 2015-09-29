@@ -37,15 +37,16 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -193,25 +194,26 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		SearchQueueBatch batch;
-		try (Trx txUpdate = db.trx()) {
+		db.blockingTrx(txUpdate -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
-					handler.handle(ac.failedFuture(CONFLICT, "project_conflicting_name"));
-					txUpdate.failure();
+					txUpdate.fail(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name")));
 					return;
 				}
 				setName(requestModel.getName());
 			}
-
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.success();
-		}
-		processOrFail2(ac, batch, handler);
-
+			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+			txUpdate.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+			if (txUpdated.failed()) {
+				handler.handle(Future.failedFuture(txUpdated.cause()));
+			} else {
+				processOrFail2(ac, txUpdated.result(), handler);
+			}
+		});
 	}
 
 	@Override

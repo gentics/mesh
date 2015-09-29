@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
@@ -46,7 +45,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addSearchEndpoints() {
-		try (Trx tx = db.trx()) {
+		db.noTrx(noTx -> {
 			addSearch("users", boot.meshRoot().getUserRoot(), UserListResponse.class);
 			addSearch("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class);
 			addSearch("roles", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
@@ -56,7 +55,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			addSearch("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class);
 			addSearch("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
 			addSearch("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
-		}
+		});
 	}
 
 	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void addSearch(String typeName,

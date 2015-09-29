@@ -428,7 +428,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	// @Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		String uuid;
