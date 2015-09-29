@@ -371,7 +371,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(3, restResponse.getMetainfo().getPageCount());
+		assertEquals(2, restResponse.getMetainfo().getPageCount());
 		assertEquals(10, restResponse.getMetainfo().getPerPage());
 		assertEquals(getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
@@ -743,9 +743,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
-		assertEquals("Could not find value for required schema field with key {name}",
-				((MeshRestClientHttpException) future.cause()).getResponseMessage().getInternalMessage());
+		expectException(future, BAD_REQUEST, "node_error_missing_mandatory_field_value", "name", "content");
 		assertNull(future.result());
 
 	}
