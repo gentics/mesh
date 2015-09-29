@@ -5,6 +5,7 @@ import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -67,6 +68,38 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		FileUtils.deleteDirectory(new File(uploads));
 		FileUtils.deleteDirectory(new File(targetTmpDir));
 		FileUtils.deleteDirectory(new File("file-uploads"));
+	}
+
+	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
+		// Update the schema and enable binary support for folders
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.setBinary(binaryFlag);
+		// schema.set
+		// node.getSchemaContainer().setSchema(schema);
+	}
+
+	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
+
+		resetClientSchemaStorage();
+		// role().grantPermissions(node, UPDATE_PERM);
+		Buffer buffer = TestUtils.randomBuffer(binaryLen);
+
+		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);
+	}
+
+	@Test
+	public void testUploadWithNoPerm() throws IOException {
+
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+		Node node = folder("news");
+		prepareSchema(node, true, "");
+		role().revokePermissions(node, UPDATE_PERM);
+
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 	}
 
 	@Test
@@ -143,23 +176,6 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
 	}
 
-	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
-		// Update the schema and enable binary support for folders
-		Schema schema = node.getSchemaContainer().getSchema();
-		schema.setBinary(binaryFlag);
-		// schema.set
-		// node.getSchemaContainer().setSchema(schema);
-	}
-
-	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
-
-		resetClientSchemaStorage();
-		role().grantPermissions(node, UPDATE_PERM);
-		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-
-		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);
-	}
-
 	@Test
 	public void testPathSegmentation() {
 		Node node = folder("news");
@@ -176,8 +192,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node;
-		node = folder("news");
+		Node node = folder("news");
 		prepareSchema(node, true, "");
 
 		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
