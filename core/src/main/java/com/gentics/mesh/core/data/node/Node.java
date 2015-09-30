@@ -84,6 +84,13 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
+	/**
+	 * Return a page of tags that are assigned to the node.
+	 * 
+	 * @param ac
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
 	/***
@@ -93,6 +100,11 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	void createLink(Node node);
 
+	/**
+	 * Return a list of language names.
+	 * 
+	 * @return
+	 */
 	List<String> getAvailableLanguageNames();
 
 	/**
@@ -130,6 +142,14 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	void setParentNode(Node parentNode);
 
+	/**
+	 * Create a child node in this node.
+	 * 
+	 * @param creator
+	 * @param schemaContainer
+	 * @param project
+	 * @return
+	 */
 	Node create(User creator, SchemaContainer schemaContainer, Project project);
 
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;

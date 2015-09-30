@@ -36,6 +36,9 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
 
+	/**
+	 * Transform the field into the rest response model.
+	 */
 	abstract public T transformToRest(ActionContext ac);
 
 }
