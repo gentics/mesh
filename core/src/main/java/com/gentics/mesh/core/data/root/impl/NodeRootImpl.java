@@ -157,7 +157,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						return;
 					}
 
-					db.trx(tc -> {
+					db.trx(txCreate -> {
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node
@@ -167,18 +167,18 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							tc.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage())));
+							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage())));
 							return;
 						}
 						try {
 							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
 							container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 						} catch (Exception e) {
-							tc.fail(e);
+							txCreate.fail(e);
 							return;
 						}
 						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-						tc.complete(Tuple.tuple(batch, node));
+						txCreate.complete(Tuple.tuple(batch, node));
 					} , (AsyncResult<Tuple<SearchQueueBatch, Node>> rhb) -> {
 						if (rhb.failed()) {
 							handler.handle(Future.failedFuture(rhb.cause()));

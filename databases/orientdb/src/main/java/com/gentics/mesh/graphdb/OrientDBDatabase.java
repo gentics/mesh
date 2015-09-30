@@ -107,7 +107,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					tx.failure();
 				}
 				break;
-			} catch (OConcurrentModificationException e) {
+			} catch (Exception e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}

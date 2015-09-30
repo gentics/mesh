@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
@@ -150,16 +151,14 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 								String projectName = basicReference.getProjectName();
 
 								if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
-									handler.handle(Future
-											.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_incomplete_node_reference"))));
+									txCreate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
 									return;
 								}
 
 								// TODO decide whether we need to check perms on the project as well
 								Project project = boot.projectRoot().findByName(projectName);
 								if (project == null) {
-									handler.handle(Future
-											.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_not_found", projectName))));
+									txCreate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
 									return;
 								}
 								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());

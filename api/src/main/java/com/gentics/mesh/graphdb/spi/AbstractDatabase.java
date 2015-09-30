@@ -63,15 +63,15 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Database trx(Handler<Future<T>> trxHandler, Handler<AsyncResult<T>> resultHandler) {
-		resultHandler.handle(trx(trxHandler));
+	public <T> Database trx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
+		resultHandler.handle(trx(tcHandler));
 		return this;
 	}
 
 	@Override
-	public <T> Database asyncTrx(Handler<Future<T>> trxHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Database asyncTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-			Future<T> future = trx(trxHandler);
+			Future<T> future = trx(tcHandler);
 			if (future.succeeded()) {
 				bh.complete(future.result());
 			} else {
@@ -91,29 +91,35 @@ public abstract class AbstractDatabase implements Database {
 			log.error("Error while handling no-transaction.", e);
 			return Future.failedFuture(e);
 		}
+		if (!future.isComplete()) {
+			future.complete();
+		}
 		return future;
 	}
 
+	// @Override
+	// public Database asyncNoTrx(Consumer<NoTrx> transactionCode) {
+	// Mesh.vertx().executeBlocking(bh -> {
+	// try (NoTrx noTx = noTrx()) {
+	// transactionCode.accept(noTx);
+	// }
+	// } , false, rh -> {
+	// if (rh.failed()) {
+	// throw rh.cause();
+	// }
+	// });
+	// return this;
+	// }
+
 	@Override
-	public <T> Database asyncNoTrx(Handler<Future<T>> trxHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-
-			Future<T> trxFuture = Future.future();
-			trxFuture.setHandler(rh -> {
-				if (rh.failed()) {
-					bh.fail(rh.cause());
-				} else {
-					bh.complete(rh.result());
-				}
-			});
-			try (NoTrx noTx = noTrx()) {
-				trxHandler.handle(trxFuture);
-				// TODO maybe we should only retry OConcurrentExceptions?
-			} catch (Exception e) {
-				log.error("Error while handling no-transaction.", e);
-				bh.fail(e);
+			Future<T> future = noTrx(transactionCodeHandler);
+			if (future.succeeded()) {
+				bh.complete(future.result());
+			} else {
+				bh.fail(future.cause());
 			}
-
 		} , false, resultHandler);
 		return this;
 	}

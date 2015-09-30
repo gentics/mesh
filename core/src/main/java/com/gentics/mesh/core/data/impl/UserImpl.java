@@ -455,6 +455,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 				}
 
+				// TODO use fillRest method instead
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				if (requestModel.getNodeReference() != null) {
@@ -478,7 +479,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 								setReferencedNode(node);
 								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 								txUpdate.complete(batch);
-								return;
+//								return;
 							}
 						}
 					}
