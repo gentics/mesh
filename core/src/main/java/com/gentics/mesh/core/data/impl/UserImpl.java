@@ -286,9 +286,9 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	@Override
 	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(noTrx -> {
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
 			UserResponse restUser = new UserResponse();
 			fillRest(restUser, ac);
 			restUser.setUsername(getUsername());
@@ -334,10 +334,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			obsFieldSet.toHandler().handle(Future.succeededFuture());
 
 			// Wait for all async processes to complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				tc.complete(restUser);
+			Observable.merge(futures).subscribe(item -> {
 			} , error -> {
-				tc.fail(error);
+				noTrx.fail(error);
+			} , () -> {
+				noTrx.complete(restUser);
 			});
 
 		} , (AsyncResult<UserResponse> rh) -> {
