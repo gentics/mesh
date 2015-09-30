@@ -32,6 +32,9 @@ import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
 
+/**
+ * Main spring bean providing configuration class.
+ */
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class MeshSpringConfiguration {

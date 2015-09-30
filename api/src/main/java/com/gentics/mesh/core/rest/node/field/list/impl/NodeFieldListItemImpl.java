@@ -18,6 +18,12 @@ public class NodeFieldListItemImpl implements NodeFieldListItem {
 		return uuid;
 	}
 
+	/**
+	 * Set the uuid of the node item.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	public NodeFieldListItemImpl setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;
