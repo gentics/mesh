@@ -16,6 +16,11 @@ import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Deserialize for node references. The deserializer will first try to deserialize the json node by passing the json to the NodeResponse deserializer. This is
+ * done in order to deserialize expanded node references. Second the deserializer will deserialze the json node using the basic {@link NodeReferenceImpl} pojo
+ * in order to provide a collapsed form.
+ */
 public class UserNodeReferenceDeserializer extends JsonDeserializer<NodeReference> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserNodeReferenceDeserializer.class);
@@ -36,9 +41,6 @@ public class UserNodeReferenceDeserializer extends JsonDeserializer<NodeReferenc
 			}
 			NodeReferenceImpl basicReference = oc.treeToValue(node, NodeReferenceImpl.class);
 			return basicReference;
-			//			NodeResponse restNode = new NodeResponse();
-			//			restNode.setUuid(collapsedField.getUuid());
-			//			map.put(fieldKey, restNode);
 		} catch (IOException e) {
 			throw new MeshJsonException("Could not read node reference", e);
 		}

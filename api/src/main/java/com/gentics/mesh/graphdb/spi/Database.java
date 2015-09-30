@@ -93,8 +93,22 @@ public interface Database {
 	 */
 	NoTrx noTrx();
 
+	/**
+	 * Execute the given handler within the scope of a no transaction.
+	 * 
+	 * @param transactionCodeHandler
+	 *            handler that is invoked within the scope of the no-transaction.
+	 * @return
+	 */
 	<T> Future<T> noTrx(Handler<Future<T>> transactionCodeHandler);
 
+	/**
+	 * Execute the tcHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
+	 * 
+	 * @param tcHandler
+	 * @param resultHandler
+	 * @return
+	 */
 	<T> Database blockingTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**

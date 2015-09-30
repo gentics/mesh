@@ -22,8 +22,6 @@ import io.vertx.core.logging.LoggerFactory;
  * the schema information from the json and delegate the deserialization to a different node mapper which will be able to handle the json using the schema
  * information provided.
  * 
- * @author johannes2
- *
  * @param <T>
  */
 public class DelegagingNodeResponseDeserializer<T> extends JsonDeserializer<T> {

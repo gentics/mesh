@@ -243,7 +243,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		tag.setEditor(getUserReference());
 		tag.getFields().setName("tagName");
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		tag.setTagFamilyReference(tagFamilyReference);
+		tag.setTagFamily(tagFamilyReference);
 		write(tag);
 
 		TagUpdateRequest tagUpdate = new TagUpdateRequest();
@@ -260,7 +260,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		tag2.setEdited(getTimestamp());
 		tag2.setEditor(getUserReference());
 		tag2.getFields().setName("Name for language tag en");
-		tag2.setTagFamilyReference(tagFamilyReference);
+		tag2.setTagFamily(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 
 		TagListResponse tagList = new TagListResponse();

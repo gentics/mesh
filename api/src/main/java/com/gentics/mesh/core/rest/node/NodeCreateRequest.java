@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.rest.node;
 
-
+/**
+ * POJO for a node create request.
+ */
 public class NodeCreateRequest extends NodeUpdateRequest {
 
 	private String parentNodeUuid;
@@ -10,10 +12,20 @@ public class NodeCreateRequest extends NodeUpdateRequest {
 	public NodeCreateRequest() {
 	}
 
+	/**
+	 * Return the parent node uuid.
+	 * 
+	 * @return
+	 */
 	public String getParentNodeUuid() {
 		return parentNodeUuid;
 	}
 
+	/**
+	 * Set the parent node uuid for the node that should be created.
+	 * 
+	 * @param parentNodeUuid
+	 */
 	public void setParentNodeUuid(String parentNodeUuid) {
 		this.parentNodeUuid = parentNodeUuid;
 	}

@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.common.RestResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
+/**
+ * POJO for a schema response model.
+ */
 public class SchemaResponse extends SchemaImpl implements RestResponse {
 
 	private String uuid;
@@ -32,10 +35,20 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 		this.uuid = uuid;
 	}
 
+	/**
+	 * Return the permissions of the schema.
+	 * 
+	 * @return
+	 */
 	public String[] getPermissions() {
 		return permissions;
 	}
 
+	/**
+	 * Set the permissions of the schema.
+	 * 
+	 * @param permissions
+	 */
 	public void setPermissions(String... permissions) {
 		this.permissions = permissions;
 	}

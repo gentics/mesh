@@ -11,12 +11,6 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 */
 	private int code;
 
-	@Deprecated
-	public HttpStatusCodeErrorException(int code, String message) {
-		super(message);
-		this.code = code;
-	}
-
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String message, Throwable e) {
 		super(message, e);
 		this.code = status.code();
@@ -27,7 +21,11 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		this.code = status.code();
 	}
 
-
+	/**
+	 * Return the http status code.
+	 * 
+	 * @return
+	 */
 	public int getCode() {
 		return code;
 	}

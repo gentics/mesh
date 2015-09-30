@@ -33,6 +33,10 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
+/**
+ * Main json util which is used to register all custom json specific handlers and deserializers.
+ *
+ */
 public final class JsonUtil {
 
 	protected static ObjectMapper defaultMapper;
@@ -41,6 +45,9 @@ public final class JsonUtil {
 
 	protected static ObjectMapper nodeMapper;
 
+	/**
+	 * When enabled indented JSON will be produced.
+	 */
 	public static boolean debugMode = false;
 
 	static {

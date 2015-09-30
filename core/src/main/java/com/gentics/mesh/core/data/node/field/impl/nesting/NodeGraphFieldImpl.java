@@ -57,6 +57,4 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 	}
 
-	//}
-
 }

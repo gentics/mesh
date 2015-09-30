@@ -165,6 +165,9 @@ public class DemoDataProvider {
 
 	}
 
+	/**
+	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
+	 */
 	private void addBootstrappedData() {
 		for (Group group : root.getGroupRoot().findAll()) {
 			groups.put(group.getName(), group);

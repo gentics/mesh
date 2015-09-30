@@ -78,10 +78,23 @@ public interface SearchQueueBatch extends MeshVertex {
 	 */
 	void process(Handler<AsyncResult<Void>> handler);
 
+	/**
+	 * Print debug output.
+	 */
 	void printDebug();
 
+	/**
+	 * Set the creation timestamp of the search queue batch.
+	 * 
+	 * @param currentTimeMillis
+	 */
 	void setTimestamp(long currentTimeMillis);
 
+	/**
+	 * Return the timestamp when the batch was created.
+	 * 
+	 * @return
+	 */
 	long getTimestamp();
 
 }

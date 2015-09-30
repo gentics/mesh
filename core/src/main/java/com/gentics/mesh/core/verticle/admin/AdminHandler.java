@@ -27,6 +27,11 @@ public class AdminHandler extends AbstractHandler {
 		rc.response().end("OK");
 	}
 
+	/**
+	 * Invoke a database backup call to the current graph database provider.
+	 * 
+	 * @param rc
+	 */
 	public void handleBackup(RoutingContext rc) {
 		ActionContext ac = ActionContext.create(rc);
 		try {

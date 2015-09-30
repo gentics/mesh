@@ -24,6 +24,11 @@ public class HttpServerConfig {
 	public HttpServerConfig() {
 	}
 
+	/**
+	 * Return the flag which indicates whether ssl should be enabled.
+	 * 
+	 * @return
+	 */
 	public boolean isSsl() {
 		return BooleanUtils.isTrue(ssl);
 	}
@@ -32,6 +37,11 @@ public class HttpServerConfig {
 		this.ssl = ssl;
 	}
 
+	/**
+	 * Return the http server port.
+	 * 
+	 * @return
+	 */
 	public int getPort() {
 		return port;
 	}

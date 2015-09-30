@@ -20,9 +20,6 @@ import io.vertx.ext.web.Route;
 
 /**
  * The tag verticle provides rest endpoints which allow manipulation and handling of tag related objects.
- * 
- * @author johannes2
- *
  */
 @Component
 @Scope("singleton")

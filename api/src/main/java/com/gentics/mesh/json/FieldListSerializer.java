@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 
+/**
+ * Serializer for simplified field lists. The serializer will create a json array using the given field list items.
+ *
+ */
 public class FieldListSerializer extends JsonSerializer<FieldList> {
 
 	@Override

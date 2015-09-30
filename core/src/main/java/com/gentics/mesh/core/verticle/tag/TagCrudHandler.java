@@ -61,6 +61,11 @@ public class TagCrudHandler extends AbstractCrudHandler {
 		} , ac.errorHandler());
 	}
 
+	/**
+	 * Add the handler that returns a node list for a specified tag.
+	 * 
+	 * @param ac
+	 */
 	public void handleTaggedNodesList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();

@@ -5,10 +5,21 @@ public enum Permission {
 
 	private String name;
 
+	/**
+	 * Create a new permission
+	 * 
+	 * @param name
+	 *            human readable name
+	 */
 	Permission(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * Return the human readable name of the permission.
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		return name;
 	}

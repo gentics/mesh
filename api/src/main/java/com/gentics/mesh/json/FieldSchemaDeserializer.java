@@ -12,6 +12,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
+/**
+ * The field schema deserialize will deserialize the field by first examining the field type and delegating the deserialisation to another jackson mapper which
+ * will deserialize the node using the appropriate schema implementation class.
+ *
+ * @param <T>
+ */
 public class FieldSchemaDeserializer<T extends FieldSchema> extends JsonDeserializer<T> {
 
 	@Override

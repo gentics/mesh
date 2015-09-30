@@ -106,7 +106,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				TagFamilyReference tagFamilyReference = new TagFamilyReference();
 				tagFamilyReference.setName(tagFamily.getName());
 				tagFamilyReference.setUuid(tagFamily.getUuid());
-				restTag.setTagFamilyReference(tagFamilyReference);
+				restTag.setTagFamily(tagFamilyReference);
 			}
 			restTag.getFields().setName(getName());
 			tc.complete(restTag);

@@ -114,6 +114,11 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(AdminVerticle.class);
 	}
 
+	/**
+	 * Add the given verticle class to the list of mandatory verticles
+	 * 
+	 * @param clazz
+	 */
 	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
 		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
 	}

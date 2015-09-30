@@ -7,6 +7,11 @@ import io.vertx.core.Handler;
 
 public interface SearchQueueEntry extends MeshVertex {
 
+	/**
+	 * Return the search queue entry element uuid which identifies the element that should be handled.
+	 * 
+	 * @return
+	 */
 	String getElementUuid();
 
 	SearchQueueEntry setElementUuid(String uuid);
@@ -21,6 +26,11 @@ public interface SearchQueueEntry extends MeshVertex {
 
 	SearchQueueEntry process(Handler<AsyncResult<Void>> handler);
 
+	/**
+	 * Return the search queue action name.
+	 * 
+	 * @return
+	 */
 	String getElementActionName();
 
 	SearchQueueEntry setElementIndexType(String indexType);

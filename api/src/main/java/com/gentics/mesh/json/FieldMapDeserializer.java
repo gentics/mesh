@@ -49,6 +49,10 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * The {@link FieldMapDeserializer} is used to deserialize the fieldmap within a node response/update request.
+ *
+ */
 public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 	private static final Logger log = LoggerFactory.getLogger(FieldMapDeserializer.class);
@@ -56,22 +60,29 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 	@Override
 	public FieldMap deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
+		// 1. Load the schema name that was identified by another deserializer and put into the context.
 		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
 		if (schemaName == null) {
 			throw new MeshJsonException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
 		}
+		// 2. Load the schema storage that holds the schema for the handled node
 		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
+
+		Schema schema = schemaStorage.getSchema(schemaName);
+		if (schema == null) {
+			throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
+		}
+
+		// 3. Iterate over all fields and load the field schema from 
 		Iterator<Entry<String, JsonNode>> it = node.fields();
 		FieldMap map = new FieldMapImpl();
 		while (it.hasNext()) {
 			Entry<String, JsonNode> currentEntry = it.next();
 			String fieldKey = currentEntry.getKey();
-			Schema schema = schemaStorage.getSchema(schemaName);
-			if (schema == null) {
-				throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
-			}
+
+			// Check whether the field with the given key could be found in the schema
 			FieldSchema fieldSchema = null;
 			for (FieldSchema currentFieldSchema : schemaStorage.getSchema(schemaName).getFields()) {
 				if (currentFieldSchema.getName() == null) {
@@ -89,10 +100,27 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		return map;
 	}
 
+	/**
+	 * Deserialize the current field and put it in the provided map.
+	 * 
+	 * @param map
+	 *            Map which holds the deserialize fields
+	 * @param fieldKey
+	 *            Key of the current field
+	 * @param fieldSchema
+	 *            Field schema for the current field
+	 * @param jsonNode
+	 *            JsonNode of the current field
+	 * @param jsonParser
+	 * @param schemaStorage
+	 * @throws JsonProcessingException
+	 */
 	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, JsonParser jsonParser,
 			SchemaStorage schemaStorage) throws JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+
+		// Handle each field type
 		switch (type) {
 		case HTML:
 			HtmlField htmlField = new HtmlFieldImpl();
@@ -143,7 +171,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				dateField.setDate(jsonNode.numberValue().longValue());
 			}
 			if (!jsonNode.isNull() && !jsonNode.isNumber()) {
-				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
+				throw new MeshJsonException(
+						"The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
 			}
 			map.put(fieldKey, dateField);
 			break;
