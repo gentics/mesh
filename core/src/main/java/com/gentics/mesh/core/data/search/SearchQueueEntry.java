@@ -20,10 +20,27 @@ public interface SearchQueueEntry extends MeshVertex {
 
 	SearchQueueEntry setElementType(String type);
 
+	/**
+	 * Return the search queue entry action (eg. Update, delete..)
+	 * 
+	 * @return
+	 */
 	SearchQueueEntryAction getElementAction();
 
+	/**
+	 * Set the entry action (eg. update, delete, create)
+	 * 
+	 * @param action
+	 * @return
+	 */
 	SearchQueueEntry setElementAction(String action);
 
+	/**
+	 * Process the entry and invoke the handler once processing failed or completed successfully.
+	 * 
+	 * @param handler
+	 * @return
+	 */
 	SearchQueueEntry process(Handler<AsyncResult<Void>> handler);
 
 	/**

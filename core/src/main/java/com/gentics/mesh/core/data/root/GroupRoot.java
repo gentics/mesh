@@ -25,6 +25,9 @@ public interface GroupRoot extends RootVertex<Group> {
 	 */
 	Group create(String name, User user);
 
+	/**
+	 * Find all groups that are visible to the given user and match the paging parameters.
+	 */
 	Page<? extends Group> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 	/**

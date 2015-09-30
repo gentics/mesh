@@ -90,6 +90,12 @@ public enum FieldTypes {
 		return name().toLowerCase();
 	}
 
+	/**
+	 * Convert the given field type name to a field type object.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static FieldTypes valueByName(String name) {
 		for (FieldTypes type : values()) {
 			if (type.toString().equals(name)) {

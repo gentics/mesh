@@ -9,11 +9,19 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	/**
 	 * Returns the node for this field.
 	 * 
-	 * @param fieldKey The key for this field
+	 * @param fieldKey
+	 *            The key for this field
 	 * @return Node for this field when set, otherwise null.
 	 */
 	Node getNode();
 
+	/**
+	 * Transform the graph field into a rest field.
+	 * 
+	 * @param ac
+	 * @param fieldKey
+	 * @return
+	 */
 	Field transformToRest(InternalActionContext ac, String fieldKey);
 
 }

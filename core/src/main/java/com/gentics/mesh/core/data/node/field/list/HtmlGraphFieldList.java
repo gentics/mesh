@@ -7,8 +7,20 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 
 	public static final String TYPE = "html";
 
-	HtmlGraphField createHTML(String key);
+	/**
+	 * Create a new html graph field.
+	 * 
+	 * @param html
+	 * @return
+	 */
+	HtmlGraphField createHTML(String html);
 
+	/**
+	 * Return the html graph field at the given index position.
+	 * 
+	 * @param index
+	 * @return
+	 */
 	HtmlGraphField getHTML(int index);
 
 }

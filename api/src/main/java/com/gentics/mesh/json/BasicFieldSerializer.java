@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 /**
- * Serializer which will handle basic fields (eg. String, html, number) which does not have a nested object within the field json format.
+ * Serializer which will handle basic fields (eg. String, html, number) which does not have a nested object within the field JSON format.
  *
  * @param <T>
  */

@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.node.field.nesting.AbstractComplexGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
 
+//TODO finish implementation
 public class MicroschemaGraphFieldImpl extends AbstractComplexGraphField implements MicroschemaGraphField, GraphFieldContainer {
 
 	@Override

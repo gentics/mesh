@@ -91,6 +91,7 @@ public class MeshImpl implements Mesh {
 
 		printProductInformation();
 
+		// Start the spring context
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
 			setParentContext(ctx);
 			BootstrapInitializer initalizer = ctx.getBean(BootstrapInitializer.class);
@@ -131,17 +132,6 @@ public class MeshImpl implements Mesh {
 			}
 		});
 	}
-
-//	/**
-//	 * Handle command line arguments.
-//	 * 
-//	 * @param args
-//	 * @throws ParseException
-//	 */
-//	@Override
-//	public void handleArguments(String[] args) throws ParseException {
-//		// TODO Not yet implemented
-//	}
 
 	private void dontExit() {
 		while (true) {

@@ -7,16 +7,18 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements HtmlGraphField {
+public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField>implements HtmlGraphField {
 
 	public HtmlGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
 	}
 
+	@Override
 	public void setHtml(String html) {
 		setFieldProperty("html", html);
 	}
 
+	@Override
 	public String getHTML() {
 		return getFieldProperty("html");
 	}

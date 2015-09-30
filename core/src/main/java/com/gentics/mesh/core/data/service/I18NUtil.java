@@ -18,6 +18,14 @@ public class I18NUtil {
 
 	public static final Locale DEFAULT_LOCALE = new Locale("en", "US");
 
+	/**
+	 * Return the i18n string for the given bundle, local and i18n key.
+	 * 
+	 * @param bundleName
+	 * @param locale
+	 * @param key
+	 * @return
+	 */
 	public static String get(String bundleName, Locale locale, String key) {
 
 		if (locale == null) {
@@ -27,14 +35,42 @@ public class I18NUtil {
 		return labels.getString(key);
 	}
 
+	/**
+	 * Return the i18n string for the given locale and key.
+	 * 
+	 * @param locale
+	 * @param key
+	 * @return
+	 */
 	public static String get(Locale locale, String key) {
 		return get(MESH_CORE_BUNDLENAME, locale, key);
 	}
 
+	/**
+	 * Return the i18n string for the given locale and parameters.
+	 * 
+	 * @param locale
+	 * @param key
+	 * @param parameters
+	 * @return
+	 */
 	public static String get(Locale locale, String key, String... parameters) {
 		return get(MESH_CORE_BUNDLENAME, locale, key, parameters);
 	}
 
+	/**
+	 * Return the i18n string for the given bundle name, local and i18n string parameters.
+	 * 
+	 * @param bundleName
+	 *            Name of the bundle resource that should be used.
+	 * @param locale
+	 *            Locale that will be used to identify the used language. The default locale will be used when no specified.
+	 * @param key
+	 *            I18n String key
+	 * @param parameters
+	 *            I18n String parameters
+	 * @return
+	 */
 	public static String get(String bundleName, Locale locale, String key, String... parameters) {
 		if (locale == null) {
 			locale = DEFAULT_LOCALE;
@@ -53,10 +89,27 @@ public class I18NUtil {
 		return i18nMessage;
 	}
 
+	/**
+	 * Return the i18n string for the i18n string and parameters. The locale information will be extracted from the action context.
+	 * 
+	 * @param ac
+	 * @param key
+	 * @param parameters
+	 * @return
+	 */
 	public static String get(ActionContext ac, String key, String... parameters) {
 		return get(MESH_CORE_BUNDLENAME, ac.getLocale(), key, parameters);
 	}
 
+	/**
+	 * Return the i18n string for the i18n string, parameters and bundle. The locale information will be extracted from the action context.
+	 * 
+	 * @param bundleName
+	 * @param ac
+	 * @param key
+	 * @param parameters
+	 * @return
+	 */
 	public static String get(String bundleName, ActionContext ac, String key, String... parameters) {
 		return get(bundleName, (Locale) ac.get("locale"), key, parameters);
 	}

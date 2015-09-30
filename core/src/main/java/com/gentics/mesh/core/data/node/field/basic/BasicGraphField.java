@@ -6,6 +6,12 @@ import com.gentics.mesh.handler.ActionContext;
 
 public interface BasicGraphField<T extends Field> extends MicroschemaListableGraphField {
 
+	/**
+	 * Transform the graph field to the rest field.
+	 * 
+	 * @param ac
+	 * @return
+	 */
 	T transformToRest(ActionContext ac);
 
 }

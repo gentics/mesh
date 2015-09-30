@@ -34,7 +34,19 @@ public interface Schema {
 	 */
 	public void setName(String name);
 
+	/**
+	 * Return the display field of the schema.
+	 * 
+	 * @return
+	 */
 	public String getDisplayField();
+
+	/**
+	 * Set the display field value.
+	 * 
+	 * @param displayField
+	 */
+	public void setDisplayField(String displayField);
 
 	/**
 	 * Return the binary folder flag.
@@ -64,10 +76,18 @@ public interface Schema {
 	 */
 	public void setBinary(boolean flag);
 
+	/**
+	 * Return the list of field schemas.
+	 * 
+	 * @return
+	 */
 	public List<? extends FieldSchema> getFields();
 
-	public void setDisplayField(String displayField);
-
+	/**
+	 * Add the given field schema to the list of field schemas.
+	 * 
+	 * @param fieldSchema
+	 */
 	public void addField(FieldSchema fieldSchema);
 
 	/**
@@ -84,6 +104,10 @@ public interface Schema {
 	 */
 	void setDescription(String description);
 
+	/**
+	 * Validate the schema for correctness.
+	 * @throws MeshJsonException
+	 */
 	void validate() throws MeshJsonException;
 
 }

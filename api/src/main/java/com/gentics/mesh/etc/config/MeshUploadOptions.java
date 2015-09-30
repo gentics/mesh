@@ -21,6 +21,11 @@ public class MeshUploadOptions {
 		return byteLimit;
 	}
 
+	/**
+	 * Set the upload limit in bytes.
+	 * 
+	 * @param byteLimit
+	 */
 	public void setByteLimit(long byteLimit) {
 		this.byteLimit = byteLimit;
 	}
@@ -34,6 +39,11 @@ public class MeshUploadOptions {
 		return directory;
 	}
 
+	/**
+	 * Set the binary storage directory.
+	 * 
+	 * @param directory
+	 */
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
@@ -47,6 +57,11 @@ public class MeshUploadOptions {
 		return tempDirectory;
 	}
 
+	/**
+	 * Set the temporary upload directory. New uploads will be placed within this location before processing.
+	 * 
+	 * @param tempDirectory
+	 */
 	public void setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
 	}

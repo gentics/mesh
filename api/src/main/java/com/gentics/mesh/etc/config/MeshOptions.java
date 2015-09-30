@@ -13,12 +13,9 @@ public class MeshOptions {
 	public static final boolean ENABLED = true;
 	public static final boolean DISABLED = false;
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
-	public static final int DEFAULT_MAX_DEPTH = 5;
 	public static final int DEFAULT_PAGE_SIZE = 25;
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
-
-	private int maxDepth = DEFAULT_MAX_DEPTH;
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
@@ -45,26 +42,38 @@ public class MeshOptions {
 		return verticles;
 	}
 
+	/**
+	 * Return the cluster mode flag.
+	 * 
+	 * @return
+	 */
 	public boolean isClusterMode() {
 		return clusterMode;
 	}
 
+	/**
+	 * Set the flag which can toggle the cluster mode.
+	 * 
+	 * @param clusterMode
+	 */
 	public void setClusterMode(boolean clusterMode) {
 		this.clusterMode = clusterMode;
 	}
 
-	public int getMaxDepth() {
-		return maxDepth;
-	}
-
-	public void setMaxDepth(int maxDepth) {
-		this.maxDepth = maxDepth;
-	}
-
+	/**
+	 * Return the default language.
+	 * 
+	 * @return
+	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
 	}
 
+	/**
+	 * Return the default page size.
+	 * 
+	 * @return
+	 */
 	public int getDefaultPageSize() {
 		return defaultPageSize;
 	}
@@ -114,10 +123,20 @@ public class MeshOptions {
 		return httpServerOptions;
 	}
 
+	/**
+	 * Set the http server options.
+	 * 
+	 * @param httpServerOptions
+	 */
 	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		this.httpServerOptions = httpServerOptions;
 	}
 
+	/**
+	 * Return the search options.
+	 * 
+	 * @return
+	 */
 	public ElasticSearchOptions getSearchOptions() {
 		return searchOptions;
 	}

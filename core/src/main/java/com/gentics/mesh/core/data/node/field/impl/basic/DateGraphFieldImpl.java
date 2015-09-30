@@ -13,6 +13,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField>implements 
 		super(fieldKey, parentContainer);
 	}
 
+	@Override
 	public void setDate(Long date) {
 		if (date == null) {
 			setFieldProperty("date", null);
@@ -21,6 +22,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField>implements 
 		}
 	}
 
+	@Override
 	public Long getDate() {
 		String value = getFieldProperty("date");
 		if (value == null) {

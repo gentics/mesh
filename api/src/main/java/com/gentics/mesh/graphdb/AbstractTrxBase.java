@@ -21,12 +21,20 @@ public class AbstractTrxBase {
 	 */
 	private FramedGraph currentGraph;
 
+	/**
+	 * Initialize the transaction.
+	 * 
+	 * @param transactionalGraph
+	 */
 	protected void init(FramedGraph transactionalGraph) {
+		// 1. Set the new transactional graph so that it can be accessed via Trx.getGraph()
 		setGraph(transactionalGraph);
 		if (log.isDebugEnabled()) {
 			log.debug("Started transaction {" + getGraph().hashCode() + "}");
 		}
+		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field. 
 		setOldGraph(Database.getThreadLocalGraph());
+		// Overwrite the current active threadlocal graph with the given transactional graph. This way Ferma graph elements will utilize this instance.
 		Database.setThreadLocalGraph(transactionalGraph);
 	}
 

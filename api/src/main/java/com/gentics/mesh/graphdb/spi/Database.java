@@ -23,6 +23,11 @@ public interface Database {
 		Database.threadLocalGraph.set(graph);
 	}
 
+	/**
+	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
+	 * 
+	 * @return
+	 */
 	public static FramedGraph getThreadLocalGraph() {
 		return Database.threadLocalGraph.get();
 	}
@@ -64,6 +69,12 @@ public interface Database {
 	@Deprecated
 	Trx trx();
 
+	/**
+	 * Execute the given handler within the scope of a transaction.
+	 * 
+	 * @param code
+	 * @return
+	 */
 	<T> Future<T> trx(Handler<Future<T>> code);
 
 	/**

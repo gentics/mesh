@@ -7,8 +7,18 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 
 	public static final String TYPE = "microschemas";
 
+	/**
+	 * Add the microschema container to the aggregation node.
+	 * 
+	 * @param container
+	 */
 	void addMicroschema(MicroschemaContainer container);
 
+	/**
+	 * Remove the microschema container from the aggregation node.
+	 * 
+	 * @param container
+	 */
 	void removeMicroschema(MicroschemaContainer container);
 
 	/**

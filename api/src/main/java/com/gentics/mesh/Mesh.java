@@ -20,6 +20,12 @@ public interface Mesh {
 		return factory.mesh();
 	}
 
+	/**
+	 * Returns the initialized instance of mesh that was created using the given options.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	static Mesh mesh(MeshOptions options) {
 		return factory.mesh(options);
 	}
@@ -45,8 +51,18 @@ public interface Mesh {
 
 	void setCustomLoader(MeshCustomLoader<Vertx> verticleLoader);
 
+	/**
+	 * Return the mesh options.
+	 * 
+	 * @return
+	 */
 	MeshOptions getOptions();
 
+	/**
+	 * Start mesh.
+	 * 
+	 * @throws Exception
+	 */
 	void run() throws Exception;
 
 	/**

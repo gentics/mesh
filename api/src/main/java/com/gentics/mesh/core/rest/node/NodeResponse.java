@@ -111,6 +111,11 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 		return isContainer;
 	}
 
+	/**
+	 * Set the container flag which indicates whether the node is a container for other nodes. (eg. a folder)
+	 * 
+	 * @param isContainer
+	 */
 	public void setContainer(boolean isContainer) {
 		this.isContainer = isContainer;
 	}

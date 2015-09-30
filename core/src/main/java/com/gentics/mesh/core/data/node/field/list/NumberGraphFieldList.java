@@ -7,8 +7,20 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 
 	public static final String TYPE = "number";
 
+	/**
+	 * Create a new number graph field with the given value.
+	 * 
+	 * @param value
+	 * @return
+	 */
 	NumberGraphField createNumber(String value);
 
+	/**
+	 * Return the graph number field at the given position.
+	 * 
+	 * @param index
+	 * @return
+	 */
 	NumberGraphField getNumber(int index);
 
 }

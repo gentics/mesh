@@ -12,15 +12,17 @@ public abstract class AbstractTrx extends AbstractTrxBase implements Trx {
 
 	private boolean isSuccess = false;
 
+	@Override
 	public void success() {
 		isSuccess = true;
 	}
 
+	@Override
 	public void failure() {
 		isSuccess = false;
 	}
 
-	public boolean isSuccess() {
+	private boolean isSuccess() {
 		return isSuccess;
 	}
 
@@ -31,6 +33,7 @@ public abstract class AbstractTrx extends AbstractTrxBase implements Trx {
 		} else {
 			rollback();
 		}
+		// Restore the old graph that was previously swapped with the current graph 
 		Database.setThreadLocalGraph(getOldGraph());
 	}
 

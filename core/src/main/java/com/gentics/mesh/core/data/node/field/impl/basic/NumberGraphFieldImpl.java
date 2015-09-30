@@ -13,10 +13,12 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField>impleme
 		super(fieldKey, parentContainer);
 	}
 
+	@Override
 	public void setNumber(String number) {
 		setFieldProperty("number", number);
 	}
 
+	@Override
 	public String getNumber() {
 		return getFieldProperty("number");
 	}
