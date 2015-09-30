@@ -17,6 +17,9 @@ import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 
+/**
+ * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
+ */
 public interface GraphFieldContainer extends BasicFieldContainer {
 
 	StringGraphField getString(String key);

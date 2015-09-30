@@ -86,6 +86,11 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
 	Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
+	/***
+	 * Create link between the nodes.
+	 * 
+	 * @param node
+	 */
 	void createLink(Node node);
 
 	List<String> getAvailableLanguageNames();

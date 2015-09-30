@@ -11,6 +11,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+/**
+ * Aggregation node for nodes.
+ */
 public interface NodeRoot extends RootVertex<Node> {
 
 	public static final String TYPE = "nodes";

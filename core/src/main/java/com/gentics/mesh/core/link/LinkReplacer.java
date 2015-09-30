@@ -13,8 +13,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * The link replacer can be used to replace links within the contents of a string.
  * 
- * @author johannes2
- *
  * @param <T>
  */
 public class LinkReplacer<T extends AbstractLinkResolver> {

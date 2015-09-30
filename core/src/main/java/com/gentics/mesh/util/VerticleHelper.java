@@ -2,6 +2,7 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -51,6 +52,13 @@ public class VerticleHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
 
+	/**
+	 * Load the objects from the root vertex using the paging parameter from the action context and send a JSON transformed response.
+	 * 
+	 * @param ac
+	 * @param root
+	 * @param listResponse
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(InternalActionContext ac, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
 		loadObjects(ac, root, rh -> {
@@ -60,6 +68,14 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
+	/**
+	 * Set the paging parameters into the given list response by examing the given page.
+	 * 
+	 * @param response
+	 *            List response that will be updated
+	 * @param page
+	 *            Page that will be used to extract the paging parameters
+	 */
 	public static void setPaging(AbstractListResponse<?> response, Page<?> page) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(page.getNumber());
@@ -81,6 +97,15 @@ public class VerticleHelper {
 		});
 	}
 
+	/**
+	 * Process the given batch and call the handler when the batch was processed.
+	 * 
+	 * @param ac
+	 * @param batch
+	 *            Batch to be processed
+	 * @param handler
+	 *            Result handler that will be invoked on completion or error
+	 */
 	public static <T> void processBatch(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<Future<T>>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -149,8 +174,22 @@ public class VerticleHelper {
 		}
 	}
 
+	/**
+	 * Asynchronously load the objects and populate the given list response.
+	 * 
+	 * @param ac
+	 *            Action context that will be used to extract the paging parameters from
+	 * @param root
+	 *            Aggregation node that should be used to load the objects
+	 * @param handler
+	 *            Handler which will be invoked once all objects have been loaded and transformed and the list reponse is completed
+	 * @param listResponse
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+
+		// TODO use reflection to create the empty list response
+
 		PagingInfo pagingInfo = ac.getPagingInfo();
 		MeshAuthUser requestUser = ac.getUser();
 		try {
@@ -202,6 +241,14 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
+	/**
+	 * Transform the page into a list response.
+	 * 
+	 * @param ac
+	 * @param page
+	 * @param handler
+	 * @param listResponse
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(
 			InternalActionContext ac, Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 		Set<ObservableFuture<TR>> futures = new HashSet<>();
@@ -225,6 +272,16 @@ public class VerticleHelper {
 		});
 	}
 
+	/**
+	 * Load the object with the uuid which is taken from the routing context parameter and transform it into a rest model. Call the given handler when the
+	 * object was loaded or when loading failed.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param permission
+	 * @param root
+	 * @param handler
+	 */
 	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		loadObject(ac, uuidParameterName, permission, root, rh -> {
@@ -245,20 +302,40 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> node) {
-		node.transformToRest(ac, th -> {
+	/**
+	 * Transform the given vertex to a rest model and send with a JSON document response.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 */
+	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> vertex) {
+		vertex.transformToRest(ac, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()));
 			}
 		});
 	}
 
+	/**
+	 * Create a generic message response and send it as a JSON document.
+	 * 
+	 * @param ac
+	 * @param i18nKey
+	 * @param parameters
+	 */
 	public static void responde(ActionContext ac, String i18nKey, String... parameters) {
 		GenericMessageResponse msg = new GenericMessageResponse();
 		msg.setMessage(ac.i18n(i18nKey, parameters));
 		ac.send(toJson(msg));
 	}
 
+	/**
+	 * Create an object using the given aggregation node and responde with a transformed object.
+	 * 
+	 * @param ac
+	 * @param root
+	 *            Aggregation node that should be used to create the object.
+	 */
 	public static <T extends GenericVertex<?>> void createObject(InternalActionContext ac, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -274,6 +351,13 @@ public class VerticleHelper {
 		});
 	}
 
+	/**
+	 * Update the object which is identified by the uuid parameter name and the aggregation root node.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param root
+	 */
 	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
@@ -294,6 +378,15 @@ public class VerticleHelper {
 		});
 	}
 
+	/**
+	 * Delete the object that is identified by the uuid and the aggregation root node.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param i18nMessageKey
+	 *            I18n message key that will be used to create a specific generic message response.
+	 * @param root
+	 */
 	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName,
 			String i18nMessageKey, RootVertex<T> root) {
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -313,7 +406,7 @@ public class VerticleHelper {
 						vertex.delete();
 						txDelete.complete(batch);
 					} else {
-						txDelete.fail(new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not determine object name"));
+						txDelete.fail(error(ac, INTERNAL_SERVER_ERROR, "Could not determine object name"));
 					}
 				} , (AsyncResult<SearchQueueBatch> txDeleted) -> {
 					if (txDeleted.failed()) {
@@ -334,8 +427,7 @@ public class VerticleHelper {
 
 		String uuid = ac.getParameter(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
-			handler.handle(Future
-					.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_request_parameter_missing", uuidParameterName))));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "error_request_parameter_missing", uuidParameterName));
 		} else {
 			loadObjectByUuid(ac, uuid, perm, root, handler);
 		}
@@ -372,6 +464,20 @@ public class VerticleHelper {
 		}
 	}
 
+	/**
+	 * Load the object by uuid and check the given permission.
+	 * 
+	 * @param ac
+	 *            Context to be used in order to check user permissions
+	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param perm
+	 *            Permission that must be granted in order to load the object
+	 * @param root
+	 *            Aggregation root vertex that should be used to find the element
+	 * @param handler
+	 *            handler that should be called when the object was successfully loaded or when an error occurred (401,404)
+	 */
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
@@ -381,16 +487,19 @@ public class VerticleHelper {
 				if (rh.failed()) {
 					handler.handle(Future.failedFuture(rh.cause()));
 				} else {
-					MeshSpringConfiguration.getInstance().database().noTrx(tc -> {
+					Database db = MeshSpringConfiguration.getInstance().database();
+					db.noTrx(tc -> {
 						T node = rh.result();
 						if (node == null) {
 							handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
+							return;
 						} else {
 							MeshAuthUser requestUser = ac.getUser();
 							if (requestUser.hasPermission(ac, node, perm)) {
 								handler.handle(Future.succeededFuture(node));
 							} else {
 								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
+								return;
 							}
 						}
 					});
@@ -399,6 +508,14 @@ public class VerticleHelper {
 		}
 	}
 
+	/**
+	 * Check the result object and fail early when the result failed as well.
+	 * 
+	 * @param ac
+	 * @param result
+	 *            Result that will be checked
+	 * @return false when the result failed, otherwise true
+	 */
 	public static boolean hasSucceeded(InternalActionContext ac, AsyncResult<?> result) {
 		if (result.failed()) {
 			ac.fail(result.cause());

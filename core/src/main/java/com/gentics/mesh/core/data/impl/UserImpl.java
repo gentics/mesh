@@ -478,6 +478,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 								setReferencedNode(node);
 								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 								txUpdate.complete(batch);
+								return;
 							}
 						}
 					}

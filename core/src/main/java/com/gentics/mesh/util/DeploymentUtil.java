@@ -17,9 +17,6 @@ import com.gentics.mesh.cli.MeshImpl;
 
 /**
  * Various wrappers for verticle deployment calls.
- * 
- * @author johannes2
- *
  */
 public final class DeploymentUtil {
 

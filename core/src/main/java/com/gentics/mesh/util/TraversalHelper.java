@@ -20,6 +20,29 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  */
 public final class TraversalHelper {
 
+	/**
+	 * Create a page result for the given traversal and the specified paging parameters. Due to Tinkerpop Gremlin limitation it is needed to manually duplicate
+	 * the traverals. TP 3.x will be able to reuse existing traversals.
+	 * 
+	 * @param traversal
+	 *            Base traversal that is used to find the affected elements
+	 * @param countTraversal
+	 *            Base traversal that is used to find the affected element (used for counting)
+	 * @param sortBy
+	 *            Order by element property (eg. name, creator..). When null no extra sorting will be applied.
+	 * @param order
+	 *            Sortorder
+	 * @param page
+	 *            Page that is currently selected
+	 * @param pageSize
+	 *            Page size that is used to calculate the skip item amount
+	 * @param perPage
+	 *            Per page parameter
+	 * @param classOfT
+	 *            Class that used to map the ferma objects that were found for the page query
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal, String sortBy,
 			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
 
@@ -92,9 +115,13 @@ public final class TraversalHelper {
 		}
 	}
 
+	/**
+	 * Simple debug method for printing all existing vertices.
+	 */
 	public static void printDebugVertices() {
 		for (VertexFrame frame : Database.getThreadLocalGraph().v()) {
-			System.out.println(frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
+			System.out.println(
+					frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}
 
 	}

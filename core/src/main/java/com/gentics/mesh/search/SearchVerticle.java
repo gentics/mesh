@@ -44,28 +44,41 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 		addSearchEndpoints();
 	}
 
+	/**
+	 * Add various search endpoints using the aggregation nodes.
+	 */
 	private void addSearchEndpoints() {
 		db.noTrx(noTx -> {
-			addSearch("users", boot.meshRoot().getUserRoot(), UserListResponse.class);
-			addSearch("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class);
-			addSearch("roles", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
-			addSearch("nodes", boot.meshRoot().getNodeRoot(), NodeListResponse.class);
-			addSearch("tags", boot.meshRoot().getTagRoot(), TagListResponse.class);
-			addSearch("tagFamilies", boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class);
-			addSearch("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class);
-			addSearch("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
-			addSearch("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
+			registerSearchHandler("users", boot.meshRoot().getUserRoot(), UserListResponse.class);
+			registerSearchHandler("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class);
+			registerSearchHandler("roles", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
+			registerSearchHandler("nodes", boot.meshRoot().getNodeRoot(), NodeListResponse.class);
+			registerSearchHandler("tags", boot.meshRoot().getTagRoot(), TagListResponse.class);
+			registerSearchHandler("tagFamilies", boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class);
+			registerSearchHandler("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class);
+			registerSearchHandler("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
+			registerSearchHandler("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
 		});
 	}
 
-	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void addSearch(String typeName,
+	/**
+	 * Register the selected search handler.
+	 * 
+	 * @param typeName
+	 *            Name of the search endpoint
+	 * @param root
+	 *            Aggregation node that should be used to load the objects that were found within the search index
+	 * @param classOfRL
+	 *            Class of matching list response
+	 */
+	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void registerSearchHandler(String typeName,
 			RootVertex<T> root, Class<RL> classOfRL) {
 		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			try {
 				searchHandler.handleSearch(InternalActionContext.create(rc), root, classOfRL);
 			} catch (Exception e) {
-				//fail(rc, "search_error_query");
+				// fail(rc, "search_error_query");
 				rc.fail(e);
 			}
 		});

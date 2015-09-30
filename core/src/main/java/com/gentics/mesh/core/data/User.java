@@ -134,6 +134,12 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
+	/**
+	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
+	 * 
+	 * @param sourceNode
+	 * @param targetNode
+	 */
 	void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
 	/**
@@ -143,7 +149,12 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	List<? extends Group> getGroups();
 
-	void addGroup(Group parentGroup);
+	/**
+	 * Add the user to the given group.
+	 * 
+	 * @param group
+	 */
+	void addGroup(Group group);
 
 	/**
 	 * Return a list of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.

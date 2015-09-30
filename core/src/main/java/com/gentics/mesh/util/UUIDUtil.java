@@ -16,6 +16,11 @@ public final class UUIDUtil {
 
 	}
 
+	/**
+	 * Create a random UUID string which does not include dashes.
+	 * 
+	 * @return
+	 */
 	public static String randomUUID() {
 		final UUID uuid = UUID_GENERATOR.generate();
 		return (digits(uuid.getMostSignificantBits() >> 32, 8) + digits(uuid.getMostSignificantBits() >> 16, 4)
@@ -29,6 +34,12 @@ public final class UUIDUtil {
 		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
 	}
 
+	/**
+	 * Check whether the given text is a uuid.
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public static boolean isUUID(String text) {
 		if (text == null || text.length() != 32) {
 			return false;

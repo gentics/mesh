@@ -37,9 +37,15 @@ public final class FileUtils {
 			} catch (Exception e) {
 				bc.fail(e);
 			}
-		}, hashHandler);
+		} , hashHandler);
 	}
 
+	/**
+	 * Convert the byte array to a hex formatted string.
+	 * 
+	 * @param bytes
+	 * @return
+	 */
 	public static String bytesToHex(byte[] bytes) {
 		char[] hexChars = new char[bytes.length * 2];
 		for (int j = 0; j < bytes.length; j++) {

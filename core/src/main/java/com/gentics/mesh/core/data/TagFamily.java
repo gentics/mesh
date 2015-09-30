@@ -14,6 +14,7 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 
 	/**
 	 * Return the description of the tag family.
+	 * 
 	 * @return
 	 */
 	String getDescription();
@@ -51,11 +52,22 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 */
 	void addTag(Tag tag);
 
+	/**
+	 * Return a list of all tags that are assigned to the tag family.
+	 * 
+	 * @return
+	 */
 	List<? extends Tag> getTags();
 
+	/**
+	 * Return a page of all tags which are visible to the given user. Use the paging parameters from the action context.
+	 * 
+	 * @param requestUser
+	 * @param pagingInfo
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
-
-	TagFamilyImpl getImpl();
 
 	/**
 	 * Return the tag with the given name that was assigned to the tag family.
@@ -65,4 +77,5 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 */
 	Tag findTagByName(String name);
 
+	TagFamilyImpl getImpl();
 }

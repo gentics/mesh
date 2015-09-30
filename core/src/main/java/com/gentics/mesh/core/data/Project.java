@@ -13,6 +13,12 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedVertex, In
 
 	public static final String TYPE = "project";
 
+	/**
+	 * Create the base node of the project using the user as a reference for the editor and creator fields.
+	 * 
+	 * @param creator
+	 * @return
+	 */
 	Node createBaseNode(User creator);
 
 	/**

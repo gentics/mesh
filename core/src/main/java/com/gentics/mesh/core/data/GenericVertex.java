@@ -71,6 +71,12 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void setCreationTimestamp(long timestamp);
 
+	/**
+	 * Update the vertex using the action context information and invoke the handler once the update has been completed.
+	 * 
+	 * @param ac
+	 * @param handler
+	 */
 	void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler);
 
 }
