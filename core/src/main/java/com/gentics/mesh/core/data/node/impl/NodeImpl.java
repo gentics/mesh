@@ -321,6 +321,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
 				return;
 			}
+
+			// Prevent errors in which no futures have been added
+			ObservableFuture<Void> dummyFuture = RxHelper.observableFuture();
+			futures.add(dummyFuture);
+			dummyFuture.toHandler().handle(Future.succeededFuture());
+
 			Observable.merge(futures).last().subscribe(lastItem -> {
 				trx.complete(restNode);
 			} , error -> {
@@ -532,7 +538,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				return container.getString(displayFieldName).getString();
 			}
 		} catch (Exception e) {
-			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}");
+			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
 		}
 		return null;
 	}
