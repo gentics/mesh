@@ -163,7 +163,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
 					return;
 				} else {
-					db.blockingTrx(txCreate -> {
+					db.trx(txCreate -> {
 						requestUser.reload();
 						Project project = create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);

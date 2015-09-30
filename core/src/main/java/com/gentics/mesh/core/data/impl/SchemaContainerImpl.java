@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -148,17 +149,17 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 
 		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
 
 		SchemaContainer foundSchema = root.findByName(requestModel.getName());
 		if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
 			return;
 		}
 
-		db.blockingTrx(txUpdate -> {
+		db.trx(txUpdate -> {
 			if (!getName().equals(requestModel.getName())) {
 				setName(requestModel.getName());
 			}

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
@@ -154,17 +155,17 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "tagfamily_name_not_set"));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "tagfamily_name_not_set"));
 		} else {
 			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
 					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						handler.handle(ac.failedFuture(CONFLICT, "tagfamily_conflicting_name", newName));
+						handler.handle(failedFuture(ac, CONFLICT, "tagfamily_conflicting_name", newName));
 						return;
 					}
-					db.blockingTrx(txUpdate -> {
+					db.trx(txUpdate -> {
 						tagFamily.setName(newName);
 						SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 						txUpdate.complete(batch);

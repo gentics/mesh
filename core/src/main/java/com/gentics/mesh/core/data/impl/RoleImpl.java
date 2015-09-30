@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -124,11 +125,11 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				handler.handle(ac.failedFuture(CONFLICT, "role_conflicting_name"));
+				handler.handle(failedFuture(ac, CONFLICT, "role_conflicting_name"));
 				return;
 			}
 
-			db.blockingTrx(tc -> {
+			db.trx(tc -> {
 				setName(requestModel.getName());
 				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 				tc.complete(batch);

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -20,13 +21,11 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -86,19 +85,19 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 			String tagName = requestModel.getFields().getName();
 			if (StringUtils.isEmpty(tagName)) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tag_name_not_set")));
+				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_name_not_set")));
 				return;
 			}
 
 			TagFamilyReference reference = requestModel.getTagFamilyReference();
 			if (reference == null) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set")));
+				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set")));
 				return;
 			}
 			boolean hasName = !isEmpty(reference.getName());
 			boolean hasUuid = !isEmpty(reference.getUuid());
 			if (!hasUuid && !hasName) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing")));
+				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing")));
 				return;
 			}
 
@@ -122,11 +121,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			}
 
 			if (tagFamily.findTagByName(tagName) != null) {
-				handler.handle(ac.failedFuture(CONFLICT, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()));
+				handler.handle(failedFuture(ac, CONFLICT, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()));
 				return;
 			}
 			final TagFamily foundFamily = tagFamily;
-			db.blockingTrx(tc -> {
+			db.trx(tc -> {
 				requestUser.reload();
 				// tagFamily.reload();
 				project.reload();

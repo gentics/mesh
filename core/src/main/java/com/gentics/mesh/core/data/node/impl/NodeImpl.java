@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -560,13 +562,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_set"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "error_language_not_set"));
 				return;
 			}
-			db.blockingTrx(txUpdate -> {
+			db.trx(txUpdate -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
-					txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", requestModel.getLanguage())));
+					txUpdate.fail(error(ac, BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
 					return;
 				}
 
@@ -580,7 +582,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
-					txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "node_update_failed", e));
+					txUpdate.fail(error(ac, BAD_REQUEST, "node_update_failed", e));
 					return;
 				}
 				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
@@ -595,7 +597,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 		} catch (IOException e1) {
 			log.error(e1);
-			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage(), e1));
+			handler.handle(failedFuture(ac, BAD_REQUEST, e1.getMessage(), e1));
 		}
 	}
 
@@ -608,7 +610,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		Node parent = targetNode.getParentNode();
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
 				return this;
 			}
 			parent = parent.getParentNode();
@@ -616,23 +618,23 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 		try {
 			if (!targetNode.getSchema().isFolder()) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
 				return this;
 			}
 		} catch (Exception e) {
 			log.error("Could not load schema for target node during move action", e);
 			// TODO maybe add better i18n error
-			handler.handle(ac.failedFuture(BAD_REQUEST, "error"));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "error"));
 			return this;
 		}
 
 		if (getUuid().equals(targetNode.getUuid())) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_same_nodes"));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_same_nodes"));
 			return this;
 		}
 
 		// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
-		db.blockingTrx(txMove -> {
+		db.trx(txMove -> {
 			setParentNode(targetNode);
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());

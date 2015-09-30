@@ -11,6 +11,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
@@ -428,10 +430,10 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		UserUpdateRequest requestModel;
 		try {
 			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
-			db.blockingTrx(txUpdate -> {
+			db.trx(txUpdate -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 					if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-						handler.handle(ac.failedFuture(CONFLICT, "user_conflicting_username"));
+						handler.handle(failedFuture(ac, CONFLICT, "user_conflicting_username"));
 						return;
 					}
 					setUsername(requestModel.getUsername());
@@ -461,7 +463,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					if (reference instanceof NodeReferenceImpl) {
 						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
 						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-							handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
+							txUpdate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
 							return;
 						} else {
 							String referencedNodeUuid = basicReference.getUuid();
@@ -469,7 +471,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 							/* TODO decide whether we need to check perms on the project as well */
 							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 							if (project == null) {
-								handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+								txUpdate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
 								return;
 							} else {
 								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());

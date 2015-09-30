@@ -5,12 +5,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.handler.impl.HttpActionContextImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * Abstraction of the vertx-web routing context.
@@ -22,16 +20,6 @@ public interface ActionContext {
 	ActionContext put(String key, Object obj);
 
 	<T> T get(String key);
-
-	// TODO we should get this of this and make it possible to choose between httmlaction context and internal context
-	/**
-	 * Create a action context using the routing context in order to extract needed parameters.
-	 *
-	 * @return the body handler
-	 */
-	static ActionContext create(RoutingContext rc) {
-		return new HttpActionContextImpl(rc);
-	}
 
 	/**
 	 * Return the request parameter with the given name.
@@ -80,6 +68,10 @@ public interface ActionContext {
 	 */
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
+	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, Throwable cause);
+
+	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters);
+
 	/**
 	 * Fail the action with the given cause.
 	 * 
@@ -89,18 +81,8 @@ public interface ActionContext {
 
 	<T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException;
 
-	/**
-	 * Return the body string.
-	 * 
-	 * @return
-	 */
 	String getBodyAsString();
 
-	/**
-	 * Return the currently set locale for the context.
-	 * 
-	 * @return
-	 */
 	Locale getLocale();
 
 	List<String> getExpandedFieldnames();

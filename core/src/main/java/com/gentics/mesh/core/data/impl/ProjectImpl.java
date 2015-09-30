@@ -194,7 +194,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		db.blockingTrx(txUpdate -> {
+		db.trx(txUpdate -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {

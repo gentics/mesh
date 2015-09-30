@@ -162,7 +162,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
-		db.blockingTrx(txUpdate -> {
+		db.trx(txUpdate -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {
 				// Check whether a uuid was specified and whether the tag family changed

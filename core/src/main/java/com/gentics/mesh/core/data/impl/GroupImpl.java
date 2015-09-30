@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -156,18 +157,18 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
 				return;
 			}
 
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name"));
+					handler.handle(failedFuture(ac, CONFLICT, "group_conflicting_name"));
 					return;
 				}
 
-				db.blockingTrx(tc -> {
+				db.trx(tc -> {
 					setName(requestModel.getName());
 					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 					tc.complete(batch);

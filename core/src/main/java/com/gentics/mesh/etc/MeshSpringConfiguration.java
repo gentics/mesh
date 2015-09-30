@@ -11,8 +11,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.ElasticSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;

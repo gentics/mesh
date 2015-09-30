@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -79,17 +80,17 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
 			return;
 		}
 		db.noTrx(noTrx -> {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 				if (findByName(requestModel.getName()) != null) {
-					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name", requestModel.getName()));
+					handler.handle(failedFuture(ac, CONFLICT, "group_conflicting_name", requestModel.getName()));
 					return;
 				}
-				db.blockingTrx(txCreate -> {
+				db.trx(txCreate -> {
 					requestUser.reload();
 					Group group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);

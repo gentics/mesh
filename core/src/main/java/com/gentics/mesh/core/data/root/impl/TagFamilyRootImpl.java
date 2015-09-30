@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -89,14 +90,14 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 			String name = requestModel.getName();
 			if (StringUtils.isEmpty(name)) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
+				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
 			} else {
 				if (findByName(name) != null) {
-					handler.handle(ac.failedFuture(CONFLICT, ac.i18n("tagfamily_conflicting_name", name)));
+					handler.handle(failedFuture(ac, CONFLICT, ac.i18n("tagfamily_conflicting_name", name)));
 					return;
 				}
 				if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
-					db.blockingTrx(txCreate -> {
+					db.trx(txCreate -> {
 						requestUser.reload();
 						TagFamily tagFamily = create(name, requestUser);
 						addTagFamily(tagFamily);

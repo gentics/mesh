@@ -89,7 +89,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							db.blockingTrx(txAdd -> {
+							db.trx(txAdd -> {
 								group.addRole(role);
 								txAdd.complete(group);
 							} , (AsyncResult<Group> txAdded) -> {
@@ -115,7 +115,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							db.blockingTrx(txRemove -> {
+							db.trx(txRemove -> {
 								group.removeRole(role);
 								txRemove.complete(group);
 							} , (AsyncResult<Group> txAdded) -> {
@@ -157,7 +157,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							db.blockingTrx(tcAdd -> {
+							db.trx(tcAdd -> {
 								Group group = grh.result();
 								User user = urh.result();
 								group.addUser(user);
@@ -182,7 +182,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							db.blockingTrx(tcRemove -> {
+							db.trx(tcRemove -> {
 								Group group = grh.result();
 								User user = urh.result();
 								group.removeUser(user);

@@ -120,7 +120,7 @@ public interface Database {
 	 * @param resultHandler
 	 * @return
 	 */
-	<T> Database blockingTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database trx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Asynchronously execute the transactionCodeHandler within the scope of a non transaction and invoke the result handler after the transaction code handler

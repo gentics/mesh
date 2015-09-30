@@ -157,7 +157,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						return;
 					}
 
-					db.blockingTrx(tc -> {
+					db.trx(tc -> {
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node

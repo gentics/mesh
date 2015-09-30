@@ -105,7 +105,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			}
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 
-				db.blockingTrx(txCreate -> {
+				db.trx(txCreate -> {
 
 					try {
 						requestUser.reload();

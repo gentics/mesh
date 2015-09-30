@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -127,11 +128,11 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 						Group parentGroup = rh.result();
 						if (findByUsername(requestModel.getUsername()) != null) {
 							String message = ac.i18n("user_conflicting_username");
-							handler.handle(ac.failedFuture(CONFLICT, message));
+							handler.handle(failedFuture(ac, CONFLICT, message));
 							return;
 						}
 
-						db.blockingTrx(txCreate -> {
+						db.trx(txCreate -> {
 							MeshAuthUser requestUser = ac.getUser();
 							User user = create(requestModel.getUsername(), parentGroup, requestUser);
 							user.setFirstname(requestModel.getFirstname());

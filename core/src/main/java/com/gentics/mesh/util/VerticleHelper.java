@@ -2,6 +2,7 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -87,11 +88,11 @@ public class VerticleHelper {
 		if (batch == null) {
 			// TODO i18n
 			log.error("Batch was not set. Can't process search index batch.");
-			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
+			handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		}
 
 		// 1. Remove the batch from the queue
-		db.blockingTrx(tc -> {
+		db.trx(tc -> {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			searchQueue.reload();
 			searchQueue.remove(batch);
@@ -105,7 +106,7 @@ public class VerticleHelper {
 					batch.process(rh -> {
 						// 3. Add the batch back to the queue when an error occurs
 						if (rh.failed()) {
-							db.blockingTrx(txAddBack -> {
+							db.trx(txAddBack -> {
 								SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 								batch.reload();
 								log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
@@ -117,7 +118,7 @@ public class VerticleHelper {
 								}
 							});
 							// Inform the caller that processing failed
-							handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
+							handler.handle(failedFuture(ac, BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
 						} else {
 							// Inform the caller that processing completed
 							handler.handle(Future.succeededFuture());
@@ -306,7 +307,7 @@ public class VerticleHelper {
 					name = ((NamedVertex) vertex).getName();
 				}
 				final String objectName = name;
-				db.blockingTrx(txDelete -> {
+				db.trx(txDelete -> {
 					if (vertex instanceof IndexedVertex) {
 						SearchQueueBatch batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
 						vertex.delete();

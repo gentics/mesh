@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
@@ -188,7 +189,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 										if (fh.failed()) {
 											ac.fail(fh.cause());
 										} else {
-											db.blockingTrx(txUpdate -> {
+											db.trx(txUpdate -> {
 												node.setBinaryFileName(fileName);
 												node.setBinaryFileSize(ul.size());
 												node.setBinaryContentType(contentType);
@@ -252,7 +253,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 										handler.handle(Future.succeededFuture(hashSum.get()));
 									} else {
 										log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-										handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+										handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
 										return;
 									}
 								});
@@ -267,7 +268,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								handler.handle(Future.succeededFuture(hashSum.get()));
 							} else {
 								log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-								handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+								handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
 							}
 						});
 					}
@@ -275,7 +276,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				});
 
 			} else {
-				handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
+				handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
 			}
 		};
 
@@ -294,7 +295,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 									targetFolderChecked.handle(Future.succeededFuture(folder));
 								} else {
 									log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}", mkh.cause());
-									handler.handle(ac.failedFuture(BAD_REQUEST, "node_error_upload_failed"));
+									handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_upload_failed"));
 								}
 							});
 						} else {
@@ -302,11 +303,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						}
 					} else {
 						log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.", deh.cause());
-						handler.handle(ac.failedFuture(BAD_REQUEST, "node_error_upload_failed", deh.cause()));
+						handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_upload_failed", deh.cause()));
 					}
 				});
 			} else {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "node_error_hashing_failed"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_hashing_failed"));
 			}
 		});
 
@@ -359,7 +360,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						loadObject(ac, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
 							if (hasSucceeded(ac, th)) {
 								Tag tag = th.result();
-								db.blockingTrx(txAdd -> {
+								db.trx(txAdd -> {
 									node.addTag(tag);
 									txAdd.complete(node);
 								} , (AsyncResult<Node> txAdded) -> {
@@ -386,7 +387,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (hasSucceeded(ac, srh) && hasSucceeded(ac, rh)) {
 						Node node = rh.result();
 						Tag tag = srh.result();
-						db.blockingTrx(txRemove -> {
+						db.trx(txRemove -> {
 							node.removeTag(tag);
 							txRemove.complete(node);
 						} , (AsyncResult<Node> txRemoved) -> {

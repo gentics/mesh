@@ -90,7 +90,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
-							db.blockingTrx(addTx -> {
+							db.trx(addTx -> {
 								project.getSchemaContainerRoot().addSchemaContainer(schema);
 								addTx.complete(schema);
 							} , (AsyncResult<SchemaContainer> rtx) -> {
@@ -121,7 +121,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
-							db.blockingTrx(tcRemove -> {
+							db.trx(tcRemove -> {
 								project.getSchemaContainerRoot().removeSchemaContainer(schema);
 								tcRemove.complete(schema);
 							} , (AsyncResult<SchemaContainer> schemaRemoved) -> {

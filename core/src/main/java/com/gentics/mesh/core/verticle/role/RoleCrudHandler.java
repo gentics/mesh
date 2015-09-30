@@ -99,7 +99,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 								MeshVertex targetElement = vertex.result();
 
 								// Prepare the sets for revoke and grant actions
-								db.blockingTrx(txUpdate -> {
+								db.trx(txUpdate -> {
 									Set<GraphPermission> permissionsToGrant = new HashSet<>();
 									Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 									permissionsToRevoke.add(CREATE_PERM);

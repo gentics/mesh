@@ -77,11 +77,10 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	@Override
 	public Locale getLocale() {
-		data().computeIfAbsent(LOCALE_MAP_DATA_KEY, map -> {
+		return (Locale) data().computeIfAbsent(LOCALE_MAP_DATA_KEY, map -> {
 			String header = rc.request().headers().get("Accept-Language");
 			return getLocale(header);
 		});
-		return (Locale) data().get(LOCALE_MAP_DATA_KEY);
 	}
 
 	@Override
