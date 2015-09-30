@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -87,19 +88,24 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
+
 		Node sourceNode = folder("deals");
 		Node targetNode = folder("2015");
+		String oldSourceParentId = sourceNode.getParentNode().getUuid();
 		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());
 
-		assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-				targetNode.getUuid(), folder("deals").getParentNode().getUuid());
-
+		sourceNode.reload();
+		try (Trx tx = db.trx()) {
+			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId, sourceNode.getParentNode().getUuid());
+			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
+					targetNode.getUuid(), sourceNode.getParentNode().getUuid());
+			assertEquals(2, searchProvider.getStoreEvents().size());
+		}
 		// TODO assert entries
-		assertEquals(4, searchProvider.getStoreEvents().size());
 	}
 
 }

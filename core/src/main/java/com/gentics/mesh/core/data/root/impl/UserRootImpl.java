@@ -161,12 +161,12 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 											.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_not_found", projectName))));
 									return;
 								}
-								db.noTrx(noTx -> {
-									Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-									user.setReferencedNode(node);
-								});
-							} else {
+								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								user.setReferencedNode(node);
+							} else if (reference != null) {
 								// TODO handle user create using full node rest model.
+								txCreate.fail("Create of users with expanded node reference field is not yet implemented.");
+								return;
 							}
 
 							SearchQueueBatch batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
