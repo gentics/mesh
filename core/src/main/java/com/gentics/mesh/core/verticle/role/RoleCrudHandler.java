@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
@@ -12,6 +13,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -96,6 +98,10 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 						// 2. Resolve the path to element that is targeted
 						MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
 							if (hasSucceeded(ac, vertex)) {
+								if (vertex.result() == null) {
+									ac.errorHandler().handle(failedFuture(ac, NOT_FOUND, "error_element_for_path_not_found", pathToElement));
+									return;
+								}
 								MeshVertex targetElement = vertex.result();
 
 								// Prepare the sets for revoke and grant actions

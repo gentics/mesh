@@ -22,6 +22,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
+import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
@@ -121,11 +122,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 				txHandler.handle(currentTransactionCompleted);
 				latch.await(10, TimeUnit.SECONDS);
 				break;
+			} catch (OSchemaException e) {
+				log.error("OrientDB schema exception detected.");
+				//factory.getTx().getRawGraph().getMetadata().getSchema().reload();
+				//Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (OConcurrentModificationException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
 			} catch (Exception e) {
+				log.error("Error handling transaction", e);
 				resultHandler.handle(Future.failedFuture(e));
 				return this;
 			}

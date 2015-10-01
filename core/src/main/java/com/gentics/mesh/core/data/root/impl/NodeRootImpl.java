@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -174,7 +175,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						try {
 							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
 							container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-						} catch (Exception e) {
+						} catch (MeshSchemaException e) {
 							txCreate.fail(e);
 							return;
 						}

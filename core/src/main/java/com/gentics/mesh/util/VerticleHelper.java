@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -273,7 +274,7 @@ public class VerticleHelper {
 	}
 
 	/**
-	 * Load the object with the uuid which is taken from the routing context parameter and transform it into a rest model. Call the given handler when the
+	 * Load the object with the UUID which is taken from the routing context parameter and transform it into a rest model. Call the given handler when the
 	 * object was loaded or when loading failed.
 	 * 
 	 * @param ac
@@ -330,7 +331,7 @@ public class VerticleHelper {
 	}
 
 	/**
-	 * Create an object using the given aggregation node and responde with a transformed object.
+	 * Create an object using the given aggregation node and respond with a transformed object.
 	 * 
 	 * @param ac
 	 * @param root
@@ -446,7 +447,7 @@ public class VerticleHelper {
 	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm,
 			RootVertex<T> root) {
 		if (root == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
+			throw error(ac, BAD_REQUEST, "error_root_node_not_found");
 		} else {
 
 			T object = root.findByUuidBlocking(uuid);
@@ -481,31 +482,33 @@ public class VerticleHelper {
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
+			throw error(ac, BAD_REQUEST, "error_root_node_not_found");
 		} else {
+			Database db = MeshSpringConfiguration.getInstance().database();
+			root.reload();
 			root.findByUuid(uuid, rh -> {
 				if (rh.failed()) {
 					handler.handle(Future.failedFuture(rh.cause()));
+					return;
+				} else if (rh.result() == null) {
+					handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
+					return;
 				} else {
-					Database db = MeshSpringConfiguration.getInstance().database();
 					db.noTrx(tc -> {
 						T node = rh.result();
-						if (node == null) {
-							handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
+						MeshAuthUser requestUser = ac.getUser();
+						if (requestUser.hasPermission(ac, node, perm)) {
+							handler.handle(Future.succeededFuture(node));
 							return;
 						} else {
-							MeshAuthUser requestUser = ac.getUser();
-							if (requestUser.hasPermission(ac, node, perm)) {
-								handler.handle(Future.succeededFuture(node));
-							} else {
-								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
-								return;
-							}
+							handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
+							return;
 						}
 					});
 				}
 			});
 		}
+
 	}
 
 	/**
