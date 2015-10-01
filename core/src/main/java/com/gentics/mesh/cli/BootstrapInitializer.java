@@ -172,11 +172,12 @@ public class BootstrapInitializer {
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(tx -> {
 			try {
 				initProjects();
+				tx.complete();
 			} catch (Exception e) {
-				tc.fail(e);
+				tx.fail(e);
 			}
 		} , completed -> {
 			Mesh.vertx().eventBus().send("mesh-startup-complete", true);

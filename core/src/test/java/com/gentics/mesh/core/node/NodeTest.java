@@ -280,6 +280,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
 		try (Trx tx = db.trx()) {
 			node.delete();
+			tx.success();
 		}
 
 		// TODO check for attached subnodes

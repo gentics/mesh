@@ -76,16 +76,19 @@ public interface Database {
 	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
 	 * 
 	 * @param txHandler
+	 *            Handler that will be executed within the scope of the transaction.
 	 * @param resultHandler
+	 *            Handler that is being invoked when the transaction has been committed
 	 * @return
 	 */
 	<T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
-	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler
-	 * finishes or fails.
+	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
+	 * fails.
 	 * 
 	 * @param txHandler
+	 *            Handler that will be executed within the scope of the transaction.
 	 * @param resultHandler
 	 * @return
 	 */
