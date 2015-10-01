@@ -79,7 +79,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public void grantPermissions(MeshVertex node, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-			setLinkOutTo(node.getImpl(), permission.label());
+			addFramedEdge(permission.label(), node.getImpl());
 		}
 	}
 

@@ -217,7 +217,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		Project project = project();
 		String uuid = project.getUuid();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
-		role().grantPermissions(project, READ_PERM);
+		role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
 		latchFor(future);
