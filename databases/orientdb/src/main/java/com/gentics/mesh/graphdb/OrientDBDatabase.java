@@ -110,6 +110,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		for (int retry = 0; retry < maxRetry; retry++) {
 			currentTransactionCompleted = Future.future();
 			try (Trx tx = trx()) {
+				//TODO FIXME get rid of the countdown latch
 				CountDownLatch latch = new CountDownLatch(1);
 				currentTransactionCompleted.setHandler(rh -> {
 					if (rh.succeeded()) {
@@ -124,6 +125,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				break;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
+				//TODO maybe we should invoke a metadata getschema reload? 
 				//factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				//Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (OConcurrentModificationException e) {

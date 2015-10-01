@@ -10,6 +10,8 @@ import io.vertx.core.Vertx;
 
 public interface Mesh {
 
+	public static final String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
+
 	/**
 	 * Returns the initialized instance.
 	 * 
@@ -30,6 +32,11 @@ public interface Mesh {
 		return factory.mesh(options);
 	}
 
+	/**
+	 * Return the mesh version and build timestamp.
+	 * 
+	 * @return
+	 */
 	static String getVersion() {
 		try {
 			Properties buildProperties = new Properties();
@@ -38,8 +45,8 @@ public interface Mesh {
 		} catch (Exception e) {
 			return "Unknown";
 		}
-		//Package pack = MeshImpl.class.getPackage();
-		//return pack.getImplementationVersion();
+		// Package pack = MeshImpl.class.getPackage();
+		// return pack.getImplementationVersion();
 	}
 
 	/**
@@ -49,6 +56,11 @@ public interface Mesh {
 	 */
 	void shutdown();
 
+	/**
+	 * Set a custom verticle loader that will be invoked once all major components have been initialized.
+	 * 
+	 * @param verticleLoader
+	 */
 	void setCustomLoader(MeshCustomLoader<Vertx> verticleLoader);
 
 	/**

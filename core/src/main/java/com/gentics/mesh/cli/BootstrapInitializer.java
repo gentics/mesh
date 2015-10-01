@@ -80,6 +80,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
+/**
+ * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
+ * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
+ */
 @Component
 public class BootstrapInitializer {
 
@@ -180,7 +184,8 @@ public class BootstrapInitializer {
 				tx.fail(e);
 			}
 		} , completed -> {
-			Mesh.vertx().eventBus().send("mesh-startup-complete", true);
+			log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
+			Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 		});
 
 	}
@@ -245,6 +250,11 @@ public class BootstrapInitializer {
 	@Autowired
 	private RouterStorage routerStorage;
 
+	/**
+	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
+	 * 
+	 * @return
+	 */
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
 		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
@@ -453,6 +463,9 @@ public class BootstrapInitializer {
 
 	}
 
+	/**
+	 * Grant CRUD to all objects within the graph to the Admin Role.
+	 */
 	public void initPermissions() {
 		try (Trx tx = db.trx()) {
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
@@ -473,6 +486,15 @@ public class BootstrapInitializer {
 		}
 	}
 
+	/**
+	 * Initialize the languages by loading the json file and creating the language graph elements.
+	 * 
+	 * @param rootNode
+	 *            Aggregation node to which the languages will be assigned
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
 	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
 
 		long start = System.currentTimeMillis();
@@ -490,7 +512,9 @@ public class BootstrapInitializer {
 			if (language == null) {
 				language = rootNode.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
-				log.debug("Added language {" + languageTag + " / " + languageName + "}");
+				if (log.isDebugEnabled()) {
+					log.debug("Added language {" + languageTag + " / " + languageName + "}");
+				}
 			}
 		}
 		long diff = System.currentTimeMillis() - start;

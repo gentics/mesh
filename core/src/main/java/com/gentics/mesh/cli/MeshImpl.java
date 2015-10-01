@@ -24,7 +24,7 @@ public class MeshImpl implements Mesh {
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
-	private static MeshImpl instance;
+	// private static MeshImpl instance;
 
 	private MeshOptions options;
 	private Vertx vertx;
@@ -33,13 +33,6 @@ public class MeshImpl implements Mesh {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		log = LoggerFactory.getLogger(MeshImpl.class);
-	}
-
-	public static Mesh instance() {
-		if (instance == null) {
-			throw new RuntimeException("Mesh instance not yet initialized.");
-		}
-		return instance;
 	}
 
 	public MeshImpl(MeshOptions options) {
@@ -54,26 +47,12 @@ public class MeshImpl implements Mesh {
 		this.vertx = vertx;
 	}
 
-	public static MeshImpl create(MeshOptions options) {
-		if (instance == null) {
-			instance = new MeshImpl(options);
-		}
-		return instance;
-	}
-
-	public static Mesh create(MeshOptions options, Vertx vertx) {
-		if (instance == null) {
-			instance = new MeshImpl(options, vertx);
-		}
-		return instance;
-	}
-
 	@Override
 	public Vertx getVertx() {
 		if (vertx == null) {
 			VertxOptions options = new VertxOptions();
 			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
-			//TODO configure worker pool size
+			// TODO configure worker pool size
 			options.setWorkerPoolSize(36);
 			vertx = Vertx.vertx(options);
 		}
@@ -135,7 +114,7 @@ public class MeshImpl implements Mesh {
 
 	private void dontExit() {
 		while (true) {
-			//TODO use unsafe park instead
+			// TODO use unsafe park instead
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e) {
@@ -149,7 +128,7 @@ public class MeshImpl implements Mesh {
 		log.info(infoLine("Mesh Version " + Mesh.getVersion()));
 		log.info(infoLine("Gentics Software GmbH"));
 		log.info("#---------------------------------------------------#");
-		//log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
+		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
 		log.info(infoLine("Name: " + MeshNameProvider.getInstance().getName()));
 		log.info("#####################################################");
@@ -163,11 +142,6 @@ public class MeshImpl implements Mesh {
 		return "# " + StringUtils.rightPad(text, 49) + " #";
 	}
 
-	/**
-	 * Set a custom verticle loader that will be invoked once all major components have been initialized.
-	 * 
-	 * @param verticleLoader
-	 */
 	@Override
 	public void setCustomLoader(MeshCustomLoader<Vertx> verticleLoader) {
 		this.verticleLoader = verticleLoader;
@@ -181,7 +155,7 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() {
 		log.info("Mesh shutting down...");
-		//Orientdb has a dedicated shutdown hook
+		// Orientdb has a dedicated shutdown hook
 		MeshSpringConfiguration.getInstance().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();

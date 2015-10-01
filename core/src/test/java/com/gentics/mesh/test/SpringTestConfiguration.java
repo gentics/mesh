@@ -18,6 +18,8 @@ import com.gentics.mesh.util.UUIDUtil;
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class SpringTestConfiguration {
 
+	public static boolean ignored = false;
+
 	@Bean
 	public DummySearchProvider dummySearchProvider() {
 		return new DummySearchProvider();
@@ -31,6 +33,9 @@ public class SpringTestConfiguration {
 
 	@PostConstruct
 	public void setup() {
+		if (ignored) {
+			return;
+		}
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
