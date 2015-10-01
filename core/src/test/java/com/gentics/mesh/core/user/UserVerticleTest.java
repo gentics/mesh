@@ -149,13 +149,22 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-
-		String username = "testuser_3";
 		UserRoot root = meshRoot().getUserRoot();
-		User user3 = root.create(username, group(), user());
-		user3.setLastname("should_not_be_listed");
-		user3.setFirstname("should_not_be_listed");
-		user3.setEmailAddress("should_not_be_listed");
+
+		int nUsers = 20;
+		for (int i = 0; i < nUsers; i++) {
+			String username = "testuser_" + i;
+			User user = root.create(username, group(), user());
+			user.setLastname("should_be_listed");
+			user.setFirstname("should_be_listed");
+			user.setEmailAddress("should_be_listed");
+			role().grantPermissions(user, READ_PERM);
+		}
+
+		User invisibleUser = root.create("should_not_be_listed", group(), user());
+		invisibleUser.setLastname("should_not_be_listed");
+		invisibleUser.setFirstname("should_not_be_listed");
+		invisibleUser.setEmailAddress("should_not_be_listed");
 
 		// Test default paging parameters
 		Future<UserListResponse> future = getClient().findUsers();
@@ -164,10 +173,12 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(3, restResponse.getData().size());
+		// Admin User + Guest User + Dummy User = 3
+		assertEquals(3 + nUsers, restResponse.getMetainfo().getTotalCount());
+		assertEquals(3 + nUsers, restResponse.getData().size());
 
 		int perPage = 2;
-		int totalUsers = users().size();
+		int totalUsers = 3 + nUsers;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		future = getClient().findUsers(new PagingInfo(3, perPage));
 		latchFor(future);
@@ -193,8 +204,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		}
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
 
-		// Verify that user3 is not part of the response
-		final String extra3Username = username;
+		// Verify that the invisible is not part of the response
+		final String extra3Username = "should_not_be_listed";
 		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
@@ -218,7 +229,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(0, future.result().getData().size());
 		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
 		assertEquals(1, future.result().getMetainfo().getPageCount());
-		assertEquals(8, future.result().getMetainfo().getTotalCount());
+		assertEquals(nUsers + 3, future.result().getMetainfo().getTotalCount());
 		assertEquals(25, future.result().getMetainfo().getPerPage());
 
 	}

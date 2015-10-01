@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -167,7 +168,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage())));
+							txCreate.fail(error(ac, BAD_REQUEST, "node_no_language_found", requestModel.getLanguage()));
 							return;
 						}
 						try {
