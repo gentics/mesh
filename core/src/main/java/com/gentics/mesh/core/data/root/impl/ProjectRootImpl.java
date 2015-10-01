@@ -8,6 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.Stack;
 
+import javax.naming.InvalidNameException;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -111,7 +113,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							schemaRoot.resolveToElement(stack, resultHandler);
 							break;
 						case MicroschemaContainerRoot.TYPE:
-							// MicroschemaContainerRoot microschemaRoot = project.get
+							// MicroschemaContainerRoot microschemaRoot =
+							// project.get
 							// project.getMicroschemaRoot();
 							throw new NotImplementedException();
 							// break;
@@ -182,8 +185,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 
 							SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 							txCreate.complete(Tuple.tuple(batch, project));
-						} catch (Exception e) {
-							// TODO should we really fail here?
+						} catch (InvalidNameException e) {
+							 //*TODO should we really fail here?
 							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Error while adding project to router storage", e));
 							return;
 						}
