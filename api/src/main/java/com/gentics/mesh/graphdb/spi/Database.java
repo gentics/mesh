@@ -117,7 +117,7 @@ public interface Database {
 	<T> Future<T> noTrx(Handler<Future<T>> txHandler);
 
 	/**
-	 * Execute the tcHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
+	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
 	 * 
 	 * @param txHandler
 	 * @param resultHandler

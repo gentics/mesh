@@ -104,19 +104,25 @@ public class OrientDBDatabase extends AbstractDatabase {
 		 */
 		for (int retry = 0; retry < maxRetry; retry++) {
 			try (Trx tx = trx()) {
+				future.setHandler(rh -> {
+					if (rh.succeeded()) {
+						tx.success();
+					} else {
+						tx.failure();
+					}
+				});
 				txHandler.handle(future);
-				if (future.succeeded()) {
-					tx.success();
-				} else {
-					tx.failure();
-				}
 				break;
-			} catch (Exception e) {
+			} catch (OConcurrentModificationException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
 				// Reset the future
+				future.setHandler(null);
 				future = Future.future();
+			} catch (Exception e) {
+				future.fail(e);
+				break;
 			}
 			if (future.isComplete()) {
 				break;

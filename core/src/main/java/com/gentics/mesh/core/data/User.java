@@ -85,6 +85,7 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 * 
 	 * @param hash
 	 */
+	//TODO change this to an async call since hashing of the password is blocking
 	void setPasswordHash(String hash);
 
 	/**
