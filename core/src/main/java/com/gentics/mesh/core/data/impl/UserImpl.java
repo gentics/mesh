@@ -427,9 +427,9 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		UserUpdateRequest requestModel;
+
 		try {
-			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			db.trx(txUpdate -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 					if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
@@ -479,7 +479,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 								setReferencedNode(node);
 								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 								txUpdate.complete(batch);
-//								return;
+								//								return;
 							}
 						}
 					}

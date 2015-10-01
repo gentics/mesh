@@ -772,26 +772,25 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	@Ignore
 	public void testReadOwnCreatedUser() {
 
 	}
 
 	@Test
 	public void testDeleteByUUID2() throws Exception {
-		String uuid;
 		String name = "extraUser";
-		User extraUser;
 		UserRoot userRoot = meshRoot().getUserRoot();
-		extraUser = userRoot.create(name, group(), user());
-		uuid = extraUser.getUuid();
+		User extraUser = userRoot.create(name, group(), user());
+		String uuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, DELETE_PERM);
 
 		assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 
-		userRoot.findByUuid(uuid, rh -> {
-			User user = rh.result();
-			assertEquals(1, user.getGroups().size());
-		});
+		User user = userRoot.findByUuidBlocking(uuid);
+		assertEquals(1, user.getGroups().size());
+		assertTrue("The user should be enabled", user.isEnabled());
+
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
@@ -799,12 +798,11 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 
 		// Check whether the user was correctly disabled
-		userRoot.findByUuid(uuid, rh -> {
-			User user2 = rh.result();
-			assertNotNull(user2);
-			assertEquals(0, user2.getGroups().size());
-			assertFalse("The user should have been disabled", user2.isEnabled());
-		});
+		User user2 = userRoot.findByUuidBlocking(uuid);
+		user2.reload();
+		assertNotNull(user2);
+		assertFalse("The user should have been disabled", user2.isEnabled());
+		assertEquals(0, user2.getGroups().size());
 	}
 
 	@Test

@@ -108,13 +108,47 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	void setReferencedNode(Node node);
 
+	/**
+	 * Check given permissions on the given vertex.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 * @param permission
+	 * @return
+	 * @deprecated use {@link #hasPermission(InternalActionContext, MeshVertex, GraphPermission, Handler)} instead.
+	 */
+	@Deprecated
 	boolean hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 
+	/**
+	 * Check whether the user has the given permission for the given vertex. Invoke the handler with the result.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 * @param permission
+	 * @param handler
+	 * @return Fluent API
+	 */
 	User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler);
 
+	/**
+	 * Return an array of human readable permissions for the given vertex.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 * @return
+	 */
 	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
 
-	Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node);
+	/**
+	 * Return a set of permissions which the user got for the given vertex.
+	 * 
+	 * @param ac
+	 *            The action context data map will be used to quickly lookup already determined permissions.
+	 * @param vertex
+	 * @return
+	 */
+	Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex vertex);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
