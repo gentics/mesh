@@ -63,15 +63,15 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Database trx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
-		resultHandler.handle(trx(tcHandler));
+	public <T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+		resultHandler.handle(trx(txHandler));
 		return this;
 	}
 
 	@Override
-	public <T> Database asyncTrx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Database asyncTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-			Future<T> future = trx(tcHandler);
+			Future<T> future = trx(txHandler);
 			if (future.succeeded()) {
 				bh.complete(future.result());
 			} else {
@@ -95,9 +95,9 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Database asyncNoTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-			Future<T> future = noTrx(transactionCodeHandler);
+			Future<T> future = noTrx(txHandler);
 			future.setHandler(rh -> {
 				if (rh.failed()) {
 					bh.fail(rh.cause());

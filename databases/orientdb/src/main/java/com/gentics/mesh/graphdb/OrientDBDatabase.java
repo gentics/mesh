@@ -96,11 +96,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	@Deprecated
-	public <T> Future<T> trx(Handler<Future<T>> tcHandler) {
+	public <T> Future<T> trx(Handler<Future<T>> txHandler) {
 		Future<T> future = Future.future();
+		/**
+		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
+		 * {@link OConcurrentModificationException} is thrown.
+		 */
 		for (int retry = 0; retry < maxRetry; retry++) {
 			try (Trx tx = trx()) {
-				tcHandler.handle(future);
+				txHandler.handle(future);
 				if (future.succeeded()) {
 					tx.success();
 				} else {

@@ -12,6 +12,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+/**
+ * Main description of a graph database.
+ */
 public interface Database {
 
 	/**
@@ -107,30 +110,29 @@ public interface Database {
 	/**
 	 * Execute the given handler within the scope of a no transaction.
 	 * 
-	 * @param transactionCodeHandler
+	 * @param txHandler
 	 *            handler that is invoked within the scope of the no-transaction.
 	 * @return
 	 */
-	<T> Future<T> noTrx(Handler<Future<T>> transactionCodeHandler);
+	<T> Future<T> noTrx(Handler<Future<T>> txHandler);
 
 	/**
 	 * Execute the tcHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
 	 * 
-	 * @param tcHandler
+	 * @param txHandler
 	 * @param resultHandler
 	 * @return
 	 */
-	<T> Database trx(Handler<Future<T>> tcHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
-	 * Asynchronously execute the transactionCodeHandler within the scope of a non transaction and invoke the result handler after the transaction code handler
-	 * finishes.
+	 * Asynchronously execute the txHandler within the scope of a non transaction and invoke the result handler after the transaction code handler finishes.
 	 * 
-	 * @param transactionCodeHandler
+	 * @param txHandler
 	 * @param resultHandler
 	 * @return
 	 */
-	<T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database asyncNoTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Initialize the database and store the settings.
