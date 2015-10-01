@@ -15,6 +15,7 @@ import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
@@ -36,12 +37,6 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public NoTrx noTrx() {
 		return new Neo4jNoTrx(new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false));
-	}
-	
-	@Override
-	public <T> Future<T> trx(Handler<Future<T>> code) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -120,6 +115,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void restoreGraph(String backupFile) throws IOException {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public <T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

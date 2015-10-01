@@ -37,8 +37,12 @@ import com.gentics.mesh.test.TestUtil;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class TrxTest extends AbstractBasicDBTest {
+
+	private static final Logger log = LoggerFactory.getLogger(TrxTest.class);
 
 	@Test
 	public void testAsyncTestErrorHandling() throws Exception {
@@ -107,7 +111,9 @@ public class TrxTest extends AbstractBasicDBTest {
 			// Start two threads with a retry trx
 			for (int i = 0; i < nThreads; i++) {
 				final int threadNo = i;
-				System.out.println("Thread [" + threadNo + "] Starting");
+				if (log.isTraceEnabled()) {
+					log.trace("Thread [" + threadNo + "] Starting");
+				}
 				db.asyncTrx(trx -> {
 					Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
 					node.addTag(tag);
@@ -118,7 +124,7 @@ public class TrxTest extends AbstractBasicDBTest {
 				});
 			}
 
-			System.out.println("Waiting on lock");
+			log.debug("Waiting on lock");
 			failingLatch(latch);
 
 			try (Trx tx = db.trx()) {
@@ -264,6 +270,7 @@ public class TrxTest extends AbstractBasicDBTest {
 				trx.complete("OK");
 			});
 		} , rh -> {
+			System.out.println("Completed async trx");
 			cf.complete(rh);
 		});
 		assertTrue(cf.get().succeeded());

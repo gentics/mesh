@@ -6,7 +6,7 @@ import com.syncleus.ferma.FramedGraph;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class AbstractTrxBase {
+public class AbstractTrxBase<T extends FramedGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTrxBase.class);
 
@@ -19,14 +19,14 @@ public class AbstractTrxBase {
 	/**
 	 * Graph that is active within the scope of the autoclosable.
 	 */
-	private FramedGraph currentGraph;
+	private T currentGraph;
 
 	/**
 	 * Initialize the transaction.
 	 * 
 	 * @param transactionalGraph
 	 */
-	protected void init(FramedGraph transactionalGraph) {
+	protected void init(T transactionalGraph) {
 		// 1. Set the new transactional graph so that it can be accessed via Trx.getGraph()
 		setGraph(transactionalGraph);
 		if (log.isDebugEnabled()) {
@@ -38,11 +38,11 @@ public class AbstractTrxBase {
 		Database.setThreadLocalGraph(transactionalGraph);
 	}
 
-	public FramedGraph getGraph() {
+	public T getGraph() {
 		return currentGraph;
 	}
 
-	protected void setGraph(FramedGraph currentGraph) {
+	protected void setGraph(T currentGraph) {
 		this.currentGraph = currentGraph;
 	}
 

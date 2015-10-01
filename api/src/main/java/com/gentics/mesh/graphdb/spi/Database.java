@@ -73,22 +73,23 @@ public interface Database {
 	Trx trx();
 
 	/**
-	 * Execute the given handler within the scope of a transaction.
+	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
 	 * 
-	 * @param code
-	 * @return
-	 */
-	<T> Future<T> trx(Handler<Future<T>> code);
-
-	/**
-	 * Asynchronously execute the transactionCodeHandler within the scope of a transaction and invoke the result handler after the transaction code handler
-	 * finishes or fails.
-	 * 
-	 * @param transactionCode
+	 * @param txHandler
 	 * @param resultHandler
 	 * @return
 	 */
-	<T> Database asyncTrx(Handler<Future<T>> transactionCode, Handler<AsyncResult<T>> resultHandler);
+	<T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+
+	/**
+	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler
+	 * finishes or fails.
+	 * 
+	 * @param txHandler
+	 * @param resultHandler
+	 * @return
+	 */
+	<T> Database asyncTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -115,15 +116,6 @@ public interface Database {
 	 * @return
 	 */
 	<T> Future<T> noTrx(Handler<Future<T>> txHandler);
-
-	/**
-	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
-	 * 
-	 * @param txHandler
-	 * @param resultHandler
-	 * @return
-	 */
-	<T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Asynchronously execute the txHandler within the scope of a non transaction and invoke the result handler after the transaction code handler finishes.

@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -277,11 +278,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 		uuid = node.getUuid();
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
-		Future<Void> future = db.trx(tc -> {
+		try (Trx tx = db.trx()) {
 			node.delete();
-			tc.complete();
-		});
-		latchFor(future);
+		}
 
 		// TODO check for attached subnodes
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
@@ -293,7 +292,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdate() {
 		Node node = content();
-		Future<Void> future = db.trx(tx -> {
+		try (Trx tx = db.trx()) {
 			User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
 			assertEquals(user().getUuid(), node.getCreator().getUuid());
 			System.out.println(newUser.getUuid());
@@ -302,9 +301,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 			assertEquals(newUser.getUuid(), node.getCreator().getUuid());
 			// TODO update other fields
-			tx.complete();
-		});
-		latchFor(future);
+		}
 	}
 
 	@Test

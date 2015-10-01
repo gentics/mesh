@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb;
 
-import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.FramedTransactionalGraph;
 
 /**
  * A {@link Trx} is an interface for autoclosable transactions.
@@ -22,7 +22,7 @@ public interface Trx extends AutoCloseable {
 	 * 
 	 * @return
 	 */
-	FramedGraph getGraph();
+	FramedTransactionalGraph getGraph();
 
 	/**
 	 * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.

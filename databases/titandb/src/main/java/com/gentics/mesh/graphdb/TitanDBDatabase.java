@@ -7,11 +7,13 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
@@ -32,12 +34,6 @@ public class TitanDBDatabase extends AbstractDatabase {
 	@Override
 	public Trx trx() {
 		return new TitanDBTrx(new DelegatingFramedTransactionalGraph<>(graph, true, false));
-	}
-
-	@Override
-	public <T> Future<T> trx(Handler<Future<T>> code) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -108,5 +104,11 @@ public class TitanDBDatabase extends AbstractDatabase {
 	@Override
 	public void restoreGraph(String backupFile) {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public <T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

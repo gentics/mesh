@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -23,11 +25,15 @@ import com.orientechnologies.orient.core.exception.OConcurrentModificationExcept
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * OrientDB specific mesh graph database implementation.
+ */
 public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
@@ -89,53 +95,54 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	@Deprecated
 	public Trx trx() {
 		return new OrientDBTrx(factory);
 	}
 
 	@Override
-	@Deprecated
-	public <T> Future<T> trx(Handler<Future<T>> txHandler) {
-		Future<T> future = Future.future();
+	public <T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.
 		 */
+		Future<T> currentTransactionCompleted = null;
 		for (int retry = 0; retry < maxRetry; retry++) {
+			currentTransactionCompleted = Future.future();
 			try (Trx tx = trx()) {
-				future.setHandler(rh -> {
+				CountDownLatch latch = new CountDownLatch(1);
+				currentTransactionCompleted.setHandler(rh -> {
 					if (rh.succeeded()) {
 						tx.success();
 					} else {
 						tx.failure();
 					}
+					latch.countDown();
 				});
-				txHandler.handle(future);
+				txHandler.handle(currentTransactionCompleted);
+				latch.await(10, TimeUnit.SECONDS);
 				break;
 			} catch (OConcurrentModificationException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
-				// Reset the future
-				future.setHandler(null);
-				future = Future.future();
 			} catch (Exception e) {
-				future.fail(e);
-				break;
-			}
-			if (future.isComplete()) {
-				break;
+				resultHandler.handle(Future.failedFuture(e));
+				return this;
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 		}
-		return future;
+		if (currentTransactionCompleted != null && currentTransactionCompleted.isComplete()) {
+			resultHandler.handle(currentTransactionCompleted);
+			return this;
+		}
+		resultHandler.handle(Future.failedFuture("retry limit for trx exceeded"));
+		return this;
+
 	}
 
 	@Override
-	@Deprecated
 	public NoTrx noTrx() {
 		return new OrientDBNoTrx(factory);
 	}

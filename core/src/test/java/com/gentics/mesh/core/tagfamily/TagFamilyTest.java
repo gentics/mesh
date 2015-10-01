@@ -2,7 +2,6 @@ package com.gentics.mesh.core.tagfamily;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -24,11 +23,11 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
 public class TagFamilyTest extends AbstractBasicObjectTest {
@@ -114,16 +113,14 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		Future<Void> future = db.trx(trx -> {
+		try (Trx tx = db.trx()) {
 			Map<String, String> uuidToBeDeleted = new HashMap<>();
 			TagFamily tagFamily = tagFamily("colors");
 			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
 			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
 			tagFamily.delete();
 			assertDeleted(uuidToBeDeleted);
-			trx.complete();
-		});
-		latchFor(future);
+		}
 	}
 
 	@Test

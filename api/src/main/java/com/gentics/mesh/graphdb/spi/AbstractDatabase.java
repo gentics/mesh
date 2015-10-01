@@ -63,20 +63,15 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
-		resultHandler.handle(trx(txHandler));
-		return this;
-	}
-
-	@Override
 	public <T> Database asyncTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
-			Future<T> future = trx(txHandler);
-			if (future.succeeded()) {
-				bh.complete(future.result());
-			} else {
-				bh.fail(future.cause());
-			}
+			trx(txHandler, rh -> {
+				if (rh.succeeded()) {
+					bh.complete(rh.result());
+				} else {
+					bh.fail(rh.cause());
+				}
+			});
 		} , false, resultHandler);
 		return this;
 	}
