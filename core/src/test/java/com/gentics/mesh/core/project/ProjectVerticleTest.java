@@ -102,6 +102,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);

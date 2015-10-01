@@ -21,17 +21,22 @@ import org.junit.Test;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -76,6 +81,26 @@ public class RoleTest extends AbstractBasicObjectTest {
 		assertTrue(permissions.contains(DELETE_PERM));
 		assertFalse(permissions.contains(UPDATE_PERM));
 		role.grantPermissions(role, CREATE_PERM);
+	}
+
+	@Test
+	public void testGrantDuplicates() {
+		Role role = meshRoot().getRoleRoot().create("testRole", group(), user());
+		NodeImpl extraNode = tx.getGraph().addFramedVertex(NodeImpl.class);
+		assertEquals(0, countEdges(role, READ_PERM.label(), Direction.OUT));
+		role.grantPermissions(extraNode, READ_PERM);
+		assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
+		role.grantPermissions(extraNode, READ_PERM);
+		assertEquals("We already got a permission edge. No additional edge should have been created.", 1,
+				countEdges(role, READ_PERM.label(), Direction.OUT));
+	}
+
+	private long countEdges(MeshVertex vertex, String label, Direction direction) {
+		long count = 0;
+		for (Edge edge : vertex.getImpl().getElement().getEdges(direction, label)) {
+			count++;
+		}
+		return count;
 	}
 
 	@Test
@@ -169,9 +194,14 @@ public class RoleTest extends AbstractBasicObjectTest {
 		ac.data().clear();
 		assertEquals(4, requestUser.getPermissions(ac, node).size());
 
-		for (Role role : roles().values()) {
-			for (GraphPermission permission : GraphPermission.values()) {
-				assertTrue(role.hasPermission(permission, node));
+		try (Trx tx = db.trx()) {
+			for (Role role : roles().values()) {
+				for (GraphPermission permission : GraphPermission.values()) {
+					assertTrue(
+							"The role {" + role.getName() + "} does not grant perm {" + permission.getSimpleName() + "} to the node {"
+									+ node.getUuid() + "} but it should since the parent object got this role permission.",
+							role.hasPermission(permission, node));
+				}
 			}
 		}
 	}

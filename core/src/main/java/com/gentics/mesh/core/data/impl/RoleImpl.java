@@ -29,12 +29,20 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
+
+	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
 	@Override
 	public String getType() {
@@ -79,7 +87,25 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public void grantPermissions(MeshVertex node, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-			addFramedEdge(permission.label(), node.getImpl());
+
+			boolean found = false;
+			for (Edge edge : this.getElement().getEdges(Direction.OUT, permission.label())) {
+				if (edge.getVertex(Direction.IN).getId().equals(node.getImpl().getId())) {
+					found = true;
+
+					if (log.isTraceEnabled()) {
+						Vertex inV = edge.getVertex(Direction.IN);
+						Vertex outV = edge.getVertex(Direction.OUT);
+						log.trace("Found edge: " + edge.getLabel() + " from " + inV.getProperty("uuid") + ":"
+								+ inV.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " to " + outV.getProperty("uuid") + ":"
+								+ outV.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + ":" + outV.getProperty("name"));
+					}
+					break;
+				}
+			}
+			if (!found) {
+				addFramedEdge(permission.label(), node.getImpl());
+			}
 		}
 	}
 
