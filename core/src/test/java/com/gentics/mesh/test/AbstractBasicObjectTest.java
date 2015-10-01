@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.RoutingContext;
@@ -14,7 +15,10 @@ import io.vertx.ext.web.RoutingContext;
 public abstract class AbstractBasicObjectTest extends AbstractBasicDBTest implements BasicObjectTestcases {
 
 	protected void testPermission(GraphPermission perm, GenericVertex<?> node) {
-		role().grantPermissions(node, perm);
+		try (Trx tx = db.trx()) {
+			role().grantPermissions(node, perm);
+			tx.success();
+		}
 
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
