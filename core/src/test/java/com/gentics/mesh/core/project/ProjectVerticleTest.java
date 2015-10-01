@@ -111,6 +111,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		ProjectResponse restProject = createFuture.result();
 		test.assertProject(request, restProject);
+		meshRoot().getProjectRoot().reload();
 		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 		// Read the project
