@@ -82,44 +82,29 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Future<T> noTrx(Handler<Future<T>> tcHandler) {
+	public <T> Future<T> noTrx(Handler<Future<T>> txHandler) {
 		Future<T> future = Future.future();
 		try (NoTrx noTx = noTrx()) {
-			tcHandler.handle(future);
+			txHandler.handle(future);
 			// TODO maybe we should only retry OConcurrentExceptions?
 		} catch (Exception e) {
 			log.error("Error while handling no-transaction.", e);
 			return Future.failedFuture(e);
 		}
-		if (!future.isComplete()) {
-			future.complete();
-		}
 		return future;
 	}
-
-	// @Override
-	// public Database asyncNoTrx(Consumer<NoTrx> transactionCode) {
-	// Mesh.vertx().executeBlocking(bh -> {
-	// try (NoTrx noTx = noTrx()) {
-	// transactionCode.accept(noTx);
-	// }
-	// } , false, rh -> {
-	// if (rh.failed()) {
-	// throw rh.cause();
-	// }
-	// });
-	// return this;
-	// }
 
 	@Override
 	public <T> Database asyncNoTrx(Handler<Future<T>> transactionCodeHandler, Handler<AsyncResult<T>> resultHandler) {
 		Mesh.vertx().executeBlocking(bh -> {
 			Future<T> future = noTrx(transactionCodeHandler);
-			if (future.succeeded()) {
-				bh.complete(future.result());
-			} else {
-				bh.fail(future.cause());
-			}
+			future.setHandler(rh -> {
+				if (rh.failed()) {
+					bh.fail(rh.cause());
+				} else {
+					bh.complete(rh.result());
+				}
+			});
 		} , false, resultHandler);
 		return this;
 	}

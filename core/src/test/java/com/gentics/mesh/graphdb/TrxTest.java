@@ -13,6 +13,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -237,6 +238,36 @@ public class TrxTest extends AbstractBasicDBTest {
 		});
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
+	}
+
+	@Test
+	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
+		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
+		db.asyncNoTrx(noTrx -> {
+			TestUtil.run(() -> {
+				TestUtil.sleep(1000);
+				noTrx.complete("OK");
+			});
+		} , rh -> {
+			cf.complete(rh);
+		});
+		assertTrue(cf.get().succeeded());
+		assertEquals("OK", cf.get().result());
+	}
+
+	@Test
+	public void testAsyncTrxNestedAsync() throws InterruptedException, ExecutionException {
+		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
+		db.asyncTrx(trx -> {
+			TestUtil.run(() -> {
+				TestUtil.sleep(1000);
+				trx.complete("OK");
+			});
+		} , rh -> {
+			cf.complete(rh);
+		});
+		assertTrue(cf.get().succeeded());
+		assertEquals("OK", cf.get().result());
 	}
 
 	@Test
