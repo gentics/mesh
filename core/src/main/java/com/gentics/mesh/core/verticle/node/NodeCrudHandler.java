@@ -184,8 +184,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								} else {
 									String contentType = ul.contentType();
 									String fileName = ul.fileName();
-
-									hashAndMoveBinaryFile(ac, ul, node.getUuid(), node.getSegmentedPath(), fh -> {
+									String nodeUuid = node.getUuid();
+									hashAndMoveBinaryFile(ac, ul, nodeUuid, node.getSegmentedPath(), fh -> {
 										if (fh.failed()) {
 											ac.fail(fh.cause());
 										} else {
@@ -204,8 +204,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 													ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
 												} else {
 													VerticleHelper.processOrFail(ac, txUpdated.result().v1(), ch -> {
-														ac.send(toJson(new GenericMessageResponse(
-																ac.i18n("node_binary_field_updated", ch.result().getUuid()))));
+														ac.send(toJson(new GenericMessageResponse(ac.i18n("node_binary_field_updated", nodeUuid))));
 													} , txUpdated.result().v2());
 												}
 											});
