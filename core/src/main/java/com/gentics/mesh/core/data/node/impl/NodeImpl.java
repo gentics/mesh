@@ -174,8 +174,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		setLinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
+
+	/**
+	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
+	 */
 	@Override
 	public Node create(User creator, SchemaContainer schemaContainer, Project project) {
+		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node. 
 		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaContainer, project);
 		node.setParentNode(this);
 		return node;

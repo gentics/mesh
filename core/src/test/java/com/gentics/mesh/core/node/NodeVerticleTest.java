@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -290,27 +289,32 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore
 	public void testReadMultiple() throws Exception {
-		final String noPermNodeUUID;
 
 		Node parentNode = folder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 		Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
-		noPermNode.setCreator(user());
-		noPermNodeUUID = noPermNode.getUuid();
+		String noPermNodeUUID = noPermNode.getUuid();
+
+		int nNodes = 20;
+		for (int i = 0; i < nNodes; i++) {
+			Node node = parentNode.create(user(), schemaContainer("content"), project());
+			assertNotNull(node);
+			role().grantPermissions(node, READ_PERM);
+		}
+
 		assertNotNull(noPermNode.getUuid());
 		int perPage = 11;
 		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
-		assertEquals(2, restResponse.getData().size());
+		assertEquals(perPage, restResponse.getData().size());
 
-		// Extra Nodes + permitted node
-		int totalNodes = getNodeCount();
+		// Extra Nodes + permitted nodes
+		int totalNodes = getNodeCount() + nNodes;
 		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
-		assertEquals("The response did not contain the correct amount of items", 2, restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -354,8 +358,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
-		assertEquals(1, list.getMetainfo().getPageCount());
-		assertEquals(getNodeCount(), list.getMetainfo().getTotalCount());
+		assertEquals(2, list.getMetainfo().getPageCount());
+		assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 
 	}
 
@@ -468,12 +472,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
 	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;
 		String uuid = folder("2015").getUuid();
-		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
@@ -482,13 +485,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			set.add(getClient().deleteNode(PROJECT_NAME, uuid));
 		}
 
-		validateDeletion(set, barrier);
+		validateDeletion(set, null);
 
 	}
 
 	@Test
 	@Override
-	// @Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);

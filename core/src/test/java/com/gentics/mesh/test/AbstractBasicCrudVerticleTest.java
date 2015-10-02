@@ -33,8 +33,10 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 		}
 		assertTrue(foundDelete);
 
-//		Trx.disableDebug();
-		assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		//		Trx.disableDebug();
+		if (barrier != null) {
+			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
+		}
 	}
 
 	protected void validateSet(Set<Future<?>> set, CyclicBarrier barrier) {
@@ -42,7 +44,7 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 			latchFor(future);
 			assertSuccess(future);
 		}
-//		Trx.disableDebug();
+		//		Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -69,7 +71,7 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-//		Trx.disableDebug();
+		//		Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -77,9 +79,9 @@ public abstract class AbstractBasicCrudVerticleTest extends AbstractRestVerticle
 	}
 
 	protected CyclicBarrier prepareBarrier(int nJobs) {
-//		Trx.enableDebug();
+		//		Trx.enableDebug();
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-//		Trx.setBarrier(barrier);
+		//		Trx.setBarrier(barrier);
 		return barrier;
 	}
 }
