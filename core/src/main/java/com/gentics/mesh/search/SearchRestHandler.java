@@ -184,13 +184,9 @@ public class SearchRestHandler {
 	 * @return
 	 */
 	private <T> Observable<T> concatList(List<? extends Observable<T>> list) {
-		Observable<T> merged = null;
+		Observable<T> merged = Observable.empty();
 		for (Observable<T> element : list) {
-			if (merged == null) {
-				merged = element;
-			} else {
-				merged = merged.concatWith(element);
-			}
+			merged = merged.concatWith(element);
 		}
 		return merged;
 	}
