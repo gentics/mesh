@@ -1,9 +1,6 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.Map;
-
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 /**
@@ -63,7 +60,7 @@ public class NodeUpdateRequest implements RestModel {
 	 * 
 	 * @return
 	 */
-	public Map<String, Field> getFields() {
+	public FieldMap getFields() {
 		return fields;
 	}
 

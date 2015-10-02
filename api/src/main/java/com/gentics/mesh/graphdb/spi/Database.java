@@ -81,7 +81,7 @@ public interface Database {
 	 *            Handler that is being invoked when the transaction has been committed
 	 * @return
 	 */
-	<T> Database trx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
@@ -92,7 +92,7 @@ public interface Database {
 	 * @param resultHandler
 	 * @return
 	 */
-	<T> Database asyncTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database asyncTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -118,7 +118,7 @@ public interface Database {
 	 *            handler that is invoked within the scope of the no-transaction.
 	 * @return
 	 */
-	<T> Future<T> noTrx(Handler<Future<T>> txHandler);
+	<T> Future<T> noTrx(TrxHandler<Future<T>> txHandler);
 
 	/**
 	 * Asynchronously execute the txHandler within the scope of a non transaction and invoke the result handler after the transaction code handler finishes.
@@ -127,7 +127,7 @@ public interface Database {
 	 * @param resultHandler
 	 * @return
 	 */
-	<T> Database asyncNoTrx(Handler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Database asyncNoTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Initialize the database and store the settings.

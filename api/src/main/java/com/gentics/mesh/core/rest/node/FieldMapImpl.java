@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.gentics.mesh.core.rest.node.field.Field;
 
@@ -9,6 +10,13 @@ import com.gentics.mesh.core.rest.node.field.Field;
  *
  */
 public class FieldMapImpl extends HashMap<String, Field>implements FieldMap {
+
+	public FieldMapImpl(Map<String, Field> map) {
+		super(map);
+	}
+
+	public FieldMapImpl() {
+	}
 
 	private static final long serialVersionUID = 5375505652759811047L;
 
