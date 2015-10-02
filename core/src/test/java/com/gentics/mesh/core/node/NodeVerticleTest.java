@@ -430,11 +430,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdateMultithreaded() throws InterruptedException {
 
-		String uuid;
-		Node node;
 		final String newName = "english renamed name";
-		node = folder("2015");
-		uuid = node.getUuid();
+		Node node = folder("2015");
+		String uuid = node.getUuid();
 		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -449,7 +447,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("en", "de");
 
-		int nJobs = 5;
+		int nJobs = 115;
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
