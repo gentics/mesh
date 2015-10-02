@@ -138,21 +138,19 @@ public class SearchRestHandler {
 							n++;
 						}
 
+						// Set meta information to the rest response
 						PagingMetaInfo metainfo = new PagingMetaInfo();
 						int totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
 						// Cap totalpages to 1
-						if (totalPages == 0) {
-							totalPages = 1;
-						}
+						totalPages = totalPages == 0 ? 1 : totalPages;
 						metainfo.setTotalCount(list.size());
-
 						metainfo.setCurrentPage(pagingInfo.getPage());
 						metainfo.setPageCount(totalPages);
 						metainfo.setPerPage(pagingInfo.getPerPage());
 						listResponse.setMetainfo(metainfo);
 
-						// Wait for all async processes to complete
-						Observable.merge(transformedElements).collect(() -> {
+						// Populate the response data with the transformed elements and send the response
+						concatList(transformedElements).collect(() -> {
 							return listResponse.getData();
 						} , (x, y) -> {
 							x.add(y);
@@ -177,5 +175,23 @@ public class SearchRestHandler {
 			}
 		});
 
+	}
+
+	/**
+	 * Concat the given list of observables and return a single observable that emits the listed elements.
+	 * 
+	 * @param list
+	 * @return
+	 */
+	private <T> Observable<T> concatList(List<? extends Observable<T>> list) {
+		Observable<T> merged = null;
+		for (Observable<T> element : list) {
+			if (merged == null) {
+				merged = element;
+			} else {
+				merged = merged.concatWith(element);
+			}
+		}
+		return merged;
 	}
 }
