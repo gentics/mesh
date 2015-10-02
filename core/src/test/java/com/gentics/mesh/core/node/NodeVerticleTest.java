@@ -389,6 +389,90 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
+
+		int nJobs = 200;
+		CountDownLatch latch = new CountDownLatch(nJobs);
+
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+
+		long nNodesFound = meshRoot().getNodeRoot().findAll().size();
+
+		NodeCreateRequest createRequest = new NodeCreateRequest();
+		createRequest.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		createRequest.setLanguage("en");
+		createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
+		createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
+		createRequest.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		createRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		createRequest.setPublished(true);
+		createRequest.setParentNodeUuid(uuid);
+
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		updateRequest.setSchema(schemaReference);
+		updateRequest.setLanguage("en");
+		updateRequest.setPublished(true);
+		updateRequest.getFields().put("name", FieldUtil.createStringField("UPDATED"));
+
+		// Create various nodes and update them directly after creation. Ensure that update was successful.
+		for (int i = 0; i < nJobs; i++) {
+			log.info("Invoking createNode REST call for job {" + i + "}");
+			Future<NodeResponse> createFuture = getClient().createNode(PROJECT_NAME, createRequest);
+
+			createFuture.setHandler(rh -> {
+				if (rh.failed()) {
+					fail(rh.cause().getMessage());
+				} else {
+					log.info("Created {" + rh.result().getUuid() + "}");
+					NodeResponse response = rh.result();
+					Future<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, response.getUuid(), updateRequest);
+					updateFuture.setHandler(uh -> {
+						if (uh.failed()) {
+							fail(uh.cause().getMessage());
+						} else {
+							log.info("Updated {" + uh.result().getUuid() + "}");
+							Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid());
+							readFuture.setHandler(rf -> {
+								if (rh.failed()) {
+									fail(rh.cause().getMessage());
+								} else {
+									log.info("Read {" + rf.result().getUuid() + "}");
+									Future<GenericMessageResponse> deleteFuture = getClient().deleteNode(PROJECT_NAME, rf.result().getUuid());
+									deleteFuture.setHandler(df -> {
+										if (df.failed()) {
+											fail(df.cause().getMessage());
+										} else {
+											log.info("Deleted {" + rf.result().getUuid() + "} " + df.result().getMessage());
+											latch.countDown();
+										}
+									});
+								}
+
+							});
+
+						}
+					});
+				}
+			});
+			Thread.sleep(250);
+			log.info("Invoked call create requests.");
+		}
+
+		failingLatch(latch);
+
+		long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().size();
+		assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
+		//		for (Future<NodeResponse> future : set) {
+		//			latchFor(future);
+		//			assertSuccess(future);
+		//		}
+	}
+
+	@Test
 	@Override
 	public void testCreateMultithreaded() throws InterruptedException {
 		Node parentNode = folder("news");
@@ -476,7 +560,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int nJobs = 3;
 		String uuid = folder("2015").getUuid();
-//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();

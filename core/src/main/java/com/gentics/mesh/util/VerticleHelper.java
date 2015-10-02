@@ -155,6 +155,13 @@ public class VerticleHelper {
 		});
 	}
 
+	/**
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param handler
+	 * @param element
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(
 			InternalActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
 
