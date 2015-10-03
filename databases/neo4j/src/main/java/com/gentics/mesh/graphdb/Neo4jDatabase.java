@@ -36,6 +36,13 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void reset() {
+		neo4jBlueprintGraph.getVertices().forEach(v -> {
+			v.remove();
+		});
+	}
+
+	@Override
 	public NoTrx noTrx() {
 		return new Neo4jNoTrx(new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false));
 	}
