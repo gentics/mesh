@@ -44,6 +44,10 @@ public class TitanDBDatabase extends AbstractDatabase {
 		// graph = TitanFactory.open(configuration);
 		// this.configuration = configuration;
 		Configuration configuration = getBerkleyDBConf(options);
+		if (options.getDirectory() == null) {
+			configuration = getInMemoryConf(options);
+		}
+
 		graph = TitanFactory.open(configuration);
 
 		// You may use getCassandraConf() or getInMemoryConf() to switch the backend graph db
