@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
@@ -27,8 +26,10 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -150,12 +151,12 @@ public class SearchRestHandler {
 						listResponse.setMetainfo(metainfo);
 
 						// Populate the response data with the transformed elements and send the response
-						concatList(transformedElements).collect(() -> {
+						RxUtil.concatList(transformedElements).collect(() -> {
 							return listResponse.getData();
 						} , (x, y) -> {
 							x.add(y);
 						}).subscribe(itemList -> {
-							ac.send(toJson(listResponse));
+							ac.send(JsonUtil.toJson(listResponse));
 						} , error -> {
 							ac.fail(error);
 						});
@@ -177,17 +178,5 @@ public class SearchRestHandler {
 
 	}
 
-	/**
-	 * Concat the given list of observables and return a single observable that emits the listed elements.
-	 * 
-	 * @param list
-	 * @return
-	 */
-	private <T> Observable<T> concatList(List<? extends Observable<T>> list) {
-		Observable<T> merged = Observable.empty();
-		for (Observable<T> element : list) {
-			merged = merged.concatWith(element);
-		}
-		return merged;
-	}
+
 }

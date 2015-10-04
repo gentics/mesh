@@ -7,6 +7,10 @@ import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class MicroschemaGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicroschemaGraphField, MicroschemaFieldListImpl>
 		implements MicroschemaGraphFieldList {
 
@@ -22,9 +26,8 @@ public class MicroschemaGraphFieldListImpl extends AbstractReferencingGraphField
 	}
 
 	@Override
-	public MicroschemaFieldListImpl transformToRest(InternalActionContext ac, String fieldKey) {
-		// TODO Auto-generated method stub
-		return null;
+	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<MicroschemaFieldListImpl>> handler) {
+		handler.handle(Future.succeededFuture(null));
 	}
 
 }

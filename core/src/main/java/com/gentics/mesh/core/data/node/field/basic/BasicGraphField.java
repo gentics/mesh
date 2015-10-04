@@ -4,14 +4,17 @@ import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphFie
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.ActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 public interface BasicGraphField<T extends Field> extends MicroschemaListableGraphField {
 
 	/**
 	 * Transform the graph field to the rest field.
 	 * 
 	 * @param ac
-	 * @return
+	 * @param handler
 	 */
-	T transformToRest(ActionContext ac);
+	void transformToRest(ActionContext ac, Handler<AsyncResult<T>> handler);
 
 }

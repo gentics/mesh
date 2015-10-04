@@ -7,6 +7,10 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class StringGraphFieldImpl extends AbstractBasicField<StringField>implements StringGraphField {
 
 	public StringGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
@@ -24,11 +28,11 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField>impleme
 	}
 
 	@Override
-	public StringField transformToRest(ActionContext ac) {
+	public void transformToRest(ActionContext ac, Handler<AsyncResult<StringField>> handler) {
 		StringFieldImpl stringField = new StringFieldImpl();
 		String text = getString();
 		stringField.setString(text == null ? "" : text);
-		return stringField;
+		handler.handle(Future.succeededFuture(stringField));
 	}
 
 }

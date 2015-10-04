@@ -61,6 +61,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -335,8 +338,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return field;
 	}
 
+	private static <T extends Field> Handler<AsyncResult<T>> wrap(Handler<AsyncResult<Field>> handler) {
+		Handler<AsyncResult<T>> returnHandler = ele -> {
+			if (ele.failed()) {
+				handler.handle(Future.failedFuture(ele.cause()));
+			} else {
+				handler.handle(Future.succeededFuture(ele.result()));
+			}
+		};
+		return returnHandler;
+	}
+
 	@Override
-	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField) {
+	public void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField,
+			Handler<AsyncResult<Field>> handler) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:
@@ -345,45 +360,63 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			// fieldKey, this);
 			StringGraphField graphStringField = getString(fieldKey);
 			if (graphStringField == null) {
-				return new StringFieldImpl();
+				handler.handle(Future.succeededFuture(new StringFieldImpl()));
+				return;
 			} else {
-				return graphStringField.transformToRest(ac);
+				graphStringField.transformToRest(ac, th -> {
+					if (th.failed()) {
+						handler.handle(Future.failedFuture(th.cause()));
+					} else {
+						handler.handle(Future.succeededFuture(th.result()));
+					}
+				});
+				return;
 			}
 		case NUMBER:
 			NumberGraphField graphNumberField = getNumber(fieldKey);
 			if (graphNumberField == null) {
-				return new NumberFieldImpl();
+				handler.handle(Future.succeededFuture(new NumberFieldImpl()));
+				return;
 			} else {
-				return graphNumberField.transformToRest(ac);
+				graphNumberField.transformToRest(ac, wrap(handler));
+				return;
 			}
 
 		case DATE:
 			DateGraphField graphDateField = getDate(fieldKey);
 			if (graphDateField == null) {
-				return new DateFieldImpl();
+				handler.handle(Future.succeededFuture(new DateFieldImpl()));
+				return;
 			} else {
-				return graphDateField.transformToRest(ac);
+				graphDateField.transformToRest(ac, wrap(handler));
+				return;
 			}
 		case BOOLEAN:
 			BooleanGraphField graphBooleanField = getBoolean(fieldKey);
 			if (graphBooleanField == null) {
-				return new BooleanFieldImpl();
+				handler.handle(Future.succeededFuture(new BooleanFieldImpl()));
+				return;
 			} else {
-				return graphBooleanField.transformToRest(ac);
+				graphBooleanField.transformToRest(ac, wrap(handler));
+				return;
 			}
 		case NODE:
 			NodeGraphField graphNodeField = getNode(fieldKey);
 			if (graphNodeField == null) {
-				return new NodeFieldImpl();
+				handler.handle(Future.succeededFuture(new NodeFieldImpl()));
+				return;
 			} else {
-				return graphNodeField.transformToRest(ac, fieldKey);
+				graphNodeField.transformToRest(ac, fieldKey, handler);
+				return;
 			}
 		case HTML:
 			HtmlGraphField graphHtmlField = getHtml(fieldKey);
 			if (graphHtmlField == null) {
-				return new HtmlFieldImpl();
+				handler.handle(Future.succeededFuture(new HtmlFieldImpl()));
+				return;
 			} else {
-				return graphHtmlField.transformToRest(ac);
+				graphHtmlField.transformToRest(ac, wrap(handler));
+				return;
 			}
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
@@ -392,51 +425,65 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case NodeGraphFieldList.TYPE:
 				NodeGraphFieldList nodeFieldList = getNodeList(fieldKey);
 				if (nodeFieldList == null) {
-					return new NodeFieldListImpl();
+					handler.handle(Future.succeededFuture(new NodeFieldListImpl()));
+					return;
 				} else {
-					return nodeFieldList.transformToRest(ac, fieldKey);
+					nodeFieldList.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			case NumberGraphFieldList.TYPE:
 				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
-					return new NumberFieldListImpl();
+					handler.handle(Future.succeededFuture(new NumberFieldListImpl()));
+					return;
 				} else {
-					return numberFieldList.transformToRest(ac, fieldKey);
+					numberFieldList.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			case BooleanGraphFieldList.TYPE:
 				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
 				if (booleanFieldList == null) {
-					return new BooleanFieldListImpl();
+					handler.handle(Future.succeededFuture(new BooleanFieldListImpl()));
+					return;
 				} else {
-					return booleanFieldList.transformToRest(ac, fieldKey);
+					booleanFieldList.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			case HtmlGraphFieldList.TYPE:
 				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
-					return new HtmlFieldListImpl();
+					handler.handle(Future.succeededFuture(new HtmlFieldListImpl()));
+					return;
 				} else {
-					return htmlFieldList.transformToRest(ac, fieldKey);
+					htmlFieldList.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			case MicroschemaGraphFieldList.TYPE:
 				MicroschemaGraphFieldList graphMicroschemaField = getMicroschemaList(fieldKey);
 				if (graphMicroschemaField == null) {
-					return new MicroschemaFieldListImpl();
+					handler.handle(Future.succeededFuture(new MicroschemaFieldListImpl()));
+					return;
 				} else {
-					return graphMicroschemaField.transformToRest(ac, fieldKey);
+					graphMicroschemaField.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			case StringGraphFieldList.TYPE:
 				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
-					return new StringFieldListImpl();
+					handler.handle(Future.succeededFuture(new StringFieldListImpl()));
+					return;
 				} else {
-					return stringFieldList.transformToRest(ac, fieldKey);
+					stringFieldList.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			case DateGraphFieldList.TYPE:
 				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
-					return new DateFieldListImpl();
+					handler.handle(Future.succeededFuture(new DateFieldListImpl()));
+					return;
 				} else {
-					return dateFieldList.transformToRest(ac, fieldKey);
+					dateFieldList.transformToRest(ac, fieldKey, wrap(handler));
+					return;
 				}
 			}
 			// String listType = listFielSchema.getListType();
@@ -454,15 +501,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		case MICROSCHEMA:
 			MicroschemaGraphField graphMicroschemaField = getMicroschema(fieldKey);
 			if (graphMicroschemaField == null) {
-				return new MicroschemaFieldImpl();
+				handler.handle(Future.succeededFuture(new MicroschemaFieldImpl()));
+				return;
 			} else {
 				// TODO impl me
 				// graphMicroschemaField.transformToRest(ac);
-				throw new NotImplementedException();
+				handler.handle(Future.failedFuture(new NotImplementedException()));
+				return;
 			}
 		}
-
-		return null;
 	}
 
 	@Override

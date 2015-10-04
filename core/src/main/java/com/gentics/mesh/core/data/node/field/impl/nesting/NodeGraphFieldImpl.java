@@ -14,6 +14,10 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
@@ -32,7 +36,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public Field transformToRest(InternalActionContext ac, String fieldKey) {
+	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<Field>> handler) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey);
@@ -49,11 +53,11 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return reference.get();
+			handler.handle(Future.succeededFuture(reference.get()));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
 			nodeField.setUuid(getNode().getUuid());
-			return nodeField;
+			handler.handle(Future.succeededFuture(nodeField));	
 		}
 	}
 

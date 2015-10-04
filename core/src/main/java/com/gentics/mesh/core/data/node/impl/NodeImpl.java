@@ -174,13 +174,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		setLinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
-
 	/**
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
 	public Node create(User creator, SchemaContainer schemaContainer, Project project) {
-		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node. 
+		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node.
 		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaContainer, project);
 		node.setParentNode(this);
 		return node;
@@ -293,19 +292,29 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					List<String> fieldsToExpand = ac.getExpandedFieldnames();
 					for (FieldSchema fieldEntry : schema.getFields()) {
 						boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
-						com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(),
-								fieldEntry, expandField);
-						if (fieldEntry.isRequired() && restField == null) {
-							/* TODO i18n */
-							trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
-									+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
-							return;
-						}
-						if (restField == null) {
-							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-						} else {
-							restNode.getFields().put(fieldEntry.getName(), restField);
-						}
+						ObservableFuture<Void> obsRestField = RxHelper.observableFuture();
+						futures.add(obsRestField);
+						fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField, rh -> {
+							if (rh.failed()) {
+								obsRestField.toHandler().handle(Future.failedFuture(rh.cause()));
+							} else {
+								com.gentics.mesh.core.rest.node.field.Field restField = rh.result();
+								if (fieldEntry.isRequired() && restField == null) {
+									/* TODO i18n */
+									//TODO no trx fail. Instead let obsRestField fail
+									trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
+											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
+									obsRestField.toHandler().handle(Future.failedFuture("Field not set"));
+									return;
+								}
+								if (restField == null) {
+									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+								} else {
+									restNode.getFields().put(fieldEntry.getName(), restField);
+									obsRestField.toHandler().handle(Future.succeededFuture());
+								}
+							}
+						});
 					}
 				}
 

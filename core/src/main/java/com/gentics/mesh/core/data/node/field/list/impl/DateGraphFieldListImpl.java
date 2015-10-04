@@ -7,6 +7,10 @@ import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl>implements DateGraphFieldList {
 
 	@Override
@@ -37,11 +41,11 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public DateFieldListImpl transformToRest(InternalActionContext ac, String fieldKey) {
+	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<DateFieldListImpl>> handler) {
 		DateFieldListImpl restModel = new DateFieldListImpl();
 		for (DateGraphField item : getList()) {
 			restModel.add(item.getDate());
 		}
-		return restModel;
+		handler.handle(Future.succeededFuture(restModel));
 	}
 }

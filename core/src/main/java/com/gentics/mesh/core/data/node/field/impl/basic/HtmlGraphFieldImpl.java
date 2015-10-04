@@ -7,6 +7,10 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+
 public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField>implements HtmlGraphField {
 
 	public HtmlGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
@@ -24,12 +28,12 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField>implements 
 	}
 
 	@Override
-	public HtmlFieldImpl transformToRest(ActionContext ac) {
+	public void transformToRest(ActionContext ac, Handler<AsyncResult<HtmlField>> handler) {
 		HtmlFieldImpl htmlField = new HtmlFieldImpl();
 		String html = getHTML();
 		//TODO really empty string for unset field value?!
 		htmlField.setHTML(html == null ? "" : html);
-		return htmlField;
+		handler.handle(Future.succeededFuture(htmlField));
 	}
 
 }
