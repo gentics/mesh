@@ -20,14 +20,16 @@ public abstract class AbstractBasicObjectTest extends AbstractBasicDBTest implem
 			tx.success();
 		}
 
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
-		assertTrue(role().hasPermission(perm, node));
-		assertTrue(getRequestUser().hasPermission(ac, node, perm));
-		role().revokePermissions(node, perm);
-		rc.data().clear();
-		assertFalse(role().hasPermission(perm, node));
-		assertFalse(getRequestUser().hasPermission(ac, node, perm));
+		try (Trx tx = db.trx()) {
+			RoutingContext rc = getMockedRoutingContext("");
+			InternalActionContext ac = InternalActionContext.create(rc);
+			assertTrue(role().hasPermission(perm, node));
+			assertTrue(getRequestUser().hasPermission(ac, node, perm));
+			role().revokePermissions(node, perm);
+			rc.data().clear();
+			assertFalse(role().hasPermission(perm, node));
+			assertFalse(getRequestUser().hasPermission(ac, node, perm));
+		}
 	}
 
 }
