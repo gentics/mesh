@@ -78,35 +78,36 @@ public class TrxTest extends AbstractBasicDBTest {
 		final int nThreads = 10;
 		final int nRuns = 200;
 
-		TagFamily tagFamily = tagFamily("colors");
-
-		for (int r = 1; r <= nRuns; r++) {
-			final int currentRun = r;
-			CountDownLatch latch = new CountDownLatch(nThreads);
+		try (Trx tx2 = db.trx()) {
+			TagFamily tagFamily = tagFamily("colors");
 			Node node = content();
+			for (int r = 1; r <= nRuns; r++) {
+				final int currentRun = r;
+				CountDownLatch latch = new CountDownLatch(nThreads);
 
-			// Start two threads with a retry trx
-			for (int i = 0; i < nThreads; i++) {
-				final int threadNo = i;
-				if (log.isTraceEnabled()) {
-					log.trace("Thread [" + threadNo + "] Starting");
+				// Start two threads with a retry trx
+				for (int i = 0; i < nThreads; i++) {
+					final int threadNo = i;
+					if (log.isTraceEnabled()) {
+						log.trace("Thread [" + threadNo + "] Starting");
+					}
+					db.asyncTrx(trx -> {
+						Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
+						node.addTag(tag);
+						trx.complete(tag);
+					} , rh -> {
+						assertEquals(TagImpl.class, rh.result().getClass());
+						latch.countDown();
+					});
 				}
-				db.asyncTrx(trx -> {
-					Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
-					node.addTag(tag);
-					trx.complete(tag);
-				} , rh -> {
-					assertEquals(TagImpl.class, rh.result().getClass());
-					latch.countDown();
-				});
-			}
 
-			log.debug("Waiting on lock");
-			failingLatch(latch);
+				log.debug("Waiting on lock");
+				failingLatch(latch);
 
-			try (Trx tx = db.trx()) {
-				int expect = nThreads * r;
-				assertEquals("Expected {" + expect + "} tags since this is the " + r + "th run.", expect, content().getTags().size());
+				try (Trx tx = db.trx()) {
+					int expect = nThreads * r;
+					assertEquals("Expected {" + expect + "} tags since this is the " + r + "th run.", expect, content().getTags().size());
+				}
 			}
 		}
 	}
