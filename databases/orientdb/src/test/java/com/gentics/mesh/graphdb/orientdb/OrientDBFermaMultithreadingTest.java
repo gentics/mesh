@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb.orientdb;
 
+import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.runAndWait;
+
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
@@ -9,8 +11,11 @@ import org.junit.Test;
 
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
+
+import io.vertx.core.Vertx;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
@@ -18,7 +23,7 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() {
-		db.init(null);
+		db.init(null, Vertx.vertx());
 	}
 
 	Person p;

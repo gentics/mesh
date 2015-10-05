@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.test.TestUtil;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
@@ -71,30 +72,6 @@ public class TrxTest extends AbstractBasicDBTest {
 		assertNull(result.cause());
 		assertEquals("test", result.result());
 	}
-
-//	@Test
-//	@Ignore
-//	public void testAsyncTrxRetryHandling() throws Exception {
-//		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
-//		AtomicInteger e = new AtomicInteger(0);
-//		db.asyncTrx(trx -> {
-//			e.incrementAndGet();
-//			if (e.get() == 1) {
-//				String msg = "Cannot UPDATE the record #13:8 because the version is not the latest. Probably you are updating an old record or it has been modified by another user (db=v7 your=v6)";
-//				// "test #9:1 blub adsd"
-//				throw new OConcurrentModificationException(msg);
-//			} else {
-//				trx.complete("OK");
-//			}
-//		} , rh -> {
-//			fut.complete(rh);
-//		});
-//		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
-//		assertEquals(2, e.get());
-//		assertEquals("OK", result.result());
-//		assertTrue(result.succeeded());
-//		assertNull(result.cause());
-//	}
 
 	@Test
 	public void testConcurrentUpdate() throws Exception {

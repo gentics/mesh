@@ -33,6 +33,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -40,9 +41,12 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
@@ -400,18 +404,28 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 5;
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setName("test12345");
+		int nJobs = 100;
+		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
+		//CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName("test12345_" + i);
 			set.add(getClient().createProject(request));
 		}
-		validateCreation(set, barrier);
+		validateCreation(set, null);
+
+		try (Trx tx = db.trx()) {
+			int n = 0;
+			for (Vertex vertex : tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())) {
+				n++;
+			}
+			int nProjectsAfter = meshRoot().getProjectRoot().findAll().size();
+			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
+			assertEquals(nProjectsBefore + nJobs, n);
+		}
 	}
 
 	@Test

@@ -153,13 +153,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 					db.trx(txCreate -> {
 						NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 						if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-							handler.handle(
-									Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field"))));
+							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field")));
 							return;
 						}
 						if (StringUtils.isEmpty(requestModel.getLanguage())) {
-							handler.handle(
-									Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified"))));
+							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified")));
 							return;
 						}
 						requestUser.reload();

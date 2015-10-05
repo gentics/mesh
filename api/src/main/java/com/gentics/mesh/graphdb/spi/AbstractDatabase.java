@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
@@ -13,6 +12,7 @@ import com.gentics.mesh.graphdb.Trx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -21,6 +21,7 @@ public abstract class AbstractDatabase implements Database {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
 	protected StorageOptions options;
+	protected Vertx vertx;
 
 	@Override
 	public void clear() {
@@ -38,8 +39,9 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(StorageOptions options) {
+	public void init(StorageOptions options, Vertx vertx) {
 		this.options = options;
+		this.vertx = vertx;
 		start();
 	}
 
@@ -64,7 +66,7 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Database asyncTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
-		Mesh.vertx().executeBlocking(bh -> {
+		vertx.executeBlocking(bh -> {
 			trx(txHandler, rh -> {
 				if (rh.succeeded()) {
 					bh.complete(rh.result());
@@ -81,7 +83,6 @@ public abstract class AbstractDatabase implements Database {
 		Future<T> future = Future.future();
 		try (NoTrx noTx = noTrx()) {
 			txHandler.handle(future);
-			// TODO maybe we should only retry OConcurrentExceptions?
 		} catch (Exception e) {
 			log.error("Error while handling no-transaction.", e);
 			return Future.failedFuture(e);
@@ -91,7 +92,7 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Database asyncNoTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
-		Mesh.vertx().executeBlocking(bh -> {
+		vertx.executeBlocking(bh -> {
 			Future<T> future = noTrx(txHandler);
 			future.setHandler(rh -> {
 				if (rh.failed()) {

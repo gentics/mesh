@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb;
 
+import com.gentics.mesh.graphdb.spi.Database;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;

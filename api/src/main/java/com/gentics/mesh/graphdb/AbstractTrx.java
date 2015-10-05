@@ -22,7 +22,7 @@ public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGra
 		isSuccess = false;
 	}
 
-	private boolean isSuccess() {
+	protected boolean isSuccess() {
 		return isSuccess;
 	}
 

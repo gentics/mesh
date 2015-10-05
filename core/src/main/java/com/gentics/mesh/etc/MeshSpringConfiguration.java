@@ -68,7 +68,7 @@ public class MeshSpringConfiguration {
 			throw new RuntimeException(message);
 		}
 		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-		database.init(options);
+		database.init(options, Mesh.vertx());
 		return database;
 	}
 

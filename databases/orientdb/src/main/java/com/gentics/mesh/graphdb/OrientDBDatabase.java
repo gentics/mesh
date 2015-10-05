@@ -30,6 +30,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -52,8 +53,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(StorageOptions options) {
-		this.options = options;
+	public void init(StorageOptions options, Vertx vertx) {
+		super.init(options, vertx);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
@@ -122,7 +123,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					latch.countDown();
 				});
 				txHandler.handle(currentTransactionCompleted);
-				latch.await(10, TimeUnit.SECONDS);
+				latch.await(30, TimeUnit.SECONDS);
 				break;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");

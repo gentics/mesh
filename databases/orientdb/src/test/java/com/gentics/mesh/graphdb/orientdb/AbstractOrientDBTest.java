@@ -1,19 +1,9 @@
 package com.gentics.mesh.graphdb.orientdb;
 
+import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.syncleus.ferma.FramedGraph;
 
 public class AbstractOrientDBTest {
-
-	protected void runAndWait(Runnable runnable) {
-		Thread thread = new Thread(runnable);
-		thread.start();
-		try {
-			thread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		System.out.println("Done waiting");
-	}
 
 	protected void manipulatePerson(FramedGraph graph, Person p) {
 		p.setName("Changed " + System.currentTimeMillis());
@@ -25,6 +15,12 @@ public class AbstractOrientDBTest {
 		for (Person friend : p.getFriends()) {
 			friend.setName("Changed Name " + System.currentTimeMillis());
 		}
+	}
+
+	protected void addFriend(FramedGraph graph, Person p) {
+		Person friend = graph.addFramedVertex(Person.class);
+		friend.setName("NewFriend");
+		p.addFriend(friend);
 	}
 
 	protected Person addPersonWithFriends(FramedGraph graph, String name) {

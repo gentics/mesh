@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -163,38 +164,41 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 		db.noTrx(tc -> {
 			if (requestUser.hasPermission(ac, boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
+					handler.handle(failedFuture(ac, CONFLICT, "project_conflicting_name"));
 					return;
 				} else {
 					db.trx(txCreate -> {
 						requestUser.reload();
 						Project project = create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);
-						try {
-							routerStorage.addProjectRouter(project.getName());
-							if (log.isInfoEnabled()) {
-								log.info("Registered project {" + project.getName() + "}");
-							}
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
-							// TODO add microschema root crud perms
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
 
-							SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-							txCreate.complete(Tuple.tuple(batch, project));
-						} catch (InvalidNameException e) {
-							 //*TODO should we really fail here?
-							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Error while adding project to router storage", e));
-							return;
-						}
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
+						// TODO add microschema root crud perms
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+
+						SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						txCreate.complete(Tuple.tuple(batch, project));
+
 					} , (AsyncResult<Tuple<SearchQueueBatch, Project>> txCreated) -> {
 						if (txCreated.failed()) {
 							handler.handle(Future.failedFuture(txCreated.cause()));
 						} else {
-							processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+							Project project = txCreated.result().v2();
+							try {
+								routerStorage.addProjectRouter(project.getName());
+							} catch (InvalidNameException e) {
+								//*TODO should we really fail here?
+								handler.handle(failedFuture(ac, BAD_REQUEST, "Error while adding project to router storage", e));
+								return;
+							}
+							if (log.isInfoEnabled()) {
+								log.info("Registered project {" + project.getName() + "}");
+							}
+							processOrFail(ac, txCreated.result().v1(), handler, project);
 						}
 					});
 

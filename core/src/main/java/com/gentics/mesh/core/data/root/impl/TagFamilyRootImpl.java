@@ -99,6 +99,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 				if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 					db.trx(txCreate -> {
 						requestUser.reload();
+						this.reload();
+						this.setElement(null);
 						TagFamily tagFamily = create(name, requestUser);
 						addTagFamily(tagFamily);
 						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);

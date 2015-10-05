@@ -126,6 +126,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			}
 			final TagFamily foundFamily = tagFamily;
 			db.trx(tc -> {
+				this.reload();
+				this.setElement(null);
 				requestUser.reload();
 				// tagFamily.reload();
 				project.reload();

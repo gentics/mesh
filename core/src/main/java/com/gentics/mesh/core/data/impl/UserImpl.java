@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -475,7 +476,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 								txUpdate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
 								return;
 							} else {
-								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								NodeRoot nodeRoot = project.getNodeRoot();
+								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, nodeRoot);
 								setReferencedNode(node);
 								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 								txUpdate.complete(batch);

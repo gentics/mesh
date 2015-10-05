@@ -7,10 +7,12 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Element;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 /**
  * Main description of a graph database.
@@ -133,8 +135,9 @@ public interface Database {
 	 * Initialize the database and store the settings.
 	 * 
 	 * @param options
+	 * @param vertx 
 	 */
-	void init(StorageOptions options);
+	void init(StorageOptions options, Vertx vertx);
 
 	/**
 	 * Reload the given mesh element.
