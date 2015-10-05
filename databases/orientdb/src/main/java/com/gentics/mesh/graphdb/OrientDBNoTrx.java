@@ -23,7 +23,8 @@ public class OrientDBNoTrx extends AbstractNoTrx implements AutoCloseable {
 
 	@Override
 	public void close() {
-		getGraph().close();
 		Database.setThreadLocalGraph(getOldGraph());
+		getGraph().close();
+		getGraph().shutdown();
 	}
 }

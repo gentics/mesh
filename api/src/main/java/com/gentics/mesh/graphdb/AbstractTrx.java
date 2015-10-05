@@ -28,13 +28,15 @@ public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGra
 
 	@Override
 	public void close() {
+		Database.setThreadLocalGraph(getOldGraph());
 		if (isSuccess()) {
 			commit();
 		} else {
 			rollback();
 		}
-		// Restore the old graph that was previously swapped with the current graph 
-		Database.setThreadLocalGraph(getOldGraph());
+		// Restore the old graph that was previously swapped with the current graph
+		getGraph().close();
+		getGraph().shutdown();
 	}
 
 	protected void commit() {
