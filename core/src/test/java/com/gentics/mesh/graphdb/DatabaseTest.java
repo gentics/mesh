@@ -38,13 +38,6 @@ public class DatabaseTest extends AbstractBasicDBTest {
 	}
 
 	@Test
-	public void testReload() {
-		try (Trx tx = db.trx()) {
-			user().reload();
-		}
-	}
-
-	@Test
 	public void testExport() throws IOException {
 		db.exportGraph(outputDirectory.getAbsolutePath());
 	}

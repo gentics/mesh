@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.test.TestUtil;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
@@ -57,6 +56,13 @@ public class TrxTest extends AbstractBasicDBTest {
 		assertTrue(result.failed());
 		assertNotNull(result.cause());
 		assertEquals("blub", result.cause().getMessage());
+	}
+
+	@Test
+	public void testReload() {
+		try (Trx tx = db.trx()) {
+			user().reload();
+		}
 	}
 
 	@Test
