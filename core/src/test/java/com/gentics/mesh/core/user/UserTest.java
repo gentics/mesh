@@ -92,16 +92,18 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		JsonObject json = user.principal();
 		assertNotNull(json);
-		assertEquals(user().getUuid(), json.getString("uuid"));
-		assertEquals(user().getUsername(), json.getString("username"));
-		assertEquals(user().getFirstname(), json.getString("firstname"));
-		assertEquals(user().getLastname(), json.getString("lastname"));
-		assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
+		try (Trx tx = db.trx()) {
+			assertEquals(user().getUuid(), json.getString("uuid"));
+			assertEquals(user().getUsername(), json.getString("username"));
+			assertEquals(user().getFirstname(), json.getString("firstname"));
+			assertEquals(user().getLastname(), json.getString("lastname"));
+			assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
 
-		assertNotNull(json.getJsonArray("roles"));
-		assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
-		assertNotNull(json.getJsonArray("groups"));
-		assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+			assertNotNull(json.getJsonArray("roles"));
+			assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
+			assertNotNull(json.getJsonArray("groups"));
+			assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+		}
 	}
 
 	@Test

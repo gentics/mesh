@@ -28,8 +28,8 @@ public class DatabaseTest extends AbstractBasicDBTest {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
 		Mesh.mesh().getOptions().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
-//		db.reset();
-//		setupData();
+		// db.reset();
+		// setupData();
 	}
 
 	@After
@@ -39,7 +39,9 @@ public class DatabaseTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testReload() {
-		user().reload();
+		try (Trx tx = db.trx()) {
+			user().reload();
+		}
 	}
 
 	@Test
