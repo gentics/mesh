@@ -262,13 +262,21 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	String getSegmentedPath();
 
 	/**
-	 * Returns the i18n display name for the node.
+	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
+	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
 	 * 
 	 * @param ac
 	 * @return
 	 */
 	String getDisplayName(InternalActionContext ac);
 
+	/**
+	 * Find a node field container that matches the nearest possible value for the ?lang= request parameter. When a user requests a node using ?lang=de,en and
+	 * there is no de version the en version will be selected and returned.
+	 * 
+	 * @param ac
+	 * @return Next matching field container or null when no language matched
+	 */
 	NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac);
 
 	/**

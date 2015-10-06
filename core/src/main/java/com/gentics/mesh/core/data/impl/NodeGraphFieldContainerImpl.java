@@ -169,7 +169,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
 					Node node = rh.result();
 					if (node == null) {
-						log.error("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
+						//TODO We want to delete the field when the field has been explicitly set to null
+						if (log.isDebugEnabled()) {
+							log.debug("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
+						}
 						// TODO we need to fail here - the node could not be found.
 						// throw new HttpStatusCodeErrorException(NOT_FOUND, ac.i18n("The field {, parameters))
 					} else {
