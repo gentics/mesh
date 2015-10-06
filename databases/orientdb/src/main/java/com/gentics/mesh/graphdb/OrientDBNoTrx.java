@@ -13,12 +13,8 @@ public class OrientDBNoTrx extends AbstractNoTrx implements AutoCloseable {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBNoTrx.class);
 
 	public OrientDBNoTrx(OrientGraphFactory factory) {
-//		if (Database.getThreadLocalGraph() instanceof DelegatingFramedGraph) {
-//			init(Database.getThreadLocalGraph());
-//		} else {
-			FramedGraph graph = new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
-			init(graph);
-//		}
+		FramedGraph graph = new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
+		init(graph);
 	}
 
 	@Override
