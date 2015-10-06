@@ -14,4 +14,21 @@ public class OrientDBTrx extends AbstractTrx {
 		init(transaction);
 	}
 
+	@Override
+	public void close() {
+		Database.setThreadLocalGraph(getOldGraph());
+		try {
+			if (isSuccess()) {
+				commit();
+			} else {
+				rollback();
+			}
+		} catch (OConcurrentModificationException e) {
+			getGraph().shutdown();
+			throw e;
+		}
+		// Restore the old graph that was previously swapped with the current graph
+		getGraph().close();
+		getGraph().shutdown();
+	}
 }
