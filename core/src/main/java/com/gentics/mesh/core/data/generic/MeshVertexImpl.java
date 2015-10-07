@@ -25,7 +25,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
-	public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
+	//public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
 	@Override
 	protected void init() {
@@ -60,77 +60,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public Object getId() {
 		return id;
 	}
-
-	//	@Override
-	//	public void unlinkIn(VertexFrame vertex, String... labels) {
-	//		for (Edge edge : this.getElement().getEdges(Direction.IN, labels)) {
-	//			if (edge.getVertex(Direction.IN).getId().equals(vertex.getId())) {
-	//				edge.remove();
-	//			}
-	//		}
-	//	}
-	//
-	//	@Override
-	//	public void unlinkOut(VertexFrame vertex, String... labels) {
-	//		for (Edge edge : this.getElement().getEdges(Direction.OUT, labels)) {
-	//			if (edge.getVertex(Direction.OUT).getId().equals(vertex.getId())) {
-	//				edge.remove();
-	//			}
-	//		}
-	//	}
-	//
-	//	@Override
-	//	public void setLinkOut(VertexFrame vertex, String... labels) {
-	//		for (String label : labels) {
-	//			for (Edge edge : this.getElement().getEdges(Direction.OUT, label)) {
-	//				edge.remove();
-	//			}
-	//			this.getElement().addEdge(label, vertex.getElement());
-	//		}
-	//	}
-	//
-	//	@Override
-	//	public void setLinkIn(VertexFrame vertex, String... labels) {
-	//		for (String label : labels) {
-	//			for (Edge edge : this.getElement().getEdges(Direction.IN, label)) {
-	//				edge.remove();
-	//			}
-	//			vertex.getElement().addEdge(label, this.getElement());
-	//		}
-	//	}
-	//
-	//	/**
-	//	 * Ensure that only one edge per label exists which connects both vertices.
-	//	 * 
-	//	 * @param vertex
-	//	 * @param labels
-	//	 */
-	//	public void setLinkOutTo(VertexFrame vertex, String... labels) {
-	//		Set<String> labelSet = new HashSet<>(Arrays.asList(labels));
-	//		// Unlink all edges between both objects with the given label that do not target the given vertex
-	//		for (Edge edge : this.getElement().getEdges(Direction.OUT, labels)) {
-	//			if (edge.getVertex(Direction.OUT).getId().equals(vertex.getElement().getId())) {
-	//				labelSet.remove(edge.getLabel());
-	//			} else {
-	//				edge.remove();
-	//			}
-	//		}
-	//
-	//		// Create a new edge for those labels that do not yet have a edge to the vertex 
-	//		for (String label : labelSet) {
-	//			this.getElement().addEdge(label, vertex.getElement());
-	//		}
-	//	}
-	//	//
-	//		public void setLinkInTo(VertexFrame vertex, String... labels) {
-	//			// Unlink all edges between both objects with the given label
-	//			unlinkIn(vertex, labels);
-	//			// Create a new edge with the given label
-	//			//linkIn(vertex, labels);
-	//			for (String label : labels) {
-	//				vertex.getElement().addEdge(label, this.getElement());
-	//			}
-	//		}
 
 	public void setLinkInTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges between both objects with the given label
@@ -185,8 +114,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public Vertex getElement() {
-		//Element vertex = ((WrappedVertex)Database.getThreadLocalGraph().getVertex(id)).getBaseElement();
-		Element vertex = threadLocalElement.get();
+		//TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the transaction finishes
+		Element vertex = ((WrappedVertex)Database.getThreadLocalGraph().getVertex(id)).getBaseElement();
+		//Element vertex = threadLocalElement.get();
 
 		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {
