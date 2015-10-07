@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
+import com.gentics.mesh.nav.model.NavigationRequestHandler;
 
 @Component
 @Scope("singleton")
@@ -15,7 +16,7 @@ import com.gentics.mesh.core.AbstractProjectRestVerticle;
 public class NavigationVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
-	NavigationConfiguration navigationConfig;
+	private NavigationRequestHandler handler;
 
 	public NavigationVerticle() {
 		super("navigation");
@@ -27,7 +28,7 @@ public class NavigationVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addNavigationHandler() {
-		route().method(GET).handler(navigationConfig.navigationRequestHandler());
+		route().method(GET).handler(handler);
 	}
 
 }
