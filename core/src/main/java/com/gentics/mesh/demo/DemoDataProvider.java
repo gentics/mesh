@@ -99,43 +99,38 @@ public class DemoDataProvider {
 		long start = System.currentTimeMillis();
 
 		db.noTrx(noTrx -> {
-			try {
+			bootstrapInitializer.initMandatoryData();
+			schemaContainers.clear();
+			tagFamilies.clear();
+			contents.clear();
+			folders.clear();
+			tags.clear();
+			users.clear();
+			roles.clear();
+			groups.clear();
 
-				bootstrapInitializer.initMandatoryData();
-				schemaContainers.clear();
-				tagFamilies.clear();
-				contents.clear();
-				folders.clear();
-				tags.clear();
-				users.clear();
-				roles.clear();
-				groups.clear();
+			root = rootService.meshRoot();
+			english = rootService.languageRoot().findByLanguageTag("en");
+			german = rootService.languageRoot().findByLanguageTag("de");
 
-				root = rootService.meshRoot();
-				english = rootService.languageRoot().findByLanguageTag("en");
-				german = rootService.languageRoot().findByLanguageTag("de");
+			addBootstrappedData();
+			addUserGroupRoleProject();
+			addSchemaContainers();
 
-				addBootstrappedData();
-				addUserGroupRoleProject();
-				addSchemaContainers();
+			addTagFamilies();
+			addTags();
+			addFolderStructure();
+			addContents();
 
-				addTagFamilies();
-				addTags();
-				addFolderStructure();
-				addContents();
-
-				log.info("Nodes:    " + getNodeCount());
-				log.info("Folders:  " + folders.size());
-				log.info("Contents: " + contents.size());
-				log.info("Tags:     " + tags.size());
-				log.info("Schemas: " + schemaContainers.size());
-				log.info("TagFamilies: " + tagFamilies.size());
-				log.info("Users:    " + users.size());
-				log.info("Groups:   " + groups.size());
-				log.info("Roles:    " + roles.size());
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+			log.info("Nodes:    " + getNodeCount());
+			log.info("Folders:  " + folders.size());
+			log.info("Contents: " + contents.size());
+			log.info("Tags:     " + tags.size());
+			log.info("Schemas: " + schemaContainers.size());
+			log.info("TagFamilies: " + tagFamilies.size());
+			log.info("Users:    " + users.size());
+			log.info("Groups:   " + groups.size());
+			log.info("Roles:    " + roles.size());
 		});
 		updatePermissions();
 		long duration = System.currentTimeMillis() - start;

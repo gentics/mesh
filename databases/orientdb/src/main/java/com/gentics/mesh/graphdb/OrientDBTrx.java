@@ -16,7 +16,6 @@ public class OrientDBTrx extends AbstractTrx {
 
 	@Override
 	public void close() {
-		Database.setThreadLocalGraph(getOldGraph());
 		try {
 			if (isSuccess()) {
 				commit();
@@ -24,11 +23,11 @@ public class OrientDBTrx extends AbstractTrx {
 				rollback();
 			}
 		} catch (OConcurrentModificationException e) {
-			getGraph().shutdown();
 			throw e;
+		} finally {
+			// Restore the old graph that was previously swapped with the current graph
+			getGraph().shutdown();
+			Database.setThreadLocalGraph(getOldGraph());
 		}
-		// Restore the old graph that was previously swapped with the current graph
-		getGraph().close();
-		getGraph().shutdown();
 	}
 }

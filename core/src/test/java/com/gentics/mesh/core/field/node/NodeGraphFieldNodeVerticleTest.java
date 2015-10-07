@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -13,6 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
+import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -20,7 +23,6 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.Future;
 
@@ -59,8 +61,9 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		Node node = folder("news");
 		Node node2 = folder("deals");
 
+		Node updatedNode = folder("2015");
 		// Load the node so that we can use it to prepare the update request
-		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid());
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
 		latchFor(future);
 		NodeResponse loadedNode = future.result();
 
@@ -69,10 +72,24 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeResponse field = response.getField("nodeField");
 		assertEquals(node.getUuid(), field.getUuid());
 
+		Future<NodeResponse> loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
+				new NodeRequestParameters().setLanguages("en"));
+		latchFor(loadedNodeFuture);
+		assertSuccess(loadedNodeFuture);
+		field = loadedNodeFuture.result().getField("nodeField");
+		assertEquals(node.getUuid(), field.getUuid());
+
 		// Update the field to point to node2
 		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
 		field = response.getField("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
+
+		loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeRequestParameters().setLanguages("en"));
+		latchFor(loadedNodeFuture);
+		assertSuccess(loadedNodeFuture);
+		field = loadedNodeFuture.result().getField("nodeField");
+		assertEquals(node2.getUuid(), field.getUuid());
+
 	}
 
 	@Test

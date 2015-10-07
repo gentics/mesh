@@ -106,9 +106,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.put("language", language);
 
 			addFields(map, container, node.getSchema());
-			if (log.isDebugEnabled()) {
+			if (log.isTraceEnabled()) {
 				String json = JsonUtil.toJson(map);
-				log.debug(json);
+				log.trace("Search index json:");
+				log.trace(json);
 			}
 			searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
