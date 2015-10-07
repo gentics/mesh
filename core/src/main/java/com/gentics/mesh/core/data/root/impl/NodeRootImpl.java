@@ -194,13 +194,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 				}
 			};
 
+			// Check whether the user is allowed to view the schema
 			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
 					if (requestUser.hasPermission(ac, containerByName, READ_PERM)) {
 						containerFoundHandler.handle(Future.succeededFuture(containerByName));
 					} else {
-						handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", containerByName.getUuid()))));
+						handler.handle(Future.failedFuture(new InvalidPermissionException(
+								ac.i18n("error_missing_perm", containerByName.getUuid() + "/" + schemaInfo.getSchema().getName()))));
 						return;
 					}
 				} else {
