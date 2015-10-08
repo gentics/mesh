@@ -337,6 +337,8 @@ public class BootstrapInitializer {
 			meshRoot.getTagFamilyRoot();
 			meshRoot.getProjectRoot();
 			meshRoot.getSearchQueue();
+			meshRoot.getLanguageRoot();
+
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			UserRoot userRoot = meshRoot.getUserRoot();
 			RoleRoot roleRoot = meshRoot.getRoleRoot();

@@ -379,7 +379,6 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 200;
 
-		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
