@@ -1,8 +1,5 @@
 package com.gentics.mesh.json;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -18,8 +15,6 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
 public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldListItem> {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeFieldListItemDeserializer.class);
-
 	@Override
 	public NodeFieldListItem deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
@@ -33,14 +28,8 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 
 		NodeResponse nodeItem = null;
 		try {
-			// if(log.isDebugEnabled()) {
-			// log.debug("Json: " + jsonNode.toString());
-			// }
 			nodeItem = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
 		} catch (MeshJsonException e) {
-			// if (log.isDebugEnabled()) {
-			// log.debug("Could not deserialize json to expanded Node Response", e);
-			// }
 			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
 			nodeItem = new NodeResponse();
 			nodeItem.setUuid(collapsedItem.getUuid());

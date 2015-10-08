@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -307,11 +306,13 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		TagFamily tagFamily = tagFamily("basic");
+		InternalActionContext ac = getMockedInternalActionContext("");
 		Tag tag = tagFamily.create("someTag", project(), user());
-		assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
-		assertFalse(user().hasPermission(tag, GraphPermission.READ_PERM));
+		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.READ_PERM));
+		assertFalse(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
-		assertTrue(user().hasPermission(tag, GraphPermission.READ_PERM));
+		ac.data().clear();
+		assertTrue(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
 	}
 
 	@Test
@@ -329,20 +330,14 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		Tag tag;
-		try (Trx tx = db.trx()) {
-			tag = tag("red");
-			tag.remove();
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
-				assertNull(rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		Tag tag = tag("red");
+		tag.remove();
+		CountDownLatch latch = new CountDownLatch(1);
+		meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
+			assertNull(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test

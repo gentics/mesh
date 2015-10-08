@@ -1,15 +1,14 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.util.DeploymentUtil.deployAndWait;
-
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.demo.verticle.CustomerVerticle;
 import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
 import io.vertx.core.json.JsonObject;
@@ -33,17 +32,17 @@ public class DemoRunner {
 		FileUtils.deleteDirectory(graphDBDir);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getStorageOptions().setDirectory(null);
-		Mesh mesh = Mesh.initalize(options);
+		Mesh mesh = Mesh.mesh(options);
 
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", 8080);
-			deployAndWait(vertx, config, CustomerVerticle.class);
+			DeploymentUtil.deployAndWait(vertx, config, CustomerVerticle.class);
 			// deployAndWait(vertx, AuthenticationVerticle.class);
 			// deployAndWait(vertx, NavigationVerticle.class);
 			// deployAndWait(vertx, TagCloudVerticle.class);
 			// deployAndWait(vertx, config, StaticContentVerticle.class);
-			deployAndWait(vertx, config, AdminGUIVerticle.class);
+			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
 		mesh.run();
 

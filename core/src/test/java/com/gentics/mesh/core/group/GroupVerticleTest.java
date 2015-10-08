@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,9 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -74,7 +77,6 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 		assertElement(boot.groupRoot(), restGroup.getUuid(), true);
-
 	}
 
 	@Test
@@ -158,13 +160,14 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateGroupWithNoPerm() throws Exception {
 		final String name = "test12345";
 		GroupCreateRequest request = new GroupCreateRequest();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		request.setName(name);
 		String rootUuid;
 		GroupRoot root = meshRoot().getGroupRoot();
 		rootUuid = root.getUuid();
 		role().revokePermissions(root, CREATE_PERM);
 		User user = user();
-		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(ac, root, CREATE_PERM));
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -183,7 +186,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupRoot root = meshRoot().getGroupRoot();
 		// Create and save some groups
 		final int nGroups = 21;
-		Group extraGroupWithNoPerm = root.create(extraGroupName, user());
+		root.create(extraGroupName, user());
 		for (int i = 0; i < nGroups; i++) {
 			Group group = root.create("group_" + i, user());
 			role().grantPermissions(group, READ_PERM);
@@ -249,8 +252,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertEquals(0, future.result().getData().size());
 		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
-		assertEquals(30, future.result().getMetainfo().getPageCount());
-		assertEquals(30, future.result().getMetainfo().getTotalCount());
+		assertEquals(25, future.result().getMetainfo().getPageCount());
+		assertEquals(25, future.result().getMetainfo().getTotalCount());
 		assertEquals(1, future.result().getMetainfo().getPerPage());
 
 	}
@@ -302,10 +305,13 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
+		CountDownLatch latch = new CountDownLatch(1);
 		boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
 			Group reloadedGroup = rh.result();
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
+			latch.countDown();
 		});
+		MeshAssert.failingLatch(latch);
 	}
 
 	@Test

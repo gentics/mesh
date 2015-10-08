@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
@@ -19,39 +18,39 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			deleteObject(ac, "uuid", "user_deleted", boot.userRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			createObject(ac, boot.userRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			updateObject(ac, "uuid", boot.userRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			loadObject(ac, "uuid", READ_PERM, boot.userRoot(), rh -> {
 				loadTransformAndResponde(ac, "uuid", READ_PERM, boot.userRoot());
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tx -> {
 			loadTransformAndResponde(ac, boot.userRoot(), new UserListResponse());
-		}
+		} , ac.errorHandler());
 	}
 
 }

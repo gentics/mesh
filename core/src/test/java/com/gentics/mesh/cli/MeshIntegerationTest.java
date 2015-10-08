@@ -1,31 +1,32 @@
 package com.gentics.mesh.cli;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
+import com.gentics.mesh.test.SpringTestConfiguration;
 
 public class MeshIntegerationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testStartup() throws Exception {
+
+		SpringTestConfiguration.ignored = true;
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
 
-		Mesh.initalize();
+		final CountDownLatch latch = new CountDownLatch(2);
 		final Mesh mesh = Mesh.mesh();
-
-		final AtomicBoolean customLoaderInvoked = new AtomicBoolean(false);
-		final AtomicBoolean meshStarted = new AtomicBoolean(false);
-		mesh.setCustomLoader((vertx) -> {
-			customLoaderInvoked.set(true);
+		mesh.getVertx().eventBus().consumer(Mesh.STARTUP_EVENT_ADDRESS, mh -> {
+			latch.countDown();
 		});
-		final CountDownLatch latch = new CountDownLatch(1);
+		mesh.setCustomLoader((vertx) -> {
+			latch.countDown();
+		});
 
 		new Thread(() -> {
 			try {
@@ -35,9 +36,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 				e.printStackTrace();
 			}
 		}).start();
-		if (latch.await(timeout, TimeUnit.SECONDS)) {
-			assertTrue(meshStarted.get());
-		} else {
+		if (!latch.await(timeout, TimeUnit.SECONDS)) {
 			fail("Mesh did not startup on time. Timeout {" + timeout + "} seconds reached.");
 		}
 	}

@@ -22,51 +22,52 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 
 @Component
 public class GroupCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.groupRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			deleteObject(ac, "uuid", "group_deleted", boot.groupRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			updateObject(ac, "uuid", boot.groupRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.groupRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, boot.groupRoot(), new GroupListResponse());
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			PagingInfo pagingInfo = ac.getPagingInfo();
 			MeshAuthUser requestUser = ac.getUser();
 			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
@@ -77,31 +78,36 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 					ac.fail(e);
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleAddRoleToGroup(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							try (Trx txAdd = db.trx()) {
+							db.trx(txAdd -> {
 								group.addRole(role);
-								txAdd.success();
-							}
-							transformAndResponde(ac, group);
+								txAdd.complete(group);
+							} , (AsyncResult<Group> txAdded) -> {
+								if (txAdded.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
+								} else {
+									transformAndResponde(ac, txAdded.result());
+								}
+							});
 						}
 					});
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
 					// TODO check whether the role is actually part of the group
@@ -109,78 +115,90 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
-							try (Trx txRemove = db.trx()) {
+							db.trx(txRemove -> {
 								group.removeRole(role);
-								txRemove.success();
-							}
-							transformAndResponde(ac, group);
+								txRemove.complete(group);
+							} , (AsyncResult<Group> txAdded) -> {
+								if (txAdded.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
+								} else {
+									transformAndResponde(ac, txAdded.result());
+								}
+							});
 						}
 					});
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleGroupUserList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingInfo pagingInfo = ac.getPagingInfo();
 			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
-
 				if (hasSucceeded(ac, grh)) {
-					Group group = grh.result();
-					Page<? extends User> userPage;
 					try {
-						userPage = group.getVisibleUsers(requestUser, pagingInfo);
+						Group group = grh.result();
+						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 						transformAndResponde(ac, userPage, new UserListResponse());
 					} catch (Exception e) {
 						ac.fail(e);
 					}
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleAddUserToGroup(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
+
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							try (Trx txAdd = db.trx()) {
+							db.trx(tcAdd -> {
 								Group group = grh.result();
 								User user = urh.result();
 								group.addUser(user);
-								txAdd.success();
-							}
-							Group group = grh.result();
-							transformAndResponde(ac, group);
+								tcAdd.complete(group);
+							} , (AsyncResult<Group> addHandler) -> {
+								if (addHandler.failed()) {
+									ac.fail(addHandler.cause());
+								} else {
+									transformAndResponde(ac, addHandler.result());
+								}
+							});
 						}
 					});
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							try (Trx txRemove = db.trx()) {
+							db.trx(tcRemove -> {
 								Group group = grh.result();
 								User user = urh.result();
 								group.removeUser(user);
-								txRemove.success();
-							}
-							Group group = grh.result();
-							transformAndResponde(ac, group);
+								tcRemove.complete(group);
+							} , (AsyncResult<Group> rh) -> {
+								if (rh.failed()) {
+									ac.fail(rh.cause());
+								} else {
+									transformAndResponde(ac, rh.result());
+								}
+							});
 						}
 					});
 				}
 			});
-		}
+		} , ac.errorHandler());
 	}
 
 }

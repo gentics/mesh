@@ -10,9 +10,21 @@ import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 
 public interface NestingGraphField extends GraphField {
 
-	StringGraphField createString(String string);
-
+	/**
+	 * Return the string graph field with the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	StringGraphField getString(String key);
+
+	/**
+	 * Create a new string graph field with the given string.
+	 * 
+	 * @param string
+	 * @return
+	 */
+	StringGraphField createString(String string);
 
 	NodeGraphField createNode(String key, Node node);
 
@@ -22,7 +34,19 @@ public interface NestingGraphField extends GraphField {
 
 	HtmlGraphField createHTML(String key);
 
+	/**
+	 * Return the boolean graph field with the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	BooleanGraphField getBoolean(String key);
 
+	/**
+	 * Create a new boolean graph field within the nesting field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	BooleanGraphField createBoolean(String key);
 }

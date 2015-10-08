@@ -18,7 +18,6 @@ public class CopyVerticle extends AbstractCoreApiVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		// TODO Auto-generated method stub
-
 	}
 
 }

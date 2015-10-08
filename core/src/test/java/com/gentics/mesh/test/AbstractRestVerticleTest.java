@@ -1,6 +1,7 @@
 package com.gentics.mesh.test;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,13 +11,14 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NUtil;
@@ -85,14 +87,22 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		config.put("port", port);
 		EventLoopContext context = ((VertxInternal) vertx).createEventLoopContext("test", config, Thread.currentThread().getContextClassLoader());
 
+		CountDownLatch latch = new CountDownLatch(getVertices().size());
+
 		// Inject spring config and start each verticle
 		for (AbstractWebVerticle verticle : getVertices()) {
 			verticle.setSpringConfig(springConfig);
 			verticle.init(vertx, context);
-			verticle.start();
-			verticle.registerEndPoints();
+			Future<Void> future = Future.future();
+			verticle.start(future);
+			future.setHandler(rh -> {
+				latch.countDown();
+			});
 		}
-		client = new MeshRestClient("localhost", getPort());
+
+		failingLatch(latch);
+
+		client = new MeshRestClient("localhost", getPort(), vertx);
 		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();
@@ -105,11 +115,11 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 		searchProvider.reset();
 		BootstrapInitializer.clearReferences();
-		databaseService.getDatabase().clear();
 		for (AbstractWebVerticle verticle : getVertices()) {
 			verticle.stop();
 		}
-	
+		databaseService.getDatabase().clear();
+
 	}
 
 	protected void resetClientSchemaStorage() throws IOException {

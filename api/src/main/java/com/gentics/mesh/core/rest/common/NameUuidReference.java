@@ -13,19 +13,41 @@ public class NameUuidReference<T> {
 		this.uuid = uuid;
 	}
 
+	/**
+	 * Return the name of the referenced element.
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Set the name of the referenced element.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public T setName(String name) {
 		this.name = name;
 		return (T) this;
 	}
 
+	/**
+	 * Return the uuid of element that is referenced.
+	 * 
+	 * @return
+	 */
 	public String getUuid() {
 		return uuid;
 	}
 
+	/**
+	 * Set the uuid of the referenced element.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	public T setUuid(String uuid) {
 		this.uuid = uuid;
 		return (T) this;

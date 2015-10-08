@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
@@ -25,11 +24,12 @@ import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -89,7 +89,7 @@ public class SearchRestHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				try (Trx tx = db.trx()) {
+				db.noTrx(noTrx -> {
 					rootVertex.reload();
 
 					List<ObservableFuture<T>> futures = new ArrayList<>();
@@ -116,7 +116,7 @@ public class SearchRestHandler {
 						return new ArrayList<T>();
 					} , (x, y) -> {
 						// Check permissions
-						if (y != null && requestUser.hasPermission(y, GraphPermission.READ_PERM)) {
+						if (y != null && requestUser.hasPermission(ac, y, GraphPermission.READ_PERM)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -127,37 +127,46 @@ public class SearchRestHandler {
 						int upper = low + pagingInfo.getPerPage() - 1;
 
 						int n = 0;
+						List<ObservableFuture<TR>> transformedElements = new ArrayList<>();
 						for (T element : list) {
 							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
+								ObservableFuture<TR> obs = RxHelper.observableFuture();
+								transformedElements.add(obs);
 								// Transform node and add it to the list of nodes
-								element.transformToRest(ac, th -> {
-									listResponse.getData().add(th.result());
-								});
+								element.transformToRest(ac, obs.toHandler());
 							}
 							n++;
 						}
 
+						// Set meta information to the rest response
 						PagingMetaInfo metainfo = new PagingMetaInfo();
 						int totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
 						// Cap totalpages to 1
-						if (totalPages == 0) {
-							totalPages = 1;
-						}
+						totalPages = totalPages == 0 ? 1 : totalPages;
 						metainfo.setTotalCount(list.size());
-
 						metainfo.setCurrentPage(pagingInfo.getPage());
 						metainfo.setPageCount(totalPages);
 						metainfo.setPerPage(pagingInfo.getPerPage());
 						listResponse.setMetainfo(metainfo);
 
-						ac.send(toJson(listResponse));
+						// Populate the response data with the transformed elements and send the response
+						RxUtil.concatList(transformedElements).collect(() -> {
+							return listResponse.getData();
+						} , (x, y) -> {
+							x.add(y);
+						}).subscribe(itemList -> {
+							ac.send(JsonUtil.toJson(listResponse));
+						} , error -> {
+							ac.fail(error);
+						});
+
 					} , error -> {
 						log.error("Error while processing search response items", error);
 						ac.fail(error);
 					});
 
-				}
+				});
 			}
 
 			@Override
@@ -168,4 +177,6 @@ public class SearchRestHandler {
 		});
 
 	}
+
+
 }

@@ -9,8 +9,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 /**
  * Wrapper for a bcrypted password hash. The wrapper is used within the {@link SimpleCredentialsMatcher} to validate the token password info.
  * 
- * @author johannes2
- *
  */
 public class BCryptPasswordHash {
 

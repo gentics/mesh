@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
@@ -12,6 +13,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,13 +27,14 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -42,47 +45,41 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.roleRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			deleteObject(ac, "uuid", "role_deleted", boot.roleRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		//		Mesh.vertx().executeBlocking(bc -> {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot());
-		}
-		//		} , false, rh -> {
-		//			if (rh.failed()) {
-		//				rc.fail(rh.cause());
-		//			}
-		//		});
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			updateObject(ac, "uuid", boot.roleRoot());
-		}
+		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse());
-		}
+		} , ac.errorHandler());
 	}
 
 	public void handlePermissionUpdate(InternalActionContext ac) {
-		try (NoTrx tx = db.noTrx()) {
+		db.asyncNoTrx(tc -> {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			if (StringUtils.isEmpty(roleUuid)) {
@@ -96,15 +93,19 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 				// 1. Load the role that should be used
 				loadObjectByUuid(ac, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
 					if (hasSucceeded(ac, rh)) {
-						Role role = rh.result();
+
 						RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
-						//2. Resolve the path to element that is targeted
+						// 2. Resolve the path to element that is targeted
 						MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
 							if (hasSucceeded(ac, vertex)) {
+								if (vertex.result() == null) {
+									ac.errorHandler().handle(failedFuture(ac, NOT_FOUND, "error_element_for_path_not_found", pathToElement));
+									return;
+								}
 								MeshVertex targetElement = vertex.result();
 
 								// Prepare the sets for revoke and grant actions
-								try (Trx txUpdate = db.trx()) {
+								db.trx(txUpdate -> {
 									Set<GraphPermission> permissionsToGrant = new HashSet<>();
 									Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 									permissionsToRevoke.add(CREATE_PERM);
@@ -114,8 +115,9 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 									for (String permName : requestModel.getPermissions()) {
 										GraphPermission permission = GraphPermission.valueOfSimpleName(permName);
 										if (permission == null) {
-											txUpdate.failure();
-											ac.fail(BAD_REQUEST, "role_error_permission_name_unknown", permName);
+											txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST,
+													ac.i18n("role_error_permission_name_unknown", permName)));
+											return;
 										}
 										if (log.isDebugEnabled()) {
 											log.debug("Adding permission {" + permission.getSimpleName() + "} to list of permissions to add.");
@@ -133,17 +135,24 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 									}
 
 									// 3. Apply the permission actions
+									Role role = rh.result();
 									targetElement.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
 											permissionsToRevoke);
-									txUpdate.success();
-								}
-								ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))));
+									txUpdate.complete(role);
+								} , (AsyncResult<Role> txUpdated) -> {
+									if (txUpdated.failed()) {
+										ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
+									} else {
+										Role role = txUpdated.result();
+										ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))));
+									}
+								});
 							}
 						});
 
 					}
 				});
 			}
-		}
+		} , ac.errorHandler());
 	}
 }

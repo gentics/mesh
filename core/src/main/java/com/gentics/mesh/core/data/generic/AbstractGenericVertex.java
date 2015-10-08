@@ -10,7 +10,12 @@ import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractGenericVertex.class);
 
 	private static final String CREATION_TIMESTAMP_PROPERTY_KEY = "creation_timestamp";
 	private static final String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
@@ -46,18 +51,23 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 		User creator = getCreator();
 		if (creator != null) {
-			model.setCreator(creator.transformToUserReference());
+			creator.transformToUserReference(rh -> {
+				model.setCreator(rh.result());
+			});
 		} else {
+			log.error("The object has no creator. Omitting creator field");
 			// TODO throw error and log something
 		}
 
 		User editor = getEditor();
 		if (editor != null) {
-			model.setEditor(editor.transformToUserReference());
+			editor.transformToUserReference(rh -> {
+				model.setEditor(rh.result());
+			});
 		} else {
 			// TODO throw error and log something
 		}
-		model.setPermissions(ac.getUser().getPermissionNames(this));
+		model.setPermissions(ac.getUser().getPermissionNames(ac, this));
 
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());

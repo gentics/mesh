@@ -33,6 +33,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -40,10 +41,15 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
+import io.vertx.ext.web.RoutingContext;
 
 public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
@@ -74,6 +80,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertProject(request, restProject);
 		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
 		CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<Project> reference = new AtomicReference<>();
 		meshRoot().getProjectRoot().findByUuid(restProject.getUuid(), rh -> {
@@ -83,11 +91,11 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		failingLatch(latch);
 		Project project = reference.get();
 		assertNotNull(project);
-		assertTrue(user().hasPermission(project, CREATE_PERM));
-		assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
-		assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
-		assertTrue(user().hasPermission(project.getTagRoot(), CREATE_PERM));
-		assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project, CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getBaseNode(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getTagFamilyRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getTagRoot(), CREATE_PERM));
+		assertTrue(user().hasPermission(ac, project.getNodeRoot(), CREATE_PERM));
 	}
 
 	@Test
@@ -98,6 +106,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -105,6 +115,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		ProjectResponse restProject = createFuture.result();
 		test.assertProject(request, restProject);
+		meshRoot().getProjectRoot().reload();
 		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 		// Read the project
@@ -213,7 +224,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		Project project = project();
 		String uuid = project.getUuid();
 		assertNotNull("The UUID of the project must not be null.", project.getUuid());
-		role().grantPermissions(project, READ_PERM);
+		role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
 		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid);
 		latchFor(future);
@@ -393,18 +404,28 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 5;
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setName("test12345");
+		int nJobs = 100;
+		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
 
-		CyclicBarrier barrier = prepareBarrier(nJobs);
+		//CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName("test12345_" + i);
 			set.add(getClient().createProject(request));
 		}
-		validateCreation(set, barrier);
+		validateCreation(set, null);
+
+		try (Trx tx = db.trx()) {
+			int n = 0;
+			for (Vertex vertex : tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())) {
+				n++;
+			}
+			int nProjectsAfter = meshRoot().getProjectRoot().findAll().size();
+			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
+			assertEquals(nProjectsBefore + nJobs, n);
+		}
 	}
 
 	@Test

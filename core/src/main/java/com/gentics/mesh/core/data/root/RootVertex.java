@@ -69,6 +69,12 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 */
 	void create(InternalActionContext rc, Handler<AsyncResult<T>> handler);
 
+	/**
+	 * Find the object by uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	T findByUuidBlocking(String uuid);
 
 }

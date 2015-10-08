@@ -9,6 +9,9 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 /**
  * A node field container is a aggregation node that holds localized fields.
  *
@@ -22,9 +25,9 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, Microschem
 	 * @param fieldKey
 	 * @param fieldSchema
 	 * @param expandField
-	 * @return
+	 * @param handler
 	 */
-	Field getRestFieldFromGraph(InternalActionContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField);
+	void getRestFieldFromGraph(InternalActionContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField, Handler<AsyncResult<Field>> handler);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.

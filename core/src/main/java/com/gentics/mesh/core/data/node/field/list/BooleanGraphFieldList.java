@@ -7,7 +7,19 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 
 	public static final String TYPE = "boolean";
 
+	/**
+	 * Return the boolean graph field at index position.
+	 * 
+	 * @param index
+	 * @return
+	 */
 	BooleanGraphField getBoolean(int index);
 
+	/**
+	 * Create a boolean graph field within the list.
+	 * 
+	 * @param flag
+	 * @return
+	 */
 	BooleanGraphField createBoolean(Boolean flag);
 }

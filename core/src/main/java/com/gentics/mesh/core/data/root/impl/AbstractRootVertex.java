@@ -32,8 +32,18 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	private static Logger log = LoggerFactory.getLogger(AbstractRootVertex.class);
 
+	/**
+	 * Return the ferma graph persistance class for the items of the root vertex. (eg. NodeImpl, TagImpl...)
+	 * 
+	 * @return
+	 */
 	abstract protected Class<? extends T> getPersistanceClass();
 
+	/**
+	 * Return the label for the item edges.
+	 * 
+	 * @return
+	 */
 	abstract protected String getRootLabel();
 
 	protected void addItem(T item) {
@@ -56,7 +66,8 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 
 	@Override
 	public RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler) {
-		resultHandler.handle(Future.succeededFuture(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
+		resultHandler.handle(Future.succeededFuture(
+				out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null)));
 		return this;
 	}
 

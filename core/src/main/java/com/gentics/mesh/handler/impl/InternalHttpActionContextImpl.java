@@ -11,9 +11,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -21,6 +21,8 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -84,6 +86,16 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	@Override
 	public void setUser(User user) {
 		getRoutingContext().setUser(user);
+	}
+
+	@Override
+	public <T> Handler<AsyncResult<T>> errorHandler() {
+		Handler<AsyncResult<T>> handler = t -> {
+			if(t.failed()) {
+				fail(t.cause());
+			}
+		};
+		return handler;
 	}
 
 	@Override

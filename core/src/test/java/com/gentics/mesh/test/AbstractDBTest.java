@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -16,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -34,10 +31,8 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.demo.UserInfo;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.DatabaseService;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -78,8 +73,8 @@ public abstract class AbstractDBTest {
 		JsonUtil.debugMode = true;
 	}
 
-	public void setupData() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		dataProvider.setup(1);
+	public void setupData() throws Exception {
+		dataProvider.setup();
 	}
 
 	public SchemaContainer schemaContainer(String key) {
@@ -220,24 +215,28 @@ public abstract class AbstractDBTest {
 		return reference.get();
 	}
 
-	protected RoutingContext getMockedRoutingContext(String query) {
-		try (Trx tx = db.trx()) {
-			User user = dataProvider.getUserInfo().getUser();
-			Map<String, Object> map = new HashMap<>();
-			RoutingContext rc = mock(RoutingContext.class);
-			Session session = mock(Session.class);
-			HttpServerRequest request = mock(HttpServerRequest.class);
-			when(request.query()).thenReturn(query);
+	protected InternalActionContext getMockedInternalActionContext(String query) {
+		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query));
+		return ac;
+	}
 
-			MeshAuthUserImpl requestUser = tx.getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
-			when(rc.data()).thenReturn(map);
-			when(rc.request()).thenReturn(request);
-			when(rc.session()).thenReturn(session);
-			JsonObject principal = new JsonObject();
-			principal.put("uuid", user.getUuid());
-			when(rc.user()).thenReturn(requestUser);
-			return rc;
-		}
+	protected RoutingContext getMockedRoutingContext(String query) {
+		User user = dataProvider.getUserInfo().getUser();
+		Map<String, Object> map = new HashMap<>();
+		RoutingContext rc = mock(RoutingContext.class);
+		Session session = mock(Session.class);
+		HttpServerRequest request = mock(HttpServerRequest.class);
+		when(request.query()).thenReturn(query);
+
+		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+		when(rc.data()).thenReturn(map);
+		when(rc.request()).thenReturn(request);
+		when(rc.session()).thenReturn(session);
+		JsonObject principal = new JsonObject();
+		principal.put("uuid", user.getUuid());
+		when(rc.user()).thenReturn(requestUser);
+		return rc;
+
 	}
 
 }

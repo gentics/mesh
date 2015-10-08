@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -37,9 +39,8 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -118,11 +119,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<Node>> handler) {
 
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
-		try (NoTrx tx = db.noTrx()) {
+		db.noTrx(noTx -> {
+
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 
@@ -147,58 +149,60 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 				SchemaContainer schemaContainer = rh.result();
 				try {
 					Schema schema = schemaContainer.getSchema();
-					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
-					if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field"))));
-						return;
-					}
-					if (StringUtils.isEmpty(requestModel.getLanguage())) {
-						handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified"))));
-						return;
-					}
 
-					Node node;
-					SearchQueueBatch batch;
-					try (Trx txCreate = db.trx()) {
+					db.trx(txCreate -> {
+						NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
+						if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
+							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field")));
+							return;
+						}
+						if (StringUtils.isEmpty(requestModel.getLanguage())) {
+							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified")));
+							return;
+						}
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node
 						Node parentNode = loadObjectByUuidBlocking(ac, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot());
-						node = parentNode.create(requestUser, schemaContainer, project);
+						Node node = parentNode.create(requestUser, schemaContainer, project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							handler.handle(Future.failedFuture(
-									new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_language_found", requestModel.getLanguage()))));
-							txCreate.failure();
+							txCreate.fail(error(ac, BAD_REQUEST, "node_no_language_found", requestModel.getLanguage()));
 							return;
 						}
 						try {
 							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
 							container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-						} catch (Exception e) {
-							handler.handle(Future.failedFuture(e));
-							txCreate.failure();
+						} catch (MeshSchemaException e) {
+							txCreate.fail(e);
 							return;
 						}
-						batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-						txCreate.success();
-					}
-					processOrFail(ac, batch, handler, node);
+						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						txCreate.complete(Tuple.tuple(batch, node));
+					} , (AsyncResult<Tuple<SearchQueueBatch, Node>> rhb) -> {
+						if (rhb.failed()) {
+							handler.handle(Future.failedFuture(rhb.cause()));
+						} else {
+							processOrFail(ac, rhb.result().v1(), handler, rhb.result().v2());
+						}
+					});
 				} catch (Exception e) {
 					handler.handle(Future.failedFuture(e));
 					return;
 				}
 			};
 
+			// Check whether the user is allowed to view the schema
 			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
-					if (requestUser.hasPermission(containerByName, READ_PERM)) {
+					if (requestUser.hasPermission(ac, containerByName, READ_PERM)) {
 						containerFoundHandler.handle(Future.succeededFuture(containerByName));
 					} else {
-						handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", containerByName.getUuid()))));
+						handler.handle(Future.failedFuture(new InvalidPermissionException(
+								ac.i18n("error_missing_perm", containerByName.getUuid() + "/" + schemaInfo.getSchema().getName()))));
 						return;
 					}
 				} else {
@@ -214,7 +218,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 					}
 				});
 			}
-		}
+		});
 	}
 
 	@Override

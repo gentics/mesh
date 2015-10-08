@@ -19,8 +19,18 @@ public interface HttpActionContext extends ActionContext {
 		return new HttpActionContextImpl(rc);
 	}
 
+	/**
+	 * Return the set of fileuploads that are accessible through the context.
+	 * 
+	 * @return
+	 */
 	Set<FileUpload> getFileUploads();
 
+	/**
+	 * Return the request headers.
+	 * 
+	 * @return
+	 */
 	MultiMap requestHeaders();
 
 }

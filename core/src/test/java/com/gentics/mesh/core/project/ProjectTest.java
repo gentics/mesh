@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -53,11 +53,8 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		uuidToBeDeleted.put("project.schemaContainerRoot", project().getSchemaContainerRoot().getUuid());
 		uuidToBeDeleted.put("project.nodeRoot", project().getNodeRoot().getUuid());
 
-		try (Trx txDelete = db.trx()) {
-			Project project = project();
-			project.delete();
-			txDelete.success();
-		}
+		Project project = project();
+		project.delete();
 
 		CountDownLatch latch = new CountDownLatch(1);
 		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
@@ -125,14 +122,16 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<ProjectResponse> cf = new CompletableFuture<>();
 		project.transformToRest(ac, rh -> {
-			assertNotNull(rh.result());
-			ProjectResponse response = rh.result();
-			assertEquals(project.getName(), response.getName());
-			assertEquals(project.getUuid(), response.getUuid());
+			cf.complete(rh.result());
 			latch.countDown();
 		});
 		failingLatch(latch);
+		assertNotNull(cf.get());
+		ProjectResponse response = cf.get();
+		assertEquals(project.getName(), response.getName());
+		assertEquals(project.getUuid(), response.getUuid());
 	}
 
 	@Test
@@ -159,10 +158,12 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		Project project = root.getProjectRoot().create("TestProject", user());
-		assertFalse(user().hasPermission(project, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
-		assertTrue(user().hasPermission(project, GraphPermission.CREATE_PERM));
+		ac.data().clear();
+		assertTrue(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
 	}
 
 	@Test

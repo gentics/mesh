@@ -6,21 +6,24 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
@@ -50,13 +53,11 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -71,6 +72,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements Node {
 
@@ -170,8 +174,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		setLinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
+	/**
+	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
+	 */
 	@Override
 	public Node create(User creator, SchemaContainer schemaContainer, Project project) {
+		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node.
 		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaContainer, project);
 		node.setParentNode(this);
 		return node;
@@ -193,125 +201,172 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	@Override
 	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-		NodeResponse restNode = new NodeResponse();
-		fillRest(restNode, ac);
-
-		SchemaContainer container = getSchemaContainer();
-		if (container == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
-		}
-		restNode.setPublished(isPublished());
-
-		try {
-			Schema schema = container.getSchema();
-			if (schema == null) {
-				throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found.");
+		db.asyncNoTrx(trx -> {
+			NodeResponse restNode = new NodeResponse();
+			fillRest(restNode, ac);
+			SchemaContainer container = getSchemaContainer();
+			if (container == null) {
+				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
 			}
-			/* Load the schema information */
-			if (getSchemaContainer() != null) {
-				SchemaReference schemaReference = new SchemaReference();
-				schemaReference.setName(getSchema().getName());
-				schemaReference.setUuid(getSchemaContainer().getUuid());
-				restNode.setSchema(schemaReference);
-			}
+			restNode.setPublished(isPublished());
 
-			restNode.setDisplayField(schema.getDisplayField());
-			Node parentNode = getParentNode();
-			if (parentNode != null) {
-				NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
-				parentNodeReference.setUuid(parentNode.getUuid());
-				parentNodeReference.setDisplayName(parentNode.getDisplayName(ac));
-				//TODO add schema information
-				restNode.setParentNode(parentNodeReference);
-				
-			}
-
-			/* Load the children */
-			if (getSchema().isFolder()) {
-				// //TODO handle uuid
-				// //TODO handle expand
-				List<String> children = new ArrayList<>();
-				// //TODO check permissions
-				for (Node child : getChildren()) {
-					children.add(child.getUuid());
-				}
-				restNode.setContainer(true);
-				restNode.setChildren(children);
-			}
-
-			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
-
-			restNode.setAvailableLanguages(getAvailableLanguageNames());
-			if (schema.isBinary()) {
-				restNode.setFileName(getBinaryFileName());
-				BinaryProperties binaryProperties = new BinaryProperties();
-				binaryProperties.setMimeType(getBinaryContentType());
-				binaryProperties.setFileSize(getBinaryFileSize());
-				binaryProperties.setSha512sum(getBinarySHA512Sum());
-				// TODO determine whether file is an image
-				// binaryProperties.setDpi(getImageDpi());
-				getBinaryImageDPI();
-				getBinaryImageHeight();
-				getBinaryImageWidth();
-				// binaryProperties.setHeight(getImageHeight());
-				// binaryProperties.setWidth(getImageWidth());
-				restNode.setBinaryProperties(binaryProperties);
-			}
-
-			if (fieldContainer == null) {
-				List<String> languageTags = ac.getSelectedLanguageTags();
-				String langInfo = getLanguageInfo(languageTags);
-				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
-						+ langInfo + "}. Fields will be empty.");
-				// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
-			} else {
-				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-				List<String> fieldsToExpand = ac.getExpandedFieldnames();
-				for (FieldSchema fieldEntry : schema.getFields()) {
-					boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
-					com.gentics.mesh.core.rest.node.field.Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry,
-							expandField);
-					if (fieldEntry.isRequired() && restField == null) {
-						/* TODO i18n */
-						throw new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
-								+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+			try {
+				Schema schema = container.getSchema();
+				if (schema == null) {
+					trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
+				} else {
+					restNode.setDisplayField(schema.getDisplayField());
+					// Load the children
+					if (schema.isFolder()) {
+						// //TODO handle uuid
+						// //TODO handle expand
+						List<String> children = new ArrayList<>();
+						// //TODO check permissions
+						for (Node child : getChildren()) {
+							children.add(child.getUuid());
+						}
+						restNode.setContainer(true);
+						restNode.setChildren(children);
 					}
-					if (restField == null) {
-						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-					} else {
-						restNode.getFields().put(fieldEntry.getName(), restField);
+					if (schema.isBinary()) {
+						restNode.setFileName(getBinaryFileName());
+						BinaryProperties binaryProperties = new BinaryProperties();
+						binaryProperties.setMimeType(getBinaryContentType());
+						binaryProperties.setFileSize(getBinaryFileSize());
+						binaryProperties.setSha512sum(getBinarySHA512Sum());
+						// TODO determine whether file is an image
+						// binaryProperties.setDpi(getImageDpi());
+						getBinaryImageDPI();
+						getBinaryImageHeight();
+						getBinaryImageWidth();
+						// binaryProperties.setHeight(getImageHeight());
+						// binaryProperties.setWidth(getImageWidth());
+						restNode.setBinaryProperties(binaryProperties);
 					}
 				}
-			}
 
-			// try {
-			for (Tag tag : getTags(ac)) {
-				TagFamily tagFamily = tag.getTagFamily();
-				String tagFamilyName = tagFamily.getName();
-				String tagFamilyUuid = tagFamily.getUuid();
-				TagReference reference = tag.tansformToTagReference();
-				TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
-				if (group == null) {
-					group = new TagFamilyTagGroup();
-					group.setUuid(tagFamilyUuid);
-					restNode.getTags().put(tagFamilyName, group);
+				// Schema reference
+				SchemaContainer schemaContainer = getSchemaContainer();
+				if (schemaContainer != null) {
+					ObservableFuture<Void> obsSchemaReference = RxHelper.observableFuture();
+					futures.add(obsSchemaReference);
+					schemaContainer.transformToReference(ac, rh -> {
+						if (rh.succeeded()) {
+							restNode.setSchema(rh.result());
+							obsSchemaReference.toHandler().handle(Future.succeededFuture());
+						} else {
+							obsSchemaReference.toHandler().handle(Future.failedFuture(rh.cause()));
+						}
+					});
 				}
-				group.getItems().add(reference);
-			}
-		} catch (InvalidArgumentException e) {
-			// TODO i18n
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags");
-		}
 
-		handler.handle(Future.succeededFuture(restNode));
-		// } catch (IOException e) {
-		// // TODO i18n
-		// throw new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not loaded.", e);
-		// }
+				// Parent node reference
+				Node parentNode = getParentNode();
+				if (parentNode != null) {
+					ObservableFuture<Void> obsParentNodeReference = RxHelper.observableFuture();
+					futures.add(obsParentNodeReference);
+					parentNode.transformToReference(ac, rh -> {
+						if (rh.succeeded()) {
+							restNode.setParentNode(rh.result());
+							obsParentNodeReference.toHandler().handle(Future.succeededFuture());
+						} else {
+							obsParentNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
+						}
+					});
+				}
+
+				NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
+				restNode.setAvailableLanguages(getAvailableLanguageNames());
+
+				if (fieldContainer == null) {
+					List<String> languageTags = ac.getSelectedLanguageTags();
+					String langInfo = getLanguageInfo(languageTags);
+					log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
+							+ langInfo + "}. Fields will be empty.");
+					// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
+				} else {
+					restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
+					List<String> fieldsToExpand = ac.getExpandedFieldnames();
+					for (FieldSchema fieldEntry : schema.getFields()) {
+						boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
+						ObservableFuture<Void> obsRestField = RxHelper.observableFuture();
+						futures.add(obsRestField);
+						fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField, rh -> {
+							if (rh.failed()) {
+								obsRestField.toHandler().handle(Future.failedFuture(rh.cause()));
+							} else {
+								com.gentics.mesh.core.rest.node.field.Field restField = rh.result();
+								if (fieldEntry.isRequired() && restField == null) {
+									/* TODO i18n */
+									//TODO no trx fail. Instead let obsRestField fail
+									trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
+											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
+									obsRestField.toHandler().handle(Future.failedFuture("Field not set"));
+									return;
+								}
+								if (restField == null) {
+									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+								} else {
+									restNode.getFields().put(fieldEntry.getName(), restField);
+									obsRestField.toHandler().handle(Future.succeededFuture());
+								}
+							}
+						});
+					}
+				}
+
+				// Tags
+				for (Tag tag : getTags(ac)) {
+					TagFamily tagFamily = tag.getTagFamily();
+					String tagFamilyName = tagFamily.getName();
+					String tagFamilyUuid = tagFamily.getUuid();
+					TagReference reference = tag.tansformToTagReference();
+					TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
+					if (group == null) {
+						group = new TagFamilyTagGroup();
+						group.setUuid(tagFamilyUuid);
+						restNode.getTags().put(tagFamilyName, group);
+					}
+					group.getItems().add(reference);
+				}
+			} catch (InvalidArgumentException e) {
+				// TODO i18n
+				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
+				return;
+			}
+
+			// Prevent errors in which no futures have been added
+			ObservableFuture<Void> dummyFuture = RxHelper.observableFuture();
+			futures.add(dummyFuture);
+			dummyFuture.toHandler().handle(Future.succeededFuture());
+
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				trx.complete(restNode);
+			} , error -> {
+				trx.fail(error);
+			});
+
+		} , (AsyncResult<NodeResponse> rh) -> {
+			handler.handle(rh);
+		});
 
 		return this;
 
+	}
+
+	@Override
+	public Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler) {
+		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
+		nodeReference.setUuid(getUuid());
+		nodeReference.setDisplayName(getDisplayName(ac));
+		getSchemaContainer().transformToReference(ac, rh -> {
+			nodeReference.setSchema(rh.result());
+		});
+		handler.handle(Future.succeededFuture(nodeReference));
+		return this;
 	}
 
 	@Override
@@ -321,6 +376,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		for (String languageTag : languageTags) {
 			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
+				// MeshRootImpl.getInstance().getLanguageRoot().reload();
+				// Language lan =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
+				// System.out.println(lan);
 				throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", languageTag));
 			}
 			fieldContainer = getGraphFieldContainer(language);
@@ -490,13 +548,16 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		try {
 			GraphFieldContainer container = findNextMatchingFieldContainer(ac);
 			if (container == null) {
-				log.error("Could not find any matching i18n field container for node {" + getUuid() + "}.");
+				if (log.isDebugEnabled()) {
+					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
+				}
 			} else {
+				// Determine the display field name and load the string value from that field.
 				displayFieldName = getSchema().getDisplayField();
 				return container.getString(displayFieldName).getString();
 			}
 		} catch (Exception e) {
-			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}");
+			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
 		}
 		return null;
 	}
@@ -514,18 +575,17 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		SearchQueueBatch batch;
+		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_set"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "error_language_not_set"));
 				return;
 			}
-			try (Trx txUpdate = db.trx()) {
+			db.trx(txUpdate -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
-					handler.handle(ac.failedFuture(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
+					txUpdate.fail(error(ac, BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
 					return;
 				}
 
@@ -539,64 +599,74 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
-					handler.handle(ac.failedFuture(BAD_REQUEST, e.getMessage()));
-					txUpdate.failure();
+					txUpdate.fail(error(ac, BAD_REQUEST, "node_update_failed", e));
+					return;
 				}
-				batch = addIndexBatch(UPDATE_ACTION);
-				txUpdate.success();
-			}
-			processOrFail2(ac, batch, handler);
+				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+				txUpdate.complete(batch);
+			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+				if (txUpdated.failed()) {
+					handler.handle(Future.failedFuture(txUpdated.cause()));
+				} else {
+					processOrFail2(ac, txUpdated.result(), handler);
+				}
+			});
+
 		} catch (IOException e1) {
 			log.error(e1);
-			handler.handle(ac.failedFuture(BAD_REQUEST, e1.getMessage(), e1));
+			handler.handle(failedFuture(ac, BAD_REQUEST, e1.getMessage(), e1));
 		}
 	}
 
 	@Override
-	public void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	public Node moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler) {
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		// TODO should we add a guard that terminates this loop when it runs to long?
 		// Check whether the target node is part of the subtree of the source node.
 		Node parent = targetNode.getParentNode();
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
-				return;
+				handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
+				return this;
 			}
 			parent = parent.getParentNode();
 		}
 
 		try {
 			if (!targetNode.getSchema().isFolder()) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
-				return;
+				handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
+				return this;
 			}
 		} catch (Exception e) {
 			log.error("Could not load schema for target node during move action", e);
 			// TODO maybe add better i18n error
-			handler.handle(ac.failedFuture(BAD_REQUEST, "error"));
-			return;
+			handler.handle(failedFuture(ac, BAD_REQUEST, "error"));
+			return this;
 		}
 
 		if (getUuid().equals(targetNode.getUuid())) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "node_move_error_same_nodes"));
-			return;
+			handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_same_nodes"));
+			return this;
 		}
 
 		// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
-		SearchQueueBatch batch ;
-		try (Trx txMove = db.trx()) {
+		db.trx(txMove -> {
 			setParentNode(targetNode);
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
 			targetNode.setEditor(ac.getUser());
 			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
-			batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
-			txMove.success();
-		}
-		processOrFail2(ac, batch, handler);
-
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			txMove.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txMoved) -> {
+			if (txMoved.failed()) {
+				handler.handle(Future.failedFuture(txMoved.cause()));
+			} else {
+				processOrFail2(ac, txMoved.result(), handler);
+			}
+		});
+		return this;
 	}
 
 	@Override

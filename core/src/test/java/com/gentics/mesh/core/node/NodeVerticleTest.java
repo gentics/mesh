@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -50,7 +49,6 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -286,32 +284,37 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(24, restResponse.getData().size());
+		assertEquals(getNodeCount(), restResponse.getData().size());
 	}
 
 	@Test
 	@Override
-	@Ignore
 	public void testReadMultiple() throws Exception {
-		final String noPermNodeUUID;
 
 		Node parentNode = folder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 		Node noPermNode = parentNode.create(user(), schemaContainer("content"), project());
-		noPermNode.setCreator(user());
-		noPermNodeUUID = noPermNode.getUuid();
+		String noPermNodeUUID = noPermNode.getUuid();
+
+		int nNodes = 20;
+		for (int i = 0; i < nNodes; i++) {
+			Node node = parentNode.create(user(), schemaContainer("content"), project());
+			assertNotNull(node);
+			role().grantPermissions(node, READ_PERM);
+		}
+
 		assertNotNull(noPermNode.getUuid());
 		int perPage = 11;
 		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
-		assertEquals(2, restResponse.getData().size());
+		assertEquals(perPage, restResponse.getData().size());
 
-		// Extra Nodes + permitted node
-		int totalNodes = getNodeCount();
+		// Extra Nodes + permitted nodes
+		int totalNodes = getNodeCount() + nNodes;
 		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
-		assertEquals("The response did not contain the correct amount of items", 2, restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
 		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
 		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
@@ -355,8 +358,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
-		assertEquals(1, list.getMetainfo().getPageCount());
-		assertEquals(getNodeCount(), list.getMetainfo().getTotalCount());
+		assertEquals(2, list.getMetainfo().getPageCount());
+		assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 
 	}
 
@@ -372,7 +375,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(3, restResponse.getMetainfo().getPageCount());
+		assertEquals(2, restResponse.getMetainfo().getPageCount());
 		assertEquals(10, restResponse.getMetainfo().getPerPage());
 		assertEquals(getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
@@ -383,6 +386,90 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<NodeResponse> future = getClient().findNodeByUuid("BOGUS", "someUuuid");
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "project_not_found", "BOGUS");
+	}
+
+	@Test
+	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
+
+		int nJobs = 200;
+		CountDownLatch latch = new CountDownLatch(nJobs);
+
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+
+		long nNodesFound = meshRoot().getNodeRoot().findAll().size();
+
+		NodeCreateRequest createRequest = new NodeCreateRequest();
+		createRequest.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		createRequest.setLanguage("en");
+		createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
+		createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
+		createRequest.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		createRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		createRequest.setPublished(true);
+		createRequest.setParentNodeUuid(uuid);
+
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("folder");
+		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		updateRequest.setSchema(schemaReference);
+		updateRequest.setLanguage("en");
+		updateRequest.setPublished(true);
+		updateRequest.getFields().put("name", FieldUtil.createStringField("UPDATED"));
+
+		// Create various nodes and update them directly after creation. Ensure that update was successful.
+		for (int i = 0; i < nJobs; i++) {
+			log.info("Invoking createNode REST call for job {" + i + "}");
+			Future<NodeResponse> createFuture = getClient().createNode(PROJECT_NAME, createRequest);
+
+			createFuture.setHandler(rh -> {
+				if (rh.failed()) {
+					fail(rh.cause().getMessage());
+				} else {
+					log.info("Created {" + rh.result().getUuid() + "}");
+					NodeResponse response = rh.result();
+					Future<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, response.getUuid(), updateRequest);
+					updateFuture.setHandler(uh -> {
+						if (uh.failed()) {
+							fail(uh.cause().getMessage());
+						} else {
+							log.info("Updated {" + uh.result().getUuid() + "}");
+							Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid());
+							readFuture.setHandler(rf -> {
+								if (rh.failed()) {
+									fail(rh.cause().getMessage());
+								} else {
+									log.info("Read {" + rf.result().getUuid() + "}");
+									Future<GenericMessageResponse> deleteFuture = getClient().deleteNode(PROJECT_NAME, rf.result().getUuid());
+									deleteFuture.setHandler(df -> {
+										if (df.failed()) {
+											fail(df.cause().getMessage());
+										} else {
+											log.info("Deleted {" + rf.result().getUuid() + "} " + df.result().getMessage());
+											latch.countDown();
+										}
+									});
+								}
+
+							});
+
+						}
+					});
+				}
+			});
+			Thread.sleep(250);
+			log.info("Invoked call create requests.");
+		}
+
+		failingLatch(latch);
+
+		long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().size();
+		assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
+		//		for (Future<NodeResponse> future : set) {
+		//			latchFor(future);
+		//			assertSuccess(future);
+		//		}
 	}
 
 	@Test
@@ -413,6 +500,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			set.add(getClient().createNode(PROJECT_NAME, request));
 		}
 
+		// Check each call response
 		Set<String> uuids = new HashSet<>();
 		for (Future<NodeResponse> future : set) {
 			latchFor(future);
@@ -428,14 +516,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	// @Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
-		String uuid;
-		Node node;
 		final String newName = "english renamed name";
-		node = folder("2015");
-		uuid = node.getUuid();
+		Node node = folder("2015");
+		String uuid = node.getUuid();
 		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -450,7 +535,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeRequestParameters parameters = new NodeRequestParameters();
 		parameters.setLanguages("en", "de");
 
-		int nJobs = 5;
+		int nJobs = 115;
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
@@ -464,37 +549,32 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		// assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 
 	}
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
 	public void testDeleteByUUIDMultithreaded() {
 
 		int nJobs = 3;
-		String uuid;
-		try (NoTrx tx = db.noTrx()) {
-			uuid = folder("2015").getUuid();
-		}
-		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		//		Trx.enableDebug();
-		//		Trx.setBarrier(barrier);
+		String uuid = folder("2015").getUuid();
+		//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		// Trx.enableDebug();
+		// Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking deleteNode REST call");
 			set.add(getClient().deleteNode(PROJECT_NAME, uuid));
 		}
 
-		validateDeletion(set, barrier);
+		validateDeletion(set, null);
 
 	}
 
 	@Test
 	@Override
-	// @Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
@@ -509,7 +589,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 	}
 
 	@Test
@@ -525,7 +605,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 	}
 
 	@Test
@@ -747,9 +827,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
-		assertEquals("Could not find value for required schema field with key {name}",
-				((MeshRestClientHttpException) future.cause()).getResponseMessage().getInternalMessage());
+		expectException(future, BAD_REQUEST, "node_error_missing_mandatory_field_value", "name", "content");
 		assertNull(future.result());
 
 	}

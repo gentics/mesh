@@ -24,8 +24,8 @@
 		</encoder>
 	</appender>
 
-	<logger name="io.vertx" level="TRACE"/>
-	<logger name="com.gentics.mesh" level="DEBUG"/>
+	<logger name="io.vertx" level="INFO"/>
+	<logger name="com.gentics.mesh" level="INFO"/>
 	<logger name="org.elasticsearch" level="INFO"/>
 	<logger name="com.gentics.mesh.rest.MeshResponseHandler" level="INFO"/>
 <!-- 

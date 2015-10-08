@@ -11,12 +11,14 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -34,25 +36,22 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false);
-	}
-	
-	@Override
-	public NoTrx noTrx() {
-		return new Neo4jNoTrx(this);
+	public void reset() {
+		neo4jBlueprintGraph.getVertices().forEach(v -> {
+			v.remove();
+		});
 	}
 
 	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false);
+	public NoTrx noTrx() {
+		return new Neo4jNoTrx(new DelegatingFramedGraph<>(neo4jBlueprintGraph, true, false));
 	}
 
 	@Override
 	public Trx trx() {
-		return new Neo4jTrx(this);
+		return new Neo4jTrx(new DelegatingFramedTransactionalGraph<>(neo4jBlueprintGraph, true, false));
 	}
-	
+
 	private void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -124,6 +123,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 	@Override
 	public void restoreGraph(String backupFile) throws IOException {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

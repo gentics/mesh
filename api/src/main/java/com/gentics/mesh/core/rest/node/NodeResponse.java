@@ -37,7 +37,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	private SchemaReference schema;
 
 	private boolean published = false;
-	
+
 	private boolean isContainer;
 
 	private String displayField;
@@ -67,14 +67,29 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 		this.parentNode = parentNode;
 	}
 
+	/**
+	 * Return the tags which were used to tag the node. The tags are nested within their tag families.
+	 * 
+	 * @return
+	 */
 	public Map<String, TagFamilyTagGroup> getTags() {
 		return tags;
 	}
 
+	/**
+	 * Set the schema reference of the node.
+	 * 
+	 * @param schema
+	 */
 	public void setSchema(SchemaReference schema) {
 		this.schema = schema;
 	}
 
+	/**
+	 * Return the schema reference of the node.
+	 * 
+	 * @return
+	 */
 	public SchemaReference getSchema() {
 		return schema;
 	}
@@ -87,42 +102,92 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 		this.children = children;
 	}
 
+	/**
+	 * Return the flag which indicates whether the node is a container.
+	 * 
+	 * @return
+	 */
 	public boolean isContainer() {
 		return isContainer;
 	}
 
+	/**
+	 * Set the container flag which indicates whether the node is a container for other nodes. (eg. a folder)
+	 * 
+	 * @param isContainer
+	 */
 	public void setContainer(boolean isContainer) {
 		this.isContainer = isContainer;
 	}
 
+	/**
+	 * Return the published flag of the node.
+	 * 
+	 * @return
+	 */
 	public boolean isPublished() {
 		return published;
 	}
 
+	/**
+	 * Set the published flag of the node.
+	 * 
+	 * @param published
+	 */
 	public void setPublished(boolean published) {
 		this.published = published;
 	}
 
+	/**
+	 * Return the path of the node.
+	 * 
+	 * @return
+	 */
 	public String getPath() {
 		return path;
 	}
 
+	/**
+	 * Set the path of the node.
+	 * 
+	 * @param path
+	 */
 	public void setPath(String path) {
 		this.path = path;
 	}
 
+	/**
+	 * Return the version of the node.
+	 * 
+	 * @return
+	 */
 	public String getVersion() {
 		return version;
 	}
 
+	/**
+	 * Set the version of the node.
+	 * 
+	 * @param version
+	 */
 	public void setVersion(String version) {
 		this.version = version;
 	}
 
+	/**
+	 * Return the display field name for the node.
+	 * 
+	 * @return
+	 */
 	public String getDisplayField() {
 		return displayField;
 	}
 
+	/**
+	 * Set the display field value for the node.
+	 * 
+	 * @param displayField
+	 */
 	public void setDisplayField(String displayField) {
 		this.displayField = displayField;
 	}
@@ -135,6 +200,11 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 		this.binaryProperties = binaryProperties;
 	}
 
+	/**
+	 * Return the binary filename of the node (may be null when no binary value was set)
+	 * 
+	 * @return
+	 */
 	public String getFileName() {
 		return fileName;
 	}

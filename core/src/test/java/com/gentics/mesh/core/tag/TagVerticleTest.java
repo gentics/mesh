@@ -43,8 +43,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -209,13 +207,9 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testUpdateTagWithConflictingName() {
-		String uuid;
-		String tagFamilyName;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("red");
-			uuid = tag.getUuid();
-			tagFamilyName = tag.getTagFamily().getName();
-		}
+		Tag tag = tag("red");
+		String uuid = tag.getUuid();
+		String tagFamilyName = tag.getTagFamily().getName();
 
 		final String newName = "green";
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -233,15 +227,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 
-		String tagName;
-		String tagUuid;
-		try (Trx tx = db.trx()) {
-			Tag tag = tag("vehicle");
-			tagName = tag.getName();
-			tagUuid = tag.getUuid();
-			role().revokePermissions(tag, UPDATE_PERM);
-			tx.success();
-		}
+		Tag tag = tag("vehicle");
+		String tagName = tag.getName();
+		String tagUuid = tag.getUuid();
+		role().revokePermissions(tag, UPDATE_PERM);
 
 		// Create an tag update request
 		TagUpdateRequest request = new TagUpdateRequest();
@@ -263,53 +252,42 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String name;
-		String uuid;
-		try (NoTrx tx = db.noTrx()) {
-			Tag tag = tag("vehicle");
-			name = tag.getName();
-			uuid = tag.getUuid();
-		}
+		Tag tag = tag("vehicle");
+		String name = tag.getName();
+		String uuid = tag.getUuid();
 
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		try (NoTrx tx = db.noTrx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.tagRoot().findByUuid(uuid, rh -> {
-				assertNull("The tag should have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-			Project project = boot.projectRoot().findByName(PROJECT_NAME);
-			assertNotNull(project);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.tagRoot().findByUuid(uuid, rh -> {
+			assertNull("The tag should have been deleted", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
+		Project project = boot.projectRoot().findByName(PROJECT_NAME);
+		assertNotNull(project);
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		String uuid;
-		try (NoTrx tx = db.noTrx()) {
-			Tag tag = tag("vehicle");
-			uuid = tag.getUuid();
-			role().revokePermissions(tag, DELETE_PERM);
-		}
+		Tag tag = tag("vehicle");
+		String uuid = tag.getUuid();
+		role().revokePermissions(tag, DELETE_PERM);
 
 		Future<GenericMessageResponse> messageFut = getClient().deleteTag(PROJECT_NAME, uuid);
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-		try (NoTrx tx = db.noTrx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			boot.tagRoot().findByUuid(uuid, rh -> {
-				assertNotNull("The tag should not have been deleted", rh.result());
-				latch.countDown();
-			});
-			failingLatch(latch);
-		}
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.tagRoot().findByUuid(uuid, rh -> {
+			assertNotNull("The tag should not have been deleted", rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test
@@ -325,12 +303,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals("SomeName", future.result().getFields().getName());
 
-		try (NoTrx tx = db.noTrx()) {
-			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
-					meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
-			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuidBlocking(future.result().getUuid()));
-		}
+		assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
+				meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
+		assertNotNull("The tag could not be found within the project.tagRoot node.",
+				project().getTagRoot().findByUuidBlocking(future.result().getUuid()));
 
 		future = getClient().findTagByUuid(PROJECT_NAME, future.result().getUuid());
 		latchFor(future);
@@ -341,19 +317,17 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
-		try (NoTrx tx = db.noTrx()) {
-			TagCreateRequest tagCreateRequest = new TagCreateRequest();
-			assertNotNull("We expect that a tag with the name already exists.", tag("red"));
-			tagCreateRequest.getFields().setName("red");
-			String tagFamilyName;
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		assertNotNull("We expect that a tag with the name already exists.", tag("red"));
+		tagCreateRequest.getFields().setName("red");
+		String tagFamilyName;
 
-			TagFamily tagFamily = tagFamilies().get("colors");
-			tagFamilyName = tagFamily.getName();
-			tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
-			Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
-			latchFor(future);
-			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
-		}
+		TagFamily tagFamily = tagFamilies().get("colors");
+		tagFamilyName = tagFamily.getName();
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
 	}
 
 	@Test
@@ -375,9 +349,8 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
-		int nJobs = 10;
+		int nJobs = 100;
 		String uuid = tag("red").getUuid();
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
@@ -404,7 +377,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws Exception {
-		int nJobs = 500;
+		int nJobs = 200;
 
 		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
@@ -420,17 +393,14 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTrx tx = db.noTrx()) {
-
-			int nJobs = 200;
-			Set<Future<TagResponse>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
-			}
-			for (Future<TagResponse> future : set) {
-				latchFor(future);
-				assertSuccess(future);
-			}
+		int nJobs = 200;
+		Set<Future<TagResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
+		}
+		for (Future<TagResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
 		}
 	}
 

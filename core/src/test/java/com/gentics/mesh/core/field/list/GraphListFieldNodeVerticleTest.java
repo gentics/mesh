@@ -133,9 +133,9 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testDateList() throws IOException {
 		setSchema("date");
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add("01.01.1971");
-		listField.add("01.01.1972");
-		listField.add("01.01.1973");
+		listField.add((System.currentTimeMillis() / 1000) + 1);
+		listField.add((System.currentTimeMillis() / 1000) + 2);
+		listField.add((System.currentTimeMillis() / 1000) + 3);
 
 		NodeResponse response = createNode("listField", listField);
 		DateFieldListImpl listFromResponse = response.getField("listField");
@@ -219,16 +219,16 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		setSchema("date");
 
 		DateFieldListImpl listField = new DateFieldListImpl();
-		listField.add("A");
-		listField.add("B");
-		listField.add("C");
+		listField.add(1L);
+		listField.add(2L);
+		listField.add(3L);
 
 		NodeResponse response = createNode("listField", listField);
 		DateFieldListImpl listFromResponse = response.getField("listField");
 		assertEquals(3, listFromResponse.getItems().size());
 
 		// Add another item to the list and update the node
-		listField.add("D");
+		listField.add(4L);
 		response = updateNode("listField", listField);
 		listFromResponse = response.getField("listField");
 		assertEquals(4, listFromResponse.getItems().size());

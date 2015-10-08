@@ -60,20 +60,16 @@ import io.vertx.core.http.HttpMethod;
 
 public class MeshRestClient extends AbstractMeshRestClient {
 
-	private static Vertx vertx;
-
-	public MeshRestClient(String host) {
-		this(host, DEFAULT_PORT);
+	public MeshRestClient(String host, Vertx vertx) {
+		this(host, DEFAULT_PORT, vertx);
 	}
 
-	public MeshRestClient(String host, int port) {
+	public MeshRestClient(String host, int port, Vertx vertx) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);
-		if (vertx == null) {
-			vertx = Vertx.vertx();
-		}
-		client = vertx.createHttpClient(options);
+		//TODO refactor and use a static instance?
+		this.client = vertx.createHttpClient(options);
 	}
 
 	@Override
@@ -209,7 +205,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	public Future<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
 		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
-		return handleRequest(POST, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
+		return handleRequest(PUT, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
 	}
 
 	@Override
@@ -366,7 +362,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
-		return handleRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters), NodeResponse.class);
+		return handleRequest(PUT, "/" + projectName + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters), NodeResponse.class);
 	}
 
 	@Override
@@ -386,7 +382,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<GroupResponse> addUserToGroup(String groupUuid, String userUuid) {
 		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
-		return handleRequest(POST, "/groups/" + groupUuid + "/users/" + userUuid, GroupResponse.class);
+		return handleRequest(PUT, "/groups/" + groupUuid + "/users/" + userUuid, GroupResponse.class);
 	}
 
 	@Override
@@ -404,7 +400,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	@Override
 	public Future<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid) {
 		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
-		return handleRequest(POST, "/groups/" + groupUuid + "/roles/" + roleUuid, GroupResponse.class);
+		return handleRequest(PUT, "/groups/" + groupUuid + "/roles/" + roleUuid, GroupResponse.class);
 	}
 
 	@Override
@@ -450,7 +446,7 @@ public class MeshRestClient extends AbstractMeshRestClient {
 	public Future<SchemaResponse> addSchemaToProject(String schemaUuid, String projectUuid) {
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(POST, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
+		return handleRequest(PUT, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
 	}
 
 	@Override

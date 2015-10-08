@@ -1,4 +1,4 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.graphdb;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,12 +15,11 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.test.AbstractDBTest;
 
-public class DatabaseTest extends AbstractDBTest {
+public class DatabaseTest extends AbstractBasicDBTest {
 
 	private File outputDirectory;
 
@@ -29,12 +28,12 @@ public class DatabaseTest extends AbstractDBTest {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
 		Mesh.mesh().getOptions().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
-		db.reset();
-		setupData();
+		// db.reset();
+		// setupData();
 	}
 
 	@After
-	public void cleanup() throws IOException {
+	public void removeOutputDir() throws IOException {
 		FileUtils.deleteDirectory(outputDirectory);
 	}
 
@@ -55,6 +54,7 @@ public class DatabaseTest extends AbstractDBTest {
 	}
 
 	@Test
+	@Ignore
 	public void testBackup() throws IOException {
 		db.backupGraph(outputDirectory.getAbsolutePath());
 	}

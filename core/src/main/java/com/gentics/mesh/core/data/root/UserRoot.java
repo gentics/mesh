@@ -24,8 +24,20 @@ public interface UserRoot extends RootVertex<User> {
 	 */
 	User create(String username, Group group, User creator);
 
+	/**
+	 * Find the mesh auth user with the given username.
+	 * 
+	 * @param username
+	 * @return
+	 */
 	MeshAuthUser findMeshAuthUserByUsername(String username);
 
+	/**
+	 * Find the user with the given username.
+	 * 
+	 * @param username
+	 * @return
+	 */
 	User findByUsername(String username);
 
 	/**
@@ -41,6 +53,5 @@ public interface UserRoot extends RootVertex<User> {
 	 * @param user
 	 */
 	void removeUser(User user);
-
 
 }

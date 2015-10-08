@@ -9,31 +9,41 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
-import com.syncleus.ferma.DelegatingFramedGraph;
-import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
+import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * OrientDB specific mesh graph database implementation.
+ */
 public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
 	private OrientGraphFactory factory;
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
+	private int maxRetry = 25;
 
 	@Override
 	public void stop() {
@@ -43,10 +53,27 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void init(StorageOptions options, Vertx vertx) {
+		super.init(options, vertx);
+		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
+			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
+			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
+		}
+		start();
+	}
+
+	@Override
 	public void clear() {
-		factory.getNoTx().getVertices().forEach(v -> {
-			v.remove();
-		});
+		for (int i = 0; i < 10; i++) {
+			try {
+				factory.getNoTx().getVertices().forEach(v -> {
+					v.remove();
+				});
+				break;
+			} catch (OConcurrentModificationException e) {
+				log.error("Error while clearing graph.");
+			}
+		}
 	}
 
 	@Override
@@ -56,8 +83,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop");
 		} else {
-			// factory = new OrientGraphFactory("plocal:" + options.getDirectory());// .setupPool(5, 100);
-			factory = new OrientGraphFactory("plocal:" + options.getDirectory());
+			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
 		// Add some indices
 		// memoryGraph.createKeyIndex("name", Vertex.class);
@@ -72,23 +98,63 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(factory.getTx(), true, false);
-	}
-
-	@Override
 	public Trx trx() {
-		return new OrientDBTrx(this);
+		return new OrientDBTrx(factory);
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(factory.getNoTx(), true, false);
+	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+		/**
+		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
+		 * {@link OConcurrentModificationException} is thrown.
+		 */
+		Future<T> currentTransactionCompleted = null;
+		for (int retry = 0; retry < maxRetry; retry++) {
+			currentTransactionCompleted = Future.future();
+			try (Trx tx = trx()) {
+				//TODO FIXME get rid of the countdown latch
+				CountDownLatch latch = new CountDownLatch(1);
+				currentTransactionCompleted.setHandler(rh -> {
+					if (rh.succeeded()) {
+						tx.success();
+					} else {
+						tx.failure();
+					}
+					latch.countDown();
+				});
+				txHandler.handle(currentTransactionCompleted);
+				latch.await(30, TimeUnit.SECONDS);
+				break;
+			} catch (OSchemaException e) {
+				log.error("OrientDB schema exception detected.");
+				//TODO maybe we should invoke a metadata getschema reload? 
+				//factory.getTx().getRawGraph().getMetadata().getSchema().reload();
+				//Database.getThreadLocalGraph().getMetadata().getSchema().reload();
+			} catch (OConcurrentModificationException e) {
+				if (log.isTraceEnabled()) {
+					log.trace("Error while handling transaction. Retrying " + retry, e);
+				}
+			} catch (Exception e) {
+				log.error("Error handling transaction", e);
+				resultHandler.handle(Future.failedFuture(e));
+				return this;
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Retrying .. {" + retry + "}");
+			}
+		}
+		if (currentTransactionCompleted != null && currentTransactionCompleted.isComplete()) {
+			resultHandler.handle(currentTransactionCompleted);
+			return this;
+		}
+		resultHandler.handle(Future.failedFuture("retry limit for trx exceeded"));
+		return this;
+
 	}
 
 	@Override
 	public NoTrx noTrx() {
-		return new OrientDBNoTrx(this);
+		return new OrientDBNoTrx(factory);
 	}
 
 	@Override

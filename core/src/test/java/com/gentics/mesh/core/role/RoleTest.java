@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -20,17 +21,22 @@ import org.junit.Test;
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -78,11 +84,32 @@ public class RoleTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testGrantDuplicates() {
+		Role role = meshRoot().getRoleRoot().create("testRole", group(), user());
+		NodeImpl extraNode = tx.getGraph().addFramedVertex(NodeImpl.class);
+		assertEquals(0, countEdges(role, READ_PERM.label(), Direction.OUT));
+		role.grantPermissions(extraNode, READ_PERM);
+		assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
+		role.grantPermissions(extraNode, READ_PERM);
+		assertEquals("We already got a permission edge. No additional edge should have been created.", 1,
+				countEdges(role, READ_PERM.label(), Direction.OUT));
+	}
+
+	private long countEdges(MeshVertex vertex, String label, Direction direction) {
+		long count = 0;
+		for (Edge edge : vertex.getImpl().getElement().getEdges(direction, label)) {
+			count++;
+		}
+		return count;
+	}
+
+	@Test
 	public void testIsPermitted() throws Exception {
 		User user = user();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		int nRuns = 2000;
 		for (int i = 0; i < nRuns; i++) {
-			user.hasPermission(folder("news"), READ_PERM);
+			user.hasPermission(ac, folder("news"), READ_PERM);
 		}
 	}
 
@@ -126,9 +153,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
 		role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+		InternalActionContext ac = getMockedInternalActionContext("");
 		User user = user();
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				user.hasPermission(meshRoot().getGroupRoot(), CREATE_PERM));
+				user.hasPermission(ac, meshRoot().getGroupRoot(), CREATE_PERM));
 	}
 
 	@Test
@@ -158,14 +186,22 @@ public class RoleTest extends AbstractBasicObjectTest {
 			role.grantPermissions(parentNode, CREATE_PERM);
 		}
 
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
 		Node node = parentNode.create(user(), getSchemaContainer(), project());
-		assertEquals(0, requestUser.getPermissions(node).size());
+		assertEquals(0, requestUser.getPermissions(ac, node).size());
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-		assertEquals(4, requestUser.getPermissions(node).size());
+		ac.data().clear();
+		assertEquals(4, requestUser.getPermissions(ac, node).size());
 
-		for (Role role : roles().values()) {
-			for (GraphPermission permission : GraphPermission.values()) {
-				assertTrue(role.hasPermission(permission, node));
+		try (Trx tx = db.trx()) {
+			for (Role role : roles().values()) {
+				for (GraphPermission permission : GraphPermission.values()) {
+					assertTrue(
+							"The role {" + role.getName() + "} does not grant perm {" + permission.getSimpleName() + "} to the node {"
+									+ node.getUuid() + "} but it should since the parent object got this role permission.",
+							role.hasPermission(permission, node));
+				}
 			}
 		}
 	}
@@ -201,11 +237,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 		MeshAuthUser requestUser = ac.getUser();
 		Page<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 5));
 		assertEquals(roles().size(), page.getTotalElements());
-		assertEquals(5, page.getSize());
+		assertEquals(4, page.getSize());
 
 		page = boot.roleRoot().findAll(requestUser, new PagingInfo(1, 15));
 		assertEquals(roles().size(), page.getTotalElements());
-		assertEquals(9, page.getSize());
+		assertEquals(4, page.getSize());
 	}
 
 	@Test
@@ -233,14 +269,18 @@ public class RoleTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<RoleResponse> cf = new CompletableFuture<>();
 		role.transformToRest(ac, rh -> {
-			RoleResponse restModel = rh.result();
-			assertNotNull(restModel);
-			assertEquals(role.getName(), restModel.getName());
-			assertEquals(role.getUuid(), restModel.getUuid());
+			cf.complete(rh.result());
 			latch.countDown();
 		});
+
 		failingLatch(latch);
+		RoleResponse restModel = cf.get();
+		assertNotNull(restModel);
+		assertEquals(role.getName(), restModel.getName());
+		assertEquals(role.getUuid(), restModel.getUuid());
+
 	}
 
 	@Test
@@ -269,10 +309,12 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		Role role = root.getRoleRoot().create("SuperUser", null, user());
-		assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
-		assertTrue(user().hasPermission(role, GraphPermission.CREATE_PERM));
+		ac.data().clear();
+		assertTrue(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 	}
 
 	@Test

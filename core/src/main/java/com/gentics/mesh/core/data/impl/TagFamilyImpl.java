@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
@@ -33,7 +34,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -121,11 +121,16 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 
 	@Override
 	public TagFamily transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
-		TagFamilyResponse response = new TagFamilyResponse();
-		response.setName(getName());
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			TagFamilyResponse response = new TagFamilyResponse();
+			response.setName(getName());
 
-		fillRest(response, ac);
-		handler.handle(Future.succeededFuture(response));
+			fillRest(response, ac);
+			tc.complete(response);
+		} , (AsyncResult<TagFamilyResponse> rh) -> {
+			handler.handle(rh);
+		});
 		return this;
 	}
 
@@ -146,27 +151,31 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {
-			handler.handle(ac.failedFuture(BAD_REQUEST, "tagfamily_name_not_set"));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "tagfamily_name_not_set"));
 		} else {
 			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
 					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						handler.handle(ac.failedFuture(CONFLICT, "tagfamily_conflicting_name", newName));
+						handler.handle(failedFuture(ac, CONFLICT, "tagfamily_conflicting_name", newName));
 						return;
 					}
-					SearchQueueBatch batch;
-					try (Trx txUpdate = db.trx()) {
+					db.trx(txUpdate -> {
 						tagFamily.setName(newName);
-						batch = addIndexBatch(UPDATE_ACTION);
-						txUpdate.success();
-					}
-					processOrFail2(ac, batch, handler);
+						SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+						txUpdate.complete(batch);
+					} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+						if (txUpdated.failed()) {
+							handler.handle(Future.failedFuture(txUpdated.cause()));
+						} else {
+							processOrFail2(ac, txUpdated.result(), handler);
+						}
+					});
 				}
 			});
 		}

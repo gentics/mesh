@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.orientdb;
 
 import org.junit.Test;
 
+import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.*;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;

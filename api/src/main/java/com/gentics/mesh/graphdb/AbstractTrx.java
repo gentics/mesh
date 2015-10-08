@@ -6,32 +6,37 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public abstract class AbstractTrx extends AbstractTrxBase implements Trx {
+public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGraph> implements Trx {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTrx.class);
 
 	private boolean isSuccess = false;
 
+	@Override
 	public void success() {
 		isSuccess = true;
 	}
 
+	@Override
 	public void failure() {
 		isSuccess = false;
 	}
 
-	public boolean isSuccess() {
+	protected boolean isSuccess() {
 		return isSuccess;
 	}
 
 	@Override
 	public void close() {
+		Database.setThreadLocalGraph(getOldGraph());
 		if (isSuccess()) {
 			commit();
 		} else {
 			rollback();
 		}
-		Database.setThreadLocalGraph(getOldGraph());
+		// Restore the old graph that was previously swapped with the current graph
+		getGraph().close();
+		getGraph().shutdown();
 	}
 
 	protected void commit() {

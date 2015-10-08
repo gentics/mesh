@@ -6,6 +6,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
+/**
+ * A search queue is a queue which holds search queue batches. Each batch is used to update the search index documents. Once a batch has been processed it
+ * should be removed from the search queue.
+ *
+ */
 public interface SearchQueue extends MeshVertex {
 
 	/**
@@ -52,8 +57,18 @@ public interface SearchQueue extends MeshVertex {
 	 */
 	void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException;
 
+	/**
+	 * Remove the search queue batch from the queue.
+	 * 
+	 * @param batch
+	 */
 	void remove(SearchQueueBatch batch);
 
+	/**
+	 * Add the search queue batch to the queue.
+	 * 
+	 * @param batch
+	 */
 	void add(SearchQueueBatch batch);
 
 }

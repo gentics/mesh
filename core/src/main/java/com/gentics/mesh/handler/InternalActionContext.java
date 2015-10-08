@@ -7,9 +7,14 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A internal action context exposes various internal method which a api action context would normally not dare to expose.
+ */
 public interface InternalActionContext extends ActionContext {
 
 	public static InternalActionContext create(RoutingContext rc) {
@@ -18,8 +23,18 @@ public interface InternalActionContext extends ActionContext {
 
 	void setUser(User user);
 
+	/**
+	 * Return the project that may be set when this action context is used for a project specific request (eg. /api/v1/dummy/nodes..)
+	 * 
+	 * @return
+	 */
 	Project getProject();
 
+	/**
+	 * Return the mesh auth user.
+	 * 
+	 * @return
+	 */
 	MeshAuthUser getUser();
 
 	/**
@@ -36,5 +51,7 @@ public interface InternalActionContext extends ActionContext {
 	 * @return Paging information
 	 */
 	PagingInfo getPagingInfo();
+
+	public <T> Handler<AsyncResult<T>> errorHandler();
 
 }

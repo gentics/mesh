@@ -7,12 +7,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.ElasticSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -32,6 +32,9 @@ import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
 
+/**
+ * Main spring bean providing configuration class.
+ */
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
 public class MeshSpringConfiguration {
@@ -45,7 +48,7 @@ public class MeshSpringConfiguration {
 		instance = this;
 	}
 
-	public static MeshSpringConfiguration getMeshSpringConfiguration() {
+	public static MeshSpringConfiguration getInstance() {
 		return instance;
 	}
 
@@ -65,7 +68,7 @@ public class MeshSpringConfiguration {
 			throw new RuntimeException(message);
 		}
 		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-		database.init(options);
+		database.init(options, Mesh.vertx());
 		return database;
 	}
 

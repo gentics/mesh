@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -31,10 +31,16 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.CookieHandler;
 
 /**
- * Central storage for all apex request routers.
+ * Central storage for all vertx web request routers.
  * 
- * @author johannes2
+ * Structure:
+ *  
+ * ROOT_ROUTER(:coreRouter) -> customRouters
+ *                          -> apiRouters -> apiSubRouter (eg: /users.., /roles..)
+ *                          -> projectRouters (eg: /Dummy/nodes)
  *
+ * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
+ * 
  */
 @Component
 @Scope(value = "singleton")

@@ -420,7 +420,7 @@ traits:
             application/json:
               example: !include json/GenericMessageResponse.example.json
     /projects/{uuid}:
-      post:
+      put:
         description: Add the schema to the project.
         responses:
           200:
@@ -510,7 +510,7 @@ traits:
       is: [ sortable, paged ]
       get:
         description: Load the tags that tag the node.
-      post:
+      put:
         description: Add the tag to the node.
       delete:
         description: Remove the tag from the node.

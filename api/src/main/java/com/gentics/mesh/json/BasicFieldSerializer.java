@@ -20,15 +20,21 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
+/**
+ * Serializer which will handle basic fields (eg. String, html, number) which does not have a nested object within the field JSON format.
+ *
+ * @param <T>
+ */
 public class BasicFieldSerializer<T extends Field> extends JsonSerializer<T> {
 
 	@Override
 	public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
 
 		if (value instanceof FieldSchema) {
-			//gen.writeObject(value);
 			return;
 		} else {
+
+			// Determine the type of the field and the specific deseralisation calls to produce the simplified json
 			FieldTypes type = FieldTypes.valueByName(value.getType());
 			switch (type) {
 			case HTML:
@@ -68,27 +74,9 @@ public class BasicFieldSerializer<T extends Field> extends JsonSerializer<T> {
 				if (dateField.getDate() == null) {
 					gen.writeNull();
 				} else {
-					gen.writeString(dateField.getDate());
+					gen.writeNumber(dateField.getDate());
 				}
 				break;
-			//			case NODE:
-			//				NodeField nodeField = (NodeFieldImpl) value;
-			//				// TODO impl
-			//				break;
-			//			case LIST:
-			//				//TODO just continue with normal deserialization
-			//				//ListField listField = (ListFieldImpl) value;
-			//				// TODO impl
-			//				gen.writeObject(value);
-			//				break;
-			//			case SELECT:
-			//				SelectField selectField = (SelectFieldImpl) value;
-			//				// TODO impl
-			//				break;
-			//			case MICROSCHEMA:
-			//				MicroschemaField microschemaField = (MicroschemaFieldImpl) value;
-			//				// TODO impl
-			//				break;
 			default:
 				//TODO handle error
 				break;

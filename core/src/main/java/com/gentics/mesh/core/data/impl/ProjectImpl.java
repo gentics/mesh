@@ -37,11 +37,11 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -140,11 +140,16 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 
 	@Override
 	public Project transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
-		ProjectResponse projectResponse = new ProjectResponse();
-		projectResponse.setName(getName());
-		projectResponse.setRootNodeUuid(getBaseNode().getUuid());
-		fillRest(projectResponse, ac);
-		handler.handle(Future.succeededFuture(projectResponse));
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			ProjectResponse projectResponse = new ProjectResponse();
+			projectResponse.setName(getName());
+			projectResponse.setRootNodeUuid(getBaseNode().getUuid());
+			fillRest(projectResponse, ac);
+			tc.complete(projectResponse);
+		} , (AsyncResult<ProjectResponse> rh) -> {
+			handler.handle(rh);
+		});
 		return this;
 	}
 
@@ -186,28 +191,29 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		SearchQueueBatch batch;
-		try (Trx txUpdate = db.trx()) {
+		db.trx(txUpdate -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
 				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
-					handler.handle(ac.failedFuture(CONFLICT, "project_conflicting_name"));
-					txUpdate.failure();
+					txUpdate.fail(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name")));
 					return;
 				}
 				setName(requestModel.getName());
 			}
-
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.success();
-		}
-		processOrFail2(ac, batch, handler);
-
+			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+			txUpdate.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+			if (txUpdated.failed()) {
+				handler.handle(Future.failedFuture(txUpdated.cause()));
+			} else {
+				processOrFail2(ac, txUpdated.result(), handler);
+			}
+		});
 	}
 
 	@Override

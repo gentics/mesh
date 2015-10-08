@@ -106,9 +106,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.put("language", language);
 
 			addFields(map, container, node.getSchema());
-			if (log.isDebugEnabled()) {
+			if (log.isTraceEnabled()) {
 				String json = JsonUtil.toJson(map);
-				log.debug(json);
+				log.trace("Search index json:");
+				log.trace(json);
 			}
 			searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
@@ -121,7 +122,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while storing node document.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 
@@ -161,7 +162,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			log.error("Error while updating node document.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 	}
@@ -226,7 +227,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					case "date":
 						DateGraphFieldList graphDateList = container.getDateList(fieldSchema.getName());
 						if (graphDateList != null) {
-							List<String> dateItems = new ArrayList<>();
+							List<Long> dateItems = new ArrayList<>();
 							for (DateGraphField listItem : graphDateList.getList()) {
 								dateItems.add(listItem.getDate());
 							}

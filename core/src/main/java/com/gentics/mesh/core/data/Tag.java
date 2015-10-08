@@ -70,6 +70,12 @@ public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVer
 	 */
 	TagGraphFieldContainer getFieldContainer(Language language);
 
+	/**
+	 * Return the tag graph field container. Create the container for the given language if non could be found.
+	 * 
+	 * @param language
+	 * @return
+	 */
 	TagGraphFieldContainer getOrCreateFieldContainer(Language language);
 
 	/**

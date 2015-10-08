@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -26,15 +27,22 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
+
+	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
 	@Override
 	public String getType() {
@@ -79,25 +87,46 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public void grantPermissions(MeshVertex node, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-			addFramedEdge(permission.label(), node.getImpl());
+
+			boolean found = false;
+			for (Edge edge : this.getElement().getEdges(Direction.OUT, permission.label())) {
+				if (edge.getVertex(Direction.IN).getId().equals(node.getImpl().getId())) {
+					found = true;
+
+					if (log.isTraceEnabled()) {
+						Vertex inV = edge.getVertex(Direction.IN);
+						Vertex outV = edge.getVertex(Direction.OUT);
+						log.trace("Found edge: " + edge.getLabel() + " from " + inV.getProperty("uuid") + ":"
+								+ inV.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " to " + outV.getProperty("uuid") + ":"
+								+ outV.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + ":" + outV.getProperty("name"));
+					}
+					break;
+				}
+			}
+			if (!found) {
+				addFramedEdge(permission.label(), node.getImpl());
+			}
 		}
 	}
 
 	@Override
 	public Role transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
 
-		RoleResponse restRole = new RoleResponse();
-		restRole.setName(getName());
-		fillRest(restRole, ac);
-
-		for (Group group : getGroups()) {
-			GroupResponse restGroup = new GroupResponse();
-			restGroup.setName(group.getName());
-			restGroup.setUuid(group.getUuid());
-			restRole.getGroups().add(restGroup);
-		}
-
-		handler.handle(Future.succeededFuture(restRole));
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			RoleResponse restRole = new RoleResponse();
+			restRole.setName(getName());
+			fillRest(restRole, ac);
+			for (Group group : getGroups()) {
+				GroupResponse restGroup = new GroupResponse();
+				restGroup.setName(group.getName());
+				restGroup.setUuid(group.getUuid());
+				restRole.getGroups().add(restGroup);
+			}
+			tc.complete(restRole);
+		} , (AsyncResult<RoleResponse> rh) -> {
+			handler.handle(rh);
+		});
 		return this;
 	}
 
@@ -117,21 +146,26 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
 			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				handler.handle(ac.failedFuture(CONFLICT, "role_conflicting_name"));
+				handler.handle(failedFuture(ac, CONFLICT, "role_conflicting_name"));
 				return;
 			}
-			SearchQueueBatch batch;
-			try (Trx txUpdate = db.trx()) {
+
+			db.trx(tc -> {
 				setName(requestModel.getName());
-				batch = addIndexBatch(UPDATE_ACTION);
-				txUpdate.success();
-			}
-			processOrFail2(ac, batch, handler);
+				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+				tc.complete(batch);
+			} , (AsyncResult<SearchQueueBatch> rh) -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					processOrFail2(ac, rh.result(), handler);
+				}
+			});
 		}
 
 	}

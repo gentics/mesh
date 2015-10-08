@@ -1,15 +1,15 @@
 package com.gentics.mesh.util;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 public final class FileUtils {
 
@@ -37,9 +37,15 @@ public final class FileUtils {
 			} catch (Exception e) {
 				bc.fail(e);
 			}
-		}, hashHandler);
+		} , hashHandler);
 	}
 
+	/**
+	 * Convert the byte array to a hex formatted string.
+	 * 
+	 * @param bytes
+	 * @return
+	 */
 	public static String bytesToHex(byte[] bytes) {
 		char[] hexChars = new char[bytes.length * 2];
 		for (int j = 0; j < bytes.length; j++) {

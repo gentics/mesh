@@ -128,40 +128,36 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testSearchForChildNodes() throws JSONException, InterruptedException {
 		fullIndex();
 
-		try (Trx tx = db.trx()) {
-			Node parentNode = folder("news");
+		Node parentNode = folder("news");
 
-			Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()));
-			latchFor(future);
-			assertSuccess(future);
-			NodeListResponse response = future.result();
-			assertNotNull(response);
-			assertFalse(response.getData().isEmpty());
-			//TODO verify the found nodes are correct
-			//			for (NodeResponse childNode : response.getData()) {
-			//				System.out.println(childNode.getUuid());
-			//				System.out.println(((StringField)childNode.getField("name")).getString());
-			//			}
-		}
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+		// TODO verify the found nodes are correct
+		// for (NodeResponse childNode : response.getData()) {
+		// System.out.println(childNode.getUuid());
+		// System.out.println(((StringField)childNode.getField("name")).getString());
+		// }
 	}
 
 	@Test
 	@Override
 	public void testDocumentCreation() throws Exception {
-		try (Trx tx = db.trx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
-			StringGraphFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
-			list.createString("one");
-			list.createString("two");
-			list.createString("three");
-			list.createString("four");
+		StringGraphFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
+		list.createString("one");
+		list.createString("two");
+		list.createString("three");
+		list.createString("four");
 
-			Schema schema = node.getSchemaContainer().getSchema();
-			schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
-			node.getSchemaContainer().setSchema(schema);
-			tx.success();
-		}
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
+		node.getSchemaContainer().setSchema(schema);
+
 		// Invoke a dummy search on an empty index
 		String json = "{";
 		json += "				\"sort\" : {";
@@ -187,7 +183,6 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			batch = searchQueue.createBatch("0");
-			Node node = folder("2015");
 			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 			tx.success();
 		}

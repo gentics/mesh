@@ -53,92 +53,71 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 	@Test
 	public void testQueueThreadSafety() throws Exception {
 
-		SearchQueue searchQueue;
-
 		// Add some entries to the search queue
-		try (Trx tx = db.trx()) {
-			searchQueue = boot.meshRoot().getSearchQueue();
-			SearchQueueBatch batch = searchQueue.createBatch("0");
-			for (Node node : boot.nodeRoot().findAll()) {
-				batch.addEntry(node.getUuid(), Node.TYPE, CREATE_ACTION);
-			}
-			tx.success();
+		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+		SearchQueueBatch batch = searchQueue.createBatch("0");
+		for (Node node : boot.nodeRoot().findAll()) {
+			batch.addEntry(node.getUuid(), Node.TYPE, CREATE_ACTION);
 		}
 
-		try (Trx tx = db.trx()) {
-			long size = searchQueue.getSize();
-			SearchQueueBatch batch = searchQueue.take();
-			assertNotNull(batch);
-			assertEquals(size - 1, searchQueue.getSize());
-		}
+		long size = searchQueue.getSize();
+		System.out.println("Size: " + size);
 
-		try (Trx tx = db.trx()) {
-			long size = searchQueue.getSize();
-			System.out.println("Size: " + size);
-			CountDownLatch latch = new CountDownLatch((int) size);
-			for (int i = 0; i <= size; i++) {
-				Runnable r = () -> {
-//					int z = 0;
-					while (true) {
-						// try {
-						try (Trx txTake = db.trx()) {
-							try {
-								SearchQueueBatch currentBatch = searchQueue.take();
-								assertNotNull("Batch was null.", currentBatch);
-							} catch (Exception e) {
-								fail(e.getMessage());
-							}
-							txTake.success();
+		CountDownLatch latch = new CountDownLatch((int) size);
+		for (int i = 0; i <= size; i++) {
+			Runnable r = () -> {
+				while (true) {
+					try (Trx txTake = db.trx()) {
+						try {
+							SearchQueueBatch currentBatch = searchQueue.take();
+							assertNotNull("Batch was null.", currentBatch);
+						} catch (Exception e) {
+							fail(e.getMessage());
 						}
-						System.out.println("Got the element");
-						latch.countDown();
-						break;
-						// } catch (OConcurrentModificationException e) {
-						// System.out.println("Got it - Try: " + z + " Size: " + searchQueue.getSize());
-						// z++;
-						// }
+						txTake.success();
 					}
-				};
-				Thread t = new Thread(r);
-				t.start();
-			}
+					System.out.println("Got the element");
+					latch.countDown();
+					break;
+				}
+			};
+			Thread t = new Thread(r);
+			t.start();
 			failingLatch(latch);
 		}
 
-		try (Trx tx = db.trx()) {
-			searchQueue.reload();
-			assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
-			SearchQueueBatch batch = searchQueue.take();
-			assertNull(batch);
+		searchQueue.reload();
+		assertEquals("We took all elements. The queue should be empty", 0, searchQueue.getSize());
+		batch = searchQueue.take();
+		assertNull(batch);
 
-			CountDownLatch latch2 = new CountDownLatch(10);
-			AtomicReference<AssertionError> errorReference = new AtomicReference<>();
-			for (int i = 0; i < 10; i++) {
-				Runnable r = () -> {
-					try (Trx tx2 = db.trx()) {
+		CountDownLatch latch2 = new CountDownLatch(10);
+		AtomicReference<AssertionError> errorReference = new AtomicReference<>();
+		for (int i = 0; i < 10; i++) {
+			Runnable r = () -> {
+				try (Trx tx2 = db.trx()) {
+					try {
+						SearchQueueBatch currentBatch = searchQueue.take();
+						latch2.countDown();
 						try {
-							SearchQueueBatch currentBatch = searchQueue.take();
-							latch2.countDown();
-							try {
-								assertNull("Batch was null.", currentBatch);
-							} catch (AssertionError e) {
-								if (errorReference.get() == null) {
-									errorReference.set(e);
-								}
+							assertNull("Batch was null.", currentBatch);
+						} catch (AssertionError e) {
+							if (errorReference.get() == null) {
+								errorReference.set(e);
 							}
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				};
-				Thread t = new Thread(r);
-				t.start();
-			}
-			failingLatch(latch2);
-			if (errorReference.get() != null) {
-				throw errorReference.get();
-			}
+				}
+			};
+			Thread t = new Thread(r);
+			t.start();
+		}
+		failingLatch(latch2);
+		if (errorReference.get() != null) {
+			throw errorReference.get();
 		}
 
 	}

@@ -217,6 +217,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		RoleCreateRequest roleCreate = new RoleCreateRequest();
 		roleCreate.setName("super editors");
+		roleCreate.setGroupUuid(randomUUID());
 		write(roleCreate);
 
 		RolePermissionRequest rolePermission = new RolePermissionRequest();
@@ -242,7 +243,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		tag.setEditor(getUserReference());
 		tag.getFields().setName("tagName");
 		tag.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-		tag.setTagFamilyReference(tagFamilyReference);
+		tag.setTagFamily(tagFamilyReference);
 		write(tag);
 
 		TagUpdateRequest tagUpdate = new TagUpdateRequest();
@@ -259,7 +260,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		tag2.setEdited(getTimestamp());
 		tag2.setEditor(getUserReference());
 		tag2.getFields().setName("Name for language tag en");
-		tag2.setTagFamilyReference(tagFamilyReference);
+		tag2.setTagFamily(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 
 		TagListResponse tagList = new TagListResponse();
@@ -429,7 +430,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -442,9 +443,12 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
+		nodeResponse.setSchema(getSchemaReference("content"));
+
 		NodeReferenceImpl parentNodeReference = new NodeReferenceImpl();
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
+
 		nodeResponse.setParentNode(parentNodeReference);
 		nodeResponse.setCreator(getUserReference());
 		nodeResponse.setCreated(getTimestamp());
@@ -457,7 +461,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("teaser", createStringField("Dummy teaser for en"));
 		fields.put("content", createStringField("Content for language tag en"));
 
-		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "CREATE");
 		return nodeResponse;
 	}
@@ -467,6 +470,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		contentCreate.setParentNodeUuid(randomUUID());
 		contentCreate.setLanguage("en");
 		contentCreate.setPublished(true);
+		contentCreate.setSchema(getSchemaReference("content"));
 
 		Map<String, Field> fields = contentCreate.getFields();
 		fields.put("name", createStringField("English name"));
@@ -477,12 +481,11 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
 
-		contentCreate.setSchema(getSchemaReference("content"));
 		return contentCreate;
 	}
 
@@ -490,13 +493,14 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
 		nodeUpdate.setPublished(true);
+		nodeUpdate.setSchema(getSchemaReference("content"));
 
 		Map<String, Field> fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField("22.12.2015"));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));

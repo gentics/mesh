@@ -4,10 +4,14 @@ import java.io.IOException;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 public class TinkerGraphDatabase extends AbstractDatabase {
 
@@ -18,25 +22,13 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public FramedGraph startNoTransaction() {
-		return new DelegatingFramedGraph<>(mockedGraph, true, false);
-	}
-	
-	@Override
 	public NoTrx noTrx() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public Trx trx() {
-		// TODO Auto-generated method stub
-		return null;
+		return new TinkergraphNoTrx(new DelegatingFramedGraph<>(mockedGraph, true, false));
 	}
 
 	@Override
-	public FramedTransactionalGraph startTransaction() {
-		return new DelegatingFramedTransactionalGraph<>(mockedGraph, true, false);
+	public Trx trx() {
+		return new TinkergraphTrx(new DelegatingFramedTransactionalGraph<>(mockedGraph, true, false));
 	}
 
 	@Override
@@ -67,5 +59,11 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	@Override
 	public void importGraph(String importFile) throws IOException {
 		// Not supported
+	}
+
+	@Override
+	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

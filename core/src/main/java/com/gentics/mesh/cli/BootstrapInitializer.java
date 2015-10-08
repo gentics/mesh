@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -63,9 +64,9 @@ import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.MeshVerticleConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchVerticle;
@@ -79,6 +80,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
+/**
+ * The bootstrap initializer takes care of creating all mandatory graph elements for mesh. This includes the creation of MeshRoot, ProjectRoot, NodeRoot,
+ * GroupRoot, UserRoot and various element such as the Admin User, Admin Group, Admin Role.
+ */
 @Component
 public class BootstrapInitializer {
 
@@ -113,6 +118,11 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(AdminVerticle.class);
 	}
 
+	/**
+	 * Add the given verticle class to the list of mandatory verticles
+	 * 
+	 * @param clazz
+	 */
 	private void addMandatoryVerticle(Class<? extends AbstractVerticle> clazz) {
 		mandatoryVerticles.put(clazz.getSimpleName(), clazz);
 	}
@@ -161,14 +171,22 @@ public class BootstrapInitializer {
 			joinCluster();
 		}
 		initMandatoryData();
+		initPermissions();
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		try (Trx tx = db.trx()) {
-			initProjects();
-		}
-		Mesh.vertx().eventBus().send("mesh-startup-complete", true);
+		db.asyncNoTrx(tx -> {
+			try {
+				initProjects();
+				tx.complete();
+			} catch (Exception e) {
+				tx.fail(e);
+			}
+		} , completed -> {
+			log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
+			Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
+		});
 
 	}
 
@@ -232,10 +250,13 @@ public class BootstrapInitializer {
 	@Autowired
 	private RouterStorage routerStorage;
 
+	/**
+	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
+	 * 
+	 * @return
+	 */
 	public MeshRoot meshRoot() {
 		// Check reference graph and finally create the node when it can't be found.
-		//		if (meshRoot == null) {
-		//			synchronized (BootstrapInitializer.class) {
 		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 		if (foundMeshRoot == null) {
 			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
@@ -244,12 +265,7 @@ public class BootstrapInitializer {
 				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
 			}
 		}
-		//				else {
-		//					meshRoot = foundMeshRoot;
-		//				}
-		//			}
 		return foundMeshRoot;
-		//		}
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {
@@ -441,30 +457,44 @@ public class BootstrapInitializer {
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 			initLanguages(languageRoot);
 
-			initPermissions(tx, adminRole);
-
 			schemaStorage.init();
 			tx.success();
 		}
 
 	}
 
-	private void initPermissions(Trx tx, Role role) {
-		for (Vertex vertex : tx.getGraph().getVertices()) {
-			WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-			// TODO typecheck? and verify how orient will behave
-			if (role.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-				log.info("Skipping own role");
-				continue;
+	/**
+	 * Grant CRUD to all objects within the graph to the Admin Role.
+	 */
+	public void initPermissions() {
+		try (Trx tx = db.trx()) {
+			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
+			for (Vertex vertex : tx.getGraph().getVertices()) {
+				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+				// TODO typecheck? and verify how orient will behave
+				if (adminRole.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
+					log.info("Skipping own role");
+					continue;
+				}
+				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				adminRole.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+				if (log.isTraceEnabled()) {
+					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");
+				}
 			}
-			MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-			if (log.isTraceEnabled()) {
-				log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + role.getUuid() + "}");
-			}
+			tx.success();
 		}
 	}
 
+	/**
+	 * Initialize the languages by loading the json file and creating the language graph elements.
+	 * 
+	 * @param rootNode
+	 *            Aggregation node to which the languages will be assigned
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
 	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
 
 		long start = System.currentTimeMillis();
@@ -482,7 +512,9 @@ public class BootstrapInitializer {
 			if (language == null) {
 				language = rootNode.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
-				log.debug("Added language {" + languageTag + " / " + languageName + "}");
+				if (log.isDebugEnabled()) {
+					log.debug("Added language {" + languageTag + " / " + languageName + "}");
+				}
 			}
 		}
 		long diff = System.currentTimeMillis() - start;

@@ -1,4 +1,4 @@
-package com.gentics.mesh.search;
+package com.gentics.mesh.search.impl;
 
 import static org.elasticsearch.client.Requests.refreshRequest;
 
@@ -20,6 +20,7 @@ import org.elasticsearch.node.NodeBuilder;
 
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
+import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

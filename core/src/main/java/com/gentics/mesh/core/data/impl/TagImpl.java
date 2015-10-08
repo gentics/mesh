@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -36,7 +35,6 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -97,32 +95,24 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
-		TagResponse restTag = new TagResponse();
 
-		restTag.setPermissions(ac.getUser().getPermissionNames(this));
-		restTag.setUuid(getUuid());
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			TagResponse restTag = new TagResponse();
+			fillRest(restTag, ac);
+			TagFamily tagFamily = getTagFamily();
+			if (tagFamily != null) {
+				TagFamilyReference tagFamilyReference = new TagFamilyReference();
+				tagFamilyReference.setName(tagFamily.getName());
+				tagFamilyReference.setUuid(tagFamily.getUuid());
+				restTag.setTagFamily(tagFamilyReference);
+			}
+			restTag.getFields().setName(getName());
+			tc.complete(restTag);
+		} , (AsyncResult<TagResponse> rh) -> {
+			resultHandler.handle(rh);
+		});
 
-		TagFamily tagFamily = getTagFamily();
-
-		if (tagFamily != null) {
-			TagFamilyReference tagFamilyReference = new TagFamilyReference();
-			tagFamilyReference.setName(tagFamily.getName());
-			tagFamilyReference.setUuid(tagFamily.getUuid());
-			restTag.setTagFamilyReference(tagFamilyReference);
-		}
-
-		User creator = getCreator();
-		if (creator != null) {
-			restTag.setCreator(creator.transformToUserReference());
-		}
-
-		User editor = getEditor();
-		if (editor != null) {
-			restTag.setEditor(editor.transformToUserReference());
-		}
-
-		restTag.getFields().setName(getName());
-		resultHandler.handle(Future.succeededFuture(restTag));
 		return this;
 	}
 
@@ -167,12 +157,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
-		SearchQueueBatch batch = null;
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamilyReference();
-		try (Trx txUpdate = db.trx()) {
+		db.trx(txUpdate -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {
 				// Check whether a uuid was specified and whether the tag family changed
@@ -185,16 +174,14 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "tag_name_not_set"));
-				txUpdate.failure();
+				txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_name_not_set")));
 				return;
 			} else {
 				TagFamily tagFamily = getTagFamily();
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT,
-							ac.i18n("tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName()))));
-					txUpdate.failure();
+					txUpdate.fail(new HttpStatusCodeErrorException(CONFLICT,
+							ac.i18n("tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
 					return;
 				}
 				setEditor(ac.getUser());
@@ -204,10 +191,15 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 					// TODO update the tagfamily
 				}
 			}
-			batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.success();
-		}
-		processOrFail2(ac, batch, handler);
+			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+			txUpdate.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+			if (txUpdated.failed()) {
+				handler.handle(Future.failedFuture(txUpdated.cause()));
+			} else {
+				processOrFail2(ac, txUpdated.result(), handler);
+			}
+		});
 
 	}
 

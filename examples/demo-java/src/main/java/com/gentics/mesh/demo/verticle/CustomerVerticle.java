@@ -42,11 +42,11 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		demoDataProvider.setup(1);
+		demoDataProvider.setup();
 
 		vertx.eventBus().consumer("mesh-startup-complete", mh -> {
 
-			client = new MeshRestClient("localhost", config().getInteger("port"));
+			client = new MeshRestClient("localhost", config().getInteger("port"), vertx);
 			client.setLogin("joe1", "test123");
 			client.login();
 

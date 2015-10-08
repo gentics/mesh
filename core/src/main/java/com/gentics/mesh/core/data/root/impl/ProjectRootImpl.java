@@ -2,14 +2,18 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.Stack;
 
+import javax.naming.InvalidNameException;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -31,7 +35,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -111,7 +114,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							schemaRoot.resolveToElement(stack, resultHandler);
 							break;
 						case MicroschemaContainerRoot.TYPE:
-							// MicroschemaContainerRoot microschemaRoot = project.get
+							// MicroschemaContainerRoot microschemaRoot =
+							// project.get
 							// project.getMicroschemaRoot();
 							throw new NotImplementedException();
 							// break;
@@ -143,7 +147,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<Project>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		RouterStorage routerStorage = RouterStorage.getRouterStorage();
 		MeshRoot meshRoot = BootstrapInitializer.getBoot().meshRoot();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -157,47 +161,53 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_missing_name"))));
 			return;
 		}
-		try (Trx tx = db.trx()) {
-			if (requestUser.hasPermission(boot.projectRoot(), CREATE_PERM)) {
+		db.noTrx(tc -> {
+			if (requestUser.hasPermission(ac, boot.projectRoot(), CREATE_PERM)) {
 				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-					handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name"))));
+					handler.handle(failedFuture(ac, CONFLICT, "project_conflicting_name"));
 					return;
 				} else {
-					Project project;
-					SearchQueueBatch batch = null;
-					try (Trx txCreate = db.trx()) {
+					db.trx(txCreate -> {
 						requestUser.reload();
-						project = create(requestModel.getName(), requestUser);
+						Project project = create(requestModel.getName(), requestUser);
 						project.setCreator(requestUser);
-						try {
-							routerStorage.addProjectRouter(project.getName());
+
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
+						// TODO add microschema root crud perms
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
+						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+
+						SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						txCreate.complete(Tuple.tuple(batch, project));
+
+					} , (AsyncResult<Tuple<SearchQueueBatch, Project>> txCreated) -> {
+						if (txCreated.failed()) {
+							handler.handle(Future.failedFuture(txCreated.cause()));
+						} else {
+							Project project = txCreated.result().v2();
+							try {
+								routerStorage.addProjectRouter(project.getName());
+							} catch (InvalidNameException e) {
+								//*TODO should we really fail here?
+								handler.handle(failedFuture(ac, BAD_REQUEST, "Error while adding project to router storage", e));
+								return;
+							}
 							if (log.isInfoEnabled()) {
 								log.info("Registered project {" + project.getName() + "}");
 							}
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
-							//TODO add microschema root crud perms
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
-							requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
-
-							batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-							txCreate.success();
-						} catch (Exception e) {
-							// TODO should we really fail here?
-							txCreate.failure();
-							handler.handle(ac.failedFuture(BAD_REQUEST, "Error while adding project to router storage", e));
-							return;
+							processOrFail(ac, txCreated.result().v1(), handler, project);
 						}
-					}
-					processOrFail(ac, batch, handler, project);
+					});
+
 				}
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", boot.projectRoot().getUuid()))));
 				return;
 			}
-		}
+		});
 
 	}
 

@@ -5,6 +5,7 @@ import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -21,7 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -42,9 +42,6 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	@Autowired
 	private NodeVerticle verticle;
 
-	final String uploads = "target/testuploads";
-	final String targetTmpDir = "target/tmp";
-
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
@@ -54,19 +51,54 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 
 	@Before
 	public void setup() throws IOException {
-		FileUtils.deleteDirectory(new File(uploads));
-		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
-		Mesh.mesh().getOptions().getUploadOptions().setTempDirectory(targetTmpDir);
+		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
+		FileUtils.deleteDirectory(uploadDir);
+		uploadDir.mkdirs();
+
+		File tempDir = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
+		FileUtils.deleteDirectory(tempDir);
+		tempDir.mkdirs();
+
+		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 	}
 
 	@After
-	public void cleanUp() throws IOException {
-		FileUtils.deleteDirectory(new File(uploads));
-		Mesh.mesh().getOptions().getUploadOptions().setDirectory(uploads);
+	public void cleanup() throws Exception {
+		super.cleanup();
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
+	}
 
-		FileUtils.deleteDirectory(new File(uploads));
-		FileUtils.deleteDirectory(new File(targetTmpDir));
-		FileUtils.deleteDirectory(new File("file-uploads"));
+	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
+		// Update the schema and enable binary support for folders
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.setBinary(binaryFlag);
+		// schema.set
+		// node.getSchemaContainer().setSchema(schema);
+	}
+
+	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
+
+		resetClientSchemaStorage();
+		// role().grantPermissions(node, UPDATE_PERM);
+		Buffer buffer = TestUtils.randomBuffer(binaryLen);
+
+		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);
+	}
+
+	@Test
+	public void testUploadWithNoPerm() throws IOException {
+
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+		Node node = folder("news");
+		prepareSchema(node, true, "");
+		role().revokePermissions(node, UPDATE_PERM);
+
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 	}
 
 	@Test
@@ -76,17 +108,12 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("news");
-			prepareSchema(node, false, "image/.*");
-			tx.success();
-		}
+		node = folder("news");
+		prepareSchema(node, false, "image/.*");
 
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_error_no_binary_node");
-		}
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
 	}
 
 	@Test
@@ -95,24 +122,16 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("news");
-			prepareSchema(node, true, "");
-			tx.success();
-		}
+		Node node = folder("news");
+		prepareSchema(node, true, "");
 
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-			latchFor(future);
-			assertSuccess(future);
-		}
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		assertSuccess(future);
 
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-			latchFor(future);
-			assertSuccess(future);
-		}
+		future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		assertSuccess(future);
 
 	}
 
@@ -122,18 +141,12 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("news");
-			prepareSchema(node, false, "");
-			tx.success();
-		}
+		Node node = folder("news");
+		prepareSchema(node, false, "");
 
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_error_no_binary_node");
-		}
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
 	}
 
 	/**
@@ -154,46 +167,22 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("news");
-			prepareSchema(node, true, "");
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
-		}
-	}
+		Node node = folder("news");
+		prepareSchema(node, true, "");
 
-	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
-		// Update the schema and enable binary support for folders
-		Schema schema = node.getSchemaContainer().getSchema();
-		schema.setBinary(binaryFlag);
-		// schema.set
-		// node.getSchemaContainer().setSchema(schema);
-	}
-
-	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
-
-		resetClientSchemaStorage();
-		role().grantPermissions(node, UPDATE_PERM);
-		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-
-		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
 	}
 
 	@Test
 	public void testPathSegmentation() {
-		try (Trx tx = db.trx()) {
-			Node node = folder("news");
-			node.setUuid(UUIDUtil.randomUUID());
-			String uuid = "b677504736ed47a1b7504736ed07a14a";
-			node.setUuid(uuid);
-			String path = node.getSegmentedPath();
-			assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
-		}
+		Node node = folder("news");
+		node.setUuid(UUIDUtil.randomUUID());
+		String uuid = "b677504736ed47a1b7504736ed07a14a";
+		node.setUuid(uuid);
+		String path = node.getSegmentedPath();
+		assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 	}
 
 	@Test
@@ -202,23 +191,16 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node;
-		try (Trx tx = db.trx()) {
-			node = folder("news");
-			prepareSchema(node, true, "");
-			tx.success();
-		}
+		Node node = folder("news");
+		prepareSchema(node, true, "");
 
-		try (Trx tx = db.trx()) {
-			Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
-			latchFor(future);
-			assertSuccess(future);
-			expectMessageResponse("node_binary_field_updated", future, node.getUuid());
-		}
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
 
-		try (Trx tx = db.trx()) {
-			assertEquals(fileName, node.getBinaryFileName());
-		}
+		node.reload();
+		assertEquals(fileName, node.getBinaryFileName());
 
 		Future<NodeResponse> responseFuture = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
 		latchFor(responseFuture);

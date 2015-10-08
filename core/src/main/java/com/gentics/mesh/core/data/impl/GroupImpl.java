@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -26,8 +27,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -111,31 +110,35 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 	}
 
 	public Group transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
-		GroupResponse restGroup = new GroupResponse();
-		fillRest(restGroup, ac);
-		restGroup.setName(getName());
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(tc -> {
+			GroupResponse restGroup = new GroupResponse();
+			fillRest(restGroup, ac);
+			restGroup.setName(getName());
 
-		// for (User user : group.getUsers()) {
-		// String name = user.getUsername();
-		// if (name != null) {
-		// restGroup.getUsers().add(name);
-		// }
-		// Collections.sort(restGroup.getUsers());
+			// for (User user : group.getUsers()) {
+			// String name = user.getUsername();
+			// if (name != null) {
+			// restGroup.getUsers().add(name);
+			// }
+			// Collections.sort(restGroup.getUsers());
 
-		for (Role role : getRoles()) {
-			String name = role.getName();
-			if (name != null) {
-				restGroup.getRoles().add(name);
+			for (Role role : getRoles()) {
+				String name = role.getName();
+				if (name != null) {
+					restGroup.getRoles().add(name);
+				}
 			}
-		}
 
-		// // Set<Group> children = groupRepository.findChildren(group);
-		// Set<Group> children = group.getGroups();
-		// for (Group childGroup : children) {
-		// restGroup.getGroups().add(childGroup.getName());
-		// }
-
-		handler.handle(Future.succeededFuture(restGroup));
+			// // Set<Group> children = groupRepository.findChildren(group);
+			// Set<Group> children = group.getGroups();
+			// for (Group childGroup : children) {
+			// restGroup.getGroups().add(childGroup.getName());
+			// }
+			tc.complete(restGroup);
+		} , (AsyncResult<GroupResponse> rh) -> {
+			handler.handle(rh);
+		});
 
 		return this;
 
@@ -148,33 +151,38 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		try (NoTrx tx = db.noTrx()) {
-
+		db.noTrx(trc -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, "error_name_must_be_set"));
+				handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
 				return;
 			}
 
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					handler.handle(ac.failedFuture(CONFLICT, "group_conflicting_name"));
+					handler.handle(failedFuture(ac, CONFLICT, "group_conflicting_name"));
 					return;
 				}
-				SearchQueueBatch batch;
-				try (Trx txUpdate = db.trx()) {
+
+				db.trx(tc -> {
 					setName(requestModel.getName());
-					batch = addIndexBatch(UPDATE_ACTION);
-					txUpdate.success();
-				}
-				processOrFail2(ac, batch, handler);
+					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+					tc.complete(batch);
+				} , (AsyncResult<SearchQueueBatch> rh) -> {
+					if (rh.failed()) {
+						handler.handle(Future.failedFuture(rh.cause()));
+					} else {
+						processOrFail2(ac, rh.result(), handler);
+					}
+				});
 
 			}
-		}
+		});
+
 	}
 
 	@Override

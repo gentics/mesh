@@ -229,7 +229,7 @@ public final class MockingUtils {
 
 		// Date field
 		DateGraphField dateField = mock(DateGraphFieldImpl.class);
-		when(dateField.getDate()).thenReturn("01.01.2015 23:12:01");
+		when(dateField.getDate()).thenReturn(System.currentTimeMillis() / 1000);
 		when(container.getDate("date")).thenReturn(dateField);
 
 		// Boolean field

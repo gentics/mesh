@@ -103,7 +103,7 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		DateGraphFieldList list = container.createDateList("dummyList");
 		assertNotNull(list);
-		DateGraphField dateField = list.createDate("Date One");
+		DateGraphField dateField = list.createDate(1L);
 		assertNotNull(dateField);
 		assertEquals(1, list.getSize());
 		assertEquals(1, list.getList().size());

@@ -44,33 +44,37 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		NodeResponse response = updateNode("dateField", new DateFieldImpl().setDate("01.01.1971"));
+		Long nowEpoch = System.currentTimeMillis() / 1000;
+		NodeResponse response = updateNode("dateField", new DateFieldImpl().setDate(nowEpoch));
 		DateFieldImpl field = response.getField("dateField");
-		assertEquals("01.01.1971", field.getDate());
+		assertEquals(nowEpoch, field.getDate());
 
-		response = updateNode("dateField", new DateFieldImpl().setDate("02.01.1971"));
+		response = updateNode("dateField", new DateFieldImpl().setDate(nowEpoch));
 		field = response.getField("dateField");
-		assertEquals("02.01.1971", field.getDate());
+		assertEquals(nowEpoch, field.getDate());
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("dateField", new DateFieldImpl().setDate("01.01.1971"));
+		Long nowEpoch = System.currentTimeMillis() / 1000;
+		NodeResponse response = createNode("dateField", new DateFieldImpl().setDate(nowEpoch));
 		DateField field = response.getField("dateField");
-		assertEquals("01.01.1971", field.getDate());
+		assertEquals(nowEpoch, field.getDate());
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExitingField() {
+		Long nowEpoch = System.currentTimeMillis() / 1000;
+
 		Node node = folder("2015");
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		container.createDate("dateField").setDate("01.01.1971");
+		container.createDate("dateField").setDate(nowEpoch);
 
 		NodeResponse response = readNode(node);
 		DateField deserializedDateField = response.getField("dateField");
 		assertNotNull(deserializedDateField);
-		assertEquals("01.01.1971", deserializedDateField.getDate());
+		assertEquals(nowEpoch, deserializedDateField.getDate());
 	}
 }

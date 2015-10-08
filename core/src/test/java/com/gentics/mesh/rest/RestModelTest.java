@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -32,8 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -124,16 +123,16 @@ public class RestModelTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeList() throws IOException, MeshSchemaException {
+	public void testNodeList() throws Exception {
 		setupData();
-		try (Trx tx = db.trx()) {
+		try (NoTrx noTx = db.noTrx()) {
 			Schema folderSchema = schemaContainer("folder").getSchema();
 			Schema contentSchema = schemaContainer("content").getSchema();
 
 			NodeResponse folder = new NodeResponse();
 			folder.setSchema(new SchemaReference(folderSchema.getName(), null));
 			folder.getFields().put("name", FieldUtil.createStringField("folder name"));
-			//		folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
+			// folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
 
 			NodeResponse content = new NodeResponse();
 			content.setSchema(new SchemaReference(contentSchema.getName(), null));
@@ -180,9 +179,9 @@ public class RestModelTest extends AbstractDBTest {
 		listFieldSchema.setMin(5);
 		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
-		//NodeField defaultNode = new NodeFieldImpl();
-		//defaultNode.setUuid(UUIDUtil.randomUUID());
-		//listFieldSchema.getItems().add(defaultNode);
+		// NodeField defaultNode = new NodeFieldImpl();
+		// defaultNode.setUuid(UUIDUtil.randomUUID());
+		// listFieldSchema.getItems().add(defaultNode);
 		schemaCreateRequest.addField(listFieldSchema);
 
 		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();

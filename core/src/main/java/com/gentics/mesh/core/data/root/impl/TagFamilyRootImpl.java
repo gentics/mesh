@@ -2,11 +2,13 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -20,7 +22,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -82,38 +83,41 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<TagFamily>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-
-		try (Trx tx = db.trx()) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.noTrx(noTx -> {
 			MeshAuthUser requestUser = ac.getUser();
 			TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 			String name = requestModel.getName();
 			if (StringUtils.isEmpty(name)) {
-				handler.handle(ac.failedFuture(BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
+				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
 			} else {
 				if (findByName(name) != null) {
-					handler.handle(ac.failedFuture(CONFLICT, ac.i18n("tagfamily_conflicting_name", name)));
+					handler.handle(failedFuture(ac, CONFLICT, ac.i18n("tagfamily_conflicting_name", name)));
 					return;
 				}
-
-				if (requestUser.hasPermission(this, CREATE_PERM)) {
-					TagFamily tagFamily = null;
-					SearchQueueBatch batch;
-					try (Trx txCreate = db.trx()) {
+				if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
+					db.trx(txCreate -> {
 						requestUser.reload();
-						tagFamily = create(name, requestUser);
+						this.reload();
+						this.setElement(null);
+						TagFamily tagFamily = create(name, requestUser);
 						addTagFamily(tagFamily);
 						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
-						batch = tagFamily.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-						txCreate.success();
-					}
-					processOrFail(ac, batch, handler, tagFamily);
+						SearchQueueBatch batch = tagFamily.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						txCreate.complete(Tuple.tuple(batch, tagFamily));
+					} , (AsyncResult<Tuple<SearchQueueBatch, TagFamily>> txCreated) -> {
+						if (txCreated.failed()) {
+							handler.handle(Future.failedFuture(txCreated.cause()));
+						} else {
+							processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+						}
+					});
 				} else {
 					handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
 				}
 			}
-		}
+		});
 
 	}
 

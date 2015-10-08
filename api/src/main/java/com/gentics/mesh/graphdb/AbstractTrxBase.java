@@ -6,7 +6,7 @@ import com.syncleus.ferma.FramedGraph;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class AbstractTrxBase {
+public class AbstractTrxBase<T extends FramedGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTrxBase.class);
 
@@ -19,22 +19,30 @@ public class AbstractTrxBase {
 	/**
 	 * Graph that is active within the scope of the autoclosable.
 	 */
-	private FramedGraph currentGraph;
+	private T currentGraph;
 
-	protected void init(Database database, FramedGraph transactionalGraph) {
+	/**
+	 * Initialize the transaction.
+	 * 
+	 * @param transactionalGraph
+	 */
+	protected void init(T transactionalGraph) {
+		// 1. Set the new transactional graph so that it can be accessed via Trx.getGraph()
 		setGraph(transactionalGraph);
 		if (log.isDebugEnabled()) {
 			log.debug("Started transaction {" + getGraph().hashCode() + "}");
 		}
+		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field. 
 		setOldGraph(Database.getThreadLocalGraph());
+		// Overwrite the current active threadlocal graph with the given transactional graph. This way Ferma graph elements will utilize this instance.
 		Database.setThreadLocalGraph(transactionalGraph);
 	}
 
-	public FramedGraph getGraph() {
+	public T getGraph() {
 		return currentGraph;
 	}
 
-	protected void setGraph(FramedGraph currentGraph) {
+	protected void setGraph(T currentGraph) {
 		this.currentGraph = currentGraph;
 	}
 

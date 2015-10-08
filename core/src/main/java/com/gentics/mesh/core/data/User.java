@@ -8,6 +8,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.handler.InternalActionContext;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
 
@@ -81,6 +85,7 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 * 
 	 * @param hash
 	 */
+	//TODO change this to an async call since hashing of the password is blocking
 	void setPasswordHash(String hash);
 
 	/**
@@ -104,11 +109,47 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	void setReferencedNode(Node node);
 
-	boolean hasPermission(MeshVertex vertex, GraphPermission permission);
+	/**
+	 * Check given permissions on the given vertex.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 * @param permission
+	 * @return
+	 * @deprecated use {@link #hasPermission(InternalActionContext, MeshVertex, GraphPermission, Handler)} instead.
+	 */
+	@Deprecated
+	boolean hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 
-	String[] getPermissionNames(MeshVertex vertex);
+	/**
+	 * Check whether the user has the given permission for the given vertex. Invoke the handler with the result.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 * @param permission
+	 * @param handler
+	 * @return Fluent API
+	 */
+	User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler);
 
-	Set<GraphPermission> getPermissions(MeshVertex node);
+	/**
+	 * Return an array of human readable permissions for the given vertex.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 * @return
+	 */
+	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
+
+	/**
+	 * Return a set of permissions which the user got for the given vertex.
+	 * 
+	 * @param ac
+	 *            The action context data map will be used to quickly lookup already determined permissions.
+	 * @param vertex
+	 * @return
+	 */
+	Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex vertex);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
@@ -128,6 +169,12 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
+	/**
+	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
+	 * 
+	 * @param sourceNode
+	 * @param targetNode
+	 */
 	void inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
 	/**
@@ -137,7 +184,12 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	List<? extends Group> getGroups();
 
-	void addGroup(Group parentGroup);
+	/**
+	 * Add the user to the given group.
+	 * 
+	 * @param group
+	 */
+	void addGroup(Group group);
 
 	/**
 	 * Return a list of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
@@ -171,9 +223,10 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	/**
 	 * Return a user reference object for the user.
 	 * 
-	 * @return
+	 * @param handler
+	 * @return Fluent API
 	 */
-	UserReference transformToUserReference();
+	User transformToUserReference(Handler<AsyncResult<UserReference>> handler);
 
 	List<? extends GenericVertexImpl> getEditedElements();
 

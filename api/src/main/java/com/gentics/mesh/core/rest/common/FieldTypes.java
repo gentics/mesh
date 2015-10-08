@@ -39,14 +39,21 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
+/**
+ * This enum stores all needed references to interfaces and implementations for the various field types. Each field has a fieldschema, fieldschema impl, rest
+ * pojo model interface, rest pojo model implementation.
+ */
 public enum FieldTypes {
 	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringField.class, StringFieldImpl.class), HTML(HtmlFieldSchema.class,
 			HtmlFieldSchemaImpl.class, HtmlField.class, HtmlFieldImpl.class), NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class,
-			NumberField.class, NumberFieldImpl.class), DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class, DateFieldImpl.class), BOOLEAN(
-			BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanField.class, BooleanFieldImpl.class), SELECT(SelectFieldSchema.class,
-			SelectFieldSchemaImpl.class, SelectField.class, SelectFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class,
-			NodeField.class, NodeFieldImpl.class), LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListField.class, ListFieldImpl.class), MICROSCHEMA(
-			MicroschemaFieldSchema.class, MicroschemaFieldSchemaImpl.class, MicroschemaField.class, MicroschemaFieldImpl.class);
+					NumberField.class,
+					NumberFieldImpl.class), DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class, DateFieldImpl.class), BOOLEAN(
+							BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanField.class,
+							BooleanFieldImpl.class), SELECT(SelectFieldSchema.class, SelectFieldSchemaImpl.class, SelectField.class,
+									SelectFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class, NodeField.class,
+											NodeFieldImpl.class), LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListField.class,
+													ListFieldImpl.class), MICROSCHEMA(MicroschemaFieldSchema.class, MicroschemaFieldSchemaImpl.class,
+															MicroschemaField.class, MicroschemaFieldImpl.class);
 
 	private Class<? extends FieldSchema> schemaInterfaceClazz;
 
@@ -83,6 +90,12 @@ public enum FieldTypes {
 		return name().toLowerCase();
 	}
 
+	/**
+	 * Convert the given field type name to a field type object.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static FieldTypes valueByName(String name) {
 		for (FieldTypes type : values()) {
 			if (type.toString().equals(name)) {

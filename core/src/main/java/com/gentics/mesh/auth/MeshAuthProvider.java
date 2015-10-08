@@ -5,10 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
@@ -37,14 +35,10 @@ public class MeshAuthProvider implements AuthProvider {
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-
-		Mesh.vertx().executeBlocking(fut -> {
+		db.asyncNoTrx(tc -> {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
-			MeshAuthUser user;
-			try (NoTrx tx = db.noTrx()) {
-				user = boot.userRoot().findMeshAuthUserByUsername(username);
-			}
+			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
 				// TODO check if user is enabled
@@ -72,8 +66,8 @@ public class MeshAuthProvider implements AuthProvider {
 				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 			}
-		} , false, rh -> {
-			if (!rh.succeeded()) {
+		} , rh -> {
+			if (rh.failed()) {
 				log.error("Error while authenticating user.", rh.cause());
 				resultHandler.handle(Future.failedFuture(rh.cause()));
 			}

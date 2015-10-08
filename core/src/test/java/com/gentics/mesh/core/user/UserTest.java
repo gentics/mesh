@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -56,7 +57,8 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testHasPermission() {
-		assertTrue(user().hasPermission(english(), READ_PERM));
+		InternalActionContext ac = getMockedInternalActionContext("");
+		assertTrue(user().hasPermission(ac, english(), READ_PERM));
 	}
 
 	@Test
@@ -68,7 +70,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 		Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 6));
 		assertEquals(users().size(), page.getTotalElements());
-		assertEquals(6, page.getSize());
+		assertEquals(3, page.getSize());
 
 		page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
 		assertEquals(users().size(), page.getTotalElements());
@@ -90,26 +92,37 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		JsonObject json = user.principal();
 		assertNotNull(json);
-		assertEquals(user().getUuid(), json.getString("uuid"));
-		assertEquals(user().getUsername(), json.getString("username"));
-		assertEquals(user().getFirstname(), json.getString("firstname"));
-		assertEquals(user().getLastname(), json.getString("lastname"));
-		assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
+		try (Trx tx = db.trx()) {
+			assertEquals(user().getUuid(), json.getString("uuid"));
+			assertEquals(user().getUsername(), json.getString("username"));
+			assertEquals(user().getFirstname(), json.getString("firstname"));
+			assertEquals(user().getLastname(), json.getString("lastname"));
+			assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
 
-		assertNotNull(json.getJsonArray("roles"));
-		assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
-		assertNotNull(json.getJsonArray("groups"));
-		assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+			assertNotNull(json.getJsonArray("roles"));
+			assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
+			assertNotNull(json.getJsonArray("groups"));
+			assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
+		}
 	}
 
 	@Test
 	public void testGetPermissions() {
 		Language language = english();
 		String[] perms = { "create", "update", "delete", "read" };
-		String[] loadedPerms = user().getPermissionNames(language);
-		Arrays.sort(perms);
-		Arrays.sort(loadedPerms);
-		assertArrayEquals("Permissions do not match", perms, loadedPerms);
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		long start = System.currentTimeMillis();
+		int nChecks = 10000;
+		for (int i = 0; i < nChecks; i++) {
+			String[] loadedPerms = user().getPermissionNames(ac, language);
+			Arrays.sort(perms);
+			Arrays.sort(loadedPerms);
+			assertArrayEquals("Permissions do not match", perms, loadedPerms);
+			assertNotNull(ac.data().get("permissions:" + language.getUuid()));
+		}
+		System.out.println("Duration: " + (System.currentTimeMillis() - start));
+		System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
 	}
 
 	@Test
@@ -151,18 +164,21 @@ public class UserTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<UserResponse> cf = new CompletableFuture<>();
 		user().transformToRest(ac, rh -> {
-			UserResponse restUser = rh.result();
-			assertNotNull(restUser);
-			assertEquals(user().getUsername(), restUser.getUsername());
-			assertEquals(user().getUuid(), restUser.getUuid());
-			assertEquals(user().getLastname(), restUser.getLastname());
-			assertEquals(user().getFirstname(), restUser.getFirstname());
-			assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
-			assertEquals(1, restUser.getGroups().size());
+			cf.complete(rh.result());
+
 			latch.countDown();
 		});
 		failingLatch(latch);
+		UserResponse restUser = cf.get();
+		assertNotNull(restUser);
+		assertEquals(user().getUsername(), restUser.getUsername());
+		assertEquals(user().getUuid(), restUser.getUuid());
+		assertEquals(user().getLastname(), restUser.getLastname());
+		assertEquals(user().getFirstname(), restUser.getFirstname());
+		assertEquals(user().getEmailAddress(), restUser.getEmailAddress());
+		assertEquals(1, restUser.getGroups().size());
 	}
 
 	@Test
@@ -189,10 +205,12 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		User user = user();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		User newUser = root.getUserRoot().create("Anton", null, user());
-		assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+		assertFalse(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
-		assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+		ac.data().clear();
+		assertTrue(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
 	}
 
 	@Test
@@ -208,89 +226,84 @@ public class UserTest extends AbstractBasicObjectTest {
 		Role roleWithNoPerm;
 		Role roleWithCreatePerm;
 
-		try (Trx tx = db.trx()) {
-			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
-			newUser = meshRoot().getUserRoot().create("Anton", newGroup, user());
+		InternalActionContext ac = getMockedInternalActionContext("");
 
-			// Create test roles
-			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
-			roleWithDeletePerm.grantPermissions(sourceNode, DELETE_PERM);
+		Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
+		newUser = meshRoot().getUserRoot().create("Anton", newGroup, user());
 
-			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newGroup, newUser);
-			roleWithReadPerm.grantPermissions(sourceNode, READ_PERM);
+		// Create test roles
+		roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
+		roleWithDeletePerm.grantPermissions(sourceNode, DELETE_PERM);
 
-			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newGroup, newUser);
-			roleWithUpdatePerm.grantPermissions(sourceNode, UPDATE_PERM);
+		roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newGroup, newUser);
+		roleWithReadPerm.grantPermissions(sourceNode, READ_PERM);
 
-			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newGroup, newUser);
-			roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM);
+		roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newGroup, newUser);
+		roleWithUpdatePerm.grantPermissions(sourceNode, UPDATE_PERM);
 
-			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newGroup, newUser);
-			roleWithCreatePerm.grantPermissions(sourceNode, CREATE_PERM);
+		roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newGroup, newUser);
+		roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM);
 
-			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newGroup, newUser);
-			tx.success();
+		roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newGroup, newUser);
+		roleWithCreatePerm.grantPermissions(sourceNode, CREATE_PERM);
+
+		roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newGroup, newUser);
+		user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
+		ac.data().clear();
+		newUser.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertTrue(
+					"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
+							+ perm.name() + "}",
+					newUser.hasPermission(ac, targetNode, perm));
 		}
-		try (Trx tx = db.trx()) {
-			user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
-			tx.success();
+
+		// roleWithAllPerm
+		roleWithAllPerm.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}",
+					roleWithAllPerm.hasPermission(perm, targetNode));
 		}
 
-		try (Trx tx = db.trx()) {
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue(
-						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
-								+ perm.name() + "}",
-						newUser.hasPermission(targetNode, perm));
-			}
-
-			// roleWithAllPerm
-			roleWithAllPerm.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}",
-						roleWithAllPerm.hasPermission(perm, targetNode));
-			}
-
-			// roleWithNoPerm
-			roleWithNoPerm.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertFalse(
-						"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
-								+ perm.name() + "}",
-						roleWithNoPerm.hasPermission(perm, targetNode));
-			}
-
-			// roleWithDeletePerm
-			roleWithDeletePerm.reload();
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(CREATE_PERM, targetNode));
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(READ_PERM, targetNode));
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(UPDATE_PERM, targetNode));
-			assertTrue("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithReadPerm
-			roleWithReadPerm.reload();
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(CREATE_PERM, targetNode));
-			assertTrue("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(READ_PERM, targetNode));
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(UPDATE_PERM, targetNode));
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithUpdatePerm
-			roleWithUpdatePerm.reload();
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(CREATE_PERM, targetNode));
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
-			assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
-
-			// roleWithCreatePerm
-			roleWithCreatePerm.reload();
-			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue(
-						"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
-								+ perm.name() + "}",
-						roleWithCreatePerm.hasPermission(perm, targetNode));
-			}
-
+		// roleWithNoPerm
+		roleWithNoPerm.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertFalse(
+					"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
+							+ perm.name() + "}",
+					roleWithNoPerm.hasPermission(perm, targetNode));
 		}
+
+		// roleWithDeletePerm
+		roleWithDeletePerm.reload();
+		assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(CREATE_PERM, targetNode));
+		assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(READ_PERM, targetNode));
+		assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(UPDATE_PERM, targetNode));
+		assertTrue("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(DELETE_PERM, targetNode));
+
+		// roleWithReadPerm
+		roleWithReadPerm.reload();
+		assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(CREATE_PERM, targetNode));
+		assertTrue("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(READ_PERM, targetNode));
+		assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(UPDATE_PERM, targetNode));
+		assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(DELETE_PERM, targetNode));
+
+		// roleWithUpdatePerm
+		roleWithUpdatePerm.reload();
+		assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(CREATE_PERM, targetNode));
+		assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
+		assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
+		assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
+
+		// roleWithCreatePerm
+		roleWithCreatePerm.reload();
+		for (GraphPermission perm : GraphPermission.values()) {
+			assertTrue(
+					"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
+							+ perm.name() + "}",
+					roleWithCreatePerm.hasPermission(perm, targetNode));
+		}
+
 	}
 
 	@Test
@@ -361,12 +374,15 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		User user = user();
-		assertEquals(1, user.getGroups().size());
-		assertTrue(user.isEnabled());
-		user.delete();
-		assertFalse(user.isEnabled());
-		assertEquals(0, user.getGroups().size());
+		try (Trx tx = db.trx()) {
+			User user = user();
+			assertEquals(1, user.getGroups().size());
+			assertTrue(user.isEnabled());
+			user.delete();
+			assertFalse(user.isEnabled());
+			assertEquals(0, user.getGroups().size());
+			tx.success();
+		}
 	}
 
 	@Test

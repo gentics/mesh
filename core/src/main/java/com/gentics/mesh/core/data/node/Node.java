@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -83,10 +84,27 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
+	/**
+	 * Return a page of tags that are assigned to the node.
+	 * 
+	 * @param ac
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
+	/***
+	 * Create link between the nodes.
+	 * 
+	 * @param node
+	 */
 	void createLink(Node node);
 
+	/**
+	 * Return a list of language names.
+	 * 
+	 * @return
+	 */
 	List<String> getAvailableLanguageNames();
 
 	/**
@@ -124,6 +142,14 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	void setParentNode(Node parentNode);
 
+	/**
+	 * Create a child node in this node.
+	 * 
+	 * @param creator
+	 * @param schemaContainer
+	 * @param project
+	 * @return
+	 */
 	Node create(User creator, SchemaContainer schemaContainer, Project project);
 
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
@@ -236,13 +262,21 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	String getSegmentedPath();
 
 	/**
-	 * Returns the i18n display name for the node.
+	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
+	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
 	 * 
 	 * @param ac
 	 * @return
 	 */
 	String getDisplayName(InternalActionContext ac);
 
+	/**
+	 * Find a node field container that matches the nearest possible value for the ?lang= request parameter. When a user requests a node using ?lang=de,en and
+	 * there is no de version the en version will be selected and returned.
+	 * 
+	 * @param ac
+	 * @return Next matching field container or null when no language matched
+	 */
 	NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac);
 
 	/**
@@ -271,9 +305,17 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @param ac
 	 * @param targetNode
-	 * @param resultHandler
+	 * @param handler
 	 * @return
 	 */
-	void moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> resultHandler);
+	Node moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler);
+
+	/**
+	 * Transform the node into a node reference rest model.
+	 * 
+	 * @param ac
+	 * @param handler
+	 */
+	Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler);
 
 }

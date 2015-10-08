@@ -11,7 +11,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.etc.MeshSpringConfiguration.getMeshSpringConfiguration;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -36,6 +38,7 @@ import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -45,16 +48,22 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
 
@@ -184,8 +193,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public String[] getPermissionNames(MeshVertex node) {
-		Set<GraphPermission> permissions = getPermissions(node);
+	public String[] getPermissionNames(InternalActionContext ac, MeshVertex node) {
+		Set<GraphPermission> permissions = getPermissions(ac, node);
 		String[] strings = new String[permissions.size()];
 		Iterator<GraphPermission> it = permissions.iterator();
 		for (int i = 0; i < permissions.size(); i++) {
@@ -195,77 +204,160 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(MeshVertex node) {
-		//TODO FIXME refactor this code. The traversal is not fast
-		Set<GraphPermission> permissions = new HashSet<>();
-		Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back().label()
-				.toSet();
-		for (String label : labels) {
-			permissions.add(GraphPermission.valueOfLabel(label));
-		}
-		return permissions;
-	}
-
-	@Override
-	public boolean hasPermission(MeshVertex node, GraphPermission permission) {
-		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
-	}
-
-	@Override
-	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
-		UserResponse restUser = new UserResponse();
-		fillRest(restUser, ac);
-		restUser.setUsername(getUsername());
-		restUser.setEmailAddress(getEmailAddress());
-		restUser.setFirstname(getFirstname());
-		restUser.setLastname(getLastname());
-
-		Node node = getReferencedNode();
-		if (node != null) {
-			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
-			if (expandReference) {
-				//				//TODO handle expanded form
-				//				handler.handle(ac.failedFuture(BAD_REQUEST, "Expanding of node references not yet implemented."));
-				//				return;
-				node.transformToRest(ac, rh -> {
-					restUser.setNodeReference(rh.result());
-					for (Group group : getGroups()) {
-						restUser.addGroup(group.getName());
-					}
-					handler.handle(Future.succeededFuture(restUser));
+	@SuppressWarnings("unchecked")
+	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
+		String mapKey = "permissions:" + node.getUuid();
+		return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
+			Set<GraphPermission> graphPermissions = new HashSet<>();
+			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
+			groups.forEach(group -> {
+				Iterable<Vertex> roles = group.getVertices(Direction.IN, HAS_ROLE);
+				roles.forEach(role -> {
+					Iterable<Edge> permissions = role.getEdges(Direction.OUT, GraphPermission.labels());
+					permissions.forEach(permission -> {
+						if (node.getImpl().getId().equals(permission.getVertex(Direction.IN).getId())) {
+							graphPermissions.add(GraphPermission.valueOfLabel(permission.getLabel()));
+						}
+					});
 				});
+			});
+			return graphPermissions;
+		});
+		// Set<? extends String> labels = out(HAS_USER).in(HAS_ROLE).outE(GraphPermission.labels()).mark().inV().retain(node.getImpl()).back()
+		// .label().toSet();
+		// or (String label : labels) {
+		// graphPermissions.add(GraphPermission.valueOfLabel(label));
+		// }
+	}
 
-			} else {
-				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-				userNodeReference.setUuid(node.getUuid());
-				if (node.getProject() != null) {
-					userNodeReference.setProjectName(node.getProject().getName());
-				} else {
-					log.error("Project of node is null. Can't set project field of user nodeReference.");
-					// TODO handle this case
-				}
-				restUser.setNodeReference(userNodeReference);
-				for (Group group : getGroups()) {
-					restUser.addGroup(group.getName());
-				}
-				handler.handle(Future.succeededFuture(restUser));
+	@Override
+	public boolean hasPermission(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
 
-			}
-		} else {
-			for (Group group : getGroups()) {
-				restUser.addGroup(group.getName());
-			}
-			handler.handle(Future.succeededFuture(restUser));
+		if (log.isTraceEnabled()) {
+			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
+		String mapKey = "permission:" + permission.label() + ":" + node.getUuid();
+		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
+			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
+			for (Vertex group : groups) {
+				if (log.isTraceEnabled()) {
+					log.trace("Group: " + group.getProperty("name") + " - uuid: " + group.getProperty("uuid") + " - type: "
+							+ group.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
+				}
+				Iterable<Vertex> roles = group.getVertices(Direction.IN, HAS_ROLE);
+				for (Vertex role : roles) {
+					if (log.isTraceEnabled()) {
+						log.trace("Role: " + role.getProperty("name") + " - uuid: " + role.getProperty("uuid") + " - type: "
+								+ role.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
+					}
+					Iterable<Edge> permissions = role.getEdges(Direction.OUT, permission.label());
+					for (Edge permissionEdge : permissions) {
+						if (log.isTraceEnabled()) {
+							log.trace("Permission Edge: " + permissionEdge.getProperty("uuid") + " - label: " + permissionEdge.getLabel()
+									+ " - type: " + permissionEdge.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " from: "
+									+ permissionEdge.getVertex(Direction.OUT).getProperty("uuid") + " to: "
+									+ permissionEdge.getVertex(Direction.IN).getProperty("uuid"));
+						}
+
+						if (node.getImpl().getId().equals(permissionEdge.getVertex(Direction.IN).getId())) {
+							if (log.isTraceEnabled()) {
+								log.trace("Found edge to specified node. User has permission.");
+							}
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		});
+		// return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+
+	}
+
+	@Override
+	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		db.asyncNoTrx(noTrx -> {
+			boolean result = hasPermission(ac, vertex, permission);
+			handler.handle(Future.succeededFuture(result));
+		} , rh -> {
+			handler.handle(Future.succeededFuture());
+		});
 		return this;
 	}
 
 	@Override
-	public UserReference transformToUserReference() {
+	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+
+		db.asyncNoTrx(noTrx -> {
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
+			UserResponse restUser = new UserResponse();
+			fillRest(restUser, ac);
+			restUser.setUsername(getUsername());
+			restUser.setEmailAddress(getEmailAddress());
+			restUser.setFirstname(getFirstname());
+			restUser.setLastname(getLastname());
+
+			Node node = getReferencedNode();
+			if (node != null) {
+				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
+				ObservableFuture<Void> obsNodeReference = RxHelper.observableFuture();
+				futures.add(obsNodeReference);
+				if (expandReference) {
+					node.transformToRest(ac, rh -> {
+						if (rh.succeeded()) {
+							restUser.setNodeReference(rh.result());
+							obsNodeReference.toHandler().handle(Future.succeededFuture());
+						} else {
+							obsNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
+						}
+					});
+				} else {
+					NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+					userNodeReference.setUuid(node.getUuid());
+					if (node.getProject() != null) {
+						userNodeReference.setProjectName(node.getProject().getName());
+					} else {
+						log.error("Project of node is null. Can't set project field of user nodeReference.");
+						// TODO handle this case
+					}
+					restUser.setNodeReference(userNodeReference);
+					obsNodeReference.toHandler().handle(Future.succeededFuture());
+				}
+
+			}
+			for (Group group : getGroups()) {
+				restUser.addGroup(group.getName());
+			}
+
+			// Prevent errors in which no futures have been added
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			obsFieldSet.toHandler().handle(Future.succeededFuture());
+
+			// Wait for all async processes to complete
+			Observable.merge(futures).subscribe(item -> {
+			} , error -> {
+				noTrx.fail(error);
+			} , () -> {
+				noTrx.complete(restUser);
+			});
+
+		} , (AsyncResult<UserResponse> rh) -> {
+			handler.handle(rh);
+		});
+
+		return this;
+	}
+
+	@Override
+	public User transformToUserReference(Handler<AsyncResult<UserReference>> handler) {
 		UserReference reference = new UserReference();
 		reference.setName(getUsername());
 		reference.setUuid(getUuid());
-		return reference;
+		handler.handle(Future.succeededFuture(reference));
+		return this;
 	}
 
 	@Override
@@ -330,21 +422,19 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	 */
 	@Override
 	public void setPassword(String password) {
-		setPasswordHash(getMeshSpringConfiguration().passwordEncoder().encode(password));
+		setPasswordHash(getInstance().passwordEncoder().encode(password));
 	}
 
 	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		UserUpdateRequest requestModel;
-		try {
-			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
-			SearchQueueBatch batch = null;
-			try (Trx txUpdate = db.trx()) {
+		Database db = MeshSpringConfiguration.getInstance().database();
 
+		try {
+			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			db.trx(txUpdate -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 					if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-						handler.handle(ac.failedFuture(CONFLICT, "user_conflicting_username"));
+						handler.handle(failedFuture(ac, CONFLICT, "user_conflicting_username"));
 						return;
 					}
 					setUsername(requestModel.getUsername());
@@ -363,18 +453,19 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				}
 
 				if (!isEmpty(requestModel.getPassword())) {
-					setPasswordHash(MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+					setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 				}
 
+				// TODO use fillRest method instead
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				if (requestModel.getNodeReference() != null) {
 					NodeReference reference = requestModel.getNodeReference();
-					//TODO also handle full node response inside node reference field
+					// TODO also handle full node response inside node reference field
 					if (reference instanceof NodeReferenceImpl) {
 						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
 						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-							handler.handle(ac.failedFuture(BAD_REQUEST, "user_incomplete_node_reference"));
+							txUpdate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
 							return;
 						} else {
 							String referencedNodeUuid = basicReference.getUuid();
@@ -382,22 +473,30 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 							/* TODO decide whether we need to check perms on the project as well */
 							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 							if (project == null) {
-								handler.handle(ac.failedFuture(BAD_REQUEST, "project_not_found", projectName));
+								txUpdate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
 								return;
 							} else {
-								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								NodeRoot nodeRoot = project.getNodeRoot();
+								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, nodeRoot);
 								setReferencedNode(node);
-								batch = addIndexBatch(UPDATE_ACTION);
-								txUpdate.success();
+								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+								txUpdate.complete(batch);
+								//								return;
 							}
 						}
 					}
 				} else {
-					batch = addIndexBatch(UPDATE_ACTION);
-					txUpdate.success();
+					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+					txUpdate.complete(batch);
 				}
-			}
-			processOrFail2(ac, batch, handler);
+			} , (AsyncResult<SearchQueueBatch> userUpdated) -> {
+				if (userUpdated.failed()) {
+					handler.handle(Future.failedFuture(userUpdated.cause()));
+				} else {
+					processOrFail2(ac, userUpdated.result(), handler);
+				}
+			});
+
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}
@@ -406,12 +505,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		//		for (GenericVertex<?> element : getCreatedElements()) {
-		//			batch.addEntry(element, UPDATE_ACTION);
-		//		}
-		//		for (GenericVertex<?> element : getEditedElements()) {
-		//			batch.addEntry(element, UPDATE_ACTION);
-		//		}
+		// for (GenericVertex<?> element : getCreatedElements()) {
+		// batch.addEntry(element, UPDATE_ACTION);
+		// }
+		// for (GenericVertex<?> element : getEditedElements()) {
+		// batch.addEntry(element, UPDATE_ACTION);
+		// }
 	}
 
 }

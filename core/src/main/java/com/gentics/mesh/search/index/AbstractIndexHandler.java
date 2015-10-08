@@ -106,16 +106,18 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	 * @param user
 	 */
 	protected void addUser(Map<String, Object> map, String key, User user) {
-		// TODO make sure field names match response UserResponse field names..
-		Map<String, Object> userFields = new HashMap<>();
-		// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being modified.
-		// userFields.put("username", user.getUsername());
-		// userFields.put("emailadress", user.getEmailAddress());
-		// userFields.put("firstname", user.getFirstname());
-		// userFields.put("lastname", user.getLastname());
-		// userFields.put("enabled", String.valueOf(user.isEnabled()));
-		userFields.put("uuid", user.getUuid());
-		map.put(key, userFields);
+		if (user != null) {
+			// TODO make sure field names match response UserResponse field names..
+			Map<String, Object> userFields = new HashMap<>();
+			// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being modified.
+			// userFields.put("username", user.getUsername());
+			// userFields.put("emailadress", user.getEmailAddress());
+			// userFields.put("firstname", user.getFirstname());
+			// userFields.put("lastname", user.getLastname());
+			// userFields.put("enabled", String.valueOf(user.isEnabled()));
+			userFields.put("uuid", user.getUuid());
+			map.put(key, userFields);
+		}
 	}
 
 	protected void addTags(Map<String, Object> map, List<? extends Tag> tags) {

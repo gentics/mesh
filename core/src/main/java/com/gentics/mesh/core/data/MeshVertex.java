@@ -21,6 +21,14 @@ public interface MeshVertex extends MeshElement {
 	 */
 	void delete();
 
+	/**
+	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
+	 * 
+	 * @param role
+	 * @param recursive
+	 * @param permissionsToGrant
+	 * @param permissionsToRevoke
+	 */
 	void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
 
 	/**
@@ -29,4 +37,5 @@ public interface MeshVertex extends MeshElement {
 	 * @return
 	 */
 	MeshVertexImpl getImpl();
+
 }

@@ -39,16 +39,54 @@ public interface Group extends GenericVertex<GroupResponse>, NamedVertex, Indexe
 	 */
 	void removeRole(Role role);
 
+	/**
+	 * Return a list of users that are assigned to the group.
+	 * 
+	 * @return
+	 */
 	List<? extends User> getUsers();
 
+	/**
+	 * Return the a list of roles that are assigned to the group.
+	 * 
+	 * @return
+	 */
 	List<? extends Role> getRoles();
 
+	/**
+	 * Check whether the user has been assigned to the group.
+	 * 
+	 * @param user
+	 * @return
+	 */
 	boolean hasUser(User user);
 
+	/**
+	 * Check whether the role has been assigned to the group.
+	 * 
+	 * @param role
+	 * @return
+	 */
 	boolean hasRole(Role role);
 
+	/**
+	 * Return a page with all visible roles that the given user can see.
+	 * 
+	 * @param requestUser
+	 * @param pagingInfo
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
+	/**
+	 * Return a page with all users that the given user can see.
+	 * 
+	 * @param requestUser
+	 * @param pagingInfo
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
 
 }

@@ -133,7 +133,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 			log.error("Error while processing all remaining search queue batches.", error);
 			handler.handle(Future.failedFuture(error));
 		} , () -> {
-			MeshSpringConfiguration.getMeshSpringConfiguration().searchProvider().refreshIndex();
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
 			handler.handle(Future.succeededFuture());
 		});
 	}

@@ -17,6 +17,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 
 import io.vertx.ext.web.Route;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.rx.java.ObservableHandler;
+import io.vertx.rx.java.RxHelper;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -50,6 +53,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addFieldHandlers() {
+
 		route("/:uuid/fields/:fieldName").method(GET).handler(rc -> {
 			crudHandler.handleReadField(InternalActionContext.create(rc));
 		});
@@ -84,10 +88,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			crudHandler.handleMoveFieldItem(InternalActionContext.create(rc));
 		});
 
-		//TODO copy?
-		//		route("/:uuid/fields/:fieldName/:itemIndex/copy/:newItemIndex").method(POST).handler(rc -> {
-		//			crudHandler.handleMoveFieldItem(ActionContext.create(rc));
-		//		});
+		// TODO copy?
+		// route("/:uuid/fields/:fieldName/:itemIndex/copy/:newItemIndex").method(POST).handler(rc -> {
+		// crudHandler.handleMoveFieldItem(ActionContext.create(rc));
+		// });
 
 	}
 
@@ -125,7 +129,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			crudHandler.readTags(InternalActionContext.create(rc));
 		});
 
-		Route postRoute = route("/:uuid/tags/:tagUuid").method(POST).produces(APPLICATION_JSON);
+		Route postRoute = route("/:uuid/tags/:tagUuid").method(PUT).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {
 			crudHandler.handleAddTag(InternalActionContext.create(rc));
 		});
@@ -153,7 +157,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			//TODO move if back into verticle 
+			// TODO move if back into verticle
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {

@@ -2,9 +2,16 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,7 +35,6 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -38,11 +44,21 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class VerticleHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
 
+	/**
+	 * Load the objects from the root vertex using the paging parameter from the action context and send a JSON transformed response.
+	 * 
+	 * @param ac
+	 * @param root
+	 * @param listResponse
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(InternalActionContext ac, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse) {
 		loadObjects(ac, root, rh -> {
@@ -52,6 +68,14 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
+	/**
+	 * Set the paging parameters into the given list response by examing the given page.
+	 * 
+	 * @param response
+	 *            List response that will be updated
+	 * @param page
+	 *            Page that will be used to extract the paging parameters
+	 */
 	public static void setPaging(AbstractListResponse<?> response, Page<?> page) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(page.getNumber());
@@ -63,104 +87,144 @@ public class VerticleHelper {
 	// TODO merge with prev method
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
-		// TODO i18n
-		if (batch == null) {
-			log.error("Batch was not set. Can't process search index batch.");
-			handler.handle(ac.failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
-		} else {
-			SearchQueue searchQueue;
-//			db.trx(()-> {
-//				
-//			});
-			try (Trx txBatch = db.trx()) {
-				searchQueue = boot.meshRoot().getSearchQueue();
-				searchQueue.reload();
-				searchQueue.remove(batch);
-				txBatch.success();
+		processBatch(ac, batch, rh -> {
+			if (rh.failed()) {
+				handler.handle(Future.failedFuture(rh.cause()));
+			} else {
+				handler.handle(Future.succeededFuture());
 			}
-
-			try (Trx txBatch = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-				batch.process(rh -> {
-					if (rh.failed()) {
-						try (Trx tx = db.trx()) {
-							batch.reload();
-							log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
-							searchQueue.add(batch);
-							tx.success();
-						}
-						handler.handle(ac.failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
-					} else {
-						handler.handle(Future.succeededFuture());
-					}
-				});
-			}
-		}
+		});
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(InternalActionContext ac,
-			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
-
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	/**
+	 * Process the given batch and call the handler when the batch was processed.
+	 * 
+	 * @param ac
+	 * @param batch
+	 *            Batch to be processed
+	 * @param handler
+	 *            Result handler that will be invoked on completion or error
+	 */
+	public static <T> void processBatch(ActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<Future<T>>> handler) {
+		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
-		// TODO i18n
 		if (batch == null) {
+			// TODO i18n
+			log.error("Batch was not set. Can't process search index batch.");
+			handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "indexing_not_possible"));
+		}
+
+		// 1. Remove the batch from the queue
+		db.trx(tc -> {
+			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+			searchQueue.reload();
+			searchQueue.remove(batch);
+			tc.complete(searchQueue);
+		} , sqrh -> {
+			if (sqrh.failed()) {
+				handler.handle(Future.failedFuture(sqrh.cause()));
+			} else {
+				// 2. Process the batch
+				db.noTrx(txProcess -> {
+					batch.process(rh -> {
+						// 3. Add the batch back to the queue when an error occurs
+						if (rh.failed()) {
+							db.trx(txAddBack -> {
+								SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+								batch.reload();
+								log.error("Error while processing batch {" + batch.getBatchId() + "}. Adding batch back to queue.", rh.cause());
+								searchQueue.add(batch);
+								txAddBack.complete(batch);
+							} , txAddedBack -> {
+								if (txAddedBack.failed()) {
+									log.error("Failed to add batch {" + batch.getBatchId() + "} batck to search queue.", txAddedBack.cause());
+								}
+							});
+							// Inform the caller that processing failed
+							handler.handle(failedFuture(ac, BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
+						} else {
+							// Inform the caller that processing completed
+							handler.handle(Future.succeededFuture());
+						}
+					});
+				});
+			}
+		});
+	}
+
+	/**
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param handler
+	 * @param element
+	 */
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(
+			InternalActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
+
+		if (element == null) {
 			// TODO log
-			ac.fail(BAD_REQUEST, "indexing_not_possible");
-			return;
-		} else if (element == null) {
-			// TODO log
+			// TODO i18n
 			ac.fail(BAD_REQUEST, "element creation failed");
 			return;
 		} else {
-			SearchQueue searchQueue;
-			try (Trx txBatch = db.trx()) {
-				searchQueue = boot.meshRoot().getSearchQueue();
-				searchQueue.reload();
-				searchQueue.remove(batch);
-				txBatch.success();
-			}
+			processBatch(ac, batch, rh -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					handler.handle(Future.succeededFuture(element));
+				}
+			});
 
-			try (Trx txBatch = db.trx()) {
-				batch.process(rh -> {
-					if (rh.failed()) {
-						log.error("Error while processing batch {" + batch.getBatchId() + "} for element {" + element.getUuid() + ":"
-								+ element.getType() + "}.", rh.cause());
-						try (Trx tx = db.trx()) {
-							log.debug("Adding batch {" + batch.getBatchId() + "} back to queue");
-							searchQueue.add(batch);
-							tx.success();
-						}
-						ac.fail(BAD_REQUEST, "search_index_batch_process_failed", rh.cause());
-
-					} else {
-						handler.handle(Future.succeededFuture(element));
-					}
-				});
-			}
 		}
 	}
 
+	/**
+	 * Asynchronously load the objects and populate the given list response.
+	 * 
+	 * @param ac
+	 *            Action context that will be used to extract the paging parameters from
+	 * @param root
+	 *            Aggregation node that should be used to load the objects
+	 * @param handler
+	 *            Handler which will be invoked once all objects have been loaded and transformed and the list reponse is completed
+	 * @param listResponse
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+
+		// TODO use reflection to create the empty list response
+
 		PagingInfo pagingInfo = ac.getPagingInfo();
 		MeshAuthUser requestUser = ac.getUser();
 		try {
-
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
+			List<ObservableFuture<TR>> futures = new ArrayList<>();
 			for (T node : page) {
-				node.transformToRest(ac, rh -> {
-					if (hasSucceeded(ac, rh)) {
-						listResponse.getData().add(rh.result());
-					}
-					// TODO handle async issue
-				});
+				ObservableFuture<TR> obs = RxHelper.observableFuture();
+				futures.add(obs);
+				node.transformToRest(ac, obs.toHandler());
+				// rh -> {
+				// if (rh.succeeded()) {
+				// listResponse.getData().add(rh.result());
+				// } else {
+				// handler.handle(Future.failedFuture(rh.cause()));
+				// }
+				// // TODO handle async issue
+				// });
 			}
-			setPaging(listResponse, page);
-			handler.handle(Future.succeededFuture(listResponse));
+			Observable.merge(futures).collect(() -> {
+				return listResponse;
+			} , (list, restElement) -> {
+				list.getData().add(restElement);
+			}).subscribe(list -> {
+				setPaging(listResponse, page);
+				handler.handle(Future.succeededFuture(listResponse));
+			} , error -> {
+				handler.handle(Future.failedFuture(error));
+			});
 		} catch (InvalidArgumentException e) {
 			handler.handle(Future.failedFuture(e));
 		}
@@ -175,8 +239,8 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(InternalActionContext ac,
-			Page<T> page, RL listResponse) {
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
+			InternalActionContext ac, Page<T> page, RL listResponse) {
 		transformPage(ac, page, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()));
@@ -184,17 +248,47 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(InternalActionContext ac,
-			Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+	/**
+	 * Transform the page into a list response.
+	 * 
+	 * @param ac
+	 * @param page
+	 * @param handler
+	 * @param listResponse
+	 */
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(
+			InternalActionContext ac, Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
+		Set<ObservableFuture<TR>> futures = new HashSet<>();
+
 		for (T node : page) {
-			node.transformToRest(ac, rh -> {
-				listResponse.getData().add(rh.result());
-			});
+			ObservableFuture<TR> obs = RxHelper.observableFuture();
+			futures.add(obs);
+			node.transformToRest(ac, obs.toHandler());
 		}
-		setPaging(listResponse, page);
-		handler.handle(Future.succeededFuture(listResponse));
+
+		// Wait for all async processes to complete
+		Observable.merge(futures).collect(() -> {
+			return listResponse.getData();
+		} , (x, y) -> {
+			x.add(y);
+		}).subscribe(list -> {
+			setPaging(listResponse, page);
+			handler.handle(Future.succeededFuture(listResponse));
+		} , error -> {
+			handler.handle(Future.failedFuture(error));
+		});
 	}
 
+	/**
+	 * Load the object with the UUID which is taken from the routing context parameter and transform it into a rest model. Call the given handler when the
+	 * object was loaded or when loading failed.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param permission
+	 * @param root
+	 * @param handler
+	 */
 	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		loadObject(ac, uuidParameterName, permission, root, rh -> {
@@ -215,78 +309,64 @@ public class VerticleHelper {
 		});
 	}
 
-	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> node) {
-		node.transformToRest(ac, th -> {
+	/**
+	 * Transform the given vertex to a rest model and send with a JSON document response.
+	 * 
+	 * @param ac
+	 * @param vertex
+	 */
+	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> vertex) {
+		vertex.transformToRest(ac, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()));
 			}
 		});
 	}
 
+	/**
+	 * Create a generic message response and send it as a JSON document.
+	 * 
+	 * @param ac
+	 * @param i18nKey
+	 * @param parameters
+	 */
 	public static void responde(ActionContext ac, String i18nKey, String... parameters) {
 		GenericMessageResponse msg = new GenericMessageResponse();
 		msg.setMessage(ac.i18n(i18nKey, parameters));
 		ac.send(toJson(msg));
 	}
 
+	/**
+	 * Create an object using the given aggregation node and respond with a transformed object.
+	 * 
+	 * @param ac
+	 * @param root
+	 *            Aggregation node that should be used to create the object.
+	 */
 	public static <T extends GenericVertex<?>> void createObject(InternalActionContext ac, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		root.create(ac, rh -> {
 			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				try (Trx txi = db.trx()) {
+				db.noTrx(noTx -> {
 					vertex.reload();
 					transformAndResponde(ac, vertex);
-				}
+				});
 			}
 		});
 	}
 
-	//	public static <T extends GenericVertex<?>> void createObject(ActionContext ac, RootVertex<T> root) {
-	//
-	//		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
-	//
-	//		final int RETRY_COUNT = 15;
-	//		Mesh.vertx().executeBlocking(bc -> {
-	//			AtomicBoolean hasFinished = new AtomicBoolean(false);
-	//			for (int i = 0; i < RETRY_COUNT && !hasFinished.get(); i++) {
-	//				try {
-	//					log.debug("Opening new transaction for try: {" + i + "}");
-	//					try (NonTrx tx = db.nonTrx()) {
-	//						if (log.isDebugEnabled()) {
-	//							log.debug("Invoking create on root vertex");
-	//						}
-	//						root.create(ac, rh -> {
-	//							if (hasSucceeded(ac, rh)) {
-	//								GenericVertex<?> vertex = rh.result();
-	//								try (NonTrx txRead = db.nonTrx()) {
-	//									vertex.reload();
-	//									transformAndResponde(ac, vertex);
-	//								}
-	//							}
-	//							hasFinished.set(true);
-	//						});
-	//					}
-	//				} catch (OConcurrentModificationException e) {
-	//					log.error("Creation failed in try {" + i + "} retrying.");
-	//				}
-	//			}
-	//			if (!hasFinished.get()) {
-	//				log.error("Creation failed after {" + RETRY_COUNT + "} attempts.");
-	//				ac.fail(INTERNAL_SERVER_ERROR, "Creation failed after {" + RETRY_COUNT + "} attepts.");
-	//			}
-	//		} , false, rh -> {
-	//			if (rh.failed()) {
-	//				ac.fail(rh.cause());
-	//			}
-	//		});
-	//
-	//	}
-
+	/**
+	 * Update the object which is identified by the uuid parameter name and the aggregation root node.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param root
+	 */
 	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
@@ -295,19 +375,28 @@ public class VerticleHelper {
 						ac.fail(rh2.cause());
 					} else {
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
-						try (Trx txi = db.trx()) {
+						db.noTrx(noTx -> {
 							vertex.reload();
 							transformAndResponde(ac, vertex);
-						}
+						});
 					}
 				});
 			}
 		});
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName, String i18nMessageKey,
-			RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+	/**
+	 * Delete the object that is identified by the uuid and the aggregation root node.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param i18nMessageKey
+	 *            I18n message key that will be used to create a specific generic message response.
+	 * @param root
+	 */
+	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName,
+			String i18nMessageKey, RootVertex<T> root) {
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		loadObject(ac, uuidParameterName, DELETE_PERM, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -317,29 +406,35 @@ public class VerticleHelper {
 				if (vertex instanceof NamedVertex) {
 					name = ((NamedVertex) vertex).getName();
 				}
-				SearchQueueBatch batch = null;
-				try (Trx txDelete = db.trx()) {
+				final String objectName = name;
+				db.trx(txDelete -> {
 					if (vertex instanceof IndexedVertex) {
-						batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+						SearchQueueBatch batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+						vertex.delete();
+						txDelete.complete(batch);
+					} else {
+						txDelete.fail(error(ac, INTERNAL_SERVER_ERROR, "Could not determine object name"));
 					}
-					vertex.delete();
-					txDelete.success();
-				}
-				String id = name != null ? uuid + "/" + name : uuid;
-				VerticleHelper.processOrFail2(ac, batch, brh -> {
-					ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+				} , (AsyncResult<SearchQueueBatch> txDeleted) -> {
+					if (txDeleted.failed()) {
+						ac.errorHandler().handle(Future.failedFuture(txDeleted.cause()));
+					} else {
+						String id = objectName != null ? uuid + "/" + objectName : uuid;
+						VerticleHelper.processOrFail2(ac, txDeleted.result(), brh -> {
+							ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+						});
+					}
 				});
 			}
 		});
 	}
 
-	public static <T extends GenericVertex<?>> void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, RootVertex<T> root,
-			Handler<AsyncResult<T>> handler) {
+	public static <T extends GenericVertex<?>> void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm,
+			RootVertex<T> root, Handler<AsyncResult<T>> handler) {
 
 		String uuid = ac.getParameter(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
-			handler.handle(Future
-					.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_request_parameter_missing", uuidParameterName))));
+			handler.handle(failedFuture(ac, BAD_REQUEST, "error_request_parameter_missing", uuidParameterName));
 		} else {
 			loadObjectByUuid(ac, uuid, perm, root, handler);
 		}
@@ -355,9 +450,10 @@ public class VerticleHelper {
 	 * @param root
 	 * @return
 	 */
-	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root) {
+	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm,
+			RootVertex<T> root) {
 		if (root == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
+			throw error(ac, BAD_REQUEST, "error_root_node_not_found");
 		} else {
 
 			T object = root.findByUuidBlocking(uuid);
@@ -365,7 +461,7 @@ public class VerticleHelper {
 				throw new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid));
 			} else {
 				MeshAuthUser requestUser = ac.getUser();
-				if (requestUser.hasPermission(object, perm)) {
+				if (requestUser.hasPermission(ac, object, perm)) {
 					return object;
 				} else {
 					throw new InvalidPermissionException(ac.i18n("error_missing_perm", object.getUuid()));
@@ -375,44 +471,60 @@ public class VerticleHelper {
 		}
 	}
 
+	/**
+	 * Load the object by uuid and check the given permission.
+	 * 
+	 * @param ac
+	 *            Context to be used in order to check user permissions
+	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param perm
+	 *            Permission that must be granted in order to load the object
+	 * @param root
+	 *            Aggregation root vertex that should be used to find the element
+	 * @param handler
+	 *            handler that should be called when the object was successfully loaded or when an error occurred (401,404)
+	 */
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_root_node_not_found"));
+			throw error(ac, BAD_REQUEST, "error_root_node_not_found");
 		} else {
-			// try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-			// root.reload();
-			// User user = getUser(rc);
-			// user.reload();
-			// T element = root.findByUuidBlocking(uuid);
-			// if (user.hasPermission(element, perm)) {
-			// System.out.println("JOW" + element.getUuid());
-			// } else {
-			// System.out.println("NÖ" + element.getUuid());
-			// }
-			// }
+			Database db = MeshSpringConfiguration.getInstance().database();
+			root.reload();
 			root.findByUuid(uuid, rh -> {
-				try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
-					if (rh.failed()) {
-						handler.handle(Future.failedFuture(rh.cause()));
-					} else {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+					return;
+				} else if (rh.result() == null) {
+					handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
+					return;
+				} else {
+					db.noTrx(tc -> {
 						T node = rh.result();
-						if (node == null) {
-							handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
+						MeshAuthUser requestUser = ac.getUser();
+						if (requestUser.hasPermission(ac, node, perm)) {
+							handler.handle(Future.succeededFuture(node));
+							return;
 						} else {
-							MeshAuthUser requestUser = ac.getUser();
-							if (requestUser.hasPermission(node, perm)) {
-								handler.handle(Future.succeededFuture(node));
-							} else {
-								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
-							}
+							handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
+							return;
 						}
-					}
+					});
 				}
 			});
 		}
+
 	}
 
+	/**
+	 * Check the result object and fail early when the result failed as well.
+	 * 
+	 * @param ac
+	 * @param result
+	 *            Result that will be checked
+	 * @return false when the result failed, otherwise true
+	 */
 	public static boolean hasSucceeded(InternalActionContext ac, AsyncResult<?> result) {
 		if (result.failed()) {
 			ac.fail(result.cause());

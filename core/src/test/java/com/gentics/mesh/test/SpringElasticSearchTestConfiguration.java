@@ -5,8 +5,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.etc.ElasticSearchOptions;
-import com.gentics.mesh.search.ElasticSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })

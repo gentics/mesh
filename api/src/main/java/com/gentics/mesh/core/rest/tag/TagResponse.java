@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.tag;
 
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 
+/**
+ * POJO for a tag response model.
+ */
 public class TagResponse extends AbstractGenericNodeRestModel {
 
 	private TagFamilyReference tagFamily;
@@ -11,18 +14,29 @@ public class TagResponse extends AbstractGenericNodeRestModel {
 	public TagResponse() {
 	}
 
+	/**
+	 * Return the tag family reference.
+	 * 
+	 * @return
+	 */
 	public TagFamilyReference getTagFamily() {
 		return tagFamily;
 	}
 
-	public void setTagFamilyReference(TagFamilyReference tagFamily) {
+	/**
+	 * Set the tag family reference.
+	 * 
+	 * @param tagFamily
+	 */
+	public void setTagFamily(TagFamilyReference tagFamily) {
 		this.tagFamily = tagFamily;
 	}
 
-	public TagFamilyReference getTagFamilyReference() {
-		return tagFamily;
-	}
-
+	/**
+	 * Return the tag field container.
+	 * 
+	 * @return
+	 */
 	public TagFieldContainer getFields() {
 		return fields;
 	}

@@ -17,14 +17,29 @@ public class AbstractListResponse<T> {
 	public AbstractListResponse() {
 	}
 
+	/**
+	 * Return the meta info for the list.
+	 * 
+	 * @return
+	 */
 	public PagingMetaInfo getMetainfo() {
 		return metainfo;
 	}
 
+	/**
+	 * Set the meta info for the list.
+	 * 
+	 * @param metainfo
+	 */
 	public void setMetainfo(PagingMetaInfo metainfo) {
 		this.metainfo = metainfo;
 	}
 
+	/**
+	 * Return the list data.
+	 * 
+	 * @return
+	 */
 	@JsonTypeInfo(use = Id.CLASS)
 	public List<T> getData() {
 		return data;

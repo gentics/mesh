@@ -83,6 +83,9 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		}
 	}
 
+	/**
+	 * Handler that reacts onto status requests.
+	 */
 	private void addStatusHandler() {
 		route("/status").method(GET).handler(rc -> {
 			handler.handleStatus(rc);

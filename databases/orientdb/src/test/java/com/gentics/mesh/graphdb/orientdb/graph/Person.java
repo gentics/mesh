@@ -1,10 +1,8 @@
-package com.gentics.mesh.graphdb.orientdb;
+package com.gentics.mesh.graphdb.orientdb.graph;
 
 import java.util.List;
 
-import com.syncleus.ferma.AbstractVertexFrame;
-
-public class Person extends AbstractVertexFrame {
+public class Person extends AbstractInterceptingVertexFrame {
 
 	public List<? extends Person> getFriends() {
 		return out("HAS_FRIEND").has(Person.class).toListExplicit(Person.class);

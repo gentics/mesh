@@ -7,16 +7,15 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -30,7 +29,8 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 	@Override
 	public JsonObject principal() {
 		JsonObject user = new JsonObject();
-		try (Trx tx = MeshSpringConfiguration.getMeshSpringConfiguration().database().trx()) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		try (NoTrx noTx = db.noTrx()) {
 			user.put("uuid", getUuid());
 			user.put("username", getUsername());
 			user.put("firstname", getFirstname());
@@ -73,12 +73,12 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 
-	public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
-		final MeshAuthUserImpl user = this;
-		//Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
-		resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permission)));
-		return this;
-	}
+	// public MeshAuthUserImpl isAuthorised(MeshVertex targetNode, GraphPermission permission, Handler<AsyncResult<Boolean>> resultHandler) {
+	// final MeshAuthUserImpl user = this;
+	// //Mesh.vertx().executeBlocking(fut -> fut.complete(user.hasPermission(targetNode, permission)), false, resultHandler);
+	// resultHandler.handle(Future.succeededFuture(user.hasPermission(targetNode, permission)));
+	// return this;
+	// }
 
 	@Override
 	public User clearCache() {

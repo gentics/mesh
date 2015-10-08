@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -111,15 +113,12 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		Map<String, String> uuidToBeDeleted = new HashMap<>();
 		try (Trx tx = db.trx()) {
+			Map<String, String> uuidToBeDeleted = new HashMap<>();
 			TagFamily tagFamily = tagFamily("colors");
 			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
 			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
 			tagFamily.delete();
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
 			assertDeleted(uuidToBeDeleted);
 		}
 	}
@@ -153,7 +152,6 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily;
 		tagFamily = project().getTagFamilyRoot().create("newProject", user());
 		testPermission(GraphPermission.UPDATE_PERM, tagFamily);
-
 	}
 
 	@Test
@@ -171,14 +169,17 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
+		CompletableFuture<TagFamilyResponse> cf = new CompletableFuture<>();
 		tagFamily.transformToRest(ac, rh -> {
-			assertNotNull(rh.result());
-			TagFamilyResponse response = rh.result();
-			assertEquals(tagFamily.getName(), response.getName());
-			assertEquals(tagFamily.getUuid(), response.getUuid());
+			cf.complete(rh.result());
 			latch.countDown();
 		});
+
 		failingLatch(latch);
+		TagFamilyResponse response = cf.get(1, TimeUnit.SECONDS);
+		assertNotNull(response);
+		assertEquals(tagFamily.getName(), response.getName());
+		assertEquals(tagFamily.getUuid(), response.getUuid());
 	}
 
 	@Test
@@ -206,10 +207,12 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCRUDPermissions() {
 		TagFamilyRoot root = project().getTagFamilyRoot();
+		InternalActionContext ac = getMockedInternalActionContext("");
 		TagFamily tagFamily = root.create("test123", user());
-		assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
-		assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+		ac.data().clear();
+		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
 	}
 
 }

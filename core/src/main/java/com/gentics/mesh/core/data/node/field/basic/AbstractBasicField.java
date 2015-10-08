@@ -4,6 +4,9 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+
 public abstract class AbstractBasicField<T extends Field> implements BasicGraphField<T> {
 
 	private String fieldKey;
@@ -36,6 +39,9 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
 
-	abstract public T transformToRest(ActionContext ac);
+	/**
+	 * Transform the field into the rest response model.
+	 */
+	abstract public void transformToRest(ActionContext ac, Handler<AsyncResult<T>> handler);
 
 }

@@ -16,70 +16,104 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			createObject(ac, boot.schemaContainerRoot());
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
+
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			deleteObject(ac, "uuid", "schema_deleted", boot.schemaContainerRoot());
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
+
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			updateObject(ac, "uuid", boot.schemaContainerRoot());
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
+
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.schemaContainerRoot());
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			loadTransformAndResponde(ac, boot.schemaContainerRoot(), new SchemaListResponse());
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
 	}
 
 	public void handleAddProjectToSchema(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
 					loadObject(ac, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
 						if (hasSucceeded(ac, srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
-							try (Trx txAdd = db.trx()) {
+							db.trx(addTx -> {
 								project.getSchemaContainerRoot().addSchemaContainer(schema);
-								txAdd.success();
-							}
-							transformAndResponde(ac, schema);
+								addTx.complete(schema);
+							} , (AsyncResult<SchemaContainer> rtx) -> {
+								if (rtx.failed()) {
+									ac.fail(rtx.cause());
+								} else {
+									transformAndResponde(ac, rtx.result());
+								}
+							});
 						}
 					});
 				}
 			});
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
 
 	}
 
 	public void handleRemoveProjectFromSchema(InternalActionContext ac) {
-		try (Trx tx = db.trx()) {
+		db.asyncNoTrx(tc -> {
 			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
 					// TODO check whether schema is assigned to project
@@ -87,16 +121,25 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
-							try (Trx txRemove = db.trx()) {
+							db.trx(tcRemove -> {
 								project.getSchemaContainerRoot().removeSchemaContainer(schema);
-								txRemove.success();
-							}
-							transformAndResponde(ac, schema);
+								tcRemove.complete(schema);
+							} , (AsyncResult<SchemaContainer> schemaRemoved) -> {
+								if (schemaRemoved.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(schemaRemoved.cause()));
+								} else {
+									transformAndResponde(ac, schemaRemoved.result());
+								}
+							});
 						}
 					});
 				}
 			});
-		}
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
 	}
 
 }

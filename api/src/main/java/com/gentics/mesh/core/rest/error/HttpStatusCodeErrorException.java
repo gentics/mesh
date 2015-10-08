@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.rest.error;
 
+import com.gentics.mesh.handler.ActionContext;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 
 public class HttpStatusCodeErrorException extends RuntimeException {
 
@@ -11,10 +15,29 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 */
 	private int code;
 
-	@Deprecated
-	public HttpStatusCodeErrorException(int code, String message) {
-		super(message);
-		this.code = code;
+	/**
+	 * Create a i18n translated error exception.
+	 * 
+	 * @param ac
+	 * @param status
+	 * @param i18nMessageKey
+	 * @param parameters
+	 * @return
+	 */
+	public static HttpStatusCodeErrorException error(ActionContext ac, HttpResponseStatus status, String i18nMessageKey, String... parameters) {
+		return new HttpStatusCodeErrorException(status, ac.i18n(i18nMessageKey, parameters));
+	}
+
+	public static HttpStatusCodeErrorException error(ActionContext ac, HttpResponseStatus status, String i18nMessageKey, Throwable t) {
+		return new HttpStatusCodeErrorException(status, ac.i18n(i18nMessageKey), t);
+	}
+
+	public static <T> AsyncResult<T> failedFuture(ActionContext ac, HttpResponseStatus status, String i18nMessage, Throwable cause) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, ac.i18n(i18nMessage), cause));
+	}
+
+	public static <T> AsyncResult<T> failedFuture(ActionContext ac, HttpResponseStatus status, String i18nKey, String... parameters) {
+		return Future.failedFuture(new HttpStatusCodeErrorException(status, ac.i18n(i18nKey, parameters)));
 	}
 
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String message, Throwable e) {
@@ -27,7 +50,11 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		this.code = status.code();
 	}
 
-
+	/**
+	 * Return the http status code.
+	 * 
+	 * @return
+	 */
 	public int getCode() {
 		return code;
 	}

@@ -1,15 +1,22 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.tinkerpop.blueprints.Element;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+
+/**
+ * Main description of a graph database.
+ */
 public interface Database {
 
 	/**
@@ -21,13 +28,14 @@ public interface Database {
 		Database.threadLocalGraph.set(graph);
 	}
 
+	/**
+	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
+	 * 
+	 * @return
+	 */
 	public static FramedGraph getThreadLocalGraph() {
 		return Database.threadLocalGraph.get();
 	}
-
-	FramedTransactionalGraph startTransaction();
-
-	FramedGraph startNoTransaction();
 
 	/**
 	 * Stop the graph database.
@@ -35,7 +43,7 @@ public interface Database {
 	void stop();
 
 	/**
-	 * Star the graph database.
+	 * Start the graph database.
 	 */
 	void start();
 
@@ -63,9 +71,30 @@ public interface Database {
 	 * 
 	 * @return
 	 */
+	@Deprecated
 	Trx trx();
 
-	void trx(Consumer<Trx> tx);
+	/**
+	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
+	 * 
+	 * @param txHandler
+	 *            Handler that will be executed within the scope of the transaction.
+	 * @param resultHandler
+	 *            Handler that is being invoked when the transaction has been committed
+	 * @return
+	 */
+	<T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+
+	/**
+	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
+	 * fails.
+	 * 
+	 * @param txHandler
+	 *            Handler that will be executed within the scope of the transaction.
+	 * @param resultHandler
+	 * @return
+	 */
+	<T> Database asyncTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -85,11 +114,30 @@ public interface Database {
 	NoTrx noTrx();
 
 	/**
+	 * Execute the given handler within the scope of a no transaction.
+	 * 
+	 * @param txHandler
+	 *            handler that is invoked within the scope of the no-transaction.
+	 * @return
+	 */
+	<T> Future<T> noTrx(TrxHandler<Future<T>> txHandler);
+
+	/**
+	 * Asynchronously execute the txHandler within the scope of a non transaction and invoke the result handler after the transaction code handler finishes.
+	 * 
+	 * @param txHandler
+	 * @param resultHandler
+	 * @return
+	 */
+	<T> Database asyncNoTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+
+	/**
 	 * Initialize the database and store the settings.
 	 * 
 	 * @param options
+	 * @param vertx 
 	 */
-	void init(StorageOptions options);
+	void init(StorageOptions options, Vertx vertx);
 
 	/**
 	 * Reload the given mesh element.

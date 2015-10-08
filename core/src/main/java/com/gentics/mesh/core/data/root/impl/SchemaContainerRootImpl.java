@@ -58,10 +58,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		schemaContainer.setSchema(schema);
 		schemaContainer.setName(schema.getName());
 		addSchemaContainer(schemaContainer);
-		schemaContainer.setCreator(creator);
 		schemaContainer.setCreationTimestamp(System.currentTimeMillis());
-		schemaContainer.setEditor(creator);
 		schemaContainer.setLastEditedTimestamp(System.currentTimeMillis());
+		schemaContainer.setCreator(creator);
+		schemaContainer.setEditor(creator);
 		return schemaContainer;
 	}
 
@@ -94,7 +94,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<SchemaContainer>> handler) {
 		MeshAuthUser requestUser = ac.getUser();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 
 		SchemaCreateRequest schema;
 		try {
@@ -103,15 +103,25 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_name"))));
 				return;
 			}
-			if (requestUser.hasPermission(this, CREATE_PERM)) {
-				SchemaContainer container;
-				try (Trx txCreate = db.trx()) {
-					requestUser.reload();
-					container = create(schema, requestUser);
-					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					txCreate.success();
-				}
-				handler.handle(Future.succeededFuture(container));
+			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
+
+				db.trx(txCreate -> {
+
+					try {
+						requestUser.reload();
+						SchemaContainer container = create(schema, requestUser);
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+						txCreate.complete(container);
+					} catch (Exception e) {
+						txCreate.fail(e);
+					}
+				} , (AsyncResult<SchemaContainer> txCreated) -> {
+					if (txCreated.failed()) {
+						handler.handle(Future.failedFuture(txCreated.cause()));
+					} else {
+						handler.handle(Future.succeededFuture(txCreated.result()));
+					}
+				});
 			}
 		} catch (Exception e1) {
 			handler.handle(Future.failedFuture(e1));

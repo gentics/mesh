@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -14,6 +16,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.IOException;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -32,8 +35,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -100,7 +101,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	@Override
 	public void create(InternalActionContext ac, Handler<AsyncResult<User>> handler) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		Database db = MeshSpringConfiguration.getMeshSpringConfiguration().database();
+		Database db = MeshSpringConfiguration.getInstance().database();
 		UserCreateRequest requestModel;
 		try {
 			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getSchemaStorage());
@@ -121,69 +122,67 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_parentgroup_field"))));
 				return;
 			}
-			try (NoTrx tx = db.noTrx()) {
+			db.noTrx(noTrx -> {
 				// Load the parent group for the user
 				loadObjectByUuid(ac, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
 					if (hasSucceeded(ac, rh)) {
 						Group parentGroup = rh.result();
 						if (findByUsername(requestModel.getUsername()) != null) {
 							String message = ac.i18n("user_conflicting_username");
-							handler.handle(ac.failedFuture(CONFLICT, message));
+							handler.handle(failedFuture(ac, CONFLICT, message));
 							return;
 						}
-						MeshAuthUser requestUser = ac.getUser();
-						User user;
-						SearchQueueBatch batch;
-						try (Trx txCreate = db.trx()) {
-							requestUser.reload();
-							user = create(requestModel.getUsername(), parentGroup, requestUser);
+
+						db.trx(txCreate -> {
+							MeshAuthUser requestUser = ac.getUser();
+							User user = create(requestModel.getUsername(), parentGroup, requestUser);
 							user.setFirstname(requestModel.getFirstname());
 							user.setUsername(requestModel.getUsername());
 							user.setLastname(requestModel.getLastname());
 							user.setEmailAddress(requestModel.getEmailAddress());
-							user.setPasswordHash(
-									MeshSpringConfiguration.getMeshSpringConfiguration().passwordEncoder().encode(requestModel.getPassword()));
+							user.setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 							user.addGroup(parentGroup);
 							requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 							NodeReference reference = requestModel.getNodeReference();
-							if (reference != null) {
 
-								if (reference instanceof NodeReferenceImpl) {
-									NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
-									String referencedNodeUuid = basicReference.getUuid();
-									String projectName = basicReference.getProjectName();
+							if (reference != null && reference instanceof NodeReferenceImpl) {
+								NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+								String referencedNodeUuid = basicReference.getUuid();
+								String projectName = basicReference.getProjectName();
 
-									if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
-										handler.handle(Future.failedFuture(
-												new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_incomplete_node_reference"))));
-										return;
-									}
-
-									// TODO decide whether we need to check perms on the project as well
-									Project project = boot.projectRoot().findByName(projectName);
-									if (project == null) {
-										handler.handle(Future.failedFuture(
-												new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("project_not_found", projectName))));
-										return;
-									}
-									Node node;
-									try (NoTrx tx2 = db.noTrx()) {
-										node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-									}
-									user.setReferencedNode(node);
-								} else {
-									//TODO handle user create using full node rest model.
+								if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
+									txCreate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
+									return;
 								}
 
+								// TODO decide whether we need to check perms on the project as well
+								Project project = boot.projectRoot().findByName(projectName);
+								if (project == null) {
+									txCreate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
+									return;
+								}
+								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+								user.setReferencedNode(node);
+							} else if (reference != null) {
+								// TODO handle user create using full node rest model.
+								txCreate.fail("Create of users with expanded node reference field is not yet implemented.");
+								return;
 							}
-							batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-							txCreate.success();
-						}
-						processOrFail(ac, batch, handler, user);
+
+							SearchQueueBatch batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+							txCreate.complete(Tuple.tuple(batch, user));
+						} , (AsyncResult<Tuple<SearchQueueBatch, User>> txCreated) -> {
+							if (txCreated.failed()) {
+								handler.handle(Future.failedFuture(txCreated.cause()));
+							} else {
+								processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+							}
+						});
 
 					}
 				});
-			}
+
+			});
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}

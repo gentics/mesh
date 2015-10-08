@@ -5,11 +5,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.cli.Mesh;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.PemKeyCertOptions;
@@ -30,6 +31,11 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	@Override
 	public void start() throws Exception {
+		start(Future.future());
+	}
+
+	@Override
+	public void start(Future<Void> startFuture) throws Exception {
 		this.localRouter = setupLocalRouter();
 		if (localRouter == null) {
 			throw new MeshConfigurationException("The local router was not setup correctly. Startup failed.");
@@ -56,13 +62,21 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 			options.setPemKeyCertOptions(keyOptions);
 		}
 
+		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		server.requestHandler(routerStorage.getRootRouter()::accept);
-		server.listen();
-		if (log.isInfoEnabled()) {
-			log.info("Started http server.. Port: " + config().getInteger("port"));
-		}
-		registerEndPoints();
+		server.listen(rh -> {
+			if (log.isInfoEnabled()) {
+				log.info("Started http server.. Port: " + config().getInteger("port"));
+			}
+			try {
+				registerEndPoints();
+			} catch (Exception e) {
+				startFuture.fail(e);
+				return;
+			}
+			startFuture.complete();
+		});
 
 	}
 

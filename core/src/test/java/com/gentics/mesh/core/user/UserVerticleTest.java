@@ -50,7 +50,8 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -148,13 +149,22 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-
-		String username = "testuser_3";
 		UserRoot root = meshRoot().getUserRoot();
-		User user3 = root.create(username, group(), user());
-		user3.setLastname("should_not_be_listed");
-		user3.setFirstname("should_not_be_listed");
-		user3.setEmailAddress("should_not_be_listed");
+
+		int nUsers = 20;
+		for (int i = 0; i < nUsers; i++) {
+			String username = "testuser_" + i;
+			User user = root.create(username, group(), user());
+			user.setLastname("should_be_listed");
+			user.setFirstname("should_be_listed");
+			user.setEmailAddress("should_be_listed");
+			role().grantPermissions(user, READ_PERM);
+		}
+
+		User invisibleUser = root.create("should_not_be_listed", group(), user());
+		invisibleUser.setLastname("should_not_be_listed");
+		invisibleUser.setFirstname("should_not_be_listed");
+		invisibleUser.setEmailAddress("should_not_be_listed");
 
 		// Test default paging parameters
 		Future<UserListResponse> future = getClient().findUsers();
@@ -163,10 +173,12 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserListResponse restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(8, restResponse.getData().size());
+		// Admin User + Guest User + Dummy User = 3
+		assertEquals(3 + nUsers, restResponse.getMetainfo().getTotalCount());
+		assertEquals(3 + nUsers, restResponse.getData().size());
 
 		int perPage = 2;
-		int totalUsers = users().size();
+		int totalUsers = 3 + nUsers;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 		future = getClient().findUsers(new PagingInfo(3, perPage));
 		latchFor(future);
@@ -192,8 +204,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		}
 		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
 
-		// Verify that user3 is not part of the response
-		final String extra3Username = username;
+		// Verify that the invisible is not part of the response
+		final String extra3Username = "should_not_be_listed";
 		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
@@ -217,7 +229,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(0, future.result().getData().size());
 		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
 		assertEquals(1, future.result().getMetainfo().getPageCount());
-		assertEquals(8, future.result().getMetainfo().getTotalCount());
+		assertEquals(nUsers + 3, future.result().getMetainfo().getTotalCount());
 		assertEquals(25, future.result().getMetainfo().getPerPage());
 
 	}
@@ -321,7 +333,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateUserWithNodeReference() {
 
 		Node node = folder("2015");
-		assertTrue(user().hasPermission(node, READ_PERM));
+		InternalActionContext ac = getMockedInternalActionContext("");
+		assertTrue(user().hasPermission(ac, node, READ_PERM));
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
@@ -685,9 +698,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		UserResponse restUser = createFuture.result();
 
-		try (Trx tx = db.trx()) {
-			test.assertUser(newUser, restUser);
-		}
+		test.assertUser(newUser, restUser);
 
 		Future<UserResponse> readFuture = getClient().findUserByUuid(restUser.getUuid());
 		latchFor(readFuture);
@@ -722,13 +733,11 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		try (Trx tx = db.trx()) {
-			boot.userRoot().findByUuid(uuid, rh -> {
-				User loadedUser = rh.result();
-				assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
-				assertFalse(loadedUser.isEnabled());
-			});
-		}
+		boot.userRoot().findByUuid(uuid, rh -> {
+			User loadedUser = rh.result();
+			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
+			assertFalse(loadedUser.isEnabled());
+		});
 	}
 
 	@Test
@@ -750,27 +759,21 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
-		String uuid;
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create("extraUser", group(), user());
-			uuid = user.getUuid();
-			assertNotNull(uuid);
-			role().grantPermissions(user, UPDATE_PERM);
-			role().grantPermissions(user, CREATE_PERM);
-			role().grantPermissions(user, READ_PERM);
-			tx.success();
-		}
+		UserRoot userRoot = meshRoot().getUserRoot();
+		User user = userRoot.create("extraUser", group(), user());
+		String uuid = user.getUuid();
+		assertNotNull(uuid);
+		role().grantPermissions(user, UPDATE_PERM);
+		role().grantPermissions(user, CREATE_PERM);
+		role().grantPermissions(user, READ_PERM);
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			userRoot.findByUuid(uuid, rh -> {
-				assertNotNull("The user should not have been deleted", rh.result());
-			});
-		}
+		userRoot = meshRoot().getUserRoot();
+		userRoot.findByUuid(uuid, rh -> {
+			assertNotNull("The user should not have been deleted", rh.result());
+		});
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -781,47 +784,37 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	@Ignore
 	public void testReadOwnCreatedUser() {
 
 	}
 
 	@Test
 	public void testDeleteByUUID2() throws Exception {
-		String uuid;
 		String name = "extraUser";
-		User extraUser;
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			extraUser = userRoot.create(name, group(), user());
-			uuid = extraUser.getUuid();
-			role().grantPermissions(extraUser, DELETE_PERM);
-			tx.success();
-		}
+		UserRoot userRoot = meshRoot().getUserRoot();
+		User extraUser = userRoot.create(name, group(), user());
+		String uuid = extraUser.getUuid();
+		role().grantPermissions(extraUser, DELETE_PERM);
 
-		try (Trx tx = db.trx()) {
-			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
-			UserRoot userRoot = meshRoot().getUserRoot();
-			userRoot.findByUuid(uuid, rh -> {
-				User user = rh.result();
-				assertEquals(1, user.getGroups().size());
-			});
-		}
+		assertTrue(role().hasPermission(DELETE_PERM, extraUser));
+
+		User user = userRoot.findByUuidBlocking(uuid);
+		assertEquals(1, user.getGroups().size());
+		assertTrue("The user should be enabled", user.isEnabled());
 
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 
-		try (Trx tx = db.trx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-
-			// Check whether the user was correctly disabled
-			userRoot.findByUuid(uuid, rh -> {
-				User user2 = rh.result();
-				assertNotNull(user2);
-				assertEquals(0, user2.getGroups().size());
-				assertFalse("The user should have been disabled", user2.isEnabled());
-			});
+		// Check whether the user was correctly disabled
+		try (NoTrx noTx = db.noTrx()) {
+			User user2 = userRoot.findByUuidBlocking(uuid);
+			user2.reload();
+			assertNotNull(user2);
+			assertFalse("The user should have been disabled", user2.isEnabled());
+			assertEquals(0, user2.getGroups().size());
 		}
 	}
 

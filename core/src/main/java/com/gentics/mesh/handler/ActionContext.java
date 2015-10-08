@@ -23,7 +23,7 @@ public interface ActionContext {
 
 	<T> T get(String key);
 
-	//TODO we should get this of this and make it possible to choose between httmlaction context and internal context
+	// TODO we should get this of this and make it possible to choose between httmlaction context and internal context
 	/**
 	 * Create a action context using the routing context in order to extract needed parameters.
 	 *
@@ -80,10 +80,6 @@ public interface ActionContext {
 	 */
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
-	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, Throwable cause);
-
-	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters);
-
 	/**
 	 * Fail the action with the given cause.
 	 * 
@@ -93,8 +89,18 @@ public interface ActionContext {
 
 	<T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException;
 
+	/**
+	 * Return the body string.
+	 * 
+	 * @return
+	 */
 	String getBodyAsString();
 
+	/**
+	 * Return the currently set locale for the context.
+	 * 
+	 * @return
+	 */
 	Locale getLocale();
 
 	List<String> getExpandedFieldnames();

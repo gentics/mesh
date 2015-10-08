@@ -6,7 +6,7 @@ import java.util.List;
 import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 
 /**
- * Group response model.
+ * POJO that is used group response models.
  */
 public class GroupResponse extends AbstractGenericNodeRestModel {
 

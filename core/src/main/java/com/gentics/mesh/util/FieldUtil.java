@@ -50,7 +50,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createDateField(String date) {
+	public static Field createDateField(Long date) {
 		DateField field = new DateFieldImpl();
 		field.setDate(date);
 		return field;
