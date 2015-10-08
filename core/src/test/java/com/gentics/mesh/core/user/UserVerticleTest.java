@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -733,11 +734,12 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
-		boot.userRoot().findByUuid(uuid, rh -> {
-			User loadedUser = rh.result();
+
+		try (Trx tx = db.trx()) {
+			User loadedUser = boot.userRoot().findByUuidBlocking(uuid);
 			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
 			assertFalse(loadedUser.isEnabled());
-		});
+		}
 	}
 
 	@Test

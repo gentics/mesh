@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -40,9 +39,9 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
+import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
-import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -305,13 +304,10 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
-			Group reloadedGroup = rh.result();
+		try (Trx tx = db.trx()) {
+			Group reloadedGroup = boot.groupRoot().findByUuidBlocking(restGroup.getUuid());
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
-			latch.countDown();
-		});
-		MeshAssert.failingLatch(latch);
+		}
 	}
 
 	@Test
