@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -331,13 +332,9 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() throws Exception {
 		Tag tag = tag("red");
+		String uuid = tag.getUuid();
 		tag.remove();
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertElement(meshRoot().getTagRoot(), uuid, false);
 	}
 
 	@Test

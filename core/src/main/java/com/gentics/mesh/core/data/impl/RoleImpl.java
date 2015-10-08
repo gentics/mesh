@@ -139,8 +139,8 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 
 	@Override
 	public void delete() {
-		getVertex().remove();
 		addIndexBatch(DELETE_ACTION);
+		getVertex().remove();
 	}
 
 	@Override

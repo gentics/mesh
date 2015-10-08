@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -342,15 +343,15 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		Role role = role();
-		String uuid = role.getUuid();
-		role.delete();
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.roleRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		String uuid;
+		try (Trx tx = db.trx()) {
+			Role role = role();
+			uuid = role.getUuid();
+			role.delete();
+			tx.success();
+		}
+		assertElement(boot.roleRoot(), uuid, false);
+
 	}
 
 	@Test

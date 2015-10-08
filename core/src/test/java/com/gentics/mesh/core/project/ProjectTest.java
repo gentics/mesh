@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -56,13 +57,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = project();
 		project.delete();
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
-
+		assertElement(meshRoot().getProjectRoot(), uuid, false);
 		assertDeleted(uuidToBeDeleted);
 
 		// TODO assert on tag families of the project

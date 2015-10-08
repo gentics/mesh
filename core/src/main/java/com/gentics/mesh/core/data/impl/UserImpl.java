@@ -407,12 +407,12 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public void delete() {
+		disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
 		}
 		outE(HAS_USER).removeAll();
-		disable();
 	}
 
 	/**

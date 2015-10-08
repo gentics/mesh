@@ -92,8 +92,8 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	@Override
 	public void delete() {
 		// TODO should all references be updated to a new fallback schema?
-		getElement().remove();
 		addIndexBatch(DELETE_ACTION);
+		getElement().remove();
 	}
 
 	@Override

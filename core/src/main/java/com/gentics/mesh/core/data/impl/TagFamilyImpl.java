@@ -136,6 +136,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 
 	@Override
 	public void delete() {
+		addIndexBatch(DELETE_ACTION);
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
@@ -143,7 +144,6 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 			tag.remove();
 		}
 		getElement().remove();
-		addIndexBatch(DELETE_ACTION);
 
 	}
 
