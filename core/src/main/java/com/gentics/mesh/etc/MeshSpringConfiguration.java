@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc;
 
+import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_HTTP_ONLY_FLAG;
+import static io.vertx.ext.web.handler.SessionHandler.DEFAULT_COOKIE_SECURE_FLAG;
+
 import javax.annotation.PostConstruct;
 
 import org.springframework.context.annotation.Bean;
@@ -85,7 +88,7 @@ public class MeshSpringConfiguration {
 	@Bean
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-		return new SessionHandlerImpl("mesh.session", 30 * 60 * 1000, false, store);
+		return new SessionHandlerImpl("mesh.session", 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG, store);
 	}
 
 	@Bean
