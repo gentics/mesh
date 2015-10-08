@@ -273,13 +273,15 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		test.assertUser(updateRequest, restUser);
-		assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
-		User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
-		assertNotNull(reloadedUser);
-		assertEquals("Epic Stark", reloadedUser.getLastname());
-		assertEquals("Tony Awesome", reloadedUser.getFirstname());
-		assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
-		assertEquals("dummy_user_changed", reloadedUser.getUsername());
+		try (Trx tx = db.trx()) {
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
+			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+			assertNotNull(reloadedUser);
+			assertEquals("Epic Stark", reloadedUser.getLastname());
+			assertEquals("Tony Awesome", reloadedUser.getFirstname());
+			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+		}
 	}
 
 	@Test
@@ -470,12 +472,14 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		test.assertUser(updateRequest, restUser);
 
-		User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
-		assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
-		assertEquals(user.getUsername(), reloadedUser.getUsername());
-		assertEquals(user.getFirstname(), reloadedUser.getFirstname());
-		assertEquals(user.getLastname(), reloadedUser.getLastname());
-		assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
+		try (Trx tx = db.trx()) {
+			User reloadedUser = boot.userRoot().findByUsername(user.getUsername());
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+			assertEquals(user.getUsername(), reloadedUser.getUsername());
+			assertEquals(user.getFirstname(), reloadedUser.getFirstname());
+			assertEquals(user.getLastname(), reloadedUser.getLastname());
+			assertEquals(user.getEmailAddress(), reloadedUser.getEmailAddress());
+		}
 	}
 
 	@Test
