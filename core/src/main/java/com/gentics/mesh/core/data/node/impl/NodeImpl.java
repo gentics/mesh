@@ -206,7 +206,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 		db.asyncNoTrx(trx -> {
 			NodeResponse restNode = new NodeResponse();
-			fillRest(restNode, ac);
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
 				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
@@ -337,6 +336,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
 				return;
 			}
+
+			fillRest(restNode, ac);
 
 			// Prevent errors in which no futures have been added
 			ObservableFuture<Void> dummyFuture = RxHelper.observableFuture();

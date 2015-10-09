@@ -24,8 +24,6 @@ public class MeshImpl implements Mesh {
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
-	// private static MeshImpl instance;
-
 	private MeshOptions options;
 	private Vertx vertx;
 

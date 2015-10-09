@@ -17,8 +17,11 @@ import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -113,9 +116,20 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
+	public Iterable<Edge> getEdges(MeshVertex target, Direction direction, String... labels) {
+		Vertex sourceVertex = getElement();
+		if (sourceVertex instanceof OrientVertex) {
+			OrientVertex targetVertex = (OrientVertex) target.getElement();
+			return ((OrientVertex) sourceVertex).getEdges(targetVertex, direction, labels);
+		} else {
+			throw new NotImplementedException("Not implemented for current graph database.");
+		}
+	}
+
+	@Override
 	public Vertex getElement() {
 		//TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the transaction finishes
-		Element vertex = ((WrappedVertex)Database.getThreadLocalGraph().getVertex(id)).getBaseElement();
+		Element vertex = ((WrappedVertex) Database.getThreadLocalGraph().getVertex(id)).getBaseElement();
 		//Element vertex = threadLocalElement.get();
 
 		// Unwrap wrapped vertex

@@ -58,7 +58,13 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	public void testHasPermission() {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		assertTrue(user().hasPermission(ac, english(), READ_PERM));
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 100000; i++) {
+			assertTrue(user().hasPermission(ac, english(), READ_PERM));
+			ac.data().clear();
+		}
+		long duration = System.currentTimeMillis() - start;
+		System.out.println("Duration: " + duration);
 	}
 
 	@Test

@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
+		<version>0.1.0-dev-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -25,6 +25,13 @@
 	<dependencies>
 		<dependency>
 			<artifactId>mesh-core</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<type>jar</type>
+			<classifier>javadoc</classifier>
+		</dependency>
+		<dependency>
+			<artifactId>mesh-api</artifactId>
 			<groupId>${project.groupId}</groupId>
 			<version>${project.version}</version>
 			<type>jar</type>
@@ -235,7 +242,7 @@
 					</execution>
 					<execution>
 						<id>unpack-javadoc</id>
-						<phase>site</phase>
+						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
@@ -249,6 +256,15 @@
 									<classifier>javadoc</classifier>
 									<overWrite>false</overWrite>
 									<outputDirectory>${project.build.directory}/site/docs/javadoc</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>mesh-api</artifactId>
+									<version>${project.version}</version>
+									<type>jar</type>
+									<classifier>javadoc</classifier>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}/site/docs/javadoc-api</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

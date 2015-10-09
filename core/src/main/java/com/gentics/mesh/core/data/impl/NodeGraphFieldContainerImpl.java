@@ -57,6 +57,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -355,6 +357,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField,
 			Handler<AsyncResult<Field>> handler) {
+
+		Database db = MeshSpringConfiguration.getInstance().database();
+		//		db.asyncNoTrx(noTrx -> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:
@@ -369,8 +374,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				graphStringField.transformToRest(ac, th -> {
 					if (th.failed()) {
 						handler.handle(Future.failedFuture(th.cause()));
+						return;
 					} else {
 						handler.handle(Future.succeededFuture(th.result()));
+						return;
 					}
 				});
 				return;
@@ -513,6 +520,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				return;
 			}
 		}
+
+		//		} , rh -> {
+		//
+		//		});
 	}
 
 	@Override
