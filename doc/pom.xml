@@ -231,7 +231,7 @@
 						<goals>
 							<goal>unpack-dependencies</goal>
 						</goals>
-						<phase>pre-site</phase>
+						<phase>prepare-package</phase>
 						<configuration>
 							<includeGroupIds>org.webjars</includeGroupIds>
 							<includeArtifactIds>highlightjs</includeArtifactIds>
