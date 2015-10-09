@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -14,7 +13,6 @@
 	<packaging>jar</packaging>
 	<name>Mesh - Documentation</name>
 	<description>Parent module for documentation</description>
-
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -80,22 +78,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>pre-site</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.3.2</version>
@@ -105,7 +87,7 @@
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>pre-site</phase>
+						<phase>process-classes</phase>
 						<configuration>
 							<executable>java</executable>
 							<arguments>
@@ -120,7 +102,7 @@
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>pre-site</phase>
+						<phase>process-classes</phase>
 						<configuration>
 							<executable>java</executable>
 							<arguments>
@@ -156,7 +138,7 @@
 						<goals>
 							<goal>process-asciidoc</goal>
 						</goals>
-						<phase>site</phase>
+						<phase>package</phase>
 						<configuration>
 							<attributes>
 								<toc>left</toc>
@@ -167,6 +149,45 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.jolokia</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>build-docker</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>push-docker</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
+					<registry>https://registry.gentics.com</registry>
+					<images>
+						<image>
+							<name>registry.gentics.com/mesh-website:${project.version}</name>
+							<alias>mesh-website</alias>
+							<build>
+								<assembly>
+									<mode>dir</mode>
+									<basedir>/opt/tvc</basedir>
+									<dockerFileDir>mesh-website</dockerFileDir>
+									<descriptor>docker-assembly.xml</descriptor>
+								</assembly>
+							</build>
+						</image>
+					</images>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
@@ -246,7 +267,7 @@
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
-						<phase>site</phase>
+						<phase>package</phase>
 						<configuration>
 							<nodeVersion>v0.12.2</nodeVersion>
 							<npmVersion>2.7.6</npmVersion>
@@ -259,7 +280,7 @@
 						<goals>
 							<goal>npm</goal>
 						</goals>
-						<phase>site</phase>
+						<phase>package</phase>
 						<configuration>
 							<arguments>install</arguments>
 						</configuration>
@@ -271,27 +292,7 @@
 						<goals>
 							<goal>gulp</goal>
 						</goals>
-						<phase>site</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-scm-publish-plugin</artifactId>
-				<version>1.1</version>
-				<configuration>
-					<!-- mono-module doesn't require site:stage -->
-					<scmBranch>gtx-pages</scmBranch>
-					<content>${project.build.directory}/site</content>
-				</configuration>
-				<executions>
-					<execution>
-						<id>scm-publish</id>
-						<!-- deploy site with maven-scm-publish-plugin -->
-						<phase>site-deploy</phase>
-						<goals>
-							<goal>publish-scm</goal>
-						</goals>
+						<phase>package</phase>
 					</execution>
 				</executions>
 			</plugin>
@@ -376,12 +377,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<distributionManagement>
-		<site>
-			<id>github-site</id>
-			<url>scm:git:git@github.com:gentics/mesh.git</url>
-		</site>
-	</distributionManagement>
 
 </project>

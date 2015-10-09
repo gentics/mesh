@@ -361,6 +361,24 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate-cypher-images</id>
+						<phase>package</phase>
+						<goals>
+							<goal>test-javadoc</goal>
+						</goals>
+						<configuration>
+							<useStandardDocletOptions>false</useStandardDocletOptions>
+							<doclet>de.jotschi.javadoc.cypher.CypherDoclet</doclet>
+							<docletArtifact>
+								<groupId>de.jotschi</groupId>
+								<artifactId>javadoc-cypher-doclet</artifactId>
+								<version>0.0.1-SNAPSHOT</version>
+							</docletArtifact>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>

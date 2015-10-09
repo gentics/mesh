@@ -16,6 +16,9 @@
 		<gh-pages.url>http://gentics.github.io/mesh/</gh-pages.url>
 		<gh-url>https://github.com/gentics/mesh/tree/master</gh-url>
 
+		<dockerHost>aquila.office</dockerHost>
+		<dockerHostProtocol>http</dockerHostProtocol>
+
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.2.0-SNAPSHOT</ferma.version>

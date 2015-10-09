@@ -31,7 +31,7 @@ var mkdirp = require("mkdirp");
 
 // path to website on the server in production mode (i.e. when running
 // `gulp build`). MUST BE ABSOLUTE AND MUST END WITH A SLASH!
-var contextPath = "/mesh/";
+var contextPath = "/";
 
 // path to website on the server in development mode (i.e. when running
 // `gulp watch`). MUST BE ABSOLUTE AND MUST END WITH A SLASH!
@@ -55,9 +55,9 @@ var paths = {
 	entypo : "Entypo+",
 	less_includes : [ "src/site/stylesheets", "src/main/less",
 			"bower_components/bootstrap/less" ],
-	raml_source : "src/raml/rest-spec-core.raml",
-	raml_template : "src/raml/template.handlebars",
-	raml_resource_template : "src/raml/resource.handlebars",
+	raml_source : "src/main/raml/rest-spec-core.raml",
+	raml_template : "src/main/raml/template.handlebars",
+	raml_resource_template : "src/main/raml/resource.handlebars",
 	raml_outputdir : "target/site/docs/raml",
 	src : "src/site",
 	site : "target/site",
