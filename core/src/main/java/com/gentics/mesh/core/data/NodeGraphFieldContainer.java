@@ -27,12 +27,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, Microschem
 	 * @param expandField
 	 * @param handler
 	 */
-	void getRestFieldFromGraph(InternalActionContext rc, String fieldKey, FieldSchema fieldSchema, boolean expandField, Handler<AsyncResult<Field>> handler);
+	void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField, Handler<AsyncResult<Field>> handler);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
 	 * 
-	 * @param rc
+	 * @param ac
 	 * @param fields
 	 * @param schema
 	 * @throws MeshSchemaException

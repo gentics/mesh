@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 
 /**
- * Wrapper for a bcrypted password hash. The wrapper is used within the {@link SimpleCredentialsMatcher} to validate the token password info.
- * 
+ * Wrapper for a bcrypted password hash.
  */
 public class BCryptPasswordHash {
 

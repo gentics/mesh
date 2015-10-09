@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.HttpActionContext;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -33,7 +34,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param rc
 	 */
 	public void handleBackup(RoutingContext rc) {
-		ActionContext ac = ActionContext.create(rc);
+		ActionContext ac = HttpActionContext.create(rc);
 		try {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
 			responde(ac, "backup_finished");
@@ -44,7 +45,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleRestore(RoutingContext rc) {
-		ActionContext ac = ActionContext.create(rc);
+		ActionContext ac = HttpActionContext.create(rc);
 		try {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
@@ -56,7 +57,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleExport(RoutingContext rc) {
-		ActionContext ac = ActionContext.create(rc);
+		ActionContext ac = HttpActionContext.create(rc);
 		try {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
 			responde(ac, "export_finished");
@@ -67,7 +68,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleImport(RoutingContext rc) {
-		ActionContext ac = ActionContext.create(rc);
+		ActionContext ac = HttpActionContext.create(rc);
 		try {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());

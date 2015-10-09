@@ -68,10 +68,6 @@ public interface ActionContext {
 	 */
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
-	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, Throwable cause);
-
-	<T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters);
-
 	/**
 	 * Fail the action with the given cause.
 	 * 
@@ -83,8 +79,19 @@ public interface ActionContext {
 
 	String getBodyAsString();
 
+	/**
+	 * Return the current set locale.
+	 * 
+	 * @return
+	 */
 	Locale getLocale();
 
+	//TODO move this to internal action context
+	/**
+	 * Return a list of field name that should be expanded.
+	 * 
+	 * @return
+	 */
 	List<String> getExpandedFieldnames();
 
 	/**

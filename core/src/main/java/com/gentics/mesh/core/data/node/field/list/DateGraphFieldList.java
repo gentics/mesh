@@ -10,7 +10,8 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 	/**
 	 * Add another graph field to the list of graph fields.
 	 * 
-	 * @param key
+	 * @param date
+	 *            Date to be set for the new field
 	 * @return
 	 */
 	DateGraphField createDate(Long date);

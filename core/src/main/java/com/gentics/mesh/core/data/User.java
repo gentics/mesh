@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+
 import java.util.Set;
 
 import com.gentics.mesh.core.data.impl.GenericVertexImpl;
@@ -13,6 +14,23 @@ import com.gentics.mesh.handler.InternalActionContext;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+
+/**
+ * The User Domain Model class
+ * 
+ * <pre>
+ * {@code
+ * 	(u:UserImpl)-[r1:HAS_USER]->(ur:UserRootImpl)
+ * 	(u)-[r2:HAS_USER]->(g:GroupImpl)
+  	(g)<-[r3:HAS_ROLE]-(r:RoleImpl)
+ * }
+ * </pre>
+ *
+ * <p>
+ * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.User.jpg" alt="">
+ * </p>
+ * 
+ */
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "user";

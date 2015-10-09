@@ -68,7 +68,6 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * Shortcut method for getSchemaContainer().getSchema()
 	 * 
 	 * @return
-	 * @throws IOException
 	 */
 	Schema getSchema();
 
@@ -80,8 +79,19 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	NodeGraphFieldContainer getGraphFieldContainer(Language language);
 
+	/**
+	 * Return the field container for the given language. Create the container when non was found.
+	 * 
+	 * @param language
+	 * @return
+	 */
 	NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language);
 
+	/**
+	 * Return a list of graph field containers for the node.
+	 * 
+	 * @return
+	 */
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
 	/**

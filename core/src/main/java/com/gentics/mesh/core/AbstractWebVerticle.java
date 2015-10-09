@@ -99,6 +99,9 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	/**
 	 * Wrapper for getRouter().route(path)
+	 * 
+	 * @param path
+	 * @return
 	 */
 	protected Route route(String path) {
 		Route route = localRouter.route(path);

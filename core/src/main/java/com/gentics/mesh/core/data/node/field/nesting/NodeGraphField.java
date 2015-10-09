@@ -12,8 +12,6 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	/**
 	 * Returns the node for this field.
 	 * 
-	 * @param fieldKey
-	 *            The key for this field
 	 * @return Node for this field when set, otherwise null.
 	 */
 	Node getNode();

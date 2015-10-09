@@ -67,7 +67,7 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 * @param ac
 	 * @param handler
 	 */
-	void create(InternalActionContext rc, Handler<AsyncResult<T>> handler);
+	void create(InternalActionContext ac, Handler<AsyncResult<T>> handler);
 
 	/**
 	 * Find the object by uuid.

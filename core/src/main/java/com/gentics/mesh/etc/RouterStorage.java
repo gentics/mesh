@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.HttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -34,11 +34,13 @@ import io.vertx.ext.web.handler.CookieHandler;
  * Central storage for all vertx web request routers.
  * 
  * Structure:
- *  
+ * <pre>
+ * {@code
  * ROOT_ROUTER(:coreRouter) -> customRouters
  *                          -> apiRouters -> apiSubRouter (eg: /users.., /roles..)
  *                          -> projectRouters (eg: /Dummy/nodes)
- *
+ * }
+ * </pre>
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
@@ -121,14 +123,14 @@ public class RouterStorage {
 					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
 					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 						failureRoutingContext.response().setStatusCode(400);
-						String msg = I18NUtil.get(ActionContext.create(failureRoutingContext), "error_parse_request_json_error");
+						String msg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), "error_parse_request_json_error");
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
 					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
 						failureRoutingContext.response().setStatusCode(code);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 					} else {
-						String msg = I18NUtil.get(ActionContext.create(failureRoutingContext), "error_internal");
+						String msg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), "error_internal");
 						failureRoutingContext.response().setStatusCode(500);
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 					}
