@@ -4,6 +4,9 @@ import org.apache.commons.lang.BooleanUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Mesh Http Server configuration POJO.
+ */
 public class HttpServerConfig {
 
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "NOT_SET";

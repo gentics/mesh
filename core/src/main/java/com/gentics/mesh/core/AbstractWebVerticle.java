@@ -17,6 +17,10 @@ import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
+/**
+ * An abstract class that should be used when creating verticles which expose a http server. The verticle will automatically start a http server and add the
+ * http server handler to the core router storage handler.
+ */
 public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
@@ -80,8 +84,18 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	}
 
+	/**
+	 * Register all endpoints to the local router.
+	 * 
+	 * @throws Exception
+	 */
 	public abstract void registerEndPoints() throws Exception;
 
+	/**
+	 * Setup the local router.
+	 * 
+	 * @return
+	 */
 	public abstract Router setupLocalRouter();
 
 	@Override

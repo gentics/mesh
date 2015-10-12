@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
 /**
- * Main json util which is used to register all custom json specific handlers and deserializers.
+ * Main JSON util which is used to register all custom JSON specific handlers and deserializers.
  *
  */
 public final class JsonUtil {
@@ -67,6 +67,9 @@ public final class JsonUtil {
 		schemaMapper.registerModule(module);
 	}
 
+	/**
+	 * Register the modules and setup the configuration for the object mapper which will be used when handling mesh nodes.
+	 */
 	private static void initNodeMapper() {
 		nodeMapper = new ObjectMapper();
 		nodeMapper.setSerializationInclusion(Include.NON_NULL);
@@ -152,6 +155,12 @@ public final class JsonUtil {
 		return (T) schemaMapper.readValue(json, classOfT);
 	}
 
+	/**
+	 * Transform the given node response into a JSON string.
+	 * 
+	 * @param response
+	 * @return
+	 */
 	public static String writeNodeJson(NodeResponse response) {
 		try {
 			return nodeMapper.writeValueAsString(response);

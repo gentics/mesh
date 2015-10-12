@@ -8,6 +8,9 @@ import com.gentics.mesh.etc.StorageOptions;
 
 import io.vertx.ext.mail.MailConfig;
 
+/**
+ * Main mesh configuration POJO.
+ */
 public class MeshOptions {
 
 	public static final boolean ENABLED = true;

@@ -7,8 +7,14 @@ import org.elasticsearch.node.Node;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+/**
+ * A search provider is a service this enables storage and retrieval of indexed documents.
+ */
 public interface SearchProvider {
 
+	/**
+	 * Explicitly refresh one or more indices (making the content indexed since the last refresh searchable).
+	 */
 	void refreshIndex();
 
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
@@ -72,7 +78,12 @@ public interface SearchProvider {
 	 */
 	void reset();
 
-	//TODO get rid of the elastic search depedency within the interface
+	/**
+	 * Return the elastic search node.
+	 * 
+	 * @return
+	 */
+	//TODO get rid of the elastic search dependency within the interface
 	Node getNode();
 
 }

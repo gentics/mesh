@@ -1,7 +1,7 @@
 package com.gentics.mesh.etc;
 
 /**
- * Search engine options.
+ * Search engine options POJO.
  */
 public class ElasticSearchOptions {
 

@@ -6,6 +6,11 @@ import com.syncleus.ferma.FramedGraph;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * An abstract base class that can be used to implement database specific Trx and NoTrx classes.
+ * 
+ * @param <T>
+ */
 public class AbstractTrxBase<T extends FramedGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTrxBase.class);

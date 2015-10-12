@@ -61,6 +61,12 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 		return map;
 	}
 
+	/**
+	 * Add the given group uuid and names to the map.
+	 * 
+	 * @param map
+	 * @param groups
+	 */
 	private void addGroups(Map<String, Object> map, List<? extends Group> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();

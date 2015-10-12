@@ -6,7 +6,10 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGraph> implements Trx {
+/**
+ * An abstract class that can be used to implement vendor specific graph database Trx classes.
+ */
+public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGraph>implements Trx {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTrx.class);
 
@@ -22,6 +25,11 @@ public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGra
 		isSuccess = false;
 	}
 
+	/**
+	 * Return the state of the success status flag.
+	 * 
+	 * @return
+	 */
 	protected boolean isSuccess() {
 		return isSuccess;
 	}
@@ -39,6 +47,9 @@ public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGra
 		getGraph().shutdown();
 	}
 
+	/**
+	 * Invoke a commit on the database of this transaction.
+	 */
 	protected void commit() {
 		if (log.isDebugEnabled()) {
 			log.debug("Commiting graph {" + getGraph().hashCode() + "}.");
@@ -53,6 +64,9 @@ public abstract class AbstractTrx extends AbstractTrxBase<FramedTransactionalGra
 		}
 	}
 
+	/**
+	 * Invoke a rollback on the database of this transaction.
+	 */
 	protected void rollback() {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking rollback on graph {" + getGraph().hashCode() + "}.");

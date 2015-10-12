@@ -89,6 +89,12 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		return searchProvider != null;
 	}
 
+	/**
+	 * Add basic references (creator, editor, created, edited) to the map for the given vertex.
+	 * 
+	 * @param map
+	 * @param vertex
+	 */
 	protected void addBasicReferences(Map<String, Object> map, GenericVertex<?> vertex) {
 		// TODO make sure field names match node response
 		map.put("uuid", vertex.getUuid());
@@ -133,6 +139,18 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		map.put("tags", tagFields);
 	}
 
+	/**
+	 * Handle a search index action. A action will modify the search index (delete, update, create)
+	 * 
+	 * @param uuid
+	 *            Uuid of the document that should be handled
+	 * @param actionName
+	 *            Type of the action (delete, update, create)
+	 * @param indexType
+	 *            Type of the index
+	 * @param handler
+	 *            Handler that is invoked once the action has terminated
+	 */
 	public void handleAction(String uuid, String actionName, String indexType, Handler<AsyncResult<Void>> handler) {
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";

@@ -1,6 +1,11 @@
 package com.gentics.mesh.core.rest.common;
 
-public class NameUuidReference<T> {
+/**
+ * Base class for named references. A named reference is a reference to a element within mesh that can be identified by uuid and name.
+ *
+ * @param <T>
+ */
+public abstract class NameUuidReference<T> {
 
 	private String name;
 	private String uuid;

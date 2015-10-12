@@ -13,6 +13,10 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
+/**
+ * Deserializer which is used to deserialize node list items.
+ *
+ */
 public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldListItem> {
 
 	@Override
@@ -28,8 +32,10 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 
 		NodeResponse nodeItem = null;
 		try {
+			// Try to deserialize the node response in the expanded form.
 			nodeItem = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
 		} catch (MeshJsonException e) {
+			// Fallback and deseralize the element using the collapsed form.
 			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);
 			nodeItem = new NodeResponse();
 			nodeItem.setUuid(collapsedItem.getUuid());

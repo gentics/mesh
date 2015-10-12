@@ -21,6 +21,11 @@ public interface InternalActionContext extends ActionContext {
 		return new InternalHttpActionContextImpl(rc);
 	}
 
+	/**
+	 * Set the user to the context.
+	 * 
+	 * @param user
+	 */
 	void setUser(User user);
 
 	/**

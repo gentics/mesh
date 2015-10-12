@@ -49,6 +49,19 @@ public class SearchRestHandler {
 	@Autowired
 	private Database db;
 
+	/**
+	 * Handle a search request.
+	 * 
+	 * @param ac
+	 * @param rootVertex
+	 *            Root Vertex of the elements that should be searched
+	 * @param classOfRL
+	 *            Class of the rest model list that should be used when creating the response
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws InvalidArgumentException
+	 * @throws MeshJsonException
+	 */
 	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(InternalActionContext ac,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
@@ -177,6 +190,5 @@ public class SearchRestHandler {
 		});
 
 	}
-
 
 }

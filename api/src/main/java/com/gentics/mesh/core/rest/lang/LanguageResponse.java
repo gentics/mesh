@@ -53,6 +53,11 @@ public class LanguageResponse extends AbstractResponse {
 		return nativeName;
 	}
 
+	/**
+	 * Set the language native name.
+	 * 
+	 * @param nativeName
+	 */
 	public void setNativeName(String nativeName) {
 		this.nativeName = nativeName;
 	}

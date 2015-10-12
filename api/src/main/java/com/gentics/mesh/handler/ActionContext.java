@@ -7,7 +7,6 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.MultiMap;
 
 /**
@@ -15,10 +14,28 @@ import io.vertx.core.MultiMap;
  */
 public interface ActionContext {
 
+	/**
+	 * Return the data map that is bound to this context.
+	 * 
+	 * @return
+	 */
 	Map<String, Object> data();
 
+	/**
+	 * Add the data object for the given key to the data map.
+	 * 
+	 * @param key
+	 * @param obj
+	 * @return Fluent API
+	 */
 	ActionContext put(String key, Object obj);
 
+	/**
+	 * Return the data object for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	<T> T get(String key);
 
 	/**
@@ -46,8 +63,18 @@ public interface ActionContext {
 	 */
 	String i18n(String i18nKey, String... parameters);
 
+	/**
+	 * Return the request parameters.
+	 * 
+	 * @return
+	 */
 	MultiMap getParameters();
 
+	/**
+	 * Return the query string.
+	 * 
+	 * @return
+	 */
 	String query();
 
 	/**
@@ -75,8 +102,20 @@ public interface ActionContext {
 	 */
 	void fail(Throwable cause);
 
+	/**
+	 * Deserialize the body string using the given class.
+	 * 
+	 * @param classOfT
+	 * @return
+	 * @throws HttpStatusCodeErrorException
+	 */
 	<T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException;
 
+	/**
+	 * Return the body string of the request.
+	 * 
+	 * @return
+	 */
 	String getBodyAsString();
 
 	/**

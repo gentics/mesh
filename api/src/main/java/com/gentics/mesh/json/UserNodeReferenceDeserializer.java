@@ -39,6 +39,7 @@ public class UserNodeReferenceDeserializer extends JsonDeserializer<NodeReferenc
 			if (log.isTraceEnabled()) {
 				log.trace("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version.", e);
 			}
+			// Fallback to deserialize the node using the basic node reference (collapsed form)
 			NodeReferenceImpl basicReference = oc.treeToValue(node, NodeReferenceImpl.class);
 			return basicReference;
 		} catch (IOException e) {
