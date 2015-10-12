@@ -6,6 +6,7 @@ import static com.gentics.mesh.mock.MockingUtils.mockNode;
 import static com.gentics.mesh.mock.MockingUtils.mockNodeBasic;
 import static com.gentics.mesh.mock.MockingUtils.mockProject;
 import static com.gentics.mesh.mock.MockingUtils.mockRole;
+import static com.gentics.mesh.mock.MockingUtils.mockSchemaContainer;
 import static com.gentics.mesh.mock.MockingUtils.mockTag;
 import static com.gentics.mesh.mock.MockingUtils.mockTagFamily;
 import static com.gentics.mesh.mock.MockingUtils.mockUser;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -35,11 +37,17 @@ import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.search.index.ProjectIndexHandler;
 import com.gentics.mesh.search.index.RoleIndexHandler;
+import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 import com.gentics.mesh.test.DummySearchProvider;
 
+/**
+ * Search document example JSON generator
+ * 
+ * This generator will create JSON files which represent the JSON documents that are stored within the elastic search index.
+ */
 public class SearchModelGenerator extends AbstractGenerator {
 
 	private DummySearchProvider provider;
@@ -74,6 +82,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			writeRoleDocumentExample();
 			writeProjectDocumentExample();
 			writeTagFamilyDocumentExample();
+			writeSchemaDocumentExample();
 			System.exit(0);
 		}
 
@@ -86,7 +95,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Tag tagA = mockTag("green", user, tagFamily);
 		Tag tagB = mockTag("red", user, tagFamily);
 		Project project = mockProject(user);
-		Node parentNode = mockNodeBasic("folder");
+		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
 		nodeIndexHandler.store(node, "node", rh -> {
@@ -97,7 +106,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeProjectDocumentExample() throws Exception {
 		User creator = mockUser("admin", "Admin", "", null);
-
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
 		ProjectIndexHandler projectIndexHandler = ctx.getBean(ProjectIndexHandler.class);
@@ -134,7 +142,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 		userIndexHandler.store(user, "user", rh -> {
 		});
 		writeStoreEvent("user.search");
-
 	}
 
 	private void writeTagFamilyDocumentExample() throws Exception {
@@ -144,7 +151,16 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagFamilyIndexHandler.store(tagFamily, "tagFamily", rh -> {
 		});
 		writeStoreEvent("tagFamily.search");
+	}
 
+	private void writeSchemaDocumentExample() throws Exception {
+		User user = mockUser("joe1", "Joe", "Doe");
+		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
+
+		SchemaContainerIndexHandler searchIndexHandler = ctx.getBean(SchemaContainerIndexHandler.class);
+		searchIndexHandler.store(schemaContainer, "schema", rh -> {
+		});
+		writeStoreEvent("schema.search");
 	}
 
 	private void writeTagDocumentExample() throws Exception {
@@ -155,7 +171,6 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagIndexHandler.store(tag, "tag", rh -> {
 		});
 		writeStoreEvent("tag.search");
-
 	}
 
 	private void writeStoreEvent(String name) throws Exception {

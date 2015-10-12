@@ -85,10 +85,10 @@ public final class MockingUtils {
 		return language;
 	}
 
-	public static Node mockNodeBasic(String schemaType) {
+	public static Node mockNodeBasic(String schemaType, User user) {
 		Node node = mock(NodeImpl.class);
 		when(node.getUuid()).thenReturn(randomUUID());
-		SchemaContainer schemaContainer = mockSchemaContainer(schemaType);
+		SchemaContainer schemaContainer = mockSchemaContainer(schemaType, user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		return node;
 	}
@@ -157,11 +157,15 @@ public final class MockingUtils {
 		return tag;
 	}
 
-	public static SchemaContainer mockSchemaContainer(String name) {
+	public static SchemaContainer mockSchemaContainer(String name, User user) {
 		SchemaContainer container = mock(SchemaContainerImpl.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(randomUUID());
 		when(container.getSchema()).thenReturn(mockContentSchema());
+		when(container.getCreator()).thenReturn(user);
+		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getEditor()).thenReturn(user);
+		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		return container;
 	}
 
@@ -198,7 +202,7 @@ public final class MockingUtils {
 		List<? extends Tag> tagList = Arrays.asList(tagA, tagB);
 		Mockito.<List<? extends Tag>> when(node.getTags()).thenReturn(tagList);
 
-		SchemaContainer schemaContainer = mockSchemaContainer("content");
+		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 
 		when(node.getCreator()).thenReturn(user);
@@ -207,13 +211,13 @@ public final class MockingUtils {
 		Schema schema = schemaContainer.getSchema();
 		when(node.getSchema()).thenReturn(schema);
 
-		NodeGraphFieldContainer container = mockContainer(language);
+		NodeGraphFieldContainer container = mockContainer(language, user);
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 
 		return node;
 	}
 
-	public static NodeGraphFieldContainer mockContainer(Language language) {
+	public static NodeGraphFieldContainer mockContainer(Language language, User user) {
 		NodeGraphFieldContainer container = mock(NodeGraphFieldContainerImpl.class);
 		when(container.getLanguage()).thenReturn(language);
 
@@ -239,7 +243,7 @@ public final class MockingUtils {
 
 		// Node field
 		NodeGraphField nodeField = mock(NodeGraphFieldImpl.class);
-		Node nodeRef = mockNodeBasic("folder");
+		Node nodeRef = mockNodeBasic("folder", user);
 		when(nodeField.getNode()).thenReturn(nodeRef);
 		when(container.getNode("node")).thenReturn(nodeField);
 

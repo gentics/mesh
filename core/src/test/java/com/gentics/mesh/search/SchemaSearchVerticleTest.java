@@ -49,7 +49,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest {
 		response = future.result();
 		assertEquals(0, response.getData().size());
 
-		future = getClient().searchSchemas(getSimpleTermQuery("name", "content"), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchSchemas(getSimpleTermQuery("name", "folder"), new PagingInfo().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -59,7 +59,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentCreation() throws Exception {
-		final String newName = "newSchema";
+		final String newName = "newschema";
 		SchemaResponse schema = createSchema(newName);
 		MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName), new PagingInfo().setPage(1).setPerPage(2));
@@ -72,7 +72,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
-		final String schemaName = "newSchemaName";
+		final String schemaName = "newschemaname";
 		SchemaResponse schema = createSchema(schemaName);
 
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
@@ -91,11 +91,11 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest {
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		final String schemaName = "newproject";
-		SchemaResponse project = createSchema(schemaName);
+		final String schemaName = "newschemaname";
+		SchemaResponse schema = createSchema(schemaName);
 
-		String newSchemaName = "updatedprojectname";
-		updateSchema(project.getUuid(), newSchemaName);
+		String newSchemaName = "updatedschemaname";
+		updateSchema(schema.getUuid(), newSchemaName);
 
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
 				new PagingInfo().setPage(1).setPerPage(2));

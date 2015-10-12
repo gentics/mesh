@@ -44,6 +44,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	protected Map<String, Object> transformToDocumentMap(SchemaContainer container) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", container.getName());
+		map.put("description", container.getSchema().getDescription());
 		addBasicReferences(map, container);
 		return map;
 	}
