@@ -2,7 +2,6 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -40,7 +39,6 @@ import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.MeshAssert;
 
-import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
 public class NodeTest extends AbstractBasicObjectTest {

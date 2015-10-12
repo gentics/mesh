@@ -50,10 +50,27 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testFindByLanguageTag() {
+
+		//		for (int e = 0; e < 15; e++) {
+		long start = System.currentTimeMillis();
+		for (int i = 0; i < 200000; i++) {
+			LanguageRoot root = meshRoot().getLanguageRoot();
+			Language language = root.findByLanguageTag("de");
+			assertNotNull(language);
+		}
+		long duration = System.currentTimeMillis() - start;
+		System.out.println("Duration: " + duration);
+		//		}
+	}
+
+	@Test
 	@Override
 	public void testFindByName() {
+
 		Language language = meshRoot().getLanguageRoot().findByName("German");
 		assertNotNull(language);
+
 		assertEquals("German", language.getName());
 		assertEquals("Deutsch", language.getNativeName());
 		assertEquals("de", language.getLanguageTag());

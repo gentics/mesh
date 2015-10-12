@@ -54,6 +54,12 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 	}
 
+	/**
+	 * Initialize and start the search provider using the given options.
+	 * 
+	 * @param options
+	 * @return Fluent API
+	 */
 	public ElasticSearchProvider init(ElasticSearchOptions options) {
 		this.options = options;
 		start();

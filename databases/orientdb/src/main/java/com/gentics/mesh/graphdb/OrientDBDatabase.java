@@ -24,7 +24,10 @@ import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.AsyncResult;
@@ -59,7 +62,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
-		start();
 	}
 
 	@Override
@@ -85,10 +87,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
-		// Add some indices
-		// memoryGraph.createKeyIndex("name", Vertex.class);
-		// memoryGraph.createKeyIndex("ferma_type", Vertex.class);
-		// memoryGraph.createKeyIndex("ferma_type", Edge.class);
+		// Create some indices
+		OrientGraphNoTx tx = factory.getNoTx();
+
+		tx.createIndex("languageTag", Vertex.class);
+		tx.createKeyIndex("languageTag", Vertex.class);
+		tx.createKeyIndex("name", Vertex.class);
+		tx.createKeyIndex("ferma_type", Vertex.class);
+		tx.createKeyIndex("ferma_type", Edge.class);
+		tx.shutdown();
 
 	}
 
