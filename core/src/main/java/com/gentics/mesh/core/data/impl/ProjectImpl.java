@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +51,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implements Project {
 
@@ -141,12 +145,30 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 	@Override
 	public Project transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(noTrx -> {
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
+
 			ProjectResponse projectResponse = new ProjectResponse();
 			projectResponse.setName(getName());
 			projectResponse.setRootNodeUuid(getBaseNode().getUuid());
-			fillRest(projectResponse, ac);
-			tc.complete(projectResponse);
+
+			// Add common fields
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			fillRest(projectResponse, ac, rh -> {
+				if (rh.failed()) {
+					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
+				} else {
+					obsFieldSet.toHandler().handle(Future.succeededFuture());
+				}
+			});
+
+			// Merge and complete
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				noTrx.complete(projectResponse);
+			} , error -> {
+				noTrx.fail(error);
+			});
 		} , (AsyncResult<ProjectResponse> rh) -> {
 			handler.handle(rh);
 		});

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
@@ -198,13 +199,21 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
-					if (requestUser.hasPermission(ac, containerByName, READ_PERM)) {
-						containerFoundHandler.handle(Future.succeededFuture(containerByName));
-					} else {
-						handler.handle(Future.failedFuture(new InvalidPermissionException(
-								ac.i18n("error_missing_perm", containerByName.getUuid() + "/" + schemaInfo.getSchema().getName()))));
-						return;
-					}
+					requestUser.hasPermission(ac, containerByName, GraphPermission.READ_PERM, ph -> {
+						if (ph.succeeded() && ph.result()) {
+							containerFoundHandler.handle(Future.succeededFuture(containerByName));
+							return;
+						} else if (ph.failed()) {
+							log.error("Error while checking permissions", ph.cause());
+							handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
+							return;
+						} else {
+							handler.handle(Future.failedFuture(new InvalidPermissionException(
+									ac.i18n("error_missing_perm", containerByName.getUuid() + "/" + schemaInfo.getSchema().getName()))));
+							return;
+						}
+					});
+
 				} else {
 					handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("schema_not_found", schemaInfo.getSchema().getName()))));
 					return;
@@ -212,6 +221,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			} else {
 				loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaContainerRoot(), rh -> {
 					if (hasSucceeded(ac, rh)) {
+						//TODO check permissions
 						SchemaContainer schemaContainer = rh.result();
 						containerFoundHandler.handle(Future.succeededFuture(schemaContainer));
 						return;

@@ -46,6 +46,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
+import net.bytebuddy.description.annotation.AnnotationDescription.Loadable;
 import rx.Observable;
 
 public class VerticleHelper {
@@ -449,7 +450,9 @@ public class VerticleHelper {
 	 * @param perm
 	 * @param root
 	 * @return
+	 * @deprecated Use {@link #loadObjectByUuid(InternalActionContext, String, GraphPermission, RootVertex, Handler)} instead
 	 */
+	@Deprecated
 	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm,
 			RootVertex<T> root) {
 		if (root == null) {
@@ -503,13 +506,18 @@ public class VerticleHelper {
 					db.noTrx(tc -> {
 						T node = rh.result();
 						MeshAuthUser requestUser = ac.getUser();
-						if (requestUser.hasPermission(ac, node, perm)) {
-							handler.handle(Future.succeededFuture(node));
-							return;
-						} else {
-							handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
-							return;
-						}
+						requestUser.hasPermission(ac, node, perm, ph -> {
+							if (ph.failed()) {
+								log.error("Error while checking permissions", ph.cause());
+								handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
+							} else if (ph.succeeded() && ph.result()) {
+								handler.handle(Future.succeededFuture(node));
+								return;
+							} else {
+								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
+								return;
+							}
+						});
 					});
 				}
 			});

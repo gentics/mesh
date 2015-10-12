@@ -35,6 +35,9 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -378,6 +381,36 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	// Schema
+	protected SchemaResponse createSchema(String schemaName) {
+		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+		schemaCreateRequest.setName(schemaName);
+		Future<SchemaResponse> future = getClient().createSchema(schemaCreateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		return future.result();
+	}
+
+	protected SchemaResponse readSchema(String uuid) {
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(uuid);
+		latchFor(future);
+		assertSuccess(future);
+		return future.result();
+	}
+
+	protected SchemaResponse updateSchema(String uuid, String schemaName) {
+		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
+		schemaUpdateRequest.setName(schemaName);
+		Future<SchemaResponse> future = getClient().updateSchema(uuid, schemaUpdateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		return future.result();
+	}
+
+	protected void deleteSchema(String uuid) {
+		Future<GenericMessageResponse> future = getClient().deleteSchema(uuid);
+		latchFor(future);
+		assertSuccess(future);
+	}
 
 	// Microschema
 

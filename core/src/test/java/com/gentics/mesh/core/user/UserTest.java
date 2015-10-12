@@ -15,6 +15,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
@@ -110,6 +113,42 @@ public class UserTest extends AbstractBasicObjectTest {
 			assertNotNull(json.getJsonArray("groups"));
 			assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
 		}
+	}
+
+	@Test
+	public void testGetPermissionNamesViaHandler() throws InterruptedException, ExecutionException, TimeoutException {
+		User user = user();
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		Node node = content();
+
+		int max = 20000;
+		CountDownLatch latch = new CountDownLatch(max);
+		long now = System.currentTimeMillis();
+		for (int i = 0; i < max; i++) {
+
+			//ac.data().clear();
+			//CompletableFuture<String[]> permissionFuture = new CompletableFuture<>();
+
+			if (1 != 1) {
+				user.getPermissionNames(ac, node);
+				latch.countDown();
+			} else {
+				user.getPermissionNames(ac, node, rh -> {
+					//String[] names = rh.result().toArray(new String[rh.result().size()]);
+					//permissionFuture.complete(names);
+					latch.countDown();
+				});
+			}
+			//assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
+		}
+
+		latch.await();
+		long dur = System.currentTimeMillis() - now;
+		System.out.println("Duration:" + dur);
+		//		for (String name : permissionFuture.get()) {
+		//			System.out.println(name);
+		//		}
 	}
 
 	@Test

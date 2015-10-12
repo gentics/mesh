@@ -8,6 +8,7 @@ import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,9 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Group {
 
@@ -111,9 +115,11 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	public Group transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(noTrx -> {
+
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
+
 			GroupResponse restGroup = new GroupResponse();
-			fillRest(restGroup, ac);
 			restGroup.setName(getName());
 
 			// for (User user : group.getUsers()) {
@@ -135,7 +141,24 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 			// for (Group childGroup : children) {
 			// restGroup.getGroups().add(childGroup.getName());
 			// }
-			tc.complete(restGroup);
+
+			// Add common fields
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			fillRest(restGroup, ac, rh -> {
+				if (rh.failed()) {
+					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
+				} else {
+					obsFieldSet.toHandler().handle(Future.succeededFuture());
+				}
+			});
+
+			// Merge and complete
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				noTrx.complete(restGroup);
+			} , error -> {
+				noTrx.fail(error);
+			});
 		} , (AsyncResult<GroupResponse> rh) -> {
 			handler.handle(rh);
 		});

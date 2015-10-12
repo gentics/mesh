@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -45,7 +48,14 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
-	protected void fillRest(AbstractGenericNodeRestModel model, InternalActionContext ac) {
+	/**
+	 * Add common fields to the given rest model object. The method will add common files like creator, editor, uuid, permissions, edited, created.
+	 * 
+	 * @param model
+	 * @param ac
+	 * @param handler
+	 */
+	protected <R extends AbstractGenericNodeRestModel> void fillRest(R model, InternalActionContext ac, Handler<AsyncResult<R>> handler) {
 
 		model.setUuid(getUuid());
 
@@ -67,10 +77,19 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		} else {
 			// TODO throw error and log something
 		}
-		model.setPermissions(ac.getUser().getPermissionNames(ac, this));
-
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
+
+		ac.getUser().getPermissionNames(ac, this, ph -> {
+			if (ph.failed()) {
+				handler.handle(Future.failedFuture(ph.cause()));
+			} else {
+				String[] names = ph.result().toArray(new String[ph.result().size()]);
+				model.setPermissions(names);
+				handler.handle(Future.succeededFuture(model));
+			}
+		});
+
 	}
 
 	@Override

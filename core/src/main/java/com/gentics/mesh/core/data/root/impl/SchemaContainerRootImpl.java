@@ -2,15 +2,19 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
@@ -103,22 +107,21 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				return;
 			}
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
-
 				db.trx(txCreate -> {
-
 					try {
 						requestUser.reload();
 						SchemaContainer container = create(schema, requestUser);
 						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-						txCreate.complete(container);
+						SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						txCreate.complete(Tuple.tuple(batch, container));
 					} catch (Exception e) {
 						txCreate.fail(e);
 					}
-				} , (AsyncResult<SchemaContainer> txCreated) -> {
+				} , (AsyncResult<Tuple<SearchQueueBatch, SchemaContainer>> txCreated) -> {
 					if (txCreated.failed()) {
 						handler.handle(Future.failedFuture(txCreated.cause()));
 					} else {
-						handler.handle(Future.succeededFuture(txCreated.result()));
+						processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
 					}
 				});
 			}

@@ -12,6 +12,7 @@ import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +46,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>implements TagFamily {
 
@@ -122,12 +126,30 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	@Override
 	public TagFamily transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(noTrx -> {
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
+
 			TagFamilyResponse response = new TagFamilyResponse();
 			response.setName(getName());
 
-			fillRest(response, ac);
-			tc.complete(response);
+			// Add common fields
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			fillRest(response, ac, rh -> {
+				if (rh.failed()) {
+					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
+				} else {
+					obsFieldSet.toHandler().handle(Future.succeededFuture());
+				}
+			});
+
+			// Merge and complete
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				noTrx.complete(response);
+			} , error -> {
+				noTrx.fail(error);
+			});
+
 		} , (AsyncResult<TagFamilyResponse> rh) -> {
 			handler.handle(rh);
 		});

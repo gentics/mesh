@@ -204,150 +204,160 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-		db.asyncNoTrx(trx -> {
+		db.asyncNoTrx(noTrx -> {
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
-				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
+				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
 			}
 			restNode.setPublished(isPublished());
 
-			try {
-				Schema schema = container.getSchema();
-				if (schema == null) {
-					trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
-				} else {
-					restNode.setDisplayField(schema.getDisplayField());
-					// Load the children
-					if (schema.isFolder()) {
-						// //TODO handle uuid
-						// //TODO handle expand
-						List<String> children = new ArrayList<>();
-						// //TODO check permissions
-						for (Node child : getChildren()) {
-							children.add(child.getUuid());
-						}
-						restNode.setContainer(true);
-						restNode.setChildren(children);
+			//			try {
+			Schema schema = container.getSchema();
+			if (schema == null) {
+				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
+			} else {
+				restNode.setDisplayField(schema.getDisplayField());
+				// Load the children
+				if (schema.isFolder()) {
+					// //TODO handle uuid
+					// //TODO handle expand
+					List<String> children = new ArrayList<>();
+					// //TODO check permissions
+					for (Node child : getChildren()) {
+						children.add(child.getUuid());
 					}
-					if (schema.isBinary()) {
-						restNode.setFileName(getBinaryFileName());
-						BinaryProperties binaryProperties = new BinaryProperties();
-						binaryProperties.setMimeType(getBinaryContentType());
-						binaryProperties.setFileSize(getBinaryFileSize());
-						binaryProperties.setSha512sum(getBinarySHA512Sum());
-						// TODO determine whether file is an image
-						// binaryProperties.setDpi(getImageDpi());
-						getBinaryImageDPI();
-						getBinaryImageHeight();
-						getBinaryImageWidth();
-						// binaryProperties.setHeight(getImageHeight());
-						// binaryProperties.setWidth(getImageWidth());
-						restNode.setBinaryProperties(binaryProperties);
-					}
+					restNode.setContainer(true);
+					restNode.setChildren(children);
 				}
-
-				// Schema reference
-				SchemaContainer schemaContainer = getSchemaContainer();
-				if (schemaContainer != null) {
-					ObservableFuture<Void> obsSchemaReference = RxHelper.observableFuture();
-					futures.add(obsSchemaReference);
-					schemaContainer.transformToReference(ac, rh -> {
-						if (rh.succeeded()) {
-							restNode.setSchema(rh.result());
-							obsSchemaReference.toHandler().handle(Future.succeededFuture());
-						} else {
-							obsSchemaReference.toHandler().handle(Future.failedFuture(rh.cause()));
-						}
-					});
+				if (schema.isBinary()) {
+					restNode.setFileName(getBinaryFileName());
+					BinaryProperties binaryProperties = new BinaryProperties();
+					binaryProperties.setMimeType(getBinaryContentType());
+					binaryProperties.setFileSize(getBinaryFileSize());
+					binaryProperties.setSha512sum(getBinarySHA512Sum());
+					// TODO determine whether file is an image
+					// binaryProperties.setDpi(getImageDpi());
+					getBinaryImageDPI();
+					getBinaryImageHeight();
+					getBinaryImageWidth();
+					// binaryProperties.setHeight(getImageHeight());
+					// binaryProperties.setWidth(getImageWidth());
+					restNode.setBinaryProperties(binaryProperties);
 				}
-
-				// Parent node reference
-				Node parentNode = getParentNode();
-				if (parentNode != null) {
-					ObservableFuture<Void> obsParentNodeReference = RxHelper.observableFuture();
-					futures.add(obsParentNodeReference);
-					parentNode.transformToReference(ac, rh -> {
-						if (rh.succeeded()) {
-							restNode.setParentNode(rh.result());
-							obsParentNodeReference.toHandler().handle(Future.succeededFuture());
-						} else {
-							obsParentNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
-						}
-					});
-				}
-
-				NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
-				restNode.setAvailableLanguages(getAvailableLanguageNames());
-
-				if (fieldContainer == null) {
-					List<String> languageTags = ac.getSelectedLanguageTags();
-					String langInfo = getLanguageInfo(languageTags);
-					log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
-							+ langInfo + "}. Fields will be empty.");
-					// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
-				} else {
-					restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-					List<String> fieldsToExpand = ac.getExpandedFieldnames();
-					for (FieldSchema fieldEntry : schema.getFields()) {
-						boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
-						ObservableFuture<Void> obsRestField = RxHelper.observableFuture();
-						futures.add(obsRestField);
-						fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField, rh -> {
-							if (rh.failed()) {
-								obsRestField.toHandler().handle(Future.failedFuture(rh.cause()));
-							} else {
-								com.gentics.mesh.core.rest.node.field.Field restField = rh.result();
-								if (fieldEntry.isRequired() && restField == null) {
-									/* TODO i18n */
-									//TODO no trx fail. Instead let obsRestField fail
-									trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
-											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
-									obsRestField.toHandler().handle(Future.failedFuture("Field not set"));
-									return;
-								}
-								if (restField == null) {
-									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-								} else {
-									restNode.getFields().put(fieldEntry.getName(), restField);
-									obsRestField.toHandler().handle(Future.succeededFuture());
-								}
-							}
-						});
-					}
-				}
-
-				// Tags
-				for (Tag tag : getTags(ac)) {
-					TagFamily tagFamily = tag.getTagFamily();
-					String tagFamilyName = tagFamily.getName();
-					String tagFamilyUuid = tagFamily.getUuid();
-					TagReference reference = tag.tansformToTagReference();
-					TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
-					if (group == null) {
-						group = new TagFamilyTagGroup();
-						group.setUuid(tagFamilyUuid);
-						restNode.getTags().put(tagFamilyName, group);
-					}
-					group.getItems().add(reference);
-				}
-			} catch (InvalidArgumentException e) {
-				// TODO i18n
-				trx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
-				return;
 			}
 
-			fillRest(restNode, ac);
+			// Schema reference
+			SchemaContainer schemaContainer = getSchemaContainer();
+			if (schemaContainer != null) {
+				ObservableFuture<Void> obsSchemaReference = RxHelper.observableFuture();
+				futures.add(obsSchemaReference);
+				schemaContainer.transformToReference(ac, rh -> {
+					if (rh.succeeded()) {
+						restNode.setSchema(rh.result());
+						obsSchemaReference.toHandler().handle(Future.succeededFuture());
+					} else {
+						obsSchemaReference.toHandler().handle(Future.failedFuture(rh.cause()));
+					}
+				});
+			}
+
+			// Parent node reference
+			Node parentNode = getParentNode();
+			if (parentNode != null) {
+				ObservableFuture<Void> obsParentNodeReference = RxHelper.observableFuture();
+				futures.add(obsParentNodeReference);
+				parentNode.transformToReference(ac, rh -> {
+					if (rh.succeeded()) {
+						restNode.setParentNode(rh.result());
+						obsParentNodeReference.toHandler().handle(Future.succeededFuture());
+					} else {
+						obsParentNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
+					}
+				});
+			}
+
+			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
+			restNode.setAvailableLanguages(getAvailableLanguageNames());
+
+			if (fieldContainer == null) {
+				List<String> languageTags = ac.getSelectedLanguageTags();
+				String langInfo = getLanguageInfo(languageTags);
+				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
+						+ langInfo + "}. Fields will be empty.");
+				// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
+			} else {
+				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
+				List<String> fieldsToExpand = ac.getExpandedFieldnames();
+				for (FieldSchema fieldEntry : schema.getFields()) {
+					boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
+					ObservableFuture<Void> obsRestField = RxHelper.observableFuture();
+					futures.add(obsRestField);
+					fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField, rh -> {
+						if (rh.failed()) {
+							obsRestField.toHandler().handle(Future.failedFuture(rh.cause()));
+						} else {
+							com.gentics.mesh.core.rest.node.field.Field restField = rh.result();
+							if (fieldEntry.isRequired() && restField == null) {
+								/* TODO i18n */
+								//TODO no trx fail. Instead let obsRestField fail
+								noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
+										+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
+								obsRestField.toHandler().handle(Future.failedFuture("Field not set"));
+								return;
+							}
+							if (restField == null) {
+								log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+							} else {
+								restNode.getFields().put(fieldEntry.getName(), restField);
+								obsRestField.toHandler().handle(Future.succeededFuture());
+							}
+						}
+					});
+				}
+			}
+
+			// Tags
+			for (Tag tag : getTags(ac)) {
+				TagFamily tagFamily = tag.getTagFamily();
+				String tagFamilyName = tagFamily.getName();
+				String tagFamilyUuid = tagFamily.getUuid();
+				TagReference reference = tag.tansformToTagReference();
+				TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
+				if (group == null) {
+					group = new TagFamilyTagGroup();
+					group.setUuid(tagFamilyUuid);
+					restNode.getTags().put(tagFamilyName, group);
+				}
+				group.getItems().add(reference);
+			}
+			//			} catch (InvalidArgumentException e) {
+			//				 TODO i18n
+			//				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
+			//				return;
+			//			}
 
 			// Prevent errors in which no futures have been added
 			ObservableFuture<Void> dummyFuture = RxHelper.observableFuture();
 			futures.add(dummyFuture);
 			dummyFuture.toHandler().handle(Future.succeededFuture());
 
+			// Add common fields
+			ObservableFuture<Void> obsCommonFiields = RxHelper.observableFuture();
+			futures.add(obsCommonFiields);
+			fillRest(restNode, ac, fr -> {
+				if (fr.failed()) {
+					obsCommonFiields.toHandler().handle(Future.failedFuture(fr.cause()));
+				} else {
+					obsCommonFiields.toHandler().handle(Future.succeededFuture());
+				}
+			});
+
+			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {
-				trx.complete(restNode);
+				noTrx.complete(restNode);
 			} , error -> {
-				trx.fail(error);
+				noTrx.fail(error);
 			});
 
 		} , (AsyncResult<NodeResponse> rh) -> {

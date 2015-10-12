@@ -46,6 +46,10 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
+/**
+ * 
+ *TODO make it possible to use custom ES index configuration: http://stackoverflow.com/questions/6275727/define-custom-elasticsearch-analyzer-using-java-api
+ */
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 

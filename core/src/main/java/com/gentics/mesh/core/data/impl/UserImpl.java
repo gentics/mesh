@@ -21,6 +21,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +65,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
+import rx.subjects.AsyncSubject;
 
 public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
 
@@ -168,9 +170,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		setProperty(EMAIL_PROPERTY_KEY, emailAddress);
 	}
 
-	/**
-	 * Return all assigned groups.
-	 */
 	@Override
 	public List<? extends Group> getGroups() {
 		// TODO add permission handling?
@@ -193,7 +192,56 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
-	//TODO migrate to non blocking api
+	public User getPermissionNames(InternalActionContext ac, MeshVertex node, Handler<AsyncResult<List<String>>> handler) {
+
+		class PermResult {
+
+			GraphPermission perm;
+			Boolean flag;
+
+			public PermResult(GraphPermission perm, Boolean flag) {
+				this.perm = perm;
+				this.flag = flag;
+			}
+		}
+		String mapKey = "permissions:" + node.getUuid();
+		List<String> permissions = (List<String>) ac.data().get(mapKey);
+		if (permissions != null) {
+			handler.handle(Future.succeededFuture(permissions));
+			return this;
+		} else {
+			List<Observable<PermResult>> futures = new ArrayList<>();
+
+			for (GraphPermission perm : GraphPermission.values()) {
+				AsyncSubject<PermResult> obs = AsyncSubject.create();
+				futures.add(obs);
+				// TODO Checking permissions asynchronously requires a reload of the user object and therefore the perm check is slower. We need to check whether we want to still reload the user.  
+				//				hasPermission(ac, node, perm, rh -> {
+				//					if (rh.failed()) {
+				//						obs.onError(rh.cause());
+				//					} else {
+				//						obs.onNext(new PermResult(perm, rh.result()));
+				//						obs.onCompleted();
+				//					}
+				//				});
+
+				obs.onNext(new PermResult(perm, hasPermission(ac, node, perm)));
+				obs.onCompleted();
+
+			}
+
+			Observable.merge(futures).filter(res -> res.flag).map(res -> res.perm.getSimpleName()).toList().subscribe(list -> {
+				ac.data().put(mapKey, list);
+				handler.handle(Future.succeededFuture(list));
+			} , error -> {
+				handler.handle(Future.failedFuture(error));
+			});
+		}
+		return this;
+	}
+
+	@Override
+	@Deprecated
 	public String[] getPermissionNames(InternalActionContext ac, MeshVertex node) {
 		Set<GraphPermission> permissions = getPermissions(ac, node);
 		String[] strings = new String[permissions.size()];
@@ -207,24 +255,25 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	@Override
 	@SuppressWarnings("unchecked")
 	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
-		String mapKey = "permissions:" + node.getUuid();
-		return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
-			Set<GraphPermission> graphPermissions = new HashSet<>();
-			for (GraphPermission perm : GraphPermission.values()) {
-				if (hasPermission(ac, node, perm)) {
-					graphPermissions.add(perm);
-				}
+		//		String mapKey = "permissions:" + node.getUuid();
+		//		return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
+		Set<GraphPermission> graphPermissions = new HashSet<>();
+		for (GraphPermission perm : GraphPermission.values()) {
+			if (hasPermission(ac, node, perm)) {
+				graphPermissions.add(perm);
 			}
-			return graphPermissions;
-		});
+		}
+		return graphPermissions;
+		//		});
 	}
 
 	@Override
+	@Deprecated
 	public boolean hasPermission(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
-		String mapKey = "permission:" + permission.label() + ":" + node.getUuid();
+		String mapKey = getPermissionMapKey(node, permission);
 		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
 			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
 			for (Vertex group : groups) {
@@ -238,7 +287,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 						log.trace("Role: " + role.getProperty("name") + " - uuid: " + role.getProperty("uuid") + " - type: "
 								+ role.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
 					}
-					// TODO maybe it would be better to use this orientdb extension. 
+					// TODO maybe it would be better to use this orientdb extension. In tests we notices that this call is not actually faster. I don't think it uses the edge index by default. 
 					//					Iterable<Edge> permissions = ((OrientVertex) role).getEdges((OrientVertex)node.getImpl().getElement(), Direction.OUT, permission.label());
 					//					for (Edge permissionEdge : permissions) {
 					//						return true;
@@ -271,14 +320,37 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
+
+		Boolean perm = (Boolean) ac.data().get(getPermissionMapKey(vertex, permission));
+		if (perm != null) {
+			handler.handle(Future.succeededFuture(perm));
+			return this;
+		}
+
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
 			boolean result = hasPermission(ac, vertex, permission);
 			handler.handle(Future.succeededFuture(result));
 		} , rh -> {
-			handler.handle(Future.succeededFuture());
+			if (rh.failed()) {
+				handler.handle(Future.failedFuture(rh.cause()));
+			} else {
+				handler.handle(Future.succeededFuture());
+			}
 		});
 		return this;
+	}
+
+	/**
+	 * Return the map key for the action context data field that may hold the fetched permission.
+	 * 
+	 * @param vertex
+	 * @param permission
+	 * @return
+	 */
+	private String getPermissionMapKey(MeshVertex vertex, GraphPermission permission) {
+		String mapKey = "permission:" + permission.label() + ":" + vertex.getUuid();
+		return mapKey;
 	}
 
 	@Override
@@ -288,7 +360,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		db.asyncNoTrx(noTrx -> {
 			Set<ObservableFuture<Void>> futures = new HashSet<>();
 			UserResponse restUser = new UserResponse();
-			fillRest(restUser, ac);
+
 			restUser.setUsername(getUsername());
 			restUser.setEmailAddress(getEmailAddress());
 			restUser.setFirstname(getFirstname());
@@ -326,10 +398,16 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 				restUser.addGroup(group.getName());
 			}
 
-			// Prevent errors in which no futures have been added
+			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			obsFieldSet.toHandler().handle(Future.succeededFuture());
+			fillRest(restUser, ac, rh -> {
+				if (rh.failed()) {
+					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
+				} else {
+					obsFieldSet.toHandler().handle(Future.succeededFuture());
+				}
+			});
 
 			// Wait for all async processes to complete
 			Observable.merge(futures).subscribe(item -> {
@@ -338,7 +416,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			} , () -> {
 				noTrx.complete(restUser);
 			});
-
 		} , (AsyncResult<UserResponse> rh) -> {
 			handler.handle(rh);
 		});

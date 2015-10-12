@@ -9,6 +9,8 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +27,7 @@ import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -87,14 +90,29 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
-		// Create some indices
-		OrientGraphNoTx tx = factory.getNoTx();
+		createIndices();
 
-		tx.createIndex("languageTag", Vertex.class);
-		tx.createKeyIndex("languageTag", Vertex.class);
-		tx.createKeyIndex("name", Vertex.class);
-		tx.createKeyIndex("ferma_type", Vertex.class);
-		tx.createKeyIndex("ferma_type", Edge.class);
+	}
+
+	/**
+	 * Create various indices if non existent in current graph database.
+	 */
+	private void createIndices() {
+		Map<String, Class<? extends Element>> indices = new HashMap<>();
+		indices.put("languageTag", Vertex.class);
+		indices.put("name", Vertex.class);
+		indices.put("ferma_type", Edge.class);
+		indices.put("ferma_type", Vertex.class);
+
+		OrientGraphNoTx tx = factory.getNoTx();
+		for (Map.Entry<String, Class<? extends Element>> entry : indices.entrySet()) {
+			String key = entry.getKey();
+			Class<? extends Element> clazz = entry.getValue();
+			if (tx.getIndex(key, clazz) == null) {
+				log.trace("Creating index {" + key + "#" + clazz.getName());
+				tx.createIndex(key, clazz);
+			}
+		}
 		tx.shutdown();
 
 	}

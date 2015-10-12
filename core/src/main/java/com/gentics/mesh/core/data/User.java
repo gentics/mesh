@@ -4,6 +4,8 @@ import java.util.List;
 
 import java.util.Set;
 
+import org.apache.tools.ant.property.GetProperty;
+
 import com.gentics.mesh.core.data.impl.GenericVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -13,7 +15,6 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-
 
 /**
  * The User Domain Model class
@@ -156,8 +157,21 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 * @param ac
 	 * @param vertex
 	 * @return
+	 * @deprecated Use {@link #getPermissionNames(InternalActionContext, MeshVertex, Handler)} instead.
+	 * 
 	 */
+	@Deprecated
 	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
+
+	/**
+	 * Collect the permissions names for the given vertex and invoke the handler with the result.
+	 * 
+	 * @param ac
+	 * @param node
+	 * @param handler
+	 * @return Fluent API
+	 */
+	User getPermissionNames(InternalActionContext ac, MeshVertex node, Handler<AsyncResult<List<String>>> handler);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.

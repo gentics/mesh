@@ -39,6 +39,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
 
@@ -113,17 +116,36 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	public Role transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(noTrx -> {
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
+
 			RoleResponse restRole = new RoleResponse();
 			restRole.setName(getName());
-			fillRest(restRole, ac);
+
 			for (Group group : getGroups()) {
 				GroupResponse restGroup = new GroupResponse();
 				restGroup.setName(group.getName());
 				restGroup.setUuid(group.getUuid());
 				restRole.getGroups().add(restGroup);
 			}
-			tc.complete(restRole);
+
+			// Add common fields 
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			fillRest(restRole, ac, rh -> {
+				if (rh.failed()) {
+					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
+				} else {
+					obsFieldSet.toHandler().handle(Future.succeededFuture());
+				}
+			});
+
+			// Merge and complete
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				noTrx.complete(restRole);
+			} , error -> {
+				noTrx.fail(error);
+			});
 		} , (AsyncResult<RoleResponse> rh) -> {
 			handler.handle(rh);
 		});

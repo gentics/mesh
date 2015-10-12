@@ -13,7 +13,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -46,6 +48,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag, IndexedVertex {
 
@@ -97,9 +102,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(trx -> {
+			Set<ObservableFuture<Void>> futures = new HashSet<>();
+
 			TagResponse restTag = new TagResponse();
-			fillRest(restTag, ac);
+
 			TagFamily tagFamily = getTagFamily();
 			if (tagFamily != null) {
 				TagFamilyReference tagFamilyReference = new TagFamilyReference();
@@ -108,7 +115,24 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				restTag.setTagFamily(tagFamilyReference);
 			}
 			restTag.getFields().setName(getName());
-			tc.complete(restTag);
+
+			// Add common fields
+			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
+			futures.add(obsFieldSet);
+			fillRest(restTag, ac, rh -> {
+				if (rh.failed()) {
+					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
+				} else {
+					obsFieldSet.toHandler().handle(Future.succeededFuture());
+				}
+			});
+
+			// Merge and complete
+			Observable.merge(futures).last().subscribe(lastItem -> {
+				trx.complete(restTag);
+			} , error -> {
+				trx.fail(error);
+			});
 		} , (AsyncResult<TagResponse> rh) -> {
 			resultHandler.handle(rh);
 		});

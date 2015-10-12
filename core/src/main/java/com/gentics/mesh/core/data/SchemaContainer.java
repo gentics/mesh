@@ -16,7 +16,7 @@ import io.vertx.core.Handler;
  * A schema container is a graph element which stores the JSON schema data.
  *
  */
-public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedVertex {
+public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "schemaContainer";
 
