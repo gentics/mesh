@@ -384,6 +384,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected SchemaResponse createSchema(String schemaName) {
 		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
 		schemaCreateRequest.setName(schemaName);
+		schemaCreateRequest.setDisplayField("name");
+		schemaCreateRequest.setDescription("Descriptive text");
 		Future<SchemaResponse> future = getClient().createSchema(schemaCreateRequest);
 		latchFor(future);
 		assertSuccess(future);

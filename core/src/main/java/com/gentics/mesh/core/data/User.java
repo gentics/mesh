@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
-
 import java.util.Set;
-
-import org.apache.tools.ant.property.GetProperty;
 
 import com.gentics.mesh.core.data.impl.GenericVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
