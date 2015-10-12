@@ -139,7 +139,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			}
 		}
 		return searchQueueRoot;
-
 	}
 
 	@Override
@@ -309,6 +308,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.groupRoot = null;
 		MeshRootImpl.roleRoot = null;
 
+		MeshRootImpl.searchQueueRoot = null;
 		MeshRootImpl.schemaContainerRoot = null;
 		MeshRootImpl.tagFamilyRoot = null;
 		MeshRootImpl.microschemaContainerRoot = null;
