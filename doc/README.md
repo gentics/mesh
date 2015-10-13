@@ -23,6 +23,10 @@ Open [wiki.raw](http://localhost:4000/wiki.raw) to access the raw adoc files.
 
 You can directly view the adoc files in your browser by installing [Asciidoctor.js Live Preview](https://chrome.google.com/webstore/detail/asciidoctorjs-live-previe/iaalpfgpbocpdfblpnhhgllgbdbchmia?hl=en)
 
+### Wiki Checkout
+
+Use ```mvn scm:checkout@clone-github-wiki``` to invoke a checkout of the wiki sources to ```target/github-wiki```.
+
 ### AsciiDocs to swig templates 
 
 Use ```mvn org.asciidoctor:asciidoctor-maven-plugin:process-asciidoc@process-asciidocs``` to invoke asciidoc transformation.
