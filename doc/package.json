@@ -31,6 +31,7 @@
     "pretty-hrtime": "^1.0.0",
     "request": "^2.55.0",
     "serve-static": "^1.9.2",
+    "serve-index" : "^1.7.2",
     "swig": "^1.4.2",
     "vinyl-source-stream": "^1.1.0"
   },

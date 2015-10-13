@@ -15,6 +15,7 @@ var rename = require("gulp-rename");
 var replace = require("gulp-replace");
 var request = require("request");
 var serveStatic = require("serve-static");
+var serveIndex = require('serve-index')
 var source = require("vinyl-source-stream");
 var streamify = require("gulp-streamify");
 var swig = require("swig");
@@ -291,6 +292,15 @@ gulp.task("watch", [ "site-dev" ], function() {
 	app.use(contextPathDev, serveStatic(paths.site, {
 		"index" : [ "index.html" ]
 	}));
+	
+	app.use("/wiki.raw", serveIndex(paths.wiki_sourcedir, {'icons': true}));
+	app.use("/wiki.raw", serveStatic(paths.wiki_sourcedir, {
+		"index" : [ "index.html" ],
+		"setHeaders": function(res, path) {
+			res.setHeader("Content-Type", "text/plain; charset=utf-8");
+		}
+	}));
+	
 	app.listen(devPort, function() {
 		gutil.log("Listening on port", gutil.colors.cyan("4000"), "...");
 	});
