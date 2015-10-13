@@ -7,6 +7,7 @@ var flatten = require("gulp-flatten");
 var fs = require("fs");
 var gulp = require("gulp");
 var gutil = require("gulp-util");
+var gshell = require("gulp-shell");
 var iconfilter = require("./src/main/filters/iconfilter.js");
 var path = require("path");
 var prettyHrtime = require("pretty-hrtime");
@@ -53,12 +54,14 @@ var paths = {
 	bootstrap_js : "bower_components/bootstrap/dist/js/bootstrap.min.js",
 	docs_generated : "target/docs-generated",
 	entypo : "Entypo+",
-	less_includes : [ "src/site/stylesheets", "src/main/less",
-			"bower_components/bootstrap/less" ],
+	less_includes : [ "src/site/stylesheets", "src/main/less", "bower_components/bootstrap/less" ],
+	raml_sourcedir : "src/main/raml/",
 	raml_source : "src/main/raml/rest-spec-core.raml",
 	raml_template : "src/main/raml/template.handlebars",
 	raml_resource_template : "src/main/raml/resource.handlebars",
 	raml_outputdir : "target/site/docs/raml",
+
+	wiki_sourcedir : "target/github-wiki",
 	src : "src/site",
 	site : "target/site",
 	target_asciidoctor_bs_themes : "target/asciidoctor-bs-themes",
@@ -71,7 +74,7 @@ var paths = {
 
 var onError = function(e) {
 	console.log("Error: " + e.message);
-        console.dir(e);
+	console.dir(e);
 	process.exit(10);
 }
 
@@ -84,8 +87,7 @@ function build(done, dev) {
 		});
 	}
 
-	swig.setTag("icon", iconfilter.parse, iconfilter.compile, iconfilter.ends,
-			iconfilter.block);
+	swig.setTag("icon", iconfilter.parse, iconfilter.compile, iconfilter.ends, iconfilter.block);
 
 	var site_url = siteUrl;
 	if (dev) {
@@ -148,8 +150,7 @@ function buildDocs(done, dev) {
 		site_url = siteUrlDev;
 	}
 
-	Metalsmith(__dirname).source(paths.docs_generated).destination(
-			paths.target_docs)
+	Metalsmith(__dirname).source(paths.docs_generated).destination(paths.target_docs)
 
 	// do not remove files already in the target directory
 	.clean(false)
@@ -176,9 +177,7 @@ gulp.task("bower", function() {
 });
 
 // download bootstrap themes for AsciiDoc
-gulp
-		.task(
-				"install-asciidoc-bs-themes",
+gulp.task("install-asciidoc-bs-themes",
 				function(done) {
 					if (fs.existsSync(paths.target_asciidoctor_bs_themes)) {
 						done();
@@ -217,10 +216,6 @@ gulp.task("scripts", [ "bower" ], function() {
 	return gulp.src(paths.bootstrap_js).pipe(gulp.dest(paths.target_scripts));
 });
 
-// build docs
-gulp.task("site-docs", function(done) {
-	buildDocs(done);
-})
 
 // build raml
 gulp.task("raml", function(done) {
@@ -231,13 +226,11 @@ gulp.task("raml", function(done) {
 			console.log(err);
 			process.exit(1);
 		} else {
-			console.log("Create output directory {" + paths.raml_outputdir
-					+ "}");
+			console.log("Create output directory {" + paths.raml_outputdir + "}");
 		}
 	});
 
-	console.log("Reading resource template file {"
-			+ paths.raml_resource_template + "}");
+	console.log("Reading resource template file {" + paths.raml_resource_template + "}");
 	fs.readFile(paths.raml_resource_template, 'utf8', function(err, data) {
 		resourceTemplateSource = data;
 	});
@@ -252,8 +245,7 @@ gulp.task("raml", function(done) {
 		stream.on('close', function() {
 			raml2html.render(buildSource, config, function(html) {
 				var outputFile = paths.raml_outputdir + "/index.html";
-				console.log("Rendering completed. Writing output to {"
-						+ outputFile + "}");
+				console.log("Rendering completed. Writing output to {" + outputFile + "}");
 				fs.writeFile(outputFile, html, function(err) {
 					if (err) {
 						console.log(err);
@@ -265,14 +257,11 @@ gulp.task("raml", function(done) {
 				});
 			}, onError);
 		});
-
 	});
-
 });
 
 // build site
-gulp.task("site", [ "icons", "scripts", "site-docs",
-		"install-asciidoc-bs-themes", "raml" ], function(done) {
+gulp.task("site", [ "icons", "scripts", "site-docs", "install-asciidoc-bs-themes", "raml", "maven-adocs" ], function(done) {
 	build(done);
 });
 
@@ -282,6 +271,17 @@ gulp.task("site-dev", [ "site" ], function(done) {
 		build(done, true);
 	}, true);
 });
+
+gulp.task("site-docs-maven", ["maven-adocs"], function(done) {
+	buildDocs(done);
+});
+
+gulp.task("site-docs", function(done) {
+	buildDocs(done);
+});
+
+
+gulp.task("maven-adocs", [], gshell.task([ 'mvn org.asciidoctor:asciidoctor-maven-plugin:process-asciidoc@process-asciidocs' ]));
 
 // start a web server, watch source directory and rebuild if necessary
 gulp.task("watch", [ "site-dev" ], function() {
@@ -293,6 +293,14 @@ gulp.task("watch", [ "site-dev" ], function() {
 	}));
 	app.listen(devPort, function() {
 		gutil.log("Listening on port", gutil.colors.cyan("4000"), "...");
+	});
+
+	gulp.watch([ paths.raml_sourcedir + "/**/*" ], [ "raml" ], function() {
+		gutil.log("Rebuilding raml...");
+	});
+
+	gulp.watch([ paths.wiki_sourcedir + "/**/*.adoc" ], [ "site-docs-maven" ], function() {
+		gutil.log("Rebuilding AsciiDocs...");
 	});
 
 	return gulp.watch([ paths.src + "/**/*", paths.templates + "/**/*" ], {},

@@ -21,8 +21,13 @@ import org.springframework.test.context.ContextConfiguration;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
 public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTest {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
 
 	@Autowired
 	protected SearchVerticle searchVerticle;
@@ -45,7 +50,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		QueryBuilder qb = QueryBuilders.queryStringQuery(text);
 		JSONObject request = new JSONObject();
 		request.put("query", new JSONObject(qb.toString()));
-		return request.toString();
+		String query = request.toString();
+		if (log.isDebugEnabled()) {
+			log.debug(query);
+		}
+		return query;
 	}
 
 	protected String getSimpleTermQuery(String key, String value) throws JSONException {
@@ -55,7 +64,11 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 
 		JSONObject request = new JSONObject();
 		request.put("query", new JSONObject(bqb.toString()));
-		return request.toString();
+		String query = request.toString();
+		if (log.isDebugEnabled()) {
+			log.debug(query);
+		}
+		return query;
 	}
 
 	protected void fullIndex() throws InterruptedException {

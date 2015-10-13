@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -361,12 +362,15 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								Tag tag = th.result();
 								db.trx(txAdd -> {
 									node.addTag(tag);
-									txAdd.complete(node);
-								} , (AsyncResult<Node> txAdded) -> {
+									SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+									txAdd.complete(Tuple.tuple(batch, node));
+								} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txAdded) -> {
 									if (txAdded.failed()) {
 										ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 									} else {
-										transformAndResponde(ac, txAdded.result());
+										processOrFail(ac, txAdded.result().v1(), ch -> {
+											transformAndResponde(ac, ch.result());
+										} , txAdded.result().v2());
 									}
 								});
 
@@ -388,12 +392,15 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						Tag tag = srh.result();
 						db.trx(txRemove -> {
 							node.removeTag(tag);
-							txRemove.complete(node);
-						} , (AsyncResult<Node> txRemoved) -> {
-							if (txRemoved.failed()) {
-								ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
+							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							txRemove.complete(Tuple.tuple(batch, node));
+						} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txAdded) -> {
+							if (txAdded.failed()) {
+								ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 							} else {
-								transformAndResponde(ac, txRemoved.result());
+								processOrFail(ac, txAdded.result().v1(), ch -> {
+									transformAndResponde(ac, ch.result());
+								} , txAdded.result().v2());
 							}
 						});
 					}

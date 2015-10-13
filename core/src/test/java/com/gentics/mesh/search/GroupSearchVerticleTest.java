@@ -44,6 +44,18 @@ public class GroupSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
+	public void testSearchByUuid() throws InterruptedException, JSONException {
+		String groupName = "testgroup42a";
+		String uuid = createGroup(groupName).getUuid();
+
+		Future<GroupListResponse> searchFuture = getClient().searchGroups(getSimpleTermQuery("uuid", uuid));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals(uuid, searchFuture.result().getData().get(0).getUuid());
+	}
+
+	@Test
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String groupName = "testgroup42a";

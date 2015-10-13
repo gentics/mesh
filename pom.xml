@@ -29,6 +29,13 @@
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 	</properties>
 
+	<scm>
+		<connection>scm:git:git@github.com:gentics/mesh.git</connection>
+		<developerConnection>scm:git:git@github.com:gentics/mesh.git</developerConnection>
+		<url>https://github.com/gentics/mesh</url>
+	</scm>
+
+
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>

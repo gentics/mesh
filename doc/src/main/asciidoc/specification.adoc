@@ -1,7 +1,8 @@
 = Functional specification
 
-== TODO 
+== TODO
 
+test
 Check whether the requirement for custom relationships is obsolete when using the list node type. A user can setup custom relationships using that type. (eg. relatedProducts in response json format)
 
 == Intro
