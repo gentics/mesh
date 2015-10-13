@@ -19,7 +19,8 @@ public class MeshOptions {
 	public static final int DEFAULT_PAGE_SIZE = 25;
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
-
+	public static final String MESH_SESSION_KEY = "mesh.session";
+	
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	private int defaultPageSize = DEFAULT_PAGE_SIZE;

@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -89,7 +90,7 @@ public class MeshSpringConfiguration {
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		//TODO make session age configurable
-		return new SessionHandlerImpl("mesh.session", 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG, store);
+		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG, store);
 	}
 
 	@Bean

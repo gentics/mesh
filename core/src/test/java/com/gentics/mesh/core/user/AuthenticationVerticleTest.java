@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -67,6 +69,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		latchFor(logoutFuture);
 		assertSuccess(logoutFuture);
 
+		assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
 		meResponse = client.me();
 		latchFor(meResponse);
 		expectMessage(meResponse, HttpResponseStatus.UNAUTHORIZED, "Unauthorized");
