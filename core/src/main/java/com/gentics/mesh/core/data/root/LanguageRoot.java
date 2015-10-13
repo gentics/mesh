@@ -12,7 +12,7 @@ public interface LanguageRoot extends RootVertex<Language> {
 	 * 
 	 * @param languageName
 	 * @param languageTag
-	 * @return
+	 * @return Created language
 	 */
 	Language create(String languageName, String languageTag);
 
@@ -27,7 +27,7 @@ public interface LanguageRoot extends RootVertex<Language> {
 	 * Find the language with the given language tag.
 	 * 
 	 * @param languageTag
-	 * @return
+	 * @return Found language or null when no language could be found that matches the given tag
 	 */
 	Language findByLanguageTag(String languageTag);
 

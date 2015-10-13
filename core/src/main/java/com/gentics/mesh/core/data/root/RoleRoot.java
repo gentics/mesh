@@ -20,7 +20,7 @@ public interface RoleRoot extends RootVertex<Role> {
 	 *            Group to be assigned to the role
 	 * @param creator
 	 *            User that is being used to set the reference fields
-	 * @return
+	 * @return Created role
 	 */
 	Role create(String name, Group group, User creator);
 
@@ -28,6 +28,7 @@ public interface RoleRoot extends RootVertex<Role> {
 	 * Add the given role to this aggregation vertex.
 	 * 
 	 * @param role
+	 *            Role to be added
 	 */
 	void addRole(Role role);
 
@@ -35,6 +36,7 @@ public interface RoleRoot extends RootVertex<Role> {
 	 * Remove the given role from this aggregation vertex.
 	 * 
 	 * @param role
+	 *            Role to be removed
 	 */
 	void removeRole(Role role);
 

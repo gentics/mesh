@@ -15,19 +15,6 @@ import io.vertx.core.Handler;
 
 /**
  * The User Domain Model class
- * 
- * <pre>
- * {@code
- * 	(u:UserImpl)-[r1:HAS_USER]->(ur:UserRootImpl)
- * 	(u)-[r2:HAS_USER]->(g:GroupImpl)
-  	(g)<-[r3:HAS_ROLE]-(r:RoleImpl)
- * }
- * </pre>
- *
- * <p>
- * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.User.jpg" alt="">
- * </p>
- * 
  */
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
 

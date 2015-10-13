@@ -32,6 +32,9 @@ public class MeshFactoryImpl implements MeshFactory {
 		}
 	}
 
+	/**
+	 * Clear the stored instance.
+	 */
 	public static void clear() {
 		instance = null;
 	}

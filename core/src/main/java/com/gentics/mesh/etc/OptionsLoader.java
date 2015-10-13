@@ -14,6 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Utility class that is used to create and load mesh options.
+ */
 public final class OptionsLoader {
 
 	private static final Logger log = LoggerFactory.getLogger(OptionsLoader.class);

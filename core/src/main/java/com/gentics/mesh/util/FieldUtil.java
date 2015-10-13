@@ -19,6 +19,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
+/**
+ * Utility class that is commonly used for tests and the RAML generator.
+ *
+ */
 public final class FieldUtil {
 
 	public static StringFieldSchema createStringFieldSchema(String defaultString) {

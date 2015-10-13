@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
@@ -152,6 +151,30 @@ public class UserTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testGetPermissionsViaHandle() throws Exception {
+		Language language = english();
+		String[] perms = { "create", "update", "delete", "read" };
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		long start = System.currentTimeMillis();
+		int nChecks = 10000;
+		CountDownLatch latch = new CountDownLatch(nChecks);
+		for (int i = 0; i < nChecks; i++) {
+			user().getPermissionNames(ac, language, rh -> {
+				String[] loadedPerms = rh.result().toArray(new String[rh.result().size()]);
+				Arrays.sort(perms);
+				Arrays.sort(loadedPerms);
+				assertArrayEquals("Permissions do not match", perms, loadedPerms);
+				assertNotNull(ac.data().get("permissions:" + language.getUuid()));
+				latch.countDown();
+			});
+		}
+		failingLatch(latch);
+		System.out.println("Duration: " + (System.currentTimeMillis() - start));
+		System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
+	}
+
+	@Test
 	public void testGetPermissions() {
 		Language language = english();
 		String[] perms = { "create", "update", "delete", "read" };
@@ -164,7 +187,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			Arrays.sort(perms);
 			Arrays.sort(loadedPerms);
 			assertArrayEquals("Permissions do not match", perms, loadedPerms);
-			assertNotNull(ac.data().get("permissions:" + language.getUuid()));
+			//assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 		}
 		System.out.println("Duration: " + (System.currentTimeMillis() - start));
 		System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);

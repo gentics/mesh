@@ -50,7 +50,6 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		});
 	}
 
-	// TODO invalidate active sessions for this user
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleDelete(InternalActionContext.create(rc));

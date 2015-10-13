@@ -256,7 +256,7 @@ public class TagTest extends AbstractBasicObjectTest {
 
 	@Test
 	@Override
-	public void testTransformation() {
+	public void testTransformation() throws Exception {
 		Tag tag = tag("red");
 		assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 		List<String> languageTags = new ArrayList<>();
@@ -266,7 +266,9 @@ public class TagTest extends AbstractBasicObjectTest {
 
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		for (int i = 0; i < 100; i++) {
+		int nTransformations = 100;
+		CountDownLatch latch = new CountDownLatch(nTransformations);
+		for (int i = 0; i < nTransformations; i++) {
 			long start = System.currentTimeMillis();
 			tag.transformToRest(ac, th -> {
 				if (th.failed()) {
@@ -277,8 +279,10 @@ public class TagTest extends AbstractBasicObjectTest {
 				long dur = System.currentTimeMillis() - start;
 				log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
 				JsonUtil.toJson(response);
+				latch.countDown();
 			});
 		}
+		failingLatch(latch);
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);
 

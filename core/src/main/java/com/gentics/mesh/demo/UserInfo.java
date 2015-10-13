@@ -4,6 +4,9 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
 
+/**
+ * Container for user, group, role and password references of an user.
+ */
 public class UserInfo {
 
 	private User user;

@@ -34,6 +34,7 @@ import io.vertx.ext.web.handler.CookieHandler;
  * Central storage for all vertx web request routers.
  * 
  * Structure:
+ * 
  * <pre>
  * {@code
  * ROOT_ROUTER(:coreRouter) -> customRouters
@@ -41,6 +42,7 @@ import io.vertx.ext.web.handler.CookieHandler;
  *                          -> projectRouters (eg: /Dummy/nodes)
  * }
  * </pre>
+ * 
  * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
  * 
  */
@@ -158,6 +160,10 @@ public class RouterStorage {
 
 	}
 
+	/**
+	 * Initialize the Root API router and add common handlers to the router.
+	 * The API router is used to attach subrouters for routes like /api/v1/[groups|users|roles]
+	 */
 	private void initAPIRouter() {
 		Router router = getAPIRouter();
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {

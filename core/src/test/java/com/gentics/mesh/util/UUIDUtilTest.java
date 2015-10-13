@@ -8,9 +8,6 @@ import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Some tests for the uuid utils.
- * 
- * @author johannes2
- *
  */
 public class UUIDUtilTest {
 

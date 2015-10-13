@@ -16,8 +16,8 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 *            Schema that should be stored in the container
 	 * @param creator
 	 *            User that is used to set editor and creator references
-	 * @return
-	 * @throws MeshSchemaException 
+	 * @return Created schema container
+	 * @throws MeshSchemaException
 	 */
 	SchemaContainer create(Schema schema, User creator) throws MeshSchemaException;
 
@@ -35,6 +35,12 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 */
 	void removeSchemaContainer(SchemaContainer schemaContainer);
 
+	/**
+	 * Check whether the given schema is assigned to this root node.
+	 * 
+	 * @param schema
+	 * @return
+	 */
 	boolean contains(SchemaContainer schema);
 
 }

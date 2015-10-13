@@ -18,6 +18,11 @@ import io.vertx.ext.auth.User;
 @Component
 public class AuthenticationRestHandler extends AbstractHandler {
 
+	/**
+	 * Handle a /me request which will return the current user as a JSON response.
+	 * 
+	 * @param ac
+	 */
 	public void handleMe(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			MeshAuthUser requestUser = ac.getUser();
@@ -25,6 +30,11 @@ public class AuthenticationRestHandler extends AbstractHandler {
 		} , ac.errorHandler());
 	}
 
+	/**
+	 * Handle a login request.
+	 * 
+	 * @param ac
+	 */
 	public void handleLogin(InternalActionContext ac) {
 		try {
 			LoginRequest request = JsonUtil.readValue(ac.getBodyAsString(), LoginRequest.class);
@@ -46,6 +56,11 @@ public class AuthenticationRestHandler extends AbstractHandler {
 
 	}
 
+	/**
+	 * Handle a logout request.
+	 * 
+	 * @param ac
+	 */
 	public void handleLogout(InternalActionContext ac) {
 		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");

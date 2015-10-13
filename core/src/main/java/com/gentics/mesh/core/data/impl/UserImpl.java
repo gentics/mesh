@@ -67,6 +67,19 @@ import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 import rx.subjects.AsyncSubject;
 
+/**
+ * <pre>
+* {@code
+* 	(u:UserImpl)-[r1:HAS_USER]->(ur:UserRootImpl)
+* 	(u)-[r2:HAS_USER]->(g:GroupImpl)
+ 	(g)<-[r3:HAS_ROLE]-(r:RoleImpl)
+* }
+ * </pre>
+ *
+ * <p>
+ * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
+ * </p>
+ */
 public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);

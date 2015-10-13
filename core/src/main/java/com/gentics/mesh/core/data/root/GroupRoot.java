@@ -33,14 +33,14 @@ public interface GroupRoot extends RootVertex<Group> {
 	/**
 	 * Add the group to the aggregation vertex.
 	 * 
-	 * @param group
+	 * @param group Group to be added
 	 */
 	void addGroup(Group group);
 
 	/**
 	 * Remove the group from the aggregation vertex.
 	 * 
-	 * @param group
+	 * @param group Group to be removed
 	 */
 	void removeGroup(Group group);
 }

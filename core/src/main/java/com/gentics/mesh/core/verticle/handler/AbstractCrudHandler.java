@@ -2,6 +2,9 @@ package com.gentics.mesh.core.verticle.handler;
 
 import com.gentics.mesh.handler.InternalActionContext;
 
+/**
+ * Abstract class for CRUD REST handlers.
+ */
 public abstract class AbstractCrudHandler extends AbstractHandler {
 
 	/**

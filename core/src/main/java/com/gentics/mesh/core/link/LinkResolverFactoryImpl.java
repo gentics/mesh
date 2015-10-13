@@ -9,8 +9,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 /**
  * Factory which provides link resolvers
  * 
- * @author johannes2
- *
  * @param <T>
  */
 @Service

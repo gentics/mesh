@@ -12,14 +12,14 @@ public interface TagRoot extends RootVertex<Tag> {
 	/**
 	 * Add the given tag to the aggregation vertex.
 	 * 
-	 * @param tag
+	 * @param tag Tag to be added
 	 */
 	void addTag(Tag tag);
 
 	/**
 	 * Remove the tag from the aggregation vertex.
 	 * 
-	 * @param tag
+	 * @param tag Tag to be removed
 	 */
 	void removeTag(Tag tag);
 

@@ -22,9 +22,11 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * Find all nodes that are visible for the user.
 	 * 
 	 * @param requestUser
+	 *            User that is used to check view permission
 	 * @param languageTags
 	 * @param pagingInfo
-	 * @return
+	 *            Paging parameters
+	 * @return Page with found nodes or an empty page
 	 * @throws InvalidArgumentException
 	 */
 	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
@@ -33,9 +35,12 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * Create a new node.
 	 * 
 	 * @param user
+	 *            User that is used to set creator and editor references
 	 * @param container
+	 *            Schema that should be used when creating the node
 	 * @param project
-	 * @return
+	 *            Project to which the node should be assigned to
+	 * @return Created node
 	 */
 	Node create(User user, SchemaContainer container, Project project);
 

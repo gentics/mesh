@@ -15,8 +15,10 @@ public interface TagFamilyRoot extends RootVertex<TagFamily> {
 	 * Create a new tag family with the given name and assign creator and editor field using the provided user.
 	 * 
 	 * @param name
+	 *            Name of the tag family
 	 * @param user
-	 * @return
+	 *            User that should be used to set creator and editor references
+	 * @return Created tag family
 	 */
 	TagFamily create(String name, User user);
 

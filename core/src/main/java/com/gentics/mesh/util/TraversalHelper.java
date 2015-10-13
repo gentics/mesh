@@ -43,7 +43,7 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal, String sortBy,
+	private static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal, String sortBy,
 			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
@@ -86,6 +86,16 @@ public final class TraversalHelper {
 
 	}
 
+	/**
+	 * Return a paged result for the given traversal and paging parameters.
+	 * 
+	 * @param traversal
+	 * @param countTraversal
+	 * @param pagingInfo
+	 * @param classOfT
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal,
 			PagingInfo pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
 		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),

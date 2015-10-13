@@ -44,6 +44,22 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Project Root Node domain model implementation.
+ * 
+ * <pre>
+* {@code
+* 	(pr:ProjectRootImpl)-[r1:HAS_PROJECT]->(p1:ProjectImpl)
+* 	(pr-[r2:HAS_PROJECT]->(p2:ProjectImpl)
+ 	(pr)-[r3:HAS_PROJECT]->(p3:ProjectImpl)
+ * 	(mr:MeshRootImpl)-[r:HAS_PROJECT_ROOT]->(pr)
+* }
+ * </pre>
+ *
+ * <p>
+ * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.root.impl.ProjectRootImpl.jpg" alt="">
+ * </p>
+ */
 public class ProjectRootImpl extends AbstractRootVertex<Project>implements ProjectRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
@@ -182,7 +198,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 
 						SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.complete(Tuple.tuple(batch, project));
-
 					} , (AsyncResult<Tuple<SearchQueueBatch, Project>> txCreated) -> {
 						if (txCreated.failed()) {
 							handler.handle(Future.failedFuture(txCreated.cause()));
@@ -201,14 +216,12 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							processOrFail(ac, txCreated.result().v1(), handler, project);
 						}
 					});
-
 				}
 			} else {
 				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", boot.projectRoot().getUuid()))));
 				return;
 			}
 		});
-
 	}
 
 }

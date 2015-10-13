@@ -6,6 +6,9 @@ import java.util.regex.Pattern;
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 
+/**
+ * Main source for UUIDs. The UUIDs are shorted in order to better utilize the database indices.
+ */
 public final class UUIDUtil {
 
 	public static final RandomBasedGenerator UUID_GENERATOR = Generators.randomBasedGenerator();
@@ -28,7 +31,13 @@ public final class UUIDUtil {
 				+ digits(uuid.getLeastSignificantBits(), 12));
 	}
 
-	/** Returns val represented by the specified number of hex digits. */
+	/**
+	 * Returns val represented by the specified number of hex digits.
+	 * 
+	 * @param val
+	 * @param digits
+	 * @return
+	 */
 	private static String digits(long val, int digits) {
 		long hi = 1L << (digits * 4);
 		return Long.toHexString(hi | (val & (hi - 1))).substring(1);

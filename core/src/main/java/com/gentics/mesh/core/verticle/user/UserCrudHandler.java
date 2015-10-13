@@ -19,6 +19,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleDelete(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
+			// TODO invalidate active sessions for this user
 			deleteObject(ac, "uuid", "user_deleted", boot.userRoot());
 		} , ac.errorHandler());
 	}
