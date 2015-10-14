@@ -161,8 +161,8 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Initialize the Root API router and add common handlers to the router.
-	 * The API router is used to attach subrouters for routes like /api/v1/[groups|users|roles]
+	 * Initialize the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
+	 * /api/v1/[groups|users|roles]
 	 */
 	private void initAPIRouter() {
 		Router router = getAPIRouter();
@@ -175,10 +175,16 @@ public class RouterStorage {
 		router.route().handler(springConfiguration.userSessionHandler());
 	}
 
+	/**
+	 * Return or create the custom router which will be the base router for all custom verticles which can be accessed using <code>/custom</code>.
+	 * 
+	 * @return
+	 */
 	public Router getCustomRouter() {
 		Router customRouter = coreRouters.get(CUSTOM_ROUTER_KEY);
 		if (customRouter == null) {
 			customRouter = Router.router(vertx);
+
 			coreRouters.put(CUSTOM_ROUTER_KEY, customRouter);
 			getRootRouter().mountSubRouter(DEFAULT_CUSTOM_MOUNTPOINT, customRouter);
 		}

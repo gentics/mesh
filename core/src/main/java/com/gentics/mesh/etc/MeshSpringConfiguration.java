@@ -90,24 +90,45 @@ public class MeshSpringConfiguration {
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
 		//TODO make session age configurable
-		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG, store);
+		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
+				store);
 	}
 
+	/**
+	 * Handler which will authenticate the user credentials
+	 * 
+	 * @return
+	 */
 	@Bean
 	public AuthHandler authHandler() {
 		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
 	}
 
+	/**
+	 * User session handler which will provider the user from within the session.
+	 * 
+	 * @return
+	 */
 	@Bean
 	public UserSessionHandler userSessionHandler() {
 		return UserSessionHandler.create(authProvider());
 	}
 
+	/**
+	 * Return the mesh auth provider that can be used to authenticate a user.
+	 * 
+	 * @return
+	 */
 	@Bean
 	public AuthProvider authProvider() {
 		return new MeshAuthProvider();
 	}
 
+	/**
+	 * Return the configured mail client
+	 * 
+	 * @return
+	 */
 	@Bean
 	public MailClient mailClient() {
 		MailConfig config = Mesh.mesh().getOptions().getMailServerOptions();
@@ -115,6 +136,11 @@ public class MeshSpringConfiguration {
 		return mailClient;
 	}
 
+	/**
+	 * Return the configured CORS handler
+	 * 
+	 * @return
+	 */
 	public CorsHandler corsHandler() {
 		String pattern = Mesh.mesh().getOptions().getHttpServerOptions().getCorsAllowedOriginPattern();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
@@ -127,9 +153,14 @@ public class MeshSpringConfiguration {
 		return corsHandler;
 	}
 
-	// TODO maybe uploads should use a dedicated bodyhandler?
+	/**
+	 * Return the configured body handler.
+	 * 
+	 * @return
+	 */
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
+		// TODO maybe uploads should use a dedicated bodyhandler?
 		BodyHandler handler = BodyHandler.create();
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues

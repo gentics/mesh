@@ -19,7 +19,7 @@ import io.vertx.ext.auth.User;
 public class AuthenticationRestHandler extends AbstractHandler {
 
 	/**
-	 * Handle a /me request which will return the current user as a JSON response.
+	 * Handle a <code>/me</code> request which will return the current user as a JSON response.
 	 * 
 	 * @param ac
 	 */

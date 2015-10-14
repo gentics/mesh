@@ -25,7 +25,7 @@ You can directly view the adoc files in your browser by installing [Asciidoctor.
 
 ### Wiki Checkout
 
-Use ```mvn scm:checkout@clone-github-wiki``` to invoke a checkout of the wiki sources to ```target/github-wiki```.
+Use ```mvn exec:exec@github-wiki-clone``` to invoke a checkout of the wiki sources to ```target/github-wiki```.
 
 ### AsciiDocs to swig templates 
 

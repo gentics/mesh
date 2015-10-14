@@ -360,6 +360,37 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadUserListWithExpandedNodeReference() {
+		Node node = folder("2015");
+
+		NodeReferenceImpl reference = new NodeReferenceImpl();
+		reference.setUuid(node.getUuid());
+		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(group().getUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+		Future<UserResponse> future = getClient().createUser(newUser);
+		latchFor(future);
+		assertSuccess(future);
+
+		Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingInfo().setPerPage(100),
+				new NodeRequestParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
+		latchFor(userListResponseFuture);
+		assertSuccess(userListResponseFuture);
+		UserListResponse userResponse = userListResponseFuture.result();
+		assertNotNull(userResponse);
+
+		UserResponse foundUser = userResponse.getData().parallelStream().filter(u -> u.getUuid().equals(future.result().getUuid())).findFirst().get();
+
+		assertNotNull(foundUser.getNodeReference());
+		assertEquals(node.getUuid(), foundUser.getNodeReference().getUuid());
+		assertEquals(NodeResponse.class, foundUser.getNodeReference().getClass());
+	}
+
+	@Test
 	public void testReadUserWithExpandedNodeReference() {
 		Node node = folder("2015");
 

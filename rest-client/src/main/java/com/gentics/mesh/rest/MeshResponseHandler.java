@@ -2,13 +2,6 @@ package com.gentics.mesh.rest;
 
 import org.apache.commons.lang.StringUtils;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -19,9 +12,17 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
@@ -60,7 +61,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					if (isSchemaClass(classOfT)) {
 						T restObj = JsonUtil.readSchema(json, classOfT);
 						future.complete(restObj);
-					} else if (isNodeClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
+					} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
 						T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
 						future.complete(restObj);
 					} else {
@@ -98,6 +99,13 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private boolean isUserClass(Class<T> clazz) {
 		if (clazz.isAssignableFrom(UserResponse.class) || clazz.isAssignableFrom(UserCreateRequest.class)
 				|| clazz.isAssignableFrom(UserUpdateRequest.class)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isUserListClass(Class<?> clazz) {
+		if (clazz.isAssignableFrom(UserListResponse.class)) {
 			return true;
 		}
 		return false;

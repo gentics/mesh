@@ -19,6 +19,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 
+/**
+ * Mesh auth provider 
+ */
 @Component
 public class MeshAuthProvider implements AuthProvider {
 
