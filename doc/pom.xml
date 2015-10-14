@@ -61,11 +61,13 @@
 			<artifactId>mesh-tagcloud</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-admin</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+        -->
 
 		<!-- Generator dependencies -->
 		<dependency>

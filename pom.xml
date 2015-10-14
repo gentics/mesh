@@ -39,7 +39,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.1.0</version>
+		<version>3.1.1</version>
 	</parent>
 
 	<developers>
@@ -47,7 +47,7 @@
 			<name>Johannes Schüth</name>
 			<url>https://github.com/Jotschi</url>
 			<email>git@jotschi.de</email>
-			<organization>Gentics Software GmbH</organization>
+			<organization>Gentics Software</organization>
 			<roles>
 				<role>Core Developer</role>
 			</roles>
@@ -55,7 +55,7 @@
 		<developer>
 			<name>Michael Bromley</name>
 			<url>https://github.com/michaelbromley/</url>
-			<organization>Gentics Software GmbH</organization>
+			<organization>Gentics Software</organization>
 			<roles>
 				<role>Core Developer</role>
 			</roles>
@@ -68,13 +68,13 @@
 	</issueManagement>
 
 	<organization>
-		<name>Gentics Software GmbH</name>
+		<name>Gentics Software</name>
 		<url>http://www.gentics.com</url>
 	</organization>
 
 	<licenses>
 		<license>
-			<name>Gentics Software GmbH License</name>
+			<name>Gentics Software License</name>
 			<url>http://www.gentics.com</url>
 		</license>
 	</licenses>
