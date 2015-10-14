@@ -118,6 +118,23 @@
 							</arguments>
 						</configuration>
 					</execution>
+					<execution>
+						<id>github-wiki-clone</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<executable>git</executable>
+							<arguments>
+								<argument>clone</argument>
+								<argument>-b</argument>
+								<argument>master</argument>
+								<argument>git@github.com:gentics/mesh.wiki.git</argument>
+								<argument>target/github-wiki</argument>
+							</arguments>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<!-- Process all .adoc files -->
@@ -155,38 +172,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-scm-plugin</artifactId>
-				<version>1.9.4</version>
-				<configuration>
-					<providerImplementations>
-						<git>jgit</git>
-					</providerImplementations>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.maven.scm</groupId>
-						<artifactId>maven-scm-provider-jgit</artifactId>
-						<version>1.9.4</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>clone-github-wiki</id>
-						<goals>
-							<goal>checkout</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<checkoutDirectory>${project.basedir}/target/github-wiki</checkoutDirectory>
-							<connectionType>connection</connectionType>
-							<connectionUrl>scm:git:git@github.com:gentics/mesh.wiki.git</connectionUrl>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
+			<!-- Disabled since it does not support ssh-agent <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-scm-plugin</artifactId> <version>1.9.4</version> <configuration> 
+				<providerImplementations> <git>jgit</git> </providerImplementations> </configuration> <dependencies> <dependency> <groupId>org.apache.maven.scm</groupId> <artifactId>maven-scm-provider-jgit</artifactId> 
+				<version>1.9.4</version> </dependency> </dependencies> <executions> <execution> <id>clone-github-wiki</id> <goals> <goal>checkout</goal> </goals> <phase>generate-resources</phase> <configuration> 
+				<checkoutDirectory>${project.basedir}/target/github-wiki</checkoutDirectory> <connectionType>connection</connectionType> <connectionUrl>scm:git:git@github.com:gentics/mesh.wiki.git</connectionUrl> 
+				</configuration> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
