@@ -1,6 +1,7 @@
 package com.gentics.mesh.handler.impl;
 
 import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.Locale;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	@Override
 	public void send(String body) {
-		rc.response().putHeader("content-type", APPLICATION_JSON);
+		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 		// TODO use 201 for created entities
 		rc.response().setStatusCode(200).end(body);
 	}

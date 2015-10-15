@@ -1,6 +1,7 @@
 package com.gentics.mesh.etc;
 
 import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -122,7 +123,7 @@ public class RouterStorage {
 						log.error("Error:", failure);
 					}
 					//TODO wrap this instead into a try/catch and throw the failure
-					failureRoutingContext.response().putHeader("content-type", APPLICATION_JSON);
+					failureRoutingContext.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 						failureRoutingContext.response().setStatusCode(400);
 						String msg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), "error_parse_request_json_error");

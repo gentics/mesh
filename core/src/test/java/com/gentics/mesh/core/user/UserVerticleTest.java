@@ -107,16 +107,15 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = user().getUuid();
-		CyclicBarrier barrier = prepareBarrier(nJobs);
+//		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findUserByUuid(uuid));
 		}
-		validateSet(set, barrier);
+		validateSet(set, null);
 	}
 
 	@Test
@@ -283,6 +282,37 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
 			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
 			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+		}
+	}
+
+	@Test
+	public void testUpdateWithSpecialCharacters() throws Exception {
+		User user = user();
+		String oldUsername = user.getUsername();
+		final char c = '\u2665';
+		String email = "t.stark@stärk-industries.com" + c;
+		String firstname = "Töny Awesöme" + c;
+		String lastname = "Epic Stärk" + c;
+		String username = "dummy_usär_chänged" + c;
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setEmailAddress(email);
+		updateRequest.setFirstname(firstname);
+		updateRequest.setLastname(lastname);
+		updateRequest.setUsername(username);
+
+		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse restUser = future.result();
+		test.assertUser(updateRequest, restUser);
+		try (Trx tx = db.trx()) {
+			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
+			User reloadedUser = boot.userRoot().findByUsername(username);
+			assertNotNull(reloadedUser);
+			assertEquals(lastname, reloadedUser.getLastname());
+			assertEquals(firstname, reloadedUser.getFirstname());
+			assertEquals(email, reloadedUser.getEmailAddress());
+			assertEquals(username, reloadedUser.getUsername());
 		}
 	}
 
