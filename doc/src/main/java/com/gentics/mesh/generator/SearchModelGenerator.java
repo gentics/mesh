@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.search.index.ProjectIndexHandler;
@@ -41,7 +42,6 @@ import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
-import com.gentics.mesh.test.DummySearchProvider;
 
 /**
  * Search document example JSON generator

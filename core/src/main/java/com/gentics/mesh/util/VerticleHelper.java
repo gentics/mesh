@@ -449,7 +449,7 @@ public class VerticleHelper {
 	 * @param uuid
 	 * @param perm
 	 * @param root
-	 * @return
+	 * @return The found object
 	 * @deprecated Use {@link #loadObjectByUuid(InternalActionContext, String, GraphPermission, RootVertex, Handler)} instead
 	 */
 	@Deprecated

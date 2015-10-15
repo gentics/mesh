@@ -51,7 +51,7 @@ public interface Mesh {
 
 	/**
 	 * Stop the the Mesh instance and release any resources held by it.
-	 * <p>
+	 * 
 	 * The instance cannot be used after it has been closed.
 	 */
 	void shutdown();

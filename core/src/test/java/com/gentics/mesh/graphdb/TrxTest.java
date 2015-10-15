@@ -128,7 +128,7 @@ public class TrxTest extends AbstractBasicDBTest {
 		}
 		int e = i.incrementAndGet();
 		try (Trx tx = db.trx()) {
-			assertNotNull(root.create("testuser" + e, group(), user()));
+			assertNotNull(root.create("testuser" + e, user()));
 			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
@@ -138,7 +138,7 @@ public class TrxTest extends AbstractBasicDBTest {
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (Trx tx = db.trx()) {
-				assertNotNull(root.create("testuser" + u, group(), user()));
+				assertNotNull(root.create("testuser" + u, user()));
 				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
 				tx.failure();
 			}

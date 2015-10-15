@@ -32,6 +32,11 @@ public interface BasicObjectTestcases {
 
 	void testCreateDelete() throws Exception;
 
+	/**
+	 * Test whether CRUD permissions are correctly inherited.
+	 * 
+	 * @throws Exception
+	 */
 	void testCRUDPermissions() throws Exception;
 
 }

@@ -10,7 +10,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.test.DummySearchProvider;
+import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.test.TestUtil;
 
 @Configuration

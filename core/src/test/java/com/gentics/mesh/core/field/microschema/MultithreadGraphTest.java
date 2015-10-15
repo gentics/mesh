@@ -23,7 +23,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 		runAndWait(() -> {
 			try (Trx tx = db.trx()) {
 				MeshRoot meshRoot = boot.meshRoot();
-				User user = meshRoot.getUserRoot().create("test", null, null);
+				User user = meshRoot.getUserRoot().create("test", null);
 				assertNotNull(user);
 				tx.success();
 			}

@@ -316,7 +316,7 @@ public class DemoDataProvider {
 		log.info("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		User user = root.getUserRoot().create(username, null, null);
+		User user = root.getUserRoot().create(username, null);
 		user.setUuid("UUIDOFUSER1");
 		user.setPassword(password);
 		user.setFirstname(firstname);
@@ -362,15 +362,16 @@ public class DemoDataProvider {
 
 		// Guest Group / Role
 
-		Group guests = root.getGroupRoot().create("guests", userInfo.getUser());
-		groups.put("guests", guests);
+		Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
+		groups.put("guests", guestGroup);
 
-		Role guestRole = root.getRoleRoot().create("guest_role", guests, userInfo.getUser());
+		Role guestRole = root.getRoleRoot().create("guest_role", guestGroup, userInfo.getUser());
 		roles.put(guestRole.getName(), guestRole);
 
 		// Extra User
 		// for (int i = 0; i < 6 * multiplicator; i++) {
-		User user = userRoot.create("guest", guests, userInfo.getUser());
+		User user = userRoot.create("guest", userInfo.getUser());
+		user.addGroup(guestGroup);
 		// userService.setPassword(user, "guestpw" + i);
 		user.setFirstname("Guest Firstname");
 		user.setLastname("Guest Lastname");

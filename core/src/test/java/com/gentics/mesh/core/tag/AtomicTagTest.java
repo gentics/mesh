@@ -25,7 +25,7 @@ public class AtomicTagTest extends AbstractEmptyDBTest {
 	@Test
 	public void testTagCreation() throws Exception {
 		MeshRoot meshRoot = boot.meshRoot();
-		User user = meshRoot.getUserRoot().create("test", null, null);
+		User user = meshRoot.getUserRoot().create("test", null);
 		LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 		assertNotNull(languageRoot);
 		languageRoot.create("Deutsch", "de");

@@ -12,6 +12,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Configuration

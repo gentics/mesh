@@ -54,7 +54,8 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testGetUsersByGroup() throws Exception {
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser", group(), user());
+		User extraUser = userRoot.create("extraUser", user());
+		extraUser.addGroup(group());
 		String extraUserUuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, READ_PERM);
 		String groupUuid = group().getUuid();
@@ -80,7 +81,7 @@ extends AbstractRestVerticleTest {
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser", null, user());
+		User extraUser = userRoot.create("extraUser", user());
 		String userUuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, READ_PERM);
 
@@ -94,7 +95,7 @@ extends AbstractRestVerticleTest {
 		Group group = group();
 		UserRoot userRoot = meshRoot().getUserRoot();
 
-		User extraUser = userRoot.create("extraUser", null, user());
+		User extraUser = userRoot.create("extraUser", user());
 		role().grantPermissions(extraUser, READ_PERM);
 
 		assertFalse("User should not be member of the group.", group.hasUser(extraUser));
@@ -116,7 +117,7 @@ extends AbstractRestVerticleTest {
 		Group group = group();
 		groupUuid = group.getUuid();
 		UserRoot userRoot = meshRoot().getUserRoot();
-		extraUser = userRoot.create("extraUser", null, user());
+		extraUser = userRoot.create("extraUser", user());
 		extraUserUuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, READ_PERM);
 		role().revokePermissions(group, UPDATE_PERM);
@@ -131,7 +132,7 @@ extends AbstractRestVerticleTest {
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		User extraUser;
 		UserRoot userRoot = meshRoot().getUserRoot();
-		extraUser = userRoot.create("extraUser", null, user());
+		extraUser = userRoot.create("extraUser", user());
 		role().grantPermissions(extraUser, DELETE_PERM);
 
 		Future<GroupResponse> future = getClient().addUserToGroup(group().getUuid(), extraUser.getUuid());

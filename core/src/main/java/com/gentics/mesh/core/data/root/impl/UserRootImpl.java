@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -66,13 +64,11 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	}
 
 	@Override
-	public User create(String username, Group group, User creator) {
+	public User create(String username, User creator) {
 		User user = getGraph().addFramedVertex(UserImpl.class);
 		user.setUsername(username);
 		user.enable();
-		if (group != null) {
-			group.addUser(user);
-		}
+
 		if (creator != null) {
 			user.setCreator(creator);
 			user.setCreationTimestamp(System.currentTimeMillis());
@@ -118,70 +114,63 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 				return;
 			}
 			String groupUuid = requestModel.getGroupUuid();
-			if (isEmpty(groupUuid)) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_parentgroup_field"))));
-				return;
-			}
 			db.noTrx(noTrx -> {
-				// Load the parent group for the user
-				loadObjectByUuid(ac, groupUuid, CREATE_PERM, boot.groupRoot(), rh -> {
-					if (hasSucceeded(ac, rh)) {
-						Group parentGroup = rh.result();
-						if (findByUsername(requestModel.getUsername()) != null) {
-							String message = ac.i18n("user_conflicting_username");
-							handler.handle(failedFuture(ac, CONFLICT, message));
+				if (findByUsername(requestModel.getUsername()) != null) {
+					String message = ac.i18n("user_conflicting_username");
+					handler.handle(failedFuture(ac, CONFLICT, message));
+					return;
+				}
+
+				db.trx(txCreate -> {
+					MeshAuthUser requestUser = ac.getUser();
+					User user = create(requestModel.getUsername(), requestUser);
+					user.setFirstname(requestModel.getFirstname());
+					user.setUsername(requestModel.getUsername());
+					user.setLastname(requestModel.getLastname());
+					user.setEmailAddress(requestModel.getEmailAddress());
+					user.setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
+					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
+					NodeReference reference = requestModel.getNodeReference();
+
+					if (!isEmpty(groupUuid)) {
+						Group parentGroup = loadObjectByUuidBlocking(ac, groupUuid, CREATE_PERM, boot.groupRoot());
+						user.addGroup(parentGroup);
+						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
+					}
+
+					if (reference != null && reference instanceof NodeReferenceImpl) {
+						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
+						String referencedNodeUuid = basicReference.getUuid();
+						String projectName = basicReference.getProjectName();
+
+						if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
+							txCreate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
 							return;
 						}
 
-						db.trx(txCreate -> {
-							MeshAuthUser requestUser = ac.getUser();
-							User user = create(requestModel.getUsername(), parentGroup, requestUser);
-							user.setFirstname(requestModel.getFirstname());
-							user.setUsername(requestModel.getUsername());
-							user.setLastname(requestModel.getLastname());
-							user.setEmailAddress(requestModel.getEmailAddress());
-							user.setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
-							user.addGroup(parentGroup);
-							requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
-							NodeReference reference = requestModel.getNodeReference();
+						// TODO decide whether we need to check perms on the project as well
+						Project project = boot.projectRoot().findByName(projectName);
+						if (project == null) {
+							txCreate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
+							return;
+						}
+						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+						user.setReferencedNode(node);
+					} else if (reference != null) {
+						// TODO handle user create using full node rest model.
+						txCreate.fail("Create of users with expanded node reference field is not yet implemented.");
+						return;
+					}
 
-							if (reference != null && reference instanceof NodeReferenceImpl) {
-								NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
-								String referencedNodeUuid = basicReference.getUuid();
-								String projectName = basicReference.getProjectName();
-
-								if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
-									txCreate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
-									return;
-								}
-
-								// TODO decide whether we need to check perms on the project as well
-								Project project = boot.projectRoot().findByName(projectName);
-								if (project == null) {
-									txCreate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
-									return;
-								}
-								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
-								user.setReferencedNode(node);
-							} else if (reference != null) {
-								// TODO handle user create using full node rest model.
-								txCreate.fail("Create of users with expanded node reference field is not yet implemented.");
-								return;
-							}
-
-							SearchQueueBatch batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-							txCreate.complete(Tuple.tuple(batch, user));
-						} , (AsyncResult<Tuple<SearchQueueBatch, User>> txCreated) -> {
-							if (txCreated.failed()) {
-								handler.handle(Future.failedFuture(txCreated.cause()));
-							} else {
-								processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
-							}
-						});
-
+					SearchQueueBatch batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					txCreate.complete(Tuple.tuple(batch, user));
+				} , (AsyncResult<Tuple<SearchQueueBatch, User>> txCreated) -> {
+					if (txCreated.failed()) {
+						handler.handle(Future.failedFuture(txCreated.cause()));
+					} else {
+						processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
 					}
 				});
-
 			});
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));

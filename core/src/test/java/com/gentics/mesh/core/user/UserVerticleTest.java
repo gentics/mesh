@@ -155,17 +155,19 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nUsers = 20;
 		for (int i = 0; i < nUsers; i++) {
 			String username = "testuser_" + i;
-			User user = root.create(username, group(), user());
+			User user = root.create(username, user());
+			user.addGroup(group());
 			user.setLastname("should_be_listed");
 			user.setFirstname("should_be_listed");
 			user.setEmailAddress("should_be_listed");
 			role().grantPermissions(user, READ_PERM);
 		}
 
-		User invisibleUser = root.create("should_not_be_listed", group(), user());
+		User invisibleUser = root.create("should_not_be_listed", user());
 		invisibleUser.setLastname("should_not_be_listed");
 		invisibleUser.setFirstname("should_not_be_listed");
 		invisibleUser.setEmailAddress("should_not_be_listed");
+		invisibleUser.addGroup(group());
 
 		// Test default paging parameters
 		Future<UserListResponse> future = getClient().findUsers();
@@ -563,7 +565,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = meshRoot().getUserRoot();
-		userRoot.create("existing_username", group(), user());
+		User user = userRoot.create("existing_username", user());
+		user.addGroup(group());
 
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("existing_username");
@@ -593,7 +596,9 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Create an user with a conflicting username
 		UserRoot userRoot = meshRoot().getUserRoot();
-		userRoot.create("existing_username", group(), user());
+		User user = userRoot.create("existing_username", user());
+		user.addGroup(group());
+
 		// Add update permission to group in order to create the user in that group
 		role().grantPermissions(group(), CREATE_PERM);
 		UserCreateRequest newUser = new UserCreateRequest();
@@ -645,8 +650,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<UserResponse> future = getClient().createUser(newUser);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "user_missing_parentgroup_field");
-
+		assertSuccess(future);
+		assertEquals(0, future.result().getGroups().size());
 	}
 
 	@Test
@@ -662,7 +667,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<UserResponse> future = getClient().createUser(newUser);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
-
 	}
 
 	@Test
@@ -689,7 +693,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 			latch.countDown();
 		});
 		failingLatch(latch);
-
 	}
 
 	@Test
@@ -789,7 +792,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 			set.add(getClient().deleteUser(uuid));
 		}
 		validateDeletion(set, barrier);
-
 	}
 
 	@Test
@@ -797,7 +799,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User user = userRoot.create("extraUser", group(), user());
+		User user = userRoot.create("extraUser", user());
+		user.addGroup(group());
 		String uuid = user.getUuid();
 		assertNotNull(uuid);
 		role().grantPermissions(user, UPDATE_PERM);
@@ -830,7 +833,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID2() throws Exception {
 		String name = "extraUser";
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create(name, group(), user());
+		User extraUser = userRoot.create(name, user());
+		extraUser.addGroup(group());
 		String uuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, DELETE_PERM);
 

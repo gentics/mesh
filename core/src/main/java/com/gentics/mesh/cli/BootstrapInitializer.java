@@ -347,7 +347,7 @@ public class BootstrapInitializer {
 			// Verify that an admin user exists
 			User adminUser = userRoot.findByUsername("admin");
 			if (adminUser == null) {
-				adminUser = userRoot.create("admin", null, adminUser);
+				adminUser = userRoot.create("admin", adminUser);
 
 				adminUser.setCreator(adminUser);
 				adminUser.setCreationTimestamp(System.currentTimeMillis());

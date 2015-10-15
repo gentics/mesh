@@ -1,4 +1,4 @@
-package com.gentics.mesh.test;
+package com.gentics.mesh.search.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;

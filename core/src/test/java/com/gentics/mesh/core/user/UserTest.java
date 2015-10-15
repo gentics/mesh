@@ -52,7 +52,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testRootNode() {
 		UserRoot root = meshRoot().getUserRoot();
 		int nUserBefore = root.findAll().size();
-		assertNotNull(root.create("dummy12345", null, user()));
+		assertNotNull(root.create("dummy12345", user()));
 		int nUserAfter = root.findAll().size();
 		assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 	}
@@ -196,7 +196,8 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User extraUser = userRoot.create("extraUser", group(), user());
+		User extraUser = userRoot.create("extraUser", user());
+		extraUser.addGroup(group());
 		role().grantPermissions(extraUser, READ_PERM);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
@@ -253,7 +254,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() throws Exception {
 		MeshRoot root = meshRoot();
-		User user = root.getUserRoot().create("Anton", null, user());
+		User user = root.getUserRoot().create("Anton", user());
 		assertTrue(user.isEnabled());
 		assertNotNull(user);
 		String uuid = user.getUuid();
@@ -274,7 +275,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		MeshRoot root = meshRoot();
 		User user = user();
 		InternalActionContext ac = getMockedInternalActionContext("");
-		User newUser = root.getUserRoot().create("Anton", null, user());
+		User newUser = root.getUserRoot().create("Anton", user());
 		assertFalse(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
 		user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
 		ac.data().clear();
@@ -297,7 +298,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 
 		Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
-		newUser = meshRoot().getUserRoot().create("Anton", newGroup, user());
+		newUser = meshRoot().getUserRoot().create("Anton", user());
+		newUser.addGroup(newGroup);
 
 		// Create test roles
 		roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
@@ -419,7 +421,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		final String PASSWDHASH = "RANDOM";
 
 		UserRoot userRoot = meshRoot().getUserRoot();
-		User user = userRoot.create(USERNAME, null, user());
+		User user = userRoot.create(USERNAME, user());
 		user.setEmailAddress(EMAIL);
 		user.setFirstname(FIRSTNAME);
 		user.setLastname(LASTNAME);
@@ -456,7 +458,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		User newUser = meshRoot().getUserRoot().create("newUser", null, user());
+		User newUser = meshRoot().getUserRoot().create("newUser", user());
 
 		User user = user();
 
@@ -492,28 +494,28 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user = meshRoot().getUserRoot().create("Anton", user());
 		testPermission(GraphPermission.READ_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user = meshRoot().getUserRoot().create("Anton", user());
 		testPermission(GraphPermission.DELETE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user = meshRoot().getUserRoot().create("Anton", user());
 		testPermission(GraphPermission.UPDATE_PERM, user);
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		User user = meshRoot().getUserRoot().create("Anton", null, user());
+		User user = meshRoot().getUserRoot().create("Anton", user());
 		testPermission(GraphPermission.CREATE_PERM, user);
 	}
 }

@@ -111,25 +111,22 @@ public class MeshImpl implements Mesh {
 	}
 
 	private void dontExit() {
-		while (true) {
-			// TODO use unsafe park instead
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		try {
+			Thread.currentThread().wait();
+		} catch (Exception e) {
+			log.info("Interrupted..");
 		}
 	}
 
 	private void printProductInformation() {
-		log.info("#####################################################");
+		log.info("###############################################################");
 		log.info(infoLine("Mesh Version " + Mesh.getVersion()));
 		log.info(infoLine("Gentics Software GmbH"));
-		log.info("#---------------------------------------------------#");
+		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
 		log.info(infoLine("Name: " + MeshNameProvider.getInstance().getName()));
-		log.info("#####################################################");
+		log.info("###############################################################");
 	}
 
 	private String getVertxVersion() {
@@ -137,7 +134,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	private static String infoLine(String text) {
-		return "# " + StringUtils.rightPad(text, 49) + " #";
+		return "# " + StringUtils.rightPad(text, 59) + " #";
 	}
 
 	@Override
@@ -153,7 +150,7 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() {
 		log.info("Mesh shutting down...");
-		// Orientdb has a dedicated shutdown hook
+		MeshSpringConfiguration.getInstance().database().stop();
 		MeshSpringConfiguration.getInstance().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();

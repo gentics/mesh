@@ -292,7 +292,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testUpdate() {
 		Node node = content();
 		try (Trx tx = db.trx()) {
-			User newUser = meshRoot().getUserRoot().create("newUser", group(), user());
+			User newUser = meshRoot().getUserRoot().create("newUser", user());
+			newUser.addGroup(group());
 			assertEquals(user().getUuid(), node.getCreator().getUuid());
 			System.out.println(newUser.getUuid());
 			node.setCreator(newUser);

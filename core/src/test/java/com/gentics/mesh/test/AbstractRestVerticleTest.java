@@ -54,6 +54,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
+import com.gentics.mesh.search.impl.DummySearchProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;

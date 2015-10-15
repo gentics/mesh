@@ -20,7 +20,7 @@ public class MeshOptions {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String MESH_SESSION_KEY = "mesh.session";
-	
+
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	private int defaultPageSize = DEFAULT_PAGE_SIZE;
@@ -143,5 +143,14 @@ public class MeshOptions {
 	 */
 	public ElasticSearchOptions getSearchOptions() {
 		return searchOptions;
+	}
+
+	/**
+	 * Set the search options.
+	 * 
+	 * @param searchOptions
+	 */
+	public void setSearchOptions(ElasticSearchOptions searchOptions) {
+		this.searchOptions = searchOptions;
 	}
 }
