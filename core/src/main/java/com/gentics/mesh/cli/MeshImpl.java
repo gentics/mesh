@@ -111,10 +111,13 @@ public class MeshImpl implements Mesh {
 	}
 
 	private void dontExit() {
-		try {
-			Thread.currentThread().wait();
-		} catch (Exception e) {
-			log.info("Interrupted..");
+		while (true) {
+			// TODO use unsafe park instead
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
