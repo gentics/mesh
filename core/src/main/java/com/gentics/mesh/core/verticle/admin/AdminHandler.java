@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.util.VerticleHelper.responde;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class AdminHandler extends AbstractHandler {
 		ActionContext ac = HttpActionContext.create(rc);
 		try {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
-			responde(ac, "backup_finished");
+			responde(ac, "backup_finished", OK);
 		} catch (IOException e) {
 			log.error("Backup failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "backup_failed");
@@ -49,7 +50,7 @@ public class AdminHandler extends AbstractHandler {
 		try {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
-			responde(ac, "restore_finished");
+			responde(ac, "restore_finished", OK);
 		} catch (IOException e) {
 			log.error("Restore failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "restore_failed");
@@ -60,7 +61,7 @@ public class AdminHandler extends AbstractHandler {
 		ActionContext ac = HttpActionContext.create(rc);
 		try {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
-			responde(ac, "export_finished");
+			responde(ac, "export_finished", OK);
 		} catch (IOException e) {
 			log.error("Export failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "export_failed");
@@ -72,7 +73,7 @@ public class AdminHandler extends AbstractHandler {
 		try {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());
-			responde(ac, "import_finished");
+			responde(ac, "import_finished", OK);
 		} catch (IOException e) {
 			log.error("Import failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "import_failed");

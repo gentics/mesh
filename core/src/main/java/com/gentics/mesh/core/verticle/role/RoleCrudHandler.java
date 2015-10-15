@@ -14,6 +14,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -74,7 +75,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse());
+			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -144,7 +145,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 										ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
 									} else {
 										Role role = txUpdated.result();
-										ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))));
+										ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))), OK);
 									}
 								});
 							}

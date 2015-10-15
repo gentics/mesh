@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 

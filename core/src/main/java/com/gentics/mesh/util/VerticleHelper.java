@@ -6,7 +6,9 @@ import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.erro
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -46,7 +49,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
-import net.bytebuddy.description.annotation.AnnotationDescription.Loadable;
 import rx.Observable;
 
 public class VerticleHelper {
@@ -61,10 +63,10 @@ public class VerticleHelper {
 	 * @param listResponse
 	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(InternalActionContext ac, RootVertex<T> root,
-			AbstractListResponse<TR> listResponse) {
+			AbstractListResponse<TR> listResponse, HttpResponseStatus statusCode) {
 		loadObjects(ac, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
-				ac.send(toJson(rh.result()));
+				ac.send(toJson(rh.result()), statusCode);
 			}
 		} , listResponse);
 	}
@@ -232,19 +234,27 @@ public class VerticleHelper {
 	}
 
 	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(InternalActionContext ac, String uuidParameterName,
-			GraphPermission permission, RootVertex<T> root) {
+			GraphPermission permission, RootVertex<T> root, HttpResponseStatus status) {
 		loadAndTransform(ac, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
-				ac.send(toJson(rh.result()));
+				ac.send(toJson(rh.result()), status);
 			}
 		});
 	}
 
+	/**
+	 * Transform the given page to a rest page and send it to the client.
+	 * 
+	 * @param ac
+	 * @param page
+	 * @param listResponse
+	 * @param status
+	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
-			InternalActionContext ac, Page<T> page, RL listResponse) {
+			InternalActionContext ac, Page<T> page, RL listResponse, HttpResponseStatus status) {
 		transformPage(ac, page, th -> {
 			if (hasSucceeded(ac, th)) {
-				ac.send(toJson(th.result()));
+				ac.send(toJson(th.result()), status);
 			}
 		} , listResponse);
 	}
@@ -315,11 +325,12 @@ public class VerticleHelper {
 	 * 
 	 * @param ac
 	 * @param vertex
+	 * @param statusCode
 	 */
-	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> vertex) {
+	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> vertex, HttpResponseStatus statusCode) {
 		vertex.transformToRest(ac, th -> {
 			if (hasSucceeded(ac, th)) {
-				ac.send(toJson(th.result()));
+				ac.send(toJson(th.result()), statusCode);
 			}
 		});
 	}
@@ -331,10 +342,10 @@ public class VerticleHelper {
 	 * @param i18nKey
 	 * @param parameters
 	 */
-	public static void responde(ActionContext ac, String i18nKey, String... parameters) {
+	public static void responde(ActionContext ac, String i18nKey, HttpResponseStatus statusCode, String... parameters) {
 		GenericMessageResponse msg = new GenericMessageResponse();
 		msg.setMessage(ac.i18n(i18nKey, parameters));
-		ac.send(toJson(msg));
+		ac.send(toJson(msg), statusCode);
 	}
 
 	/**
@@ -353,7 +364,7 @@ public class VerticleHelper {
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
 				db.noTrx(noTx -> {
 					vertex.reload();
-					transformAndResponde(ac, vertex);
+					transformAndResponde(ac, vertex, CREATED);
 				});
 			}
 		});
@@ -378,7 +389,7 @@ public class VerticleHelper {
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
 						db.noTrx(noTx -> {
 							vertex.reload();
-							transformAndResponde(ac, vertex);
+							transformAndResponde(ac, vertex, OK);
 						});
 					}
 				});
@@ -422,7 +433,7 @@ public class VerticleHelper {
 					} else {
 						String id = objectName != null ? uuid + "/" + objectName : uuid;
 						VerticleHelper.processOrFail2(ac, txDeleted.result(), brh -> {
-							ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))));
+							ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))), OK);
 						});
 					}
 				});

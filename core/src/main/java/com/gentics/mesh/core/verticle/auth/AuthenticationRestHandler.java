@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.auth;
 
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 import org.springframework.stereotype.Component;
@@ -26,7 +27,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	public void handleMe(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			MeshAuthUser requestUser = ac.getUser();
-			transformAndResponde(ac, requestUser);
+			transformAndResponde(ac, requestUser, OK);
 		} , ac.errorHandler());
 	}
 
@@ -47,7 +48,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 					User authenticated = rh.result();
 					ac.setUser(authenticated);
 					GenericMessageResponse message = new GenericMessageResponse("OK");
-					ac.send(JsonUtil.toJson(message));
+					ac.send(JsonUtil.toJson(message), OK);
 				}
 			});
 		} catch (Exception e) {
@@ -64,7 +65,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	public void handleLogout(InternalActionContext ac) {
 		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");
-		ac.send(JsonUtil.toJson(message));
+		ac.send(JsonUtil.toJson(message), OK);
 	}
 
 }

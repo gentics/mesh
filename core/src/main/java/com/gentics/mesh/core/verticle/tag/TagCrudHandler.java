@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
@@ -49,7 +50,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getTagRoot());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getTagRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -57,7 +58,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, project.getTagRoot(), new TagListResponse());
+			loadTransformAndResponde(ac, project.getTagRoot(), new TagListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -75,7 +76,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 					Page<? extends Node> page;
 					try {
 						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingInfo());
-						transformAndResponde(ac, page, new NodeListResponse());
+						transformAndResponde(ac, page, new NodeListResponse(), OK);
 					} catch (Exception e) {
 						//TODO i18n - exception handling
 						ac.fail(BAD_REQUEST, "Could not load nodes");

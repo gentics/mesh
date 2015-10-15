@@ -8,6 +8,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
@@ -49,7 +50,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -57,7 +58,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, project.getTagFamilyRoot(), new TagFamilyListResponse());
+			loadTransformAndResponde(ac, project.getTagFamilyRoot(), new TagFamilyListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -73,7 +74,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 					TagFamily tagFamily = rh.result();
 					try {
 						Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-						transformAndResponde(ac, tagPage, new TagListResponse());
+						transformAndResponde(ac, tagPage, new TagListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}

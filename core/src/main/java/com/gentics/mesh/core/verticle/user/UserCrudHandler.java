@@ -6,6 +6,7 @@ import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
@@ -42,7 +43,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			loadObject(ac, "uuid", READ_PERM, boot.userRoot(), rh -> {
-				loadTransformAndResponde(ac, "uuid", READ_PERM, boot.userRoot());
+				loadTransformAndResponde(ac, "uuid", READ_PERM, boot.userRoot(), OK);
 			});
 		} , ac.errorHandler());
 	}
@@ -50,7 +51,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
-			loadTransformAndResponde(ac, boot.userRoot(), new UserListResponse());
+			loadTransformAndResponde(ac, boot.userRoot(), new UserListResponse(), OK);
 		} , ac.errorHandler());
 	}
 

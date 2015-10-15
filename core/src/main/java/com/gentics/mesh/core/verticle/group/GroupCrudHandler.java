@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
@@ -55,14 +56,14 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.groupRoot());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.groupRoot(), OK);
 		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.groupRoot(), new GroupListResponse());
+			loadTransformAndResponde(ac, boot.groupRoot(), new GroupListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -73,7 +74,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
 				try {
 					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-					transformAndResponde(ac, rolePage, new RoleListResponse());
+					transformAndResponde(ac, rolePage, new RoleListResponse(), OK);
 				} catch (InvalidArgumentException e) {
 					ac.fail(e);
 				}
@@ -96,7 +97,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									transformAndResponde(ac, txAdded.result());
+									transformAndResponde(ac, txAdded.result(), OK);
 								}
 							});
 						}
@@ -122,7 +123,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									transformAndResponde(ac, txAdded.result());
+									transformAndResponde(ac, txAdded.result(), OK);
 								}
 							});
 						}
@@ -141,7 +142,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 					try {
 						Group group = grh.result();
 						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						transformAndResponde(ac, userPage, new UserListResponse());
+						transformAndResponde(ac, userPage, new UserListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}
@@ -166,7 +167,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (addHandler.failed()) {
 									ac.fail(addHandler.cause());
 								} else {
-									transformAndResponde(ac, addHandler.result());
+									transformAndResponde(ac, addHandler.result(), OK);
 								}
 							});
 						}
@@ -191,7 +192,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (rh.failed()) {
 									ac.fail(rh.cause());
 								} else {
-									transformAndResponde(ac, rh.result());
+									transformAndResponde(ac, rh.result() , OK);
 								}
 							});
 						}

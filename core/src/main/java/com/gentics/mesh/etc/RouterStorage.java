@@ -1,6 +1,5 @@
 package com.gentics.mesh.etc;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.HashMap;

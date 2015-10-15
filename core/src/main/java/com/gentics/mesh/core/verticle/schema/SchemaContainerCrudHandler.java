@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
@@ -63,7 +64,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.schemaContainerRoot());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.schemaContainerRoot(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);
@@ -74,7 +75,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.schemaContainerRoot(), new SchemaListResponse());
+			loadTransformAndResponde(ac, boot.schemaContainerRoot(), new SchemaListResponse(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);
@@ -97,7 +98,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 								if (rtx.failed()) {
 									ac.fail(rtx.cause());
 								} else {
-									transformAndResponde(ac, rtx.result());
+									transformAndResponde(ac, rtx.result(), OK);
 								}
 							});
 						}
@@ -128,7 +129,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 								if (schemaRemoved.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(schemaRemoved.cause()));
 								} else {
-									transformAndResponde(ac, schemaRemoved.result());
+									transformAndResponde(ac, schemaRemoved.result(), OK);
 								}
 							});
 						}

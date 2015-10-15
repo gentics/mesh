@@ -15,6 +15,7 @@ import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
 import java.util.Set;
@@ -89,7 +90,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getNodeRoot());
+			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getNodeRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -97,7 +98,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, project.getNodeRoot(), new NodeListResponse());
+			loadTransformAndResponde(ac, project.getNodeRoot(), new NodeListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -118,7 +119,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								if (mh.failed()) {
 									ac.fail(mh.cause());
 								} else {
-									ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))));
+									ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))), OK);
 								}
 							});
 
@@ -205,7 +206,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 													ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
 												} else {
 													VerticleHelper.processOrFail(ac, txUpdated.result().v1(), ch -> {
-														ac.send(toJson(new GenericMessageResponse(ac.i18n("node_binary_field_updated", nodeUuid))));
+														ac.send(toJson(new GenericMessageResponse(ac.i18n("node_binary_field_updated", nodeUuid))),
+																OK);
 													} , txUpdated.result().v2());
 												}
 											});
@@ -321,7 +323,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					Node node = rh.result();
 					try {
 						Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingInfo());
-						transformAndResponde(ac, page, new NodeListResponse());
+						transformAndResponde(ac, page, new NodeListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}
@@ -338,7 +340,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					Node node = rh.result();
 					try {
 						Page<? extends Tag> tagPage = node.getTags(ac);
-						transformAndResponde(ac, tagPage, new TagListResponse());
+						transformAndResponde(ac, tagPage, new TagListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}
@@ -369,7 +371,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 										ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 									} else {
 										processOrFail(ac, txAdded.result().v1(), ch -> {
-											transformAndResponde(ac, ch.result());
+											transformAndResponde(ac, ch.result(), OK);
 										} , txAdded.result().v2());
 									}
 								});
@@ -399,7 +401,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 							} else {
 								processOrFail(ac, txAdded.result().v1(), ch -> {
-									transformAndResponde(ac, ch.result());
+									transformAndResponde(ac, ch.result(), OK);
 								} , txAdded.result().v2());
 							}
 						});

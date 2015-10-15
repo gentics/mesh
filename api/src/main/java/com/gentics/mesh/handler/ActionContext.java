@@ -50,8 +50,11 @@ public interface ActionContext {
 	 * Send the body string and complete the action.
 	 * 
 	 * @param body
+	 *            the body string that should be send
+	 * @param statusCode
+	 *            the status code to send
 	 */
-	void send(String body);
+	void send(String body, HttpResponseStatus statusCode);
 
 	/**
 	 * Return the i18n string for the given i18n key and the parameters. This method is a wrapper that will lookup the defined locale and return a matching i18n

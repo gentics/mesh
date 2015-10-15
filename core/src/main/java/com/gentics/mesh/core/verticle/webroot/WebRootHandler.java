@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.webroot;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,7 @@ public class WebRootHandler {
 		String path = ac.getParameter("param0");
 		String projectName = ac.getProject().getName();
 		MeshAuthUser requestUser = ac.getUser();
-//		List<String> languageTags = ac.getSelectedLanguageTags();
+		//		List<String> languageTags = ac.getSelectedLanguageTags();
 		Mesh.vertx().executeBlocking((Future<Node> bch) -> {
 			try (Trx tx = db.trx()) {
 				Path nodePath = webrootService.findByProjectPath(ac, projectName, path);
@@ -49,19 +50,19 @@ public class WebRootHandler {
 						throw new EntityNotFoundException(message);
 					}
 
-					if(requestUser.hasPermission(ac, node, READ_PERM)) {
+					if (requestUser.hasPermission(ac, node, READ_PERM)) {
 						bch.complete(node);
 					} else {
 						bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
 					}
-//					requestUser.isAuthorised(node, READ_PERM, rh -> {
-//						languageTags.add(lastSegment.getLanguageTag());
-//						if (rh.result()) {
-//							bch.complete(node);
-//						} else {
-//							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
-//						}
-//					});
+					//					requestUser.isAuthorised(node, READ_PERM, rh -> {
+					//						languageTags.add(lastSegment.getLanguageTag());
+					//						if (rh.result()) {
+					//							bch.complete(node);
+					//						} else {
+					//							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
+					//						}
+					//					});
 
 				} else {
 					throw new EntityNotFoundException(ac.i18n("node_not_found_for_path", path));
@@ -76,7 +77,7 @@ public class WebRootHandler {
 				Node node = arh.result();
 				node.transformToRest(ac, th -> {
 					if (hasSucceeded(ac, th)) {
-						ac.send(JsonUtil.toJson(th.result()));
+						ac.send(JsonUtil.toJson(th.result()), OK);
 					}
 				});
 			}

@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,7 +170,7 @@ public class SearchRestHandler {
 						} , (x, y) -> {
 							x.add(y);
 						}).subscribe(itemList -> {
-							ac.send(JsonUtil.toJson(listResponse));
+							ac.send(JsonUtil.toJson(listResponse), OK);
 						} , error -> {
 							ac.fail(error);
 						});
