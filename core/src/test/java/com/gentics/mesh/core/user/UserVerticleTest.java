@@ -110,7 +110,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = user().getUuid();
-//		CyclicBarrier barrier = prepareBarrier(nJobs);
+		//		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findUserByUuid(uuid));
@@ -216,10 +216,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findUsers(new PagingInfo(1, 0));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		future = getClient().findUsers(new PagingInfo(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -234,6 +230,15 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(nUsers + 3, future.result().getMetainfo().getTotalCount());
 		assertEquals(25, future.result().getMetainfo().getPerPage());
 
+	}
+
+	@Test
+	public void testInvalidPageParameter() {
+		Future<UserListResponse> future = getClient().findUsers(new PagingInfo(1, 0));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
+		assertTrue(future.result().getMetainfo().getTotalCount() > 0);
 	}
 
 	// Update tests

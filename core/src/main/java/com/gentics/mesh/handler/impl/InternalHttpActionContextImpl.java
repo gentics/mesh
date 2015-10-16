@@ -110,7 +110,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		if (page < 1) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
 		}
-		if (perPage <= 0) {
+		if (perPage < 0) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
 		}
 		return new PagingInfo(page, perPage);

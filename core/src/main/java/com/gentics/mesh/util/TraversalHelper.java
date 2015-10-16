@@ -3,6 +3,7 @@ package com.gentics.mesh.util;
 import static com.gentics.mesh.api.common.SortOrder.DESCENDING;
 import static com.gentics.mesh.api.common.SortOrder.UNSORTED;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -49,8 +50,8 @@ public final class TraversalHelper {
 		if (page < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}
-		if (pageSize < 1) {
-			throw new InvalidArgumentException("The pageSize must always be positive");
+		if (pageSize < 0) {
+			throw new InvalidArgumentException("The pageSize must always be zero or greater than zero");
 		}
 
 		// Internally we start with page 0
@@ -59,21 +60,29 @@ public final class TraversalHelper {
 		int low = page * pageSize;
 		int upper = low + pageSize - 1;
 
-		int count = (int) countTraversal.count();
-
-		// Only add the filter to the pipeline when the needed parameters were correctly specified.
-		if (order != UNSORTED && sortBy != null) {
-			traversal = traversal.order((VertexFrame f1, VertexFrame f2) -> {
-				if (order == DESCENDING) {
-					VertexFrame tmp = f1;
-					f1 = f2;
-					f2 = tmp;
-				}
-				return f2.getProperty(sortBy).equals(f1.getProperty(sortBy)) ? 1 : 0;
-			});
+		if (pageSize == 0) {
+			low = 0;
+			upper = 0;
 		}
 
-		List<? extends T> list = traversal.range(low, upper).toListExplicit(classOfT);
+		int count = (int) countTraversal.count();
+
+		List<? extends T> list = new ArrayList<>();
+		if (pageSize != 0) {
+			// Only add the filter to the pipeline when the needed parameters were correctly specified.
+			if (order != UNSORTED && sortBy != null) {
+				traversal = traversal.order((VertexFrame f1, VertexFrame f2) -> {
+					if (order == DESCENDING) {
+						VertexFrame tmp = f1;
+						f1 = f2;
+						f2 = tmp;
+					}
+					return f2.getProperty(sortBy).equals(f1.getProperty(sortBy)) ? 1 : 0;
+				});
+			}
+
+			list = traversal.range(low, upper).toListExplicit(classOfT);
+		}
 
 		int totalPages = (int) Math.ceil(count / (double) pageSize);
 		// Cap totalpages to 1
