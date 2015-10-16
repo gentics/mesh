@@ -93,6 +93,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 							db.trx(txAdd -> {
 								group.addRole(role);
 								txAdd.complete(group);
+								//TODO Update SQB
 							} , (AsyncResult<Group> txAdded) -> {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
@@ -119,6 +120,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 							db.trx(txRemove -> {
 								group.removeRole(role);
 								txRemove.complete(group);
+								//TODO Update SQB
 							} , (AsyncResult<Group> txAdded) -> {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
@@ -163,6 +165,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								User user = urh.result();
 								group.addUser(user);
 								tcAdd.complete(group);
+								//TODO Update SQB
 							} , (AsyncResult<Group> addHandler) -> {
 								if (addHandler.failed()) {
 									ac.fail(addHandler.cause());
@@ -188,6 +191,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								User user = urh.result();
 								group.removeUser(user);
 								tcRemove.complete(group);
+								//TODO Update SQB
 							} , (AsyncResult<Group> rh) -> {
 								if (rh.failed()) {
 									ac.fail(rh.cause());

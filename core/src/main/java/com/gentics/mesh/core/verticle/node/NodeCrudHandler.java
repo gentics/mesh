@@ -114,7 +114,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, targetNodeHandler)) {
 							Node sourceNode = sourceNodeHandler.result();
 							Node targetNode = targetNodeHandler.result();
-
+							//TODO Update SQB
 							sourceNode.moveTo(ac, targetNode, mh -> {
 								if (mh.failed()) {
 									ac.fail(mh.cause());
@@ -424,7 +424,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-
+				//TODO Update SQB
 			});
 		} , ac.errorHandler());
 	}
@@ -433,7 +433,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-
+				//TODO Update SQB
 			});
 		} , ac.errorHandler());
 	}
@@ -442,7 +442,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-
+				//TODO Update SQB
 			});
 		} , ac.errorHandler());
 	}
@@ -451,7 +451,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-
+				//TODO Update SQB
 			});
 		} , ac.errorHandler());
 	}
@@ -460,7 +460,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-
+				//TODO Update SQB
 			});
 		} , ac.errorHandler());
 	}
@@ -478,7 +478,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-
+				//TODO Update SQB
 			});
 		} , ac.errorHandler());
 	}
