@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.orientdb;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,6 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Parameter;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
@@ -27,7 +26,7 @@ public class EdgeIndexPerformanceTest {
 
 	private static OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");
 
-	private final static int nDocuments = 1000;
+	private final static int nDocuments = 2000;
 	private final static int nChecks = 4000;
 
 	private static List<OrientVertex> items;
@@ -54,10 +53,10 @@ public class EdgeIndexPerformanceTest {
 		try {
 			g = factory.getNoTx();
 
-			OrientEdgeType e = g.getEdgeType("E");
+			OrientEdgeType e = g.createEdgeType("HAS_ITEM");
 			e.createProperty("in", OType.LINK);
 			e.createProperty("out", OType.LINK);
-			e.createIndex("edge.has_item", OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, "out", "in");
+			e.createIndex("e.has_item", OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, "out", "in");
 
 			OrientVertexType v = g.createVertexType("root", "V");
 			v.createProperty("name", OType.STRING);
@@ -80,7 +79,7 @@ public class EdgeIndexPerformanceTest {
 				OrientVertex item = g.addVertex("class:item");
 				item.setProperty("name", "item_" + i);
 				items.add(item);
-				root.addEdge("HAS_ITEM", item, "class:E.edge");
+				root.addEdge("HAS_ITEM", item);
 			}
 			return items;
 		} finally {
@@ -97,6 +96,43 @@ public class EdgeIndexPerformanceTest {
 		} finally {
 			g.shutdown();
 		}
+	}
+
+	@Test
+	public void testEdgeIndexViaGraphGetEdges() throws Exception {
+		OrientGraphNoTx g = factory.getNoTx();
+		try {
+			for (OIndex<?> index : g.getRawGraph().getMetadata().getIndexManager().getIndexes()) {
+
+				System.out.println(index.getName() + " size: " + index.getSize());
+			}
+			//			OIndex<?> index = g.getRawGraph().getMetadata().getIndexManager().getIndex("edge.has_item");
+			//			assertNotNull("Index could not be found", index);
+		} finally {
+			g.shutdown();
+		}
+
+		double total = 0;
+		int nRuns = 20;
+		for (int e = 0; e < nRuns; e++) {
+			g = factory.getNoTx();
+			try {
+				long start = System.currentTimeMillis();
+				for (int i = 0; i < nChecks; i++) {
+					OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
+					Iterable<Edge> edges = g.getEdges("e.has_item", new OCompositeKey(root.getId(), randomDocument.getId()));
+					assertTrue(edges.iterator().hasNext());
+				}
+				long dur = System.currentTimeMillis() - start;
+				System.out.println("[graph.getEdges] Duration: " + dur);
+				double perCheck = ((double) dur / (double) nChecks);
+				total += perCheck;
+				System.out.println("[graph.getEdges] Duration per lookup: " + perCheck);
+			} finally {
+				g.shutdown();
+			}
+		}
+		System.out.println("Average: " + (total / (double) nRuns));
 	}
 
 	@Test
@@ -143,30 +179,6 @@ public class EdgeIndexPerformanceTest {
 	}
 
 	@Test
-	public void testEdgeIndexViaGraphGetEdges() throws Exception {
-		OrientGraphNoTx g = factory.getNoTx();
-
-		for (OIndex<?> index : g.getRawGraph().getMetadata().getIndexManager().getIndexes()) {
-			System.out.println(index.getName());
-		}
-		//		OIndex<?> index = g.getRawGraph().getMetadata().getIndexManager().getIndex("edge.has_item");
-		//		assertNotNull("Index could not be found", index);
-		try {
-			long start = System.currentTimeMillis();
-			for (int i = 0; i < nChecks; i++) {
-				OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
-				Iterable<Edge> edges = g.getEdges("edge.has_item", new OCompositeKey(root.getId(), randomDocument.getId()));
-				assertTrue(edges.iterator().hasNext());
-			}
-			long dur = System.currentTimeMillis() - start;
-			System.out.println("[graph.getEdges] Duration: " + dur);
-			System.out.println("[graph.getEdges] Duration per lookup: " + ((double) dur / (double) nChecks));
-		} finally {
-			g.shutdown();
-		}
-	}
-
-	@Test
 	public void testEdgeIndexViaQuery() throws Exception {
 		OrientGraphNoTx g = factory.getNoTx();
 		try {
@@ -175,7 +187,7 @@ public class EdgeIndexPerformanceTest {
 			for (int i = 0; i < nChecks; i++) {
 				OrientVertex randomDocument = items.get((int) (Math.random() * items.size()));
 
-				OCommandSQL cmd = new OCommandSQL("select from index:edge.has_item where key=?");
+				OCommandSQL cmd = new OCommandSQL("select from index:e.has_item where key=?");
 				OCompositeKey key = new OCompositeKey(root.getId(), randomDocument.getId());
 
 				assertTrue(((Iterable<Vertex>) g.command(cmd).execute(key)).iterator().hasNext());
