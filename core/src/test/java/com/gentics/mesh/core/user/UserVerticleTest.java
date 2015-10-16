@@ -799,10 +799,24 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		User user = user();
-		assertTrue(user.isEnabled());
-		String uuid = user.getUuid();
-		String name = user.getName();
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setEmailAddress("n.user@spam.gentics.com");
+		newUser.setFirstname("Joe");
+		newUser.setLastname("Doe");
+		newUser.setUsername("new_user");
+		newUser.setPassword("test123456");
+		newUser.setGroupUuid(group().getUuid());
+
+		Future<UserResponse> createFuture = getClient().createUser(newUser);
+		latchFor(createFuture);
+		assertSuccess(createFuture);
+		UserResponse restUser = createFuture.result();
+
+		assertTrue(restUser.getEnabled());
+		String uuid = restUser.getUuid();
+		String name = restUser.getUsername();
+
 		Future<GenericMessageResponse> future = getClient().deleteUser(uuid);
 		latchFor(future);
 		assertSuccess(future);
@@ -813,6 +827,14 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
 			assertFalse(loadedUser.isEnabled());
 		}
+
+		// Load the user again and check whether it is disabled
+		Future<UserResponse> userFuture = getClient().findUserByUuid(uuid);
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(userFuture.result());
+		assertFalse(userFuture.result().getEnabled());
+
 	}
 
 	@Test

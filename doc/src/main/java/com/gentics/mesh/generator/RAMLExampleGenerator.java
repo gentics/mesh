@@ -570,6 +570,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user2.setEmailAddress("j.roe@nowhere.com");
 		user2.addGroup("super-editors");
 		user2.addGroup("editors");
+		user2.setEnabled(true);
 
 		UserListResponse userList = new UserListResponse();
 		userList.getData().add(user);
@@ -615,6 +616,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user.setUsername("jdoe42");
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
+		user.setEnabled(true);
+
 		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName("dummy");
 		reference.setUuid(randomUUID());

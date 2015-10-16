@@ -378,6 +378,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			restUser.setEmailAddress(getEmailAddress());
 			restUser.setFirstname(getFirstname());
 			restUser.setLastname(getLastname());
+			restUser.setEnabled(isEnabled());
 
 			Node node = getReferencedNode();
 			if (node != null) {

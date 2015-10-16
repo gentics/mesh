@@ -26,6 +26,7 @@ import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
@@ -105,6 +106,20 @@ public class OrientDBDatabase extends AbstractDatabase {
 		indices.put("ferma_type", Vertex.class);
 
 		OrientGraphNoTx tx = factory.getNoTx();
+
+		//		tx.createEdgeType("HAS_ROLE");
+		//		
+		//		OCommandSQL cmd = new OCommandSQL();
+		//		cmd.setText("create index HAS_ROLE.unique on HAS_ROLE (out,in) unique");
+		//		tx.command(cmd).execute();
+
+//		OCommandSQL cmd = new OCommandSQL();
+//		cmd.setText("alter database custom useLightweightEdges=false");
+//		tx.command(cmd).execute();
+//
+//		cmd.setText("alter database custom useVertexFieldsForEdgeLabels=false");
+//		tx.command(cmd).execute();
+
 		for (Map.Entry<String, Class<? extends Element>> entry : indices.entrySet()) {
 			String key = entry.getKey();
 			Class<? extends Element> clazz = entry.getValue();

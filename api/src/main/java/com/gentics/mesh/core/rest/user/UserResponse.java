@@ -20,6 +20,8 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 
 	private NodeReference nodeReference;
 
+	private boolean enabled;
+
 	//TODO we should use a reference here to include name and uuid
 	private List<String> groups = new ArrayList<>();
 
@@ -132,5 +134,23 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 */
 	public void setNodeReference(NodeReference nodeReference) {
 		this.nodeReference = nodeReference;
+	}
+
+	/**
+	 * Return the enabled flag for the user.
+	 * 
+	 * @return
+	 */
+	public boolean getEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * Set the enabled flag for the user.
+	 * 
+	 * @param enabled
+	 */
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }

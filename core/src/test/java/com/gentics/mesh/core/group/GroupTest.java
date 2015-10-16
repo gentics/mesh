@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.group;
 
+import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -172,14 +173,12 @@ public class GroupTest extends AbstractBasicObjectTest {
 		assertNotNull(group);
 		assertEquals("newGroup", group.getName());
 		String uuid = group.getUuid();
+		String userUuid = user().getUuid();
+		group().addUser(user());
 		// TODO add users to group?
 		group.delete();
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getGroupRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertElement(meshRoot().getGroupRoot(), uuid, false);
+		assertElement(meshRoot().getUserRoot(), userUuid, true);
 	}
 
 	@Test
