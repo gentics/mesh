@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -91,6 +90,31 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 	
 	@Test
+	public void testSearchForLaterAddedUser() throws InterruptedException, JSONException {
+		GroupResponse group = createGroup("apa-otsAdmin");
+		String groupName = group.getName();
+		String username = "extrauser42a";
+		
+		UserCreateRequest request = new UserCreateRequest();
+		request.setUsername(username);
+		request.setPassword("test1234");
+
+		Future<UserResponse> future = getClient().createUser(request);
+		latchFor(future);
+		assertSuccess(future);
+		
+		Future<GroupResponse> futureAdd = getClient().addUserToGroup(group.getUuid(), future.result().getUuid());
+		latchFor(futureAdd);
+		assertSuccess(futureAdd);
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+
+	}
+	
+	@Test
 	public void testSearchForRemovedUser() throws InterruptedException, JSONException {
 		GroupResponse group = createGroup("apa-otsAdmin");
 		String groupName = group.getName();
@@ -107,7 +131,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 		
 		String userUuid = future.result().getUuid();
 		
-		Future<GenericMessageResponse> futureDelete = getClient().deleteUser(userUuid);
+		Future<GroupResponse> futureDelete = getClient().removeUserFromGroup(group.getUuid(), userUuid);
 		latchFor(futureDelete);
 		assertSuccess(futureDelete);
 
