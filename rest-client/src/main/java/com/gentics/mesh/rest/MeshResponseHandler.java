@@ -45,8 +45,8 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 	@Override
 	public void handle(HttpClientResponse response) {
-
-		if (response.statusCode() == 200) {
+		int code = response.statusCode();
+		if (code >= 200 && code < 300) {
 
 			if (!StringUtils.isEmpty(response.headers().get("Set-Cookie"))) {
 				client.setCookie(response.headers().get("Set-Cookie"));
