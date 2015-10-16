@@ -57,6 +57,11 @@ public interface InternalActionContext extends ActionContext {
 	 */
 	PagingInfo getPagingInfo();
 
+	/**
+	 * Return an error handler which is able to fail the call chain.
+	 * 
+	 * @return
+	 */
 	public <T> Handler<AsyncResult<T>> errorHandler();
 
 }
