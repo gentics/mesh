@@ -9,10 +9,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.orientechnologies.orient.core.index.OCompositeKey;
+import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Parameter;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
@@ -24,7 +27,7 @@ public class EdgeIndexPerformanceTest {
 
 	private static OrientGraphFactory factory = new OrientGraphFactory("memory:tinkerpop");
 
-	private final static int nDocuments = 14000;
+	private final static int nDocuments = 1000;
 	private final static int nChecks = 4000;
 
 	private static List<OrientVertex> items;
@@ -41,27 +44,26 @@ public class EdgeIndexPerformanceTest {
 	private static void setupTypesAndIndices(OrientGraphFactory factory2) {
 		OrientGraphNoTx g = factory.getNoTx();
 		try {
-			OCommandSQL cmd = new OCommandSQL();
+			//g.setUseClassForEdgeLabel(true);
+			g.setUseLightweightEdges(false);
+			g.setUseVertexFieldsForEdgeLabels(false);
+		} finally {
+			g.shutdown();
+		}
 
-			cmd.setText("alter database custom useLightweightEdges=false");
-			g.command(cmd).execute();
+		try {
+			g = factory.getNoTx();
 
-			cmd.setText("alter database custom useVertexFieldsForEdgeLabels=false");
-			g.command(cmd).execute();
-
-			OrientEdgeType e = g.createEdgeType("EAB", "E");
-			//OrientEdgeType e = g.getEdgeType("E");
+			OrientEdgeType e = g.getEdgeType("E");
 			e.createProperty("in", OType.LINK);
 			e.createProperty("out", OType.LINK);
+			e.createIndex("edge.has_item", OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, "out", "in");
 
 			OrientVertexType v = g.createVertexType("root", "V");
 			v.createProperty("name", OType.STRING);
 
 			v = g.createVertexType("item", "V");
 			v.createProperty("name", OType.STRING);
-
-			cmd.setText("create index edge.HAS_ITEM on EAB (out,in) unique");
-			g.command(cmd).execute();
 
 		} finally {
 			g.shutdown();
@@ -78,7 +80,7 @@ public class EdgeIndexPerformanceTest {
 				OrientVertex item = g.addVertex("class:item");
 				item.setProperty("name", "item_" + i);
 				items.add(item);
-				root.addEdge("HAS_ITEM", item, "class:EAB");
+				root.addEdge("HAS_ITEM", item, "class:E.edge");
 			}
 			return items;
 		} finally {
@@ -143,6 +145,12 @@ public class EdgeIndexPerformanceTest {
 	@Test
 	public void testEdgeIndexViaGraphGetEdges() throws Exception {
 		OrientGraphNoTx g = factory.getNoTx();
+
+		for (OIndex<?> index : g.getRawGraph().getMetadata().getIndexManager().getIndexes()) {
+			System.out.println(index.getName());
+		}
+		//		OIndex<?> index = g.getRawGraph().getMetadata().getIndexManager().getIndex("edge.has_item");
+		//		assertNotNull("Index could not be found", index);
 		try {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
