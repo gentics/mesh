@@ -38,4 +38,6 @@ public interface LanguageRoot extends RootVertex<Language> {
 	 */
 	Language getTagDefaultLanguage();
 
+	
+
 }

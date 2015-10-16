@@ -258,23 +258,23 @@ public class WebRootService {
 	// return null;
 	// }
 
-	/**
-	 * Locate the tag with the given name within the subset of tags of the given tag.
-	 * 
-	 * @param rootTag
-	 * @param name
-	 * @return
-	 */
-	private Vertex findSubTagWithName(Vertex rootTag, String name) {
-		for (Edge edge : rootTag.getEdges(Direction.OUT, GraphRelationships.HAS_TAG)) {
-			Vertex endNode = edge.getVertex(Direction.OUT);
-			if (endNode != null && hasNodeI18NProperty(endNode, "name", name)) {
-				return endNode;
-			}
-		}
-		return null;
-
-	}
+//	/**
+//	 * Locate the tag with the given name within the subset of tags of the given tag.
+//	 * 
+//	 * @param rootTag
+//	 * @param name
+//	 * @return
+//	 */
+//	private Vertex findSubTagWithName(Vertex rootTag, String name) {
+//		for (Edge edge : rootTag.getEdges(Direction.OUT, GraphRelationships.HAS_TAG)) {
+//			Vertex endNode = edge.getVertex(Direction.OUT);
+//			if (endNode != null && hasNodeI18NProperty(endNode, "name", name)) {
+//				return endNode;
+//			}
+//		}
+//		return null;
+//
+//	}
 
 	/**
 	 * Check whether the given node has an i18n property of the given name.

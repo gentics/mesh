@@ -59,6 +59,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_NODE);
+	}
+
 	@Override
 	protected Class<? extends Node> getPersistanceClass() {
 		return NodeImpl.class;

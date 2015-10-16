@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
@@ -46,6 +46,12 @@ import rx.Observable;
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
+
+	public static void checkIndices(Database database) {
+		for (String label : GraphPermission.labels()) {
+			database.addEdgeIndex(label);
+		}
+	}
 
 	@Override
 	public String getType() {

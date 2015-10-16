@@ -134,7 +134,7 @@ public interface Database {
 	 * Initialize the database and store the settings.
 	 * 
 	 * @param options
-	 * @param vertx 
+	 * @param vertx
 	 */
 	void init(StorageOptions options, Vertx vertx);
 
@@ -177,5 +177,22 @@ public interface Database {
 	 */
 	void restoreGraph(String backupFile) throws IOException;
 
+	/**
+	 * Adds an edge index for the given label.
+	 * 
+	 * @param label
+	 *            Label for which the edge index should be created
+	 * @param extraFields
+	 *            Additional fields that should be indexed
+	 */
+	public void addEdgeIndex(String label, String... extraFields);
+
+	/**
+	 * Add an vertex index for the given type of vertex and fields.
+	 * 
+	 * @param clazzOfVertices
+	 * @param fields
+	 */
+	public void addVertexIndex(Class<?> clazzOfVertices, String... fields);
 
 }

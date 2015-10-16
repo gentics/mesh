@@ -37,6 +37,10 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_TAG);
+	}
+
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);
 
 	@Override

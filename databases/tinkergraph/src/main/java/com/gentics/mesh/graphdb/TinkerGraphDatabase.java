@@ -66,4 +66,14 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void addEdgeIndex(String label, String... extraFields) {
+		// No supported
+	}
+
+	@Override
+	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+		// No supported
+	}
 }

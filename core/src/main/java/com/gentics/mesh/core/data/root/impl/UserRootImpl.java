@@ -43,6 +43,10 @@ import io.vertx.core.Handler;
 
 public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_USER);
+	}
+
 	@Override
 	protected Class<? extends User> getPersistanceClass() {
 		return UserImpl.class;

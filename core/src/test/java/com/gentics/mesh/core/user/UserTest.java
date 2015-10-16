@@ -135,16 +135,16 @@ public class UserTest extends AbstractBasicObjectTest {
 			//ac.data().clear();
 			//CompletableFuture<String[]> permissionFuture = new CompletableFuture<>();
 
-			if (1 != 1) {
-				user.getPermissionNames(ac, node);
-				latch.countDown();
-			} else {
+//			if (1 != 1) {
+//				user.getPermissionNames(ac, node);
+//				latch.countDown();
+//			} else {
 				user.getPermissionNames(ac, node, rh -> {
 					//String[] names = rh.result().toArray(new String[rh.result().size()]);
 					//permissionFuture.complete(names);
 					latch.countDown();
 				});
-			}
+//			}
 			//assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 		}
 

@@ -35,6 +35,10 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_TAG_FAMILY);
+	}
+
 	@Override
 	protected Class<? extends TagFamily> getPersistanceClass() {
 		return TagFamilyImpl.class;

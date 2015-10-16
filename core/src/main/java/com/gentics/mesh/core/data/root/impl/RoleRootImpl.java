@@ -36,6 +36,10 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_ROLE);
+	}
+
 	@Override
 	protected Class<? extends Role> getPersistanceClass() {
 		return RoleImpl.class;

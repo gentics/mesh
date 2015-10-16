@@ -116,4 +116,14 @@ public class TitanDBDatabase extends AbstractDatabase {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void addEdgeIndex(String label, String... extraFields) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+		throw new NotImplementedException();
+	}
 }

@@ -11,12 +11,17 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language>implements LanguageRoot {
+
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_LANGUAGE);
+	}
 
 	@Override
 	protected Class<LanguageImpl> getPersistanceClass() {
@@ -78,4 +83,5 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	public void delete() {
 		throw new NotImplementedException("The language root should never be deleted.");
 	}
+
 }

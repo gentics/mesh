@@ -52,6 +52,8 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.orientechnologies.orient.core.index.OCompositeKey;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -286,8 +288,13 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
+
+		boolean useIndex = true;
+
 		String mapKey = getPermissionMapKey(node, permission);
 		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
+			FramedGraph graph = Database.getThreadLocalGraph();
+
 			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
 			for (Vertex group : groups) {
 				if (log.isTraceEnabled()) {
@@ -300,34 +307,35 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 						log.trace("Role: " + role.getProperty("name") + " - uuid: " + role.getProperty("uuid") + " - type: "
 								+ role.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
 					}
-					// TODO maybe it would be better to use this orientdb extension. In tests we notices that this call is not actually faster. I don't think it uses the edge index by default. 
-					//					Iterable<Edge> permissions = ((OrientVertex) role).getEdges((OrientVertex)node.getImpl().getElement(), Direction.OUT, permission.label());
-					//					for (Edge permissionEdge : permissions) {
-					//						return true;
-					//					}
-					//					return false;
 
-					Iterable<Edge> permissions = role.getEdges(Direction.OUT, permission.label());
-					for (Edge permissionEdge : permissions) {
-						if (log.isTraceEnabled()) {
-							log.trace("Permission Edge: " + permissionEdge.getProperty("uuid") + " - label: " + permissionEdge.getLabel()
-									+ " - type: " + permissionEdge.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " from: "
-									+ permissionEdge.getVertex(Direction.OUT).getProperty("uuid") + " to: "
-									+ permissionEdge.getVertex(Direction.IN).getProperty("uuid"));
-						}
+					if (useIndex) {
+						Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase(),
+								new OCompositeKey(role.getId(), node.getImpl().getId()));
+						return edges.iterator().hasNext();
 
-						if (node.getImpl().getId().equals(permissionEdge.getVertex(Direction.IN).getId())) {
+					} else {
+						Iterable<Edge> permissions = role.getEdges(Direction.OUT, permission.label());
+						for (Edge permissionEdge : permissions) {
 							if (log.isTraceEnabled()) {
-								log.trace("Found edge to specified node. User has permission.");
+								log.trace("Permission Edge: " + permissionEdge.getProperty("uuid") + " - label: " + permissionEdge.getLabel()
+										+ " - type: " + permissionEdge.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " from: "
+										+ permissionEdge.getVertex(Direction.OUT).getProperty("uuid") + " to: "
+										+ permissionEdge.getVertex(Direction.IN).getProperty("uuid"));
 							}
-							return true;
+
+							if (node.getImpl().getId().equals(permissionEdge.getVertex(Direction.IN).getId())) {
+								if (log.isTraceEnabled()) {
+									log.trace("Found edge to specified node. User has permission.");
+								}
+								return true;
+							}
 						}
 					}
+
 				}
 			}
 			return false;
 		});
-		// return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 
 	}
 

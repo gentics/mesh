@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 public interface Language extends GenericVertex<LanguageResponse>, NamedVertex {
@@ -34,7 +33,5 @@ public interface Language extends GenericVertex<LanguageResponse>, NamedVertex {
 	 * @param languageTag
 	 */
 	void setLanguageTag(String languageTag);
-
-	LanguageImpl getImpl();
 
 }

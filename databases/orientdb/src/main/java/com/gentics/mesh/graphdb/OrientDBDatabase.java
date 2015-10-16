@@ -26,13 +26,16 @@ import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
-import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.orientechnologies.orient.core.metadata.schema.OClass;
+import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -91,7 +94,46 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
+		configureGraphDB();
 		createIndices();
+
+	}
+
+	private void configureGraphDB() {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			tx.setUseLightweightEdges(false);
+			tx.setUseVertexFieldsForEdgeLabels(false);
+		} finally {
+			tx.shutdown();
+		}
+	}
+
+	@Override
+	public void addEdgeIndex(String label, String... extraFields) {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			OrientEdgeType e = tx.createEdgeType(label);
+			e.createProperty("in", OType.LINK);
+			e.createProperty("out", OType.LINK);
+			String[] fields = { "out", "in" };
+			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+		} finally {
+			tx.shutdown();
+		}
+	}
+
+	@Override
+	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			String name = clazzOfVertices.getSimpleName();
+			OrientVertexType v = tx.createVertexType(name, "V");
+			v.createProperty("name", OType.STRING);
+			//v.createIndex(name, , fields);
+		} finally {
+			tx.shutdown();
+		}
 
 	}
 
@@ -106,29 +148,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		indices.put("ferma_type", Vertex.class);
 
 		OrientGraphNoTx tx = factory.getNoTx();
+		try {
 
-		//		tx.createEdgeType("HAS_ROLE");
-		//		
-		//		OCommandSQL cmd = new OCommandSQL();
-		//		cmd.setText("create index HAS_ROLE.unique on HAS_ROLE (out,in) unique");
-		//		tx.command(cmd).execute();
-
-//		OCommandSQL cmd = new OCommandSQL();
-//		cmd.setText("alter database custom useLightweightEdges=false");
-//		tx.command(cmd).execute();
-//
-//		cmd.setText("alter database custom useVertexFieldsForEdgeLabels=false");
-//		tx.command(cmd).execute();
-
-		for (Map.Entry<String, Class<? extends Element>> entry : indices.entrySet()) {
-			String key = entry.getKey();
-			Class<? extends Element> clazz = entry.getValue();
-			if (tx.getIndex(key, clazz) == null) {
-				log.trace("Creating index {" + key + "#" + clazz.getName());
-				tx.createIndex(key, clazz);
+			for (Map.Entry<String, Class<? extends Element>> entry : indices.entrySet()) {
+				String key = entry.getKey();
+				Class<? extends Element> clazz = entry.getValue();
+				if (tx.getIndex(key, clazz) == null) {
+					log.trace("Creating index {" + key + "#" + clazz.getName());
+					tx.createIndex(key, clazz);
+				}
 			}
+		} finally {
+			tx.shutdown();
 		}
-		tx.shutdown();
 
 	}
 

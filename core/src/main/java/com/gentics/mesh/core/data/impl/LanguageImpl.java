@@ -5,6 +5,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
@@ -13,7 +14,11 @@ import io.vertx.core.Handler;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
 
-	@Override
+	public static void checkIndices(Database database) {
+		database.addVertexIndex(LanguageImpl.class, "languageTag");
+	}
+
+	@Override	
 	public String getType() {
 		return Language.TYPE;
 	}

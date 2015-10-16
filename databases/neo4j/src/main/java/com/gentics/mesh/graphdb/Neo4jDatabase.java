@@ -131,4 +131,14 @@ public class Neo4jDatabase extends AbstractDatabase {
 		return null;
 	}
 
+	@Override
+	public void addEdgeIndex(String label, String... extraField) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+		throw new NotImplementedException();
+	}
+
 }

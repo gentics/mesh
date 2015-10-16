@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
+import static com.gentics.mesh.util.VerticleHelper.processOrFail;	
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
@@ -31,6 +31,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot {
+
+	public static void checkIndices(Database database) {
+		database.addEdgeIndex(HAS_GROUP);
+	}
 
 	@Override
 	protected Class<? extends Group> getPersistanceClass() {
