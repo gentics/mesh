@@ -71,8 +71,8 @@ public class SearchRestHandler {
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}
-		if (pagingInfo.getPerPage() < 1) {
-			throw new InvalidArgumentException("The pageSize must always be positive");
+		if (pagingInfo.getPerPage() < 0) {
+			throw new InvalidArgumentException("The pageSize must always be zero or greater than zero");
 		}
 
 		RL listResponse = classOfRL.newInstance();

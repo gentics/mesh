@@ -11,6 +11,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -56,6 +57,22 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
+
+	}
+
+	@Test
+	public void testSearchUserWithPerPageZero() throws InterruptedException, JSONException {
+
+		String groupName = group().getName();
+		String username = "extrauser42a";
+		createUser(username);
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
+				new PagingInfo().setPerPage(0));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(0, searchFuture.result().getData().size());
+		assertEquals(1, searchFuture.result().getMetainfo().getTotalCount());
 
 	}
 
