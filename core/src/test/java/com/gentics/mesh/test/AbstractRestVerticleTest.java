@@ -152,9 +152,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	// User
 	protected UserResponse createUser(String username) {
-		String userName = "testuser42a";
 		UserCreateRequest request = new UserCreateRequest();
-		request.setUsername(userName);
+		request.setUsername(username);
 		request.setPassword("test1234");
 		request.setGroupUuid(group().getUuid());
 
