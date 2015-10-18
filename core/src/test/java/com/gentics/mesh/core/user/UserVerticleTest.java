@@ -94,7 +94,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		for (int i = 0; i < 10; i++) {
 			Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
-			user().addGroup(extraGroup);
+			extraGroup.addUser(user());
 		}
 
 		assertEquals(11, user().getGroups().size());
@@ -155,7 +155,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		for (int i = 0; i < nUsers; i++) {
 			String username = "testuser_" + i;
 			User user = root.create(username, user());
-			user.addGroup(group());
+			group().addUser(user);
 			user.setLastname("should_be_listed");
 			user.setFirstname("should_be_listed");
 			user.setEmailAddress("should_be_listed");

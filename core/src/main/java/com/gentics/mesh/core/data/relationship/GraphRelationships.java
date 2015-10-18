@@ -25,6 +25,7 @@ public class GraphRelationships {
 	public static final String HAS_USER = "HAS_USER";
 	public static final String HAS_GROUP = "HAS_GROUP";
 	public static final String HAS_ROLE = "HAS_ROLE";
+	public static final String ASSIGNED_TO_ROLE = "ASSIGNED_TO_ROLE";
 
 	// Tags
 	public static final String HAS_TAG_ROOT = "HAS_TAG_ROOT";

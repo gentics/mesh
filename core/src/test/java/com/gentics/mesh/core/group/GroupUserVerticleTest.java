@@ -55,7 +55,7 @@ extends AbstractRestVerticleTest {
 	public void testGetUsersByGroup() throws Exception {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser", user());
-		extraUser.addGroup(group());
+		group().addUser(extraUser);
 		String extraUserUuid = extraUser.getUuid();
 		role().grantPermissions(extraUser, READ_PERM);
 		String groupUuid = group().getUuid();

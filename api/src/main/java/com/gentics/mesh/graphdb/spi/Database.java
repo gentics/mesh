@@ -195,4 +195,6 @@ public interface Database {
 	 */
 	public void addVertexIndex(Class<?> clazzOfVertices, String... fields);
 
+	void addEdgeIndexSource(String label);
+
 }

@@ -45,13 +45,6 @@ public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedV
 	List<? extends Group> getGroups();
 
 	/**
-	 * Assign the role to the given group.
-	 * 
-	 * @param group
-	 */
-	void addGroup(Group group);
-
-	/**
 	 * Check whether the role grants the given permission on the given element.
 	 * 
 	 * @param permission

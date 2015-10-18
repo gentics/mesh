@@ -60,7 +60,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		factory.close();
 		Orient.instance().shutdown();
 		Database.setThreadLocalGraph(null);
-	}
+	} 
 
 	@Override
 	public void init(StorageOptions options, Vertx vertx) {
@@ -117,6 +117,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 			e.createProperty("in", OType.LINK);
 			e.createProperty("out", OType.LINK);
 			String[] fields = { "out", "in" };
+			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+		} finally {
+			tx.shutdown();
+		}
+	}
+	
+	@Override
+	public void addEdgeIndexSource(String label) {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			OrientEdgeType e = tx.createEdgeType(label);
+			e.createProperty("out", OType.LINK);
+			String[] fields = { "out" };
 			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
 		} finally {
 			tx.shutdown();

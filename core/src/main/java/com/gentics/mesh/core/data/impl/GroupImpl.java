@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
@@ -64,10 +64,20 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	public void addUser(User user) {
 		setLinkInTo(user.getImpl(), HAS_USER);
+
+		// Add shortcut edge from user to roles of this group
+		for (Role role : getRoles()) {
+			user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+		}
 	}
 
 	public void removeUser(User user) {
 		unlinkIn(user.getImpl(), HAS_USER);
+
+		// Remove shortcut edge from user to roles of this group
+		for (Role role : getRoles()) {
+			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
+		}
 	}
 
 	public List<? extends Role> getRoles() {
@@ -76,10 +86,22 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	public void addRole(Role role) {
 		setLinkInTo(role.getImpl(), HAS_ROLE);
+
+		// Add shortcut edges from role to users of this group
+		for (User user : getUsers()) {
+			user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+		}
+
 	}
 
 	public void removeRole(Role role) {
 		unlinkIn(role.getImpl(), HAS_ROLE);
+
+		// Remove shortcut edges from role to users of this group
+		for (User user : getUsers()) {
+			user.getImpl().unlinkOut(role.getImpl(), ASSIGNED_TO_ROLE);
+		}
+
 	}
 
 	// TODO add java handler

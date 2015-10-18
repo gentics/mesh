@@ -4,9 +4,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
@@ -197,6 +198,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
+	public List<? extends Role> getRolesViaShortcut() {
+		return out(ASSIGNED_TO_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+	}
+
+	@Override
 	public Node getReferencedNode() {
 		return out(HAS_NODE_REFERENCE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
@@ -230,15 +236,16 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			for (GraphPermission perm : GraphPermission.values()) {
 				AsyncSubject<PermResult> obs = AsyncSubject.create();
 				futures.add(obs);
-				// TODO Checking permissions asynchronously requires a reload of the user object and therefore the perm check is slower. We need to check whether we want to still reload the user.  
-				//				hasPermission(ac, node, perm, rh -> {
-				//					if (rh.failed()) {
-				//						obs.onError(rh.cause());
-				//					} else {
-				//						obs.onNext(new PermResult(perm, rh.result()));
-				//						obs.onCompleted();
-				//					}
-				//				});
+				// TODO Checking permissions asynchronously requires a reload of the user object and therefore the perm check is slower. We need to check
+				// whether we want to still reload the user.
+				// hasPermission(ac, node, perm, rh -> {
+				// if (rh.failed()) {
+				// obs.onError(rh.cause());
+				// } else {
+				// obs.onNext(new PermResult(perm, rh.result()));
+				// obs.onCompleted();
+				// }
+				// });
 
 				obs.onNext(new PermResult(perm, hasPermission(ac, node, perm)));
 				obs.onCompleted();
@@ -270,8 +277,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	@Override
 	@SuppressWarnings("unchecked")
 	public Set<GraphPermission> getPermissions(InternalActionContext ac, MeshVertex node) {
-		//		String mapKey = "permissions:" + node.getUuid();
-		//		return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
+		// String mapKey = "permissions:" + node.getUuid();
+		// return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
 		Set<GraphPermission> graphPermissions = new HashSet<>();
 		for (GraphPermission perm : GraphPermission.values()) {
 			if (hasPermission(ac, node, perm)) {
@@ -279,7 +286,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			}
 		}
 		return graphPermissions;
-		//		});
+		// });
 	}
 
 	@Override
@@ -288,52 +295,31 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
-
-		boolean useIndex = true;
-
+		// System.out.println("USer" + getId());
 		String mapKey = getPermissionMapKey(node, permission);
 		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
 			FramedGraph graph = Database.getThreadLocalGraph();
 
-			Iterable<Vertex> groups = getElement().getVertices(Direction.OUT, HAS_USER);
-			for (Vertex group : groups) {
-				if (log.isTraceEnabled()) {
-					log.trace("Group: " + group.getProperty("name") + " - uuid: " + group.getProperty("uuid") + " - type: "
-							+ group.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
-				}
-				Iterable<Vertex> roles = group.getVertices(Direction.IN, HAS_ROLE);
-				for (Vertex role : roles) {
-					if (log.isTraceEnabled()) {
-						log.trace("Role: " + role.getProperty("name") + " - uuid: " + role.getProperty("uuid") + " - type: "
-								+ role.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY));
-					}
-
-					if (useIndex) {
-						Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase(),
-								new OCompositeKey(role.getId(), node.getImpl().getId()));
-						return edges.iterator().hasNext();
-
-					} else {
-						Iterable<Edge> permissions = role.getEdges(Direction.OUT, permission.label());
-						for (Edge permissionEdge : permissions) {
-							if (log.isTraceEnabled()) {
-								log.trace("Permission Edge: " + permissionEdge.getProperty("uuid") + " - label: " + permissionEdge.getLabel()
-										+ " - type: " + permissionEdge.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY) + " from: "
-										+ permissionEdge.getVertex(Direction.OUT).getProperty("uuid") + " to: "
-										+ permissionEdge.getVertex(Direction.IN).getProperty("uuid"));
-							}
-
-							if (node.getImpl().getId().equals(permissionEdge.getVertex(Direction.IN).getId())) {
-								if (log.isTraceEnabled()) {
-									log.trace("Found edge to specified node. User has permission.");
-								}
-								return true;
-							}
-						}
-					}
-
+			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
+			for (Edge roleEdge : roleEdges) {
+				Vertex role = roleEdge.getVertex(Direction.IN);
+				Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase(),
+						new OCompositeKey(role.getId(), node.getImpl().getId()));
+				boolean foundPermEdge = edges.iterator().hasNext();
+				if (foundPermEdge) {
+					return true;
 				}
 			}
+
+			// Iterable<Vertex> roles = getElement().getVertices(Direction.OUT, ASSIGNED_TO_ROLE);
+			// for (Vertex role : roles) {
+			// Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase(),
+			// new OCompositeKey(role.getId(), node.getImpl().getId()));
+			// boolean foundPermEdge = edges.iterator().hasNext();
+			// if (foundPermEdge) {
+			// return true;
+			// }
+			// }
 			return false;
 		});
 
@@ -370,8 +356,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	 * @return
 	 */
 	private String getPermissionMapKey(MeshVertex vertex, GraphPermission permission) {
-		String mapKey = "permission:" + permission.label() + ":" + vertex.getUuid();
-		return mapKey;
+		return "perm:" + permission.label() + ":" + vertex.getUuid();
 	}
 
 	@Override
@@ -456,7 +441,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public void addGroup(Group group) {
-		setLinkOutTo(group.getImpl(), HAS_USER);
+		// Redirect to group implementation
+		group.addUser(this);
 	}
 
 	@Override
@@ -575,7 +561,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 								setReferencedNode(node);
 								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 								txUpdate.complete(batch);
-								//								return;
+								// return;
 							}
 						}
 					}

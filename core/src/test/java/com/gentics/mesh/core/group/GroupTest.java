@@ -39,7 +39,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 
 		Group group = groupRoot.create("test group", user());
 		User user = userRoot.create("testuser", user());
-		user.addGroup(group());
+		group().addUser(user);
 
 		assertEquals("The group should contain one member.", 1, group.getUsers().size());
 

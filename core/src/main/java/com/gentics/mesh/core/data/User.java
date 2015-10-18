@@ -88,7 +88,7 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 * 
 	 * @param hash
 	 */
-	//TODO change this to an async call since hashing of the password is blocking
+	// TODO change this to an async call since hashing of the password is blocking
 	void setPasswordHash(String hash);
 
 	/**
@@ -213,6 +213,13 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 * @return
 	 */
 	List<? extends Role> getRoles();
+
+	/**
+	 * Return a list of roles that belong to the user. Internally this will check the user role shortcut edge.
+	 * 
+	 * @return
+	 */
+	List<? extends Role> getRolesViaShortcut();
 
 	/**
 	 * Disable the user.

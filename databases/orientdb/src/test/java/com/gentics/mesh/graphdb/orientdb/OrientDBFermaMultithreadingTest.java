@@ -88,9 +88,9 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 				System.out.println(vertex.toString());
 			}
 		}
-//		try (Trx tx = db.trx()) {
-//			manipulatePerson(tx.getGraph(), reference.get());
-//		}
+		// try (Trx tx = db.trx()) {
+		// manipulatePerson(tx.getGraph(), reference.get());
+		// }
 	}
 
 }

@@ -203,7 +203,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 		UserRoot userRoot = meshRoot().getUserRoot();
 		User extraUser = userRoot.create("extraUser", user());
-		extraUser.addGroup(group());
+		group().addUser(extraUser);
 		role().grantPermissions(extraUser, READ_PERM);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
@@ -305,7 +305,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 		Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
 		newUser = meshRoot().getUserRoot().create("Anton", user());
-		newUser.addGroup(newGroup);
+		newGroup.addUser(newUser);
 
 		// Create test roles
 		roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
@@ -408,10 +408,10 @@ public class UserTest extends AbstractBasicObjectTest {
 		for (int i = 0; i < 10; i++) {
 			Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
 			// Multiple calls should not affect the result
-			user().addGroup(extraGroup);
-			user().addGroup(extraGroup);
-			user().addGroup(extraGroup);
-			user().addGroup(extraGroup);
+			extraGroup.addUser(user);
+			extraGroup.addUser(user);
+			extraGroup.addUser(user);
+			extraGroup.addUser(user);
 		}
 
 		assertEquals(11, user().getGroups().size());

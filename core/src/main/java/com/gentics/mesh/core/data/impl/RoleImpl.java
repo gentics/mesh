@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -51,6 +52,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 		for (String label : GraphPermission.labels()) {
 			database.addEdgeIndex(label);
 		}
+		database.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
 	}
 
 	@Override
@@ -86,11 +88,6 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 	@Override
 	public boolean hasPermission(GraphPermission permission, GenericVertex<?> node) {
 		return out(permission.label()).retain(node.getImpl()).hasNext();
-	}
-
-	@Override
-	public void addGroup(Group group) {
-		setLinkOutTo(group.getImpl(), HAS_ROLE);
 	}
 
 	@Override

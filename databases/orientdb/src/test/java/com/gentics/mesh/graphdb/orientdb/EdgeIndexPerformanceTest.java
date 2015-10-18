@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.orientdb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class EdgeIndexPerformanceTest {
 	private static void setupTypesAndIndices(OrientGraphFactory factory2) {
 		OrientGraphNoTx g = factory.getNoTx();
 		try {
-			//g.setUseClassForEdgeLabel(true);
+			// g.setUseClassForEdgeLabel(true);
 			g.setUseLightweightEdges(false);
 			g.setUseVertexFieldsForEdgeLabels(false);
 		} finally {
@@ -63,6 +63,7 @@ public class EdgeIndexPerformanceTest {
 
 			v = g.createVertexType("item", "V");
 			v.createProperty("name", OType.STRING);
+			v.createIndex("item", OClass.INDEX_TYPE.FULLTEXT_HASH_INDEX, "name");
 
 		} finally {
 			g.shutdown();
@@ -99,6 +100,26 @@ public class EdgeIndexPerformanceTest {
 	}
 
 	@Test
+	public void testVertexIndex() {
+		OrientGraphNoTx g = factory.getNoTx();
+		try {
+			long start = System.currentTimeMillis();
+			for (int i = 0; i < nChecks; i++) {
+				int randomDocumentId = (int) (Math.random() * nDocuments);
+				 Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "item_" + randomDocumentId });
+				//Iterable<Vertex> vertices = g.getVertices("item.name", "item_" + randomDocumentId);
+				assertTrue(vertices.iterator().hasNext());
+			}
+			long dur = System.currentTimeMillis() - start;
+			double perCheck = ((double) dur / (double) nChecks);
+			System.out.println("[graph.getVertices] Duration per lookup: " + perCheck);
+			System.out.println("[graph.getVertices] Duration: " + dur);
+		} finally {
+			g.shutdown();
+		}
+	}
+
+	@Test
 	public void testEdgeIndexViaGraphGetEdges() throws Exception {
 		OrientGraphNoTx g = factory.getNoTx();
 		try {
@@ -106,8 +127,8 @@ public class EdgeIndexPerformanceTest {
 
 				System.out.println(index.getName() + " size: " + index.getSize());
 			}
-			//			OIndex<?> index = g.getRawGraph().getMetadata().getIndexManager().getIndex("edge.has_item");
-			//			assertNotNull("Index could not be found", index);
+			// OIndex<?> index = g.getRawGraph().getMetadata().getIndexManager().getIndex("edge.has_item");
+			// assertNotNull("Index could not be found", index);
 		} finally {
 			g.shutdown();
 		}
