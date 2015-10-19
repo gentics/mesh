@@ -110,11 +110,21 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void addEdgeIndex(String label, String... extraFields) {
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.createEdgeType(label);
-			e.createProperty("in", OType.LINK);
-			e.createProperty("out", OType.LINK);
+			OrientEdgeType e = tx.getEdgeType(label);
+			if (e == null) {
+				e = tx.createEdgeType(label);
+			}
+			if (e.getProperty("in") == null) {
+				e.createProperty("in", OType.LINK);
+			}
+			if (e.getProperty("out") == null) {
+				e.createProperty("out", OType.LINK);
+			}
+			String indexName = "e." + label.toLowerCase();
 			String[] fields = { "out", "in" };
-			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+			if (e.getClassIndex(indexName) == null) {
+				e.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+			}
 		} finally {
 			tx.shutdown();
 		}
@@ -124,10 +134,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void addEdgeIndexSource(String label) {
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.createEdgeType(label);
-			e.createProperty("out", OType.LINK);
+			OrientEdgeType e = tx.getEdgeType(label);
+			if (e == null) {
+				e = tx.createEdgeType(label);
+			}
+			if (e.getProperty("out") == null) {
+				e.createProperty("out", OType.LINK);
+			}
+			String indexName = "e." + label.toLowerCase();
 			String[] fields = { "out" };
-			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
+			if (e.getClassIndex(indexName) == null) {
+				e.createIndex(indexName, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
+			}
 		} finally {
 			tx.shutdown();
 		}
@@ -138,9 +156,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			String name = clazzOfVertices.getSimpleName();
-			OrientVertexType v = tx.createVertexType(name, "V");
-			v.createProperty("name", OType.STRING);
-			//v.createIndex(name, , fields);
+			OrientVertexType v = tx.getVertexType(name);
+			if (v == null) {
+				v = tx.createVertexType(name, "V");
+			}
+			for (String field : fields) {
+				if (v.getProperty(field) == null) {
+					v.createProperty(field, OType.STRING);
+				}
+			}
+			if (v.getClassIndex(name) == null) {
+				v.createIndex(name, OClass.INDEX_TYPE.FULLTEXT_HASH_INDEX, fields);
+			}
 		} finally {
 			tx.shutdown();
 		}

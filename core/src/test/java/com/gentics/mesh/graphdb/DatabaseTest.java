@@ -16,6 +16,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.error.MeshSchemaException;
 
@@ -35,6 +38,15 @@ public class DatabaseTest extends AbstractBasicDBTest {
 	@After
 	public void removeOutputDir() throws IOException {
 		FileUtils.deleteDirectory(outputDirectory);
+	}
+
+	@Test
+	public void testIndex() {
+		GroupRootImpl.checkIndices(db);
+		GroupRootImpl.checkIndices(db);
+		db.addVertexIndex(LanguageImpl.class, "languageTag");
+		db.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
+
 	}
 
 	@Test
