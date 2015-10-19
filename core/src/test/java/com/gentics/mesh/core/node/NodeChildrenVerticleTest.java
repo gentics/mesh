@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -111,6 +113,25 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
+		Node node = folder("news");
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
+
+		role().revokePermissions(folder("2015"), READ_PERM);
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(node, restNode);
+		assertTrue(restNode.isContainer());
+
+		int nChildren = 1;
+		assertEquals("Only the given amount of children should be listed in the response", nChildren, restNode.getChildren().size());
+	}
+
+	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
 		Node node = content("concorde");
 		assertNotNull(node);
@@ -141,6 +162,39 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		NodeListResponse nodeList = future.result();
 		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 		assertEquals(expectedItemsInPage, nodeList.getData().size());
+	}
+
+	@Test
+	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
+		Node node = folder("news");
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
+		Node nodeWithNoPerm = folder("2015");
+		role().revokePermissions(nodeWithNoPerm, READ_PERM);
+
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingInfo().setPerPage(20000),
+				new NodeRequestParameters());
+		latchFor(future);
+		assertSuccess(future);
+
+		NodeListResponse nodeList = future.result();
+		assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
+		assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
+		assertEquals(2, nodeList.getData().size());
+	}
+
+	@Test
+	public void testReadNodeChildrenWithNoPermission() throws Exception {
+		Node node = folder("news");
+		assertNotNull(node);
+		assertNotNull(node.getUuid());
+
+		role().revokePermissions(node, READ_PERM);
+
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingInfo(), new NodeRequestParameters());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+
 	}
 
 }
