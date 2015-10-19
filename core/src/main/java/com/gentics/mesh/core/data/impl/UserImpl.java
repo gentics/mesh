@@ -292,7 +292,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
-			Iterable<Edge> edges = graph.getEdges("e." + permission.label(), MeshSpringConfiguration.getInstance().database().getComposedIndexKey(role.getId(), node.getImpl().getId()));
+			Iterable<Edge> edges = graph.getEdges("e." + permission.label(), MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), node.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;

@@ -131,6 +131,25 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void addEdgeType(String label, String... stringPropertyKeys) {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			OrientEdgeType e = tx.getEdgeType(label);
+			if (e == null) {
+				e = tx.createEdgeType(label);
+			}
+			for (String key : stringPropertyKeys) {
+				if (e.getProperty(key) == null) {
+					e.createProperty(key, OType.STRING);
+				}
+			}
+		} finally {
+			tx.shutdown();
+		}
+
+	}
+
+	@Override
 	public void addEdgeIndexSource(String label) {
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
@@ -221,7 +240,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		for (int retry = 0; retry < maxRetry; retry++) {
 			currentTransactionCompleted = Future.future();
 			try (Trx tx = trx()) {
-				//TODO FIXME get rid of the countdown latch
+				// TODO FIXME get rid of the countdown latch
 				CountDownLatch latch = new CountDownLatch(1);
 				currentTransactionCompleted.setHandler(rh -> {
 					if (rh.succeeded()) {
@@ -236,9 +255,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				break;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
-				//TODO maybe we should invoke a metadata getschema reload? 
-				//factory.getTx().getRawGraph().getMetadata().getSchema().reload();
-				//Database.getThreadLocalGraph().getMetadata().getSchema().reload();
+				// TODO maybe we should invoke a metadata getschema reload?
+				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
+				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (OConcurrentModificationException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
@@ -345,7 +364,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Object getComposedIndexKey(Object... keys) {
+	public Object createComposedIndexKey(Object... keys) {
 		return new OCompositeKey(keys);
 	}
 

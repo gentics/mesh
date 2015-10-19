@@ -189,7 +189,7 @@ public interface Database {
 	 * @param extraFields
 	 *            Additional fields that should be indexed
 	 */
-	public void addEdgeIndex(String label, String... extraFields);
+	void addEdgeIndex(String label, String... extraFields);
 
 	/**
 	 * Add an edge index for the given label which only contains the outgoing edge within the index. This is useful for finding all edges which reference the
@@ -199,7 +199,13 @@ public interface Database {
 	 */
 	void addEdgeIndexSource(String label);
 
-	Object getComposedIndexKey(Object... keys);
+	/**
+	 * Create a composed index key
+	 * 
+	 * @param keys
+	 * @return
+	 */
+	Object createComposedIndexKey(Object... keys);
 
 	/**
 	 * Add an vertex index for the given type of vertex and fields.
@@ -207,6 +213,8 @@ public interface Database {
 	 * @param clazzOfVertices
 	 * @param fields
 	 */
-	public void addVertexIndex(Class<?> clazzOfVertices, String... fields);
+	void addVertexIndex(Class<?> clazzOfVertices, String... fields);
+
+	void addEdgeType(String label, String... stringPropertyKeys);
 
 }

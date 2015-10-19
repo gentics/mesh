@@ -25,10 +25,13 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.DatabaseInitializer;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
@@ -86,16 +89,7 @@ public abstract class AbstractDBTest {
 		BootstrapInitializer.clearReferences();
 		databaseService.getDatabase().clear();
 		Database database = MeshSpringConfiguration.getInstance().database();
-		GroupRootImpl.checkIndices(database);
-		UserRootImpl.checkIndices(database);
-		RoleRootImpl.checkIndices(database);
-		TagRootImpl.checkIndices(database);
-		NodeRootImpl.checkIndices(database);
-		TagFamilyRootImpl.checkIndices(database);
-		RoleImpl.checkIndices(database);
-		LanguageRootImpl.checkIndices(database);
-		LanguageImpl.checkIndices(database);
-
+		DatabaseInitializer.init(database);
 		//databaseService.getDatabase().reset();
 
 	}

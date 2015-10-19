@@ -83,7 +83,12 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Object getComposedIndexKey(Object... keys) {
+	public Object createComposedIndexKey(Object... keys) {
 		return null;
+	}
+
+	@Override
+	public void addEdgeType(String label, String... stringPropertyKeys) {
+		// TODO Auto-generated method stub
 	}
 }

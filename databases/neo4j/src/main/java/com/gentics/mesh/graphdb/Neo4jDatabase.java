@@ -148,9 +148,13 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Object getComposedIndexKey(Object... keys) {
+	public Object createComposedIndexKey(Object... keys) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
+	@Override
+	public void addEdgeType(String label, String... stringPropertyKeys) {
+		// TODO Auto-generated method stub
+	}
 }

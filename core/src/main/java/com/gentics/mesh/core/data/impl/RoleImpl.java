@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -47,13 +46,6 @@ import rx.Observable;
 public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
-
-	public static void checkIndices(Database database) {
-		for (String label : GraphPermission.labels()) {
-			database.addEdgeIndex(label);
-		}
-		database.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
-	}
 
 	@Override
 	public String getType() {
@@ -132,7 +124,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 				restRole.getGroups().add(restGroup);
 			}
 
-			// Add common fields 
+			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
 			fillRest(restRole, ac, rh -> {
