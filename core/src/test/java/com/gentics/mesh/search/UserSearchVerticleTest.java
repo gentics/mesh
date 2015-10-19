@@ -53,6 +53,26 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertEquals(1, searchFuture.result().getData().size());
 
 	}
+	
+	@Test
+	public void testSearchForUserByEmail() throws InterruptedException, JSONException {
+		String email = "testmail@test.com";
+
+		UserCreateRequest request = new UserCreateRequest();
+		request.setUsername("testuser42a");
+		request.setPassword("test1234");
+		request.setEmailAddress(email);
+		request.setGroupUuid(group().getUuid());
+
+		Future<UserResponse> future = getClient().createUser(request);
+		latchFor(future);
+		assertSuccess(future);
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("email", "*"));
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+	}
 
 	@Test
 	public void testSearchUserForGroup() throws InterruptedException, JSONException {

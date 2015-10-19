@@ -70,6 +70,20 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		}
 		return query;
 	}
+	
+	protected String getSimpleWildCardQuery(String key, String value) throws JSONException {
+		QueryBuilder qb = QueryBuilders.wildcardQuery(key, value);
+		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
+		bqb.must(qb);
+
+		JSONObject request = new JSONObject();
+		request.put("query", new JSONObject(bqb.toString()));
+		String query = request.toString();
+		if (log.isDebugEnabled()) {
+			log.debug(query);
+		}
+		return query;
+	}
 
 	protected void fullIndex() throws InterruptedException {
 		boot.meshRoot().getSearchQueue().addFullIndex();
