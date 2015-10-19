@@ -14,7 +14,7 @@ public class MultithreadGraphTest extends AbstractDBTest {
 
 	@Before
 	public void cleanup() {
-		databaseService.getDatabase().clear();
+		resetDatabase();
 	}
 
 	@Test

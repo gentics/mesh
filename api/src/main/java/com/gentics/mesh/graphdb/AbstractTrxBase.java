@@ -37,8 +37,12 @@ public class AbstractTrxBase<T extends FramedGraph> {
 		if (log.isTraceEnabled()) {
 			log.trace("Started transaction {" + getGraph().hashCode() + "}");
 		}
-		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field. 
-		setOldGraph(Database.getThreadLocalGraph());
+		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field.
+		try {
+			setOldGraph(Database.getThreadLocalGraph());
+		} catch (NullPointerException e) {
+			setOldGraph(null);
+		}
 		// Overwrite the current active threadlocal graph with the given transactional graph. This way Ferma graph elements will utilize this instance.
 		Database.setThreadLocalGraph(transactionalGraph);
 	}

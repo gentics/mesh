@@ -33,7 +33,11 @@ public interface Database {
 	 * @return
 	 */
 	public static FramedGraph getThreadLocalGraph() {
-		return Database.threadLocalGraph.get();
+		FramedGraph graph = Database.threadLocalGraph.get();
+		if (graph == null) {
+			throw new NullPointerException("Could not find thread local graph. Maybe you are executing this code outside of a transaction.");
+		}
+		return graph;
 	}
 
 	/**

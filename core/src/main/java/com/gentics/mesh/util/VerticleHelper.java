@@ -518,16 +518,19 @@ public class VerticleHelper {
 						T node = rh.result();
 						MeshAuthUser requestUser = ac.getUser();
 						requestUser.hasPermission(ac, node, perm, ph -> {
-							if (ph.failed()) {
-								log.error("Error while checking permissions", ph.cause());
-								handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
-							} else if (ph.succeeded() && ph.result()) {
-								handler.handle(Future.succeededFuture(node));
-								return;
-							} else {
-								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
-								return;
-							}
+							db.noTrx(noTx -> {
+								if (ph.failed()) {
+									log.error("Error while checking permissions", ph.cause());
+									handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
+								} else if (ph.succeeded() && ph.result()) {
+									handler.handle(Future.succeededFuture(node));
+									return;
+								} else {
+									handler.handle(
+											Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
+									return;
+								}
+							});
 						});
 					});
 				}
