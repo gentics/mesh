@@ -343,10 +343,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, 0));
-		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, -1));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -361,6 +357,14 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(2, list.getMetainfo().getPageCount());
 		assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 
+	}
+
+	@Test
+	public void testReadMultipleOnlyMetadata() {
+		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, 0));
+		latchFor(pageFuture);
+		assertSuccess(pageFuture);
+		assertEquals(0, pageFuture.result().getData().size());
 	}
 
 	@Test

@@ -153,9 +153,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			Handler<AsyncResult<SchemaContainer>> containerFoundHandler = rh -> {
 				SchemaContainer schemaContainer = rh.result();
 				try {
-					Schema schema = schemaContainer.getSchema();
-
 					db.trx(txCreate -> {
+						Schema schema = schemaContainer.getSchema();
 						NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
 						if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
 							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field")));

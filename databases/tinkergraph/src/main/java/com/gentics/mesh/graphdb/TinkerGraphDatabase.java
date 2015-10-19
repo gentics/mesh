@@ -81,4 +81,9 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	public void addEdgeIndexSource(String label) {
 		// No supported
 	}
+
+	@Override
+	public Object getComposedIndexKey(Object... keys) {
+		return null;
+	}
 }

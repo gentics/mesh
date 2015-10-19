@@ -53,7 +53,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
-import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -293,7 +292,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
-			Iterable<Edge> edges = graph.getEdges("e." + permission.label(), new OCompositeKey(role.getId(), node.getImpl().getId()));
+			Iterable<Edge> edges = graph.getEdges("e." + permission.label(), MeshSpringConfiguration.getInstance().database().getComposedIndexKey(role.getId(), node.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;

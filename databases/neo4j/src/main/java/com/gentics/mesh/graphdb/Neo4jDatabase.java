@@ -147,4 +147,10 @@ public class Neo4jDatabase extends AbstractDatabase {
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public Object getComposedIndexKey(Object... keys) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 }

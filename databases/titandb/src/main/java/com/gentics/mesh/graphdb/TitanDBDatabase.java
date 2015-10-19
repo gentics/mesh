@@ -132,4 +132,9 @@ public class TitanDBDatabase extends AbstractDatabase {
 	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
 		throw new NotImplementedException();
 	}
+
+	@Override
+	public Object getComposedIndexKey(Object... keys) {
+		return null;
+	}
 }

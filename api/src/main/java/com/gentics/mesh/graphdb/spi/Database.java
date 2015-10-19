@@ -192,13 +192,21 @@ public interface Database {
 	public void addEdgeIndex(String label, String... extraFields);
 
 	/**
+	 * Add an edge index for the given label which only contains the outgoing edge within the index. This is useful for finding all edges which reference the
+	 * given vertex via the outgoing edge.
+	 * 
+	 * @param label
+	 */
+	void addEdgeIndexSource(String label);
+
+	Object getComposedIndexKey(Object... keys);
+
+	/**
 	 * Add an vertex index for the given type of vertex and fields.
 	 * 
 	 * @param clazzOfVertices
 	 * @param fields
 	 */
 	public void addVertexIndex(Class<?> clazzOfVertices, String... fields);
-
-	void addEdgeIndexSource(String label);
 
 }
