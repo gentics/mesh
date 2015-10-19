@@ -4,11 +4,15 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -21,6 +25,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -124,8 +129,15 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				throw new InvalidPermissionException(ac.i18n("error_missing_perm", tagFamily.getUuid()));
 			}
 
-			if (tagFamily.findTagByName(tagName) != null) {
-				handler.handle(failedFuture(ac, CONFLICT, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName()));
+			Tag conflictingTag = tagFamily.findTagByName(tagName) ;
+			if (conflictingTag!= null) {
+				HttpStatusCodeErrorException conflictError = error(ac, CONFLICT, "tag_create_tag_with_same_name_already_exists", tagName,
+						tagFamily.getName());
+				Map<String, String> props = new HashMap();
+				props.put("conflictingUuid", conflictingTag.getUuid());
+				props.put("conflictingName", tagName);
+				conflictError.setProperties(props);
+				handler.handle(Future.failedFuture(conflictError));
 				return;
 			}
 			final TagFamily foundFamily = tagFamily;

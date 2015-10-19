@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.error;
 
+import java.util.Map;
+
 import com.gentics.mesh.handler.ActionContext;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -14,6 +16,8 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 * HTTP Status code
 	 */
 	private int code;
+
+	private Map<String, String> properties;
 
 	/**
 	 * Create a i18n translated error exception.
@@ -57,6 +61,14 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 */
 	public int getCode() {
 		return code;
+	}
+
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Map<String, String> properties) {
+		this.properties = properties;
 	}
 
 }

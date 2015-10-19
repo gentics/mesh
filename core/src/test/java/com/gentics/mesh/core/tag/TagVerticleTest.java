@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -288,6 +289,22 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 			latch.countDown();
 		});
 		failingLatch(latch);
+	}
+
+	@Test
+	public void testCreateConflictingName() {
+		TagCreateRequest tagCreateRequest = new TagCreateRequest();
+		tagCreateRequest.getFields().setName("red");
+		TagFamily tagFamily = tagFamilies().get("colors");
+		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+
+		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
+		latchFor(future);
+		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", "colors");
+		MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+		assertNotNull(exception.getResponseMessage().getProperties());
+		assertNotNull(exception.getResponseMessage().getProperties().get("conflictingUuid"));
+
 	}
 
 	@Test

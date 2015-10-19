@@ -127,6 +127,12 @@ public class RouterStorage {
 						failureRoutingContext.response().setStatusCode(400);
 						String msg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), "error_parse_request_json_error");
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
+					} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
+						HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
+						failureRoutingContext.response().setStatusCode(httpStatusError.getCode());
+
+						GenericMessageResponse msg = new GenericMessageResponse(httpStatusError);
+						failureRoutingContext.response().end(JsonUtil.toJson(msg));
 					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
 						failureRoutingContext.response().setStatusCode(code);

@@ -75,17 +75,22 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 			});
 		} else {
 			response.bodyHandler(bh -> {
+				String json = bh.toString();
+				if (log.isDebugEnabled()) {
+					log.debug(json);
+				}
+
 				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
-						+ bh.toString() + "} for method {" + this.method + "} and uri {" + this.uri + "}");
+						+ json + "} for method {" + this.method + "} and uri {" + this.uri + "}");
 
 				GenericMessageResponse responseMessage = null;
 				try {
-					responseMessage = JsonUtil.readValue(bh.toString(), GenericMessageResponse.class);
+					responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
 				} catch (Exception e) {
 					if (log.isDebugEnabled()) {
-						log.debug("Could not deserialize response {" + bh.toString() + "}.", e);
+						log.debug("Could not deserialize response {" + json + "}.", e);
 					}
-					responseMessage = new GenericMessageResponse(bh.toString());
+					responseMessage = new GenericMessageResponse(json);
 				}
 				future.fail(new MeshRestClientHttpException(response.statusCode(), response.statusMessage(), responseMessage));
 			});
