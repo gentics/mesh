@@ -7,7 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
@@ -55,7 +55,6 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -289,60 +288,58 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		// });
 	}
 
+	private boolean hasPermission(MeshVertex node, GraphPermission permission) {
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
+		for (Edge roleEdge : roleEdges) {
+			Vertex role = roleEdge.getVertex(Direction.IN);
+			Iterable<Edge> edges = graph.getEdges("e." + permission.label(), new OCompositeKey(role.getId(), node.getImpl().getId()));
+			boolean foundPermEdge = edges.iterator().hasNext();
+			if (foundPermEdge) {
+				return true;
+			}
+		}
+		
+		return false;
+		
+		//return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+	}
+
 	@Override
 	@Deprecated
 	public boolean hasPermission(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
-		// System.out.println("USer" + getId());
+
+		if (ac.data() == null) {
+			return hasPermission(node, permission);
+		}
 		String mapKey = getPermissionMapKey(node, permission);
 		return (boolean) ac.data().computeIfAbsent(mapKey, key -> {
-			FramedGraph graph = Database.getThreadLocalGraph();
-
-			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
-			for (Edge roleEdge : roleEdges) {
-				Vertex role = roleEdge.getVertex(Direction.IN);
-				Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase(),
-						new OCompositeKey(role.getId(), node.getImpl().getId()));
-				boolean foundPermEdge = edges.iterator().hasNext();
-				if (foundPermEdge) {
-					return true;
-				}
-			}
-
-			// Iterable<Vertex> roles = getElement().getVertices(Direction.OUT, ASSIGNED_TO_ROLE);
-			// for (Vertex role : roles) {
-			// Iterable<Edge> edges = graph.getEdges("e." + permission.label().toLowerCase(),
-			// new OCompositeKey(role.getId(), node.getImpl().getId()));
-			// boolean foundPermEdge = edges.iterator().hasNext();
-			// if (foundPermEdge) {
-			// return true;
-			// }
-			// }
-			return false;
+			return hasPermission(node, permission);
 		});
-
 	}
 
 	@Override
 	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
 
-		Boolean perm = (Boolean) ac.data().get(getPermissionMapKey(vertex, permission));
-		if (perm != null) {
-			handler.handle(Future.succeededFuture(perm));
-			return this;
+		if (ac.data() != null) {
+			Boolean perm = (Boolean) ac.data().get(getPermissionMapKey(vertex, permission));
+			if (perm != null) {
+				handler.handle(Future.succeededFuture(perm));
+				return this;
+			}
 		}
-
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
 			boolean result = hasPermission(ac, vertex, permission);
-			handler.handle(Future.succeededFuture(result));
-		} , rh -> {
+			noTrx.complete(Boolean.valueOf(result));
+		} , (AsyncResult<Boolean> rh) -> {
 			if (rh.failed()) {
 				handler.handle(Future.failedFuture(rh.cause()));
 			} else {
-				handler.handle(Future.succeededFuture());
+				handler.handle(Future.succeededFuture(rh.result()));
 			}
 		});
 		return this;

@@ -34,8 +34,8 @@ public class AbstractTrxBase<T extends FramedGraph> {
 	protected void init(T transactionalGraph) {
 		// 1. Set the new transactional graph so that it can be accessed via Trx.getGraph()
 		setGraph(transactionalGraph);
-		if (log.isDebugEnabled()) {
-			log.debug("Started transaction {" + getGraph().hashCode() + "}");
+		if (log.isTraceEnabled()) {
+			log.trace("Started transaction {" + getGraph().hashCode() + "}");
 		}
 		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field. 
 		setOldGraph(Database.getThreadLocalGraph());
@@ -58,22 +58,5 @@ public class AbstractTrxBase<T extends FramedGraph> {
 	protected FramedGraph getOldGraph() {
 		return oldGraph;
 	}
-
-	//	/**
-	//	 * This method is used for testing multithreading issues.
-	//	 */
-	//	protected void handleDebug() {
-	//		if (Trx.debug && Trx.barrier != null) {
-	//			if (log.isDebugEnabled()) {
-	//				log.debug("Waiting on trx barrier release..");
-	//			}
-	//			try {
-	//				Trx.barrier.await(10, TimeUnit.SECONDS);
-	//				log.debug("Trx barrier released");
-	//			} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
-	//				log.error("Trx barrier failed", e);
-	//			}
-	//		}
-	//	}
 
 }

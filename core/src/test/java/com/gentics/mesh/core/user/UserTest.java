@@ -11,6 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -18,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -59,7 +61,7 @@ public class UserTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testHasPermission() {
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedVoidInternalActionContext("");
 		User user = user();
 		Language language = english();
 		for (int e = 0; e < 10; e++) {
@@ -67,9 +69,37 @@ public class UserTest extends AbstractBasicObjectTest {
 			int nChecks = 50000;
 			for (int i = 0; i < nChecks; i++) {
 				assertTrue(user.hasPermission(ac, language, READ_PERM));
-				ac.data().clear();
 			}
 			long duration = System.currentTimeMillis() - start;
+			System.out.println("Duration: " + duration);
+			System.out.println("Duration per check: " + ((double) duration / (double) nChecks));
+		}
+	}
+
+	@Test
+	@Ignore
+	public void testHasPermissionAsync() throws Exception {
+		InternalActionContext ac = getMockedVoidInternalActionContext("");
+		User user = user();
+		Language language = english();
+		for (int e = 0; e < 10; e++) {
+			long start = System.currentTimeMillis();
+			int nChecks = 1000;
+			CountDownLatch latch = new CountDownLatch(nChecks);
+			for (int i = 0; i < nChecks; i++) {
+				user.hasPermission(ac, language, READ_PERM, rh -> {
+					if (rh.failed()) {
+						rh.cause().printStackTrace();
+						fail(rh.cause().getMessage());
+					}
+					assertTrue(rh.result());
+					latch.countDown();
+				});
+			}
+			long duration = System.currentTimeMillis() - start;
+			System.out.println("Dispatched: " + duration);
+			failingLatch(latch);
+			duration = System.currentTimeMillis() - start;
 			System.out.println("Duration: " + duration);
 			System.out.println("Duration per check: " + ((double) duration / (double) nChecks));
 		}
@@ -135,16 +165,16 @@ public class UserTest extends AbstractBasicObjectTest {
 			//ac.data().clear();
 			//CompletableFuture<String[]> permissionFuture = new CompletableFuture<>();
 
-//			if (1 != 1) {
-//				user.getPermissionNames(ac, node);
-//				latch.countDown();
-//			} else {
-				user.getPermissionNames(ac, node, rh -> {
-					//String[] names = rh.result().toArray(new String[rh.result().size()]);
-					//permissionFuture.complete(names);
-					latch.countDown();
-				});
-//			}
+			//			if (1 != 1) {
+			//				user.getPermissionNames(ac, node);
+			//				latch.countDown();
+			//			} else {
+			user.getPermissionNames(ac, node, rh -> {
+				//String[] names = rh.result().toArray(new String[rh.result().size()]);
+				//permissionFuture.complete(names);
+				latch.countDown();
+			});
+			//			}
 			//assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 		}
 

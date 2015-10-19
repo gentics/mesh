@@ -55,7 +55,7 @@ public interface ActionContext {
 	 *            the status code to send
 	 */
 	void send(String body, HttpResponseStatus statusCode);
-	
+
 	/**
 	 * Send the body string and complete the action with a status code of 200 OK.
 	 * 

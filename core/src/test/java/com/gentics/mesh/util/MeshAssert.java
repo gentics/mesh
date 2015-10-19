@@ -54,7 +54,9 @@ public final class MeshAssert {
 		if (TestUtil.isHost("NeXuS") || TestUtil.isHost("satan3.office")) {
 			timeout = DEV_TIMEOUT_SECONDS;
 		}
-		log.info("Using test timeout of {" + timeout + "} seconds for host {" + TestUtil.getHostname() + "}");
+		if (log.isDebugEnabled()) {
+			log.debug("Using test timeout of {" + timeout + "} seconds for host {" + TestUtil.getHostname() + "}");
+		}
 		return timeout;
 	}
 

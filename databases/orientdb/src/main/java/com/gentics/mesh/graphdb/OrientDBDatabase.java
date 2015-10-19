@@ -30,6 +30,7 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Index;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
@@ -60,7 +61,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		factory.close();
 		Orient.instance().shutdown();
 		Database.setThreadLocalGraph(null);
-	} 
+	}
 
 	@Override
 	public void init(StorageOptions options, Vertx vertx) {
@@ -73,15 +74,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void clear() {
-		for (int i = 0; i < 10; i++) {
-			try {
-				factory.getNoTx().getVertices().forEach(v -> {
-					v.remove();
-				});
-				break;
-			} catch (OConcurrentModificationException e) {
-				log.error("Error while clearing graph.");
-			}
+		OrientGraphNoTx noTx = factory.getNoTx();
+		try {
+			noTx.drop();
+		} finally {
+			noTx.shutdown();
 		}
 	}
 
@@ -122,7 +119,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			tx.shutdown();
 		}
 	}
-	
+
 	@Override
 	public void addEdgeIndexSource(String label) {
 		OrientGraphNoTx tx = factory.getNoTx();
@@ -130,7 +127,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			OrientEdgeType e = tx.createEdgeType(label);
 			e.createProperty("out", OType.LINK);
 			String[] fields = { "out" };
-			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+			e.createIndex("e." + label.toLowerCase(), OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
 		} finally {
 			tx.shutdown();
 		}

@@ -81,7 +81,6 @@ public abstract class AbstractDBTest {
 		SchemaContainer container = dataProvider.getSchemaContainer(key);
 		container.reload();
 		return container;
-
 	}
 
 	public UserInfo getUserInfo() {
@@ -215,14 +214,26 @@ public abstract class AbstractDBTest {
 		return reference.get();
 	}
 
+	protected InternalActionContext getMockedVoidInternalActionContext(String query) {
+		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, true));
+		return ac;
+	}
+
 	protected InternalActionContext getMockedInternalActionContext(String query) {
-		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query));
+		InternalActionContext ac = InternalActionContext.create(getMockedRoutingContext(query, false));
 		return ac;
 	}
 
 	protected RoutingContext getMockedRoutingContext(String query) {
+		return getMockedRoutingContext(query, false);
+	}
+
+	protected RoutingContext getMockedRoutingContext(String query, boolean noInternalMap) {
 		User user = dataProvider.getUserInfo().getUser();
 		Map<String, Object> map = new HashMap<>();
+		if (noInternalMap) {
+			map = null;
+		}
 		RoutingContext rc = mock(RoutingContext.class);
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);

@@ -24,10 +24,11 @@ public abstract class AbstractBasicObjectTest extends AbstractBasicDBTest implem
 			RoutingContext rc = getMockedRoutingContext("");
 			InternalActionContext ac = InternalActionContext.create(rc);
 			assertTrue(role().hasPermission(perm, node));
-			assertTrue(getRequestUser().hasPermission(ac, node, perm));
+			assertTrue("The user has no {" + perm.getSimpleName() + "} permission on node {" + node.getUuid() + "/" + node.getType() + "}",
+					getRequestUser().hasPermission(ac, node, perm));
 			role().revokePermissions(node, perm);
 			rc.data().clear();
-			assertFalse(role().hasPermission(perm, node));
+			assertFalse("The user still got {" + perm.getSimpleName() + "} permission on node {" + node.getUuid() + "/" + node.getType() + "} although we revoked it.",role().hasPermission(perm, node));
 			assertFalse(getRequestUser().hasPermission(ac, node, perm));
 		}
 	}
