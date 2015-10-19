@@ -76,4 +76,9 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
 		// No supported
 	}
+
+	@Override
+	public void addEdgeIndexSource(String label) {
+		// No supported
+	}
 }

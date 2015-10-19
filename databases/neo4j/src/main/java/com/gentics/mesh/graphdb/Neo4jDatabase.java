@@ -137,6 +137,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void addEdgeIndexSource(String label) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
 		throw new NotImplementedException();
 	}
