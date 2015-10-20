@@ -131,5 +131,12 @@ public interface NodeClientMethods {
 	 */
 	Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName, String contentType);
 
+	/**
+	 * Download the binary field of the given node in the given project.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @return Future with a download response that contains a reference to the byte buffer with the binary data
+	 */
 	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid);
 }

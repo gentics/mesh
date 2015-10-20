@@ -24,6 +24,11 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * The mesh response handler will take care of delegating the returned JSON to the correct JSON deserializer.
+ * 
+ * @param <T>
+ */
 public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshResponseHandler.class);
@@ -35,6 +40,18 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private HttpMethod method;
 	private String uri;
 
+	/**
+	 * Create a new response handler.
+	 * 
+	 * @param classOfT
+	 *            Expected response POJO class
+	 * @param client
+	 *            Client that was used to invoke the request
+	 * @param method
+	 *            Method that was used for the request
+	 * @param uri
+	 *            Uri that was queried
+	 */
 	public MeshResponseHandler(Class<T> classOfT, AbstractMeshRestClient client, HttpMethod method, String uri) {
 		this.classOfT = classOfT;
 		this.client = client;
@@ -80,8 +97,8 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					log.debug(json);
 				}
 
-				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {"
-						+ json + "} for method {" + this.method + "} and uri {" + this.uri + "}");
+				log.error("Request failed with statusCode {" + response.statusCode() + "} statusMessage {" + response.statusMessage() + "} {" + json
+						+ "} for method {" + this.method + "} and uri {" + this.uri + "}");
 
 				GenericMessageResponse responseMessage = null;
 				try {
@@ -101,6 +118,12 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 
 	}
 
+	/**
+	 * Check whether the given class is a user rest POJO class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
 	private boolean isUserClass(Class<T> clazz) {
 		if (clazz.isAssignableFrom(UserResponse.class) || clazz.isAssignableFrom(UserCreateRequest.class)
 				|| clazz.isAssignableFrom(UserUpdateRequest.class)) {
@@ -109,6 +132,12 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 		return false;
 	}
 
+	/**
+	 * Check whether the given class is a user rest list POJO class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
 	private boolean isUserListClass(Class<?> clazz) {
 		if (clazz.isAssignableFrom(UserListResponse.class)) {
 			return true;
@@ -116,6 +145,12 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 		return false;
 	}
 
+	/**
+	 * Check whether the given class is a node rest list POJO class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
 	private boolean isNodeListClass(Class<?> clazz) {
 		if (clazz.isAssignableFrom(NodeListResponse.class)) {
 			return true;
@@ -123,6 +158,12 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 		return false;
 	}
 
+	/**
+	 * Check whether the given class is a schema rest POJO class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
 	private boolean isSchemaClass(Class<?> clazz) {
 		if (clazz.isAssignableFrom(SchemaResponse.class) || clazz.isAssignableFrom(SchemaCreateRequest.class)
 				|| clazz.isAssignableFrom(SchemaUpdateRequest.class) || clazz.isAssignableFrom(SchemaListResponse.class)) {
@@ -131,6 +172,12 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 		return false;
 	}
 
+	/**
+	 * Check whether the given class is a node rest POJO class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
 	private boolean isNodeClass(Class<?> clazz) {
 		if (clazz.isAssignableFrom(NodeUpdateRequest.class) || clazz.isAssignableFrom(NodeResponse.class)
 				|| clazz.isAssignableFrom(NodeCreateRequest.class)) {
@@ -143,6 +190,11 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 		return future;
 	}
 
+	/**
+	 * Handle the client response.
+	 * 
+	 * @param handler
+	 */
 	public void handle(Handler<HttpClientResponse> handler) {
 		this.handler = handler;
 	}

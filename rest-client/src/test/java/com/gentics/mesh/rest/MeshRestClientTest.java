@@ -24,8 +24,8 @@ public class MeshRestClientTest {
 
 		NodeRequestParameters parameters2 = new NodeRequestParameters();
 		parameters2.setExpandedFieldNames("test");
-		assertEquals("?lang=en&expand=test", client.getQuery(parameters1, parameters2));
-		assertEquals("?lang=en", client.getQuery(parameters1));
-		assertEquals("", client.getQuery());
+		assertEquals("?lang=en&expand=test", AbstractMeshRestClient.getQuery(parameters1, parameters2));
+		assertEquals("?lang=en", AbstractMeshRestClient.getQuery(parameters1));
+		assertEquals("", AbstractMeshRestClient.getQuery());
 	}
 }

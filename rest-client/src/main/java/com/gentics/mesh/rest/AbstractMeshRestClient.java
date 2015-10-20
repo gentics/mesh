@@ -129,8 +129,13 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		return handleRequest(method, path, classOfT, Buffer.buffer(), null);
 	}
 
-	@Override
-	public String getQuery(QueryParameterProvider... parameters) {
+	/**
+	 * Return the query aggregated parameter string for the given providers.
+	 * 
+	 * @param parameters
+	 * @return
+	 */
+	public static String getQuery(QueryParameterProvider... parameters) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < parameters.length; i++) {
 			QueryParameterProvider provider = parameters[i];

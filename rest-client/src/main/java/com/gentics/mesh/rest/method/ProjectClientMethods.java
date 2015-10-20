@@ -11,18 +11,63 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 
 public interface ProjectClientMethods {
 
+	/**
+	 * Load the given project.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	Future<ProjectResponse> findProjectByUuid(String uuid);
 
+	/**
+	 * Load multiple projects.
+	 * 
+	 * @param parameters
+	 * @return
+	 */
 	Future<ProjectListResponse> findProjects(QueryParameterProvider... parameters);
 
 	// TODO use language tag instead?
+	/**
+	 * Assign language to the project.
+	 * 
+	 * @param projectUuid
+	 * @param languageUuid
+	 * @return
+	 */
 	Future<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid);
 
+	/**
+	 * Unassign the given language from the project.
+	 * 
+	 * @param projectUuid
+	 * @param languageUuid
+	 * @return
+	 */
 	Future<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid);
 
-	Future<ProjectResponse> createProject(ProjectCreateRequest projectCreateRequest);
+	/**
+	 * Create a new project.
+	 * 
+	 * @param request
+	 * @return
+	 */
+	Future<ProjectResponse> createProject(ProjectCreateRequest request);
 
-	Future<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest);
+	/**
+	 * Update the project.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @return
+	 */
+	Future<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest request);
 
+	/**
+	 * Delete the project.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	Future<GenericMessageResponse> deleteProject(String uuid);
 }

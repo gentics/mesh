@@ -11,22 +11,81 @@ import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 
 public interface GroupClientMethods {
 
+	/**
+	 * Load the given group.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	Future<GroupResponse> findGroupByUuid(String uuid);
 
+	/**
+	 * Load multiple groups.
+	 * 
+	 * @param parameters
+	 * @return
+	 */
 	Future<GroupListResponse> findGroups(QueryParameterProvider... parameters);
 
+	/**
+	 * Create the group.
+	 * 
+	 * @param groupCreateRequest
+	 * @return
+	 */
 	Future<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest);
 
-	Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest);
+	/**
+	 * Update the group.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @return
+	 */
+	Future<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request);
 
+	/**
+	 * Delete the group.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	Future<GenericMessageResponse> deleteGroup(String uuid);
 
+	/**
+	 * Add the given user to the group.
+	 * 
+	 * @param groupUuid
+	 * @param userUuid
+	 * @return
+	 */
 	Future<GroupResponse> addUserToGroup(String groupUuid, String userUuid);
 
+	/**
+	 * Remove the given user from the group.
+	 * 
+	 * @param groupUuid
+	 * @param userUuid
+	 * @return
+	 */
 	Future<GroupResponse> removeUserFromGroup(String groupUuid, String userUuid);
 
+	/**
+	 * Add the role to the group.
+	 * 
+	 * @param groupUuid
+	 * @param roleUuid
+	 * @return
+	 */
 	Future<GroupResponse> addRoleToGroup(String groupUuid, String roleUuid);
 
+	/**
+	 * Remove the role from the group.
+	 * 
+	 * @param groupUuid
+	 * @param roleUuid
+	 * @return
+	 */
 	Future<GroupResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
 
 }

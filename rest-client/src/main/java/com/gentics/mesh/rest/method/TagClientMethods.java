@@ -11,19 +11,70 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 
 public interface TagClientMethods {
 
-	Future<TagResponse> createTag(String projectName, TagCreateRequest tagCreateRequest);
+	/**
+	 * Create a new tag.
+	 * 
+	 * @param projectName
+	 * @param request
+	 * @return
+	 */
+	Future<TagResponse> createTag(String projectName, TagCreateRequest request);
 
+	/**
+	 * Load the given tag.
+	 * 
+	 * @param projectName
+	 * @param uuid
+	 * @return
+	 */
 	Future<TagResponse> findTagByUuid(String projectName, String uuid);
 
-	Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest tagUpdateRequest);
+	/**
+	 * Update the tag
+	 * 
+	 * @param projectName
+	 * @param uuid
+	 * @param request
+	 * @return
+	 */
+	Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest request);
 
+	/**
+	 * Delete the tag.
+	 * 
+	 * @param projectName
+	 * @param uuid
+	 * @return
+	 */
 	Future<GenericMessageResponse> deleteTag(String projectName, String uuid);
 
+	/**
+	 * Load multiple tags.
+	 * 
+	 * @param projectName
+	 * @param parameters
+	 * @return
+	 */
 	Future<TagListResponse> findTags(String projectName, QueryParameterProvider... parameters);
 
 	//TODO keep this?
+	/**
+	 * Load a tag using its name.
+	 * 
+	 * @param projectName
+	 * @param name
+	 * @return
+	 */
 	Future<TagResponse> findTagByName(String projectName, String name);
 
+	/**
+	 * Load multiple tags that were assigned to a given node.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param parameters
+	 * @return
+	 */
 	Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
 }
