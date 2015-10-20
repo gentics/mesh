@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.node.QueryParameterProvider;
  */
 public class PagingInfo implements QueryParameterProvider {
 
+	public static final String PAGE_PARAMETER_KEY = "page";
+	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
+
 	private int page;
 	private int perPage;
 	private String sortBy;
@@ -112,7 +115,7 @@ public class PagingInfo implements QueryParameterProvider {
 	@Override
 	public String getQueryParameters() {
 		//TODO add the other parameters as well
-		return "page=" + page + "&perPage=" + perPage;
+		return PAGE_PARAMETER_KEY + "=" + page + "&" + PER_PAGE_PARAMETER_KEY + "=" + perPage;
 	}
 
 }

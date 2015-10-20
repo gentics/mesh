@@ -91,7 +91,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	@Override
 	public <T> Handler<AsyncResult<T>> errorHandler() {
 		Handler<AsyncResult<T>> handler = t -> {
-			if(t.failed()) {
+			if (t.failed()) {
 				fail(t.cause());
 			}
 		};
@@ -100,20 +100,23 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 
 	@Override
 	public PagingInfo getPagingInfo() {
-		MultiMap params = getParameters();
-		int page = 1;
-		int perPage = MeshOptions.DEFAULT_PAGE_SIZE;
-		if (params != null) {
-			page = NumberUtils.toInt(params.get("page"), 1);
-			perPage = NumberUtils.toInt(params.get("perPage"), MeshOptions.DEFAULT_PAGE_SIZE);
+		String page = getParameter(PagingInfo.PAGE_PARAMETER_KEY);
+		String perPage = getParameter(PagingInfo.PER_PAGE_PARAMETER_KEY);
+		int pageInt = 1;
+		int perPageInt = MeshOptions.DEFAULT_PAGE_SIZE;
+		if (page != null) {
+			pageInt = NumberUtils.toInt(page, 1);
 		}
-		if (page < 1) {
+		if (perPage != null) {
+			perPageInt = NumberUtils.toInt("perPage", MeshOptions.DEFAULT_PAGE_SIZE);
+		}
+		if (pageInt < 1) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
 		}
-		if (perPage < 0) {
+		if (perPageInt < 0) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
 		}
-		return new PagingInfo(page, perPage);
+		return new PagingInfo(pageInt, perPageInt);
 	}
 
 }

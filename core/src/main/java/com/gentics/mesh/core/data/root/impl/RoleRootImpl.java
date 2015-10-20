@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -86,8 +86,10 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
+		String roleName = requestModel.getName();
+
 		MeshAuthUser requestUser = ac.getUser();
-		if (StringUtils.isEmpty(requestModel.getName())) {
+		if (StringUtils.isEmpty(roleName)) {
 			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_name_must_be_set"))));
 			return;
 		}
@@ -98,8 +100,10 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 			return;
 		}
 
-		if (findByName(requestModel.getName()) != null) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("role_conflicting_name"))));
+		Role conflictingRole = findByName(roleName);
+		if (conflictingRole != null) {
+			HttpStatusCodeErrorException conflictError = conflict(ac, conflictingRole.getUuid(), roleName,	"role_conflicting_name");
+			handler.handle(Future.failedFuture(conflictError));
 			return;
 		}
 

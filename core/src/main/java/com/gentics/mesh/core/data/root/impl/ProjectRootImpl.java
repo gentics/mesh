@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.Stack;
 
@@ -171,6 +171,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 		// TODO also create a default object schema for the project. Move this into service class
 		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(, name)
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
+		String projectName = requestModel.getName();
 		MeshAuthUser requestUser = ac.getUser();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
@@ -179,8 +180,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 		}
 		db.noTrx(tc -> {
 			if (requestUser.hasPermission(ac, boot.projectRoot(), CREATE_PERM)) {
-				if (boot.projectRoot().findByName(requestModel.getName()) != null) {
-					handler.handle(failedFuture(ac, CONFLICT, "project_conflicting_name"));
+				Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());
+				if (conflictingProject != null) {
+					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingProject.getUuid(), projectName, "project_conflicting_name");
+					handler.handle(Future.failedFuture(conflictError));
 					return;
 				} else {
 					db.trx(txCreate -> {

@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -209,7 +211,9 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 			if (!getName().equals(requestModel.getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					handler.handle(failedFuture(ac, CONFLICT, "group_conflicting_name"));
+					HttpStatusCodeErrorException conflictError = conflict(ac, groupWithSameName.getUuid(), requestModel.getName(),
+							"group_conflicting_name", requestModel.getName());
+					handler.handle(Future.failedFuture(conflictError));
 					return;
 				}
 

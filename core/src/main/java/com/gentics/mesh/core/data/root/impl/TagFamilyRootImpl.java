@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -96,8 +97,12 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 			if (StringUtils.isEmpty(name)) {
 				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
 			} else {
-				if (findByName(name) != null) {
-					handler.handle(failedFuture(ac, CONFLICT, ac.i18n("tagfamily_conflicting_name", name)));
+
+				// Check whether the name is already in-use.
+				TagFamily conflictingTagFamily = findByName(name);
+				if (conflictingTagFamily != null) {
+					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name");
+					handler.handle(Future.failedFuture(conflictError));
 					return;
 				}
 				if (requestUser.hasPermission(ac, this, CREATE_PERM)) {

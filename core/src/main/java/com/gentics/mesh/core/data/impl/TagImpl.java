@@ -8,9 +8,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
@@ -204,8 +204,9 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				TagFamily tagFamily = getTagFamily();
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-					txUpdate.fail(new HttpStatusCodeErrorException(CONFLICT,
-							ac.i18n("tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName())));
+					HttpStatusCodeErrorException conflictError = conflict(ac, foundTagWithSameName.getUuid(), newTagName,
+							"tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());
+					txUpdate.fail(conflictError);
 					return;
 				}
 				setEditor(ac.getUser());

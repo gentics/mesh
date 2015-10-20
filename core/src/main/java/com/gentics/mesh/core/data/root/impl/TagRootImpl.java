@@ -4,15 +4,11 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -129,14 +125,10 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				throw new InvalidPermissionException(ac.i18n("error_missing_perm", tagFamily.getUuid()));
 			}
 
-			Tag conflictingTag = tagFamily.findTagByName(tagName) ;
-			if (conflictingTag!= null) {
-				HttpStatusCodeErrorException conflictError = error(ac, CONFLICT, "tag_create_tag_with_same_name_already_exists", tagName,
-						tagFamily.getName());
-				Map<String, String> props = new HashMap();
-				props.put("conflictingUuid", conflictingTag.getUuid());
-				props.put("conflictingName", tagName);
-				conflictError.setProperties(props);
+			Tag conflictingTag = tagFamily.findTagByName(tagName);
+			if (conflictingTag != null) {
+				HttpStatusCodeErrorException conflictError = conflict(ac, conflictingTag.getUuid(), tagName,
+						"tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
 				handler.handle(Future.failedFuture(conflictError));
 				return;
 			}

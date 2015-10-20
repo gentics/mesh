@@ -3,16 +3,17 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.*;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -39,6 +40,7 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+
 public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 	public static void checkIndices(Database database) {
@@ -117,9 +119,11 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 			}
 			String groupUuid = requestModel.getGroupUuid();
 			db.noTrx(noTrx -> {
-				if (findByUsername(requestModel.getUsername()) != null) {
-					String message = ac.i18n("user_conflicting_username");
-					handler.handle(failedFuture(ac, CONFLICT, message));
+				String userName = requestModel.getUsername();
+				User conflictingUser = findByUsername(userName);
+				if (conflictingUser != null) {
+					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingUser.getUuid(), userName, "user_conflicting_username");
+					handler.handle(Future.failedFuture(conflictError));
 					return;
 				}
 

@@ -43,11 +43,6 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 	}
 
 	@Override
-	public MultiMap getParameters() {
-		return rc.request().params();
-	}
-
-	@Override
 	public Map<String, Object> data() {
 		return rc.data();
 	}

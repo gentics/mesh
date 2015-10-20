@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
@@ -11,6 +12,7 @@ import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
 import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.api.common.PagingInfo;
@@ -19,12 +21,14 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -91,14 +95,17 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 							Group group = grh.result();
 							Role role = rrh.result();
 							db.trx(txAdd -> {
+								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
 								group.addRole(role);
-								txAdd.complete(group);
-								//TODO Update SQB
-							} , (AsyncResult<Group> txAdded) -> {
+								txAdd.complete(Tuple.tuple(batch, group));
+							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txAdded) -> {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									transformAndResponde(ac, txAdded.result(), OK);
+									VerticleHelper.processOrFail(ac, txAdded.result().v1(), ch -> {
+										transformAndResponde(ac, txAdded.result().v2(), OK);
+									} , txAdded.result().v2());
+
 								}
 							});
 						}
@@ -118,14 +125,14 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 							Group group = grh.result();
 							Role role = rrh.result();
 							db.trx(txRemove -> {
+								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
 								group.removeRole(role);
-								txRemove.complete(group);
-								//TODO Update SQB
-							} , (AsyncResult<Group> txAdded) -> {
-								if (txAdded.failed()) {
-									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
+								txRemove.complete(Tuple.tuple(batch, group));
+							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txRemoved) -> {
+								if (txRemoved.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
 								} else {
-									transformAndResponde(ac, txAdded.result(), OK);
+									transformAndResponde(ac, txRemoved.result().v2(), OK);
 								}
 							});
 						}
@@ -160,17 +167,18 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
-							db.trx(tcAdd -> {
+							db.trx(txAdd -> {
 								Group group = grh.result();
+								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
 								User user = urh.result();
+								batch.addEntry(user, UPDATE_ACTION);
 								group.addUser(user);
-								tcAdd.complete(group);
-								//TODO Update SQB
-							} , (AsyncResult<Group> addHandler) -> {
-								if (addHandler.failed()) {
-									ac.fail(addHandler.cause());
+								txAdd.complete(Tuple.tuple(batch, group));
+							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txAdded) -> {
+								if (txAdded.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									transformAndResponde(ac, addHandler.result(), OK);
+									transformAndResponde(ac, txAdded.result().v2(), OK);
 								}
 							});
 						}
@@ -182,21 +190,22 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {<>
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
 							db.trx(tcRemove -> {
 								Group group = grh.result();
+								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
 								User user = urh.result();
+								batch.addEntry(user, UPDATE_ACTION);
 								group.removeUser(user);
-								tcRemove.complete(group);
-								//TODO Update SQB
-							} , (AsyncResult<Group> rh) -> {
-								if (rh.failed()) {
-									ac.fail(rh.cause());
+								tcRemove.complete(Tuple.tuple(batch, group));
+							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txRemoved) -> {
+								if (txRemoved.failed()) {
+									ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
 								} else {
-									transformAndResponde(ac, rh.result() , OK);
+									transformAndResponde(ac, txRemoved.result().v2(), OK);
 								}
 							});
 						}

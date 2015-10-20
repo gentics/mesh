@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
@@ -52,7 +53,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
-
 @Component
 public class NodeCrudHandler extends AbstractCrudHandler {
 
@@ -363,8 +363,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 							if (hasSucceeded(ac, th)) {
 								Tag tag = th.result();
 								db.trx(txAdd -> {
+									SearchQueueBatch batch = node.addIndexBatch(UPDATE_ACTION);
 									node.addTag(tag);
-									SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 									txAdd.complete(Tuple.tuple(batch, node));
 								} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txAdded) -> {
 									if (txAdded.failed()) {
@@ -393,8 +393,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						Node node = rh.result();
 						Tag tag = srh.result();
 						db.trx(txRemove -> {
-							node.removeTag(tag);
 							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							node.removeTag(tag);
 							txRemove.complete(Tuple.tuple(batch, node));
 						} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txAdded) -> {
 							if (txAdded.failed()) {

@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;	
+import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -90,8 +91,10 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		db.noTrx(noTrx -> {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
-				if (findByName(requestModel.getName()) != null) {
-					handler.handle(failedFuture(ac, CONFLICT, "group_conflicting_name", requestModel.getName()));
+				Group groupWithSameName = findByName(requestModel.getName()); 
+				if ( groupWithSameName!= null &&! groupWithSameName.getUuid().equals(getUuid())) {
+					HttpStatusCodeErrorException conflictError = conflict(ac, groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
+					handler.handle(Future.failedFuture(conflictError));
 					return;
 				}
 				db.trx(txCreate -> {

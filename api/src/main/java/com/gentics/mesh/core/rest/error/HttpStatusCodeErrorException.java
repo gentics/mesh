@@ -15,9 +15,9 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	/**
 	 * HTTP Status code
 	 */
-	private int code;
+	protected int code;
 
-	private Map<String, String> properties;
+	protected Map<String, String> properties;
 
 	/**
 	 * Create a i18n translated error exception.
@@ -52,6 +52,10 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String message) {
 		super(message);
 		this.code = status.code();
+	}
+
+	protected HttpStatusCodeErrorException(String message) {
+		super(message);
 	}
 
 	/**

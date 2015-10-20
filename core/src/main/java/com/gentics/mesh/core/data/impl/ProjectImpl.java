@@ -8,8 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
 import java.util.List;
@@ -99,7 +99,6 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			linkOut(root.getImpl(), HAS_TAGFAMILY_ROOT);
 		}
 		return root;
-
 	}
 
 	@Override
@@ -219,8 +218,11 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 		db.trx(txUpdate -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
-				if (MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()) != null) {
-					txUpdate.fail(new HttpStatusCodeErrorException(CONFLICT, ac.i18n("project_conflicting_name")));
+				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
+				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
+					HttpStatusCodeErrorException conflictError = conflict(ac, projectWithSameName.getUuid(), requestModel.getName(),
+							"project_conflicting_name");
+					txUpdate.fail(conflictError);
 					return;
 				}
 				setName(requestModel.getName());

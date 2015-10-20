@@ -7,7 +7,6 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.MultiMap;
 
 /**
  * Abstraction of the vertx-web routing context.
@@ -75,13 +74,6 @@ public interface ActionContext {
 	 * @return
 	 */
 	String i18n(String i18nKey, String... parameters);
-
-	/**
-	 * Return the request parameters.
-	 * 
-	 * @return
-	 */
-	MultiMap getParameters();
 
 	/**
 	 * Return the query string.

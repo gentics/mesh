@@ -3,9 +3,8 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -167,8 +167,11 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
-			if (boot.roleRoot().findByName(requestModel.getName()) != null) {
-				handler.handle(failedFuture(ac, CONFLICT, "role_conflicting_name"));
+			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName());
+			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
+				HttpStatusCodeErrorException conflictError = conflict(ac, roleWithSameName.getUuid(), requestModel.getName(),
+						"role_conflicting_name");
+				handler.handle(Future.failedFuture(conflictError));
 				return;
 			}
 

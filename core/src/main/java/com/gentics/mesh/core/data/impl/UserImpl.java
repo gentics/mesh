@@ -12,13 +12,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
@@ -44,6 +43,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -292,15 +292,16 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
-			Iterable<Edge> edges = graph.getEdges("e." + permission.label(), MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), node.getImpl().getId()));
+			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
+					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), node.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;
 			}
 		}
-		
+
 		return false;
-		
+
 		//return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
@@ -509,8 +510,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			db.trx(txUpdate -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
-					if (BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername()) != null) {
-						handler.handle(failedFuture(ac, CONFLICT, "user_conflicting_username"));
+					User conflictingUser = BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername());
+					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
+						HttpStatusCodeErrorException conflictError = conflict(ac, conflictingUser.getUuid(), requestModel.getUsername(),
+								"user_conflicting_username");
+						handler.handle(Future.failedFuture(conflictError));
 						return;
 					}
 					setUsername(requestModel.getUsername());

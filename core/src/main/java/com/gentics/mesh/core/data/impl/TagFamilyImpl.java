@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -184,7 +185,8 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						handler.handle(failedFuture(ac, CONFLICT, "tagfamily_conflicting_name", newName));
+						HttpStatusCodeErrorException conflictError = conflict(ac, tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name");
+						handler.handle(Future.failedFuture(conflictError));
 						return;
 					}
 					db.trx(txUpdate -> {
