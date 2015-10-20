@@ -215,7 +215,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 			restNode.setPublished(isPublished());
 
-			//			try {
 			Schema schema = container.getSchema();
 			if (schema == null) {
 				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
@@ -226,9 +225,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					// //TODO handle uuid
 					// //TODO handle expand
 					List<String> children = new ArrayList<>();
-					// //TODO check permissions
 					for (Node child : getChildren()) {
-						children.add(child.getUuid());
+						if (ac.getUser().hasPermission(ac, child, READ_PERM)) {
+							children.add(child.getUuid());
+						}
 					}
 					restNode.setContainer(true);
 					restNode.setChildren(children);
@@ -334,11 +334,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				}
 				group.getItems().add(reference);
 			}
-			//			} catch (InvalidArgumentException e) {
-			//				 TODO i18n
-			//				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "Could not transform tags"));
-			//				return;
-			//			}
 
 			// Prevent errors in which no futures have been added
 			ObservableFuture<Void> dummyFuture = RxHelper.observableFuture();
@@ -513,8 +508,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	@Override
 	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo)
 			throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
-		VertexTraversal<?, ?, ?> countTraversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> countTraversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back();
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 	}
 

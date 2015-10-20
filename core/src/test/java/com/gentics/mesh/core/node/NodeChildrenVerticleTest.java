@@ -118,6 +118,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
+		int nChildren = node.getChildren().size();
 		role().revokePermissions(folder("2015"), READ_PERM);
 
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
@@ -127,8 +128,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
-		int nChildren = 1;
-		assertEquals("Only the given amount of children should be listed in the response", nChildren, restNode.getChildren().size());
+		assertEquals("Only the n-1 children should be listed in the response", nChildren - 1, restNode.getChildren().size());
 	}
 
 	@Test

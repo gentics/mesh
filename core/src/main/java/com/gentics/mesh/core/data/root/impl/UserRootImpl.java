@@ -12,7 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
-
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -40,7 +39,6 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-
 public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 	public static void checkIndices(Database database) {
@@ -135,10 +133,12 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 					user.setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 					NodeReference reference = requestModel.getNodeReference();
+					SearchQueueBatch batch = user.addIndexBatch(CREATE_ACTION);
 
 					if (!isEmpty(groupUuid)) {
 						Group parentGroup = loadObjectByUuidBlocking(ac, groupUuid, CREATE_PERM, boot.groupRoot());
 						parentGroup.addUser(user);
+						batch.addEntry(parentGroup, UPDATE_ACTION);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 					}
 
@@ -166,7 +166,6 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 						return;
 					}
 
-					SearchQueueBatch batch = user.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					txCreate.complete(Tuple.tuple(batch, user));
 				} , (AsyncResult<Tuple<SearchQueueBatch, User>> txCreated) -> {
 					if (txCreated.failed()) {

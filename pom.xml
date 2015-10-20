@@ -25,7 +25,7 @@
 		<elasticsearch.version>1.7.2</elasticsearch.version>
 		<orientdb.version>2.1.3</orientdb.version>
 
-		<surefire.forkcount>8</surefire.forkcount>
+		<surefire.forkcount>4</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 	</properties>
 
