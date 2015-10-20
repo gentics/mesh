@@ -46,7 +46,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		String username = user.getUsername();
 		String uuid = user.getUuid();
 
-		MeshRestClient client = new MeshRestClient("localhost", getPort(), Mesh.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
 		client.setLogin(username, password());
 		Future<GenericMessageResponse> future = client.login();
 		latchFor(future);

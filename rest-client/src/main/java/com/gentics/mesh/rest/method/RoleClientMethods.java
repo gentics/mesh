@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 
 public interface RoleClientMethods {
 
@@ -22,4 +23,6 @@ public interface RoleClientMethods {
 	Future<RoleListResponse> findRolesForGroup(String groupUuid, QueryParameterProvider... parameter);
 
 	Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request);
+
+	Future<RoleResponse> updateRole(String uuid, RoleUpdateRequest restRole);
 }

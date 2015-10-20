@@ -18,7 +18,6 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NUtil;
@@ -106,7 +105,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		failingLatch(latch);
 
-		client = new MeshRestClient("localhost", getPort(), vertx);
+		client = MeshRestClient.create("localhost", getPort(), vertx);
 		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();

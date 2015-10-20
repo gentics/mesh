@@ -1,5 +1,12 @@
 package com.gentics.mesh.rest;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.node.QueryParameterProvider;
+import com.gentics.mesh.json.JsonUtil;
+
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -8,28 +15,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-
-import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.method.AdminClientMethods;
-import com.gentics.mesh.rest.method.AuthClientMethods;
-import com.gentics.mesh.rest.method.GroupClientMethods;
-import com.gentics.mesh.rest.method.NodeClientMethods;
-import com.gentics.mesh.rest.method.ProjectClientMethods;
-import com.gentics.mesh.rest.method.RoleClientMethods;
-import com.gentics.mesh.rest.method.SchemaClientMethods;
-import com.gentics.mesh.rest.method.SearchClientMethods;
-import com.gentics.mesh.rest.method.TagClientMethods;
-import com.gentics.mesh.rest.method.TagFamilyClientMethods;
-import com.gentics.mesh.rest.method.UserClientMethods;
-import com.gentics.mesh.rest.method.WebRootClientMethods;
-
-public abstract class AbstractMeshRestClient
-		implements NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods, SchemaClientMethods,
-		GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods {
+public abstract class AbstractMeshRestClient implements MeshRestClient {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
 
@@ -46,17 +32,21 @@ public abstract class AbstractMeshRestClient
 
 	private String cookie;
 
-	public void setLogin(String username, String password) {
+	@Override
+	public MeshRestClient setLogin(String username, String password) {
 		this.username = username;
 		this.password = password;
 		String authStringEnc = username + ":" + password;
 		authEnc = new String(Base64.encodeBase64(authStringEnc.getBytes()));
+		return this;
 	}
 
+	@Override
 	public HttpClient getClient() {
 		return client;
 	}
 
+	@Override
 	public void close() {
 		client.close();
 	}
@@ -73,16 +63,19 @@ public abstract class AbstractMeshRestClient
 		this.client = client;
 	}
 
-	public void setCookie(String cookie) {
+	public MeshRestClient setCookie(String cookie) {
 		this.cookie = cookie;
+		return this;
 	}
 
+	@Override
 	public ClientSchemaStorage getClientSchemaStorage() {
 		return clientSchemaStorage;
 	}
 
-	public void setClientSchemaStorage(ClientSchemaStorage clientSchemaStorage) {
+	public MeshRestClient setClientSchemaStorage(ClientSchemaStorage clientSchemaStorage) {
 		this.clientSchemaStorage = clientSchemaStorage;
+		return this;
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType) {
@@ -136,7 +129,8 @@ public abstract class AbstractMeshRestClient
 		return handleRequest(method, path, classOfT, Buffer.buffer(), null);
 	}
 
-	protected String getQuery(QueryParameterProvider... parameters) {
+	@Override
+	public String getQuery(QueryParameterProvider... parameters) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < parameters.length; i++) {
 			QueryParameterProvider provider = parameters[i];
