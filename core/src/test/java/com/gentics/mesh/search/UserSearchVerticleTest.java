@@ -90,7 +90,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	
 	@Test
 	public void testSearchForAddedUser() throws InterruptedException, JSONException {
-		GroupResponse group = createGroup("apa-otsAdmin");
+		GroupResponse group = createGroup("apa");
 		String groupName = group.getName();
 		String username = "extrauser42a";
 		
