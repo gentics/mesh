@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.error;
 
+import java.util.HashMap;
+
 import com.gentics.mesh.handler.ActionContext;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -16,6 +18,7 @@ public class HttpConflictErrorException extends HttpStatusCodeErrorException {
 	public HttpConflictErrorException(String message, String conflictingUuid, String conflictingName) {
 		super(message);
 		this.code = HttpResponseStatus.CONFLICT.code();
+		this.properties = new HashMap<>();
 		this.properties.put("conflictingUuid", conflictingUuid);
 		this.properties.put("conflictingName", conflictingName);
 	}
