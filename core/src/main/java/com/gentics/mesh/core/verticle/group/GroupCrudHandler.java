@@ -190,7 +190,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {<>
+			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
 					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
 						if (hasSucceeded(ac, urh)) {
