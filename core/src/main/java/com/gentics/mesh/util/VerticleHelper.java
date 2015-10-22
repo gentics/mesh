@@ -192,7 +192,7 @@ public class VerticleHelper {
 	 * @param root
 	 *            Aggregation node that should be used to load the objects
 	 * @param handler
-	 *            Handler which will be invoked once all objects have been loaded and transformed and the list reponse is completed
+	 *            Handler which will be invoked once all objects have been loaded and transformed and the list response is completed
 	 * @param listResponse
 	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
