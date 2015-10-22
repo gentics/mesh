@@ -122,10 +122,6 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(1, 0));
-		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(1, -1));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -140,6 +136,14 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, tagList.getMetainfo().getPerPage());
 		assertEquals(tags().size(), tagList.getMetainfo().getTotalCount());
 		assertEquals(totalPages, tagList.getMetainfo().getPageCount());
+	}
+
+	@Test
+	public void testReadMetaCountOnly() {
+		Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, new PagingInfo(1, 0));
+		latchFor(pageFuture);
+		assertSuccess(pageFuture);
+		assertEquals(0, pageFuture.result().getData().size());
 	}
 
 	@Test

@@ -195,10 +195,6 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findProjects(new PagingInfo(1, 0));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		future = getClient().findProjects(new PagingInfo(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -216,6 +212,14 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(143, listResponse.getMetainfo().getTotalCount());
 		assertEquals(6, listResponse.getMetainfo().getPageCount());
 		assertEquals(0, listResponse.getData().size());
+	}
+
+	@Test
+	public void testReadProjectCountInfoOnly() {
+		Future<ProjectListResponse> future = getClient().findProjects(new PagingInfo(1, 0));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
 	}
 
 	@Test

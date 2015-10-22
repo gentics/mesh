@@ -190,7 +190,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
 						HttpStatusCodeErrorException conflictError = conflict(ac, tagFamilyWithSameName.getUuid(), newName,
-								"tagfamily_conflicting_name");
+								"tagfamily_conflicting_name", newName);
 						handler.handle(Future.failedFuture(conflictError));
 						return;
 					}

@@ -237,10 +237,6 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findGroups(new PagingInfo(1, 0));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		future = getClient().findGroups(new PagingInfo(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -255,6 +251,14 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, future.result().getMetainfo().getTotalCount());
 		assertEquals(1, future.result().getMetainfo().getPerPage());
 
+	}
+
+	@Test
+	public void testReadMetaCountOnly() {
+		Future<GroupListResponse> future = getClient().findGroups(new PagingInfo(1, 0));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
 	}
 
 	@Test
@@ -355,12 +359,10 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<GroupResponse> future = getClient().updateGroup(group().getUuid(), request);
 		latchFor(future);
-		expectException(future, CONFLICT, "group_conflicting_name");
+		expectException(future, CONFLICT, "group_conflicting_name", alreadyUsedName);
 
-		groupRoot.findByUuid(group().getUuid(), rh -> {
-			Group reloadedGroup = rh.result();
-			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
-		});
+		Group reloadedGroup = groupRoot.findByUuidBlocking(group().getUuid());
+		assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 	}
 
 	@Test

@@ -102,7 +102,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 				// Check whether the name is already in-use.
 				TagFamily conflictingTagFamily = findByName(name);
 				if (conflictingTagFamily != null) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name");
+					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name",
+							name);
 					handler.handle(Future.failedFuture(conflictError));
 					return;
 				}

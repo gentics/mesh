@@ -180,10 +180,6 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findSchemas(new PagingInfo(1, 0));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		future = getClient().findSchemas(new PagingInfo(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -195,6 +191,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaListResponse list = future.result();
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
+	}
+
+	@Test
+	public void testReadMetaCountOnly() {
+		Future<SchemaListResponse> future = getClient().findSchemas(new PagingInfo(1, 0));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals(0, future.result().getData().size());
 	}
 
 	@Test

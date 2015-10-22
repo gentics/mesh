@@ -71,7 +71,6 @@ public class GroupTest extends AbstractBasicObjectTest {
 			System.out.println("G: " + group.getName());
 		}
 		assertEquals(groups().size(), groups.size());
-
 	}
 
 	@Test
