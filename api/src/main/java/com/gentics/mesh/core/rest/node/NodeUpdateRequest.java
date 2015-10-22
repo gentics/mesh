@@ -22,7 +22,7 @@ public class NodeUpdateRequest implements RestModel {
 	/**
 	 * Return the schema name.
 	 * 
-	 * @return
+	 * @return Schema reference
 	 */
 	public SchemaReference getSchema() {
 		return schema;
@@ -32,6 +32,7 @@ public class NodeUpdateRequest implements RestModel {
 	 * Set the schema name.
 	 * 
 	 * @param schema
+	 *            Schema reference
 	 */
 	public void setSchema(SchemaReference schema) {
 		this.schema = schema;
@@ -40,7 +41,7 @@ public class NodeUpdateRequest implements RestModel {
 	/**
 	 * Return the language of the node.
 	 * 
-	 * @return
+	 * @return Language tag of the language for the node
 	 */
 	public String getLanguage() {
 		return language;
@@ -50,6 +51,7 @@ public class NodeUpdateRequest implements RestModel {
 	 * Set the language of the node which should be updated.
 	 * 
 	 * @param language
+	 *            Language tag for the node
 	 */
 	public void setLanguage(String language) {
 		this.language = language;
@@ -58,7 +60,7 @@ public class NodeUpdateRequest implements RestModel {
 	/**
 	 * Set the field which should be updated.
 	 * 
-	 * @return
+	 * @return Fields of the node
 	 */
 	public FieldMap getFields() {
 		return fields;
