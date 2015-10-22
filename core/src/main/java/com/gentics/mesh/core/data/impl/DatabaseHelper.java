@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.data.impl;
 
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -20,8 +21,11 @@ import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -39,36 +43,47 @@ public class DatabaseHelper {
 		this.database = database;
 	}
 
-	public void migrate() {
+	private <T extends GenericVertex<?>> void migrateType(RootVertex<T> rootVertex, Class<? extends T> clazzOfT) {
+		try (Trx trx = database.trx()) {
+			for (T vertex : rootVertex.findAll()) {
+				log.info(
+						"Migrating vertex type for vertex {" + vertex.getImpl().getId() + "/" + vertex.getUuid() + " to " + clazzOfT.getSimpleName());
+				database.setVertexType(vertex.getElement(), clazzOfT);
+			}
+			trx.success();
+		}
+	}
 
+	public void migrate() {
 		log.info("Starting migration of vertex types");
 		try (Trx trx = database.trx()) {
-			MeshRoot meshRoot = trx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-			if (meshRoot != null) {
-				for (Language language : meshRoot.getLanguageRoot().findAll()) {
-					log.info("Migrating vertex type for vertex {" + language.getImpl().getId() + "/" + language.getUuid() + " to "
-							+ LanguageImpl.class.getSimpleName());
-					database.setVertexType(language.getElement(), LanguageImpl.class);
+			for (VertexFrame vertex : trx.getGraph().v()) {
+				String typeKey = vertex.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+				try {
+					Class<?> clazz = getClass().getClassLoader().loadClass(typeKey);
+					database.setVertexType(vertex.getElement(), clazz);
+				} catch (ClassNotFoundException e) {
+					log.error("Could not find class for type key {" + typeKey + "} within classpath. Omitting migration.");
 				}
-				trx.success();
 			}
+			trx.success();
 		}
 
-		//		for (Node node : MeshRoot.getInstance().getNodeRoot().findAll()) {
-		//			database.setVertexType(node.getElement(), NodeImpl.class);
-		//		}
-		//		for (Tag tag : MeshRoot.getInstance().getTagRoot().findAll()) {
-		//			database.setVertexType(tag.getElement(), TagImpl.class);
-		//		}
-		//		for (Project project : MeshRoot.getInstance().getProjectRoot().findAll()) {
-		//			database.setVertexType(project.getElement(), ProjectImpl.class);
-		//		}
-		//		for (SchemaContainer schemaContainer : MeshRoot.getInstance().getSchemaContainerRoot().findAll()) {
-		//			database.setVertexType(schemaContainer.getElement(), SchemaContainerImpl.class);
-		//		}
-		//		for (TagFamily tagFamily : MeshRoot.getInstance().getTagFamilyRoot().findAll()) {
-		//			database.setVertexType(tagFamily.getElement(), TagFamilyImpl.class);
-		//		}
+		try (NoTrx trx = database.noTrx()) {
+			MeshRoot meshRoot = trx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+			if (meshRoot != null) {
+				migrateType(meshRoot.getLanguageRoot(), LanguageImpl.class);
+				migrateType(meshRoot.getNodeRoot(), NodeImpl.class);
+				migrateType(meshRoot.getTagRoot(), TagImpl.class);
+				migrateType(meshRoot.getSchemaContainerRoot(), SchemaContainerImpl.class);
+				migrateType(meshRoot.getProjectRoot(), ProjectImpl.class);
+				migrateType(meshRoot.getTagFamilyRoot(), TagFamilyImpl.class);
+
+				migrateType(meshRoot.getRoleRoot(), RoleImpl.class);
+				migrateType(meshRoot.getGroupRoot(), GroupImpl.class);
+				migrateType(meshRoot.getUserRoot(), UserImpl.class);
+			}
+		}
 	}
 
 	public void init() {
