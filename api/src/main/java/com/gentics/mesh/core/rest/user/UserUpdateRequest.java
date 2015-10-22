@@ -26,6 +26,7 @@ public class UserUpdateRequest implements RestModel {
 	 * Set the user plain text password. The password will be hashed when the request is processed.
 	 * 
 	 * @param password
+	 *            Plain text password
 	 */
 	public void setPassword(String password) {
 		this.password = password;
@@ -34,7 +35,7 @@ public class UserUpdateRequest implements RestModel {
 	/**
 	 * Return the plain text password.
 	 * 
-	 * @return
+	 * @return plain text password
 	 */
 	public String getPassword() {
 		return password;
@@ -43,7 +44,7 @@ public class UserUpdateRequest implements RestModel {
 	/**
 	 * Return the user lastname.
 	 * 
-	 * @return
+	 * @return Lastname of the user
 	 */
 	public String getLastname() {
 		return lastname;
@@ -53,6 +54,7 @@ public class UserUpdateRequest implements RestModel {
 	 * Set the user lastname.
 	 * 
 	 * @param lastname
+	 *            Lastname of the user
 	 */
 	public void setLastname(String lastname) {
 		this.lastname = lastname;
@@ -61,7 +63,7 @@ public class UserUpdateRequest implements RestModel {
 	/**
 	 * Return the user firstname.
 	 * 
-	 * @return
+	 * @return Firstname of the user
 	 */
 	public String getFirstname() {
 		return firstname;
@@ -71,6 +73,7 @@ public class UserUpdateRequest implements RestModel {
 	 * Set the user firstname.
 	 * 
 	 * @param firstname
+	 *            Firstname of the user
 	 */
 	public void setFirstname(String firstname) {
 		this.firstname = firstname;
@@ -79,7 +82,7 @@ public class UserUpdateRequest implements RestModel {
 	/**
 	 * Return the user email address.
 	 * 
-	 * @return
+	 * @return Email address of the user
 	 */
 	public String getEmailAddress() {
 		return emailAddress;
@@ -97,7 +100,7 @@ public class UserUpdateRequest implements RestModel {
 	/**
 	 * Return the username.
 	 * 
-	 * @return
+	 * @return Username of the user
 	 */
 	public String getUsername() {
 		return username;
@@ -107,6 +110,7 @@ public class UserUpdateRequest implements RestModel {
 	 * Set the username.
 	 * 
 	 * @param username
+	 *            Username of the user
 	 */
 	public void setUsername(String username) {
 		this.username = username;
@@ -115,16 +119,17 @@ public class UserUpdateRequest implements RestModel {
 	/**
 	 * Return the user reference node.
 	 * 
-	 * @return
+	 * @return Node reference of the user
 	 */
 	public NodeReference getNodeReference() {
 		return nodeReference;
 	}
 
 	/**
-	 * Set the user reference node.
+	 * Set the user reference node which can be used to store additional user specific data.
 	 * 
 	 * @param nodeReference
+	 *            Node reference of the user
 	 */
 	public void setNodeReference(NodeReference nodeReference) {
 		this.nodeReference = nodeReference;

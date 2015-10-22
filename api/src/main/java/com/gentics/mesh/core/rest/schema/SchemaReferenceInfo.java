@@ -7,7 +7,7 @@ public class SchemaReferenceInfo {
 	/**
 	 * Return the schema reference.
 	 * 
-	 * @return
+	 * @return Schema reference
 	 */
 	public SchemaReference getSchema() {
 		return schema;
@@ -17,6 +17,7 @@ public class SchemaReferenceInfo {
 	 * Set the schema reference.
 	 * 
 	 * @param schema
+	 *            Schema reference
 	 */
 	public void setSchema(SchemaReference schema) {
 		this.schema = schema;

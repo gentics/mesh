@@ -40,6 +40,11 @@ import io.vertx.core.Handler;
 
 public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>implements SchemaContainer {
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(SchemaContainerImpl.class);
+	}
+
+	
 	@Override
 	public String getType() {
 		return SchemaContainer.TYPE;
@@ -186,5 +191,6 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			}
 		}
 	}
+
 
 }

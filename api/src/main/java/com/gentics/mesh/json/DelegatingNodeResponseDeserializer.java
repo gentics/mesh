@@ -24,14 +24,14 @@ import io.vertx.core.logging.LoggerFactory;
  * 
  * @param <T>
  */
-public class DelegagingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
+public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(DelegagingNodeResponseDeserializer.class);
+	private static final Logger log = LoggerFactory.getLogger(DelegatingNodeResponseDeserializer.class);
 
 	private ObjectMapper nodeMapper;
 	private Class<T> classOfT;
 
-	public DelegagingNodeResponseDeserializer(ObjectMapper nodeMapper, Class<T> classOfT) {
+	public DelegatingNodeResponseDeserializer(ObjectMapper nodeMapper, Class<T> classOfT) {
 		this.nodeMapper = nodeMapper;
 		this.classOfT = classOfT;
 	}

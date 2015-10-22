@@ -10,7 +10,7 @@ public interface MicroschemaFieldSchema extends FieldSchema {
 	/**
 	 * Return a list of microschemas which are allowed for this field.
 	 * 
-	 * @return
+	 * @return Allowed schemas
 	 */
 	String[] getAllowedMicroSchemas();
 
@@ -18,13 +18,14 @@ public interface MicroschemaFieldSchema extends FieldSchema {
 	 * Set the list of microschemas which are allowed for this field.
 	 * 
 	 * @param allowedMicroSchemas
+	 *            Allowed schemas
 	 */
 	void setAllowedMicroSchemas(String[] allowedMicroSchemas);
 
 	/**
 	 * Return a list of microschemas for this field schema.
 	 * 
-	 * @return
+	 * @return List of microschemas
 	 */
 	List<MicroschemaListableFieldSchema> getFields();
 

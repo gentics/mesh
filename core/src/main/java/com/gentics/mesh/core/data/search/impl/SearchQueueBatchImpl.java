@@ -28,6 +28,10 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(SearchQueueBatchImpl.class);
+	}
+
 	@Override
 	public void addEntry(String uuid, String type, SearchQueueEntryAction action, String indexType) {
 		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);

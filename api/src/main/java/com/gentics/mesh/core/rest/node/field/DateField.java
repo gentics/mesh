@@ -5,7 +5,7 @@ public interface DateField extends ListableField, MicroschemaListableField {
 	/**
 	 * Return the date in the form of a epoch date.
 	 * 
-	 * @return
+	 * @return Epoch date value
 	 */
 	Long getDate();
 
@@ -13,7 +13,8 @@ public interface DateField extends ListableField, MicroschemaListableField {
 	 * Set the data in the form of a epoch date.
 	 * 
 	 * @param date
-	 * @return
+	 *            Epoch date value
+	 * @return Fluent API
 	 */
 	DateField setDate(Long date);
 

@@ -58,6 +58,10 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	public static final String DEFAULT_TAG_LANGUAGE_TAG = "en";
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(TagImpl.class);
+	}
+
 	@Override
 	public String getType() {
 		return Tag.TYPE;

@@ -31,7 +31,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the lastname of the user.
 	 * 
-	 * @return
+	 * @return Lastname of the user
 	 */
 	public String getLastname() {
 		return lastname;
@@ -41,6 +41,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 * Set the lastname of the user.
 	 * 
 	 * @param lastname
+	 *            Lastname of the user
 	 */
 	public void setLastname(String lastname) {
 		this.lastname = lastname;
@@ -49,7 +50,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the firstname.
 	 * 
-	 * @return
+	 * @return Firstname of the user
 	 */
 	public String getFirstname() {
 		return firstname;
@@ -59,6 +60,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 * Set the firstname.
 	 * 
 	 * @param firstname
+	 *            Firstname of the user
 	 */
 	public void setFirstname(String firstname) {
 		this.firstname = firstname;
@@ -67,7 +69,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Returns the email address.
 	 * 
-	 * @return
+	 * @return Email address of the user
 	 */
 	public String getEmailAddress() {
 		return emailAddress;
@@ -77,6 +79,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 * Set the email address.
 	 * 
 	 * @param emailAddress
+	 *            Email address of the user
 	 */
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
@@ -85,7 +88,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the username.
 	 * 
-	 * @return
+	 * @return Username of the user
 	 */
 	public String getUsername() {
 		return username;
@@ -95,6 +98,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 * Set the username.
 	 * 
 	 * @param username
+	 *            Username of the user
 	 */
 	public void setUsername(String username) {
 		this.username = username;
@@ -103,8 +107,9 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Returns the groups of the user.
 	 * 
-	 * @return
+	 * @return List of group names of the user.
 	 */
+	//TODO switch to group references
 	public List<String> getGroups() {
 		return groups;
 	}
@@ -113,6 +118,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 * Add the given group name to the list of groups.
 	 * 
 	 * @param name
+	 *            Name of the group
 	 */
 	public void addGroup(String name) {
 		this.groups.add(name);
@@ -139,7 +145,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the enabled flag for the user.
 	 * 
-	 * @return
+	 * @return Enabled flag
 	 */
 	public boolean getEnabled() {
 		return enabled;
@@ -149,6 +155,7 @@ public class UserResponse extends AbstractGenericNodeRestModel {
 	 * Set the enabled flag for the user.
 	 * 
 	 * @param enabled
+	 *            Enabled flag
 	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;

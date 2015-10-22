@@ -16,6 +16,7 @@ import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -71,6 +72,38 @@ public class EdgeIndexPerformanceTest {
 
 	}
 
+	@Test
+	public void testVertexMigration() {
+		// Create vertex without type
+		OrientGraphNoTx g = factory.getNoTx();
+		OrientVertex v;
+		try {
+			v = g.addVertex(null);
+			v.setProperty("name", "extraName");
+		} finally {
+			g.shutdown();
+		}
+
+		// Migrate vertex
+		OrientBaseGraph tx = factory.getTx();
+		try {
+			v.moveToClass("item");
+		} finally {
+			tx.shutdown();
+		}
+
+		// Search for vertex
+		g = factory.getNoTx();
+		System.out.println("Size: " + g.getVertexType("item").getClassIndex("item").getSize());
+		try {
+			Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "extraName" });
+			assertTrue(vertices.iterator().hasNext());
+		} finally {
+			g.shutdown();
+		}
+
+	}
+
 	private static List<OrientVertex> createData(OrientVertex root, OrientGraphFactory factory, int count) {
 		OrientGraphNoTx g = factory.getNoTx();
 		try {
@@ -102,11 +135,13 @@ public class EdgeIndexPerformanceTest {
 	@Test
 	public void testVertexIndex() {
 		OrientGraphNoTx g = factory.getNoTx();
+		System.out.println("Size: " + g.getVertexType("item").getClassIndex("item").getSize());
+
 		try {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
 				int randomDocumentId = (int) (Math.random() * nDocuments);
-				 Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "item_" + randomDocumentId });
+				Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "item_" + randomDocumentId });
 				//Iterable<Vertex> vertices = g.getVertices("item.name", "item_" + randomDocumentId);
 				assertTrue(vertices.iterator().hasNext());
 			}

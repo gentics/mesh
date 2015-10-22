@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
@@ -8,6 +9,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -90,5 +93,22 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void addVertexType(Class<?> clazzOfVertex) {
+		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void setVertexType(Element element, Class<?> classOfVertex) {
+		// TODO Auto-generated method stub
+		
 	}
 }

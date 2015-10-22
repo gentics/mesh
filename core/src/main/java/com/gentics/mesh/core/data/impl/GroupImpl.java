@@ -47,6 +47,10 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	public static final String NAME_KEY = "name";
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(GroupImpl.class);
+	}
+
 	@Override
 	public String getType() {
 		return Group.TYPE;

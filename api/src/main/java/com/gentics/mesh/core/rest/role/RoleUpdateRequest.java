@@ -15,7 +15,7 @@ public class RoleUpdateRequest implements RestModel {
 	/**
 	 * Return the name of the role.
 	 * 
-	 * @return
+	 * @return Name of the role
 	 */
 	public String getName() {
 		return name;
@@ -25,6 +25,7 @@ public class RoleUpdateRequest implements RestModel {
 	 * Set the name of the role.
 	 * 
 	 * @param name
+	 *            Name of the role
 	 */
 	public void setName(String name) {
 		this.name = name;

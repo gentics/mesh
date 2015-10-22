@@ -20,7 +20,7 @@ public class StorageOptions {
 	/**
 	 * Return the graph storage directory.
 	 * 
-	 * @return
+	 * @return Graph storage filesystem directory
 	 */
 	public String getDirectory() {
 		return directory;
@@ -30,6 +30,7 @@ public class StorageOptions {
 	 * Set the graph storage directory.
 	 * 
 	 * @param directory
+	 *            Graph storage filesystem directory
 	 */
 	public void setDirectory(String directory) {
 		this.directory = directory;
@@ -38,7 +39,7 @@ public class StorageOptions {
 	/**
 	 * Return custom JSON parameters which can be used to add individual settings for the specific graph provider.
 	 * 
-	 * @return
+	 * @return Additional JSON parameters
 	 */
 	public JsonObject getParameters() {
 		return parameters;
@@ -47,7 +48,7 @@ public class StorageOptions {
 	/**
 	 * Set the custom JSON parameters for the selected graph provider.
 	 * 
-	 * @param parameters
+	 * @param parameters Additional JSON parameters
 	 */
 	public void setParameters(JsonObject parameters) {
 		this.parameters = parameters;
@@ -56,7 +57,7 @@ public class StorageOptions {
 	/**
 	 * Return the backup directory location.
 	 * 
-	 * @return
+	 * @return Backup directory
 	 */
 	public String getBackupDirectory() {
 		return backupDirectory;
@@ -66,6 +67,7 @@ public class StorageOptions {
 	 * Set the backup directory location.
 	 * 
 	 * @param backupDirectory
+	 *            Backup directory
 	 */
 	public void setBackupDirectory(String backupDirectory) {
 		this.backupDirectory = backupDirectory;
@@ -74,7 +76,7 @@ public class StorageOptions {
 	/**
 	 * Return the graph export directory.
 	 * 
-	 * @return
+	 * @return Export directory
 	 */
 	public String getExportDirectory() {
 		return exportDirectory;
@@ -84,6 +86,7 @@ public class StorageOptions {
 	 * Set the export directory.
 	 * 
 	 * @param exportDirectory
+	 *            Export directory
 	 */
 	public void setExportDirectory(String exportDirectory) {
 		this.exportDirectory = exportDirectory;

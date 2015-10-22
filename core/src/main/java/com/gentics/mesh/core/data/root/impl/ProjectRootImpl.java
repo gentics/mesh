@@ -64,6 +64,10 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(ProjectRootImpl.class);
+	}
+
 	@Override
 	protected Class<? extends Project> getPersistanceClass() {
 		return ProjectImpl.class;

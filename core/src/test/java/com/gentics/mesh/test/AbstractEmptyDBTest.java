@@ -11,7 +11,6 @@ public class AbstractEmptyDBTest extends AbstractDBTest {
 	protected NoTrx tx;
 
 	@Before
-	@SuppressWarnings("deprecation")
 	public void setup() throws Exception {
 		tx = db.noTrx();
 	}

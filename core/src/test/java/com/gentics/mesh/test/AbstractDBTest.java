@@ -25,21 +25,10 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.DatabaseInitializer;
-import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
-import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
-import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
-import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
-import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.root.impl.TagRootImpl;
-import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.demo.UserInfo;
@@ -84,12 +73,13 @@ public abstract class AbstractDBTest {
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		JsonUtil.debugMode = true;
 	}
-	
+
 	protected void resetDatabase() {
 		BootstrapInitializer.clearReferences();
-		databaseService.getDatabase().clear();
-		Database database = MeshSpringConfiguration.getInstance().database();
-		DatabaseInitializer.init(database);
+		Database db = databaseService.getDatabase();
+		db.clear();
+		DatabaseHelper helper = new DatabaseHelper(db);
+		helper.init();
 		//databaseService.getDatabase().reset();
 
 	}

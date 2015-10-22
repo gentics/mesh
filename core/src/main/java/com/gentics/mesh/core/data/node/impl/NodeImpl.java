@@ -99,6 +99,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	private static final String PUBLISHED_PROPERTY_KEY = "published";
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(NodeImpl.class);
+	}
+
 	@Override
 	public String getType() {
 		return Node.TYPE;
@@ -695,4 +699,5 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		addRelatedEntries(batch, action);
 		return batch;
 	}
+
 }

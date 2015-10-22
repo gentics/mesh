@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.Iterator;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.NotImplementedException;
@@ -13,6 +15,8 @@ import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -141,5 +145,23 @@ public class TitanDBDatabase extends AbstractDatabase {
 	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void addVertexType(Class<?> clazzOfVertex) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setVertexType(Element element, Class<?> classOfVertex) {
+		// TODO Auto-generated method stub
+
 	}
 }

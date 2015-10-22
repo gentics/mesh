@@ -13,7 +13,7 @@ public class ElasticSearchOptions {
 	 * 
 	 * Return the search index filesystem directory.
 	 * 
-	 * @return
+	 * @return Path to the search index filesystem directory
 	 */
 	public String getDirectory() {
 		return directory;
@@ -23,6 +23,7 @@ public class ElasticSearchOptions {
 	 * Set the search index filesystem directory.
 	 * 
 	 * @param directory
+	 *            Path to the search index filesystem directory
 	 */
 	public void setDirectory(String directory) {
 		this.directory = directory;

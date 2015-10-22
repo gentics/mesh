@@ -7,6 +7,13 @@ package com.gentics.mesh.core.rest.schema;
 public interface NumberFieldSchema extends MicroschemaListableFieldSchema {
 
 	/**
+	 * Return the stepping for the numbers.
+	 * 
+	 * @return Stepping for numbers
+	 */
+	Float getStep();
+
+	/**
 	 * Set the stepping for the numbers.
 	 * 
 	 * @param step
@@ -15,28 +22,35 @@ public interface NumberFieldSchema extends MicroschemaListableFieldSchema {
 	NumberFieldSchema setStep(Float step);
 
 	/**
-	 * Return the stepping for the numbers.
+	 * Return the lower limit for numbers.
 	 * 
-	 * @return
-	 */
-	Float getStep();
-
-	NumberFieldSchema setMin(Integer min);
-
-	/**
-	 * Return the lower limit for the numbers.
-	 * 
-	 * @return
+	 * @return Lower limit
 	 */
 	Integer getMin();
 
 	/**
-	 * Return the max limit for the numbers.
+	 * Set the lower limit for numbers.
 	 * 
-	 * @return
+	 * @param min
+	 *            Lower limit
+	 * @return Fluent API
+	 */
+	NumberFieldSchema setMin(Integer min);
+
+	/**
+	 * Return the max limit for numbers.
+	 * 
+	 * @return Upper limit
 	 */
 	Integer getMax();
 
+	/**
+	 * Set max limit for numbers.
+	 * 
+	 * @param max
+	 *            Upper limit
+	 * @return Fluent API
+	 */
 	NumberFieldSchema setMax(Integer max);
 
 }

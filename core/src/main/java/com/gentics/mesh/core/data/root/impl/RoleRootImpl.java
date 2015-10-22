@@ -38,6 +38,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_ROLE);
+		database.addVertexType(RoleRootImpl.class);
 	}
 
 	@Override

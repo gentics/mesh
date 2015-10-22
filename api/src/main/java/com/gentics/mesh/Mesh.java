@@ -15,8 +15,7 @@ public interface Mesh {
 	/**
 	 * Returns the initialized instance.
 	 * 
-	 * @return
-	 * @throws MeshConfigurationException
+	 * @return Fluent API
 	 */
 	static Mesh mesh() {
 		return factory.mesh();
@@ -26,7 +25,7 @@ public interface Mesh {
 	 * Returns the initialized instance of mesh that was created using the given options.
 	 * 
 	 * @param options
-	 * @return
+	 * @return Fluent API
 	 */
 	static Mesh mesh(MeshOptions options) {
 		return factory.mesh(options);
@@ -35,7 +34,7 @@ public interface Mesh {
 	/**
 	 * Return the mesh version and build timestamp.
 	 * 
-	 * @return
+	 * @return Mesh version and build timestamp.
 	 */
 	static String getVersion() {
 		try {
@@ -66,7 +65,7 @@ public interface Mesh {
 	/**
 	 * Return the mesh options.
 	 * 
-	 * @return
+	 * @return Mesh options
 	 */
 	MeshOptions getOptions();
 
@@ -80,14 +79,14 @@ public interface Mesh {
 	/**
 	 * Return the vertx instance for mesh.
 	 * 
-	 * @return
+	 * @return Vertx instance
 	 */
 	Vertx getVertx();
 
 	/**
 	 * Returns the used vertx instance for mesh.
 	 * 
-	 * @return
+	 * @return Vertx instance
 	 */
 	public static Vertx vertx() {
 		return factory.mesh().getVertx();

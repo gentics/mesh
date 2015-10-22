@@ -1,12 +1,15 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import com.gentics.mesh.etc.StorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -216,5 +219,11 @@ public interface Database {
 	void addVertexIndex(Class<?> clazzOfVertices, String... fields);
 
 	void addEdgeType(String label, String... stringPropertyKeys);
+
+	void addVertexType(Class<?> clazzOfVertex);
+
+	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
+
+	void setVertexType(Element element, Class<?> classOfVertex);
 
 }

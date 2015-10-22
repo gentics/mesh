@@ -31,6 +31,7 @@ public class RolePermissionRequest implements RestModel {
 	 * Set a set of permissions that should be set to the affected elements.
 	 * 
 	 * @param permissions
+	 *            Permissions to be set to the affected elements. Omitted permissions will be revoked.
 	 */
 	public void setPermissions(Set<String> permissions) {
 		this.permissions = permissions;
@@ -39,7 +40,7 @@ public class RolePermissionRequest implements RestModel {
 	/**
 	 * Flag that indicated that the request should be executed recursively.
 	 * 
-	 * @return
+	 * @return Flag value
 	 */
 	public Boolean getRecursive() {
 		return recursive;
@@ -49,6 +50,7 @@ public class RolePermissionRequest implements RestModel {
 	 * Set the flag which indicated whether the permission changes should be applied recursively.
 	 * 
 	 * @param recursive
+	 *            Recursive flag value
 	 */
 	public void setRecursive(Boolean recursive) {
 		this.recursive = recursive;

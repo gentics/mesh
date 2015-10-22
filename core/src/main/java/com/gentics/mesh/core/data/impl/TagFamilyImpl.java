@@ -55,6 +55,10 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(TagFamilyImpl.class);
+	}
+
 	@Override
 	public String getType() {
 		return TagFamily.TYPE;
@@ -185,7 +189,8 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
 					TagFamily tagFamily = rh.result();
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						HttpStatusCodeErrorException conflictError = conflict(ac, tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name");
+						HttpStatusCodeErrorException conflictError = conflict(ac, tagFamilyWithSameName.getUuid(), newName,
+								"tagfamily_conflicting_name");
 						handler.handle(Future.failedFuture(conflictError));
 						return;
 					}

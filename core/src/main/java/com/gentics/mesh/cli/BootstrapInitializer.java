@@ -491,13 +491,13 @@ public class BootstrapInitializer {
 	/**
 	 * Initialize the languages by loading the json file and creating the language graph elements.
 	 * 
-	 * @param rootNode
+	 * @param root
 	 *            Aggregation node to which the languages will be assigned
 	 * @throws JsonParseException
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	protected void initLanguages(LanguageRoot rootNode) throws JsonParseException, JsonMappingException, IOException {
+	protected void initLanguages(LanguageRoot root) throws JsonParseException, JsonMappingException, IOException {
 
 		long start = System.currentTimeMillis();
 		final String filename = "languages.json";
@@ -512,7 +512,7 @@ public class BootstrapInitializer {
 			String languageNativeName = entry.getValue().getNativeName();
 			Language language = meshRoot().getLanguageRoot().findByName(languageName);
 			if (language == null) {
-				language = rootNode.create(languageName, languageTag);
+				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
 				if (log.isDebugEnabled()) {
 					log.debug("Added language {" + languageTag + " / " + languageName + "}");

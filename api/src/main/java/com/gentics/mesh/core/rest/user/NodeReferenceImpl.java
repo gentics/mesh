@@ -18,6 +18,7 @@ public class NodeReferenceImpl implements NodeReference {
 	 * Set the node uuid.
 	 * 
 	 * @param uuid
+	 *            Uuid of the node
 	 */
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
@@ -26,7 +27,7 @@ public class NodeReferenceImpl implements NodeReference {
 	/**
 	 * Return the project name.
 	 * 
-	 * @return
+	 * @return Name of the project to which the node belongs
 	 */
 	public String getProjectName() {
 		return projectName;
@@ -36,6 +37,7 @@ public class NodeReferenceImpl implements NodeReference {
 	 * Set the project name.
 	 * 
 	 * @param projectName
+	 *            Name of the project to which the node belongs
 	 */
 	public void setProjectName(String projectName) {
 		this.projectName = projectName;
@@ -44,7 +46,7 @@ public class NodeReferenceImpl implements NodeReference {
 	/**
 	 * Return the display name.
 	 * 
-	 * @return
+	 * @return Display name
 	 */
 	public String getDisplayName() {
 		return displayName;
@@ -54,6 +56,7 @@ public class NodeReferenceImpl implements NodeReference {
 	 * Set the display name.
 	 * 
 	 * @param displayName
+	 *            Display name
 	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
@@ -62,7 +65,7 @@ public class NodeReferenceImpl implements NodeReference {
 	/**
 	 * Return the schema reference.
 	 * 
-	 * @return
+	 * @return Schema reference of the node
 	 */
 	public SchemaReference getSchema() {
 		return schema;
@@ -72,6 +75,7 @@ public class NodeReferenceImpl implements NodeReference {
 	 * Set the schema reference.
 	 * 
 	 * @param schema
+	 *            Schema reference for the node
 	 */
 	public void setSchema(SchemaReference schema) {
 		this.schema = schema;

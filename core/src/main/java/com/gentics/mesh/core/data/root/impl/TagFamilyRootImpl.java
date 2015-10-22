@@ -38,6 +38,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_TAG_FAMILY);
+		database.addVertexType(TagFamilyRootImpl.class);
 	}
 
 	@Override

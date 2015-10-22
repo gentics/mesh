@@ -25,6 +25,7 @@ public class GenericMessageResponse {
 	 * Create a new generic message response pojo.
 	 * 
 	 * @param message
+	 *            Message
 	 */
 	public GenericMessageResponse(String message) {
 		this(message, null);
@@ -34,7 +35,9 @@ public class GenericMessageResponse {
 	 * Create a new generic message response pojo.
 	 * 
 	 * @param message
+	 *            I18n message
 	 * @param internalMessage
+	 *            Internal message which may describe the message in a more technical fashion
 	 */
 	public GenericMessageResponse(String message, String internalMessage) {
 		this.message = message;
@@ -49,7 +52,7 @@ public class GenericMessageResponse {
 	/**
 	 * Return the message string.
 	 * 
-	 * @return
+	 * @return Message
 	 */
 	public String getMessage() {
 		return message;
@@ -59,6 +62,7 @@ public class GenericMessageResponse {
 	 * Set the message string.
 	 * 
 	 * @param message
+	 *            Message
 	 */
 	public void setMessage(String message) {
 		this.message = message;
@@ -67,7 +71,7 @@ public class GenericMessageResponse {
 	/**
 	 * Return the internal message.
 	 * 
-	 * @return
+	 * @return Message
 	 */
 	public String getInternalMessage() {
 		return internalMessage;
@@ -77,26 +81,28 @@ public class GenericMessageResponse {
 	 * Set the internal message.
 	 * 
 	 * @param internalMessage
+	 *            Message
 	 */
 	public void setInternalMessage(String internalMessage) {
 		this.internalMessage = internalMessage;
 	}
 
 	/**
-	 * Return the additional json properties.
+	 * Return the additional JSON properties.
 	 * 
-	 * @return
+	 * @return JSON properties or null of no properties have been set
 	 */
-	public Map<String,String> getProperties() {
+	public Map<String, String> getProperties() {
 		return properties;
 	}
 
 	/**
-	 * Set additional json properties.
+	 * Set additional JSON properties.
 	 * 
 	 * @param properties
+	 *            JSON properties to be attached to the message
 	 */
-	public void setProperties(Map<String,String> properties) {
+	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
 	}
 }

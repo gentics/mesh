@@ -4,7 +4,6 @@ import com.tinkerpop.blueprints.Element;
 
 /**
  * Basic interface for graph elements.
- *
  */
 public interface MeshElement {
 
@@ -12,20 +11,21 @@ public interface MeshElement {
 	 * Set the uuid of the element.
 	 * 
 	 * @param uuid
+	 *            Uuid of the element
 	 */
 	void setUuid(String uuid);
 
 	/**
 	 * Return the uuid of the element.
 	 * 
-	 * @return
+	 * @return Uuid of the element
 	 */
 	String getUuid();
 
 	/**
 	 * Return the underlying graph element.
 	 * 
-	 * @return
+	 * @return Graph element
 	 */
 	Element getElement();
 

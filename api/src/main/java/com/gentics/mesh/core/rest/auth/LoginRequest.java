@@ -13,7 +13,7 @@ public class LoginRequest implements RestModel {
 	/**
 	 * Return the password.
 	 * 
-	 * @return
+	 * @return Password to be used for login
 	 */
 	public String getPassword() {
 		return password;
@@ -22,7 +22,7 @@ public class LoginRequest implements RestModel {
 	/**
 	 * Return the username.
 	 * 
-	 * @return
+	 * @return Username to be used for login
 	 */
 	public String getUsername() {
 		return username;
@@ -32,6 +32,7 @@ public class LoginRequest implements RestModel {
 	 * Set the login username.
 	 * 
 	 * @param username
+	 *            Username to be used for login
 	 */
 	public void setUsername(String username) {
 		this.username = username;
@@ -41,6 +42,7 @@ public class LoginRequest implements RestModel {
 	 * Set the login password.
 	 * 
 	 * @param password
+	 *            Password to be used for login
 	 */
 	public void setPassword(String password) {
 		this.password = password;

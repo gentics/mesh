@@ -22,15 +22,32 @@ public class PagingInfo implements QueryParameterProvider {
 		this.order = order;
 	}
 
+	/**
+	 * Create a new paging info for page one.
+	 */
 	public PagingInfo() {
 		this(1);
 	}
 
+	/**
+	 * Create a new paging info for the given page.
+	 * 
+	 * @param page
+	 *            Page number
+	 */
 	public PagingInfo(int page) {
 		//TODO use reference for default page size
 		this(page, 25);
 	}
 
+	/**
+	 * Create a new paging info with the given values.
+	 * 
+	 * @param page
+	 *            Page number
+	 * @param perPage
+	 *            Per page count
+	 */
 	public PagingInfo(int page, int perPage) {
 		this(page, perPage, null, SortOrder.UNSORTED);
 	}
@@ -38,7 +55,7 @@ public class PagingInfo implements QueryParameterProvider {
 	/**
 	 * Return the current page.
 	 * 
-	 * @return
+	 * @return Current page number
 	 */
 	public int getPage() {
 		return page;
@@ -47,28 +64,17 @@ public class PagingInfo implements QueryParameterProvider {
 	/**
 	 * Return the per page count.
 	 * 
-	 * @return
+	 * @return Per page count
 	 */
 	public int getPerPage() {
 		return perPage;
 	}
 
 	/**
-	 * Set the per page count.
-	 * 
-	 * @param perPage
-	 * @return
-	 */
-	public PagingInfo setPerPage(int perPage) {
-		this.perPage = perPage;
-		return this;
-
-	}
-
-	/**
 	 * Set the current page.
 	 * 
 	 * @param page
+	 *            Current page number
 	 * @return Fluent API
 	 */
 	public PagingInfo setPage(int page) {
@@ -77,9 +83,23 @@ public class PagingInfo implements QueryParameterProvider {
 	}
 
 	/**
-	 * Set the used sortorder.
+	 * Set the per page count.
+	 * 
+	 * @param perPage
+	 *            Per page count
+	 * @return Fluent API
+	 */
+	public PagingInfo setPerPage(int perPage) {
+		this.perPage = perPage;
+		return this;
+
+	}
+
+	/**
+	 * Set the used sort order.
 	 * 
 	 * @param sortBy
+	 *            Sort order
 	 * @return Fluent API
 	 * @deprecated not yet implemented
 	 * 
@@ -93,7 +113,7 @@ public class PagingInfo implements QueryParameterProvider {
 	/**
 	 * Return the sort by parameter value.
 	 * 
-	 * @return
+	 * @return Field to be sorted by
 	 * @deprecated not yet implemented
 	 */
 	@Deprecated
@@ -104,7 +124,7 @@ public class PagingInfo implements QueryParameterProvider {
 	/**
 	 * Return the order parameter value.
 	 * 
-	 * @return
+	 * @return Sort order
 	 * @deprecated not yet implemented
 	 */
 	@Deprecated

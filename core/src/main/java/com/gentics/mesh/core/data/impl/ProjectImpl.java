@@ -57,9 +57,12 @@ import rx.Observable;
 
 public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implements Project {
 
-	// TODO index to name + unique constraint
-
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
+
+	public static void checkIndices(Database database) {
+		// TODO index to name + unique constraint
+		database.addVertexType(ProjectImpl.class);
+	}
 
 	@Override
 	public String getType() {

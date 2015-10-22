@@ -47,6 +47,10 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(RoleImpl.class);
+	}
+
 	@Override
 	public String getType() {
 		return Role.TYPE;

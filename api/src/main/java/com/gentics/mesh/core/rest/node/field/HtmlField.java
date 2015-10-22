@@ -5,7 +5,7 @@ public interface HtmlField extends ListableField, MicroschemaListableField {
 	/**
 	 * Return the html field value.
 	 * 
-	 * @return
+	 * @return Html value
 	 */
 	String getHTML();
 
@@ -13,7 +13,8 @@ public interface HtmlField extends ListableField, MicroschemaListableField {
 	 * Set the html field value.
 	 * 
 	 * @param html
-	 * @return fluent API
+	 *            Html value
+	 * @return Fluent API
 	 */
 	HtmlField setHTML(String html);
 

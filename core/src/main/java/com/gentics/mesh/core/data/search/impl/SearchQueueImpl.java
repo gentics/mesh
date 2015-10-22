@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.AsyncResult;
@@ -34,6 +35,10 @@ import rx.Observable;
 public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueImpl.class);
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(SearchQueueImpl.class);
+	}
 
 	@Override
 	synchronized public SearchQueueBatch take() throws InterruptedException {

@@ -16,7 +16,7 @@ public interface ActionContext {
 	/**
 	 * Return the data map that is bound to this context.
 	 * 
-	 * @return
+	 * @return Data map
 	 */
 	Map<String, Object> data();
 
@@ -24,7 +24,9 @@ public interface ActionContext {
 	 * Add the data object for the given key to the data map.
 	 * 
 	 * @param key
+	 *            Data key
 	 * @param obj
+	 *            Data object
 	 * @return Fluent API
 	 */
 	ActionContext put(String key, Object obj);
@@ -33,15 +35,17 @@ public interface ActionContext {
 	 * Return the data object for the given key.
 	 * 
 	 * @param key
-	 * @return
+	 *            Data key
+	 * @return Data value or null when no value could be found for the given key
 	 */
 	<T> T get(String key);
 
 	/**
 	 * Return the request parameter with the given name.
 	 * 
-	 * @param string
-	 * @return
+	 * @param name
+	 *            Name of the request parameter
+	 * @return value of the request parameter or null if the parameter was not found
 	 */
 	String getParameter(String name);
 
@@ -70,7 +74,9 @@ public interface ActionContext {
 	 * translation.
 	 * 
 	 * @param i18nKey
+	 *            I18n message key
 	 * @param parameters
+	 *            I18n message parameters
 	 * @return
 	 */
 	String i18n(String i18nKey, String... parameters);
@@ -78,7 +84,7 @@ public interface ActionContext {
 	/**
 	 * Return the query string.
 	 * 
-	 * @return
+	 * @return Query string
 	 */
 	String query();
 
@@ -86,8 +92,11 @@ public interface ActionContext {
 	 * Fail the action with the given status and return a generic message response which includes the given i18n message.
 	 * 
 	 * @param status
+	 *            Http status
 	 * @param i18nKey
+	 *            I18n message key
 	 * @param parameters
+	 *            I18n message parameters
 	 */
 	void fail(HttpResponseStatus status, String i18nKey, String... parameters);
 
@@ -95,8 +104,11 @@ public interface ActionContext {
 	 * Fail the action with the given status and return a generic message response which includes the given i18n message and cause.
 	 * 
 	 * @param status
+	 *            Http status
 	 * @param i18nKey
+	 *            i18n message key
 	 * @param cause
+	 *            Nested cause
 	 */
 	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
 
@@ -104,6 +116,7 @@ public interface ActionContext {
 	 * Fail the action with the given cause.
 	 * 
 	 * @param cause
+	 *            Failure
 	 */
 	void fail(Throwable cause);
 
@@ -111,7 +124,8 @@ public interface ActionContext {
 	 * Deserialize the body string using the given class.
 	 * 
 	 * @param classOfT
-	 * @return
+	 *            Class to be used for deserialisation
+	 * @return Deserialized object
 	 * @throws HttpStatusCodeErrorException
 	 */
 	<T> T fromJson(Class<?> classOfT) throws HttpStatusCodeErrorException;
@@ -119,14 +133,14 @@ public interface ActionContext {
 	/**
 	 * Return the body string of the request.
 	 * 
-	 * @return
+	 * @return Body string
 	 */
 	String getBodyAsString();
 
 	/**
 	 * Return the current set locale.
 	 * 
-	 * @return
+	 * @return Locale
 	 */
 	Locale getLocale();
 
@@ -134,7 +148,7 @@ public interface ActionContext {
 	/**
 	 * Return a list of field name that should be expanded.
 	 * 
-	 * @return
+	 * @return List of fields that should be expanded
 	 */
 	List<String> getExpandedFieldnames();
 

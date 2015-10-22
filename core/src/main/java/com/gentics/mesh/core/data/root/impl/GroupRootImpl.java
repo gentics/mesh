@@ -35,6 +35,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_GROUP);
+		database.addVertexType(GroupRootImpl.class);
 	}
 
 	@Override

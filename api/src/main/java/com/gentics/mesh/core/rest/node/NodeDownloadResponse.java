@@ -14,23 +14,29 @@ public class NodeDownloadResponse {
 	public NodeDownloadResponse() {
 	}
 
-	public void setBuffer(Buffer buffer) {
-		this.buffer = buffer;
-	}
-
 	/**
 	 * Return the buffer that contains the binary data.
 	 * 
-	 * @return
+	 * @return Buffer that contains the binary data
 	 */
 	public Buffer getBuffer() {
 		return buffer;
 	}
 
 	/**
+	 * Set the buffer that contains the binary data.
+	 * 
+	 * @param buffer
+	 *            Buffer that contains the binary data
+	 */
+	public void setBuffer(Buffer buffer) {
+		this.buffer = buffer;
+	}
+
+	/**
 	 * Return the content type of the downloaded file.
 	 * 
-	 * @return
+	 * @return Contenttype of the download
 	 */
 	public String getContentType() {
 		return contentType;
@@ -40,6 +46,7 @@ public class NodeDownloadResponse {
 	 * Set the contenttype.
 	 * 
 	 * @param contentType
+	 *            Contenttype of the download
 	 */
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
@@ -48,7 +55,7 @@ public class NodeDownloadResponse {
 	/**
 	 * Return the binary filename.
 	 * 
-	 * @return
+	 * @return Binary filename
 	 */
 	public String getFilename() {
 		return filename;
@@ -56,6 +63,10 @@ public class NodeDownloadResponse {
 
 	/**
 	 * Set the binary filename.
+	 * 
+	 * @param filename
+	 *            Binary filename
+	 * 
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;

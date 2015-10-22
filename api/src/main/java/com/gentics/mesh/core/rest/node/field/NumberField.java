@@ -5,7 +5,7 @@ public interface NumberField extends ListableField, MicroschemaListableField {
 	/**
 	 * Return the number value.
 	 * 
-	 * @return
+	 * @return Number value
 	 */
 	String getNumber();
 
@@ -13,6 +13,7 @@ public interface NumberField extends ListableField, MicroschemaListableField {
 	 * Set the number field value.
 	 * 
 	 * @param number
+	 *            Number value
 	 * @return Fluent API
 	 */
 	NumberField setNumber(String number);

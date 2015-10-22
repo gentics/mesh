@@ -21,7 +21,7 @@ public abstract class NameUuidReference<T> {
 	/**
 	 * Return the name of the referenced element.
 	 * 
-	 * @return
+	 * @return Name of the referenced element
 	 */
 	public String getName() {
 		return name;
@@ -31,7 +31,8 @@ public abstract class NameUuidReference<T> {
 	 * Set the name of the referenced element.
 	 * 
 	 * @param name
-	 * @return
+	 *            Name of the referenced element
+	 * @return Fluent API
 	 */
 	public T setName(String name) {
 		this.name = name;
@@ -41,7 +42,7 @@ public abstract class NameUuidReference<T> {
 	/**
 	 * Return the uuid of element that is referenced.
 	 * 
-	 * @return
+	 * @return Uuid of the referenced element
 	 */
 	public String getUuid() {
 		return uuid;
@@ -51,7 +52,8 @@ public abstract class NameUuidReference<T> {
 	 * Set the uuid of the referenced element.
 	 * 
 	 * @param uuid
-	 * @return
+	 *            Uuid of the referenced element
+	 * @return Fluent API
 	 */
 	public T setUuid(String uuid) {
 		this.uuid = uuid;

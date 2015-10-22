@@ -19,7 +19,7 @@ public class PagingMetaInfo {
 	/**
 	 * Return the current page number.
 	 * 
-	 * @return
+	 * @return Current page number
 	 */
 	public long getCurrentPage() {
 		return currentPage;
@@ -29,6 +29,7 @@ public class PagingMetaInfo {
 	 * Set the current page number.
 	 * 
 	 * @param currentPage
+	 *            Current page number
 	 */
 	public void setCurrentPage(long currentPage) {
 		this.currentPage = currentPage;
@@ -37,7 +38,7 @@ public class PagingMetaInfo {
 	/**
 	 * Return the amount of items that should be included in one page.
 	 * 
-	 * @return
+	 * @return Per page count
 	 */
 	public long getPerPage() {
 		return perPage;
@@ -47,6 +48,7 @@ public class PagingMetaInfo {
 	 * Set the per page count.
 	 * 
 	 * @param perPage
+	 *            Per page count
 	 */
 	public void setPerPage(long perPage) {
 		this.perPage = perPage;
@@ -55,7 +57,7 @@ public class PagingMetaInfo {
 	/**
 	 * Return the total page count.
 	 * 
-	 * @return
+	 * @return Total page count
 	 */
 	public long getPageCount() {
 		return pageCount;
@@ -65,6 +67,7 @@ public class PagingMetaInfo {
 	 * Set the total page count.
 	 * 
 	 * @param pageCount
+	 *            Total page count
 	 */
 	public void setPageCount(long pageCount) {
 		this.pageCount = pageCount;
@@ -73,7 +76,7 @@ public class PagingMetaInfo {
 	/**
 	 * Return the total element count.
 	 * 
-	 * @return
+	 * @return Total element count
 	 */
 	public long getTotalCount() {
 		return totalCount;
@@ -83,6 +86,7 @@ public class PagingMetaInfo {
 	 * Set the total element count.
 	 * 
 	 * @param totalCount
+	 *            Total element count
 	 */
 	public void setTotalCount(long totalCount) {
 		this.totalCount = totalCount;

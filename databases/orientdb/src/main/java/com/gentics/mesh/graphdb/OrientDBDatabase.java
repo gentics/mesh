@@ -9,12 +9,12 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -29,9 +29,11 @@ import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.tinkerpop.blueprints.Edge;
+import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -92,7 +94,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
 		configureGraphDB();
-		createIndices();
+		//		createIndices();
 
 	}
 
@@ -131,6 +133,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+	}
+
+	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
@@ -146,7 +156,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			tx.shutdown();
 		}
+	}
 
+	@Override
+	public void addVertexType(Class<?> clazzOfVertex) {
+		OrientGraphNoTx tx = factory.getNoTx();
+		try {
+			OrientVertexType e = tx.getVertexType(clazzOfVertex.getSimpleName());
+			if (e == null) {
+				e = tx.createVertexType(clazzOfVertex.getSimpleName(), "V");
+			}
+		} finally {
+			tx.shutdown();
+		}
 	}
 
 	@Override
@@ -185,34 +207,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			if (v.getClassIndex(name) == null) {
-				v.createIndex(name, OClass.INDEX_TYPE.FULLTEXT_HASH_INDEX, fields);
-			}
-		} finally {
-			tx.shutdown();
-		}
-
-	}
-
-	/**
-	 * Create various indices if non existent in current graph database.
-	 */
-	private void createIndices() {
-		Map<String, Class<? extends Element>> indices = new HashMap<>();
-		indices.put("languageTag", Vertex.class);
-		indices.put("name", Vertex.class);
-		indices.put("ferma_type", Edge.class);
-		indices.put("ferma_type", Vertex.class);
-
-		OrientGraphNoTx tx = factory.getNoTx();
-		try {
-
-			for (Map.Entry<String, Class<? extends Element>> entry : indices.entrySet()) {
-				String key = entry.getKey();
-				Class<? extends Element> clazz = entry.getValue();
-				if (tx.getIndex(key, clazz) == null) {
-					log.trace("Creating index {" + key + "#" + clazz.getName());
-					tx.createIndex(key, clazz);
-				}
+				v.createIndex(name, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
 			}
 		} finally {
 			tx.shutdown();
@@ -366,6 +361,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public Object createComposedIndexKey(Object... keys) {
 		return new OCompositeKey(keys);
+	}
+
+	@Override
+	public void setVertexType(Element element, Class<?> classOfVertex) {
+		((OrientVertex) element).moveToClass(classOfVertex.getSimpleName());
 	}
 
 }

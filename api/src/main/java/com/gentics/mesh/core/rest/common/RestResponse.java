@@ -5,7 +5,7 @@ public interface RestResponse extends RestModel {
 	/**
 	 * Return the uuid.
 	 * 
-	 * @return
+	 * @return Uuid
 	 */
 	String getUuid();
 
@@ -13,6 +13,7 @@ public interface RestResponse extends RestModel {
 	 * Set the uuid.
 	 * 
 	 * @param uuid
+	 *            Uuid to be set
 	 */
 	void setUuid(String uuid);
 

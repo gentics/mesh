@@ -5,7 +5,7 @@ public interface Field {
 	/**
 	 * Return the field type.
 	 * 
-	 * @return
+	 * @return Type of the field
 	 */
 	public String getType();
 

@@ -49,7 +49,7 @@ public class MeshOptions {
 	/**
 	 * Return the cluster mode flag.
 	 * 
-	 * @return
+	 * @return Flag value
 	 */
 	public boolean isClusterMode() {
 		return clusterMode;
@@ -59,6 +59,7 @@ public class MeshOptions {
 	 * Set the flag which can toggle the cluster mode.
 	 * 
 	 * @param clusterMode
+	 *            Flag value
 	 */
 	public void setClusterMode(boolean clusterMode) {
 		this.clusterMode = clusterMode;
@@ -67,7 +68,7 @@ public class MeshOptions {
 	/**
 	 * Return the default language.
 	 * 
-	 * @return
+	 * @return Language tag of the default language
 	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
@@ -76,7 +77,7 @@ public class MeshOptions {
 	/**
 	 * Return the default page size.
 	 * 
-	 * @return
+	 * @return Default page size
 	 */
 	public int getDefaultPageSize() {
 		return defaultPageSize;
@@ -85,7 +86,7 @@ public class MeshOptions {
 	/**
 	 * Return the mesh mail server options.
 	 * 
-	 * @return
+	 * @return Mail server options
 	 */
 	public MailConfig getMailServerOptions() {
 		return this.mailServerOptions;
@@ -94,7 +95,7 @@ public class MeshOptions {
 	/**
 	 * Return the mesh storage options.
 	 * 
-	 * @return
+	 * @return Storage options
 	 */
 	public StorageOptions getStorageOptions() {
 		return this.storageOptions;
@@ -103,7 +104,7 @@ public class MeshOptions {
 	/**
 	 * Return the mesh upload options.
 	 * 
-	 * @return
+	 * @return Upload options
 	 */
 	public MeshUploadOptions getUploadOptions() {
 		return uploadOptions;
@@ -113,6 +114,7 @@ public class MeshOptions {
 	 * Set the mesh upload options.
 	 * 
 	 * @param uploadOptions
+	 *            Upload options
 	 */
 	public void setUploadOptions(MeshUploadOptions uploadOptions) {
 		this.uploadOptions = uploadOptions;
@@ -121,7 +123,7 @@ public class MeshOptions {
 	/**
 	 * Return the http server options.
 	 * 
-	 * @return
+	 * @return Http server options
 	 */
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
@@ -131,6 +133,7 @@ public class MeshOptions {
 	 * Set the http server options.
 	 * 
 	 * @param httpServerOptions
+	 *            Http server options
 	 */
 	public void setHttpServerOptions(HttpServerConfig httpServerOptions) {
 		this.httpServerOptions = httpServerOptions;
@@ -139,7 +142,7 @@ public class MeshOptions {
 	/**
 	 * Return the search options.
 	 * 
-	 * @return
+	 * @return Search options
 	 */
 	public ElasticSearchOptions getSearchOptions() {
 		return searchOptions;
@@ -149,6 +152,7 @@ public class MeshOptions {
 	 * Set the search options.
 	 * 
 	 * @param searchOptions
+	 *            Search options
 	 */
 	public void setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;

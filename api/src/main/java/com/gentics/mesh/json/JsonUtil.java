@@ -56,6 +56,9 @@ public final class JsonUtil {
 		initDefaultMapper();
 	}
 
+	/**
+	 * Initialize the schema mapper.
+	 */
 	private static void initSchemaMapper() {
 		schemaMapper = new ObjectMapper();
 		schemaMapper.setSerializationInclusion(Include.NON_NULL);
@@ -90,6 +93,9 @@ public final class JsonUtil {
 		nodeMapper.registerModule(module);
 	}
 
+	/**
+	 * Initialize the default mapper.
+	 */
 	private static void initDefaultMapper() {
 		defaultMapper = new ObjectMapper();
 		defaultMapper.setSerializationInclusion(Include.NON_NULL);
@@ -105,11 +111,11 @@ public final class JsonUtil {
 		module.addSerializer(FieldList.class, new FieldListSerializer());
 
 		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
-		module.addDeserializer(NodeResponse.class, new DelegagingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
+		module.addDeserializer(NodeResponse.class, new DelegatingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
 		module.addDeserializer(NodeCreateRequest.class,
-				new DelegagingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class));
+				new DelegatingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class));
 		module.addDeserializer(NodeUpdateRequest.class,
-				new DelegagingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, NodeUpdateRequest.class));
+				new DelegatingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, NodeUpdateRequest.class));
 		defaultMapper.registerModule(module);
 
 	}

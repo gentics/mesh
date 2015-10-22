@@ -21,7 +21,7 @@ public class RoleResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the name of the role.
 	 * 
-	 * @return
+	 * @return Name of the role
 	 */
 	public String getName() {
 		return name;
@@ -31,6 +31,7 @@ public class RoleResponse extends AbstractGenericNodeRestModel {
 	 * Set the name of the role.
 	 * 
 	 * @param name
+	 *            Name of the role
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -39,7 +40,7 @@ public class RoleResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return a list of groups to which the role was assigned.
 	 * 
-	 * @return
+	 * @return List of groups to which the role was assigned
 	 */
 	public List<GroupResponse> getGroups() {
 		return groups;
@@ -49,6 +50,7 @@ public class RoleResponse extends AbstractGenericNodeRestModel {
 	 * Set a list of groups to which the role was assigned.
 	 * 
 	 * @param groups
+	 *            List of groups to which the role was assigned
 	 */
 	public void setGroups(List<GroupResponse> groups) {
 		this.groups = groups;

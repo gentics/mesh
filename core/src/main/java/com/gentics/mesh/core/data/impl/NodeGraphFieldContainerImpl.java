@@ -73,6 +73,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(NodeGraphFieldContainerImpl.class);
+	}
+
 	private void failOnMissingMandatoryField(ActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key, Schema schema)
 			throws MeshSchemaException {
 		if (field == null && fieldSchema.isRequired() && restField == null) {
@@ -531,4 +535,5 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// TODO delete linked aggregation nodes for node lists etc
 		getElement().remove();
 	}
+
 }

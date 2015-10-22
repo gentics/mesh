@@ -12,16 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.core.data.impl.DatabaseInitializer;
-import com.gentics.mesh.core.data.impl.LanguageImpl;
-import com.gentics.mesh.core.data.impl.RoleImpl;
-import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
-import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
-import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
-import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
-import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.root.impl.TagRootImpl;
-import com.gentics.mesh.core.data.root.impl.UserRootImpl;
+import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -84,7 +75,9 @@ public class MeshSpringConfiguration {
 		}
 		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
 		database.init(options, Mesh.vertx());
-		DatabaseInitializer.init(database);
+		DatabaseHelper helper = new DatabaseHelper(database);
+		helper.init();
+		helper.migrate();
 		return database;
 	}
 

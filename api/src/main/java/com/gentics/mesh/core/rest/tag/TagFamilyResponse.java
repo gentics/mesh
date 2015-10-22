@@ -4,7 +4,6 @@ import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
 
 /**
  * POJO for a tag family response model.
- *
  */
 public class TagFamilyResponse extends AbstractGenericNodeRestModel {
 
@@ -14,6 +13,7 @@ public class TagFamilyResponse extends AbstractGenericNodeRestModel {
 	 * Set the tag family name.
 	 * 
 	 * @param name
+	 *            Name of the tag family
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -22,7 +22,7 @@ public class TagFamilyResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the tag family name.
 	 * 
-	 * @return
+	 * @return Name of the tag family
 	 */
 	public String getName() {
 		return name;

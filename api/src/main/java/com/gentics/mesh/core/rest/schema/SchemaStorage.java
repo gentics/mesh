@@ -10,6 +10,7 @@ public interface SchemaStorage {
 	 * Remove the schema with the given name from the storage.
 	 * 
 	 * @param name
+	 *            Schema name
 	 */
 	void removeSchema(String name);
 
@@ -17,7 +18,8 @@ public interface SchemaStorage {
 	 * Return the schema with the given name.
 	 * 
 	 * @param name
-	 * @return
+	 *            Schema name
+	 * @return Found schema or null when no schema could be found
 	 */
 	Schema getSchema(String name);
 
@@ -25,13 +27,14 @@ public interface SchemaStorage {
 	 * Add the given schema to the storage.
 	 * 
 	 * @param schema
+	 *            Schema
 	 */
 	void addSchema(Schema schema);
 
 	/**
 	 * Return the size of the storage.
 	 * 
-	 * @return
+	 * @return Size of the storage
 	 */
 	int size();
 

@@ -7,7 +7,7 @@ public interface MeshFactory {
 	/**
 	 * Return a new or the current instance of mesh.
 	 * 
-	 * @return
+	 * @return Mesh instance
 	 */
 	Mesh mesh();
 
@@ -15,7 +15,8 @@ public interface MeshFactory {
 	 * Return a new instance of mesh.
 	 * 
 	 * @param options
-	 * @return
+	 *            Mesh options
+	 * @return Mesh instance
 	 */
 	Mesh mesh(MeshOptions options);
 

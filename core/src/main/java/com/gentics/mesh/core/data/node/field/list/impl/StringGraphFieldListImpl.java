@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
@@ -13,6 +14,11 @@ import io.vertx.core.Handler;
 
 public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl>implements StringGraphFieldList {
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(StringGraphFieldListImpl.class);
+	}
+
+	
 	@Override
 	public StringGraphField createString(String string) {
 		StringGraphField field = createField();
@@ -48,5 +54,6 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		}
 		handler.handle(Future.succeededFuture(restModel));
 	}
+
 
 }

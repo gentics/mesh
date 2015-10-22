@@ -14,11 +14,15 @@ import io.vertx.core.Handler;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
 
+	public static final String LANGUAGE_TAG_PROPERTY_KEY = "languageTag";
+	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
+	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
+
 	public static void checkIndices(Database database) {
-		database.addVertexIndex(LanguageImpl.class, "languageTag");
+		database.addVertexIndex(LanguageImpl.class, LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
-	@Override	
+	@Override
 	public String getType() {
 		return Language.TYPE;
 	}
@@ -26,32 +30,32 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 	// TODO add index
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return getProperty(LANGUAGE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		setProperty(LANGUAGE_NAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getNativeName() {
-		return getProperty("nativeName");
+		return getProperty(LANGUAGE_NATIVE_NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setNativeName(String name) {
-		setProperty("nativeName", name);
+		setProperty(LANGUAGE_NATIVE_NAME_PROPERTY_KEY, name);
 	}
 
 	@Override
 	public String getLanguageTag() {
-		return getProperty("languageTag");
+		return getProperty(LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setLanguageTag(String languageTag) {
-		setProperty("languageTag", languageTag);
+		setProperty(LANGUAGE_TAG_PROPERTY_KEY, languageTag);
 	}
 
 	@Override

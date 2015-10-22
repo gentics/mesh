@@ -16,6 +16,9 @@ import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 
+/**
+ * POJO for the node rest response model.
+ */
 public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem, NodeReference {
 
 	private String language;
@@ -57,12 +60,18 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * Return the parent node reference for the node. Note that no reference will be set for the base node of a project. This node has no parent. In those cases
 	 * the reference will be set to null.
 	 * 
-	 * @return
+	 * @return Node reference
 	 */
 	public NodeReferenceImpl getParentNode() {
 		return parentNode;
 	}
 
+	/**
+	 * Set parent node reference
+	 * 
+	 * @param parentNode
+	 *            Parent node reference
+	 */
 	public void setParentNode(NodeReferenceImpl parentNode) {
 		this.parentNode = parentNode;
 	}
@@ -94,10 +103,21 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 		return schema;
 	}
 
+	/**
+	 * List of child node uuids.
+	 * 
+	 * @return Uuid list
+	 */
 	public List<String> getChildren() {
 		return children;
 	}
 
+	/**
+	 * Set list of child node uuids.
+	 * 
+	 * @param children
+	 *            Uuid list
+	 */
 	public void setChildren(List<String> children) {
 		this.children = children;
 	}
@@ -105,7 +125,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	/**
 	 * Return the flag which indicates whether the node is a container.
 	 * 
-	 * @return
+	 * @return Container flag
 	 */
 	public boolean isContainer() {
 		return isContainer;
@@ -115,6 +135,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * Set the container flag which indicates whether the node is a container for other nodes. (eg. a folder)
 	 * 
 	 * @param isContainer
+	 *            Container flag
 	 */
 	public void setContainer(boolean isContainer) {
 		this.isContainer = isContainer;
@@ -123,7 +144,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	/**
 	 * Return the published flag of the node.
 	 * 
-	 * @return
+	 * @return Published flag
 	 */
 	public boolean isPublished() {
 		return published;
@@ -133,6 +154,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * Set the published flag of the node.
 	 * 
 	 * @param published
+	 *            Published flag
 	 */
 	public void setPublished(boolean published) {
 		this.published = published;
@@ -141,7 +163,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	/**
 	 * Return the path of the node.
 	 * 
-	 * @return
+	 * @return Localized path of the node for the node's language
 	 */
 	public String getPath() {
 		return path;
@@ -151,6 +173,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * Set the path of the node.
 	 * 
 	 * @param path
+	 *            Localized path of the node for the node's language
 	 */
 	public void setPath(String path) {
 		this.path = path;
@@ -159,7 +182,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	/**
 	 * Return the version of the node.
 	 * 
-	 * @return
+	 * @return Version of the node
 	 */
 	public String getVersion() {
 		return version;
@@ -169,6 +192,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * Set the version of the node.
 	 * 
 	 * @param version
+	 *            Version of the node
 	 */
 	public void setVersion(String version) {
 		this.version = version;
@@ -177,7 +201,7 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	/**
 	 * Return the display field name for the node.
 	 * 
-	 * @return
+	 * @return Display field
 	 */
 	public String getDisplayField() {
 		return displayField;
@@ -187,15 +211,26 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	 * Set the display field value for the node.
 	 * 
 	 * @param displayField
+	 *            Display field
 	 */
 	public void setDisplayField(String displayField) {
 		this.displayField = displayField;
 	}
 
+	/**
+	 * Return binary properties of the node.
+	 * 
+	 * @return
+	 */
 	public BinaryProperties getBinaryProperties() {
 		return binaryProperties;
 	}
 
+	/**
+	 * Set the binary properties of the node.
+	 * 
+	 * @param binaryProperties
+	 */
 	public void setBinaryProperties(BinaryProperties binaryProperties) {
 		this.binaryProperties = binaryProperties;
 	}
@@ -203,58 +238,131 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	/**
 	 * Return the binary filename of the node (may be null when no binary value was set)
 	 * 
-	 * @return
+	 * @return Filename
 	 */
 	public String getFileName() {
 		return fileName;
 	}
 
+	/**
+	 * Set the binary filename
+	 * 
+	 * @param fileName
+	 *            Filename
+	 */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 
+	/**
+	 * Return the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
+	 * 
+	 * @return Segment field name
+	 */
 	public String getSegmentField() {
 		return segmentField;
 	}
 
+	/**
+	 * Set the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
+	 * 
+	 * @param segmentField
+	 *            Segment field name
+	 */
 	public void setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
 	}
 
+	/**
+	 * Return the project to which the node belongs.
+	 * 
+	 * @return Project of the node
+	 */
 	public ProjectResponse getProject() {
 		return project;
 	}
 
+	/**
+	 * Set the project to which the node belongs.
+	 * 
+	 * @param project
+	 *            Project of the node
+	 */
 	public void setProject(ProjectResponse project) {
 		this.project = project;
 	}
 
+	/**
+	 * Return the field with the given key.
+	 * 
+	 * @param key
+	 *            Key of the field to be returned
+	 * @param classOfT
+	 *            Class of the field
+	 * @return Field or null of no field could be found for the given key
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Field> T getField(String key, Class<T> classOfT) {
 		return (T) getFields().get(key);
 	}
 
+	/**
+	 * Return the field with the given key.
+	 * 
+	 * @param key
+	 *            Name of the field
+	 * @return Found field or null when no field could be found
+	 * @param <T>
+	 *            Class of the field
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Field> T getField(String key) {
 		return (T) getFields().get(key);
 	}
 
+	/**
+	 * Return a map with fields of the node.
+	 * 
+	 * @return Map with fields
+	 */
 	public Map<String, Field> getFields() {
 		return fields;
 	}
 
+	/**
+	 * Return the language tag of the node.
+	 * 
+	 * @return Language tag
+	 */
 	public String getLanguage() {
 		return language;
 	}
 
+	/**
+	 * Set the language of the node.
+	 * 
+	 * @param language
+	 *            Language tag
+	 */
 	public void setLanguage(String language) {
 		this.language = language;
 	}
 
+	/**
+	 * Return a list of language tags which are available for the node.
+	 * 
+	 * @return List of language tags
+	 */
 	public List<String> getAvailableLanguages() {
 		return availableLanguages;
 	}
 
+	/**
+	 * Set a list of language tags which are available for the node.
+	 * 
+	 * @param availableLanguages
+	 *            List of language tags
+	 */
 	public void setAvailableLanguages(List<String> availableLanguages) {
 		this.availableLanguages = availableLanguages;
 	}

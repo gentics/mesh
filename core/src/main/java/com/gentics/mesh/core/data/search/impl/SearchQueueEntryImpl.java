@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.AbstractIndexHandler;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
@@ -34,6 +35,10 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	private static final String ELEMENT_UUID = "element_uuid";
 	private static final String ELEMENT_TYPE = "element_type";
 	private static final String ELEMENT_INDEX_TYPE = "element_index_type";
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(SearchQueueEntryImpl.class);
+	}
 
 	@Override
 	public String getElementUuid() {

@@ -5,7 +5,6 @@ import java.util.List;
 
 /**
  * A tag family tag group holds the tag references for a tag family.
- *
  */
 public class TagFamilyTagGroup {
 
@@ -19,7 +18,7 @@ public class TagFamilyTagGroup {
 	/**
 	 * Return the uuid of the tag family.
 	 * 
-	 * @return
+	 * @return Uuid
 	 */
 	public String getUuid() {
 		return uuid;
@@ -29,6 +28,7 @@ public class TagFamilyTagGroup {
 	 * Set the uuid of the tag family.
 	 * 
 	 * @param uuid
+	 *            Uuid to be set
 	 */
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
@@ -37,7 +37,7 @@ public class TagFamilyTagGroup {
 	/**
 	 * Return a list of tag references of this tag family group.
 	 * 
-	 * @return
+	 * @return List of tag references
 	 */
 	public List<TagReference> getItems() {
 		return items;

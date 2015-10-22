@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -14,6 +15,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
 import io.vertx.core.AsyncResult;
@@ -157,4 +160,23 @@ public class Neo4jDatabase extends AbstractDatabase {
 	public void addEdgeType(String label, String... stringPropertyKeys) {
 		// TODO Auto-generated method stub
 	}
+
+	@Override
+	public void addVertexType(Class<?> clazzOfVertex) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setVertexType(Element element, Class<?> classOfVertex) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
 }

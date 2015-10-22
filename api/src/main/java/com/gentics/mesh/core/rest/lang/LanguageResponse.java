@@ -9,36 +9,38 @@ public class LanguageResponse extends AbstractResponse {
 	private String languageTag;
 
 	/**
-	 * Return the language tag (eg. de)
+	 * Return the ISO 639-1 language tag (eg. de)
 	 * 
-	 * @return
+	 * @return Language tag of the language
 	 */
 	public String getLanguageTag() {
 		return languageTag;
 	}
 
 	/**
-	 * Set the language tag.
+	 * Set the ISO 639-1 language tag.
 	 * 
 	 * @param languageTag
+	 *            Language tag
 	 */
 	public void setLanguageTag(String languageTag) {
 		this.languageTag = languageTag;
 	}
 
 	/**
-	 * Return the language name (eg. German)
+	 * Return the ISO 639-1 language name (eg. German)
 	 * 
-	 * @return
+	 * @return Name of the language
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Set the name of the language.
+	 * Set the ISO 639-1 name of the language.
 	 * 
 	 * @param name
+	 *            Name of the language
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -47,7 +49,7 @@ public class LanguageResponse extends AbstractResponse {
 	/**
 	 * Return the language native name (eg. Deutsch)
 	 * 
-	 * @return
+	 * @return Native name of the language
 	 */
 	public String getNativeName() {
 		return nativeName;
@@ -57,6 +59,7 @@ public class LanguageResponse extends AbstractResponse {
 	 * Set the language native name.
 	 * 
 	 * @param nativeName
+	 *            Native name of the language
 	 */
 	public void setNativeName(String nativeName) {
 		this.nativeName = nativeName;

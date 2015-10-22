@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 
+import java.util.Iterator;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -11,8 +12,11 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -21,6 +25,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_LANGUAGE);
+		database.addVertexType(LanguageRootImpl.class);
 	}
 
 	@Override
@@ -62,7 +67,16 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	 */
 	@Override
 	public Language findByLanguageTag(String languageTag) {
-		return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY }, new Object[] {languageTag});
+		if (it.hasNext()) {
+			//TODO check whether the language was assigned to this root node?
+			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
+			FramedGraph graph = Database.getThreadLocalGraph();
+			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
+		} else {
+			return null;
+		}
 	}
 
 	/**

@@ -45,6 +45,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_USER);
+		database.addVertexType(UserRootImpl.class);
 	}
 
 	@Override

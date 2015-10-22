@@ -14,7 +14,7 @@ public class TagFamilyReference {
 	/**
 	 * Name of the tag family.
 	 * 
-	 * @return
+	 * @return Name of the tag family
 	 */
 	public String getName() {
 		return name;
@@ -24,6 +24,7 @@ public class TagFamilyReference {
 	 * Set the name of the tag family.
 	 * 
 	 * @param name
+	 *            Name of the tag family
 	 * @return Fluent API
 	 */
 	public TagFamilyReference setName(String name) {
@@ -34,7 +35,7 @@ public class TagFamilyReference {
 	/**
 	 * Return the name of the uuid.
 	 * 
-	 * @return
+	 * @return Tag family uuid
 	 */
 	public String getUuid() {
 		return uuid;
@@ -44,6 +45,7 @@ public class TagFamilyReference {
 	 * Set the name of the tagfamily uuid.
 	 * 
 	 * @param uuid
+	 *            Tag family uuid
 	 * @return Fluent API
 	 */
 	public TagFamilyReference setUuid(String uuid) {

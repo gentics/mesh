@@ -5,7 +5,7 @@ public interface NodeFieldListItem {
 	/**
 	 * Return the item node uuid.
 	 * 
-	 * @return
+	 * @return Uuid of the node item
 	 */
 	String getUuid();
 

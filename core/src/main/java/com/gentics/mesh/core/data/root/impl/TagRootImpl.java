@@ -40,6 +40,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_TAG);
+		database.addVertexType(TagRootImpl.class);
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);

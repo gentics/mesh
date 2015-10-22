@@ -9,14 +9,14 @@ public interface FieldSchema {
 	/**
 	 * Return the type of the field schema.
 	 * 
-	 * @return
+	 * @return Field schema type
 	 */
 	String getType();
 
 	/**
 	 * Return the label of the field schema.
 	 * 
-	 * @return
+	 * @return Label
 	 */
 	String getLabel();
 
@@ -24,6 +24,7 @@ public interface FieldSchema {
 	 * Set the label of the field schema.
 	 * 
 	 * @param label
+	 *            Field schema label
 	 * @return Fluent API
 	 */
 	FieldSchema setLabel(String label);
@@ -32,7 +33,7 @@ public interface FieldSchema {
 	/**
 	 * Return the name of the field schema.
 	 * 
-	 * @return
+	 * @return Name
 	 */
 	String getName();
 
@@ -46,11 +47,13 @@ public interface FieldSchema {
 
 	/**
 	 * Return the required flag of the field schema.
+	 * 
 	 * @return
 	 */
 	boolean isRequired();
 
 	/**
+	 * Set the required flag
 	 * 
 	 * @param flag
 	 * @return Fluent API

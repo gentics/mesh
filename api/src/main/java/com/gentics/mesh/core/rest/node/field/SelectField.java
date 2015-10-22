@@ -8,14 +8,15 @@ public interface SelectField extends ListableField, MicroschemaListableField {
 	 * Set the select field string selections.
 	 * 
 	 * @param selections
-	 * @return
+	 *            List of selections
+	 * @return Fluent API
 	 */
 	SelectField setSelections(List<String> selections);
 
 	/**
 	 * Return the select field string selections.
 	 * 
-	 * @return
+	 * @return List of selections
 	 */
 	List<String> getSelections();
 

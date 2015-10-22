@@ -97,6 +97,10 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	public static final String ENABLED_FLAG_PROPERTY_KEY = "enabledFlag";
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(UserImpl.class);
+	}
+
 	@Override
 	public String getType() {
 		return User.TYPE;

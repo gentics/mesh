@@ -9,19 +9,19 @@ public class TagFieldContainer {
 	private String name;
 
 	/**
-	 * Return the name of a tag field container.
+	 * Return the name of the tag.
 	 * 
-	 * @return
+	 * @return Name of the tag
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Set the name of a tag field container.
+	 * Set the name of the tag
 	 * 
-	 * @param name
-	 * @return
+	 * @param name Name of the tag
+	 * @return Fluent API
 	 */
 	public TagFieldContainer setName(String name) {
 		this.name = name;

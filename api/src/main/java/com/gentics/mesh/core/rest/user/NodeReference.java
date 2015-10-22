@@ -5,7 +5,7 @@ public interface NodeReference {
 	/**
 	 * Return the node uuid.
 	 * 
-	 * @return
+	 * @return Uuid
 	 */
 	public String getUuid();
 

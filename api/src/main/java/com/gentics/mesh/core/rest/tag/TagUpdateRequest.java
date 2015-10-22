@@ -17,9 +17,9 @@ public class TagUpdateRequest implements RestModel {
 	}
 
 	/**
-	 * Return the tag field container.
+	 * Return the tag field container which holds tag values (eg. Tag name)
 	 * 
-	 * @return
+	 * @return Tag field container
 	 */
 	public TagFieldContainer getFields() {
 		return fields;
@@ -29,6 +29,7 @@ public class TagUpdateRequest implements RestModel {
 	 * Set the tag field container.
 	 * 
 	 * @param fields
+	 *            Tag field container
 	 */
 	public void setFields(TagFieldContainer fields) {
 		this.fields = fields;
@@ -37,7 +38,7 @@ public class TagUpdateRequest implements RestModel {
 	/**
 	 * Return the tag family reference.
 	 * 
-	 * @return
+	 * @return Tag family reference
 	 */
 	public TagFamilyReference getTagFamilyReference() {
 		return tagFamilyReference;
@@ -47,6 +48,7 @@ public class TagUpdateRequest implements RestModel {
 	 * Set the tag family reference.
 	 * 
 	 * @param tagFamilyReference
+	 *            Tag family reference
 	 */
 	public void setTagFamilyReference(TagFamilyReference tagFamilyReference) {
 		this.tagFamilyReference = tagFamilyReference;

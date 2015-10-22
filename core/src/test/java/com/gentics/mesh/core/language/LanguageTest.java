@@ -53,13 +53,17 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	public void testFindByLanguageTag() {
 
 		//		for (int e = 0; e < 15; e++) {
+		int nChecks = 50000;
 		long start = System.currentTimeMillis();
-		for (int i = 0; i < 200000; i++) {
+		for (int i = 0; i < nChecks; i++) {
 			LanguageRoot root = meshRoot().getLanguageRoot();
 			Language language = root.findByLanguageTag("de");
 			assertNotNull(language);
 		}
+
 		long duration = System.currentTimeMillis() - start;
+		double perCheck = ((double) duration / (double) nChecks);
+		System.out.println("Duration per lookup: " + perCheck);
 		System.out.println("Duration: " + duration);
 		//		}
 	}

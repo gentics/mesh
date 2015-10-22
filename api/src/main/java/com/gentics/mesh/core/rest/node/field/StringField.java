@@ -5,7 +5,7 @@ public interface StringField extends ListableField, MicroschemaListableField {
 	/**
 	 * Return the string value of the field.
 	 * 
-	 * @return
+	 * @return String field value
 	 */
 	String getString();
 
@@ -13,7 +13,8 @@ public interface StringField extends ListableField, MicroschemaListableField {
 	 * Set the string value of the field.
 	 * 
 	 * @param string
-	 * @return fluent API
+	 *            String field value
+	 * @return Fluent API
 	 */
 	StringField setString(String string);
 

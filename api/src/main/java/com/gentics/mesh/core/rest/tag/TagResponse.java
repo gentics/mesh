@@ -17,7 +17,7 @@ public class TagResponse extends AbstractGenericNodeRestModel {
 	/**
 	 * Return the tag family reference.
 	 * 
-	 * @return
+	 * @return Tag family reference
 	 */
 	public TagFamilyReference getTagFamily() {
 		return tagFamily;
@@ -33,9 +33,9 @@ public class TagResponse extends AbstractGenericNodeRestModel {
 	}
 
 	/**
-	 * Return the tag field container.
+	 * Return the tag field container which holds the tag name.
 	 * 
-	 * @return
+	 * @return Tag field container
 	 */
 	public TagFieldContainer getFields() {
 		return fields;

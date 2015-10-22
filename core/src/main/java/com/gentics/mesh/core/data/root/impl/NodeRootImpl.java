@@ -61,6 +61,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_NODE);
+		database.addVertexType(NodeRootImpl.class);
 	}
 
 	@Override

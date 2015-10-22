@@ -30,7 +30,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the flag which indicates whether SSL should be enabled. By default SSL is not enabled.
 	 * 
-	 * @return
+	 * @return Ssl enabled flag
 	 */
 	public boolean isSsl() {
 		return BooleanUtils.isTrue(ssl);
@@ -40,6 +40,7 @@ public class HttpServerConfig {
 	 * Set the SSL enabled flag.
 	 * 
 	 * @param ssl
+	 *            Ssl enabled flag
 	 */
 	public void setSsl(Boolean ssl) {
 		this.ssl = ssl;
@@ -48,7 +49,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the http server port.
 	 * 
-	 * @return
+	 * @return Http server port
 	 */
 	public int getPort() {
 		return port;
@@ -58,6 +59,7 @@ public class HttpServerConfig {
 	 * Set the http server port.
 	 * 
 	 * @param port
+	 *            Http server port
 	 */
 	public void setPort(int port) {
 		this.port = port;
@@ -66,7 +68,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the CORS enabled flag. By default CORS is disabled.
 	 * 
-	 * @return
+	 * @return CORS enabled flag
 	 */
 	public Boolean getEnableCors() {
 		return enableCors;
@@ -76,6 +78,7 @@ public class HttpServerConfig {
 	 * Set the flag which will enable cors.
 	 * 
 	 * @param enableCors
+	 *            CORS enabled flag
 	 */
 	public void setEnableCors(Boolean enableCors) {
 		this.enableCors = enableCors;
@@ -84,7 +87,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the CORS flag.
 	 * 
-	 * @return
+	 * @return CORS enabled flag
 	 */
 	@JsonIgnore
 	public boolean isCorsEnabled() {
@@ -94,7 +97,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the CORS allowed origin pattern.
 	 * 
-	 * @return
+	 * @return CORS allowed pattern
 	 */
 	public String getCorsAllowedOriginPattern() {
 		return this.corsAllowedOriginPattern;
@@ -104,6 +107,7 @@ public class HttpServerConfig {
 	 * Set the CORS allowed origin pattern.
 	 * 
 	 * @param corsAllowedOriginPattern
+	 *            CORS allowed pattern
 	 */
 	public void setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
 		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
@@ -112,7 +116,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the path to the PEM style server key file.
 	 * 
-	 * @return
+	 * @return Path to pem style key file
 	 */
 	public String getKeyPath() {
 		return keyPath;
@@ -122,6 +126,7 @@ public class HttpServerConfig {
 	 * Set the PEM style server key file.
 	 * 
 	 * @param keyPath
+	 *            Path to pem style key file
 	 */
 	public void setKeyPath(String keyPath) {
 		this.keyPath = keyPath;
@@ -130,7 +135,7 @@ public class HttpServerConfig {
 	/**
 	 * Return the path to the PEM style server cert file.
 	 * 
-	 * @return
+	 * @return Path to pem style cert file
 	 */
 	public String getCertPath() {
 		return certPath;
@@ -140,6 +145,7 @@ public class HttpServerConfig {
 	 * Set the path to the PEM style server cert file.
 	 * 
 	 * @param certPath
+	 *            Path to pem style cert file
 	 */
 	public void setCertPath(String certPath) {
 		this.certPath = certPath;

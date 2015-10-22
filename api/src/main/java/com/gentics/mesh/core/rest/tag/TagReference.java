@@ -14,7 +14,7 @@ public class TagReference {
 	/**
 	 * Return the name of the tag.
 	 * 
-	 * @return
+	 * @return Name of the tag
 	 */
 	public String getName() {
 		return name;
@@ -24,6 +24,7 @@ public class TagReference {
 	 * Set the name of the tag.
 	 * 
 	 * @param name
+	 *            Name of the tag to be set
 	 */
 	public void setName(String name) {
 		this.name = name;

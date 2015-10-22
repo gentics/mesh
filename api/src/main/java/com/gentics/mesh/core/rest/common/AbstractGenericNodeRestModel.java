@@ -18,10 +18,9 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	private String[] permissions = {};
 
 	/**
-	 * 
 	 * Return the creator user reference.
 	 * 
-	 * @return
+	 * @return Creator user reference
 	 */
 	public UserReference getCreator() {
 		return creator;
@@ -39,7 +38,7 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	/**
 	 * Return the creation date.
 	 * 
-	 * @return
+	 * @return Creation date
 	 */
 	public long getCreated() {
 		return created;
@@ -49,6 +48,7 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	 * Set the creation date.
 	 * 
 	 * @param created
+	 *            Creation date
 	 */
 	public void setCreated(long created) {
 		this.created = created;
@@ -57,7 +57,7 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	/**
 	 * Return the editor user reference.
 	 * 
-	 * @return
+	 * @return Editor user reference.
 	 */
 	public UserReference getEditor() {
 		return editor;
@@ -93,7 +93,7 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	/**
 	 * Return human readable permissions for the element.
 	 * 
-	 * @return
+	 * @return Array of human readable permissions
 	 */
 	public String[] getPermissions() {
 		return permissions;
@@ -102,7 +102,7 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	/**
 	 * Set the human readable permission names for the element.
 	 * 
-	 * @param permissions
+	 * @param permissions Human readable permissions
 	 */
 	public void setPermissions(String... permissions) {
 		this.permissions = permissions;

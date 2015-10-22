@@ -23,6 +23,8 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 
 	/**
 	 * Return the schema uuid.
+	 * 
+	 * @return Uuid
 	 */
 	public String getUuid() {
 		return uuid;
@@ -30,6 +32,9 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 
 	/**
 	 * Set the schema uuid.
+	 * 
+	 * @param uuid
+	 *            Uuid
 	 */
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
@@ -38,7 +43,7 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	/**
 	 * Return the permissions of the schema.
 	 * 
-	 * @return
+	 * @return Permissions
 	 */
 	public String[] getPermissions() {
 		return permissions;
@@ -48,6 +53,7 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	 * Set the permissions of the schema.
 	 * 
 	 * @param permissions
+	 *            Permissions
 	 */
 	public void setPermissions(String... permissions) {
 		this.permissions = permissions;
@@ -56,7 +62,7 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	/**
 	 * Return a list of projects to which the schema was linked.
 	 * 
-	 * @return
+	 * @return Project list
 	 */
 	public List<ProjectResponse> getProjects() {
 		return projects;
@@ -66,6 +72,7 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	 * Set the list of project to which the schema is linked.
 	 * 
 	 * @param projects
+	 *            Project list
 	 */
 	public void setProjects(List<ProjectResponse> projects) {
 		this.projects = projects;

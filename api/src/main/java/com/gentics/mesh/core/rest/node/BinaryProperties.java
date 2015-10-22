@@ -19,7 +19,7 @@ public class BinaryProperties {
 	/**
 	 * Return the image DPI.
 	 * 
-	 * @return
+	 * @return Image DPI
 	 */
 	public Integer getDpi() {
 		return dpi;
@@ -29,6 +29,7 @@ public class BinaryProperties {
 	 * Set the image DPI.
 	 * 
 	 * @param dpi
+	 *            Image DPI
 	 */
 	public void setDpi(Integer dpi) {
 		this.dpi = dpi;
@@ -37,7 +38,7 @@ public class BinaryProperties {
 	/**
 	 * Return the binary filesize.
 	 * 
-	 * @return
+	 * @return Filesize in bytes
 	 */
 	public long getFileSize() {
 		return fileSize;
@@ -47,6 +48,7 @@ public class BinaryProperties {
 	 * Set the binary filesize.
 	 * 
 	 * @param fileSize
+	 *            Filesize in bytes
 	 */
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
@@ -55,7 +57,7 @@ public class BinaryProperties {
 	/**
 	 * Return the image height.
 	 * 
-	 * @return
+	 * @return Image height
 	 */
 	public Integer getHeight() {
 		return height;
@@ -65,6 +67,7 @@ public class BinaryProperties {
 	 * Set the image height.
 	 * 
 	 * @param height
+	 *            Image height
 	 */
 	public void setHeight(Integer height) {
 		this.height = height;
@@ -73,7 +76,7 @@ public class BinaryProperties {
 	/**
 	 * Return the width of the image.
 	 * 
-	 * @return
+	 * @return Image width
 	 */
 	public Integer getWidth() {
 		return width;
@@ -83,6 +86,7 @@ public class BinaryProperties {
 	 * Set the width of the image.
 	 * 
 	 * @param width
+	 *            Image width
 	 */
 	public void setWidth(Integer width) {
 		this.width = width;
@@ -91,7 +95,7 @@ public class BinaryProperties {
 	/**
 	 * Return the binary mimetype.
 	 * 
-	 * @return
+	 * @return Binary mimetype
 	 */
 	public String getMimeType() {
 		return mimeType;
@@ -101,6 +105,7 @@ public class BinaryProperties {
 	 * Set the binary mimetype.
 	 * 
 	 * @param mimeType
+	 *            Binary mimetype
 	 */
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
@@ -109,7 +114,7 @@ public class BinaryProperties {
 	/**
 	 * Return the sha512 checksum.
 	 * 
-	 * @return
+	 * @return Checksum
 	 */
 	public String getSha512sum() {
 		return sha512sum;
@@ -119,6 +124,7 @@ public class BinaryProperties {
 	 * Set the binary sha512 checksum.
 	 * 
 	 * @param sha512sum
+	 *            Checksum
 	 */
 	public void setSha512sum(String sha512sum) {
 		this.sha512sum = sha512sum;

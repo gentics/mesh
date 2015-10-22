@@ -17,7 +17,8 @@ public interface ListFieldSchema extends MicroschemaListableFieldSchema {
 	 * Set the list type.
 	 * 
 	 * @param listType
-	 * @return
+	 *            List type
+	 * @return Fluent API
 	 */
 	ListFieldSchema setListType(String listType);
 
@@ -32,7 +33,7 @@ public interface ListFieldSchema extends MicroschemaListableFieldSchema {
 	 * Set the maximum of items that the list can hold.
 	 * 
 	 * @param max
-	 * @return
+	 * @return Fluent API
 	 */
 	ListFieldSchema setMax(Integer max);
 
@@ -43,5 +44,11 @@ public interface ListFieldSchema extends MicroschemaListableFieldSchema {
 	 */
 	Integer getMin();
 
+	/**
+	 * Set the minimum of items that the list is allowd to hold
+	 * 
+	 * @param min
+	 * @return Fluent API
+	 */
 	ListFieldSchema setMin(Integer min);
 }

@@ -20,7 +20,7 @@ public class AbstractListResponse<T> {
 	/**
 	 * Return the meta info for the list.
 	 * 
-	 * @return
+	 * @return Meta info
 	 */
 	public PagingMetaInfo getMetainfo() {
 		return metainfo;
@@ -30,6 +30,7 @@ public class AbstractListResponse<T> {
 	 * Set the meta info for the list.
 	 * 
 	 * @param metainfo
+	 *            Meta info
 	 */
 	public void setMetainfo(PagingMetaInfo metainfo) {
 		this.metainfo = metainfo;
@@ -38,7 +39,7 @@ public class AbstractListResponse<T> {
 	/**
 	 * Return the list data.
 	 * 
-	 * @return
+	 * @return List data
 	 */
 	@JsonTypeInfo(use = Id.CLASS)
 	public List<T> getData() {

@@ -34,6 +34,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(SchemaContainerRootImpl.class);
+	}
+
 	@Override
 	protected Class<? extends SchemaContainer> getPersistanceClass() {
 		return SchemaContainerImpl.class;

@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -71,6 +72,10 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	public static void setInstance(MeshRoot meshRoot) {
 		instance = meshRoot;
+	}
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(MeshRootImpl.class);
 	}
 
 	@Override
