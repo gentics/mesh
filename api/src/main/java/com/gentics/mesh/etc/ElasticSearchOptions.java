@@ -9,6 +9,27 @@ public class ElasticSearchOptions {
 
 	private String directory = DEFAULT_DIRECTORY;
 
+	private boolean httpEnabled = false;
+
+	/**
+	 * Check whether the http server should be enabled.
+	 * 
+	 * @return
+	 */
+	public boolean isHttpEnabled() {
+		return httpEnabled;
+	}
+
+	/**
+	 * Set http server flag
+	 * 
+	 * @param httpEnabled
+	 *            Server flag
+	 */
+	public void setHttpEnabled(boolean httpEnabled) {
+		this.httpEnabled = httpEnabled;
+	}
+
 	/**
 	 * 
 	 * Return the search index filesystem directory.

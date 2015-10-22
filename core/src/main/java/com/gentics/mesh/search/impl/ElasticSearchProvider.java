@@ -43,12 +43,13 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Creating elasticsearch node");
 		}
 		long start = System.currentTimeMillis();
-		String dataDirectory = options.getDirectory();
 		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder();
-		elasticsearchSettings.put("http.enabled", "false");
-		elasticsearchSettings.put("path.data", dataDirectory);
+		elasticsearchSettings.put("http.enabled", options.isHttpEnabled());
+		elasticsearchSettings.put("path.data", options.getDirectory());
 		elasticsearchSettings.put("node.name", MeshNameProvider.getInstance().getName());
-		node = NodeBuilder.nodeBuilder().local(true).settings(elasticsearchSettings.build()).node();
+		NodeBuilder builder = NodeBuilder.nodeBuilder();
+		//TODO configure ES cluster options
+		node = builder.local(true).settings(elasticsearchSettings.build()).node();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}

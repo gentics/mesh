@@ -88,7 +88,6 @@ public class MeshSpringConfiguration {
 
 	@Bean
 	public SearchProvider searchProvider() {
-
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		if (options == null) {
 			return new DummySearchProvider();
