@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 public class AbstractListResponse<T> {
 
@@ -41,7 +39,8 @@ public class AbstractListResponse<T> {
 	 * 
 	 * @return List data
 	 */
-	@JsonTypeInfo(use = Id.CLASS)
+	//@JsonTypeInfo(use = Id.CLASS)
+	//@JsonTypeInfo(use = Id.NONE )
 	public List<T> getData() {
 		return data;
 	}
