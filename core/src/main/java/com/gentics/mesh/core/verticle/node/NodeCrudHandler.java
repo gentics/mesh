@@ -53,6 +53,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+
 @Component
 public class NodeCrudHandler extends AbstractCrudHandler {
 
@@ -360,6 +361,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (hasSucceeded(ac, rh)) {
 						Node node = rh.result();
 						loadObject(ac, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
+							//TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 							if (hasSucceeded(ac, th)) {
 								Tag tag = th.result();
 								db.trx(txAdd -> {

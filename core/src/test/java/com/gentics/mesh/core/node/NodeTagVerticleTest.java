@@ -67,6 +67,10 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
+		future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+
 		node.reload();
 		NodeResponse restNode = future.result();
 		assertTrue(test.containsTag(restNode, tag));

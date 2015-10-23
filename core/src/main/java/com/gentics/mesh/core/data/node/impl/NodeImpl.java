@@ -128,7 +128,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	@Override
 	public void addTag(Tag tag) {
-		linkOut(tag.getImpl(), HAS_TAG);
+		setLinkOutTo(tag.getImpl(), HAS_TAG);
 	}
 
 	@Override
