@@ -72,7 +72,7 @@ public class VerticleHelper {
 	}
 
 	/**
-	 * Set the paging parameters into the given list response by examing the given page.
+	 * Set the paging parameters into the given list response by examining the given page.
 	 * 
 	 * @param response
 	 *            List response that will be updated

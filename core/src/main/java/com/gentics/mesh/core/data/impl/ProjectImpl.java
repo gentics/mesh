@@ -157,7 +157,7 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillRest(projectResponse, ac, rh -> {
+			fillCommonRestFields(projectResponse, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {

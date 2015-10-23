@@ -347,7 +347,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			// Add common fields
 			ObservableFuture<Void> obsCommonFiields = RxHelper.observableFuture();
 			futures.add(obsCommonFiields);
-			fillRest(restNode, ac, fr -> {
+			fillCommonRestFields(restNode, ac, fr -> {
 				if (fr.failed()) {
 					obsCommonFiields.toHandler().handle(Future.failedFuture(fr.cause()));
 				} else {

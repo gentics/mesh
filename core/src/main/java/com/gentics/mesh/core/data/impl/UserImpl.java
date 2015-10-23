@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -53,6 +54,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -196,7 +198,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public List<? extends Role> getRoles() {
-		return out(HAS_GROUP).out(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
+		return out(HAS_USER).in(HAS_ROLE).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 	}
 
 	@Override
@@ -306,7 +308,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 		return false;
 
-		//return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+//		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
 	@Override
@@ -409,7 +411,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillRest(restUser, ac, rh -> {
+			fillCommonRestFields(restUser, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {

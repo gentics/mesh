@@ -140,7 +140,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillRest(response, ac, rh -> {
+			fillCommonRestFields(response, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {

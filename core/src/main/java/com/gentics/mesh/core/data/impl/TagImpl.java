@@ -123,7 +123,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillRest(restTag, ac, rh -> {
+			fillCommonRestFields(restTag, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {

@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -72,6 +76,9 @@ public class DatabaseHelper {
 	private boolean isMigrationNeeded() {
 		try (NoTrx tx = database.noTrx()) {
 			MeshRoot meshRoot = tx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+			if (meshRoot == null) {
+				return false;
+			}
 			String dbVersion = meshRoot.getDatabaseVersion();
 			log.info("Mesh Database version {" + MeshRootImpl.DATABASE_VERSION + "}");
 			log.info("Current Database version {" + dbVersion + "}");
@@ -91,6 +98,18 @@ public class DatabaseHelper {
 		log.info("Starting migration of vertex types");
 		if (!isMigrationNeeded()) {
 			return;
+		}
+
+		try (Trx tx = database.trx()) {
+			MeshRoot meshRoot = tx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+
+			// Add shortcut edges from role to users of this group
+			for (User user : meshRoot.getUserRoot().findAll()) {
+				for (Role role : user.getRoles()) {
+					user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+				}
+			}
+			tx.success();
 		}
 
 		// 1. Add types
@@ -121,21 +140,21 @@ public class DatabaseHelper {
 			}
 		}
 
-		try (NoTrx trx = database.noTrx()) {
-			MeshRoot meshRoot = trx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-			if (meshRoot != null) {
-				migrateType(meshRoot.getLanguageRoot(), LanguageImpl.class);
-				migrateType(meshRoot.getNodeRoot(), NodeImpl.class);
-				migrateType(meshRoot.getTagRoot(), TagImpl.class);
-				migrateType(meshRoot.getSchemaContainerRoot(), SchemaContainerImpl.class);
-				migrateType(meshRoot.getProjectRoot(), ProjectImpl.class);
-				migrateType(meshRoot.getTagFamilyRoot(), TagFamilyImpl.class);
-
-				migrateType(meshRoot.getRoleRoot(), RoleImpl.class);
-				migrateType(meshRoot.getGroupRoot(), GroupImpl.class);
-				migrateType(meshRoot.getUserRoot(), UserImpl.class);
-			}
-		}
+		//		try (NoTrx trx = database.noTrx()) {
+		//			MeshRoot meshRoot = trx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+		//			if (meshRoot != null) {
+		//				migrateType(meshRoot.getLanguageRoot(), LanguageImpl.class);
+		//				migrateType(meshRoot.getNodeRoot(), NodeImpl.class);
+		//				migrateType(meshRoot.getTagRoot(), TagImpl.class);
+		//				migrateType(meshRoot.getSchemaContainerRoot(), SchemaContainerImpl.class);
+		//				migrateType(meshRoot.getProjectRoot(), ProjectImpl.class);
+		//				migrateType(meshRoot.getTagFamilyRoot(), TagFamilyImpl.class);
+		//
+		//				migrateType(meshRoot.getRoleRoot(), RoleImpl.class);
+		//				migrateType(meshRoot.getGroupRoot(), GroupImpl.class);
+		//				migrateType(meshRoot.getUserRoot(), UserImpl.class);
+		//			}
+		//		}
 
 		try (NoTrx trx = database.noTrx()) {
 			MeshRoot meshRoot = trx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);

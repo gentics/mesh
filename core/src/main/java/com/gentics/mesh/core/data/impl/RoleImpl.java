@@ -131,7 +131,7 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillRest(restRole, ac, rh -> {
+			fillCommonRestFields(restRole, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {

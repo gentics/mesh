@@ -52,7 +52,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	 * Static field which indicates the current database version. When incremented a migration of the database will be invoked using the current
 	 * {@link DatabaseHelper#migrate()} method.
 	 */
-	public static final String DATABASE_VERSION = "1.0";
+	public static final String DATABASE_VERSION = "1.1";
 
 	private static final String DATABASE_VERSION_PROPERTY_KEY = "databaseVersion";
 

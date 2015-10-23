@@ -173,7 +173,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillRest(restGroup, ac, rh -> {
+			fillCommonRestFields(restGroup, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {

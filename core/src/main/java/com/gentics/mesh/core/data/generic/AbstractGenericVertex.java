@@ -55,7 +55,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 	 * @param ac
 	 * @param handler
 	 */
-	protected <R extends AbstractGenericNodeRestModel> void fillRest(R model, InternalActionContext ac, Handler<AsyncResult<R>> handler) {
+	protected <R extends AbstractGenericNodeRestModel> void fillCommonRestFields(R model, InternalActionContext ac, Handler<AsyncResult<R>> handler) {
 
 		model.setUuid(getUuid());
 
