@@ -360,40 +360,18 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<executions>
-<!--
 					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>generate-cypher-images</id>
-						<phase>package</phase>
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.basedir}/target/apidocs</outputDirectory>
-							<reportOutputDirectory>${project.basedir}/target/apidocs</reportOutputDirectory>
-							<useStandardDocletOptions>false</useStandardDocletOptions>
-							<doclet>de.jotschi.javadoc.cypher.CypherDoclet</doclet>
-							<docletArtifact>
-								<groupId>de.jotschi</groupId>
-								<artifactId>javadoc-cypher-doclet</artifactId>
-								<version>0.0.1-SNAPSHOT</version>
-							</docletArtifact>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-javadoc-jar</id>
-						<phase>package</phase>
+						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
 						</goals>
 					</execution>
--->
 				</executions>
+				<!-- <executions> <execution> <phase>package</phase> <goals> <goal>javadoc</goal> </goals> </execution> <execution> <id>generate-cypher-images</id> <phase>package</phase> <goals> 
+					<goal>javadoc</goal> </goals> <configuration> <outputDirectory>${project.basedir}/target/apidocs</outputDirectory> <reportOutputDirectory>${project.basedir}/target/apidocs</reportOutputDirectory> 
+					<useStandardDocletOptions>false</useStandardDocletOptions> <doclet>de.jotschi.javadoc.cypher.CypherDoclet</doclet> <docletArtifact> <groupId>de.jotschi</groupId> <artifactId>javadoc-cypher-doclet</artifactId> 
+					<version>0.0.1-SNAPSHOT</version> </docletArtifact> </configuration> </execution> <execution> <id>generate-javadoc-jar</id> <phase>package</phase> <goals> <goal>jar</goal> </goals> 
+					</execution> </executions> -->
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -420,7 +398,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
