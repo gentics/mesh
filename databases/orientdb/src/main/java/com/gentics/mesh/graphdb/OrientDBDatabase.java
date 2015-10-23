@@ -39,6 +39,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
+import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -365,6 +366,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void setVertexType(Element element, Class<?> classOfVertex) {
+		if (element instanceof WrappedVertex) {
+			element = ((WrappedVertex) element).getBaseElement();
+		}
 		((OrientVertex) element).moveToClass(classOfVertex.getSimpleName());
 	}
 

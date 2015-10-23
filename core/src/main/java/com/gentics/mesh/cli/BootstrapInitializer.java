@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -260,7 +261,7 @@ public class BootstrapInitializer {
 		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 		if (foundMeshRoot == null) {
 			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
-			foundMeshRoot.setDatabaseVersion(Mesh.getVersion());
+			foundMeshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
 			if (log.isInfoEnabled()) {
 				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
 			}

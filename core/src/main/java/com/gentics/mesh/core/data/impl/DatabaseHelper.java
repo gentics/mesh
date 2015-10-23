@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
@@ -24,14 +26,15 @@ import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.VertexFrame;
+import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Utility class that will handle index creation.
+ * Utility class that will handle index creation and database migration.
  */
 public class DatabaseHelper {
 
@@ -43,6 +46,12 @@ public class DatabaseHelper {
 		this.database = database;
 	}
 
+	/**
+	 * Migrate all vertices of the root type.
+	 * 
+	 * @param rootVertex
+	 * @param clazzOfT
+	 */
 	private <T extends GenericVertex<?>> void migrateType(RootVertex<T> rootVertex, Class<? extends T> clazzOfT) {
 		try (Trx trx = database.trx()) {
 			for (T vertex : rootVertex.findAll()) {
@@ -54,19 +63,62 @@ public class DatabaseHelper {
 		}
 	}
 
+	/**
+	 * Compare the stored database version with the version that is defined in the {@link MeshRootImpl} class. A database version is needed when the current
+	 * database version is smaller than the implementation version.
+	 * 
+	 * @return
+	 */
+	private boolean isMigrationNeeded() {
+		try (NoTrx tx = database.noTrx()) {
+			MeshRoot meshRoot = tx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+			String dbVersion = meshRoot.getDatabaseVersion();
+			log.info("Mesh Database version {" + MeshRootImpl.DATABASE_VERSION + "}");
+			log.info("Current Database version {" + dbVersion + "}");
+			if (StringUtils.isEmpty(dbVersion) || VersionUtil.compareVersions(MeshRootImpl.DATABASE_VERSION, dbVersion) > 0) {
+				log.info("Database migration needed");
+				return true;
+			}
+		}
+		log.info("Skipping Database migration");
+		return false;
+	}
+
+	/**
+	 * Check if a migration is needed and invoke the database migration.
+	 */
 	public void migrate() {
 		log.info("Starting migration of vertex types");
-		try (Trx trx = database.trx()) {
-			for (VertexFrame vertex : trx.getGraph().v()) {
+		if (!isMigrationNeeded()) {
+			return;
+		}
+
+		// 1. Add types
+		try (NoTrx tx = database.noTrx()) {
+			for (Vertex vertex : tx.getGraph().getVertices()) {
 				String typeKey = vertex.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
 				try {
 					Class<?> clazz = getClass().getClassLoader().loadClass(typeKey);
-					database.setVertexType(vertex.getElement(), clazz);
+					database.addVertexType(clazz);
 				} catch (ClassNotFoundException e) {
 					log.error("Could not find class for type key {" + typeKey + "} within classpath. Omitting migration.");
 				}
 			}
-			trx.success();
+		}
+
+		// 2. Assign types
+		try (Trx tx = database.trx()) {
+			for (Vertex vertex : tx.getGraph().getVertices()) {
+				String typeKey = vertex.getProperty(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY);
+				try {
+					Class<?> clazz = getClass().getClassLoader().loadClass(typeKey);
+					database.setVertexType(vertex, clazz);
+					tx.success();
+				} catch (ClassNotFoundException e) {
+					log.error("Could not find class for type key {" + typeKey + "} within classpath. Omitting migration.");
+					tx.failure();
+				}
+			}
 		}
 
 		try (NoTrx trx = database.noTrx()) {
@@ -84,8 +136,16 @@ public class DatabaseHelper {
 				migrateType(meshRoot.getUserRoot(), UserImpl.class);
 			}
 		}
+
+		try (NoTrx trx = database.noTrx()) {
+			MeshRoot meshRoot = trx.getGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+			meshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
+		}
 	}
 
+	/**
+	 * Initialize the database indices and types.
+	 */
 	public void init() {
 
 		database.addVertexType(MeshRootImpl.class);
