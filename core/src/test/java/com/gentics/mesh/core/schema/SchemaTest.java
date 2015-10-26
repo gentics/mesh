@@ -14,7 +14,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -24,6 +23,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -72,7 +72,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
+		Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

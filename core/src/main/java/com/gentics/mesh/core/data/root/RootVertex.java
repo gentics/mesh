@@ -3,13 +3,13 @@ package com.gentics.mesh.core.data.root;
 import java.util.List;
 import java.util.Stack;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
@@ -57,7 +57,7 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 * @throws InvalidArgumentException
 	 *             if the paging options are malformed.
 	 */
-	Page<? extends T> findAll(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
+	Page<? extends T> findAll(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
 

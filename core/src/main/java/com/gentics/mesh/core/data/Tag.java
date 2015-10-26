@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
@@ -60,7 +60,7 @@ public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVer
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
+	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Return the tag graph field container that hold the tag name for the given language.

@@ -26,7 +26,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -39,6 +38,7 @@ import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -145,7 +145,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
-		future = getClient().findSchemas(new PagingInfo(2, perPage));
+		future = getClient().findSchemas(new PagingParameter(2, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		restResponse = future.result();
@@ -161,7 +161,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<SchemaResponse> allSchemas = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingInfo(page, perPage));
+			Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameter(page, perPage));
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 
@@ -176,15 +176,15 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		// .collect(Collectors.toList());
 		// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
-		future = getClient().findSchemas(new PagingInfo(-1, perPage));
+		future = getClient().findSchemas(new PagingParameter(-1, perPage));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findSchemas(new PagingInfo(1, -1));
+		future = getClient().findSchemas(new PagingParameter(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findSchemas(new PagingInfo(4242, 25));
+		future = getClient().findSchemas(new PagingParameter(4242, 25));
 		latchFor(future);
 		assertSuccess(future);
 
@@ -195,7 +195,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<SchemaListResponse> future = getClient().findSchemas(new PagingInfo(1, 0));
+		Future<SchemaListResponse> future = getClient().findSchemas(new PagingParameter(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

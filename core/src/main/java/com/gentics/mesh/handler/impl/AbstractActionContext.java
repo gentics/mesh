@@ -1,6 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
-import static com.gentics.mesh.core.rest.node.NodeRequestParameters.EXPANDFIELDS_QUERY_PARAM_KEY;
+import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDFIELDS_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 

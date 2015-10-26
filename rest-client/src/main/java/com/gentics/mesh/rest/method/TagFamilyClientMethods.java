@@ -2,14 +2,14 @@ package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 public interface TagFamilyClientMethods {
 
@@ -29,7 +29,7 @@ public interface TagFamilyClientMethods {
 	 * @param pagingInfo
 	 * @return
 	 */
-	Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo);
+	Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingParameter pagingInfo);
 
 	/**
 	 * Create a new tag family.

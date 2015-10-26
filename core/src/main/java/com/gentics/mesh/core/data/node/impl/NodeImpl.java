@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -64,6 +63,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
@@ -510,7 +510,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 	}
 
 	@Override
-	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo)
+	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
 			throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
 				.retain(requestUser.getImpl()).back();
@@ -524,7 +524,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, ac.getPagingInfo(), TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, ac.getPagingParameter(), TagImpl.class);
 	}
 
 	@Override

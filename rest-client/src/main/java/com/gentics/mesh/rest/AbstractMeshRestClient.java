@@ -4,8 +4,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;

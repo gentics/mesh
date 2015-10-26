@@ -23,7 +23,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
@@ -32,6 +31,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -60,7 +60,7 @@ extends AbstractRestVerticleTest {
 		role().grantPermissions(extraUser, READ_PERM);
 		String groupUuid = group().getUuid();
 
-		Future<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingInfo());
+		Future<UserListResponse> future = getClient().findUsersOfGroup(groupUuid, new PagingParameter());
 		latchFor(future);
 		assertSuccess(future);
 

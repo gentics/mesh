@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -44,6 +43,7 @@ import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
@@ -152,7 +152,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		// Don't grant permissions to no perm project
 
 		// Test default paging parameters
-		Future<ProjectListResponse> future = getClient().findProjects(new PagingInfo());
+		Future<ProjectListResponse> future = getClient().findProjects(new PagingParameter());
 		latchFor(future);
 		assertSuccess(future);
 		ProjectListResponse restResponse = future.result();
@@ -161,7 +161,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 11;
-		future = getClient().findProjects(new PagingInfo(3, perPage));
+		future = getClient().findProjects(new PagingParameter(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		restResponse = future.result();
@@ -178,7 +178,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<ProjectResponse> allProjects = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingInfo(page, perPage));
+			Future<ProjectListResponse> pageFuture = getClient().findProjects(new PagingParameter(page, perPage));
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			restResponse = pageFuture.result();
@@ -191,15 +191,15 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 				.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
-		future = getClient().findProjects(new PagingInfo(-1, perPage));
+		future = getClient().findProjects(new PagingParameter(-1, perPage));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findProjects(new PagingInfo(1, -1));
+		future = getClient().findProjects(new PagingParameter(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findProjects(new PagingInfo(4242, 25));
+		future = getClient().findProjects(new PagingParameter(4242, 25));
 		latchFor(future);
 		assertSuccess(future);
 
@@ -216,7 +216,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadProjectCountInfoOnly() {
-		Future<ProjectListResponse> future = getClient().findProjects(new PagingInfo(1, 0));
+		Future<ProjectListResponse> future = getClient().findProjects(new PagingParameter(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

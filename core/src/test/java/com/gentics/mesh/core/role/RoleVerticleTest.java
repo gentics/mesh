@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -44,6 +43,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -253,7 +253,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int perPage = 11;
 		int page = 1;
-		future = getClient().findRoles(new PagingInfo(page, perPage));
+		future = getClient().findRoles(new PagingParameter(page, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		restResponse = future.result();
@@ -275,7 +275,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<RoleResponse> allRoles = new ArrayList<>();
 		for (page = 1; page <= totalPages; page++) {
-			Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingInfo(page, perPage));
+			Future<RoleListResponse> pageFuture = getClient().findRoles(new PagingParameter(page, perPage));
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			restResponse = pageFuture.result();
@@ -288,15 +288,15 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		future = getClient().findRoles(new PagingInfo(-1, perPage));
+		future = getClient().findRoles(new PagingParameter(-1, perPage));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findRoles(new PagingInfo(1, -1));
+		future = getClient().findRoles(new PagingParameter(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findRoles(new PagingInfo(4242, 25));
+		future = getClient().findRoles(new PagingParameter(4242, 25));
 		latchFor(future);
 		assertSuccess(future);
 
@@ -309,7 +309,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<RoleListResponse> future = getClient().findRoles(new PagingInfo(1, 0));
+		Future<RoleListResponse> future = getClient().findRoles(new PagingParameter(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

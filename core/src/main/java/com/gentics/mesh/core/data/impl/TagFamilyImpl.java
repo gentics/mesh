@@ -18,7 +18,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -38,6 +37,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -95,7 +95,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException {
 		// TODO check perms
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);

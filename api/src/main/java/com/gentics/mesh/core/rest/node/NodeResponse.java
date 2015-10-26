@@ -53,6 +53,8 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 
 	private FieldMap fields = new FieldMapImpl();
 
+	private String rolePerms;
+
 	public NodeResponse() {
 	}
 
@@ -371,6 +373,24 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	@Override
 	public String getType() {
 		return FieldTypes.NODE.toString();
+	}
+
+	/**
+	 * Return the role permissions.
+	 * 
+	 * @return
+	 */
+	public String getRolePerms() {
+		return rolePerms;
+	}
+
+	/**
+	 * Set the role permissions.
+	 * 
+	 * @param rolePerms
+	 */
+	public void setRolePerms(String rolePerms) {
+		this.rolePerms = rolePerms;
 	}
 
 }

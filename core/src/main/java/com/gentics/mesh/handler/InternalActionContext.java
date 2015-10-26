@@ -2,10 +2,10 @@ package com.gentics.mesh.handler;
 
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -50,12 +50,12 @@ public interface InternalActionContext extends ActionContext {
 	List<String> getSelectedLanguageTags();
 
 	/**
-	 * Extract the paging information from the request parameters. The paging information contains information about the number of the page that is currently
+	 * Extract the paging parameter from the request parameters. The paging information contains information about the number of the page that is currently
 	 * requested and the amount of items that should be included in a single page.
 	 * 
-	 * @return Paging information
+	 * @return Paging parameter
 	 */
-	PagingInfo getPagingInfo();
+	PagingParameter getPagingParameter();
 
 	/**
 	 * Return an error handler which is able to fail the call chain.

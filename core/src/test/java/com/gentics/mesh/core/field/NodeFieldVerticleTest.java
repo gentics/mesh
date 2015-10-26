@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -24,6 +23,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -60,7 +60,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
 		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameters().setLanguages("en"));
+				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
@@ -72,7 +72,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		nodeUpdateRequest.setLanguage("en");
 
 		Future<NodeResponse> updateFuture = getClient().updateNode(DemoDataProvider.PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
-				new NodeRequestParameters().setLanguages("en"));
+				new NodeRequestParameter().setLanguages("en"));
 		latchFor(updateFuture);
 		assertSuccess(updateFuture);
 		assertNotNull("The response could not be found in the result of the future.", updateFuture.result());

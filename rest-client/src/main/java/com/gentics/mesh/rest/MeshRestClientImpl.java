@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -22,7 +21,6 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -49,6 +47,8 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -239,7 +239,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingInfo pagingInfo) {
+	public Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingParameter pagingInfo) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		return handleRequest(GET, "/" + projectName + "/tagFamilies" + getQuery(pagingInfo), TagFamilyListResponse.class);
 	}
@@ -477,7 +477,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	@Override
 	public Future<Void> initSchemaStorage() {
 		//TODO handle paging correctly
-		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingInfo(1, 100));
+		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingParameter(1, 100));
 		Future<Void> future = Future.future();
 		schemasFuture.setHandler(rh -> {
 			if (rh.failed()) {

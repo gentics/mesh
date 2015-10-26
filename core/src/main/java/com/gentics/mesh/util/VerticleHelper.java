@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
@@ -40,6 +39,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -200,7 +200,7 @@ public class VerticleHelper {
 
 		// TODO use reflection to create the empty list response
 
-		PagingInfo pagingInfo = ac.getPagingInfo();
+		PagingParameter pagingInfo = ac.getPagingParameter();
 		MeshAuthUser requestUser = ac.getUser();
 		try {
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);

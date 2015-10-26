@@ -18,13 +18,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -36,7 +36,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-		root.findAll(getRequestUser(), new PagingInfo(1, 10));
+		root.findAll(getRequestUser(), new PagingParameter(1, 10));
 	}
 
 	@Test

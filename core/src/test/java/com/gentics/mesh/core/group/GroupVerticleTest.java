@@ -27,7 +27,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -202,7 +202,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, restResponse.getData().size());
 
 		int perPage = 6;
-		future = getClient().findGroups(new PagingInfo(3, perPage));
+		future = getClient().findGroups(new PagingParameter(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		restResponse = future.result();
@@ -220,7 +220,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<GroupResponse> allGroups = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingInfo(page, perPage));
+			Future<GroupListResponse> pageFuture = getClient().findGroups(new PagingParameter(page, perPage));
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			restResponse = pageFuture.result();
@@ -233,15 +233,15 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("Extra group should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		future = getClient().findGroups(new PagingInfo(-1, perPage));
+		future = getClient().findGroups(new PagingParameter(-1, perPage));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findGroups(new PagingInfo(1, -1));
+		future = getClient().findGroups(new PagingParameter(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findGroups(new PagingInfo(4242, 1));
+		future = getClient().findGroups(new PagingParameter(4242, 1));
 		latchFor(future);
 		assertSuccess(future);
 
@@ -255,7 +255,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<GroupListResponse> future = getClient().findGroups(new PagingInfo(1, 0));
+		Future<GroupListResponse> future = getClient().findGroups(new PagingParameter(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

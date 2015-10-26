@@ -17,15 +17,15 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -155,7 +155,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingInfo(), new NodeRequestParameters());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(), new NodeRequestParameter());
 		latchFor(future);
 		assertSuccess(future);
 
@@ -172,8 +172,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Node nodeWithNoPerm = folder("2015");
 		role().revokePermissions(nodeWithNoPerm, READ_PERM);
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingInfo().setPerPage(20000),
-				new NodeRequestParameters());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter().setPerPage(20000),
+				new NodeRequestParameter());
 		latchFor(future);
 		assertSuccess(future);
 
@@ -191,7 +191,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		role().revokePermissions(node, READ_PERM);
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingInfo(), new NodeRequestParameters());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(), new NodeRequestParameter());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 

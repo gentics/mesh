@@ -33,7 +33,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -42,13 +41,15 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -190,7 +191,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setParentNodeUuid(folder("news").getUuid());
 
 		// Create node
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("de");
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request, parameters);
 		latchFor(future);
@@ -305,7 +306,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertNotNull(noPermNode.getUuid());
 		int perPage = 11;
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(3, perPage));
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
@@ -322,7 +323,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<NodeResponse> allNodes = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(page, perPage));
+			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(page, perPage));
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			restResponse = pageFuture.result();
@@ -335,19 +336,19 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(-1, 25));
+		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(-1, 25));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(0, 25));
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(0, 25));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, -1));
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, -1));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(4242, 25));
+		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(4242, 25));
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		NodeListResponse list = pageFuture.result();
@@ -361,7 +362,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMultipleOnlyMetadata() {
-		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, 0));
+		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 0));
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());
@@ -371,7 +372,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadNodesWithoutPermissions() throws Exception {
 
 		// TODO add node that has no perms and check the response
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingInfo(1, 10));
+		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 10));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse restResponse = future.result();
@@ -470,10 +471,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().size();
 		assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
-		//		for (Future<NodeResponse> future : set) {
-		//			latchFor(future);
-		//			assertSuccess(future);
-		//		}
+		// for (Future<NodeResponse> future : set) {
+		// latchFor(future);
+		// assertSuccess(future);
+		// }
 	}
 
 	@Test
@@ -536,7 +537,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setPublished(true);
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en", "de");
 
 		int nJobs = 115;
@@ -564,7 +565,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		int nJobs = 3;
 		String uuid = folder("2015").getUuid();
-		//		CyclicBarrier barrier = new CyclicBarrier(nJobs);
+		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
 		// Trx.enableDebug();
 		// Trx.setBarrier(barrier);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
@@ -613,6 +614,18 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadByUuidWithRolePerms() {
+
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new RolePermissionParameter().setRoleName("admin"));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+	}
+
+	@Test
 	public void testReadByUUID() throws Exception {
 
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
@@ -640,7 +653,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = folder("products");
 		String uuid = node.getUuid();
 
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("de");
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
 		latchFor(future);
@@ -661,7 +674,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("blabla", "edgsdg");
 
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
@@ -715,7 +728,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setLanguage("en");
 		request.setPublished(true);
 		request.getFields().put("name", FieldUtil.createStringField(newName));
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en", "de");
 
 		// Update the node
@@ -776,7 +789,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setLanguage("en");
 		request.setPublished(true);
 
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en", "de");
 
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, "bogus", request, parameters);
@@ -874,7 +887,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 		request.getFields().put("displayName", FieldUtil.createStringField(newDisplayName));
 
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("de", "en");
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);

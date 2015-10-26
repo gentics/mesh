@@ -13,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -37,7 +37,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	}
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
-		NodeRequestParameters parameters = new NodeRequestParameters();
+		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
 		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid(), parameters);
@@ -58,7 +58,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		}
 
 		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameters().setLanguages("en"));
+				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
@@ -76,7 +76,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 
 		Future<NodeResponse> future = getClient().updateNode(DemoDataProvider.PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
-				new NodeRequestParameters().setLanguages("en"));
+				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());

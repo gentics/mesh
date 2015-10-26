@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
@@ -41,7 +40,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -53,6 +51,8 @@ import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -182,7 +182,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		int perPage = 2;
 		int totalUsers = 3 + nUsers;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-		future = getClient().findUsers(new PagingInfo(3, perPage));
+		future = getClient().findUsers(new PagingParameter(3, perPage));
 		latchFor(future);
 		assertSuccess(future);
 		restResponse = future.result();
@@ -198,7 +198,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<UserResponse> allUsers = new ArrayList<>();
 		for (int page = 1; page < totalPages; page++) {
-			Future<UserListResponse> pageFuture = getClient().findUsers(new PagingInfo(page, perPage));
+			Future<UserListResponse> pageFuture = getClient().findUsers(new PagingParameter(page, perPage));
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			restResponse = pageFuture.result();
@@ -212,15 +212,15 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		future = getClient().findUsers(new PagingInfo(-1, perPage));
+		future = getClient().findUsers(new PagingParameter(-1, perPage));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findUsers(new PagingInfo(1, -1));
+		future = getClient().findUsers(new PagingParameter(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		future = getClient().findUsers(new PagingInfo(4242, 25));
+		future = getClient().findUsers(new PagingParameter(4242, 25));
 		latchFor(future);
 		assertSuccess(future);
 
@@ -234,7 +234,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testInvalidPageParameter() {
-		Future<UserListResponse> future = getClient().findUsers(new PagingInfo(1, 0));
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameter(1, 0));
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
@@ -413,8 +413,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingInfo().setPerPage(100),
-				new NodeRequestParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
+		Future<UserListResponse> userListResponseFuture = getClient().findUsers(new PagingParameter().setPerPage(100),
+				new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
 		latchFor(userListResponseFuture);
 		assertSuccess(userListResponseFuture);
 		UserListResponse userResponse = userListResponseFuture.result();
@@ -445,7 +445,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 
 		Future<UserResponse> userResponseFuture = getClient().findUserByUuid(future.result().getUuid(),
-				new NodeRequestParameters().setExpandedFieldNames("nodeReference").setLanguages("en"));
+				new NodeRequestParameter().setExpandedFieldNames("nodeReference").setLanguages("en"));
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
 		UserResponse userResponse = userResponseFuture.result();

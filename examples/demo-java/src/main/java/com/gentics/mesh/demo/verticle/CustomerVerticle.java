@@ -1,22 +1,22 @@
 package com.gentics.mesh.demo.verticle;
 
-import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractCustomVerticle;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.rest.MeshRestClient;
+
+import io.vertx.core.Future;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Dummy verticle that is used to setup basic demo data
@@ -50,7 +50,7 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 			client.setLogin("joe1", "test123");
 			client.login();
 
-			Future<SchemaListResponse> schemasFuture = client.findSchemas(new PagingInfo(1, 100));
+			Future<SchemaListResponse> schemasFuture = client.findSchemas(new PagingParameter(1, 100));
 			schemasFuture.setHandler(rh -> {
 				if (rh.failed()) {
 					log.error("Could not load schemas", rh.cause());
@@ -64,7 +64,7 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 			});
 			route("/*").handler(rc -> {
 				log.info("Custom Verticle is handling a request");
-				Future<NodeListResponse> fut = client.findNodes("dummy", new PagingInfo(1, 100));
+				Future<NodeListResponse> fut = client.findNodes("dummy", new PagingParameter(1, 100));
 
 				fut.setHandler(rh -> {
 					if (rh.failed()) {

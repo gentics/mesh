@@ -1,6 +1,8 @@
-package com.gentics.mesh.core.rest.node;
+package com.gentics.mesh.query.impl;
 
-public class NodeRequestParameters implements QueryParameterProvider {
+import com.gentics.mesh.query.QueryParameterProvider;
+
+public class NodeRequestParameter implements QueryParameterProvider {
 
 	public static final String LANGUAGES_QUERY_PARAM_KEY = "lang";
 
@@ -9,12 +11,12 @@ public class NodeRequestParameters implements QueryParameterProvider {
 	private String[] languages;
 	private String[] expandedFieldNames;
 
-	public NodeRequestParameters setLanguages(String... languages) {
+	public NodeRequestParameter setLanguages(String... languages) {
 		this.languages = languages;
 		return this;
 	}
 
-	public NodeRequestParameters setExpandedFieldNames(String... fieldNames) {
+	public NodeRequestParameter setExpandedFieldNames(String... fieldNames) {
 		this.expandedFieldNames = fieldNames;
 		return this;
 	}

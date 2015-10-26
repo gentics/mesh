@@ -75,7 +75,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 					Tag tag = rh.result();
 					Page<? extends Node> page;
 					try {
-						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingInfo());
+						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
 						transformAndResponde(ac, page, new NodeListResponse(), OK);
 					} catch (Exception e) {
 						//TODO i18n - exception handling

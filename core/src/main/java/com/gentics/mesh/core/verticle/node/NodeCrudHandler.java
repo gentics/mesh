@@ -324,7 +324,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				if (hasSucceeded(ac, rh)) {
 					Node node = rh.result();
 					try {
-						Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingInfo());
+						Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
 						transformAndResponde(ac, page, new NodeListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);

@@ -17,7 +17,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -76,7 +76,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
+		Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

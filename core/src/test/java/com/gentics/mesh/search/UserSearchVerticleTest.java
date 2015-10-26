@@ -11,7 +11,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
 
@@ -199,7 +199,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 		createUser(username);
 
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()),
-				new PagingInfo().setPerPage(0));
+				new PagingParameter().setPerPage(0));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(0, searchFuture.result().getData().size());

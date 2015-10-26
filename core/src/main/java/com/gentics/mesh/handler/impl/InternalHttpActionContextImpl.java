@@ -1,6 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
-import static com.gentics.mesh.core.rest.node.NodeRequestParameters.LANGUAGES_QUERY_PARAM_KEY;
+import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -12,7 +12,6 @@ import java.util.Map;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.InternalHttpActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -99,9 +99,9 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 
 	@Override
-	public PagingInfo getPagingInfo() {
-		String page = getParameter(PagingInfo.PAGE_PARAMETER_KEY);
-		String perPage = getParameter(PagingInfo.PER_PAGE_PARAMETER_KEY);
+	public PagingParameter getPagingParameter() {
+		String page = getParameter(PagingParameter.PAGE_PARAMETER_KEY);
+		String perPage = getParameter(PagingParameter.PER_PAGE_PARAMETER_KEY);
 		int pageInt = 1;
 		int perPageInt = MeshOptions.DEFAULT_PAGE_SIZE;
 		if (page != null) {
@@ -116,7 +116,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		if (perPageInt < 0) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
 		}
-		return new PagingInfo(pageInt, perPageInt);
+		return new PagingParameter(pageInt, perPageInt);
 	}
 
 }

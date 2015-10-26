@@ -2,13 +2,13 @@ package com.gentics.mesh.core.data.root;
 
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
@@ -29,7 +29,7 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * @return Page with found nodes or an empty page
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
+	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Create a new node.

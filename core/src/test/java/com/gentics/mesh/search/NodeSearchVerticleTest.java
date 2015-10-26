@@ -17,7 +17,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
@@ -32,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
 
@@ -89,14 +89,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertEquals(2, response.getData().size());
 		deleteNode(DemoDataProvider.PROJECT_NAME, content("concorde").getUuid());
 
-		future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -172,7 +172,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		json += "			    }";
 		json += "			}";
 
-		Future<NodeListResponse> future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(json, new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -196,7 +196,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		}
 
 		// Search again and make sure we found our document
-		future = getClient().searchNodes(json, new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(json, new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -228,7 +228,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			tx.success();
 		}
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -242,14 +242,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 			failingLatch(latch);
 		}
 
-		future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
 		assertEquals("The node with name {" + "Concorde" + "} should no longer be found since we updated the node and updated the content.", 0,
 				response.getData().size());
 
-		future = getClient().searchNodes(getSimpleQuery(newString), new PagingInfo().setPage(1).setPerPage(2));
+		future = getClient().searchNodes(getSimpleQuery(newString), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -262,7 +262,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testSearchContent() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingInfo().setPage(1).setPerPage(2));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();

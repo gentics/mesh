@@ -15,7 +15,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.VerticleHelper;
 
@@ -73,7 +73,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	public void handleGroupRolesList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			PagingInfo pagingInfo = ac.getPagingInfo();
+			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
 			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
 				try {
@@ -145,7 +145,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	public void handleGroupUserList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			MeshAuthUser requestUser = ac.getUser();
-			PagingInfo pagingInfo = ac.getPagingInfo();
+			PagingParameter pagingInfo = ac.getPagingParameter();
 			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
 				if (hasSucceeded(ac, grh)) {
 					try {

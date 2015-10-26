@@ -1,11 +1,12 @@
-package com.gentics.mesh.api.common;
+package com.gentics.mesh.query.impl;
 
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
+import com.gentics.mesh.api.common.SortOrder;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 /**
- * A {@link PagingInfo} can be used to add additional paging parameters to the rest requests.
+ * A {@link PagingParameter} can be used to add additional paging parameters to the rest requests.
  */
-public class PagingInfo implements QueryParameterProvider {
+public class PagingParameter implements QueryParameterProvider {
 
 	public static final String PAGE_PARAMETER_KEY = "page";
 	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
@@ -15,7 +16,7 @@ public class PagingInfo implements QueryParameterProvider {
 	private String sortBy;
 	private SortOrder order;
 
-	public PagingInfo(int page, int perPage, String sortBy, SortOrder order) {
+	public PagingParameter(int page, int perPage, String sortBy, SortOrder order) {
 		this.page = page;
 		this.perPage = perPage;
 		this.sortBy = sortBy;
@@ -25,7 +26,7 @@ public class PagingInfo implements QueryParameterProvider {
 	/**
 	 * Create a new paging info for page one.
 	 */
-	public PagingInfo() {
+	public PagingParameter() {
 		this(1);
 	}
 
@@ -35,7 +36,7 @@ public class PagingInfo implements QueryParameterProvider {
 	 * @param page
 	 *            Page number
 	 */
-	public PagingInfo(int page) {
+	public PagingParameter(int page) {
 		//TODO use reference for default page size
 		this(page, 25);
 	}
@@ -48,7 +49,7 @@ public class PagingInfo implements QueryParameterProvider {
 	 * @param perPage
 	 *            Per page count
 	 */
-	public PagingInfo(int page, int perPage) {
+	public PagingParameter(int page, int perPage) {
 		this(page, perPage, null, SortOrder.UNSORTED);
 	}
 
@@ -77,7 +78,7 @@ public class PagingInfo implements QueryParameterProvider {
 	 *            Current page number
 	 * @return Fluent API
 	 */
-	public PagingInfo setPage(int page) {
+	public PagingParameter setPage(int page) {
 		this.page = page;
 		return this;
 	}
@@ -89,7 +90,7 @@ public class PagingInfo implements QueryParameterProvider {
 	 *            Per page count
 	 * @return Fluent API
 	 */
-	public PagingInfo setPerPage(int perPage) {
+	public PagingParameter setPerPage(int perPage) {
 		this.perPage = perPage;
 		return this;
 
@@ -105,7 +106,7 @@ public class PagingInfo implements QueryParameterProvider {
 	 * 
 	 */
 	@Deprecated
-	public PagingInfo setSortOrder(String sortBy) {
+	public PagingParameter setSortOrder(String sortBy) {
 		this.sortBy = sortBy;
 		return this;
 	}

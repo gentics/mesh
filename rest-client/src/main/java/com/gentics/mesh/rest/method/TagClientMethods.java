@@ -3,11 +3,11 @@ package com.gentics.mesh.rest.method;
 import io.vertx.core.Future;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 public interface TagClientMethods {
 

@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 
 import io.vertx.core.Future;
 
@@ -68,7 +68,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		}
 
 		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameters().setLanguages("en"));
+				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
 	}

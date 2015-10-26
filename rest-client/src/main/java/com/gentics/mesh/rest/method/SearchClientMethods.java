@@ -2,7 +2,6 @@ package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
@@ -10,6 +9,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.vertx.core.Future;
 

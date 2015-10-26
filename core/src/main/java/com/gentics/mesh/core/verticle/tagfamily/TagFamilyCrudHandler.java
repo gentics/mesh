@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -22,6 +21,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 
 @Component
 public class TagFamilyCrudHandler extends AbstractCrudHandler {
@@ -66,7 +66,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tx -> {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
-			PagingInfo pagingInfo = ac.getPagingInfo();
+			PagingParameter pagingInfo = ac.getPagingParameter();
 
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
 			loadObject(ac, "tagFamilyUuid", READ_PERM, project.getTagFamilyRoot(), rh -> {

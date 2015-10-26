@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 
 import io.vertx.core.Vertx;
 
@@ -19,10 +19,10 @@ public class MeshRestClientTest {
 	@Test
 	public void testParameterHandling() {
 		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx());
-		NodeRequestParameters parameters1 = new NodeRequestParameters();
+		NodeRequestParameter parameters1 = new NodeRequestParameter();
 		parameters1.setLanguages("en");
 
-		NodeRequestParameters parameters2 = new NodeRequestParameters();
+		NodeRequestParameter parameters2 = new NodeRequestParameter();
 		parameters2.setExpandedFieldNames("test");
 		assertEquals("?lang=en&expand=test", AbstractMeshRestClient.getQuery(parameters1, parameters2));
 		assertEquals("?lang=en", AbstractMeshRestClient.getQuery(parameters1));

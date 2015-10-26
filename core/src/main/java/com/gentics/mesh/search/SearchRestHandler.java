@@ -16,7 +16,6 @@ import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -29,6 +28,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 
@@ -67,7 +67,7 @@ public class SearchRestHandler {
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
-		PagingInfo pagingInfo = ac.getPagingInfo();
+		PagingParameter pagingInfo = ac.getPagingParameter();
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}

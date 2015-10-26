@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.node;
 
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.IndexedVertex;
@@ -17,6 +16,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
@@ -161,7 +161,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	Node create(User creator, SchemaContainer schemaContainer, Project project);
 
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingInfo pagingInfo) throws InvalidArgumentException;
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Return the binary filename.

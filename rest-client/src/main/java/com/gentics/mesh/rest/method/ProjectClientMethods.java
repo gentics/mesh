@@ -3,11 +3,11 @@ package com.gentics.mesh.rest.method;
 import io.vertx.core.Future;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 public interface ProjectClientMethods {
 

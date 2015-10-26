@@ -3,11 +3,11 @@ package com.gentics.mesh.rest.method;
 import io.vertx.core.Future;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.rest.ClientSchemaStorage;
 import com.gentics.mesh.rest.MeshRestClient;
 

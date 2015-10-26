@@ -19,7 +19,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
@@ -35,6 +34,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.MeshAssert;
@@ -105,14 +105,14 @@ public class NodeTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
-		Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 10));
+		Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingParameter(1, 10));
 
 		// There are nodes that are only available in english
 		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
 		languageTags.add("en");
-		page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingInfo(1, 15));
+		page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingParameter(1, 15));
 		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}
@@ -134,7 +134,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		languageTags.add("en");
-		Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingInfo(1, 25));
+		Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

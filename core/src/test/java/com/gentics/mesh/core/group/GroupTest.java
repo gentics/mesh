@@ -14,7 +14,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -53,12 +53,12 @@ public class GroupTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
-		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 19));
+		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingParameter(1, 19));
 
 		assertEquals(groups().size(), page.getTotalElements());
 		assertEquals(groups().size(), page.getSize());
 
-		page = boot.groupRoot().findAll(requestUser, new PagingInfo(1, 3));
+		page = boot.groupRoot().findAll(requestUser, new PagingParameter(1, 3));
 		assertEquals(groups().size(), page.getTotalElements());
 		assertEquals(3, page.getSize());
 	}

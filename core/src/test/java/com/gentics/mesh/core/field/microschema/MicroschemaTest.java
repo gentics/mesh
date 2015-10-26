@@ -10,13 +10,13 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -40,12 +40,12 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 
-		Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingInfo(1, 10));
+		Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, 10));
 
 		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
-		page = boot.microschemaContainerRoot().findAll(requestUser, new PagingInfo(1, 15));
+		page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, 15));
 		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}

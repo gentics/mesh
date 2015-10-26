@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex, IndexedVertex {
@@ -67,7 +67,7 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingInfo pagingInfo) throws InvalidArgumentException;
+	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Return the tag with the given name that was assigned to the tag family.

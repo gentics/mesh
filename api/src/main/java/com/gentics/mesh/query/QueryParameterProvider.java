@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.rest.node;
+package com.gentics.mesh.query;
 
 public interface QueryParameterProvider {
 

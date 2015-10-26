@@ -30,7 +30,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
@@ -42,6 +41,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -122,7 +122,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 		List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(page, perPage));
+			Future<TagFamilyListResponse> tagPageFut = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(page, perPage));
 			latchFor(tagPageFut);
 			assertSuccess(future);
 			restResponse = tagPageFut.result();
@@ -148,21 +148,21 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(-1, perPage));
+		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(-1, perPage));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(0, perPage));
+		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(0, perPage));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
-		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(1, -1));
+		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, -1));
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
 
 		perPage = 25;
 		totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
-		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(4242, perPage));
+		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(4242, perPage));
 		latchFor(pageFuture);
 		TagFamilyListResponse tagList = pageFuture.result();
 		assertEquals(0, tagList.getData().size());
@@ -175,7 +175,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMetaCountOnly() {
-		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingInfo(1, 0));
+		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, 0));
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());

@@ -15,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -28,6 +27,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -144,11 +144,11 @@ public class TagTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 
-		Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingInfo(1, 10));
+		Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingParameter(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
-		tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingInfo(1, 14));
+		tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingParameter(1, 14));
 		assertEquals(tags().size(), tagPage.getTotalElements());
 		assertEquals(12, tagPage.getSize());
 	}
@@ -163,14 +163,14 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
-		Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+		Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
 		assertPage(projectTagpage, tags().size());
 
-		Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+		Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
 		assertPage(globalTagPage, tags().size());
 
 		role().grantPermissions(noPermTag, READ_PERM);
-		globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingInfo(1, 20));
+		globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
 		assertPage(globalTagPage, tags().size() + 1);
 	}
 

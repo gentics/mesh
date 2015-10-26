@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;

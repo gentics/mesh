@@ -6,12 +6,12 @@ import static com.gentics.mesh.api.common.SortOrder.UNSORTED;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -106,7 +106,7 @@ public final class TraversalHelper {
 	 * @throws InvalidArgumentException
 	 */
 	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal,
-			PagingInfo pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+			PagingParameter pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
 		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}

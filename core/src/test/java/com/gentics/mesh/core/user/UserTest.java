@@ -22,7 +22,6 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.api.common.PagingInfo;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -112,11 +112,11 @@ public class UserTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 
-		Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 6));
+		Page<? extends User> page = boot.userRoot().findAll(requestUser, new PagingParameter(1, 6));
 		assertEquals(users().size(), page.getTotalElements());
 		assertEquals(3, page.getSize());
 
-		page = boot.userRoot().findAll(requestUser, new PagingInfo(1, 15));
+		page = boot.userRoot().findAll(requestUser, new PagingParameter(1, 15));
 		assertEquals(users().size(), page.getTotalElements());
 		assertEquals(users().size(), page.getSize());
 	}
@@ -124,7 +124,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingInfo(1, 25));
+		Page<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
 		assertNotNull(page);
 		assertEquals(users().size(), page.getTotalElements());
 	}
@@ -238,7 +238,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
-		Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingInfo(1, 10));
+		Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParameter(1, 10));
 
 		assertEquals(2, userPage.getTotalElements());
 	}

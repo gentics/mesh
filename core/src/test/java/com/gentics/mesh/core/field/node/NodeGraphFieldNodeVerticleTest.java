@@ -15,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
-import com.gentics.mesh.core.rest.node.NodeRequestParameters;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 
 import io.vertx.core.Future;
 
@@ -73,7 +73,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		assertEquals(node.getUuid(), field.getUuid());
 
 		Future<NodeResponse> loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
-				new NodeRequestParameters().setLanguages("en"));
+				new NodeRequestParameter().setLanguages("en"));
 		latchFor(loadedNodeFuture);
 		assertSuccess(loadedNodeFuture);
 		field = loadedNodeFuture.result().getField("nodeField");
@@ -84,7 +84,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		field = response.getField("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
 
-		loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeRequestParameters().setLanguages("en"));
+		loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeRequestParameter().setLanguages("en"));
 		latchFor(loadedNodeFuture);
 		assertSuccess(loadedNodeFuture);
 		field = loadedNodeFuture.result().getField("nodeField");

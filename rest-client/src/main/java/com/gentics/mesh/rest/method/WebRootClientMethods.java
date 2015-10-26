@@ -3,7 +3,7 @@ package com.gentics.mesh.rest.method;
 import io.vertx.core.Future;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.QueryParameterProvider;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 public interface WebRootClientMethods {
 
