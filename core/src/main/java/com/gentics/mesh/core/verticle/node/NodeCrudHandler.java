@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
@@ -115,7 +116,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						if (hasSucceeded(ac, targetNodeHandler)) {
 							Node sourceNode = sourceNodeHandler.result();
 							Node targetNode = targetNodeHandler.result();
-							//TODO Update SQB
+							// TODO Update SQB
 							sourceNode.moveTo(ac, targetNode, mh -> {
 								if (mh.failed()) {
 									ac.fail(mh.cause());
@@ -361,7 +362,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (hasSucceeded(ac, rh)) {
 						Node node = rh.result();
 						loadObject(ac, "tagUuid", READ_PERM, project.getTagRoot(), th -> {
-							//TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
+							// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 							if (hasSucceeded(ac, th)) {
 								Tag tag = th.result();
 								db.trx(txAdd -> {
@@ -417,7 +418,16 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+					NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(ac);
+					if (container == null) {
+						// TODO fail
+					} else {
+						//node.getSchema().getFields().
+						//container.getRestFieldFromGraph(ac, fieldKey, fieldSchema, expandField, handler);
+					}
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -426,7 +436,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				//TODO Update SQB
+				// TODO Update SQB
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -435,7 +448,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				//TODO Update SQB
+				// TODO Update SQB
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -444,7 +460,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				//TODO Update SQB
+				// TODO Update SQB
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -453,7 +472,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				//TODO Update SQB
+				// TODO Update SQB
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -462,7 +484,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				//TODO Update SQB
+				// TODO Update SQB
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -471,7 +496,9 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
@@ -480,7 +507,10 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", UPDATE_PERM, project.getNodeRoot(), rh -> {
-				//TODO Update SQB
+				// TODO Update SQB
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+				}
 			});
 		} , ac.errorHandler());
 	}
