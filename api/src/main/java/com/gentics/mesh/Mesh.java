@@ -94,4 +94,8 @@ public interface Mesh {
 
 	static final MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
 
+	public static void main(String[] args) throws Exception {
+		Mesh.mesh().run();
+	}
+
 }
