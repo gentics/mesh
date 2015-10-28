@@ -43,7 +43,7 @@
 					<registry>https://registry.gentics.com</registry>
 					<images>
 						<image>
-							<name>gentics/mesh-demo:${project.version}</name>
+							<name>registry.gentics.com/mesh-demo:${project.version}</name>
 							<alias>mesh-demo</alias>
 							<build>
 								<from>java:8u40</from>
@@ -73,6 +73,13 @@
 					</images>
 				</configuration>
 				<executions>
+					<execution>
+						<id>push-docker</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+					</execution>
 					<execution>
 						<id>start</id>
 						<phase>pre-integration-test</phase>
