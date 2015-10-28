@@ -15,9 +15,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<!-- <dockerHost>cetus.office</dockerHost> <dockerIP>10.43.84.220</dockerIP> -->
-		<dockerHost>satan3.office</dockerHost>
-		<dockerIP>10.43.94.243</dockerIP>
+		<dockerHost>cetus.office</dockerHost>
+		<dockerHostProtocol>http</dockerHostProtocol>
 	</properties>
 
 	<dependencies>
@@ -36,16 +35,15 @@
 
 	<build>
 		<plugins>
-
-			<!--
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<configuration>
-					<dockerHost>http://${dockerHost}:2375</dockerHost>
+					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
+					<registry>https://registry.gentics.com</registry>
 					<images>
 						<image>
-							<name>gentics/mesh-demo:0.1</name>
+							<name>gentics/mesh-demo:${project.version}</name>
 							<alias>mesh-demo</alias>
 							<build>
 								<from>java:8u40</from>
@@ -62,7 +60,7 @@
 									<port>mesh.port:8080</port>
 								</ports>
 								<wait>
-									<url>http://${dockerIP}:${mesh.port}/api/v1/admin/status</url>
+									<url>http://${dockerHost}:${mesh.port}/api/v1/admin/status</url>
 									<log>.*Initalized project.*</log>
 									<time>80000</time>
 								</wait>
@@ -106,7 +104,7 @@
 				</executions>
 				<configuration>
 					<propertiesUser>
-						<webservice.host>${dockerIP}</webservice.host>
+						<webservice.host>${dockerHost}</webservice.host>
 						<webservice.port>${mesh.port}</webservice.port>
 					</propertiesUser>
 				</configuration>
@@ -136,11 +134,10 @@
 				</executions>
 				<configuration>
 					<systemPropertyVariables>
-						<mesh.url>http://${dockerIP}:${mesh.port}</mesh.url>
+						<mesh.url>http://${dockerHost}:${mesh.port}</mesh.url>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
-		-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
