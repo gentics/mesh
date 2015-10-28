@@ -130,6 +130,13 @@ public class DemoDataProvider {
 		JsonArray dataArray = usersJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject userJson = dataArray.getJsonObject(i);
+//			String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
+//			User user = root.getUserRoot().create(username, null);
+//			user.setUuid("UUIDOFUSER1");
+//			user.setPassword(password);
+//			user.setFirstname(firstname);
+//			user.setLastname(lastname);
+//			user.setEmailAddress(email);
 		}
 
 	}
@@ -139,6 +146,10 @@ public class DemoDataProvider {
 		JsonArray dataArray = groupsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject groupJson = dataArray.getJsonObject(i);
+//			String groupName = username + "_group";
+//			Group group = root.getGroupRoot().create(groupName, user);
+//			group.addUser(user);
+
 		}
 	}
 
@@ -147,6 +158,12 @@ public class DemoDataProvider {
 		JsonArray dataArray = rolesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject roleJson = dataArray.getJsonObject(i);
+			
+//			String roleName = username + "_role";
+//			Role role = root.getRoleRoot().create(roleName, group, user);
+//			System.err.println("Created role: " + role.getElement().getId());
+//			role.grantPermissions(role, READ_PERM);
+
 		}
 	}
 
