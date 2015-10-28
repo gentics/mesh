@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;

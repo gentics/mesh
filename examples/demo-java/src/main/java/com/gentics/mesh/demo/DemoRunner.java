@@ -1,9 +1,5 @@
 package com.gentics.mesh.demo;
 
-import java.io.File;
-
-import org.apache.commons.io.FileUtils;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.demo.verticle.CustomerVerticle;
 import com.gentics.mesh.etc.OptionsLoader;
@@ -28,8 +24,8 @@ public class DemoRunner {
 	public static void main(String[] args) throws Exception {
 
 		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
-		File graphDBDir = new File(System.getProperty("java.io.tmpdir"), "graphdb");
-		FileUtils.deleteDirectory(graphDBDir);
+		//File graphDBDir = new File(System.getProperty("java.io.tmpdir"), "graphdb");
+		//FileUtils.deleteDirectory(graphDBDir);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getStorageOptions().setDirectory(null);
 		Mesh mesh = Mesh.mesh(options);

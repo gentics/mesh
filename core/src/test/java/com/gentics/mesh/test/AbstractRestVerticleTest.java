@@ -48,7 +48,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.rest.MeshRestClient;
@@ -84,7 +84,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		port = com.gentics.mesh.test.TestUtil.getRandomPort();
 		vertx = Mesh.vertx();
 
-		routerStorage.addProjectRouter(DemoDataProvider.PROJECT_NAME);
+		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 
 		JsonObject config = new JsonObject();
 		config.put("port", port);

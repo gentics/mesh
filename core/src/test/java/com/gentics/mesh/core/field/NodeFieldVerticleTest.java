@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -59,7 +59,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
-		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
 				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
@@ -71,7 +71,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
 		nodeUpdateRequest.setLanguage("en");
 
-		Future<NodeResponse> updateFuture = getClient().updateNode(DemoDataProvider.PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
+		Future<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,
 				new NodeRequestParameter().setLanguages("en"));
 		latchFor(updateFuture);
 		assertSuccess(updateFuture);

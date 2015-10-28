@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -54,7 +54,7 @@ public abstract class AbstractDBTest {
 	protected BootstrapInitializer boot;
 
 	@Autowired
-	private DemoDataProvider dataProvider;
+	private TestDataProvider dataProvider;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;

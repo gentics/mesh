@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -31,7 +31,7 @@ public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		Future<NodeListResponse> future = getClient().findNodesForTag(DemoDataProvider.PROJECT_NAME, tag("red").getUuid());
+		Future<NodeListResponse> future = getClient().findNodesForTag(PROJECT_NAME, tag("red").getUuid());
 		latchFor(future);
 		assertSuccess(future);
 	}

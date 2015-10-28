@@ -47,8 +47,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 				} else {
 					User authenticated = rh.result();
 					ac.setUser(authenticated);
-					GenericMessageResponse message = new GenericMessageResponse("OK");
-					ac.send(JsonUtil.toJson(message), OK);
+					ac.send(JsonUtil.toJson(new GenericMessageResponse("OK")), OK);
 				}
 			});
 		} catch (Exception e) {

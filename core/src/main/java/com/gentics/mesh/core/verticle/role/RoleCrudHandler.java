@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -146,7 +144,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 											ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
 										} else {
 											Role role = txUpdated.result();
-											ac.send(toJson(new GenericMessageResponse(ac.i18n("role_updated_permission", role.getName()))), OK);
+											ac.sendMessage(OK, "role_updated_permission", role.getName());
 										}
 									});
 								}

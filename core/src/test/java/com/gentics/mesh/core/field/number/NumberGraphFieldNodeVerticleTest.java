@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.number;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 
 import io.vertx.core.Future;
@@ -67,7 +67,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
 				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_parse_request_json_error");

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -47,7 +48,6 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -358,7 +358,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		updateRequest.setUsername("dummy_user_changed");
 
 		NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-		userNodeReference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		userNodeReference.setProjectName(PROJECT_NAME);
 		userNodeReference.setUuid(nodeUuid);
 		updateRequest.setNodeReference(userNodeReference);
 
@@ -369,7 +369,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertNotNull(user().getReferencedNode());
 		assertNotNull(restUser.getNodeReference());
-		assertEquals(DemoDataProvider.PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
+		assertEquals(PROJECT_NAME, ((NodeReferenceImpl) restUser.getNodeReference()).getProjectName());
 		assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 
 		test.assertUser(updateRequest, restUser);
@@ -391,7 +391,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertTrue(user().hasPermission(ac, node, READ_PERM));
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setProjectName(PROJECT_NAME);
 		reference.setUuid(node.getUuid());
 
 		UserCreateRequest newUser = new UserCreateRequest();
@@ -416,7 +416,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setUuid(node.getUuid());
-		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setProjectName(PROJECT_NAME);
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
@@ -447,7 +447,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setUuid(node.getUuid());
-		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setProjectName(PROJECT_NAME);
 
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
@@ -493,7 +493,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateUserWithBogusUuidInNodeReference() {
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setProjectName(PROJECT_NAME);
 		reference.setUuid("bogus_uuid");
 
 		UserCreateRequest newUser = new UserCreateRequest();
@@ -528,7 +528,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
-		reference.setProjectName(DemoDataProvider.PROJECT_NAME);
+		reference.setProjectName(PROJECT_NAME);
 		UserCreateRequest newUser = new UserCreateRequest();
 		newUser.setUsername("new_user");
 		newUser.setGroupUuid(group().getUuid());

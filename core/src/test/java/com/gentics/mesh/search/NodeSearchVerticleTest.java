@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.PagingParameter;
 
@@ -94,7 +94,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertEquals(2, response.getData().size());
-		deleteNode(DemoDataProvider.PROJECT_NAME, content("concorde").getUuid());
+		deleteNode(PROJECT_NAME, content("concorde").getUuid());
 
 		future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);

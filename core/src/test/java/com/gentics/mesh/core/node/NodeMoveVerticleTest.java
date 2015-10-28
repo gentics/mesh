@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -18,7 +19,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -42,7 +42,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		Node targetNode = content("concorde");
 		String oldParentUuid = sourceNode.getParentNode().getUuid();
 		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 		assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
@@ -53,7 +53,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		Node sourceNode = folder("news");
 		String oldParentUuid = sourceNode.getParentNode().getUuid();
 		assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
+		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid());
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_same_nodes");
 		assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode().getUuid());
@@ -66,7 +66,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		String oldParentUuid = sourceNode.getParentNode().getUuid();
 		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
 
@@ -80,7 +80,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
 		role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", sourceNode.getUuid());
 		assertNotEquals("The source node should not have been moved.", targetNode.getUuid(), folder("deals").getParentNode().getUuid());
@@ -93,7 +93,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		Node targetNode = folder("2015");
 		String oldSourceParentId = sourceNode.getParentNode().getUuid();
 		assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode().getUuid());
-		Future<GenericMessageResponse> future = getClient().moveNode(DemoDataProvider.PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
+		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());

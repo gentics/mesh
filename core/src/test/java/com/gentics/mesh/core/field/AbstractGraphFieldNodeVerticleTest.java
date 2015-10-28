@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
@@ -18,7 +19,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -40,7 +40,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		Future<NodeResponse> future = getClient().findNodeByUuid(DemoDataProvider.PROJECT_NAME, node.getUuid(), parameters);
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse response = future.result();
@@ -57,7 +57,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		Future<NodeResponse> future = getClient().createNode(DemoDataProvider.PROJECT_NAME, nodeCreateRequest,
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
 				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
@@ -75,7 +75,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 
-		Future<NodeResponse> future = getClient().updateNode(DemoDataProvider.PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
 				new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);

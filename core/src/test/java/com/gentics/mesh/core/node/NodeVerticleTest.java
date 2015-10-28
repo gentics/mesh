@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -46,7 +46,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
@@ -772,7 +771,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setSchema(reference);
 		request.setLanguage("en");
 
-		Future<NodeResponse> future = getClient().updateNode(DemoDataProvider.PROJECT_NAME, uuid, request);
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 

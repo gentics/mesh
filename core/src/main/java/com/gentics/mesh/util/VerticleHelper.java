@@ -433,7 +433,7 @@ public class VerticleHelper {
 					} else {
 						String id = objectName != null ? uuid + "/" + objectName : uuid;
 						VerticleHelper.processOrFail2(ac, txDeleted.result(), brh -> {
-							ac.send(toJson(new GenericMessageResponse(ac.i18n(i18nMessageKey, id))), OK);
+							ac.sendMessage(OK, i18nMessageKey, id);
 						});
 					}
 				});

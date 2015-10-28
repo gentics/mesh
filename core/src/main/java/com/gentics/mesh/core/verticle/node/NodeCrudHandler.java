@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
@@ -33,7 +32,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -121,7 +119,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								if (mh.failed()) {
 									ac.fail(mh.cause());
 								} else {
-									ac.send(toJson(new GenericMessageResponse(ac.i18n("node_moved_to", uuid, toUuid))), OK);
+									ac.sendMessage(OK, "node_moved_to", uuid, toUuid);
 								}
 							});
 
@@ -208,8 +206,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 													ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
 												} else {
 													VerticleHelper.processOrFail(ac, txUpdated.result().v1(), ch -> {
-														ac.send(toJson(new GenericMessageResponse(ac.i18n("node_binary_field_updated", nodeUuid))),
-																OK);
+														ac.sendMessage(OK, "node_binary_field_updated", nodeUuid);
 													} , txUpdated.result().v2());
 												}
 											});

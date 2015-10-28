@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
-import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;

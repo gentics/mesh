@@ -15,13 +15,16 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.InternalHttpActionContext;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
@@ -125,4 +128,8 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		return new PagingParameter(pageInt, perPageInt);
 	}
 
+	@Override
+	public void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters) {
+		send(JsonUtil.toJson(new GenericMessageResponse(i18n(i18nMessage, i18nParameters))), status);
+	}
 }

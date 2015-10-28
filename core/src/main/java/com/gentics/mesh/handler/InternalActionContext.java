@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 import com.gentics.mesh.query.impl.PagingParameter;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.auth.User;
@@ -69,6 +70,15 @@ public interface InternalActionContext extends ActionContext {
 	 * 
 	 * @return
 	 */
-	public <T> Handler<AsyncResult<T>> errorHandler();
+	<T> Handler<AsyncResult<T>> errorHandler();
+
+	/**
+	 * Send a generic message response with the given message.
+	 * 
+	 * @param status
+	 * @param i18nMessage
+	 * @param i18nParameters
+	 */
+	void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters);
 
 }

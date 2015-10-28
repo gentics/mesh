@@ -3,7 +3,7 @@ package com.gentics.mesh.core.tag;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.demo.DemoDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -41,7 +41,6 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
-import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
@@ -375,7 +374,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().updateTag(DemoDataProvider.PROJECT_NAME, uuid, request));
+			set.add(getClient().updateTag(PROJECT_NAME, uuid, request));
 		}
 		validateSet(set, barrier);
 
@@ -389,7 +388,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, uuid));
+			set.add(getClient().findTagByUuid(PROJECT_NAME, uuid));
 		}
 		validateSet(set, barrier);
 	}
@@ -403,7 +402,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<GenericMessageResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().deleteTag(DemoDataProvider.PROJECT_NAME, uuid));
+			set.add(getClient().deleteTag(PROJECT_NAME, uuid));
 		}
 		validateDeletion(set, barrier);
 	}
@@ -418,7 +417,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 			TagCreateRequest request = new TagCreateRequest();
 			request.getFields().setName("newcolor_" + i);
 			request.setTagFamilyReference(new TagFamilyReference().setName("colors"));
-			set.add(getClient().createTag(DemoDataProvider.PROJECT_NAME, request));
+			set.add(getClient().createTag(PROJECT_NAME, request));
 		}
 		validateCreation(set, null);
 	}
@@ -429,7 +428,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nJobs = 200;
 		Set<Future<TagResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, tag("red").getUuid()));
+			set.add(getClient().findTagByUuid(PROJECT_NAME, tag("red").getUuid()));
 		}
 		for (Future<TagResponse> future : set) {
 			latchFor(future);
@@ -472,7 +471,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid = tag.getUuid();
 		role().revokePermissions(tag, READ_PERM);
 
-		Future<TagResponse> future = getClient().findTagByUuid(DemoDataProvider.PROJECT_NAME, uuid);
+		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, uuid);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
@@ -484,7 +483,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setFields(new TagFieldContainer().setName("newName"));
 
-		Future<TagResponse> future = getClient().updateTag(DemoDataProvider.PROJECT_NAME, "bogus", request);
+		Future<TagResponse> future = getClient().updateTag(PROJECT_NAME, "bogus", request);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
