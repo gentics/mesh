@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
@@ -12,6 +13,7 @@ import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -49,6 +51,12 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 	@Override
 	protected String getRootLabel() {
 		return HAS_TAG_FAMILY;
+	}
+
+	@Override
+	public Project getProject() {
+		Project project = in(HAS_TAGFAMILY_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return project;
 	}
 
 	@Override

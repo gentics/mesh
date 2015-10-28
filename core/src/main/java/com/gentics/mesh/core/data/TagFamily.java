@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -31,12 +32,11 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 * 
 	 * @param name
 	 *            Name of the new tag.
-	 * @param project
 	 * @param creator
 	 *            User that is used to assign creator and editor references of the new tag.
 	 * @return
 	 */
-	Tag create(String name, Project project, User creator);
+	Tag create(String name, User creator);
 
 	/**
 	 * Remove the given tag from the tagfamily.
@@ -77,5 +77,10 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 */
 	Tag findTagByName(String name);
 
-	TagFamilyImpl getImpl();
+	/**
+	 * Return the tag family to which this tag belongs.
+	 * 
+	 * @return
+	 */
+	TagFamilyRoot getTagFamilyRoot();
 }

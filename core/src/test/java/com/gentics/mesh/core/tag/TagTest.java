@@ -53,14 +53,14 @@ public class TagTest extends AbstractBasicObjectTest {
 		tagFamily.setDescription("description");
 		assertEquals("description", tagFamily.getDescription());
 		assertEquals(0, tagFamily.getTags().size());
-		assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
+		assertNotNull(tagFamily.create(GERMAN_NAME, user()));
 		assertEquals(1, tagFamily.getTags().size());
 	}
 
 	@Test
 	public void testSimpleTag() {
 		TagFamily root = tagFamily("basic");
-		Tag tag = root.create("test", project(), user());
+		Tag tag = root.create("test", user());
 		assertEquals("test", tag.getName());
 		tag.setName("test2");
 		assertEquals("test2", tag.getName());
@@ -70,7 +70,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testNodeTaggging() throws Exception {
 		// 1. Create the tag
 		TagFamily root = tagFamily("basic");
-		Tag tag = root.create(ENGLISH_NAME, project(), user());
+		Tag tag = root.create(ENGLISH_NAME, user());
 		String uuid = tag.getUuid();
 		meshRoot().getTagRoot().findByUuid(uuid, rh -> {
 			assertNotNull(rh.result());
@@ -116,7 +116,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testNodeTagging() throws Exception {
 		final String TEST_TAG_NAME = "testTag";
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(TEST_TAG_NAME, project(), user());
+		Tag tag = tagFamily.create(TEST_TAG_NAME, user());
 
 		Node node = folder("news");
 		node.addTag(tag);
@@ -158,7 +158,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = tagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+		Tag noPermTag = basicTagFamily.create("noPermTag", user());
 		project().getTagRoot().addTag(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
@@ -239,7 +239,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreate() throws Exception {
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
+		Tag tag = tagFamily.create(GERMAN_NAME, user());
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
@@ -252,6 +252,9 @@ public class TagTest extends AbstractBasicObjectTest {
 			latch.countDown();
 		});
 		failingLatch(latch);
+		Tag projectTag = project().getTagRoot().findByUuidBlocking(uuid);
+		assertNotNull("The tag should also be assigned to the project tag root", projectTag);
+
 	}
 
 	@Test
@@ -292,7 +295,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() throws Exception {
 		TagFamily tagFamily = tagFamily("basic");
-		Tag tag = tagFamily.create("someTag", project(), user());
+		Tag tag = tagFamily.create("someTag", user());
 		String uuid = tag.getUuid();
 		CountDownLatch latch = new CountDownLatch(2);
 		meshRoot().getTagRoot().findByUuid(uuid, rh -> {
@@ -312,7 +315,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		TagFamily tagFamily = tagFamily("basic");
 		InternalActionContext ac = getMockedInternalActionContext("");
-		Tag tag = tagFamily.create("someTag", project(), user());
+		Tag tag = tagFamily.create("someTag", user());
 		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.READ_PERM));
 		assertFalse(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);

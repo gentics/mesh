@@ -1,0 +1,8 @@
+{
+  "data": [
+     {"name": "red", "tagFamily": "colors"},
+     {"name": "blue", "tagFamily": "colors"},
+     {"name": "green", "tagFamily": "colors"},
+     {"name": "yellow", "tagFamily": "colors"}
+  ]
+}

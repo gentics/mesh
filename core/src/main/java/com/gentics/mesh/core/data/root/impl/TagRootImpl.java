@@ -138,7 +138,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				this.reload();
 				requestUser.reload();
 				project.reload();
-				Tag newTag = foundFamily.create(requestModel.getFields().getName(), project, requestUser);
+				Tag newTag = foundFamily.create(requestModel.getFields().getName(), requestUser);
 				ac.getUser().addCRUDPermissionOnRole(foundFamily, CREATE_PERM, newTag);
 				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);

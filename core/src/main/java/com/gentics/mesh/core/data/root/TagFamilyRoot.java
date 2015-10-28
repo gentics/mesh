@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 
@@ -35,5 +36,12 @@ public interface TagFamilyRoot extends RootVertex<TagFamily> {
 	 * @param tagFamily
 	 */
 	void addTagFamily(TagFamily tagFamily);
+
+	/**
+	 * Return the project which is the root element of this tagfamily.
+	 * 
+	 * @return
+	 */
+	Project getProject();
 
 }

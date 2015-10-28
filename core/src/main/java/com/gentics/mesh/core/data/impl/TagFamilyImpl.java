@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
@@ -14,9 +15,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -27,7 +30,9 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -57,6 +62,12 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(TagFamilyImpl.class);
+	}
+
+	@Override
+	public TagFamilyRoot getTagFamilyRoot() {
+		TagFamilyRoot root = in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+		return root;
 	}
 
 	@Override
@@ -114,7 +125,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public Tag create(String name, Project project, User creator) {
+	public Tag create(String name, User creator) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
@@ -123,6 +134,11 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
 		tagRoot.addTag(tag);
 		// Add tag to project list of tags
+		TagFamilyRoot root = getTagFamilyRoot();
+		Objects.requireNonNull(root, "The tag root for tag family {" + getName() + "} could not be found.");
+
+		Project project = root.getProject();
+		Objects.requireNonNull(project, "The project of tag root {" + root.getUuid() + "} could not be found.");
 		project.getTagRoot().addTag(tag);
 		return tag;
 	}
@@ -146,11 +162,9 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 					obsFieldSet.toHandler().handle(Future.succeededFuture());
 				}
 			});
-			
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restTagFamily);
-
 
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {

@@ -1,0 +1,7 @@
+{
+ "data": [
+    { "name": "super-content1", "tags": ["red", "blue", "yellow"], "schema": "content" },
+    { "name": "super-content2", "parent": "super-content1", "tags": ["red", "blue", "yellow"], "schema": "content" },
+    { "name": "super-content3", "parent": "super-content2", "tags": ["red", "blue", "yellow"], "schema": "content" }
+ ]
+}

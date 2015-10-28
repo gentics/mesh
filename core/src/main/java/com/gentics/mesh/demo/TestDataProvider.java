@@ -404,11 +404,9 @@ public class TestDataProvider {
 		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
-		setCreatorEditor(basicTagFamily.getImpl());
 
 		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors", userInfo.getUser());
 		colorTagFamily.setDescription("Description for color tag family");
-		setCreatorEditor(colorTagFamily.getImpl());
 		tagFamilies.put("colors", colorTagFamily);
 
 	}
@@ -501,7 +499,7 @@ public class TestDataProvider {
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
-		Tag tag = tagFamily.create(name, project, userInfo.getUser());
+		Tag tag = tagFamily.create(name, userInfo.getUser());
 		setCreatorEditor(tag);
 		tags.put(name.toLowerCase(), tag);
 		return tag;
