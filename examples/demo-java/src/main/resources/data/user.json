@@ -1,7 +1,0 @@
-{
-  "data": [
-    { "username": "test123", "email": "abc@bogus.tld", "firstname":  "A", "lastname": "B", "groups": [ "guests", "editors", "admins" ] },
-    { "username": "test124", "email": "abc@bogus.tld", "firstname":  "A", "lastname": "B", "groups": [ "guests", "editors", "admins" ] },
-    { "username": "test125", "email": "abc@bogus.tld", "firstname":  "A", "lastname": "B", "groups": [ "guests", "editors", "admins" ] }
-  ]
-}

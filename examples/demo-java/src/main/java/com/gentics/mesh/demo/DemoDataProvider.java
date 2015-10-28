@@ -9,22 +9,19 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -34,13 +31,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -79,15 +69,12 @@ public class DemoDataProvider {
 
 	private Language german;
 
-	private UserInfo userInfo;
-
 	private MeshRoot root;
 
 	private Map<String, Project> projects = new HashMap<>();
 	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
-	private Map<String, Node> folders = new HashMap<>();
-	private Map<String, Node> contents = new HashMap<>();
+	private Map<String, Node> nodes = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
 	private Map<String, User> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
@@ -125,6 +112,11 @@ public class DemoDataProvider {
 		log.info("Setup took: {" + duration + "}");
 	}
 
+	/**
+	 * Load users json file and create users.
+	 * 
+	 * @throws IOException
+	 */
 	private void addUsers() throws IOException {
 		JsonObject usersJson = loadJson("users");
 		JsonArray dataArray = usersJson.getJsonArray("data");
@@ -135,54 +127,55 @@ public class DemoDataProvider {
 			String firstname = userJson.getString("firstName");
 			String lastname = userJson.getString("lastName");
 			String password = userJson.getString("password");
+
+			log.info("Creating user {" + username + "}");
 			User user = root.getUserRoot().create(username, null);
 			// user.setUuid("UUIDOFUSER1");
 			user.setPassword(password);
 			user.setFirstname(firstname);
 			user.setLastname(lastname);
 			user.setEmailAddress(email);
+			users.put(username, user);
 		}
 
 	}
 
+	/**
+	 * Add groups from json file to graph.
+	 * 
+	 * @throws IOException
+	 */
 	private void addGroups() throws IOException {
 		JsonObject groupsJson = loadJson("groups");
 		JsonArray dataArray = groupsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject groupJson = dataArray.getJsonObject(i);
-			String groupName = groupJson.getString("name");
-			log.info("Creating group {" + groupName + "}");
-			Group group = root.getGroupRoot().create(groupName, getAdmin());
+			String name = groupJson.getString("name");
+
+			log.info("Creating group {" + name + "}");
+			Group group = root.getGroupRoot().create(name, getAdmin());
+			groups.put(name, group);
 		}
 	}
 
+	/**
+	 * Load roles json file and add those roles to the graph.
+	 * 
+	 * @throws IOException
+	 */
 	private void addRoles() throws IOException {
 		JsonObject rolesJson = loadJson("roles");
 		JsonArray dataArray = rolesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject roleJson = dataArray.getJsonObject(i);
-			String roleName = roleJson.getString("name");
-			log.info("Creating role {" + roleName + "}");
-			Role role = root.getRoleRoot().create(roleName, getAdmin());
+			String name = roleJson.getString("name");
+
+			log.info("Creating role {" + name + "}");
+			Role role = root.getRoleRoot().create(name, getAdmin());
 			System.err.println("Created role: " + role.getElement().getId());
 			role.grantPermissions(role, READ_PERM);
+			roles.put(name, role);
 		}
-	}
-
-	private void updatePermissions() {
-		db.noTrx(tc -> {
-			Role role = userInfo.getRole();
-			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				if (log.isTraceEnabled()) {
-					log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
-				}
-				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-			}
-		});
-		log.info("Added BasicPermissions to nodes");
-
 	}
 
 	/**
@@ -200,50 +193,99 @@ public class DemoDataProvider {
 		}
 	}
 
+	/**
+	 * Load nodes json file and add those nodes to the graph.
+	 * 
+	 * @throws IOException
+	 */
 	private void addNodes() throws IOException {
 		JsonObject nodesJson = loadJson("nodes");
 		JsonArray dataArray = nodesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject nodeJson = dataArray.getJsonObject(i);
 			Project project = getProject(nodeJson.getString("project"));
-			SchemaContainer schema = schemaContainers.get(nodeJson.getString("schema"));
-			if ("content".equalsIgnoreCase(schema.getName())) {
-				Node content = addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", schema, project);
-				content.addTag(tags.get("red"));
+			String schemaName = nodeJson.getString("schema");
+			String name = nodeJson.getString("name");
+			String parentNodeName = nodeJson.getString("parent");
+			SchemaContainer schema = getSchemaContainer(schemaName);
+			Node parentNode = getNode(parentNodeName);
+
+			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
+			Node node = parentNode.create(getAdmin(), schema, project);
+
+			JsonArray tagArray = nodeJson.getJsonArray("tags");
+			for (int e = 0; e < tagArray.size(); e++) {
+				String tagName = tagArray.getString(e);
+				node.addTag(getTag(tagName));
 			}
-			if ("folder".equalsIgnoreCase(schema.getName())) {
-				// Node folder = addFolder(rootNode, englishName, germanName);
-				// folder.addTag(tags.get("red"));
-			}
+
+			// if (englishContent != null) {
+			// NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+			// englishContainer.createString("name").setString(name + " english name");
+			// englishContainer.createString("title").setString(name + " english title");
+			// englishContainer.createString("displayName").setString(name + " english displayName");
+			// englishContainer.createString("filename").setString(name + ".en.html");
+			// englishContainer.createHTML("content").setHtml(englishContent);
+			// }
+			//
+			// if (germanContent != null) {
+			// NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
+			// germanContainer.createString("name").setString(name + " german");
+			// germanContainer.createString("title").setString(name + " english title");
+			// germanContainer.createString("displayName").setString(name + " german");
+			// germanContainer.createString("filename").setString(name + ".de.html");
+			// germanContainer.createHTML("content").setHtml(germanContent);
+			// }
+			//
+			nodes.put(name, node);
+
 		}
 
 	}
 
+	/**
+	 * Load tags json and add those tags to the graph.
+	 * 
+	 * @throws IOException
+	 */
 	private void addTags() throws IOException {
 		JsonObject tagsJson = loadJson("tags");
 		JsonArray dataArray = tagsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject tagJson = dataArray.getJsonObject(i);
-			TagFamily tagFamily = tagFamilies.get(tagJson.getString("tagFamily"));
-			addTag(tagJson.getString("name"), tagFamily);
+			String name = tagJson.getString("name");
+			String tagFamilyName = tagJson.getString("tagFamily");
+
+			log.info("Creating tag {" + name + "} to family {" + tagFamilyName + "}");
+			TagFamily tagFamily = getTagFamily(tagFamilyName);
+			Tag tag = tagFamily.create(name, getAdmin());
+			tags.put(name.toLowerCase(), tag);
 		}
 	}
 
-	private JsonObject loadJson(String name) throws IOException {
-		StringWriter writer = new StringWriter();
-		IOUtils.copy(getClass().getResourceAsStream("/data/" + name + ".json"), writer, Charsets.UTF_8.name());
-		return new JsonObject(writer.toString());
-	}
-
+	/**
+	 * Load project json file and add those projects to the graph.
+	 * 
+	 * @throws IOException
+	 */
 	private void addProjects() throws IOException {
 		JsonObject projectsJson = loadJson("projects");
 		JsonArray dataArray = projectsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject projectJson = dataArray.getJsonObject(i);
 			String name = projectJson.getString("name");
-			Project project = root.getProjectRoot().create(name, userInfo.getUser());
+
+			log.info("Creating project {" + name + "}");
+			Project project = root.getProjectRoot().create(name, getAdmin());
 			project.addLanguage(getEnglish());
 			project.addLanguage(getGerman());
+			Node baseNode = project.getBaseNode();
+			nodes.put(name + ".basenode", baseNode);
+
+			// project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
+			// project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
+			// project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
+
 			projects.put(name, project);
 
 		}
@@ -255,214 +297,133 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject tagFamilyJson = dataArray.getJsonObject(i);
 			String name = tagFamilyJson.getString("name");
-			String projectName = tagFamilyJson.getString("projectName");
+			String projectName = tagFamilyJson.getString("project");
 
-			TagFamily tagFamily = getProject(projectName).getTagFamilyRoot().create(name, userInfo.getUser());
+			log.info("Creating tagfamily {" + name + "} for project {" + projectName + "}");
+			TagFamily tagFamily = getProject(projectName).getTagFamilyRoot().create(name, getAdmin());
 			tagFamily.setDescription("Description for basic tag family");
+			tagFamilies.put(name, tagFamily);
 		}
 
 	}
 
 	private void addSchemaContainers() throws MeshSchemaException, IOException {
-		addBootstrapSchemas();
+		// folder
+		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
+		schemaContainers.put("folder", folderSchemaContainer);
 
-		JsonObject schemasJson = loadJson("schemas");
-		JsonArray dataArray = schemasJson.getJsonArray("data");
-		for (int i = 0; i < dataArray.size(); i++) {
-			JsonObject schemaJson = dataArray.getJsonObject(i);
+		// content
+		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
+		schemaContainers.put("content", contentSchemaContainer);
 
-			Schema schema = new SchemaImpl();
-			schema.setName("blogpost");
-			schema.setDisplayField("title");
-			schema.setMeshVersion(Mesh.getVersion());
+		// binary-content
+		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
+		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
-			StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-			titleFieldSchema.setName("title");
-			titleFieldSchema.setLabel("Title");
-			schema.addField(titleFieldSchema);
-
-			HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-			titleFieldSchema.setName("content");
-			titleFieldSchema.setLabel("Content");
-			schema.addField(contentFieldSchema);
-
-			SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-			SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
-			blogPostSchemaContainer.setSchema(schema);
-
-		}
-
-	}
-
-	private void addBootstrapSchemas() {
-
-		// // folder
-		// SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
-		// project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
+		// JsonObject schemasJson = loadJson("schemas");
+		// JsonArray dataArray = schemasJson.getJsonArray("data");
+		// for (int i = 0; i < dataArray.size(); i++) {
+		// JsonObject schemaJson = dataArray.getJsonObject(i);
 		//
-		// // content
-		// SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
-		// project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
+		// Schema schema = new SchemaImpl();
+		// schema.setName("blogpost");
+		// schema.setDisplayField("title");
+		// schema.setMeshVersion(Mesh.getVersion());
 		//
-		// // binary-content
-		// SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
-		// project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
+		// StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+		// titleFieldSchema.setName("title");
+		// titleFieldSchema.setLabel("Title");
+		// schema.addField(titleFieldSchema);
+		//
+		// HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
+		// titleFieldSchema.setName("content");
+		// titleFieldSchema.setLabel("Content");
+		// schema.addField(contentFieldSchema);
+		//
+		// SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
+		// SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getAdmin());
+		// blogPostSchemaContainer.setSchema(schema);
+		//
+		// }
 
 	}
 
-	public Node addFolder(Node rootNode, String englishName, String germanName, Project project) {
-		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
+	private void updatePermissions() {
+		db.noTrx(tc -> {
+			Role role = getRole("admin");
+			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
+				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+				MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+				if (log.isTraceEnabled()) {
+					log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+				}
+				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+			}
+		});
+		log.info("Added BasicPermissions to nodes");
 
-		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.getOrCreateGraphFieldContainer(german);
-			// germanContainer.createString("displayName").setString(germanName);
-			germanContainer.createString("name").setString(germanName);
-		}
-		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.getOrCreateGraphFieldContainer(english);
-			// englishContainer.createString("displayName").setString(englishName);
-			englishContainer.createString("name").setString(englishName);
-		}
-
-		if (englishName == null || StringUtils.isEmpty(englishName)) {
-			throw new RuntimeException("Key for folder empty");
-		}
-		if (folders.containsKey(englishName.toLowerCase())) {
-			throw new RuntimeException("Collision of folders detected for key " + englishName.toLowerCase());
-		}
-
-		folders.put(englishName.toLowerCase(), folderNode);
-		return folderNode;
 	}
 
-	private void setCreatorEditor(GenericVertex<?> node) {
-		node.setCreator(userInfo.getUser());
-		node.setCreationTimestamp(System.currentTimeMillis());
-
-		node.setEditor(userInfo.getUser());
-		node.setLastEditedTimestamp(System.currentTimeMillis());
+	private JsonObject loadJson(String name) throws IOException {
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(getClass().getResourceAsStream("/data/" + name + ".json"), writer, Charsets.UTF_8.name());
+		return new JsonObject(writer.toString());
 	}
 
-	public Tag addTag(String name, TagFamily tagFamily) {
-		if (name == null || StringUtils.isEmpty(name)) {
-			throw new RuntimeException("Name for tag empty");
-		}
-		Tag tag = tagFamily.create(name, userInfo.getUser());
-		setCreatorEditor(tag);
-		tags.put(name.toLowerCase(), tag);
-		return tag;
-	}
-
-	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema, Project project) {
-		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
-		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			englishContainer.createString("name").setString(name + " english name");
-			englishContainer.createString("title").setString(name + " english title");
-			englishContainer.createString("displayName").setString(name + " english displayName");
-			englishContainer.createString("filename").setString(name + ".en.html");
-			englishContainer.createHTML("content").setHtml(englishContent);
-		}
-
-		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
-			germanContainer.createString("name").setString(name + " german");
-			germanContainer.createString("title").setString(name + " english title");
-			germanContainer.createString("displayName").setString(name + " german");
-			germanContainer.createString("filename").setString(name + ".de.html");
-			germanContainer.createHTML("content").setHtml(germanContent);
-		}
-
-		if (contents.containsKey(name.toLowerCase())) {
-			throw new RuntimeException("Collsion of contents detected for key " + name.toLowerCase());
-		}
-		contents.put(name.toLowerCase(), node);
-		return node;
-	}
-
-	/**
-	 * Returns the path to the tag for the given language.
-	 */
-	public String getPathForNews2015Tag(Language language) {
-
-		String name = folders.get("news").getGraphFieldContainer(language).getString("name").getString();
-		String name2 = folders.get("2015").getGraphFieldContainer(language).getString("name").getString();
-		return name + "/" + name2;
-	}
-
-	public Language getEnglish() {
+	private Language getEnglish() {
 		return english;
 	}
 
-	public Language getGerman() {
+	private Language getGerman() {
 		return german;
 	}
 
-	public UserInfo getUserInfo() {
-		return userInfo;
+	private TagFamily getTagFamily(String name) {
+		TagFamily tagfamily = tagFamilies.get(name);
+		Objects.requireNonNull(tagfamily, "Tagfamily with name {" + name + "} could not be found.");
+		return tagfamily;
 	}
 
-	public Node getFolder(String name) {
-		return folders.get(name);
+	private Tag getTag(String name) {
+		Tag tag = tags.get(name);
+		Objects.requireNonNull(tag, "Tag with name {" + name + "} could not be found.");
+		return tag;
 	}
 
-	public TagFamily getTagFamily(String key) {
-		return tagFamilies.get(key);
+	private SchemaContainer getSchemaContainer(String name) {
+		SchemaContainer container = schemaContainers.get(name);
+		Objects.requireNonNull(container, "Schema container with name {" + name + "} could not be found.");
+		return container;
 	}
 
-	public Node getContent(String name) {
-		return contents.get(name);
-	}
-
-	public Tag getTag(String name) {
-		return tags.get(name);
-	}
-
-	public SchemaContainer getSchemaContainer(String name) {
-		return schemaContainers.get(name);
-	}
-
-	public Map<String, Tag> getTags() {
-		return tags;
-	}
-
-	public Map<String, Node> getContents() {
-		return contents;
-	}
-
-	public Map<String, Node> getFolders() {
-		return folders;
-	}
-
-	public Map<String, User> getUsers() {
-		return users;
-	}
-
-	public Map<String, Group> getGroups() {
-		return groups;
-	}
-
-	public Map<String, Role> getRoles() {
-		return roles;
-	}
-
-	public Map<String, SchemaContainer> getSchemaContainers() {
-		return schemaContainers;
-	}
-
-	public MeshRoot getMeshRoot() {
-		return root;
-	}
-
-	public Map<String, Project> getProjects() {
-		return projects;
-	}
-
-	private Project getProject(String projectName) {
-		return getProjects().get(projectName);
+	private Project getProject(String name) {
+		Project project = projects.get(name);
+		Objects.requireNonNull(project, "Project {" + name + "} could not be found.");
+		return project;
 	}
 
 	private User getAdmin() {
-		return getUsers().get("admin");
+		User admin = getUser("admin");
+		Objects.requireNonNull(admin, "Admin user could not be found.");
+		return admin;
 	}
+
+	private Role getRole(String name) {
+		Role role = roles.get(name);
+		Objects.requireNonNull(role, "Role with name {" + name + "} could not be found.");
+		return role;
+	}
+
+	private User getUser(String name) {
+		User user = users.get(name);
+		Objects.requireNonNull(user, "User for name {" + name + "} could not be found.");
+		return user;
+	}
+
+	private Node getNode(String name) {
+		Node node = nodes.get(name);
+		Objects.requireNonNull(node, "Node with name {" + name + "} could not be found.");
+		return node;
+	}
+
 }
