@@ -107,7 +107,7 @@ public class DemoDataProvider {
 			german = rootService.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
-			//			addUserGroupRoleProject();
+
 			addRoles();
 			addGroups();
 			addUsers();
@@ -130,13 +130,17 @@ public class DemoDataProvider {
 		JsonArray dataArray = usersJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject userJson = dataArray.getJsonObject(i);
-//			String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-//			User user = root.getUserRoot().create(username, null);
-//			user.setUuid("UUIDOFUSER1");
-//			user.setPassword(password);
-//			user.setFirstname(firstname);
-//			user.setLastname(lastname);
-//			user.setEmailAddress(email);
+			String email = userJson.getString("email");
+			String username = userJson.getString("username");
+			String firstname = userJson.getString("firstName");
+			String lastname = userJson.getString("lastName");
+			String password = userJson.getString("password");
+			User user = root.getUserRoot().create(username, null);
+			// user.setUuid("UUIDOFUSER1");
+			user.setPassword(password);
+			user.setFirstname(firstname);
+			user.setLastname(lastname);
+			user.setEmailAddress(email);
 		}
 
 	}
@@ -146,10 +150,9 @@ public class DemoDataProvider {
 		JsonArray dataArray = groupsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject groupJson = dataArray.getJsonObject(i);
-//			String groupName = username + "_group";
-//			Group group = root.getGroupRoot().create(groupName, user);
-//			group.addUser(user);
-
+			String groupName = groupJson.getString("name");
+			log.info("Creating group {" + groupName + "}");
+			Group group = root.getGroupRoot().create(groupName, getAdmin());
 		}
 	}
 
@@ -158,12 +161,11 @@ public class DemoDataProvider {
 		JsonArray dataArray = rolesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject roleJson = dataArray.getJsonObject(i);
-			
-//			String roleName = username + "_role";
-//			Role role = root.getRoleRoot().create(roleName, group, user);
-//			System.err.println("Created role: " + role.getElement().getId());
-//			role.grantPermissions(role, READ_PERM);
-
+			String roleName = roleJson.getString("name");
+			log.info("Creating role {" + roleName + "}");
+			Role role = root.getRoleRoot().create(roleName, getAdmin());
+			System.err.println("Created role: " + role.getElement().getId());
+			role.grantPermissions(role, READ_PERM);
 		}
 	}
 
@@ -210,8 +212,8 @@ public class DemoDataProvider {
 				content.addTag(tags.get("red"));
 			}
 			if ("folder".equalsIgnoreCase(schema.getName())) {
-				//				Node folder = addFolder(rootNode, englishName, germanName);
-				//				folder.addTag(tags.get("red"));
+				// Node folder = addFolder(rootNode, englishName, germanName);
+				// folder.addTag(tags.get("red"));
 			}
 		}
 
@@ -294,17 +296,17 @@ public class DemoDataProvider {
 
 	private void addBootstrapSchemas() {
 
-		//		// folder
-		//		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
-		//		project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
+		// // folder
+		// SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
+		// project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
 		//
-		//		// content
-		//		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
-		//		project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
+		// // content
+		// SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
+		// project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
 		//
-		//		// binary-content
-		//		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
-		//		project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
+		// // binary-content
+		// SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
+		// project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
 
 	}
 
@@ -460,4 +462,7 @@ public class DemoDataProvider {
 		return getProjects().get(projectName);
 	}
 
+	private User getAdmin() {
+		return getUsers().get("admin");
+	}
 }

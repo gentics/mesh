@@ -48,7 +48,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testCreate() throws Exception {
 		String roleName = "test";
 		RoleRoot root = meshRoot().getRoleRoot();
-		Role createdRole = root.create(roleName, null, user());
+		Role createdRole = root.create(roleName, user());
 		assertNotNull(createdRole);
 		String uuid = createdRole.getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
@@ -86,7 +86,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 	@Test
 	public void testGrantDuplicates() {
-		Role role = meshRoot().getRoleRoot().create("testRole", group(), user());
+		Role role = meshRoot().getRoleRoot().create("testRole", user());
+		group().addRole(role);
 		NodeImpl extraNode = tx.getGraph().addFramedVertex(NodeImpl.class);
 		assertEquals(0, countEdges(role, READ_PERM.label(), Direction.OUT));
 		role.grantPermissions(extraNode, READ_PERM);
@@ -167,7 +168,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		int nRolesBefore = root.findAll().size();
 
 		final String roleName = "test2";
-		Role role = root.create(roleName, null, user());
+		Role role = root.create(roleName, user());
 		assertNotNull(role);
 		int nRolesAfter = root.findAll().size();
 		assertEquals(nRolesBefore + 1, nRolesAfter);
@@ -211,7 +212,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testRolesOfGroup() throws InvalidArgumentException {
 		Role extraRole;
 		RoleRoot root = meshRoot().getRoleRoot();
-		extraRole = root.create("extraRole", group(), user());
+		extraRole = root.create("extraRole", user());
+		group().addRole(extraRole);
 
 		// Multiple add role calls should not affect the result
 		group().addRole(extraRole);
@@ -290,7 +292,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		String roleName = "test";
 		RoleRoot root = meshRoot().getRoleRoot();
 
-		Role role = root.create(roleName, null, user());
+		Role role = root.create(roleName, user());
 		String uuid = role.getUuid();
 		CountDownLatch latch = new CountDownLatch(2);
 		boot.roleRoot().findByUuid(uuid, rh -> {
@@ -311,7 +313,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		MeshRoot root = meshRoot();
 		InternalActionContext ac = getMockedInternalActionContext("");
-		Role role = root.getRoleRoot().create("SuperUser", null, user());
+		Role role = root.getRoleRoot().create("SuperUser", user());
 		assertFalse(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
 		user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
 		ac.data().clear();

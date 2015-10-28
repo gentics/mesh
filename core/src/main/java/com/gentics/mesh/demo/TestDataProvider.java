@@ -332,7 +332,8 @@ public class TestDataProvider {
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";
-		Role role = root.getRoleRoot().create(roleName, group, user);
+		Role role = root.getRoleRoot().create(roleName, user);
+		group.addRole(role);
 		System.err.println("Created role: " + role.getElement().getId());
 		role.grantPermissions(role, READ_PERM);
 		roles.put(roleName, role);
@@ -358,7 +359,8 @@ public class TestDataProvider {
 		Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
 		groups.put("guests", guestGroup);
 
-		Role guestRole = root.getRoleRoot().create("guest_role", guestGroup, userInfo.getUser());
+		Role guestRole = root.getRoleRoot().create("guest_role", userInfo.getUser());
+		guestGroup.addRole(guestRole);
 		roles.put(guestRole.getName(), guestRole);
 
 		// Extra User
@@ -369,20 +371,17 @@ public class TestDataProvider {
 		user.setFirstname("Guest Firstname");
 		user.setLastname("Guest Lastname");
 		user.setEmailAddress("guest@spam.gentics.com");
-		setCreatorEditor(user);
 		users.put(user.getUsername(), user);
 		// }
 		// Extra Groups
 		// for (int i = 0; i < 6 * multiplicator; i++) {
 		Group group = groupRoot.create("extra_group", userInfo.getUser());
-		setCreatorEditor(group);
 		groups.put(group.getName(), group);
 		// }
 
 		// Extra Roles
 		// for (int i = 0; i < 6 * multiplicator; i++) {
-		Role role = roleRoot.create("extra_role", null, userInfo.getUser());
-		setCreatorEditor(role);
+		Role role = roleRoot.create("extra_role", userInfo.getUser());
 		roles.put(role.getName(), role);
 		// }
 	}
@@ -483,13 +482,13 @@ public class TestDataProvider {
 		return folderNode;
 	}
 
-	private void setCreatorEditor(GenericVertex<?> node) {
-		node.setCreator(userInfo.getUser());
-		node.setCreationTimestamp(System.currentTimeMillis());
-
-		node.setEditor(userInfo.getUser());
-		node.setLastEditedTimestamp(System.currentTimeMillis());
-	}
+//	private void setCreatorEditor(GenericVertex<?> node) {
+//		node.setCreator(userInfo.getUser());
+//		node.setCreationTimestamp(System.currentTimeMillis());
+//
+//		node.setEditor(userInfo.getUser());
+//		node.setLastEditedTimestamp(System.currentTimeMillis());
+//	}
 
 	public Tag addTag(String name) {
 		return addTag(name, getTagFamily("demo"));
@@ -500,7 +499,6 @@ public class TestDataProvider {
 			throw new RuntimeException("Name for tag empty");
 		}
 		Tag tag = tagFamily.create(name, userInfo.getUser());
-		setCreatorEditor(tag);
 		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}

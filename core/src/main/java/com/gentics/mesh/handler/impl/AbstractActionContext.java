@@ -62,7 +62,9 @@ public abstract class AbstractActionContext implements ActionContext {
 			String[] pairs = query.split("&");
 			for (String pair : pairs) {
 				int idx = pair.indexOf("=");
-
+				if (idx == -1) {
+					continue;
+				}
 				try {
 					queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {

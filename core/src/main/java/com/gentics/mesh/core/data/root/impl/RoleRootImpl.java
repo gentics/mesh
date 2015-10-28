@@ -67,14 +67,11 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 	}
 
 	@Override
-	public Role create(String name, Group group, User creator) {
+	public Role create(String name, User creator) {
 		Role role = getGraph().addFramedVertex(RoleImpl.class);
 		role.setName(name);
 		role.setCreated(creator);
 		addRole(role);
-		if (group != null) {
-			group.addRole(role);
-		}
 		return role;
 	}
 
@@ -110,7 +107,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 				db.trx(txCreate -> {
 					Group parentGroup = rh.result();
 					requestUser.reload();
-					Role role = create(requestModel.getName(), parentGroup, requestUser);
+					Role role = create(requestModel.getName(), requestUser);
+					//TODO get rid of role assignment here
+					parentGroup.addRole(role);
 					requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, role);
 					SearchQueueBatch batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					txCreate.complete(Tuple.tuple(batch, role));

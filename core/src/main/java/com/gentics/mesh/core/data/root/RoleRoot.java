@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 
@@ -16,13 +15,11 @@ public interface RoleRoot extends RootVertex<Role> {
 	 * 
 	 * @param name
 	 *            Name of the new role.
-	 * @param group
-	 *            Group to be assigned to the role
 	 * @param creator
 	 *            User that is being used to set the reference fields
 	 * @return Created role
 	 */
-	Role create(String name, Group group, User creator);
+	Role create(String names, User creator);
 
 	/**
 	 * Add the given role to this aggregation vertex.

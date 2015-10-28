@@ -452,7 +452,8 @@ public class BootstrapInitializer {
 
 			adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
-				adminRole = roleRoot.create("admin", adminGroup, adminUser);
+				adminRole = roleRoot.create("admin", adminUser);
+				adminGroup.addRole(adminRole);
 				log.info("Created admin role {" + adminRole.getUuid() + "}");
 			}
 

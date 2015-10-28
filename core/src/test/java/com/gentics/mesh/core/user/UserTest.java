@@ -162,28 +162,28 @@ public class UserTest extends AbstractBasicObjectTest {
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < max; i++) {
 
-			//ac.data().clear();
-			//CompletableFuture<String[]> permissionFuture = new CompletableFuture<>();
+			// ac.data().clear();
+			// CompletableFuture<String[]> permissionFuture = new CompletableFuture<>();
 
-			//			if (1 != 1) {
-			//				user.getPermissionNames(ac, node);
-			//				latch.countDown();
-			//			} else {
+			// if (1 != 1) {
+			// user.getPermissionNames(ac, node);
+			// latch.countDown();
+			// } else {
 			user.getPermissionNames(ac, node, rh -> {
-				//String[] names = rh.result().toArray(new String[rh.result().size()]);
-				//permissionFuture.complete(names);
+				// String[] names = rh.result().toArray(new String[rh.result().size()]);
+				// permissionFuture.complete(names);
 				latch.countDown();
 			});
-			//			}
-			//assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
+			// }
+			// assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 		}
 
 		latch.await();
 		long dur = System.currentTimeMillis() - now;
 		System.out.println("Duration:" + dur);
-		//		for (String name : permissionFuture.get()) {
-		//			System.out.println(name);
-		//		}
+		// for (String name : permissionFuture.get()) {
+		// System.out.println(name);
+		// }
 	}
 
 	@Test
@@ -223,7 +223,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			Arrays.sort(perms);
 			Arrays.sort(loadedPerms);
 			assertArrayEquals("Permissions do not match", perms, loadedPerms);
-			//assertNotNull(ac.data().get("permissions:" + language.getUuid()));
+			// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 		}
 		System.out.println("Duration: " + (System.currentTimeMillis() - start));
 		System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
@@ -338,22 +338,28 @@ public class UserTest extends AbstractBasicObjectTest {
 		newGroup.addUser(newUser);
 
 		// Create test roles
-		roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newGroup, newUser);
+		roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
+		newGroup.addRole(roleWithDeletePerm);
 		roleWithDeletePerm.grantPermissions(sourceNode, DELETE_PERM);
 
-		roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newGroup, newUser);
+		roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
+		newGroup.addRole(roleWithReadPerm);
 		roleWithReadPerm.grantPermissions(sourceNode, READ_PERM);
 
-		roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newGroup, newUser);
+		roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
+		newGroup.addRole(roleWithUpdatePerm);
 		roleWithUpdatePerm.grantPermissions(sourceNode, UPDATE_PERM);
 
-		roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newGroup, newUser);
+		roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
+		newGroup.addRole(roleWithAllPerm);
 		roleWithAllPerm.grantPermissions(sourceNode, CREATE_PERM, UPDATE_PERM, DELETE_PERM, READ_PERM);
 
-		roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newGroup, newUser);
+		roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
+		newGroup.addRole(roleWithCreatePerm);
 		roleWithCreatePerm.grantPermissions(sourceNode, CREATE_PERM);
 
-		roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newGroup, newUser);
+		roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
+		newGroup.addRole(roleWithNoPerm);
 		user().addCRUDPermissionOnRole(sourceNode, CREATE_PERM, targetNode);
 		ac.data().clear();
 		newUser.reload();

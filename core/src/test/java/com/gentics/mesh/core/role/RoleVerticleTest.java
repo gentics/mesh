@@ -189,7 +189,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUID() throws Exception {
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role", group(), user());
+		Role extraRole = roleRoot.create("extra role", user());
+		group().addRole(extraRole);
 		assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 		role().grantPermissions(extraRole, READ_PERM);
 
@@ -218,7 +219,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role", group(), user());
+		Role extraRole = roleRoot.create("extra role", user());
+		group().addRole(extraRole);
 		// Revoke read permission from the role
 		role().revokePermissions(extraRole, READ_PERM);
 
@@ -248,13 +250,14 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		String noPermRoleName;
 
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
-		Role noPermRole = roleRoot.create("no_perm_role", null, user());
+		Role noPermRole = roleRoot.create("no_perm_role", user());
 
 		role().grantPermissions(group(), READ_PERM);
 
 		// Create and save some roles
 		for (int i = 0; i < nRoles; i++) {
-			Role extraRole = roleRoot.create("extra role " + i, group(), user());
+			Role extraRole = roleRoot.create("extra role " + i, user());
+			group().addRole(extraRole);
 			role().grantPermissions(extraRole, READ_PERM);
 		}
 		// Role with no permission
@@ -342,7 +345,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role", group(), user());
+		Role extraRole = roleRoot.create("extra role", user());
+		group().addRole(extraRole);
 		String roleUuid = extraRole.getUuid();
 		role().grantPermissions(extraRole, UPDATE_PERM);
 		RoleUpdateRequest request = new RoleUpdateRequest();
@@ -426,7 +430,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		String roleUuid;
 		String roleName;
 		RoleRoot roleRoot = meshRoot().getRoleRoot();
-		Role extraRole = roleRoot.create("extra role", group(), user());
+		Role extraRole = roleRoot.create("extra role", user());
+		group().addRole(extraRole);
 		roleUuid = extraRole.getUuid();
 		roleName = extraRole.getName();
 		role().grantPermissions(extraRole, DELETE_PERM);
