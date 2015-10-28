@@ -45,17 +45,6 @@ traits:
           description: The page size. A page size of 25 will be used when this parameter is omitted.
           type: number
 
-  - pagedHeader:
-      responses:
-        200:
-          headers:
-             Link:
-               description: |
-                        A link header will be provided accoring to [RFC5988](http://tools.ietf.org/html/rfc5988#page-6). 
-               example: |
-                        Link: <https://localhost:8080/users?page=3&perPage=100>; rel="next", <https://localhost/users?page=50&perPage=100>; rel="last"
-
-
 #------------------------------------------------------------------------------
 # User Verticle
 #------------------------------------------------------------------------------

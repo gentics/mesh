@@ -15,6 +15,17 @@ securedBy: [oauth_2_0]
                         
                         
                         
+                        
+  - pagedHeader:
+      responses:
+        200:
+          headers:
+             Link:
+               description: |
+                        A link header will be provided according to [RFC5988](http://tools.ietf.org/html/rfc5988#page-6). 
+               example: |
+                        Link: <https://localhost:8080/users?page=3&perPage=100>; rel="next", <https://localhost/users?page=50&perPage=100>; rel="last"
+                        
 
 
 #------------------------------------------------------------------------------
