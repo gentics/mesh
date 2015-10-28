@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -75,6 +76,12 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
 		assertSuccess(future);
+
+		Role createdRole = meshRoot().getRoleRoot().findByUuidBlocking(future.result().getUuid());
+		assertTrue(user().hasPermission(createdRole, UPDATE_PERM));
+		assertTrue(user().hasPermission(createdRole, READ_PERM));
+		assertTrue(user().hasPermission(createdRole, DELETE_PERM));
+		assertTrue(user().hasPermission(createdRole, CREATE_PERM));
 
 		Future<RoleResponse> readFuture = getClient().findRoleByUuid(future.result().getUuid());
 		latchFor(readFuture);
@@ -192,6 +199,19 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		RoleResponse restRole = future.result();
 		test.assertRole(extraRole, restRole);
 
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidWithRolePerms() {
+		Role role = role();
+		String uuid = role.getUuid();
+
+		Future<RoleResponse> future = getClient().findRoleByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
 	@Test

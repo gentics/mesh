@@ -62,12 +62,8 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 	public Group create(String name, User creator) {
 		GroupImpl group = getGraph().addFramedVertex(GroupImpl.class);
 		group.setName(name);
+		group.setCreated(creator);
 		addGroup(group);
-
-		group.setCreator(creator);
-		group.setCreationTimestamp(System.currentTimeMillis());
-		group.setEditor(creator);
-		group.setLastEditedTimestamp(System.currentTimeMillis());
 
 		return group;
 	}

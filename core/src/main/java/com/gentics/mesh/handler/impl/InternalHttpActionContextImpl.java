@@ -20,10 +20,10 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
@@ -81,6 +81,12 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		}
 		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
 		return languageTags;
+	}
+
+	@Override
+	public String getRolePermisssionParameter() {
+		Map<String, String> queryPairs = splitQuery();
+		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
 
 	@Override

@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -71,6 +72,21 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertNotNull(response);
 		assertEquals(tagFamily.getUuid(), response.getUuid());
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidWithRolePerms() {
+		TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+		String uuid = tagFamily.getUuid();
+
+		Future<TagFamilyResponse> future = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid,
+				new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
+
 	}
 
 	@Test

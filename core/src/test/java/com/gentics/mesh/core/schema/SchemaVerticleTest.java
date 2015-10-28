@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -210,6 +211,19 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
 		test.assertSchema(schemaContainer, restSchema);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidWithRolePerms() {
+		SchemaContainer schemaContainer = schemaContainer("content");
+		String uuid = schemaContainer.getUuid();
+
+		Future<SchemaResponse> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
 	@Test

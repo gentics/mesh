@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.rest.tag;
 
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
 /**
  * POJO for a tag response model.
  */
-public class TagResponse extends AbstractGenericNodeRestModel {
+public class TagResponse extends AbstractGenericRestResponse {
 
 	private TagFamilyReference tagFamily;
 

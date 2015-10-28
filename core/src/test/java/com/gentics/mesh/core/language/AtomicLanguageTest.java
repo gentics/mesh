@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 
 public class AtomicLanguageTest extends AbstractEmptyDBTest {

@@ -142,10 +142,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagResponse> findTagByUuid(String projectName, String uuid) {
+	public Future<TagResponse> findTagByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/" + projectName + "/tags/" + uuid, TagResponse.class);
+		return handleRequest(GET, "/" + projectName + "/tags/" + uuid + getQuery(parameters), TagResponse.class);
 	}
 
 	@Override
@@ -190,9 +190,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<ProjectResponse> findProjectByUuid(String uuid) {
+	public Future<ProjectResponse> findProjectByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/projects/" + uuid, ProjectResponse.class);
+		return handleRequest(GET, "/projects/" + uuid + getQuery(parameters), ProjectResponse.class);
 	}
 
 	@Override
@@ -234,8 +234,8 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid) {
-		return handleRequest(GET, "/" + projectName + "/tagFamilies/" + uuid, TagFamilyResponse.class);
+	public Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/" + projectName + "/tagFamilies/" + uuid + getQuery(parameters), TagFamilyResponse.class);
 	}
 
 	@Override
@@ -267,9 +267,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<GroupResponse> findGroupByUuid(String uuid) {
+	public Future<GroupResponse> findGroupByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/groups/" + uuid, GroupResponse.class);
+		return handleRequest(GET, "/groups/" + uuid + getQuery(parameters), GroupResponse.class);
 	}
 
 	@Override
@@ -332,8 +332,8 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<RoleResponse> findRoleByUuid(String uuid) {
-		return handleRequest(GET, "/roles/" + uuid, RoleResponse.class);
+	public Future<RoleResponse> findRoleByUuid(String uuid, QueryParameterProvider... parameters) {
+		return handleRequest(GET, "/roles/" + uuid + getQuery(parameters), RoleResponse.class);
 	}
 
 	@Override
@@ -419,9 +419,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaResponse> findSchemaByUuid(String uuid) {
+	public Future<SchemaResponse> findSchemaByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/schemas/" + uuid, SchemaResponse.class);
+		return handleRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaResponse.class);
 	}
 
 	@Override

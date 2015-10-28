@@ -53,6 +53,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -85,6 +86,19 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertUser(user, restUser);
 		// TODO assert groups
 		// TODO assert perms
+	}
+
+	@Test
+	public void testReadByUuidWithRolePerms() {
+
+		User user = user();
+		String uuid = user.getUuid();
+
+		Future<UserResponse> future = getClient().findUserByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
 	@Test

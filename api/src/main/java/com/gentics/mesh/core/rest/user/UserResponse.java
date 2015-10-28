@@ -3,12 +3,12 @@ package com.gentics.mesh.core.rest.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
 /**
  * User response model.
  */
-public class UserResponse extends AbstractGenericNodeRestModel {
+public class UserResponse extends AbstractGenericRestResponse {
 
 	private String lastname;
 

@@ -14,13 +14,14 @@ import com.gentics.mesh.query.impl.PagingParameter;
 public interface TagFamilyClientMethods {
 
 	/**
-	 * Load the tag family using its uuid.
+	 * Load the tag family using the given UUID.
 	 * 
 	 * @param projectName
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid);
+	Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple tag families.

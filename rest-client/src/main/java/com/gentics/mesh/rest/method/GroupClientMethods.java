@@ -15,9 +15,10 @@ public interface GroupClientMethods {
 	 * Load the given group.
 	 * 
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<GroupResponse> findGroupByUuid(String uuid);
+	Future<GroupResponse> findGroupByUuid(String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple groups.

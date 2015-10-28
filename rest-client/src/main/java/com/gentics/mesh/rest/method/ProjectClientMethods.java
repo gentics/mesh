@@ -15,9 +15,10 @@ public interface ProjectClientMethods {
 	 * Load the given project.
 	 * 
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<ProjectResponse> findProjectByUuid(String uuid);
+	Future<ProjectResponse> findProjectByUuid(String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple projects.

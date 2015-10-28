@@ -25,9 +25,10 @@ public interface SchemaClientMethods {
 	 * Load the schema with the given uuid.
 	 * 
 	 * @param uuid
+	 * @param parameters 
 	 * @return
 	 */
-	Future<SchemaResponse> findSchemaByUuid(String uuid);
+	Future<SchemaResponse> findSchemaByUuid(String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Update the schema with the given request.

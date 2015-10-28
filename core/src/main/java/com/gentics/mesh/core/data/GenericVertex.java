@@ -79,4 +79,11 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	 */
 	void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler);
 
+	/**
+	 * Set the editor and creator references and update the timestamps for created and edited fields.
+	 * 
+	 * @param user
+	 */
+	void setCreated(User user);
+
 }

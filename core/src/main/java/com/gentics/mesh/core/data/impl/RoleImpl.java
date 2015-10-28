@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.RestModelHelper;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -138,6 +139,9 @@ public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role
 					obsFieldSet.toHandler().handle(Future.succeededFuture());
 				}
 			});
+
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restRole);
 
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {

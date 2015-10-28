@@ -26,6 +26,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_LANGUAGE);
 		database.addVertexType(LanguageRootImpl.class);
+		// TODO add unique index
 	}
 
 	@Override
@@ -42,8 +43,6 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	public void addLanguage(Language language) {
 		addItem(language);
 	}
-
-	// TODO add unique index
 
 	@Override
 	public Language create(String languageName, String languageTag) {

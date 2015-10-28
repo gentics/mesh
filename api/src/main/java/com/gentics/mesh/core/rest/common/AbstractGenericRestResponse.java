@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.user.UserReference;
  * Basic rest model abstract class for most mesh rest POJOs.
  *
  */
-public class AbstractGenericNodeRestModel extends AbstractResponse {
+public class AbstractGenericRestResponse extends AbstractResponse {
 
 	private UserReference creator;
 
@@ -16,6 +16,8 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	private long edited;
 
 	private String[] permissions = {};
+
+	private String[] rolePerms;
 
 	/**
 	 * Return the creator user reference.
@@ -102,9 +104,29 @@ public class AbstractGenericNodeRestModel extends AbstractResponse {
 	/**
 	 * Set the human readable permission names for the element.
 	 * 
-	 * @param permissions Human readable permissions
+	 * @param permissions
+	 *            Human readable permissions
 	 */
 	public void setPermissions(String... permissions) {
 		this.permissions = permissions;
 	}
+
+	/**
+	 * Return the human readable role permissions for the element.
+	 * 
+	 * @return
+	 */
+	public String[] getRolePerms() {
+		return rolePerms;
+	}
+
+	/**
+	 * Set the human readable role permissions for the element.
+	 * 
+	 * @param rolePerms
+	 */
+	public void setRolePerms(String... rolePerms) {
+		this.rolePerms = rolePerms;
+	}
+
 }

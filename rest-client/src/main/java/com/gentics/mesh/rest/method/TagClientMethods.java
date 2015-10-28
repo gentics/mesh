@@ -21,13 +21,14 @@ public interface TagClientMethods {
 	Future<TagResponse> createTag(String projectName, TagCreateRequest request);
 
 	/**
-	 * Load the given tag.
+	 * Load the tag with the given uuid.
 	 * 
 	 * @param projectName
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<TagResponse> findTagByUuid(String projectName, String uuid);
+	Future<TagResponse> findTagByUuid(String projectName, String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Update the tag

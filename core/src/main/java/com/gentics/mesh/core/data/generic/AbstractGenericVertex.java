@@ -6,7 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -55,7 +55,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 	 * @param ac
 	 * @param handler
 	 */
-	protected <R extends AbstractGenericNodeRestModel> void fillCommonRestFields(R model, InternalActionContext ac, Handler<AsyncResult<R>> handler) {
+	protected <R extends AbstractGenericRestResponse> void fillCommonRestFields(R model, InternalActionContext ac, Handler<AsyncResult<R>> handler) {
 
 		model.setUuid(getUuid());
 
@@ -105,6 +105,14 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 	@Override
 	public Long getLastEditedTimestamp() {
 		return getProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setCreated(User creator) {
+		setCreator(creator);
+		setCreationTimestamp(System.currentTimeMillis());
+		setEditor(creator);
+		setLastEditedTimestamp(System.currentTimeMillis());
 	}
 
 }

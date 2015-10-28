@@ -40,6 +40,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -130,6 +131,9 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 					obsFieldSet.toHandler().handle(Future.succeededFuture());
 				}
 			});
+
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restTag);
 
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {

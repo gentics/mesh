@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 /**
  * POJO for the node rest response model.
  */
-public class NodeResponse extends AbstractGenericNodeRestModel implements NodeField, NodeFieldListItem, NodeReference {
+public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, NodeReference {
 
 	private String language;
 
@@ -52,8 +52,6 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	private String fileName;
 
 	private FieldMap fields = new FieldMapImpl();
-
-	private String rolePerms;
 
 	public NodeResponse() {
 	}
@@ -373,24 +371,6 @@ public class NodeResponse extends AbstractGenericNodeRestModel implements NodeFi
 	@Override
 	public String getType() {
 		return FieldTypes.NODE.toString();
-	}
-
-	/**
-	 * Return the role permissions.
-	 * 
-	 * @return
-	 */
-	public String getRolePerms() {
-		return rolePerms;
-	}
-
-	/**
-	 * Set the role permissions.
-	 * 
-	 * @param rolePerms
-	 */
-	public void setRolePerms(String rolePerms) {
-		this.rolePerms = rolePerms;
 	}
 
 }

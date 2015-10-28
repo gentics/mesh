@@ -70,11 +70,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 	public Role create(String name, Group group, User creator) {
 		Role role = getGraph().addFramedVertex(RoleImpl.class);
 		role.setName(name);
-		role.setCreator(creator);
-		role.setCreationTimestamp(System.currentTimeMillis());
-		role.setEditor(creator);
-		role.setLastEditedTimestamp(System.currentTimeMillis());
-
+		role.setCreated(creator);
 		addRole(role);
 		if (group != null) {
 			group.addRole(role);
@@ -103,12 +99,12 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 		Role conflictingRole = findByName(roleName);
 		if (conflictingRole != null) {
-			HttpStatusCodeErrorException conflictError = conflict(ac, conflictingRole.getUuid(), roleName,	"role_conflicting_name");
+			HttpStatusCodeErrorException conflictError = conflict(ac, conflictingRole.getUuid(), roleName, "role_conflicting_name");
 			handler.handle(Future.failedFuture(conflictError));
 			return;
 		}
 
-		// TODO use blocking code here
+		// TODO use non-blocking code here
 		loadObjectByUuid(ac, requestModel.getGroupUuid(), CREATE_PERM, boot.groupRoot(), rh -> {
 			if (rh.succeeded()) {
 				db.trx(txCreate -> {

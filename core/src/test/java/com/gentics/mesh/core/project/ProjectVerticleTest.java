@@ -44,6 +44,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Vertex;
@@ -241,6 +242,18 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertTrue(permissions.contains("read"));
 		assertTrue(permissions.contains("update"));
 		assertTrue(permissions.contains("delete"));
+	}
+
+	@Test
+	public void testReadByUuidWithRolePerms() {
+		Project project = project();
+		String uuid = project.getUuid();
+
+		Future<ProjectResponse> future = getClient().findProjectByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
 	@Test

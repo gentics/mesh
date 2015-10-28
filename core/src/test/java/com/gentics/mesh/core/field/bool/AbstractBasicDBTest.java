@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.bool;
 import org.junit.After;
 import org.junit.Before;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.test.AbstractDBTest;
 

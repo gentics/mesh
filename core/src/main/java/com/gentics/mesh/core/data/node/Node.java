@@ -161,7 +161,16 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	Node create(User creator, SchemaContainer schemaContainer, Project project);
 
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo) throws InvalidArgumentException;
+	/**
+	 * Return a page with child nodes that are visible to the given user.
+	 * 
+	 * @param requestUser
+	 * @param languageTags
+	 * @param pagingParameter
+	 * @return
+	 * @throws InvalidArgumentException
+	 */
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter) throws InvalidArgumentException;
 
 	/**
 	 * Return the binary filename.

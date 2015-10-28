@@ -16,9 +16,10 @@ public interface RoleClientMethods {
 	 * Load the role.
 	 * 
 	 * @param uuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<RoleResponse> findRoleByUuid(String uuid);
+	Future<RoleResponse> findRoleByUuid(String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple roles.

@@ -619,10 +619,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new RolePermissionParameter().setRoleName("admin"));
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
 	@Test

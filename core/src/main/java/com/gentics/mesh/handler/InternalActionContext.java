@@ -50,6 +50,13 @@ public interface InternalActionContext extends ActionContext {
 	List<String> getSelectedLanguageTags();
 
 	/**
+	 * Return the role parameter value.
+	 * 
+	 * @return
+	 */
+	String getRolePermisssionParameter();
+
+	/**
 	 * Extract the paging parameter from the request parameters. The paging information contains information about the number of the page that is currently
 	 * requested and the amount of items that should be included in a single page.
 	 * 

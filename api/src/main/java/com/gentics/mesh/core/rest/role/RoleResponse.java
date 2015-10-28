@@ -3,13 +3,13 @@ package com.gentics.mesh.core.rest.role;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 
 /**
  * POJO for a role response model.
  */
-public class RoleResponse extends AbstractGenericNodeRestModel {
+public class RoleResponse extends AbstractGenericRestResponse {
 
 	private String name;
 

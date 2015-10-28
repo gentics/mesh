@@ -33,6 +33,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.RestModelHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -53,8 +54,8 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 	@Override
 	public SchemaContainer transformToRest(InternalActionContext ac, Handler<AsyncResult<SchemaResponse>> handler) {
 		try {
-			SchemaResponse schemaResponse = JsonUtil.readSchema(getJson(), SchemaResponse.class);
-			schemaResponse.setUuid(getUuid());
+			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);
+			restSchema.setUuid(getUuid());
 
 			// for (ProjectImpl project : getProjects()) {
 			// ProjectResponse restProject = new ProjectResponse();
@@ -64,16 +65,19 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			// }
 
 			// Sort the list by project name
-			Collections.sort(schemaResponse.getProjects(), new Comparator<ProjectResponse>() {
+			Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
 				@Override
 				public int compare(ProjectResponse o1, ProjectResponse o2) {
 					return o1.getName().compareTo(o2.getName());
 				};
 			});
 
-			schemaResponse.setPermissions(ac.getUser().getPermissionNames(ac, this));
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restSchema);
 
-			handler.handle(Future.succeededFuture(schemaResponse));
+			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, this));
+
+			handler.handle(Future.succeededFuture(restSchema));
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}

@@ -33,6 +33,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -180,6 +181,9 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 					obsFieldSet.toHandler().handle(Future.succeededFuture());
 				}
 			});
+
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restGroup);
 
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {

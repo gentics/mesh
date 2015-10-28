@@ -41,6 +41,7 @@ import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
@@ -271,6 +272,20 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		test.assertGroup(group, future.result());
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidWithRolePerms() {
+		Group group = group();
+		String uuid = group.getUuid();
+
+		Future<GroupResponse> future = getClient().findGroupByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
+
 	}
 
 	@Test

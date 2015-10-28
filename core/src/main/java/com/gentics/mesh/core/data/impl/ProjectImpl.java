@@ -45,6 +45,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.RestModelHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -150,14 +151,14 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 		db.asyncNoTrx(noTrx -> {
 			Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-			ProjectResponse projectResponse = new ProjectResponse();
-			projectResponse.setName(getName());
-			projectResponse.setRootNodeUuid(getBaseNode().getUuid());
+			ProjectResponse restProject = new ProjectResponse();
+			restProject.setName(getName());
+			restProject.setRootNodeUuid(getBaseNode().getUuid());
 
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillCommonRestFields(projectResponse, ac, rh -> {
+			fillCommonRestFields(restProject, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {
@@ -165,9 +166,12 @@ public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implement
 				}
 			});
 
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restProject);
+
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(projectResponse);
+				noTrx.complete(restProject);
 			} , error -> {
 				noTrx.fail(error);
 			});

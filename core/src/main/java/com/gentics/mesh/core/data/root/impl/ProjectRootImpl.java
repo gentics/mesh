@@ -97,11 +97,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 		project.getNodeRoot();
 		project.createBaseNode(creator);
 
-		project.setCreator(creator);
-		project.setCreationTimestamp(System.currentTimeMillis());
-		project.setEditor(creator);
-		project.setLastEditedTimestamp(System.currentTimeMillis());
-
+		project.setCreated(creator);
 		project.getTagRoot();
 		project.getSchemaContainerRoot();
 		project.getTagFamilyRoot();
@@ -193,7 +189,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 					db.trx(txCreate -> {
 						requestUser.reload();
 						Project project = create(requestModel.getName(), requestUser);
-						project.setCreator(requestUser);
+						
 
 						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
 						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
@@ -213,7 +209,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 							try {
 								routerStorage.addProjectRouter(project.getName());
 							} catch (InvalidNameException e) {
-								//*TODO should we really fail here?
+								// TODO should we really fail here?
 								handler.handle(failedFuture(ac, BAD_REQUEST, "Error while adding project to router storage", e));
 								return;
 							}

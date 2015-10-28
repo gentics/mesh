@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.project;
 
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
-public class ProjectResponse extends AbstractGenericNodeRestModel {
+public class ProjectResponse extends AbstractGenericRestResponse {
 
 	private String name;
 

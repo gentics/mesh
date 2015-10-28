@@ -5,41 +5,42 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.query.QueryParameterProvider;
 
 /**
- * The role permission parameter can be used to set the role parameter name which will cause mesh to add the rolePerm field to the rest response.
+ * The role permission parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest
+ * response.
  */
 public class RolePermissionParameter implements QueryParameterProvider {
 
 	public static final String ROLE_PERMISSION_QUERY_PARAM_KEY = "role";
 
-	private String roleName;
+	private String roleUuid;
 
 	/**
-	 * Set the role name.
+	 * Set the role UUID.
 	 * 
-	 * @param roleName
+	 * @param roleUuid
 	 * @return Fluent API
 	 */
-	public RolePermissionParameter setRoleName(String roleName) {
-		this.roleName = roleName;
+	public RolePermissionParameter setRoleUuid(String roleUuid) {
+		this.roleUuid = roleUuid;
 		return this;
 	}
 
 	/**
-	 * Return the rolename.
+	 * Return the role UUID.
 	 * 
 	 * @return
 	 */
-	public String getRoleName() {
-		return roleName;
+	public String getRoleUuid() {
+		return roleUuid;
 	}
 
 	@Override
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
 
-		if (!StringUtils.isEmpty(roleName)) {
+		if (!StringUtils.isEmpty(roleUuid)) {
 			query.append("role=");
-			query.append(roleName);
+			query.append(roleUuid);
 		}
 		return query.toString();
 	}

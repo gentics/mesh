@@ -11,6 +11,8 @@ public interface CrudVerticleTestCases {
 
 	// Read
 	void testReadByUUID() throws Exception;
+	
+	void testReadByUuidWithRolePerms();
 
 	void testReadByUUIDWithMissingPermission() throws Exception;
 

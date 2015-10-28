@@ -3,12 +3,12 @@ package com.gentics.mesh.core.rest.group;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
 /**
  * POJO that is used group response models.
  */
-public class GroupResponse extends AbstractGenericNodeRestModel {
+public class GroupResponse extends AbstractGenericRestResponse {
 
 	private String name;
 

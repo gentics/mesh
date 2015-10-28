@@ -53,6 +53,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.RestModelHelper;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -406,6 +407,9 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			for (Group group : getGroups()) {
 				restUser.addGroup(group.getName());
 			}
+
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restUser);
 
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();

@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;

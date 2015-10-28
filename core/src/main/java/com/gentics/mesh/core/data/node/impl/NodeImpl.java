@@ -65,6 +65,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -189,6 +190,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node.
 		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaContainer, project);
 		node.setParentNode(this);
+		setCreated(creator);
 		return node;
 	}
 
@@ -283,6 +285,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 					}
 				});
 			}
+
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restNode);
 
 			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
 			restNode.setAvailableLanguages(getAvailableLanguageNames());

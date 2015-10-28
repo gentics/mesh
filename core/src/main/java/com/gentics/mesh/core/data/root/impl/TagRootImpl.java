@@ -137,7 +137,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			db.trx(tc -> {
 				this.reload();
 				requestUser.reload();
-				// tagFamily.reload();
 				project.reload();
 				Tag newTag = foundFamily.create(requestModel.getFields().getName(), project, requestUser);
 				ac.getUser().addCRUDPermissionOnRole(foundFamily, CREATE_PERM, newTag);

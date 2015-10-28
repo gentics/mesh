@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.AbstractGenericNodeRestModel;
+import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -133,7 +133,7 @@ public class RestAssert {
 
 	}
 
-	public void assertGenericNode(GenericVertex<?> node, AbstractGenericNodeRestModel model) {
+	public void assertGenericNode(GenericVertex<?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());

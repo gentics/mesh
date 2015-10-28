@@ -16,6 +16,8 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 
 	private String[] permissions = {};
 
+	private String[] rolePerms;
+
 	private List<ProjectResponse> projects = new ArrayList<>();
 
 	public SchemaResponse() {
@@ -57,6 +59,24 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	 */
 	public void setPermissions(String... permissions) {
 		this.permissions = permissions;
+	}
+
+	/**
+	 * Return the human readable role permissions for the element.
+	 * 
+	 * @return
+	 */
+	public String[] getRolePerms() {
+		return rolePerms;
+	}
+
+	/**
+	 * Set the human readable role permissions for the element.
+	 * 
+	 * @param rolePerms
+	 */
+	public void setRolePerms(String... rolePerms) {
+		this.rolePerms = rolePerms;
 	}
 
 	/**

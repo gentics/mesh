@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -154,6 +155,18 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		test.assertTag(tag, future.result());
+	}
+	
+	@Test
+	public void testReadByUuidWithRolePerms() {
+		Tag tag= tag("red");
+		String uuid = tag.getUuid();
+
+		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
 	@Test

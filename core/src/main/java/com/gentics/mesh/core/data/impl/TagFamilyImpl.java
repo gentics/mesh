@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -39,6 +38,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -117,8 +117,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	public Tag create(String name, Project project, User creator) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
-		tag.setCreator(creator);
-		tag.setEditor(creator);
+		tag.setCreated(creator);
 		addTag(tag);
 		// Add to global list of tags
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
@@ -134,23 +133,28 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		db.asyncNoTrx(noTrx -> {
 			Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-			TagFamilyResponse response = new TagFamilyResponse();
-			response.setName(getName());
+			TagFamilyResponse restTagFamily = new TagFamilyResponse();
+			restTagFamily.setName(getName());
 
 			// Add common fields
 			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
 			futures.add(obsFieldSet);
-			fillCommonRestFields(response, ac, rh -> {
+			fillCommonRestFields(restTagFamily, ac, rh -> {
 				if (rh.failed()) {
 					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {
 					obsFieldSet.toHandler().handle(Future.succeededFuture());
 				}
 			});
+			
+
+			// Role permissions
+			RestModelHelper.setRolePermissions(ac, this, restTagFamily);
+
 
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(response);
+				noTrx.complete(restTagFamily);
 			} , error -> {
 				noTrx.fail(error);
 			});
