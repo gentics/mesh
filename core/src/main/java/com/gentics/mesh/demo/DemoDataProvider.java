@@ -142,13 +142,6 @@ public class DemoDataProvider {
 			Role role = userInfo.getRole();
 			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-
-				// TODO typecheck? and verify how orient will behave
-				if (role.getUuid().equals(vertex.getProperty("uuid"))) {
-					log.info("Skipping own role");
-					continue;
-				}
-
 				MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 				if (log.isTraceEnabled()) {
 					log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");

@@ -492,6 +492,11 @@ public class UserTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testOwnRolePerm() {
+		assertTrue("The user should have update permissions on his role", user().hasPermission(role(), GraphPermission.UPDATE_PERM));
+	}
+
+	@Test
 	@Override
 	public void testUpdate() {
 		User newUser = meshRoot().getUserRoot().create("newUser", user());

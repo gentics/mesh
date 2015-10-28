@@ -255,4 +255,6 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 
 	List<? extends GenericVertexImpl> getCreatedElements();
 
+	boolean hasPermission(MeshVertex node, GraphPermission permission);
+
 }

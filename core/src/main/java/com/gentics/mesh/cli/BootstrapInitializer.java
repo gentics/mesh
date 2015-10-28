@@ -474,11 +474,6 @@ public class BootstrapInitializer {
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				// TODO typecheck? and verify how orient will behave
-				if (adminRole.getUuid().equalsIgnoreCase(vertex.getProperty("uuid"))) {
-					log.info("Skipping own role");
-					continue;
-				}
 				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
 				adminRole.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 				if (log.isTraceEnabled()) {

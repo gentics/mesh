@@ -291,13 +291,14 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		// });
 	}
 
-	private boolean hasPermission(MeshVertex node, GraphPermission permission) {
+	@Override
+	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.getVertex(Direction.IN);
 			Iterable<Edge> edges = graph.getEdges("e." + permission.label(),
-					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), node.getImpl().getId()));
+					MeshSpringConfiguration.getInstance().database().createComposedIndexKey(role.getId(), vertex.getImpl().getId()));
 			boolean foundPermEdge = edges.iterator().hasNext();
 			if (foundPermEdge) {
 				return true;
