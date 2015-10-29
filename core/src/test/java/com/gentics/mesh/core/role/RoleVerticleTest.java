@@ -396,6 +396,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Role role = role();
 		String uuid = role.getUuid();
 
+		role().revokePermissions(role, UPDATE_PERM);
+
 		RoleUpdateRequest restRole = new RoleUpdateRequest();
 		restRole.setName("renamed role");
 
@@ -447,10 +449,12 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		Future<GenericMessageResponse> future = getClient().deleteRole(role().getUuid());
+		role().revokePermissions(role(), DELETE_PERM);
+		String uuid = role().getUuid();
+		Future<GenericMessageResponse> future = getClient().deleteRole(uuid);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", role().getUuid());
-		assertElement(meshRoot().getRoleRoot(), role().getUuid(), true);
+		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+		assertElement(meshRoot().getRoleRoot(), uuid, true);
 	}
 
 	@Test
