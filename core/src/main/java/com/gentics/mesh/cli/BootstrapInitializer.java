@@ -250,22 +250,30 @@ public class BootstrapInitializer {
 	@Autowired
 	private RouterStorage routerStorage;
 
+	private static MeshRoot meshRoot;
+
 	/**
 	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
 	 * 
 	 * @return
 	 */
 	public MeshRoot meshRoot() {
-		// Check reference graph and finally create the node when it can't be found.
-		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-		if (foundMeshRoot == null) {
-			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
-			foundMeshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
-			if (log.isInfoEnabled()) {
-				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
+		if (meshRoot == null) {
+			synchronized (BootstrapInitializer.class) {
+				// Check reference graph and finally create the node when it can't be found.
+				MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+				if (foundMeshRoot == null) {
+					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
+					if (log.isInfoEnabled()) {
+						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
+					}
+				} else {
+					meshRoot = foundMeshRoot;
+				}
 			}
 		}
-		return foundMeshRoot;
+		return meshRoot;
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {
@@ -313,6 +321,7 @@ public class BootstrapInitializer {
 	}
 
 	public static void clearReferences() {
+		BootstrapInitializer.meshRoot = null;
 		MeshRootImpl.clearReferences();
 	}
 
