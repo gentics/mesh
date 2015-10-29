@@ -20,7 +20,7 @@ import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.Future;
 
-public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
+public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private ProjectVerticle projectVerticle;

@@ -17,6 +17,8 @@ public interface SearchProvider {
 	 */
 	void refreshIndex();
 
+//	void createIndex(String indexName, String type);
+
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
 	/**
 	 * Update the document and invoke the handler when the document has been updated or an error occurred.

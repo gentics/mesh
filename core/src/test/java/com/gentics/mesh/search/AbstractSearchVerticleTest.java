@@ -70,7 +70,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		}
 		return query;
 	}
-	
+
 	protected String getSimpleWildCardQuery(String key, String value) throws JSONException {
 		QueryBuilder qb = QueryBuilders.wildcardQuery(key, value);
 		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
@@ -93,11 +93,5 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		});
 		failingLatch(latch, 30);
 	}
-
-	abstract public void testDocumentDeletion() throws Exception;
-
-	abstract public void testDocumentCreation() throws Exception;
-
-	abstract public void testDocumentUpdate() throws Exception;
 
 }

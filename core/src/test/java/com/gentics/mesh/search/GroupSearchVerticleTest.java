@@ -18,7 +18,7 @@ import com.gentics.mesh.core.verticle.group.GroupVerticle;
 
 import io.vertx.core.Future;
 
-public class GroupSearchVerticleTest extends AbstractSearchVerticleTest {
+public class GroupSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private GroupVerticle groupVerticle;

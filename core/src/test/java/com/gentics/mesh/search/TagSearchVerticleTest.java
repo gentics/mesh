@@ -22,7 +22,7 @@ import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.Future;
 
-public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
+public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private TagVerticle tagVerticle;

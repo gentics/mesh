@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -58,6 +59,14 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			registerSearchHandler("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class);
 			registerSearchHandler("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
 			registerSearchHandler("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
+			addSearchStatusHandler();
+		});
+	}
+
+	private void addSearchStatusHandler() {
+		Route getRoute = route("/status").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			searchHandler.handleStatus(InternalActionContext.create(rc));
 		});
 	}
 

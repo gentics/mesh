@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
@@ -20,6 +21,7 @@ import org.elasticsearch.node.NodeBuilder;
 
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.AsyncResult;
@@ -29,7 +31,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Elastic search provider class which implements the {@link SearchProvider} interface. 
+ * Elastic search provider class which implements the {@link SearchProvider} interface.
  */
 public class ElasticSearchProvider implements SearchProvider {
 
@@ -107,9 +109,18 @@ public class ElasticSearchProvider implements SearchProvider {
 	private Client getSearchClient() {
 		return getNode().client();
 	}
-	
-	//TODO Add method which will be used to create an index and set a custom mapping 
-	//getSearchClient().admin().indices().prepareCreate("node").addMapping(type, source)
+
+//	@Override
+//	public void createIndex(String indexName, String type) {
+//		//TODO Add method which will be used to create an index and set a custom mapping 
+//		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
+//		Mapping mapping = new Mapping();
+//		mapping.setAnalyzer("not_analyzed");
+//		mapping.setIndex("node");
+//		mapping.setType("string");
+//		String mappingJson = JsonUtil.toJson(mapping);
+//		createIndexRequestBuilder.addMapping(type, mappingJson);
+//	}
 
 	@Override
 	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {

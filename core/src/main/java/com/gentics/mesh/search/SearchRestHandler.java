@@ -19,11 +19,14 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -191,6 +194,16 @@ public class SearchRestHandler {
 				log.error("Search query failed", e);
 				ac.fail(BAD_REQUEST, "search_error_query");
 			}
+		});
+
+	}
+
+	public void handleStatus(InternalActionContext ac) {
+		db.noTrx(noTrx -> {
+			SearchQueue queue = MeshRoot.getInstance().getSearchQueue();
+			SearchStatusResponse statusResponse = new SearchStatusResponse();
+			statusResponse.setBatchCount(queue.getSize());
+			ac.send(JsonUtil.toJson(statusResponse), OK);
 		});
 
 	}

@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -82,7 +83,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	public static void main(String[] args) throws IOException {
 		new RAMLExampleGenerator().run();
 	}
-	
+
 	public void run() throws IOException {
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
@@ -111,20 +112,20 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	}
 
-//	private File baseDir = new File("target", "raml2html");
-//
-//	@Before
-//	public void setup() throws IOException {
-//		FileUtils.deleteDirectory(baseDir);
-//	}
+	//	private File baseDir = new File("target", "raml2html");
+	//
+	//	@Before
+	//	public void setup() throws IOException {
+	//		FileUtils.deleteDirectory(baseDir);
+	//	}
 
-//	@Test
-//	public void testGenerator() throws IOException {
-//		System.setProperty("baseDir", baseDir.getAbsolutePath());
-//		File jsonDir = new File(baseDir, "json");
-//		assertTrue(jsonDir.exists());
-//		assertTrue(jsonDir.listFiles().length != 0);
-//	}
+	//	@Test
+	//	public void testGenerator() throws IOException {
+	//		System.setProperty("baseDir", baseDir.getAbsolutePath());
+	//		File jsonDir = new File(baseDir, "json");
+	//		assertTrue(jsonDir.exists());
+	//		assertTrue(jsonDir.listFiles().length != 0);
+	//	}
 
 	private void createJson() throws IOException {
 
@@ -137,8 +138,15 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		schemaJson();
 		microschemaJson();
 		projectJson();
+		searchStatusJson();
 
 		genericResponseJson();
+	}
+
+	private void searchStatusJson() throws JsonGenerationException, JsonMappingException, IOException {
+		SearchStatusResponse status = new SearchStatusResponse();
+		status.setBatchCount(42);
+		write(status);
 	}
 
 	private void genericResponseJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -430,7 +438,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -481,7 +489,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -500,7 +508,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));

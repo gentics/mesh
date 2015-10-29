@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 
-public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest {
+public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private MicroschemaVerticle microschemaVerticle;

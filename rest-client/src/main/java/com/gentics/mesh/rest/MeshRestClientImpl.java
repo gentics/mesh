@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -567,6 +568,11 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<TagFamilyListResponse> searchTagFamilies(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class, json);
+	}
+
+	@Override
+	public Future<SearchStatusResponse> loadSearchStatus() {
+		return handleRequest(GET, "/search/status", SearchStatusResponse.class);
 	}
 
 	@Override

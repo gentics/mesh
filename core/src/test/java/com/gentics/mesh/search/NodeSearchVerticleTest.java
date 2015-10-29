@@ -35,7 +35,7 @@ import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
 
-public class NodeSearchVerticleTest extends AbstractSearchVerticleTest {
+public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private NodeVerticle nodeVerticle;

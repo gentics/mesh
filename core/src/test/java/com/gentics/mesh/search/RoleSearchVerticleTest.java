@@ -18,7 +18,7 @@ import com.gentics.mesh.core.verticle.role.RoleVerticle;
 
 import io.vertx.core.Future;
 
-public class RoleSearchVerticleTest extends AbstractSearchVerticleTest {
+public class RoleSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private RoleVerticle roleVerticle;

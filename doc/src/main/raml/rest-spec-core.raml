@@ -693,6 +693,15 @@ traits:
                 body:
                     application/json:
                         example: !include json/SchemaListResponse.example.json
+  /status:
+   displayName: Search Status
+   get:
+     description: Load the search status information.
+     responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/SearchStatusResponse.example.json
 
 #------------------------------------------------------------------------------
 # Move Verticle

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 
 import io.vertx.core.Future;
 
-public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest {
+public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
