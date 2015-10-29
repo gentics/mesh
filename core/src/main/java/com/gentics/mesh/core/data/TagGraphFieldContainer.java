@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data;
 
+/**
+ * Graph domain model element which is used to store tag fields. Currently only the tag name is stored within this field.
+ */
 public interface TagGraphFieldContainer extends BasicFieldContainer {
 
 	/**

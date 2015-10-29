@@ -26,12 +26,37 @@ public interface NestingGraphField extends GraphField {
 	 */
 	StringGraphField createString(String string);
 
+	/**
+	 * Create a new node graph field.
+	 * 
+	 * @param key
+	 * @param node
+	 * @return
+	 */
 	NodeGraphField createNode(String key, Node node);
 
+	/**
+	 * Create a new date graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	DateGraphField createDate(String key);
 
+	/**
+	 * Create a new number graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	NumberGraphField createNumber(String key);
 
+	/**
+	 * Create a new html graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	HtmlGraphField createHTML(String key);
 
 	/**

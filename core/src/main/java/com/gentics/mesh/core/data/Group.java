@@ -75,7 +75,7 @@ public interface Group extends GenericVertex<GroupResponse>, NamedVertex, Indexe
 	 * @param requestUser
 	 * @param pagingInfo
 	 * @return
-	 * @throws InvalidArgumentException
+	 * @throws InvalidArgumentException Request may fail when invalid paging parameters are provided
 	 */
 	Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
@@ -84,8 +84,8 @@ public interface Group extends GenericVertex<GroupResponse>, NamedVertex, Indexe
 	 * 
 	 * @param requestUser
 	 * @param pagingInfo
-	 * @return
-	 * @throws InvalidArgumentException
+	 * @return Page with found users, an empty page is returned when no users could be found
+	 * @throws InvalidArgumentException Request may fail when invalid paging parameters are provided
 	 */
 	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 

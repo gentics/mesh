@@ -11,63 +11,63 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	/**
 	 * Return the type of the vertex.
 	 * 
-	 * @return
+	 * @return Vertex type
 	 */
 	String getType();
 
 	/**
 	 * Return the creator of the vertex.
 	 * 
-	 * @return
+	 * @return Creator
 	 */
 	User getCreator();
 
 	/**
 	 * Set the creator of the vertex.
 	 * 
-	 * @param user
+	 * @param user Creator
 	 */
 	void setCreator(User user);
 
 	/**
 	 * Return the editor of the vertex.
 	 * 
-	 * @return
+	 * @return Editor
 	 */
 	User getEditor();
 
 	/**
 	 * Set the editor of the vertex.
 	 * 
-	 * @param user
+	 * @param user Editor
 	 */
 	void setEditor(User user);
 
 	/**
 	 * Return the timestamp on which the vertex was last updated.
 	 * 
-	 * @return
+	 * @return Edit timestamp
 	 */
 	Long getLastEditedTimestamp();
 
 	/**
 	 * Set the timestamp on which the vertex was last updated.
 	 * 
-	 * @param timestamp
+	 * @param timestamp Edit timestamp
 	 */
 	void setLastEditedTimestamp(long timestamp);
 
 	/**
 	 * Return the timestamp on which the vertex was created.
 	 * 
-	 * @return
+	 * @return Creation timestamp
 	 */
 	Long getCreationTimestamp();
 
 	/**
 	 * Set the timestamp on which the vertex was created.
 	 * 
-	 * @param timestamp
+	 * @param timestamp Creation timestamp
 	 */
 	void setCreationTimestamp(long timestamp);
 
@@ -82,7 +82,7 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	/**
 	 * Set the editor and creator references and update the timestamps for created and edited fields.
 	 * 
-	 * @param user
+	 * @param user Creator
 	 */
 	void setCreated(User user);
 

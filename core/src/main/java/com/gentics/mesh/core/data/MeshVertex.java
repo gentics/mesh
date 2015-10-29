@@ -12,7 +12,7 @@ public interface MeshVertex extends MeshElement {
 	/**
 	 * Return the tinkerpop blueprint vertex of this mesh vertex.
 	 * 
-	 * @return
+	 * @return Underlying vertex
 	 */
 	Vertex getVertex();
 

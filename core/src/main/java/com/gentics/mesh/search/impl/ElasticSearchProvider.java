@@ -28,6 +28,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Elastic search provider class which implements the {@link SearchProvider} interface. 
+ */
 public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
@@ -104,6 +107,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	private Client getSearchClient() {
 		return getNode().client();
 	}
+	
+	//TODO Add method which will be used to create an index and set a custom mapping 
+	//getSearchClient().admin().indices().prepareCreate("node").addMapping(type, source)
 
 	@Override
 	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {
@@ -160,6 +166,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
 		}
 		IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
+
 		builder.setSource(map);
 		builder.execute().addListener(new ActionListener<IndexResponse>() {
 

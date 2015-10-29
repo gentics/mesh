@@ -55,7 +55,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	}
 
 	@Test
-	public void testSearchForUserByEmail() throws InterruptedException, JSONException {
+	public void testSearchForUsamerByEmail() throws InterruptedException, JSONException {
 		String email = "testmail@test.com";
 
 		UserCreateRequest request = new UserCreateRequest();

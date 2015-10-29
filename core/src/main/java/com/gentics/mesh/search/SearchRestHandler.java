@@ -39,6 +39,9 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
+/**
+ * Collection of handlers which are used to deal with rest search requests.
+ */
 @Component
 public class SearchRestHandler {
 

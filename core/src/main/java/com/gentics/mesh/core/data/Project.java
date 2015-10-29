@@ -73,14 +73,14 @@ public interface Project extends GenericVertex<ProjectResponse>, NamedVertex, In
 	/**
 	 * Return the tag root aggregation vertex of the project. Internally this method will create the tag root when it has not yet been created.
 	 * 
-	 * @return
+	 * @return Tag root element
 	 */
 	TagRoot getTagRoot();
 
 	/**
 	 * Return the node root aggregation vertex of the project. Internally this method will create the node root when it has not yet been created.
 	 * 
-	 * @return
+	 * @return Node root element
 	 */
 	NodeRoot getNodeRoot();
 

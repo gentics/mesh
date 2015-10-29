@@ -23,35 +23,35 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	/**
 	 * Return the username.
 	 * 
-	 * @return
+	 * @return Username
 	 */
 	String getUsername();
 
 	/**
 	 * Set the username.
 	 * 
-	 * @param string
+	 * @param string Username
 	 */
 	void setUsername(String string);
 
 	/**
 	 * Return the email address.
 	 * 
-	 * @return
+	 * @return Email address or null when no email address was set
 	 */
 	String getEmailAddress();
 
 	/**
 	 * Set the email address.
 	 * 
-	 * @param email
+	 * @param email Email address
 	 */
 	void setEmailAddress(String email);
 
 	/**
 	 * Return the lastname.
 	 * 
-	 * @return
+	 * @return Lastname
 	 */
 	String getLastname();
 
@@ -65,7 +65,7 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	/**
 	 * Return the firstname.
 	 * 
-	 * @return
+	 * @return Firstname
 	 */
 	String getFirstname();
 
@@ -79,14 +79,14 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	/**
 	 * Return the password hash.
 	 * 
-	 * @return
+	 * @return Password hash
 	 */
 	String getPasswordHash();
 
 	/**
 	 * Set the password hash.
 	 * 
-	 * @param hash
+	 * @param hash Password hash
 	 */
 	// TODO change this to an async call since hashing of the password is blocking
 	void setPasswordHash(String hash);

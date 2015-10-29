@@ -3,12 +3,16 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+/**
+ * A tag family is the aggregation root element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are
+ * bound to projects via the {@link TagFamilyRootImpl}.
+ */
 public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex, IndexedVertex {
 
 	public static final String TYPE = "tagFamily";

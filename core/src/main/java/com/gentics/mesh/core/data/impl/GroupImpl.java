@@ -132,6 +132,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, UserImpl.class);
 	}
 
+	@Override
 	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
@@ -142,6 +143,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 
 	}
 
+	@Override
 	public Group transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
