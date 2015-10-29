@@ -144,10 +144,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		// this.links.add(link);
 	}
 
+	@Override
 	public void setSchemaContainer(SchemaContainer schema) {
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
 
+	@Override
 	public SchemaContainer getSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}

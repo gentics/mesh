@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
@@ -111,5 +112,12 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	Future<SearchStatusResponse> loadSearchStatus();
+
+	/**
+	 * Trigger a reindex action which will rebuild the index for all elements. This is useful when you want to sync the search index after restoring a backup.
+	 * 
+	 * @return
+	 */
+	Future<GenericMessageResponse> invokeReindex();
 
 }

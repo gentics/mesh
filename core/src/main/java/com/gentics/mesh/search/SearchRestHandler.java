@@ -205,7 +205,13 @@ public class SearchRestHandler {
 			statusResponse.setBatchCount(queue.getSize());
 			ac.send(JsonUtil.toJson(statusResponse), OK);
 		});
+	}
 
+	public void handleReindex(InternalActionContext ac) {
+		db.noTrx(noTrx -> {
+			//TODO i18n entry
+			ac.sendMessage(OK, "search_admin_reindex_invoked");
+		});
 	}
 
 }

@@ -576,6 +576,11 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<GenericMessageResponse> invokeReindex() {
+		return handleRequest(GET, "/search/reindex", GenericMessageResponse.class);
+	}
+
+	@Override
 	public Future<String> getMeshStatus() {
 		Future<String> future = Future.future();
 		String uri = BASEURI + "/admin/status";

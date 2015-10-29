@@ -59,15 +59,21 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			registerSearchHandler("projects", boot.meshRoot().getProjectRoot(), ProjectListResponse.class);
 			registerSearchHandler("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
 			registerSearchHandler("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
-			addSearchStatusHandler();
+			addAdminHandlers();
 		});
 	}
 
-	private void addSearchStatusHandler() {
-		Route getRoute = route("/status").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
+	private void addAdminHandlers() {
+		Route statusRoute = route("/status").method(GET).produces(APPLICATION_JSON);
+		statusRoute.handler(rc -> {
 			searchHandler.handleStatus(InternalActionContext.create(rc));
 		});
+
+		Route reindexRoute = route("/reindex").method(GET).produces(APPLICATION_JSON);
+		reindexRoute.handler(rc -> {
+			searchHandler.handleReindex(InternalActionContext.create(rc));
+		});
+
 	}
 
 	/**
