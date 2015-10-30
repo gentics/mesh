@@ -131,7 +131,7 @@
 		</cluster>
 	</network>
 	<storages>
-		<storage name="mydb" path="plocal:target/databases/graphdb" userName="admin" userPassword="admin" loaded-at-startup="true"/>
+		<storage name="mesh" path="%MESH_DB_PATH%" userName="admin" userPassword="admin" loaded-at-startup="true"/>
 	</storages>
 	<users>
 		<user name="root" password="finger" resources="*"/>
@@ -141,14 +141,16 @@
 		<!-- DATABASE POOL: size min/max -->
 		<entry name="db.pool.min" value="1"/>
 		<entry name="db.pool.max" value="50"/>
+		<!-- 
 		<entry name="orientdb.www.path" value="classpath:/META-INF/resources/webjars/orientdb-studio/2.1.0"/>
+		 -->
 		<!-- PROFILER: configures the profiler as <seconds-for-snapshot>,<archive-snapshot-size>,<summary-size> -->
 		<entry name="profiler.enabled" value="true"/>
 		<!-- <entry name="profiler.config" value="30,10,10" /> -->
-		<entry name="plugin.directory" value="orient-plugins" />
+		<entry name="plugin.directory" value="%PLUGIN_DIRECTORY%" />
 
 		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
-		<entry name="log.console.level" value="finest"/>
-		<entry name="log.file.level" value="fine"/>
+		<entry name="log.console.level" value="%CONSOLE_LOG_LEVEL%"/>
+		<entry name="log.file.level" value="%FILE_LOG_LEVEL%"/>
 	</properties>
 </orient-server>

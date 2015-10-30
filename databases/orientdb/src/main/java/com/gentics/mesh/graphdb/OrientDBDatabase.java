@@ -1,17 +1,22 @@
 package com.gentics.mesh.graphdb;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
@@ -101,13 +106,34 @@ public class OrientDBDatabase extends AbstractDatabase {
 			startOrientServer();
 		}
 		configureGraphDB();
+	}
 
+	private InputStream getOrientServerConfig() throws IOException {
+		InputStream configIns = getClass().getResourceAsStream("/config/orientdb-server-config.xml");
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orient-plugins");
+		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
+		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
+		configString = configString.replaceAll("%MESH_DB_PATH%", "plocal:" + new File(options.getDirectory()).getAbsolutePath());
+		if (log.isDebugEnabled()) {
+			log.debug("Effective orientdb server configuration:" + configString);
+		}
+		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
+		return stream;
 	}
 
 	private void startOrientServer() throws Exception {
 		OServer server = OServerMain.create();
-		InputStream configIns = getClass().getResourceAsStream("/config/orientdb-server-config.xml");
-		server.startup(configIns);
+
+		log.info("Extracting orient studio");
+		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.1.zip");
+		File pluginDirectory = new File("orient-plugins");
+		pluginDirectory.mkdirs();
+		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.1.zip")));
+
+		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
