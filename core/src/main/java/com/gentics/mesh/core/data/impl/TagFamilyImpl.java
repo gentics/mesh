@@ -125,7 +125,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	}
 
 	@Override
-	public Tag create(String name, User creator) {
+	public Tag create(String name, Project project, User creator) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
@@ -133,12 +133,8 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		// Add to global list of tags
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
 		tagRoot.addTag(tag);
-		// Add tag to project list of tags
-		TagFamilyRoot root = getTagFamilyRoot();
-		Objects.requireNonNull(root, "The tag root for tag family {" + getName() + "} could not be found.");
 
-		Project project = root.getProject();
-		Objects.requireNonNull(project, "The project of tag root {" + root.getUuid() + "} could not be found.");
+		// Add tag to project list of tags
 		project.getTagRoot().addTag(tag);
 		return tag;
 	}

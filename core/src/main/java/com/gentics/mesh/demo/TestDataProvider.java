@@ -482,13 +482,13 @@ public class TestDataProvider {
 		return folderNode;
 	}
 
-//	private void setCreatorEditor(GenericVertex<?> node) {
-//		node.setCreator(userInfo.getUser());
-//		node.setCreationTimestamp(System.currentTimeMillis());
-//
-//		node.setEditor(userInfo.getUser());
-//		node.setLastEditedTimestamp(System.currentTimeMillis());
-//	}
+	//	private void setCreatorEditor(GenericVertex<?> node) {
+	//		node.setCreator(userInfo.getUser());
+	//		node.setCreationTimestamp(System.currentTimeMillis());
+	//
+	//		node.setEditor(userInfo.getUser());
+	//		node.setLastEditedTimestamp(System.currentTimeMillis());
+	//	}
 
 	public Tag addTag(String name) {
 		return addTag(name, getTagFamily("demo"));
@@ -498,7 +498,7 @@ public class TestDataProvider {
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
-		Tag tag = tagFamily.create(name, userInfo.getUser());
+		Tag tag = tagFamily.create(name, project, userInfo.getUser());
 		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}
