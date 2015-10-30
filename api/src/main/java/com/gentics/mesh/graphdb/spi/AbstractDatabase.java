@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 
@@ -20,7 +20,7 @@ public abstract class AbstractDatabase implements Database {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
-	protected StorageOptions options;
+	protected GraphStorageOptions options;
 	protected Vertx vertx;
 
 	@Override
@@ -39,14 +39,14 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(StorageOptions options, Vertx vertx) {
+	public void init(GraphStorageOptions options, Vertx vertx) throws Exception {
 		this.options = options;
 		this.vertx = vertx;
 		start();
 	}
 
 	@Override
-	public void reset() {
+	public void reset() throws Exception {
 		if (log.isDebugEnabled()) {
 			log.debug("Resetting graph database");
 		}

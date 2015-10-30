@@ -6,7 +6,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -63,20 +63,20 @@ public class TitanDBDatabase extends AbstractDatabase {
 
 	}
 
-	private Configuration getBerkleyDBConf(StorageOptions settings) {
+	private Configuration getBerkleyDBConf(GraphStorageOptions settings) {
 		Configuration conf = new BaseConfiguration();
 		conf.setProperty("storage.backend", "berkeleyje");
 		conf.setProperty("storage.directory", settings.getDirectory());
 		return conf;
 	}
 
-	private Configuration getInMemoryConf(StorageOptions settings) {
+	private Configuration getInMemoryConf(GraphStorageOptions settings) {
 		Configuration conf = new BaseConfiguration();
 		conf.setProperty("storage.backend", "inmemory");
 		return conf;
 	}
 
-	private Configuration getCassandraConf(StorageOptions settings) {
+	private Configuration getCassandraConf(GraphStorageOptions settings) {
 		Configuration conf = new BaseConfiguration();
 		conf.setProperty("storage.backend", "embeddedcassandra");
 		conf.setProperty("storage.cassandra-config-dir", "config/cassandra.yaml");

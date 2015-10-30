@@ -22,7 +22,7 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 	private Database db = new OrientDBDatabase();
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		db.init(null, Vertx.vertx());
 	}
 

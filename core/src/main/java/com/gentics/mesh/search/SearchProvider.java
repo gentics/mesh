@@ -17,7 +17,7 @@ public interface SearchProvider {
 	 */
 	void refreshIndex();
 
-//	void createIndex(String indexName, String type);
+	//	void createIndex(String indexName, String type);
 
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
 	/**
@@ -64,6 +64,20 @@ public interface SearchProvider {
 	 *            Completion handler
 	 */
 	void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler);
+
+	/**
+	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
+	 * 
+	 * @param index
+	 *            Index name of the document
+	 * @param type
+	 *            Index type of the document
+	 * @param uuid
+	 *            Uuid for the document
+	 * @param handler
+	 *            Completion handler
+	 */
+	void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler);
 
 	/**
 	 * Start the search provider.

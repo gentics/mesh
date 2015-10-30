@@ -55,8 +55,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		list.add(verticle);
 		return list;
 	}
-	
-	
+
 	// Create Tests
 
 	@Test

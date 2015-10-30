@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
@@ -21,7 +21,6 @@ import org.elasticsearch.node.NodeBuilder;
 
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.AsyncResult;
@@ -110,17 +109,38 @@ public class ElasticSearchProvider implements SearchProvider {
 		return getNode().client();
 	}
 
-//	@Override
-//	public void createIndex(String indexName, String type) {
-//		//TODO Add method which will be used to create an index and set a custom mapping 
-//		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
-//		Mapping mapping = new Mapping();
-//		mapping.setAnalyzer("not_analyzed");
-//		mapping.setIndex("node");
-//		mapping.setType("string");
-//		String mappingJson = JsonUtil.toJson(mapping);
-//		createIndexRequestBuilder.addMapping(type, mappingJson);
-//	}
+	//	@Override
+	//	public void createIndex(String indexName, String type) {
+	//		//TODO Add method which will be used to create an index and set a custom mapping 
+	//		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
+	//		Mapping mapping = new Mapping();
+	//		mapping.setAnalyzer("not_analyzed");
+	//		mapping.setIndex("node");
+	//		mapping.setType("string");
+	//		String mappingJson = JsonUtil.toJson(mapping);
+	//		createIndexRequestBuilder.addMapping(type, mappingJson);
+	//	}
+
+	@Override
+	public void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler) {
+		getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
+
+			@Override
+			public void onResponse(GetResponse response) {
+				if (log.isDebugEnabled()) {
+					log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
+				}
+				handler.handle(Future.succeededFuture(response.getSourceAsMap()));
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
+				handler.handle(Future.failedFuture(e));
+			}
+
+		});
+	}
 
 	@Override
 	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {

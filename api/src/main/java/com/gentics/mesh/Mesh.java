@@ -52,8 +52,9 @@ public interface Mesh {
 	 * Stop the the Mesh instance and release any resources held by it.
 	 * 
 	 * The instance cannot be used after it has been closed.
+	 * @throws Exception 
 	 */
-	void shutdown();
+	void shutdown() throws Exception;
 
 	/**
 	 * Set a custom verticle loader that will be invoked once all major components have been initialized.

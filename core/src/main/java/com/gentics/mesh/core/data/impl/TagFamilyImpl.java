@@ -138,7 +138,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		Objects.requireNonNull(root, "The tag root for tag family {" + getName() + "} could not be found.");
 
 		Project project = root.getProject();
-		Objects.requireNonNull(project, "The project of tag root {" + root.getUuid() + "} could not be found.");
+		Objects.requireNonNull(project, "The project of tag family root {" + root.getUuid() + "} could not be found.");
 		project.getTagRoot().addTag(tag);
 		return tag;
 	}

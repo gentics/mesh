@@ -1,9 +1,6 @@
 
 package com.gentics.mesh.graphdb.orientdb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +17,6 @@ import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -37,7 +33,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 	private Database db = new OrientDBDatabase();
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		db.init(null, Vertx.vertx());
 	}
 

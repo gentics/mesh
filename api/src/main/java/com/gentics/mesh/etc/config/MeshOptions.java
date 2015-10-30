@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.gentics.mesh.etc.ElasticSearchOptions;
-import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.etc.GraphStorageOptions;
 
 import io.vertx.ext.mail.MailConfig;
 
@@ -33,7 +33,7 @@ public class MeshOptions {
 
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
-	private StorageOptions storageOptions = new StorageOptions();
+	private GraphStorageOptions storageOptions = new GraphStorageOptions();
 
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
@@ -97,7 +97,7 @@ public class MeshOptions {
 	 * 
 	 * @return Storage options
 	 */
-	public StorageOptions getStorageOptions() {
+	public GraphStorageOptions getStorageOptions() {
 		return this.storageOptions;
 	}
 

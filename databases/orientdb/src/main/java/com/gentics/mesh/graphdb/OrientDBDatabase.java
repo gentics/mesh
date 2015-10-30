@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
@@ -29,6 +29,9 @@ import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.server.OServer;
+import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -67,7 +70,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(StorageOptions options, Vertx vertx) {
+	public void init(GraphStorageOptions options, Vertx vertx) throws Exception {
 		super.init(options, vertx);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
@@ -86,7 +89,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		Orient.instance().startup();
 		if (options == null || options.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
@@ -94,9 +97,21 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
+		if (options.getStartServer()) {
+			startOrientServer();
+		}
 		configureGraphDB();
-		//		createIndices();
 
+	}
+
+	private void startOrientServer() throws Exception {
+		OServer server = OServerMain.create();
+		InputStream configIns = getClass().getResourceAsStream("/config/orientdb-server-config.xml");
+		server.startup(configIns);
+		OServerPluginManager manager = new OServerPluginManager();
+		manager.config(server);
+		server.activate();
+		manager.startup();
 	}
 
 	private void configureGraphDB() {

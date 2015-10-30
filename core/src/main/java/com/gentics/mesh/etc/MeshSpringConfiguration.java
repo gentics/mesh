@@ -73,12 +73,16 @@ public class MeshSpringConfiguration {
 			log.error(message);
 			throw new RuntimeException(message);
 		}
-		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-		database.init(options, Mesh.vertx());
-		DatabaseHelper helper = new DatabaseHelper(database);
-		helper.init();
-		helper.migrate();
-		return database;
+		try {
+			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
+			database.init(options, Mesh.vertx());
+			DatabaseHelper helper = new DatabaseHelper(database);
+			helper.init();
+			helper.migrate();
+			return database;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Bean

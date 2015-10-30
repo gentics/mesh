@@ -46,7 +46,13 @@ public class DatabaseTest extends AbstractBasicDBTest {
 		GroupRootImpl.checkIndices(db);
 		db.addVertexIndex(LanguageImpl.class, "languageTag");
 		db.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
-
+	}
+	
+	@Test
+	public void testServer() throws Exception {
+		Mesh.mesh().getOptions().getStorageOptions().setStartServer(true);
+		db.stop();
+		db.start();
 	}
 
 	@Test

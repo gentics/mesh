@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 /**
  * Underlying graph database storage configuration
  */
-public class StorageOptions {
+public class GraphStorageOptions {
 
 	public static final String DEFAULT_DIRECTORY = "mesh-graphdb";
 	public static final String DEFAULT_BACKUP_DIRECTORY = "mesh-backup";
@@ -14,6 +14,8 @@ public class StorageOptions {
 	private String directory = DEFAULT_DIRECTORY;
 	private String backupDirectory = DEFAULT_BACKUP_DIRECTORY;
 	private String exportDirectory = DEFAULT_EXPORT_DIRECTORY;
+
+	private Boolean startServer = false;
 
 	private JsonObject parameters;
 
@@ -48,7 +50,8 @@ public class StorageOptions {
 	/**
 	 * Set the custom JSON parameters for the selected graph provider.
 	 * 
-	 * @param parameters Additional JSON parameters
+	 * @param parameters
+	 *            Additional JSON parameters
 	 */
 	public void setParameters(JsonObject parameters) {
 		this.parameters = parameters;
@@ -90,5 +93,23 @@ public class StorageOptions {
 	 */
 	public void setExportDirectory(String exportDirectory) {
 		this.exportDirectory = exportDirectory;
+	}
+
+	/**
+	 * Return the start server flag.
+	 * 
+	 * @return
+	 */
+	public Boolean getStartServer() {
+		return startServer;
+	}
+
+	/**
+	 * Set the start server flag.
+	 * 
+	 * @param startServer
+	 */
+	public void setStartServer(Boolean startServer) {
+		this.startServer = startServer;
 	}
 }
