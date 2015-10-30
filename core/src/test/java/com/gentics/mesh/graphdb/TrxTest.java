@@ -98,7 +98,7 @@ public class TrxTest extends AbstractBasicDBTest {
 						log.trace("Thread [" + threadNo + "] Starting");
 					}
 					db.asyncTrx(trx -> {
-						Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, user());
+						Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
 						node.addTag(tag);
 						trx.complete(tag);
 					} , rh -> {
@@ -376,7 +376,7 @@ public class TrxTest extends AbstractBasicDBTest {
 								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getImpl().getId());
 
-								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, reloadedUser);
+								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun,project(), reloadedUser);
 								// Reload the node
 								reloadedNode.addTag(tag);
 								tx.success();

@@ -74,74 +74,22 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>push-docker</id>
+						<id>docker-build</id>
 						<phase>deploy</phase>
 						<goals>
+							<goal>build</goal>
 							<goal>push</goal>
 						</goals>
 					</execution>
-					<!-- 
-					<execution>
-						<id>start</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>build</goal>
-							<goal>start</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>stop</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-					 -->
+					<!-- <execution> <id>start</id> <phase>pre-integration-test</phase> <goals> <goal>build</goal> <goal>start</goal> </goals> </execution> <execution> <id>stop</id> <phase>post-integration-test</phase> 
+						<goals> <goal>stop</goal> </goals> </execution> -->
 				</executions>
 			</plugin>
-            <!-- 
-			<plugin>
-				<groupId>com.lazerycode.jmeter</groupId>
-				<artifactId>jmeter-maven-plugin</artifactId>
-				<version>1.8.1</version>
-				<executions>
-					<execution>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>jmeter</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<propertiesUser>
-						<webservice.host>${dockerHost}</webservice.host>
-						<webservice.port>${mesh.port}</webservice.port>
-					</propertiesUser>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>integration-test</id>
-						<goals>
-							<goal>integration-test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>verify</id>
-						<goals>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<systemPropertyVariables>
-						<mesh.url>http://${dockerHost}:${mesh.port}</mesh.url>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
-			 -->
+			<!-- <plugin> <groupId>com.lazerycode.jmeter</groupId> <artifactId>jmeter-maven-plugin</artifactId> <version>1.8.1</version> <executions> <execution> <phase>integration-test</phase> 
+				<goals> <goal>jmeter</goal> </goals> </execution> </executions> <configuration> <propertiesUser> <webservice.host>${dockerHost}</webservice.host> <webservice.port>${mesh.port}</webservice.port> 
+				</propertiesUser> </configuration> </plugin> <plugin> <artifactId>maven-failsafe-plugin</artifactId> <executions> <execution> <id>integration-test</id> <goals> <goal>integration-test</goal> 
+				</goals> </execution> <execution> <id>verify</id> <goals> <goal>verify</goal> </goals> </execution> </executions> <configuration> <systemPropertyVariables> <mesh.url>http://${dockerHost}:${mesh.port}</mesh.url> 
+				</systemPropertyVariables> </configuration> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>

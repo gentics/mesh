@@ -36,11 +36,13 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 * 
 	 * @param name
 	 *            Name of the new tag.
+	 * @param project
+	 *            Root project of the tag.
 	 * @param creator
 	 *            User that is used to assign creator and editor references of the new tag.
 	 * @return
 	 */
-	Tag create(String name, User creator);
+	Tag create(String name, Project project, User creator);
 
 	/**
 	 * Remove the given tag from the tagfamily.

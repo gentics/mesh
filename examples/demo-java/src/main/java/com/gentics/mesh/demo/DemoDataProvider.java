@@ -258,7 +258,8 @@ public class DemoDataProvider {
 
 			log.info("Creating tag {" + name + "} to family {" + tagFamilyName + "}");
 			TagFamily tagFamily = getTagFamily(tagFamilyName);
-			Tag tag = tagFamily.create(name, getAdmin());
+			//TODO determine project of tag family automatically or use json field to assign it
+			Tag tag = tagFamily.create(name, projects.get(0), getAdmin());
 			tags.put(name.toLowerCase(), tag);
 		}
 	}

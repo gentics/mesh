@@ -66,7 +66,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = tagFamily("basic");
-		Tag noPermTag = basicTagFamily.create("noPermTag",  user());
+		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
 		String noPermTagUUID = noPermTag.getUuid();
 		// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 		project().getTagRoot().addTag(noPermTag);
@@ -155,10 +155,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		test.assertTag(tag, future.result());
 	}
-	
+
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		Tag tag= tag("red");
+		Tag tag = tag("red");
 		String uuid = tag.getUuid();
 
 		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
