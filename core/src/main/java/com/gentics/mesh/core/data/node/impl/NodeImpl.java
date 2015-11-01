@@ -16,7 +16,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +50,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -228,18 +228,26 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
 			} else {
 				restNode.setDisplayField(schema.getDisplayField());
-				// Load the children
+
+				// Load the children information
 				if (schema.isFolder()) {
-					// //TODO handle uuid
-					// //TODO handle expand
-					List<String> children = new ArrayList<>();
 					for (Node child : getChildren()) {
 						if (ac.getUser().hasPermission(ac, child, READ_PERM)) {
-							children.add(child.getUuid());
+							String schemaName = child.getSchemaContainer().getName();
+							NodeChildrenInfo info = restNode.getChildrenInfo().get(schemaName);
+							if (info == null) {
+								info = new NodeChildrenInfo();
+								String schemaUuid = child.getSchemaContainer().getUuid();
+								info.setSchemaUuid(schemaUuid);
+								info.setCount(1);
+								restNode.getChildrenInfo().put(schemaName, info);
+							} else {
+								info.setCount(info.getCount() + 1);
+							}
 						}
 					}
 					restNode.setContainer(true);
-					restNode.setChildren(children);
+
 				}
 				if (schema.isBinary()) {
 					restNode.setFileName(getBinaryFileName());
@@ -314,7 +322,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 							com.gentics.mesh.core.rest.node.field.Field restField = rh.result();
 							if (fieldEntry.isRequired() && restField == null) {
 								/* TODO i18n */
-								//TODO no trx fail. Instead let obsRestField fail
+								// TODO no trx fail. Instead let obsRestField fail
 								noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
 										+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag."));
 								obsRestField.toHandler().handle(Future.failedFuture("Field not set"));

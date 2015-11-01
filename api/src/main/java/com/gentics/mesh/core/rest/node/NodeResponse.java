@@ -35,7 +35,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private ProjectResponse project;
 
-	private List<String> children;
+	private Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 
 	private SchemaReference schema;
 
@@ -104,22 +104,12 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	/**
-	 * List of child node uuids.
+	 * Return the children node info element.
 	 * 
-	 * @return Uuid list
+	 * @return
 	 */
-	public List<String> getChildren() {
-		return children;
-	}
-
-	/**
-	 * Set list of child node uuids.
-	 * 
-	 * @param children
-	 *            Uuid list
-	 */
-	public void setChildren(List<String> children) {
-		this.children = children;
+	public Map<String, NodeChildrenInfo> getChildrenInfo() {
+		return childrenInfo;
 	}
 
 	/**
