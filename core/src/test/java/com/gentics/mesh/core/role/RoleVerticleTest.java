@@ -71,7 +71,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreate() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -98,7 +97,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		String name = "new_role";
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName(name);
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -114,7 +112,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateReadDelete() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> createFuture = getClient().createRole(request);
 		latchFor(createFuture);
@@ -130,17 +127,16 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testCreateWithNoPermissionOnGroup() throws Exception {
+	public void testCreateWithNoPermissionRoleRoot() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
 		// Add needed permission to group
-		role().revokePermissions(group(), CREATE_PERM);
+		role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
 	}
 
 	@Test
@@ -152,18 +148,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testCreateRoleWithNoGroupId() throws Exception {
-		RoleCreateRequest request = new RoleCreateRequest();
-		request.setName("new_role");
-		Future<RoleResponse> future = getClient().createRole(request);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "role_missing_parentgroup_field");
-	}
-
-	@Test
 	public void testCreateRoleWithNoName() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -521,7 +507,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName("new_role_" + i);
-			request.setGroupUuid(group().getUuid());
 			set.add(getClient().createRole(request));
 		}
 		validateFutures(set);

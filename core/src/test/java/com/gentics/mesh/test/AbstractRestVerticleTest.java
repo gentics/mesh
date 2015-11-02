@@ -221,7 +221,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		roleCreateRequest.setGroupUuid(groupUuid);
 		Future<RoleResponse> future = getClient().createRole(roleCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
