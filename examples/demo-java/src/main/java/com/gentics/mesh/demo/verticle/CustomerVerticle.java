@@ -6,15 +6,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCustomVerticle;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.demo.DemoDataProvider;
-import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.rest.MeshRestClient;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -32,7 +26,8 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
 
 	@Autowired
-	private DemoDataProvider demoDataProvider;
+	//private DemoDataProvider demoDataProvider;
+	private TestDataProvider demoDataProvider;
 
 	private MeshRestClient client;
 
