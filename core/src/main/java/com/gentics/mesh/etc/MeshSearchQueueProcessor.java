@@ -28,15 +28,17 @@ public class MeshSearchQueueProcessor {
 
 	@PostConstruct
 	public void process() throws InterruptedException {
-		database.noTrx(tx -> {
-			long start = System.currentTimeMillis();
-			try {
-				initalizer.meshRoot().getSearchQueue().processAll();
-			} catch (Exception e) {
-				log.error("Error during search queue processing", e);
-			}
-			long duration = System.currentTimeMillis() - start;
-			log.info("Completed processing of remaining search queue entries. Processing took {" + duration + "} ms.");
-		});
+		if (database != null) {
+			database.noTrx(tx -> {
+				long start = System.currentTimeMillis();
+				try {
+					initalizer.meshRoot().getSearchQueue().processAll();
+				} catch (Exception e) {
+					log.error("Error during search queue processing", e);
+				}
+				long duration = System.currentTimeMillis() - start;
+				log.info("Completed processing of remaining search queue entries. Processing took {" + duration + "} ms.");
+			});
+		}
 	}
 }

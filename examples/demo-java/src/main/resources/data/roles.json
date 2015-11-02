@@ -1,6 +1,6 @@
 {
   "data": [
-    { "name": "editors" },
-    { "name": "super-editors" }
+    { "name": "editor" },
+    { "name": "super-editor" }
   ]
 }
