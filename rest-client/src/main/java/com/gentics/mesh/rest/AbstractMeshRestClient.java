@@ -78,7 +78,7 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		return this;
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType) {
+	protected <T> Future<T> invokeRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType) {
 		String uri = BASEURI + path;
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, this, method, uri);
 
@@ -105,28 +105,54 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		return handler.getFuture();
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, RestModel restModel) {
+	/**
+	 * Invoke the request and transform the given rest model into json and append the json to the request body.
+	 * 
+	 * @param method
+	 * @param path
+	 * @param classOfT
+	 * @param restModel
+	 * @return
+	 */
+	protected <T> Future<T> invokeRequest(HttpMethod method, String path, Class<T> classOfT, RestModel restModel) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}
 		buffer.appendString(json);
-		return handleRequest(method, path, classOfT, buffer, "application/json");
+		return invokeRequest(method, path, classOfT, buffer, "application/json");
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, String jsonBodyData) {
+	/**
+	 * Invoke the request and append the given json data to the request body.
+	 * 
+	 * @param method
+	 * @param path
+	 * @param classOfT
+	 * @param jsonBodyData
+	 * @return
+	 */
+	protected <T> Future<T> invokeRequest(HttpMethod method, String path, Class<T> classOfT, String jsonBodyData) {
 
 		Buffer buffer = Buffer.buffer();
 		if (!StringUtils.isEmpty(jsonBodyData)) {
 			buffer.appendString(jsonBodyData);
 		}
 
-		return handleRequest(method, path, classOfT, buffer, "application/json");
+		return invokeRequest(method, path, classOfT, buffer, "application/json");
 	}
 
-	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT) {
-		return handleRequest(method, path, classOfT, Buffer.buffer(), null);
+	/**
+	 * Invoke the request and return a future of the given class.
+	 * 
+	 * @param method
+	 * @param path
+	 * @param classOfT
+	 * @return
+	 */
+	protected <T> Future<T> invokeRequest(HttpMethod method, String path, Class<T> classOfT) {
+		return invokeRequest(method, path, classOfT, Buffer.buffer(), null);
 	}
 
 	/**

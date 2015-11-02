@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
@@ -208,6 +209,8 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 
 	@Override
 	public void delete() {
+		//TODO don't allow deletion of the admin group
+		addIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
 

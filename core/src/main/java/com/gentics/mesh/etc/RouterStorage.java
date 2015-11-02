@@ -25,6 +25,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -107,6 +108,26 @@ public class RouterStorage {
 		if (rootRouter == null) {
 			rootRouter = Router.router(vertx);
 
+			rootRouter.route().last().handler(rh -> {
+				GenericMessageResponse msg = new GenericMessageResponse();
+				String internalMessage = "The resource for given path {" + rh.normalisedPath() + "} could not be found.";
+				String contentType = rh.request().getHeader("Content-Type");
+				if (contentType == null) {
+					switch (rh.request().method()) {
+					case PUT:
+					case POST:
+						internalMessage += " You tried to POST or PUT data but you did not specifiy any Content-Type within your request.";
+						break;
+					}
+				}
+
+				msg.setInternalMessage(internalMessage);
+				msg.setMessage("Not Found");
+				rh.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
+				rh.response().setStatusCode(404);
+				rh.response().setStatusMessage("Not Found");
+				rh.response().end(JsonUtil.toJson(msg));
+			});
 			// TODO Still valid: somehow this failurehandler prevents authentication?
 			rootRouter.route().failureHandler(failureRoutingContext -> {
 				if (failureRoutingContext.statusCode() == 401) {

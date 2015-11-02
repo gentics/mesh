@@ -69,7 +69,7 @@ public class I18NUtil {
 	 *            I18n String key
 	 * @param parameters
 	 *            I18n String parameters
-	 * @return
+	 * @return Translated i18n message or just i18n key if the translation could not be obtained
 	 */
 	public static String get(String bundleName, Locale locale, String key, String... parameters) {
 		if (locale == null) {

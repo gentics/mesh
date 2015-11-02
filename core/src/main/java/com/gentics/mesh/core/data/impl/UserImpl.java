@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
@@ -489,12 +490,14 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 
 	@Override
 	public void delete() {
+		//TODO don't allow this for the admin user
 		disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
 		}
 		outE(HAS_USER).removeAll();
+		addIndexBatch(DELETE_ACTION);
 	}
 
 	/**

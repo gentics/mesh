@@ -170,6 +170,7 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 
 	@Override
 	public void delete() {
+		//TODO don't allow deletion of admin role
 		addIndexBatch(DELETE_ACTION);
 		getVertex().remove();
 	}

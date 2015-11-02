@@ -66,7 +66,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected Vertx vertx;
 
-	private int port;
+	protected int port;
 
 	private MeshRestClient client;
 

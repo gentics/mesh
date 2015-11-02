@@ -28,7 +28,7 @@ public class AdminGUIVerticle extends AbstractSpringVerticle {
 		staticRouter.route("/*").handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/0.1.0-SNAPSHOT").setIndexPage("index.html"));
 		routerStorage.getRootRouter().mountSubRouter("/mesh-ui", staticRouter);
 
-		routerStorage.getRootRouter().route("/*").handler(rc -> {
+		routerStorage.getRootRouter().route("/").handler(rc -> {
 			rc.response().setStatusCode(302);
 			rc.response().headers().set("Location", "/mesh-ui/");
 			rc.response().end();
