@@ -21,11 +21,12 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -44,12 +45,16 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Group {
+public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, GroupReference>implements Group {
 
 	public static final String NAME_KEY = "name";
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(GroupImpl.class);
+	}
+
+	protected GroupReference createEmptyReferenceModel() {
+		return new GroupReference();
 	}
 
 	@Override
@@ -163,7 +168,7 @@ public class GroupImpl extends AbstractIndexedVertex<GroupResponse>implements Gr
 			for (Role role : getRoles()) {
 				String name = role.getName();
 				if (name != null) {
-					restGroup.getRoles().add(name);
+					restGroup.getRoles().add(role.transformToReference(ac));
 				}
 			}
 

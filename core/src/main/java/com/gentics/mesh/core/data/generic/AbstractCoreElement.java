@@ -8,7 +8,8 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.UUIDUtil;
 
-public abstract class AbstractIndexedVertex<T extends RestModel> extends AbstractGenericVertex<T>implements IndexedVertex {
+public abstract class AbstractCoreElement<T extends RestModel> extends AbstractGenericVertex<T>
+		implements IndexedVertex {
 
 	@Override
 	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
@@ -18,5 +19,6 @@ public abstract class AbstractIndexedVertex<T extends RestModel> extends Abstrac
 		addRelatedEntries(batch, action);
 		return batch;
 	}
+
 
 }

@@ -21,6 +21,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -31,6 +32,17 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.ext.web.RoutingContext;
 
 public class TagFamilyTest extends AbstractBasicObjectTest {
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		TagFamily tagFamily = tagFamily("colors");
+		InternalActionContext ac = getMockedInternalActionContext("");
+		TagFamilyReference reference = tagFamily.transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(tagFamily.getUuid(), reference.getUuid());
+		assertEquals(tagFamily.getName(), reference.getName());
+	}
 
 	@Test
 	@Override

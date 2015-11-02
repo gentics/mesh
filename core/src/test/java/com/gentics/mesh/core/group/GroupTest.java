@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -31,6 +32,16 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.ext.web.RoutingContext;
 
 public class GroupTest extends AbstractBasicObjectTest {
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		InternalActionContext ac = getMockedInternalActionContext("");
+		GroupReference reference = group().transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(group().getUuid(), reference.getUuid());
+		assertEquals(group().getName(), reference.getName());
+	}
 
 	@Test
 	public void testUserGroup() {

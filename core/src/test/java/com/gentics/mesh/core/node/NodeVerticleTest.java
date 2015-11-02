@@ -112,7 +112,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateNodeInBaseNode() {
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -136,7 +136,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -238,7 +238,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -253,12 +253,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().revokePermissions(node, CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
+		SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
 
@@ -404,7 +404,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		long nNodesFound = meshRoot().getNodeRoot().findAll().size();
 
 		NodeCreateRequest createRequest = new NodeCreateRequest();
-		createRequest.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		createRequest.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		createRequest.setLanguage("en");
 		createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
 		createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -485,7 +485,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -805,7 +805,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("extrafield", FieldUtil.createStringField("some extra field value"));
@@ -833,7 +833,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		// non required title field is missing
 		// required name field is missing
@@ -857,7 +857,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		// title field is missing
 		request.getFields().put("name", FieldUtil.createStringField("some name"));

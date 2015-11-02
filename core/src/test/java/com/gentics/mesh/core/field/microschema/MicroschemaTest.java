@@ -24,6 +24,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class MicroschemaTest extends AbstractBasicObjectTest {
 
+	@Ignore("test does not apply")
+	@Override
+	public void testTransformToReference() throws Exception {
+	}
+	
 	@Ignore("Not yet implemented")
 	@Test
 	@Override

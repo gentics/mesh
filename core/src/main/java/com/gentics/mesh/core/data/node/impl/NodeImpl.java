@@ -269,16 +269,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			// Schema reference
 			SchemaContainer schemaContainer = getSchemaContainer();
 			if (schemaContainer != null) {
-				ObservableFuture<Void> obsSchemaReference = RxHelper.observableFuture();
-				futures.add(obsSchemaReference);
-				schemaContainer.transformToReference(ac, rh -> {
-					if (rh.succeeded()) {
-						restNode.setSchema(rh.result());
-						obsSchemaReference.toHandler().handle(Future.succeededFuture());
-					} else {
-						obsSchemaReference.toHandler().handle(Future.failedFuture(rh.cause()));
-					}
-				});
+				restNode.setSchema(schemaContainer.transformToReference(ac));
 			}
 
 			// Parent node reference
@@ -344,7 +335,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
 				String tagFamilyUuid = tagFamily.getUuid();
-				TagReference reference = tag.tansformToTagReference();
+				TagReference reference = tag.transformToReference(ac);
 				TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
 				if (group == null) {
 					group = new TagFamilyTagGroup();
@@ -377,7 +368,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 				noTrx.fail(error);
 			});
 
-		} , (AsyncResult<NodeResponse> rh) -> {
+		} , (
+
+		AsyncResult<NodeResponse> rh) ->
+
+		{
 			handler.handle(rh);
 		});
 
@@ -390,9 +385,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
-		getSchemaContainer().transformToReference(ac, rh -> {
-			nodeReference.setSchema(rh.result());
-		});
+		nodeReference.setSchema(getSchemaContainer().transformToReference(ac));
 		handler.handle(Future.succeededFuture(nodeReference));
 		return this;
 	}

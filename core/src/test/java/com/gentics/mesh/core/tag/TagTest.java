@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -42,6 +43,17 @@ public class TagTest extends AbstractBasicObjectTest {
 	public static final String GERMAN_NAME = "test german name";
 
 	public static final String ENGLISH_NAME = "test english name";
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		Tag tag = tag("red");
+		InternalActionContext ac = getMockedInternalActionContext("");
+		TagReference reference = tag.transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(tag.getUuid(), reference.getUuid());
+		assertEquals(tag.getName(), reference.getName());
+	}
 
 	@Test
 	public void testTagFamilyTagCreation() {

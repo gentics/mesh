@@ -104,6 +104,14 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
+	public TagReference transformToReference(InternalActionContext ac) {
+		TagReference tagReference = new TagReference();
+		tagReference.setName(getName());
+		tagReference.setUuid(getUuid());
+		return tagReference;
+	}
+
+	@Override
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -177,14 +185,6 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 				.retain(requestUser.getImpl()).back();
 		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 		return nodePage;
-	}
-
-	@Override
-	public TagReference tansformToTagReference() {
-		TagReference reference = new TagReference();
-		reference.setUuid(getUuid());
-		reference.setName(getName());
-		return reference;
 	}
 
 	@Override

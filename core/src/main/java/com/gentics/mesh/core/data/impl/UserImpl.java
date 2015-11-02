@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
@@ -35,7 +33,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -44,6 +42,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -82,7 +81,7 @@ import rx.subjects.AsyncSubject;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
+public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, UserReference>implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -100,6 +99,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(UserImpl.class);
+	}
+
+	@Override
+	protected UserReference createEmptyReferenceModel() {
+		return new UserReference();
 	}
 
 	@Override
@@ -129,15 +133,15 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
-	@Override
-	public List<? extends GenericVertexImpl> getEditedElements() {
-		return in(HAS_EDITOR).toList(GenericVertexImpl.class);
-	}
-
-	@Override
-	public List<? extends GenericVertexImpl> getCreatedElements() {
-		return in(HAS_CREATOR).toList(GenericVertexImpl.class);
-	}
+	//	@Override
+	//	public List<? extends GenericVertexImpl> getEditedElements() {
+	//		return in(HAS_EDITOR).toList(GenericVertexImpl.class);
+	//	}
+	//
+	//	@Override
+	//	public List<? extends GenericVertexImpl> getCreatedElements() {
+	//		return in(HAS_CREATOR).toList(GenericVertexImpl.class);
+	//	}
 
 	@Override
 	public String getFirstname() {
@@ -308,7 +312,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 		return false;
 
-//		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
+		//		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
 	@Override
@@ -405,7 +409,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 			}
 			for (Group group : getGroups()) {
-				restUser.addGroup(group.getName());
+				GroupReference reference = group.transformToReference(ac);
+				restUser.getGroups().add(reference);
 			}
 
 			// Role permissions
@@ -433,15 +438,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			handler.handle(rh);
 		});
 
-		return this;
-	}
-
-	@Override
-	public User transformToUserReference(Handler<AsyncResult<UserReference>> handler) {
-		UserReference reference = new UserReference();
-		reference.setName(getUsername());
-		reference.setUuid(getUuid());
-		handler.handle(Future.succeededFuture(reference));
 		return this;
 	}
 

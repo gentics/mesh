@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.impl.TranslatedImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-public abstract class GenericFieldContainerNode<T extends AbstractResponse> extends AbstractIndexedVertex<T> {
+public abstract class GenericFieldContainerNode<T extends AbstractResponse> extends AbstractCoreElement<T> {
 
 	protected <T extends BasicFieldContainer> T getGraphFieldContainer(Language language, Class<T> classOfT) {
 		T container = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag()).inV().nextOrDefault(classOfT, null);

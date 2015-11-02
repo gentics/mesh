@@ -17,13 +17,14 @@ import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -44,12 +45,17 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class RoleImpl extends AbstractIndexedVertex<RoleResponse>implements Role {
+public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, RoleReference>implements Role {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(RoleImpl.class);
+	}
+	
+	@Override
+	protected RoleReference createEmptyReferenceModel() {
+		return new RoleReference();
 	}
 
 	@Override

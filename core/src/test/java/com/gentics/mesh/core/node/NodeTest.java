@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -45,6 +46,22 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		Node node = content();
+		InternalActionContext ac = getMockedInternalActionContext("");
+		CountDownLatch latch = new CountDownLatch(1);
+		node.transformToReference(ac, rh -> {
+			NodeReference reference = rh.result();	
+			assertNotNull(reference);
+			assertEquals(node.getUuid(), reference.getUuid());
+			latch.countDown();
+		});
+		failingLatch(latch);
+		//		assertEquals(node.getName(), reference.getName());
+	}
 
 	/**
 	 * Test linking two contents

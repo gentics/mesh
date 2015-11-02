@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
@@ -576,8 +577,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
 		user2.setEmailAddress("j.roe@nowhere.com");
-		user2.addGroup("super-editors");
-		user2.addGroup("editors");
+		user2.getGroups().add(new GroupReference().setName("super-editors").setUuid(randomUUID()));
+		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user2.setEnabled(true);
 
 		UserListResponse userList = new UserListResponse();
@@ -631,7 +632,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		reference.setUuid(randomUUID());
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
-		user.addGroup("editors");
+		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		return user;
 	}

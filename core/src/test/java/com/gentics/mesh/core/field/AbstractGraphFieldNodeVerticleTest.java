@@ -51,7 +51,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
-		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
+		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
@@ -71,7 +71,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	protected NodeResponse updateNode(String fieldKey, Field field) {
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-		nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 

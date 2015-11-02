@@ -20,6 +20,11 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 public class LanguageTest extends AbstractBasicObjectTest {
 
+	@Ignore("test test not apply")
+	@Override
+	public void testTransformToReference() throws Exception {
+	}
+
 	@Test
 	@Override
 	public void testRootNode() {
