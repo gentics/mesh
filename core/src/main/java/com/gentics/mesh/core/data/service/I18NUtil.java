@@ -111,7 +111,7 @@ public class I18NUtil {
 	 * @return
 	 */
 	public static String get(String bundleName, ActionContext ac, String key, String... parameters) {
-		return get(bundleName, (Locale) ac.get("locale"), key, parameters);
+		return get(bundleName, ac.getLocale(), key, parameters);
 	}
 
 }
