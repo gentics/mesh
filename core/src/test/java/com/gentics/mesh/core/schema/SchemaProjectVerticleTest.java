@@ -2,12 +2,11 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +18,13 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -34,15 +36,39 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 	private SchemaVerticle schemaVerticle;
 
 	@Autowired
+	private ProjectSchemaVerticle projectSchemaVerticle;
+
+	@Autowired
 	private ProjectVerticle projectVerticle;
 
 	@Override
 	public List<AbstractWebVerticle> getVertices() {
 		List<AbstractWebVerticle> list = new ArrayList<>();
 		list.add(schemaVerticle);
+		list.add(projectSchemaVerticle);
 		list.add(projectVerticle);
 		return list;
 	}
+
+	@Test
+	public void testReadProjectSchemas() {
+		Future<SchemaListResponse> future = getClient().findSchemas(PROJECT_NAME);
+		latchFor(future);
+		assertSuccess(future);
+		SchemaListResponse list = future.result();
+		assertEquals(3, list.getData().size());
+
+		Future<SchemaResponse> removeFuture = getClient().removeSchemaFromProject(schemaContainer("folder").getUuid(), project().getUuid());
+		latchFor(removeFuture);
+		assertSuccess(removeFuture);
+
+		future = getClient().findSchemas(PROJECT_NAME);
+		latchFor(future);
+		assertSuccess(future);
+		list = future.result();
+		assertEquals(2, list.getData().size());
+	}
+
 	// Schema Project Testcases - PUT / Add
 
 	@Test
@@ -106,20 +132,22 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		Project project = project();
 		assertTrue("The schema should be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 
-		Future<SchemaResponse> future;
-		future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
+		Future<SchemaResponse> future = getClient().removeSchemaFromProject(schema.getUuid(), project.getUuid());
 		latchFor(future);
 		assertSuccess(future);
 
 		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 
-		final String removedProjectName = project.getName();
-		assertFalse(restSchema.getProjects().stream().filter(p -> p.getName().equals(removedProjectName)).findFirst().isPresent());
+		Future<SchemaListResponse> listFuture = getClient().findSchemas(PROJECT_NAME);
+		latchFor(listFuture);
+		assertSuccess(listFuture);
 
-		// Reload the schema and check for expected changes
+		//final String removedProjectName = project.getName();
+		assertEquals("The removed schema should not be listed in the response", 0,
+				listFuture.result().getData().stream().filter(s -> s.getUuid().equals(schema.getUuid())).count());
 		project.getSchemaContainerRoot().reload();
-		assertFalse("The schema should not be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
+		assertFalse("The schema should no longer be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 	}
 
 	@Test

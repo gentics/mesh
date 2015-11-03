@@ -25,7 +25,7 @@ public interface SchemaClientMethods {
 	 * Load the schema with the given uuid.
 	 * 
 	 * @param uuid
-	 * @param parameters 
+	 * @param parameters
 	 * @return
 	 */
 	Future<SchemaResponse> findSchemaByUuid(String uuid, QueryParameterProvider... parameters);
@@ -75,6 +75,15 @@ public interface SchemaClientMethods {
 	 * @return
 	 */
 	Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters);
+
+	/**
+	 * Load multiple schemas that were assigned to the given project.
+	 * 
+	 * @param projectName
+	 * @param parameters
+	 * @return
+	 */
+	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
 
 	/**
 	 * Initialize the schema storage. This will effectively load all schemas into the {@link ClientSchemaStorage} of the {@link MeshRestClient} that is

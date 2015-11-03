@@ -457,6 +457,11 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters) {
+		return invokeRequest(GET, "/" + projectName + "/schemas" + getQuery(parameters), SchemaListResponse.class);
+	}
+
+	@Override
 	public Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid) {
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");

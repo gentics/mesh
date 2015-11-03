@@ -54,6 +54,7 @@ import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
@@ -102,15 +103,19 @@ public class BootstrapInitializer {
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
 	public BootstrapInitializer() {
+
+		// User Group Role verticles
 		addMandatoryVerticle(UserVerticle.class);
 		addMandatoryVerticle(GroupVerticle.class);
 		addMandatoryVerticle(RoleVerticle.class);
 
+		// Project specific verticles
 		addMandatoryVerticle(TagVerticle.class);
 		addMandatoryVerticle(NodeVerticle.class);
 		addMandatoryVerticle(TagFamilyVerticle.class);
-		addMandatoryVerticle(WebRootVerticle.class);
+		addMandatoryVerticle(ProjectSchemaVerticle.class);
 
+		addMandatoryVerticle(WebRootVerticle.class);
 		addMandatoryVerticle(ProjectVerticle.class);
 		addMandatoryVerticle(SchemaVerticle.class);
 		addMandatoryVerticle(SearchVerticle.class);
