@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -119,6 +120,29 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(project().getBaseNode().getUuid());
+
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(request, restNode);
+	}
+
+	@Test
+	public void testCreateFolder() {
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("folder").setUuid(schemaContainer("folder").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.setPublished(true);
+		request.setParentNodeUuid(uuid);
+
+		assertEquals(0, searchProvider.getStoreEvents().size());
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -365,6 +389,14 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());
+	}
+
+	@Test
+	public void testLoadBreadcrumb() throws Exception {
+		String nodeUuid = content().getUuid();
+		Future<NodeBreadcrumbResponse> future = getClient().loadBreadcrumb(PROJECT_NAME, nodeUuid);
+		latchFor(future);
+		assertSuccess(future);
 	}
 
 	@Test

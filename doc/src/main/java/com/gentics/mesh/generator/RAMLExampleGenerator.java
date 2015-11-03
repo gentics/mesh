@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -240,6 +241,13 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		rolePermission.getPermissions().add("update");
 		rolePermission.getPermissions().add("delete");
 		write(rolePermission);
+
+		RolePermissionResponse rolePermissionResponse = new RolePermissionResponse();
+		rolePermissionResponse.getPermissions().add("create");
+		rolePermissionResponse.getPermissions().add("read");
+		rolePermissionResponse.getPermissions().add("update");
+		rolePermissionResponse.getPermissions().add("delete");
+		write(rolePermissionResponse);
 	}
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {

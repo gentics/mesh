@@ -47,6 +47,14 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		addFileuploadHandler();
 		addFileDownloadHandler();
+
+		addBreadcrumbHandler();
+	}
+
+	private void addBreadcrumbHandler() {
+		route("/:uuid/breadcrumb").method(GET).handler(rc -> {
+			crudHandler.handelReadBreadcrumb(InternalActionContext.create(rc));
+		});
 	}
 
 	private void addFieldHandlers() {

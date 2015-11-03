@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
@@ -134,6 +136,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(parentNodeUuid, "parentNodeUuid must not be null");
 		return invokeRequest(GET, "/" + projectName + "/nodes/" + parentNodeUuid + "/children" + getQuery(parameters), NodeListResponse.class);
+	}
+
+	@Override
+	public Future<NodeBreadcrumbResponse> loadBreadcrumb(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return invokeRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/breadcrumb" + getQuery(parameters), NodeBreadcrumbResponse.class);
 	}
 
 	@Override
@@ -669,7 +678,17 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 	@Override
 	public Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request) {
+		Objects.requireNonNull(roleUuid, "roleUuid must not be null");
+		Objects.requireNonNull(pathToElement, "pathToElement must not be null");
+		Objects.requireNonNull(request, "request must not be null");
 		return invokeRequest(PUT, "/roles/" + roleUuid + "/permissions/" + pathToElement, GenericMessageResponse.class, request);
+	}
+
+	@Override
+	public Future<RolePermissionResponse> readRolePermission(String roleUuid, String pathToElement) {
+		Objects.requireNonNull(roleUuid, "roleUuid must not be null");
+		Objects.requireNonNull(pathToElement, "pathToElement must not be null");
+		return invokeRequest(GET, "/roles/" + roleUuid + "/permissions/" + pathToElement, RolePermissionResponse.class);
 	}
 
 }

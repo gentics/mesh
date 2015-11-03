@@ -2,7 +2,9 @@ package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -67,6 +70,21 @@ public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 		expectMessageResponse("role_updated_permission", future, role().getName());
 
 		assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+	}
+
+	@Test
+	public void testReadPermissionsOnProjectTagFamily() {
+		// Add permission on own role
+		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+
+		String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid();
+		Future<RolePermissionResponse> future = getClient().readRolePermission(role().getUuid(), pathToElement);
+		latchFor(future);
+		assertSuccess(future);
+		RolePermissionResponse response = future.result();
+		assertNotNull(response.getPermissions());
+		assertEquals(4, response.getPermissions().size());
 	}
 
 	@Test

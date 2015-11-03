@@ -40,6 +40,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.VerticleHelper;
 
@@ -507,6 +508,20 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				// TODO Update SQB
 				if (hasSucceeded(ac, rh)) {
 					Node node = rh.result();
+				}
+			});
+		} , ac.errorHandler());
+	}
+
+	public void handelReadBreadcrumb(InternalActionContext ac) {
+		db.asyncNoTrx(tc -> {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+					node.transformToBreadcrumb(ac, th -> {
+						ac.send(JsonUtil.toJson(th.result()), OK);
+					});
 				}
 			});
 		} , ac.errorHandler());

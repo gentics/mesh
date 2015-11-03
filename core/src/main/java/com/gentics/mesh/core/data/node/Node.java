@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -170,7 +171,8 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter) throws InvalidArgumentException;
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
+			throws InvalidArgumentException;
 
 	/**
 	 * Return the binary filename.
@@ -335,5 +337,14 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param handler
 	 */
 	Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler);
+
+	/**
+	 * Transform information from the node into a breadcrumb rest model.
+	 * 
+	 * @param ac
+	 * @param handler
+	 * @return
+	 */
+	Node transformToBreadcrumb(InternalActionContext ac, Handler<AsyncResult<NodeBreadcrumbResponse>> handler);
 
 }

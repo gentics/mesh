@@ -102,7 +102,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
-		if (options.getStartServer()) {
+		if (options != null && options.getStartServer()) {
 			startOrientServer();
 		}
 		configureGraphDB();

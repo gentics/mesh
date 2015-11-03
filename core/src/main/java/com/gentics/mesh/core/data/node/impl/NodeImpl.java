@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -210,6 +211,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		return langInfo;
 	}
 
+	@Override
+	public Node transformToBreadcrumb(InternalActionContext ac, Handler<AsyncResult<NodeBreadcrumbResponse>> handler) {
+		handler.handle(Future.succeededFuture(new NodeBreadcrumbResponse()));
+		return this;
+	}
+	
 	@Override
 	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
