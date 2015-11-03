@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -79,6 +80,10 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * Example generator for the RAML Documentation. This generator will use the rest model POJOs and populate them with fake data to generate example json
+ * responses.
+ */
 public class RAMLExampleGenerator extends AbstractGenerator {
 
 	public static void main(String[] args) throws IOException {
@@ -88,7 +93,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	public void run() throws IOException {
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "target" + File.separator + "site" + File.separator + "docs" + File.separator + "raml";
+			baseDirProp = "src" + File.separator + "main" + File.separator + "raml";
 		}
 		File baseDir = new File(baseDirProp);
 		outputDir = new File(baseDir, "json");
@@ -407,6 +412,11 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schema;
 	}
 
+	private NodeBreadcrumbResponse getNodeBreadcrumbResponse() throws JsonGenerationException, JsonMappingException, IOException {
+		NodeBreadcrumbResponse response = new NodeBreadcrumbResponse();
+		return response;
+	}
+
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
@@ -535,6 +545,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getNodeCreateRequest());
 		write(getNodeListResponse());
 		write(getNodeUpdateRequest());
+		write(getNodeBreadcrumbResponse());
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {

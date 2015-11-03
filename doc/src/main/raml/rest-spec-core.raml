@@ -1,0 +1,742 @@
+#%RAML 0.8
+title: preview-spec-core
+version: v0.1
+baseUri: http://localhost:8080/
+protocols: [ HTTP, HTTPS ]
+mediaType:  application/json
+
+documentation:
+  - title: Home
+    content: | #This is the Beta API.
+
+securitySchemes:
+  - basic:
+      type: Basic Authentication
+
+traits:
+  - localized:
+      headers:
+        Accept-Language:
+          description: The response messages are localized according to the set header value. English and german translations can be provided. Unsupported languages will fallback to english.
+
+  - expandable:
+      queryParameters:
+        expand:
+          description: Expand the fields with the given name.
+          type: string
+          required: false
+
+  - sortable:
+      queryParameters:
+        orderBy:
+          description: Set the attribute by which the results should be ordered.
+
+  - include_role_perms:
+      queryParameters:
+        role:
+          description: Set the role uuid which will be used to populate the rolePerms field within the response.
+
+  - paged:
+      queryParameters:
+        page:
+          description: The page to be displayed. Please note that page numbering is 1-based and that omitting the page parameter will return the first page 1.
+          type: number
+        perPage: 
+          description: The page size. A page size of 25 will be used when this parameter is omitted.
+          type: number
+
+#------------------------------------------------------------------------------
+# User Verticle
+#------------------------------------------------------------------------------
+/users:
+  displayName: Users
+  is: [ localized ]
+  description: The users rest endpoint is used for CRUD operations on user objects. 
+  get:
+    is: [ include_role_perms, paged ]
+    description: Retrieves a list of users.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/UserListResponse.example.json
+
+
+  post:
+    description: Create new user.
+    body:
+      application/json:
+        example: !include json/UserCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/UserResponse.example.json
+
+
+  /{uuid}:
+    get:
+      is: [ include_role_perms ]
+      description: Retrieves a single user with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/UserResponse.example.json
+    put:
+      description: Updates the user with the given uuid.
+      body:
+          application/json:
+              example: !include json/UserUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/UserResponse.example.json
+    delete:
+      description: Deletes the user with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+
+#------------------------------------------------------------------------------
+# Role Verticle
+#------------------------------------------------------------------------------
+/roles:
+  is: [ localized ]
+  displayName: Roles
+  get:
+    is: [ paged, include_role_perms ]
+    description: Retrieves a list of roles.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/RoleListResponse.example.json
+  post:
+    description: Create a new role.
+    body:
+      application/json:
+        example: !include json/RoleCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/RoleResponse.example.json
+
+  /{uuid}:
+    get:
+      is: [ include_role_perms ]
+      description: Retrieves a single role with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/RoleResponse.example.json
+    put:
+      description: Updates a single role with the given uuid.
+      body:
+        application/json:
+          example: !include json/RoleUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/RoleResponse.example.json
+    delete:
+      description: Deletes a single role with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+  /{uuid}/permissions/{pathToElement}:
+    uriParameters:
+      uuid:
+        description: Uuid of the role that should be used to update the permissions.
+        type: string
+      pathToElement:
+        description: Path to the element.
+        example: |
+            /:roleUuid/permissions/projects/:projectUuid/schemas/:schemaUuid
+            /:roleUuid/permissions/projects/:projectUuid/schemas
+            /:roleUuid/permissions/projects/:projectUuid/nodes
+            /:roleUuid/permissions/projects/:projectUuid
+        type: string
+    put:
+      description: |
+        Update the role permission to the given element and update the permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
+      body:
+        application/json:
+          example: !include json/RolePermissionRequest.example.json
+
+#------------------------------------------------------------------------------
+# Group Verticle
+#------------------------------------------------------------------------------
+/groups:
+  is: [ localized, sortable ]
+  displayName: Groups
+  get: 
+    is: [ paged, include_role_perms ]
+    description: Retrieves a list of groups.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/GroupListResponse.example.json
+  post:
+    description: Create a new group.
+    body:
+        application/json:
+            example: !include json/GroupCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/GroupResponse.example.json
+
+  /{uuid}:
+    is: [ localized, sortable ]
+    get:
+      description: Retrieves a single group with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GroupResponse.example.json
+    put:
+      description: Updates a single group with the given uuid.
+      body:
+        application/json:
+          example: !include json/GroupUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GroupResponse.example.json
+    delete:
+      description: Deletes a single group with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+    /roles:
+      get:
+        description: List all the roles for the given group.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/GroupListResponse.example.json
+    /roles/{uuid}:
+      put:
+        description: Add the given role to the the group. 
+      delete:
+        description: Remove the given role from the group.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json
+    /users/{uuid}:
+      put:
+        description: Add the user with the given uuid to the group.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json
+      delete:
+        description: Remove the user with the given uuid from the group.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json
+
+
+#------------------------------------------------------------------------------
+# Project Verticle
+#------------------------------------------------------------------------------
+/projects:
+  is: [ localized ]
+  displayName: Projects
+  get:
+    is: [ paged, sortable, include_role_perms ]
+    description: Retrieves a list of projects.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/ProjectListResponse.example.json
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error
+  post:
+    description: Create a new project.
+    body:
+      application/json:
+        example: !include json/ProjectCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/ProjectResponse.example.json
+
+  /{uuid}:
+    is: [ localized ]
+    get:
+      is: [ include_role_perms ]
+      description: Retrieves the project with the given uuid.
+      body:
+        application/json:
+          example: !include json/ProjectResponse.example.json
+    put:
+      description: Update the project with the given uuid.
+      body:
+        application/json:
+          example: !include json/ProjectUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/ProjectResponse.example.json
+    delete:
+      description: Deletes the project with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+#------------------------------------------------------------------------------
+# Schema Verticle
+#------------------------------------------------------------------------------
+/schemas:
+  is: [ localized ]
+  displayName: Schemas
+  get:
+    is: [ paged , include_role_perms ]
+    description: Retrieves a list of object schemas.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/SchemaListResponse.example.json
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error
+  post:
+    description: Create the schema.
+    body:
+      application/json:
+        example: !include json/SchemaCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/SchemaResponse.example.json
+
+  /{uuid}:
+    is: [ localized ]
+    get:
+      is: [ include_role_perms ]
+      description: Retrieves the schema with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/SchemaResponse.example.json
+    put: 
+      description: Updates the schema with the given uuid.
+      body:
+        application/json:
+          example: !include json/SchemaUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/SchemaResponse.example.json
+    delete:
+      description: Deletes the schema with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+    /projects/{uuid}:
+      put:
+        description: Add the schema to the project.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json
+      delete:
+        description: Remove the schema from the project.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json
+
+
+#------------------------------------------------------------------------------
+# Node Verticle
+#------------------------------------------------------------------------------
+/{projectName}/nodes:
+  displayName: Nodes
+  /:
+    get: 
+      is: [ localized, sortable, paged, expandable, include_role_perms ]
+      description: Load all nodes.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/NodeListResponse.example.json
+    post:
+      description: Create a new node.
+      is: [ expandable, include_role_perms ]
+      body:
+        application/json:
+          example: !include json/NodeCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/NodeResponse.example.json
+  /{uuid}:
+    is: [ localized ]
+    uriParameters:
+      uuid:
+        description: Uuid of a single node.
+        type: string
+    get:
+      is: [ expandable, include_role_perms ]
+      description: Retrieves the node with the given uuid.
+      queryParameters:
+        lang:
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
+          example: /{projectName}/nodes/?lang=de,en
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/NodeResponse.example.json
+    put:
+      is: [ expandable, include_role_perms ]
+      description: Updates the node with the given uuid.
+      body:
+        application/json:
+          example: !include json/NodeUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/NodeResponse.example.json
+        423:
+    delete:
+      description: Deletes the node with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+        423:
+    /bin:
+      get:
+        description: Load the binary property value.
+      put: 
+        description: Update the binary property value.
+      post: 
+        description: Upload the binary property value.
+    /tags:
+      is: [ sortable, paged ]
+      get:
+        description: Load the tags that tag the node.
+      put:
+        description: Add the tag to the node.
+      delete:
+        description: Remove the tag from the node.
+    /children:
+      get:
+        is: [ localized, sortable, paged, expandable ]
+        description: Load child nodes for the given node.
+    /moveTo/{uuid}:
+      put:
+        description: Move the node to the given node.
+    /breadcrumb:
+      get:
+        description: Return a breadcrumb for the given node. 
+        responses:
+            200:
+              body:
+                application/json:
+                  example: !include json/NodeBreadcrumbResponse.example.json
+#------------------------------------------------------------------------------
+# TagFamily Verticle
+#------------------------------------------------------------------------------
+/{projectName}/tagFamilies:
+  displayName: TagFamilies
+  uriParameters:
+    projectName:
+      description: Name of the project.
+      type: string
+
+  /:
+    get:
+      is: [ localized, sortable, paged, include_role_perms ]
+      description: Load all tag families of the project.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagFamilyListResponse.example.json
+    post:
+      description: Create a new tag family.
+      body:
+        application/json:
+          example: !include json/TagFamilyCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagFamilyResponse.example.json
+
+  /{uuid}:
+    uriParameters:
+      uuid:
+        description: | 
+             The uuid of a single tag family.
+        type: string
+    get:
+      is: [ localized, sortable, include_role_perms ]
+      description: Load the tag family with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagResponse.example.json
+    put:
+      description: Update the tag family with the given path.
+      body:
+        application/json:
+          example: !include json/TagFamilyUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagFamilyResponse.example.json
+    delete:
+      description: Delete the tag family with the given path.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+    /tags:
+      get: 
+        description: Load all tags which were assigned to this tag family.
+
+
+
+
+#------------------------------------------------------------------------------
+# Tag Verticle
+#------------------------------------------------------------------------------
+/{projectName}/tags:
+  displayName: Tags
+  uriParameters:
+    projectName:
+      description: Name of the project.
+      type: string
+
+  /:
+    get:
+      is: [ localized, sortable, paged, include_role_perms ]
+      description: Load all tags of the project.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagListResponse.example.json
+    post:
+      description: Create a new tag.
+      body:
+        application/json:
+          example: !include json/TagCreateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagResponse.example.json
+
+  /{uuid}:
+    is: [ include_role_perms ]
+    uriParameters:
+      uuid:
+        description: | 
+             The uuid of a single tag.
+        type: string
+    get:
+      is: [ localized, sortable ]
+      description: Load the tag with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagResponse.example.json
+    put:
+      description: Update the tag with the given path.
+      body:
+        application/json:
+          example: !include json/TagUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/TagResponse.example.json
+    delete:
+      description: Delete the tag with the given path.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+
+#------------------------------------------------------------------------------
+# Search Verticle
+#------------------------------------------------------------------------------
+/search:
+  displayName: Search
+  /nodes:
+    is: [ localized, paged ]
+    displayName: Node Search
+    post:
+        description: Query for nodes. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        body:
+            application/json:
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/NodeListResponse.example.json
+  /tags:
+    is: [ localized ]
+    displayName: Tag Search
+    post:
+        description: Query for tags. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/TagListResponse.example.json
+  /users:
+    is: [ localized ]
+    displayName: User Search
+    post:
+        description: Query for users. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/UserListResponse.example.json
+  /groups:
+    is: [ localized ]
+    displayName: Group Search
+    post:
+        description: Query for groups. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/GroupListResponse.example.json
+  /roles:
+    is: [ localized ]
+    displayName: Role Search
+    post:
+        description: Query for roles. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/RoleListResponse.example.json
+  /projects:
+    is: [ localized ]
+    displayName: Project Search
+    post:
+        description: Query for projects. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/ProjectListResponse.example.json
+  /tagFamilies:
+    is: [ localized ]
+    displayName: TagFamily Search
+    post:
+        description: Query for tagFamilies. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/TagFamilyListResponse.example.json
+  /schemas:
+    is: [ localized ]
+    displayName: Schema Search
+    post:
+        description: Query for schemas. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/SchemaListResponse.example.json
+  /status:
+   displayName: Search Status
+   get:
+     description: Load the search status information.
+     responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/SearchStatusResponse.example.json
+
+#------------------------------------------------------------------------------
+# Move Verticle
+#------------------------------------------------------------------------------
+/move/{uuid}/to/{uuid}:
+  displayName: Move
+  put:
+    description: Move entities.
+
+#------------------------------------------------------------------------------
+# Authentication Verticle
+#------------------------------------------------------------------------------
+/auth:
+  displayName: Authentication
+  /me:
+    get:
+      description: Return the user response for the current user.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/UserResponse.example.json
+
+  /login:
+    post:
+      description: Login the user using the provided credentials.
+  /logout:
+    get:
+      description: Logout the user.
+
+
