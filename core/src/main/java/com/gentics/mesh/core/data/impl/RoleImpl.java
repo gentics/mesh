@@ -88,7 +88,11 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 		return permissions;
 	}
 
+	/**
+	 * @deprecated Use {@link #getPermissions(MeshVertex)} instead.
+	 */
 	@Override
+	@Deprecated
 	public boolean hasPermission(GraphPermission permission, GenericVertex<?> node) {
 		return out(permission.label()).retain(node.getImpl()).hasNext();
 	}

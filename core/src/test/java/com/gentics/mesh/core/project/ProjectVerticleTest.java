@@ -109,6 +109,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+		role().revokePermissions(meshRoot(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -116,6 +117,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		ProjectResponse restProject = createFuture.result();
 		test.assertProject(request, restProject);
+		assertEquals(4, restProject.getPermissions().length);
+
 		meshRoot().getProjectRoot().reload();
 		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 

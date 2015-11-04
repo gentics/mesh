@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -36,6 +38,9 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

@@ -190,14 +190,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 						requestUser.reload();
 						Project project = create(requestModel.getName(), requestUser);
 						
-
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project);
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
 						// TODO add microschema root crud perms
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
 						SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.complete(Tuple.tuple(batch, project));

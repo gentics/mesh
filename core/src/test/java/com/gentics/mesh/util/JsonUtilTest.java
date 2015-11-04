@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 
-public class JsonUtilsTest {
+public class JsonUtilTest {
 
 	@Test(expected = HttpStatusCodeErrorException.class)
 	public void testToJson() {
