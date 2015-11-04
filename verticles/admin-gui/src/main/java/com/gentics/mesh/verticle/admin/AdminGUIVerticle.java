@@ -1,9 +1,6 @@
 package com.gentics.mesh.verticle.admin;
 
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
+import java.util.Properties;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
@@ -13,6 +10,11 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -21,11 +23,25 @@ public class AdminGUIVerticle extends AbstractSpringVerticle {
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
 	protected HttpServer server;
 
+	//TODO handle NPEs
+	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
+
+	private static Properties readBuildProperties() {
+		try {
+			Properties buildProperties = new Properties();
+			buildProperties.load(AdminGUIVerticle.class.getResourceAsStream("/mesh-admin-gui.properties"));
+			return buildProperties;
+		} catch (Exception e) {
+			log.error("Error while loading build properties", e);
+			return null;
+		}
+	}
+
 	@Override
 	public void start() throws Exception {
 
 		Router staticRouter = Router.router(vertx);
-		staticRouter.route("/*").handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/0.1.0-SNAPSHOT").setIndexPage("index.html"));
+		staticRouter.route("/*").handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion).setIndexPage("index.html"));
 		routerStorage.getRootRouter().mountSubRouter("/mesh-ui", staticRouter);
 
 		routerStorage.getRootRouter().route("/").handler(rc -> {
@@ -43,9 +59,9 @@ public class AdminGUIVerticle extends AbstractSpringVerticle {
 		// router.route().handler(staticContentServer);
 
 		// // All other requests handled by template engine
-//		 TemplateEngine engine = HandlebarsTemplateEngine.create();
-//		 engine.render(context, templateFileName, handler);
-//		 Handlebars handlebars;
+		//		 TemplateEngine engine = HandlebarsTemplateEngine.create();
+		//		 engine.render(context, templateFileName, handler);
+		//		 Handlebars handlebars;
 		//
 		// // // Example content
 		// router.route("/test.html").handler(context -> {

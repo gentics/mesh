@@ -15,17 +15,36 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<frontend.maven.plugin.downloadRoot>http://nodejs.org/dist/</frontend.maven.plugin.downloadRoot>
-		<mesh.ui.version>0.1.0-nav-v2-SNAPSHOT</mesh.ui.version>
+		<mesh.admin-ui.version>0.1.0-nav-v2-SNAPSHOT</mesh.admin-ui.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<artifactId>mesh-admin-ui</artifactId>
 			<groupId>com.gentics.mesh</groupId>
-			<version>${mesh.ui.version}</version>
+			<version>${mesh.admin-ui.version}</version>
 			<classifier>dist</classifier>
 			<type>jar</type>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/mesh-admin-gui.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
 
 </project>
