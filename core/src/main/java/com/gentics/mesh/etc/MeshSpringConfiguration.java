@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -22,9 +23,11 @@ import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.web.RoutingContext;
@@ -32,6 +35,7 @@ import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
@@ -111,7 +115,8 @@ public class MeshSpringConfiguration {
 	 */
 	@Bean
 	public AuthHandler authHandler() {
-		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
+		return JWTAuthHandler.create(authProvider());
+//		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
 	}
 
 	/**
@@ -131,7 +136,7 @@ public class MeshSpringConfiguration {
 	 */
 	@Bean
 	public AuthProvider authProvider() {
-		return new MeshAuthProvider();
+		return new MeshJWTAuthProvider();
 	}
 
 	/**

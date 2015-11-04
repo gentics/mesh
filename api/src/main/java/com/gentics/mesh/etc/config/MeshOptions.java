@@ -38,6 +38,8 @@ public class MeshOptions {
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
+	
+	private AuthenticationOptions authenticationOptions = new AuthenticationOptions();
 
 	public MeshOptions() {
 	}
@@ -157,4 +159,21 @@ public class MeshOptions {
 	public void setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
 	}
-}
+
+	/**
+	 * Return the authentication options
+	 * 
+	 * @return Authentication options
+	 */
+	public AuthenticationOptions getAuthenticationOptions() {
+		return authenticationOptions;
+	}
+
+	/**
+	 * Set the authentication options
+	 * @param authenticationOptions Authentication options
+	 */
+	public void setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
+		this.authenticationOptions = authenticationOptions;
+	}
+ }
