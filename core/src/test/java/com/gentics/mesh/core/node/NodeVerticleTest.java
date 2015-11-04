@@ -39,7 +39,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -389,14 +388,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());
-	}
-
-	@Test
-	public void testLoadBreadcrumb() throws Exception {
-		String nodeUuid = content().getUuid();
-		Future<NodeBreadcrumbResponse> future = getClient().loadBreadcrumb(PROJECT_NAME, nodeUuid);
-		latchFor(future);
-		assertSuccess(future);
 	}
 
 	@Test

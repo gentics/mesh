@@ -54,13 +54,25 @@ public class NodeTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		CountDownLatch latch = new CountDownLatch(1);
 		node.transformToReference(ac, rh -> {
-			NodeReference reference = rh.result();	
+			NodeReference reference = rh.result();
 			assertNotNull(reference);
 			assertEquals(node.getUuid(), reference.getUuid());
 			latch.countDown();
 		});
 		failingLatch(latch);
 		//		assertEquals(node.getName(), reference.getName());
+	}
+
+	@Test
+	public void testTransformToBreadcrumb() throws Exception {
+		Node node = content();
+		InternalActionContext ac = getMockedInternalActionContext("");
+		CountDownLatch latch = new CountDownLatch(1);
+		node.transformToBreadcrumb(ac, rh -> {
+			assertNotNull(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	/**
