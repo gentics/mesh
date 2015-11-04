@@ -103,6 +103,9 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] {userUuid});
+		if (!it.hasNext()) {
+			return null;
+		}
 		FramedGraph graph = Database.getThreadLocalGraph();
 		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
 		if (it.hasNext()) {

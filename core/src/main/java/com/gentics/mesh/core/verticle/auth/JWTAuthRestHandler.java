@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
+import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -51,7 +52,7 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 				} else {
 					User authenticated = rh.result();
 					String token = provider.generateToken(authenticated);
-					ac.send(new JsonObject().put("token", token).toString(), OK);
+					ac.send(JsonUtil.toJson(new TokenResponse(token)), OK);
 				}
 			});
 		} catch (Exception e) {
@@ -77,7 +78,7 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 			return;
 		}
 		String token = provider.generateToken(ac.getUser());
-		ac.send(new JsonObject().put("token", token).toString(), OK);
+		ac.send(JsonUtil.toJson(new TokenResponse(token)), OK);
 	}
 	
 }

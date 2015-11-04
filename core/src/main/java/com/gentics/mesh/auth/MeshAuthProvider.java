@@ -31,7 +31,7 @@ public class MeshAuthProvider implements AuthProvider {
 	protected BootstrapInitializer boot;
 
 	@Autowired
-	private Database db;
+	protected Database db;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;

@@ -44,17 +44,24 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 		if (username != null && password != null) {
 			super.authenticate(authInfo, resultHandler);
 		} else {
-			String userUuid = authInfo.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
-			if (user != null) {
-				resultHandler.handle(Future.succeededFuture(user));
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not load user with UUID {" + userUuid + "}.");
+			db.asyncNoTrx(tv -> {
+				String userUuid = authInfo.getString(USERID_FIELD_NAME);
+				MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
+				if (user != null) {
+					resultHandler.handle(Future.succeededFuture(user));
+				} else {
+					if (log.isDebugEnabled()) {
+						log.debug("Could not load user with UUID {" + userUuid + "}.");
+					}
+					// TODO Don't let the user know that we know that he did not exist?
+					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 				}
-				// TODO Don't let the user know that we know that he did not exist?
-				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
-			}
+			}, rh -> {
+				if (rh.failed()) {
+					log.error("Error while authenticating user.", rh.cause());
+					resultHandler.handle(Future.failedFuture(rh.cause()));
+				}
+			});
 		}
 	}
 
