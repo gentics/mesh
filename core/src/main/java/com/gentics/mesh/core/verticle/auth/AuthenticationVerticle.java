@@ -18,7 +18,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private AuthenticationRestHandler restHandler;
+	private JWTAuthRestHandler restHandler;
 
 	public AuthenticationVerticle() {
 		super("auth");
@@ -38,6 +38,11 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		route("/logout").handler(springConfiguration.authHandler());
 		route("/logout").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			restHandler.handleLogout(InternalActionContext.create(rc));
+		});
+		
+		route("/refresh").handler(springConfiguration.authHandler());
+		route("/refresh").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			restHandler.handleRefresh(InternalActionContext.create(rc));
 		});
 	}
 }

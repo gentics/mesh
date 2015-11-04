@@ -119,15 +119,15 @@ public class MeshSpringConfiguration {
 //		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
 	}
 
-	/**
-	 * User session handler which will provider the user from within the session.
-	 * 
-	 * @return
-	 */
-	@Bean
-	public UserSessionHandler userSessionHandler() {
-		return UserSessionHandler.create(authProvider());
-	}
+//	/**
+//	 * User session handler which will provider the user from within the session.
+//	 * 
+//	 * @return
+//	 */
+//	@Bean
+//	public UserSessionHandler userSessionHandler() {
+//		return UserSessionHandler.create(authProvider());
+//	}
 
 	/**
 	 * Return the mesh auth provider that can be used to authenticate a user.
@@ -135,7 +135,7 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Bean
-	public AuthProvider authProvider() {
+	public MeshJWTAuthProvider authProvider() {
 		return new MeshJWTAuthProvider();
 	}
 
