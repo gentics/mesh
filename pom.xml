@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.2-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -92,7 +92,7 @@
 		<!-- <module>importers</module> -->
 		<module>server</module>
 		<module>examples</module>
-		<module>doc</module>
+		<!-- <module>doc</module> -->
 	</modules>
 
 	<dependencies>
