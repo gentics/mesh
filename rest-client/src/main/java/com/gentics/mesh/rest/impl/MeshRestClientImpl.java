@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
@@ -340,6 +341,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<GenericMessageResponse> deleteUser(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return invokeRequest(DELETE, "/users/" + uuid, GenericMessageResponse.class);
+	}
+
+	@Override
+	public Future<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(pathToElement, "pathToElement must not be null");
+		return invokeRequest(GET, "/users/" + uuid +"/permissions/" + pathToElement, UserPermissionResponse.class);
 	}
 
 	@Override
@@ -677,7 +685,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request) {
+	public Future<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request) {
 		Objects.requireNonNull(roleUuid, "roleUuid must not be null");
 		Objects.requireNonNull(pathToElement, "pathToElement must not be null");
 		Objects.requireNonNull(request, "request must not be null");
@@ -685,7 +693,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<RolePermissionResponse> readRolePermission(String roleUuid, String pathToElement) {
+	public Future<RolePermissionResponse> readRolePermissions(String roleUuid, String pathToElement) {
 		Objects.requireNonNull(roleUuid, "roleUuid must not be null");
 		Objects.requireNonNull(pathToElement, "pathToElement must not be null");
 		return invokeRequest(GET, "/roles/" + roleUuid + "/permissions/" + pathToElement, RolePermissionResponse.class);

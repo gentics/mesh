@@ -66,7 +66,7 @@ public interface RoleClientMethods {
 	 *            Request that defines how the permissions should be changed
 	 * @return
 	 */
-	Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request);
+	Future<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request);
 
 	/**
 	 * Read the role permissions for the given path.
@@ -75,7 +75,7 @@ public interface RoleClientMethods {
 	 * @param pathToElement
 	 * @return
 	 */
-	Future<RolePermissionResponse> readRolePermission(String roleUuid, String pathToElement);
+	Future<RolePermissionResponse> readRolePermissions(String roleUuid, String pathToElement);
 
 	/**
 	 * Update the role using the given update request.

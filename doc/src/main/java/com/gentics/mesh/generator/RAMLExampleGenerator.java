@@ -76,6 +76,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -614,6 +615,13 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		userUpdate.setNodeReference(user2.getNodeReference());
 		write(userUpdate);
+
+		UserPermissionResponse userPermResponse = new UserPermissionResponse();
+		userPermResponse.getPermissions().add("create");
+		userPermResponse.getPermissions().add("read");
+		userPermResponse.getPermissions().add("update");
+		userPermResponse.getPermissions().add("delete");
+		write(userPermResponse);
 
 		UserCreateRequest userCreate = new UserCreateRequest();
 		userCreate.setUsername("jdoe42");

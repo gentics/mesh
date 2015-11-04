@@ -101,6 +101,26 @@ traits:
             application/json:
               example: !include json/GenericMessageResponse.example.json
 
+    /{uuid}/permissions/{pathToElement}:
+        uriParameters:
+          uuid:
+            description: Uuid of the user that should be used to read the permissions.
+            type: string
+          pathToElement:
+            description: Path to the element.
+            example: |
+                /:userUuid/permissions/projects/:projectUuid/schemas/:schemaUuid
+                /:userUuid/permissions/projects/:projectUuid/schemas
+                /:userUuid/permissions/projects/:projectUuid/nodes
+                /:userUuid/permissions/projects/:projectUuid
+            type: string
+        get:
+          description: |
+            Return the user permissions to the given element.
+          body:
+            application/json:
+              example: !include json/UserPermissionResponse.example.json
+  
 
 #------------------------------------------------------------------------------
 # Role Verticle

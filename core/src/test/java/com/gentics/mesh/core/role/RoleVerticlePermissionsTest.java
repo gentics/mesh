@@ -24,7 +24,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
+public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private RoleVerticle verticle;
@@ -44,7 +44,7 @@ public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
-		Future<GenericMessageResponse> future = getClient().updateRolePermission(role().getUuid(), "projects/" + project().getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("role_updated_permission", future, role().getName());
@@ -63,7 +63,7 @@ public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 		request.getPermissions().add("read");
 		request.getPermissions().add("update");
 		request.getPermissions().add("create");
-		Future<GenericMessageResponse> future = getClient().updateRolePermission(role().getUuid(),
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
 				"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
@@ -79,7 +79,7 @@ public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 		assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 
 		String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid();
-		Future<RolePermissionResponse> future = getClient().readRolePermission(role().getUuid(), pathToElement);
+		Future<RolePermissionResponse> future = getClient().readRolePermissions(role().getUuid(), pathToElement);
 		latchFor(future);
 		assertSuccess(future);
 		RolePermissionResponse response = future.result();
@@ -100,7 +100,7 @@ public class RoleVerticlePermissionTest extends AbstractRestVerticleTest {
 		request.getPermissions().add("update");
 		request.getPermissions().add("create");
 
-		Future<GenericMessageResponse> future = getClient().updateRolePermission(role().getUuid(),
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(),
 				"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);

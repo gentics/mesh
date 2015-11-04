@@ -36,8 +36,10 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -45,6 +47,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
@@ -86,6 +89,36 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertUser(user, restUser);
 		// TODO assert groups
 		// TODO assert perms
+	}
+
+	@Test
+	public void testReadPermissions() {
+		User user = user();
+		TagFamily tagFamily = tagFamily("colors");
+
+		// Add permission on own role
+		role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
+		assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+
+		String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
+		Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+		latchFor(future);
+		assertSuccess(future);
+		UserPermissionResponse response = future.result();
+		assertNotNull(response);
+		assertEquals(4, response.getPermissions().size());
+
+		// Revoke single permission and check again
+		role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
+		assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+
+		future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+		latchFor(future);
+		assertSuccess(future);
+		response = future.result();
+		assertNotNull(response);
+		assertEquals(3, response.getPermissions().size());
+
 	}
 
 	@Test
