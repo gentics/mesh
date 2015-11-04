@@ -92,7 +92,7 @@
 		<!-- <module>importers</module> -->
 		<module>server</module>
 		<module>examples</module>
-		<module>doc</module>
+		<!-- <module>doc</module> -->
 	</modules>
 
 	<dependencies>
