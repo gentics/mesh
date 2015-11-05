@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -89,11 +92,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
+		// Initially all fields are not yet handled
+		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
+		unhandledFieldKeys.addAll(restFields.keySet());
+
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
 			Field restField = restFields.get(key);
-			restFields.remove(key);
+
+			unhandledFieldKeys.remove(key);
 
 			FieldTypes type = FieldTypes.valueByName(entry.getType());
 			switch (type) {
@@ -310,19 +318,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		}
 
+		// Some fields were specified within the json but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user about this.
 		String extraFields = "";
-		for (String key : restFields.keySet())
-
-		{
+		for (String key : unhandledFieldKeys) {
 			extraFields += "[" + key + "]";
 		}
-		if (!StringUtils.isEmpty(extraFields))
-
-		{
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_unhandled_fields", schema.getName(), extraFields));
-			// throw new MeshSchemaException("The following fields were not
-			// specified within the {" + schema.getName() + "} schema: " +
-			// extraFields);
+		if (!StringUtils.isEmpty(extraFields)) {
+			throw error(ac, BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
 		}
 
 	}
