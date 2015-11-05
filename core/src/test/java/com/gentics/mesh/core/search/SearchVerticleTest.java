@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.etc.MeshSearchQueueProcessor;
@@ -28,8 +28,8 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	private MeshSearchQueueProcessor processor;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		return list;
 	}

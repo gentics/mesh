@@ -257,6 +257,8 @@ public class BootstrapInitializer {
 
 	private static MeshRoot meshRoot;
 
+	public static boolean isInitialSetup = true;
+
 	/**
 	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
 	 * 
@@ -268,12 +270,14 @@ public class BootstrapInitializer {
 				// Check reference graph and finally create the node when it can't be found.
 				MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
 				if (foundMeshRoot == null) {
+
 					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
 					meshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
 					if (log.isInfoEnabled()) {
 						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
 				} else {
+					isInitialSetup = false;
 					meshRoot = foundMeshRoot;
 				}
 			}

@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -93,7 +93,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		CountDownLatch latch = new CountDownLatch(getVertices().size());
 
 		// Inject spring config and start each verticle
-		for (AbstractWebVerticle verticle : getVertices()) {
+		for (AbstractSpringVerticle verticle : getVertices()) {
 			verticle.setSpringConfig(springConfig);
 			verticle.init(vertx, context);
 			Future<Void> future = Future.future();
@@ -117,7 +117,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			trx.close();
 		}
 		searchProvider.reset();
-		for (AbstractWebVerticle verticle : getVertices()) {
+		for (AbstractSpringVerticle verticle : getVertices()) {
 			verticle.stop();
 		}
 		resetDatabase();
@@ -131,7 +131,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 	}
 
-	public abstract List<AbstractWebVerticle> getVertices();
+	public abstract List<AbstractSpringVerticle> getVertices();
 
 	@After
 	public void tearDown() throws Exception {

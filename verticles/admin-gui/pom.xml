@@ -20,11 +20,24 @@
 
 	<dependencies>
 		<dependency>
-			<artifactId>mesh-admin-ui</artifactId>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-admin-ui</artifactId>
 			<version>${mesh.admin-ui.version}</version>
 			<classifier>dist</classifier>
 			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-templ-handlebars</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-orientdb</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
