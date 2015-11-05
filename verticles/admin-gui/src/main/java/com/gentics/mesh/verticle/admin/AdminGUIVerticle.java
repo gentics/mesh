@@ -43,7 +43,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	private void addRedirectionHandler() {
-		route("/").method(GET).handler(rc -> {
+		routerStorage.getRootRouter().route("/").method(GET).handler(rc -> {
 			rc.response().setStatusCode(302);
 			rc.response().headers().set("Location", "/" + basePath + "/");
 			rc.response().end();

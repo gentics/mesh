@@ -58,6 +58,8 @@ import com.gentics.mesh.search.impl.DummySearchProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -109,6 +111,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();
+	}
+
+	public HttpClient createHttpClient() {
+		HttpClientOptions options = new HttpClientOptions();
+		options.setDefaultHost("localhost");
+		options.setDefaultPort(port);
+		HttpClient client = Mesh.vertx().createHttpClient(options);
+		return client;
 	}
 
 	@After

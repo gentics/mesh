@@ -1,6 +1,7 @@
 package com.gentics.mesh.verticle.admin;
 
 import static io.vertx.core.http.HttpMethod.GET;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -13,12 +14,10 @@ import java.util.concurrent.TimeoutException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 
 public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
@@ -36,12 +35,7 @@ public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAdminConfigRendering() throws InterruptedException, ExecutionException, TimeoutException {
 
-		HttpClientOptions options = new HttpClientOptions();
-		options.setDefaultHost("localhost");
-		options.setDefaultPort(port);
-
-		HttpClient client = Mesh.vertx().createHttpClient(options);
-
+		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
 		HttpClientRequest request = client.request(GET, "/mesh-ui/meshConfig.js", rh -> {
 			rh.bodyHandler(bh -> {
@@ -59,4 +53,15 @@ public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
 
 	}
 
+	@Test
+	public void testRedirect() throws InterruptedException, ExecutionException {
+
+		HttpClient client = createHttpClient();
+		CompletableFuture<String> future = new CompletableFuture<>();
+		HttpClientRequest request = client.request(GET, "/", rh -> {
+			future.complete(rh.getHeader("Location"));
+		});
+		request.end();
+		assertEquals("/mesh-ui/", future.get());
+	}
 }
