@@ -176,8 +176,8 @@ public class RouterStorage {
 			router.route().handler(springConfiguration.corsHandler());
 		}
 		router.route().handler(springConfiguration.bodyHandler());
-		router.route().handler(CookieHandler.create());
-		router.route().handler(springConfiguration.sessionHandler());
+//		router.route().handler(CookieHandler.create());
+//		router.route().handler(springConfiguration.sessionHandler());
 	}
 
 	/**

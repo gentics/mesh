@@ -38,31 +38,55 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		String username = authInfo.getString("username");
-		String password = authInfo.getString("password");
-		
-		if (username != null && password != null) {
-			super.authenticate(authInfo, resultHandler);
-		} else {
-			db.asyncNoTrx(tv -> {
-				String userUuid = authInfo.getString(USERID_FIELD_NAME);
-				MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
-				if (user != null) {
-					resultHandler.handle(Future.succeededFuture(user));
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Could not load user with UUID {" + userUuid + "}.");
-					}
-					// TODO Don't let the user know that we know that he did not exist?
-					resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+		jwtProvider.authenticate(authInfo, rh -> {
+			if (rh.failed()) {
+				resultHandler.handle(Future.failedFuture(new VertxException("Invalid Token")));
+			} else {
+				getUserByJWT(rh.result(), resultHandler);
+			}
+		});
+	}
+	
+	private void getUserByJWT(User u, Handler<AsyncResult<User>> resultHandler) {
+		db.asyncNoTrx(tv -> {
+			JsonObject authInfo = u.principal();
+			String userUuid = authInfo.getString(USERID_FIELD_NAME);
+			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
+			if (user != null) {
+				resultHandler.handle(Future.succeededFuture(user));
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not load user with UUID {" + userUuid + "}.");
 				}
-			}, rh -> {
-				if (rh.failed()) {
-					log.error("Error while authenticating user.", rh.cause());
-					resultHandler.handle(Future.failedFuture(rh.cause()));
-				}
-			});
-		}
+				// TODO Don't let the user know that we know that he
+				// did not exist?
+				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
+			}
+		} , rh2 -> {
+			if (rh2.failed()) {
+				log.error("Error while authenticating user.", rh2.cause());
+				resultHandler.handle(Future.failedFuture(rh2.cause()));
+			}
+		});
+	}
+	
+	/**
+	 * Authenticates the user and returns a JWToken if successful.
+	 * @param authInfo JsonObject that has fields "username" and "password" set.
+	 * @return
+	 */
+	public void generateToken(String username, String password, Handler<AsyncResult<String>> resultHandler) {
+		JsonObject authInfo = new JsonObject().put("username", username).put("password", password);
+		super.authenticate(authInfo, rh -> {
+			if (rh.failed()) {
+				resultHandler.handle(Future.failedFuture(rh.cause()));
+			} else {
+				User user = rh.result();
+				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
+				
+				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+			}
+		});
 	}
 
 	/**
@@ -82,6 +106,6 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	 * @return The new token
 	 */
 	public String generateToken(User user) {
-		return generateToken(user.principal().getString(USERID_FIELD_NAME));
+		return generateToken(user.principal().getString("uuid"));
 	}
 }

@@ -111,7 +111,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 		if (it.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
 		}
-		Iterator<Vertex> roots = user.getElement().getVertices(Direction.IN, HAS_USER_ROOT).iterator();
+		Iterator<Vertex> roots = user.getElement().getVertices(Direction.IN, HAS_USER).iterator();
 		Vertex root = roots.next();
 		if (roots.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");

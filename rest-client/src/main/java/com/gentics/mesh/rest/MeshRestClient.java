@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest;
 
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.method.AdminClientMethods;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
@@ -34,31 +33,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	HttpClient getClient();
-
-	/**
-	 * Return the cookie that is currently used when invoking http requests.
-	 * 
-	 * @return
-	 */
-	String getCookie();
-
-	/**
-	 * Set the cookie that should be used when invoking requests.
-	 * 
-	 * @param cookie
-	 * @return
-	 */
-	MeshRestClient setCookie(String cookie);
-
-	/**
-	 * Set the session id. Internally the session cookie will be set using the given id.
-	 * 
-	 * @param id
-	 * @return
-	 */
-	default MeshRestClient setSessionId(String id) {
-		return setCookie(MeshOptions.MESH_SESSION_KEY + "=" + id);
-	}
 
 	/**
 	 * Set the login that is used to authenticate the requests.

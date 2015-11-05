@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -69,6 +68,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
+		setAuthentification(new JWTAuthentification());
 	}
 
 	@Override
@@ -462,19 +462,6 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> login() {
-		LoginRequest loginRequest = new LoginRequest();
-		loginRequest.setUsername(username);
-		loginRequest.setPassword(password);
-		return handleRequest(POST, "/auth/login", GenericMessageResponse.class, loginRequest);
-	}
-
-	@Override
-	public Future<GenericMessageResponse> logout() {
-		return handleRequest(GET, "/auth/logout", GenericMessageResponse.class);
-	}
-
-	@Override
 	public Future<Void> initSchemaStorage() {
 		//TODO handle paging correctly
 		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingParameter(1, 100));
@@ -581,13 +568,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
-		if (getCookie() != null) {
-			request.headers().add("Cookie", getCookie());
-		} else {
-			request.headers().add("Authorization", "Basic " + authEnc);
-		}
-		request.headers().add("Accept", "application/json");
-		request.end();
+		authentification.addAuthentificationInformation(request).subscribe(x -> {
+			request.headers().add("Accept", "application/json");
+			request.end();
+		});
 		return future;
 	}
 
@@ -639,14 +623,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
 
-		if (getCookie() != null) {
-			request.headers().add("Cookie", getCookie());
-		} else {
-			request.headers().add("Authorization", "Basic " + authEnc);
-		}
-		request.headers().add("Accept", "application/json");
-
-		request.end();
+		authentification.addAuthentificationInformation(request).subscribe(x -> {
+			request.headers().add("Accept", "application/json");
+			request.end();
+		});
 		return future;
 	}
 

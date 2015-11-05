@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import io.vertx.core.Future;
+import rx.Observable;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -14,14 +15,14 @@ public interface AuthClientMethods {
 	 * 
 	 * @return
 	 */
-	Future<GenericMessageResponse> login();
+	Observable<GenericMessageResponse> login();
 
 	/**
 	 * Logout the user.
 	 * 
 	 * @return
 	 */
-	Future<GenericMessageResponse> logout();
+	Observable<GenericMessageResponse> logout();
 
 	/**
 	 * Return the currently active user's rest model data.

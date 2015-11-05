@@ -27,6 +27,11 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.10</version>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-rx-java</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
 	</dependencies>
 
 </project>

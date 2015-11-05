@@ -16,9 +16,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.User;
-
 @Component
 public class JWTAuthRestHandler extends AbstractHandler implements AuthenticationRestHandler{
 
@@ -45,14 +42,11 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 				return;
 			}
 			
-			JsonObject authInfo = new JsonObject().put("username", request.getUsername()).put("password", request.getPassword());
-			provider.authenticate(authInfo, rh -> {
+			provider.generateToken(request.getUsername(), request.getPassword(), rh -> {
 				if (rh.failed()) {
 					ac.fail(UNAUTHORIZED, "auth_login_failed", rh.cause());
 				} else {
-					User authenticated = rh.result();
-					String token = provider.generateToken(authenticated);
-					ac.send(JsonUtil.toJson(new TokenResponse(token)), OK);
+					ac.send(JsonUtil.toJson(new TokenResponse(rh.result())), OK);
 				}
 			});
 		} catch (Exception e) {

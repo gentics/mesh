@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -23,21 +22,16 @@ import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.auth.AuthProvider;
-import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
-import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
@@ -100,13 +94,13 @@ public class MeshSpringConfiguration {
 		}
 	}
 
-	@Bean
-	public SessionHandler sessionHandler() {
-		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-		//TODO make session age configurable
-		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
-				store);
-	}
+//	@Bean
+//	public SessionHandler sessionHandler() {
+//		SessionStore store = LocalSessionStore.create(Mesh.vertx());
+//		//TODO make session age configurable
+//		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
+//				store);
+//	}
 
 	/**
 	 * Handler which will authenticate the user credentials
