@@ -22,14 +22,8 @@ public class DemoRunner {
 	}
 
 	public static void main(String[] args) throws Exception {
-
-		// For testing - We cleanup all the data. The customer module contains a class that will setup a fresh graph each startup.
-		//File graphDBDir = new File(System.getProperty("java.io.tmpdir"), "graphdb");
-		//FileUtils.deleteDirectory(graphDBDir);
 		MeshOptions options = OptionsLoader.createOrloadOptions();
-		options.getStorageOptions().setDirectory(null);
 		Mesh mesh = Mesh.mesh(options);
-
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", 8080);
