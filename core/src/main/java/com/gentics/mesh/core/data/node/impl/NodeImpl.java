@@ -13,6 +13,7 @@ import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.erro
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.File;
 import java.io.IOException;
@@ -216,7 +217,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 		handler.handle(Future.succeededFuture(new NodeBreadcrumbResponse()));
 		return this;
 	}
-	
+
 	@Override
 	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -226,13 +227,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
-				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
+				noTrx.fail(error(ac, BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
 			}
 			restNode.setPublished(isPublished());
 
 			Schema schema = container.getSchema();
 			if (schema == null) {
-				noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
+				noTrx.fail(error(ac, BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
 			} else {
 				restNode.setDisplayField(schema.getDisplayField());
 
@@ -303,9 +304,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			if (fieldContainer == null) {
 				List<String> languageTags = ac.getSelectedLanguageTags();
 				String langInfo = getLanguageInfo(languageTags);
-				log.info("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
-						+ langInfo + "}. Fields will be empty.");
-				// throw new HttpStatusCodeErrorException(400, getI18n().get(rc, "node_no_language_found", langInfo));
+				if (log.isDebugEnabled()) {
+					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
+							+ langInfo + "}. Fields will be empty.");
+				}
+				noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
+				return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();

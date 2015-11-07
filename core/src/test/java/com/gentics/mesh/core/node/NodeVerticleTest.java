@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -687,6 +688,27 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		StringField field = restNode.getField("name");
 		String nameText = field.getString();
 		assertEquals("Produkte", nameText);
+	}
+
+	@Test
+	public void testReadNodeByUUIDNoLanguage() throws Exception {
+
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		Node parentNode = folder("products");
+		Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
+		Node node = parentNode.create(user(), schemaContainer("content"), project());
+		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(languageNl);
+		englishContainer.createString("name").setString("name");
+		englishContainer.createString("title").setString("title");
+		englishContainer.createString("displayName").setString("displayName");
+		englishContainer.createString("filename").setString("filename.nl.html");
+		englishContainer.createHTML("content").setHtml("nl content");
+
+		NodeRequestParameter parameters = new NodeRequestParameter();
+		parameters.setLanguages("nl");
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_no_language_found", "nl");
 	}
 
 	@Test

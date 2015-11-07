@@ -4,10 +4,13 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
@@ -109,17 +112,36 @@ public class ElasticSearchProvider implements SearchProvider {
 		return getNode().client();
 	}
 
-	//	@Override
-	//	public void createIndex(String indexName, String type) {
-	//		//TODO Add method which will be used to create an index and set a custom mapping 
-	//		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
-	//		Mapping mapping = new Mapping();
-	//		mapping.setAnalyzer("not_analyzed");
-	//		mapping.setIndex("node");
-	//		mapping.setType("string");
-	//		String mappingJson = JsonUtil.toJson(mapping);
-	//		createIndexRequestBuilder.addMapping(type, mappingJson);
-	//	}
+	@Override
+	public void createIndex(String indexName, String type) {
+		//TODO Add method which will be used to create an index and set a custom mapping 
+		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
+		Map<String, Object> indexSettings = new HashMap<>();
+		Map<String, Object> analysisSettings = new HashMap<>();
+		Map<String, Object> analyserSettings = new HashMap<>();
+		Map<String, Object> defaultAnalyserSettings = new HashMap<>();
+
+		indexSettings.put("analysis", analysisSettings);
+		analysisSettings.put("analyzer", analyserSettings);
+		analyserSettings.put("default", defaultAnalyserSettings);
+		defaultAnalyserSettings.put("type", "keyword");
+
+		createIndexRequestBuilder.setSettings(indexSettings);
+
+		createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
+
+			@Override
+			public void onResponse(CreateIndexResponse response) {
+				System.out.println(response.toString());
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				e.printStackTrace();
+			}
+
+		});
+	}
 
 	@Override
 	public void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler) {

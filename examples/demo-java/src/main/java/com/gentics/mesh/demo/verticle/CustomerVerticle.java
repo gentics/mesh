@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractCustomVerticle;
-import com.gentics.mesh.demo.TestDataProvider;
-import com.gentics.mesh.rest.MeshRestClient;
+import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -27,10 +26,10 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 	private static Logger log = LoggerFactory.getLogger(CustomerVerticle.class);
 
 	@Autowired
-	//private DemoDataProvider demoDataProvider;
-	private TestDataProvider demoDataProvider;
+	private DemoDataProvider demoDataProvider;
+	//private TestDataProvider demoDataProvider;
 
-	private MeshRestClient client;
+	//	private MeshRestClient client;
 
 	public CustomerVerticle() {
 		super("test");
@@ -38,6 +37,7 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		// We only want to setup the demo data once
 		if (BootstrapInitializer.isInitialSetup) {
 			demoDataProvider.setup();
 		} else {

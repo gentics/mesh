@@ -24,6 +24,11 @@ public class DummySearchProvider implements SearchProvider {
 	public void refreshIndex() {
 		// TODO Auto-generated method stub
 	}
+	
+	@Override
+	public void createIndex(String indexName, String type) {
+		// TODO Auto-generated method stub
+	}
 
 	@Override
 	public void updateDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {

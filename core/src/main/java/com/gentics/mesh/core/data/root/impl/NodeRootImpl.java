@@ -174,7 +174,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							txCreate.fail(error(ac, BAD_REQUEST, "node_no_language_found", requestModel.getLanguage()));
+							txCreate.fail(error(ac, BAD_REQUEST, "language_not_found", requestModel.getLanguage()));
 							return;
 						}
 						try {

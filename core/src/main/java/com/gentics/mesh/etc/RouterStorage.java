@@ -1,5 +1,6 @@
 package com.gentics.mesh.etc;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -110,7 +111,7 @@ public class RouterStorage {
 
 			rootRouter.route().last().handler(rh -> {
 				GenericMessageResponse msg = new GenericMessageResponse();
-				String internalMessage = "The resource for given path {" + rh.normalisedPath() + "} could not be found.";
+				String internalMessage = "The rest endpoint or resource for given path {" + rh.normalisedPath() + "} could not be found.";
 				String contentType = rh.request().getHeader("Content-Type");
 				if (contentType == null) {
 					switch (rh.request().method()) {
@@ -119,6 +120,17 @@ public class RouterStorage {
 						internalMessage += " You tried to POST or PUT data but you did not specifiy any Content-Type within your request.";
 						break;
 					}
+				}
+				String acceptHeaderValue = rh.request().getHeader(HttpHeaders.ACCEPT);
+				if (acceptHeaderValue == null) {
+					internalMessage += " You did not set any accept header. Please make sure to add {" + APPLICATION_JSON
+							+ "} to your accept header.";
+				}
+
+				if (acceptHeaderValue != null) {
+					//TODO validate it and send a msg if the accept header is wrong.
+					internalMessage += " Please verify that your Accept header is set correctly. I got {" + acceptHeaderValue + "}. It must accept {"
+							+ APPLICATION_JSON + "}";
 				}
 
 				msg.setInternalMessage(internalMessage);
