@@ -965,13 +965,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 
 		expectMessageResponse("node_deleted", future, uuid);
-
 		assertElement(meshRoot().getNodeRoot(), uuid, false);
-
-		assertEquals("Two documents within the index should have been deleted. (en,de)", 2, searchProvider.getDeleteEvents().size());
-
+		assertThat(searchProvider).recordedDeleteEvents(2);
 		SearchQueue searchQueue = meshRoot().getSearchQueue();
-		assertEquals("We deleted the item. A search queue entry should have been created.", 0, searchQueue.getSize());
+		assertThat(searchQueue).hasEntries(0);
 		// SearchQueueBatch batch = searchQueue.take();
 		// assertEquals(1, batch.getEntries().size());
 		// SearchQueueEntry entry = batch.getEntries().get(0);

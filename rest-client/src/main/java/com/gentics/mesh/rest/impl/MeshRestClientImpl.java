@@ -105,6 +105,14 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(languageTag, "languageTag must not be null");
+		return invokeRequest(DELETE, "/" + projectName + "/nodes/" + uuid + "/languages/" + languageTag, GenericMessageResponse.class);
+	}
+
+	@Override
 	public Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
@@ -347,7 +355,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(pathToElement, "pathToElement must not be null");
-		return invokeRequest(GET, "/users/" + uuid +"/permissions/" + pathToElement, UserPermissionResponse.class);
+		return invokeRequest(GET, "/users/" + uuid + "/permissions/" + pathToElement, UserPermissionResponse.class);
 	}
 
 	@Override
@@ -500,7 +508,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 	@Override
 	public Future<Void> initSchemaStorage() {
-		//TODO handle paging correctly
+		// TODO handle paging correctly
 		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingParameter(1, 100));
 		Future<Void> future = Future.future();
 		schemasFuture.setHandler(rh -> {
@@ -519,20 +527,20 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		return future;
 	}
 
-	//		return 
-	//		MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
-	//		meshHandler.handle(rh -> {
-	//			if (rh.statusCode() == 200) {
-	//				setCookie(rh.headers().get("Set-Cookie"));
-	//			}
-	//		});
-	//		HttpClientRequest request = client.get(BASEURI + "/auth/login", meshHandler);
-	////		request.headers().add("Authorization", "Basic " + authEnc);
-	//		request.headers().add("Accept", "application/json");
-	//		request.end();
-	//		return meshHandler.getFuture();
+	// return
+	// MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
+	// meshHandler.handle(rh -> {
+	// if (rh.statusCode() == 200) {
+	// setCookie(rh.headers().get("Set-Cookie"));
+	// }
+	// });
+	// HttpClientRequest request = client.get(BASEURI + "/auth/login", meshHandler);
+	//// request.headers().add("Authorization", "Basic " + authEnc);
+	// request.headers().add("Accept", "application/json");
+	// request.end();
+	// return meshHandler.getFuture();
 	//
-	//	}
+	// }
 
 	@Override
 	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {
@@ -634,7 +642,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(fileName, "fileName must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
 
-		//TODO handle escaping of filename
+		// TODO handle escaping of filename
 		String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
 		Buffer multiPartFormData = Buffer.buffer();
 		String header = "--" + boundary + "\r\n" + "Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n"

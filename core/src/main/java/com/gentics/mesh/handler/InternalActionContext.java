@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 import com.gentics.mesh.query.impl.PagingParameter;
 
@@ -80,5 +81,12 @@ public interface InternalActionContext extends ActionContext {
 	 * @param i18nParameters
 	 */
 	void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters);
+
+	/**
+	 * Return the currently used database.
+	 * 
+	 * @return
+	 */
+	Database getDatabase();
 
 }

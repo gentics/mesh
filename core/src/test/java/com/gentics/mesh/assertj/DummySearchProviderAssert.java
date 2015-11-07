@@ -17,4 +17,10 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		assertEquals("The search provider did not record the correct amount of store events.", count, actual.getStoreEvents().size());
 		return this;
 	}
+
+	public DummySearchProviderAssert recordedDeleteEvents(int count) {
+		isNotNull();
+		assertEquals("The search provider did not record the correct amount of delete events.", count, actual.getDeleteEvents().size());
+		return this;
+	}
 }

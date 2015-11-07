@@ -347,4 +347,14 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	Node transformToBreadcrumb(InternalActionContext ac, Handler<AsyncResult<NodeBreadcrumbResponse>> handler);
 
+	/**
+	 * Delete the language container for the given language.
+	 * 
+	 * @param ac
+	 * @param language
+	 * @param handler
+	 * @return
+	 */
+	Node deleteLanguageContainer(InternalActionContext ac, Language language, Handler<AsyncResult<Void>> handler);
+
 }

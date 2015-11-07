@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
@@ -15,6 +17,7 @@ import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
@@ -26,10 +29,12 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -77,6 +82,31 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				deleteObject(ac, "uuid", "node_deleted", ac.getProject().getNodeRoot());
 			}
 		} , ac.errorHandler());
+	}
+
+	public void handelDeleteLanguage(InternalActionContext ac) {
+		db.asyncNoTrx(tc -> {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", DELETE_PERM, project.getNodeRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+					String languageTag = ac.getParameter("languageTag");
+					Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+					if (language == null) {
+						tc.fail(error(ac, NOT_FOUND, "error_language_not_found", languageTag));
+						return;
+					}
+					node.deleteLanguageContainer(ac, language, dh -> {
+						if (dh.failed()) {
+							tc.fail(dh.cause());
+						} else {
+							ac.sendMessage(OK, "node_deleted_language", node.getUuid(), languageTag);
+						}
+					});
+				}
+			});
+		} , ac.errorHandler());
+
 	}
 
 	@Override
@@ -422,8 +452,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (container == null) {
 						// TODO fail
 					} else {
-						//node.getSchema().getFields().
-						//container.getRestFieldFromGraph(ac, fieldKey, fieldSchema, expandField, handler);
+						// node.getSchema().getFields().
+						// container.getRestFieldFromGraph(ac, fieldKey, fieldSchema, expandField, handler);
 					}
 				}
 			});
@@ -526,4 +556,5 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			});
 		} , ac.errorHandler());
 	}
+
 }
