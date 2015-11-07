@@ -492,6 +492,14 @@ traits:
         description: Add the tag to the node.
       delete:
         description: Remove the tag from the node.
+    /languages/{languageTag}:
+      delete:
+        description: Deletes the language from the given node.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json 
     /children:
       get:
         is: [ localized, sortable, paged, expandable ]

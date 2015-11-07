@@ -49,35 +49,44 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addFileDownloadHandler();
 
 		addBreadcrumbHandler();
+		
+		addLanguageHandlers();
+	}
+
+	private void addLanguageHandlers() {
+		route("/:uuid/languages/:languageTag").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handelDeleteLanguage(InternalActionContext.create(rc));
+		});
+		
 	}
 
 	private void addBreadcrumbHandler() {
-		route("/:uuid/breadcrumb").method(GET).handler(rc -> {
+		route("/:uuid/breadcrumb").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handelReadBreadcrumb(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addFieldHandlers() {
 
-		route("/:uuid/fields/:fieldName").method(GET).handler(rc -> {
+		route("/:uuid/fields/:fieldName").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleReadField(InternalActionContext.create(rc));
 		});
 
-		route("/:uuid/fields/:fieldName").method(PUT).handler(rc -> {
+		route("/:uuid/fields/:fieldName").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleUpdateField(InternalActionContext.create(rc));
 		});
 
-		route("/:uuid/fields/:fieldName").method(DELETE).handler(rc -> {
+		route("/:uuid/fields/:fieldName").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleRemoveField(InternalActionContext.create(rc));
 		});
 
 		// List methods
 
-		route("/:uuid/fields/:fieldName").method(POST).handler(rc -> {
+		route("/:uuid/fields/:fieldName").method(POST).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleAddFieldItem(InternalActionContext.create(rc));
 		});
 
-		route("/:uuid/fields/:fieldName/:itemIndex").method(DELETE).handler(rc -> {
+		route("/:uuid/fields/:fieldName/:itemIndex").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleRemoveFieldItem(InternalActionContext.create(rc));
 		});
 

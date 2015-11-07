@@ -17,6 +17,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +83,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements Node {
+public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
@@ -381,7 +382,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 		} , (
 
-		AsyncResult<NodeResponse> rh) ->
+				AsyncResult<NodeResponse> rh) ->
 
 		{
 			handler.handle(rh);
@@ -508,9 +509,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 
 	@Override
 	public List<String> getAvailableLanguageNames() {
-		// TODO Auto-generated method stub
-		// TODO set language and all languages
-		return null;
+		List<String> languageTags = new ArrayList<>();
+		//TODO it would be better to store the languagetag along with the edge
+		for(GraphFieldContainer container : getGraphFieldContainers()) {
+			languageTags.add(container.getLanguage().getLanguageTag());
+		}
+		return languageTags;
 	}
 
 	@Override
@@ -700,6 +704,36 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse>implements 
 			}
 		});
 		return this;
+	}
+
+	@Override
+	public Node deleteLanguageContainer(InternalActionContext ac, Language language, Handler<AsyncResult<Void>> handler) {
+		ac.getDatabase().trx(txDelete -> {
+			NodeGraphFieldContainer container = getGraphFieldContainer(language);
+			if (container == null) {
+				txDelete.fail(error(ac, NOT_FOUND, "node_no_language_found", language.getLanguageTag()));
+				return;
+			}
+			container.delete();
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION, language.getLanguageTag());
+			txDelete.complete(batch);
+		} , (AsyncResult<SearchQueueBatch> txDeleted) -> {
+			if (txDeleted.failed()) {
+				handler.handle(Future.failedFuture(txDeleted.cause()));
+			} else {
+				processOrFail2(ac, txDeleted.result(), handler);
+			}
+		});
+		return this;
+	}
+
+	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, String languageTag) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		String indexType = getType() + "-" + languageTag;
+		batch.addEntry(getUuid(), getType(), action, indexType);
+		addRelatedEntries(batch, action);
+		return batch;
 	}
 
 	@Override

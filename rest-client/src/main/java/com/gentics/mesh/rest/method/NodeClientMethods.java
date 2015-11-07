@@ -47,13 +47,23 @@ public interface NodeClientMethods {
 	Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, QueryParameterProvider... parameters);
 
 	/**
-	 * Delete the node with the given uuid.
+	 * Delete the node with the given uuid. All languages will be deleted.
 	 * 
 	 * @param projectName
 	 * @param uuid
 	 * @return
 	 */
 	Future<GenericMessageResponse> deleteNode(String projectName, String uuid);
+
+	/**
+	 * Delete the node with the given language.
+	 * 
+	 * @param projectName
+	 * @param uuid
+	 * @param languageTag
+	 * @return
+	 */
+	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag);
 
 	/**
 	 * Find all nodes within the project with the given name. The query parameters can be used to set paging and language settings.
@@ -159,4 +169,5 @@ public interface NodeClientMethods {
 	 * @return Future with the breadcrumb response
 	 */
 	Future<NodeBreadcrumbResponse> loadBreadcrumb(String projectName, String nodeUuid, QueryParameterProvider... parameters);
+
 }
