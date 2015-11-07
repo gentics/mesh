@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.SearchHelper;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
@@ -93,17 +94,21 @@ public class MeshSpringConfiguration {
 	@Bean
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
-		if (options == null) {
-			return new DummySearchProvider();
+		SearchProvider searchProvider = null;
+		if (options == null || options.getDirectory() == null) {
+			searchProvider = new DummySearchProvider();
 		} else {
-			return new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
+			searchProvider = new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
 		}
+		SearchHelper helper = new SearchHelper(searchProvider);
+		helper.init();
+		return searchProvider;
 	}
 
 	@Bean
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-		//TODO make session age configurable
+		// TODO make session age configurable
 		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
 				store);
 	}

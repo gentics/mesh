@@ -58,8 +58,6 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testTokenzierIssueQuery() throws InterruptedException, JSONException {
-		//TODO mode the create index call to a dedicated place
-		searchProvider.createIndex("user", "user");
 		String impossibleName = "Jöhä@sRe2";
 		user().setLastname(impossibleName);
 		fullIndex();
