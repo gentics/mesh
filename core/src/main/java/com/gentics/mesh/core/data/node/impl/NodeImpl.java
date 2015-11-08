@@ -309,8 +309,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 							+ langInfo + "}. Fields will be empty.");
 				}
-				noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
-				return;
+				//TODO The base node has no fields. We need to take care of that edgecase first
+//				noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
+//				return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();

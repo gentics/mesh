@@ -23,6 +23,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -115,7 +116,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Load users json file and create users.
+	 * Load users JSON file and create users.
 	 * 
 	 * @throws IOException
 	 */
@@ -143,7 +144,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Add groups from json file to graph.
+	 * Add groups from JSON file to graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -161,7 +162,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Load roles json file and add those roles to the graph.
+	 * Load roles JSON file and add those roles to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -184,6 +185,8 @@ public class DemoDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
 	 */
 	private void addBootstrappedData() {
+		english = root.getLanguageRoot().findByLanguageTag("en");
+		german = root.getLanguageRoot().findByLanguageTag("de");
 		for (Group group : root.getGroupRoot().findAll()) {
 			groups.put(group.getName(), group);
 		}
@@ -196,7 +199,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Load nodes json file and add those nodes to the graph.
+	 * Load nodes JSON file and add those nodes to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -221,32 +224,15 @@ public class DemoDataProvider {
 				node.addTag(getTag(tagName));
 			}
 
-			// if (englishContent != null) {
-			// NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			// englishContainer.createString("name").setString(name + " english name");
-			// englishContainer.createString("title").setString(name + " english title");
-			// englishContainer.createString("displayName").setString(name + " english displayName");
-			// englishContainer.createString("filename").setString(name + ".en.html");
-			// englishContainer.createHTML("content").setHtml(englishContent);
-			// }
-			//
-			// if (germanContent != null) {
-			// NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
-			// germanContainer.createString("name").setString(name + " german");
-			// germanContainer.createString("title").setString(name + " english title");
-			// germanContainer.createString("displayName").setString(name + " german");
-			// germanContainer.createString("filename").setString(name + ".de.html");
-			// germanContainer.createHTML("content").setHtml(germanContent);
-			// }
-			//
+			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+			englishContainer.createString("name").setString(name);
 			nodes.put(name, node);
-
 		}
 
 	}
 
 	/**
-	 * Load tags json and add those tags to the graph.
+	 * Load tags JSON and add those tags to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -267,7 +253,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Load project json file and add those projects to the graph.
+	 * Load project JSON file and add those projects to the graph.
 	 * 
 	 * @throws IOException
 	 */
