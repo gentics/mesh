@@ -1,0 +1,16 @@
+{
+  "name" : "product",
+  "binary" : false,
+  "folder" : false,
+  "fields" : [ {
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string"
+  }, {
+    "name" : "description",
+    "label" : "Description",
+    "required" : false,
+    "type" : "string"
+  } ]
+}

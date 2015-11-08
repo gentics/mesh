@@ -63,8 +63,6 @@ public class DemoDataProvider {
 	@Autowired
 	private BootstrapInitializer bootstrapInitializer;
 
-	// References to dummy data
-
 	private Language english;
 
 	private Language german;
