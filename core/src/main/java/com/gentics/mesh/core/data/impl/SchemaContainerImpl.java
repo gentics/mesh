@@ -37,7 +37,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class SchemaContainerImpl extends AbstractReferenceableCoreElement<SchemaResponse, SchemaReference>implements SchemaContainer {
+public class SchemaContainerImpl extends AbstractReferenceableCoreElement<SchemaResponse, SchemaReference> implements SchemaContainer {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
@@ -61,21 +61,21 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 
 			// TODO Get list of projects to which the schema was assigned
 			// for (Project project : getProjects()) {
-			//}
+			// }
 			// ProjectResponse restProject = new ProjectResponse();
-			// restProje	ct.setUuid(project.getUuid());
+			// restProje ct.setUuid(project.getUuid());
 			// restProject.setName(project.getName());
 			// schemaResponse.getProjects().add(restProject);
 			// }
 
 			// Sort the list by project name
-			//restSchema.getProjects()
-//			Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
-//				@Override
-//				public int compare(ProjectResponse o1, ProjectResponse o2) {
-//					return o1.getName().compareTo(o2.getName());
-//				};
-//			});
+			// restSchema.getProjects()
+			// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
+			// @Override
+			// public int compare(ProjectResponse o1, ProjectResponse o2) {
+			// return o1.getName().compareTo(o2.getName());
+			// };
+			// });
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restSchema);
@@ -88,7 +88,6 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 		}
 		return this;
 	}
-
 
 	@Override
 	public List<? extends Node> getNodes() {
@@ -153,32 +152,36 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 		Database db = MeshSpringConfiguration.getInstance().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
 
-		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);
-		if (StringUtils.isEmpty(requestModel.getName())) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
-			return;
-		}
-
-		SchemaContainer foundSchema = root.findByName(requestModel.getName());
-		if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
-			return;
-		}
-
-		db.trx(txUpdate -> {
-			if (!getName().equals(requestModel.getName())) {
-				setName(requestModel.getName());
+		try {
+			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			if (StringUtils.isEmpty(requestModel.getName())) {
+				handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
+				return;
 			}
-			setSchema(requestModel);
-			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.complete(batch);
-		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
-			if (txUpdated.failed()) {
-				handler.handle(Future.failedFuture(txUpdated.cause()));
-			} else {
-				processOrFail2(ac, txUpdated.result(), handler);
+
+			SchemaContainer foundSchema = root.findByName(requestModel.getName());
+			if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
+				handler.handle(failedFuture(ac, BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
+				return;
 			}
-		});
+
+			db.trx(txUpdate -> {
+				if (!getName().equals(requestModel.getName())) {
+					setName(requestModel.getName());
+				}
+				setSchema(requestModel);
+				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+				txUpdate.complete(batch);
+			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+				if (txUpdated.failed()) {
+					handler.handle(Future.failedFuture(txUpdated.cause()));
+				} else {
+					processOrFail2(ac, txUpdated.result(), handler);
+				}
+			});
+		} catch (Exception e) {
+			handler.handle(Future.failedFuture(e));
+		}
 
 	}
 
