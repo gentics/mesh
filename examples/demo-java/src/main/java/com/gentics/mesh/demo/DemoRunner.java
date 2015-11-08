@@ -28,13 +28,8 @@ public class DemoRunner {
 			JsonObject config = new JsonObject();
 			config.put("port", 8080);
 			DeploymentUtil.deployAndWait(vertx, config, CustomerVerticle.class);
-			// deployAndWait(vertx, AuthenticationVerticle.class);
-			// deployAndWait(vertx, NavigationVerticle.class);
-			// deployAndWait(vertx, TagCloudVerticle.class);
-			// deployAndWait(vertx, config, StaticContentVerticle.class);
 			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
 		mesh.run();
-
 	}
 }

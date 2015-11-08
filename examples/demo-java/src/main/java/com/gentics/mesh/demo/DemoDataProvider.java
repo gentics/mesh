@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,9 +32,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -96,8 +100,8 @@ public class DemoDataProvider {
 			addRoles();
 			addGroups();
 			addUsers();
-			addProjects();
 
+			addProjects();
 			addTagFamilies();
 			addTags();
 
@@ -256,8 +260,8 @@ public class DemoDataProvider {
 
 			log.info("Creating tag {" + name + "} to family {" + tagFamilyName + "}");
 			TagFamily tagFamily = getTagFamily(tagFamilyName);
-			//TODO determine project of tag family automatically or use json field to assign it
-			Tag tag = tagFamily.create(name, projects.get(0), getAdmin());
+			// TODO determine project of tag family automatically or use json field to assign it
+			Tag tag = tagFamily.create(name, getProject("demo"), getAdmin());
 			tags.put(name.toLowerCase(), tag);
 		}
 	}
@@ -280,13 +284,7 @@ public class DemoDataProvider {
 			project.addLanguage(getGerman());
 			Node baseNode = project.getBaseNode();
 			nodes.put(name + ".basenode", baseNode);
-
-			// project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
-			// project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
-			// project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
-
 			projects.put(name, project);
-
 		}
 	}
 
@@ -303,48 +301,32 @@ public class DemoDataProvider {
 			tagFamily.setDescription("Description for basic tag family");
 			tagFamilies.put(name, tagFamily);
 		}
-
 	}
 
 	private void addSchemaContainers() throws MeshSchemaException, IOException {
-		// folder
-		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
-		schemaContainers.put("folder", folderSchemaContainer);
 
-		// content
-		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
-		schemaContainers.put("content", contentSchemaContainer);
+		JsonObject schemasJson = loadJson("schemas");
+		JsonArray dataArray = schemasJson.getJsonArray("data");
+		for (int i = 0; i < dataArray.size(); i++) {
+			JsonObject schemaJson = dataArray.getJsonObject(i);
+			String schemaName = schemaJson.getString("name");
+			SchemaContainer container = rootService.schemaContainerRoot().findByName(schemaName);
+			if (container == null) {
+				StringWriter writer = new StringWriter();
+				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
+				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
+				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaImpl.class);
+				container = rootService.schemaContainerRoot().create(schema, getAdmin());
+			}
+			schemaContainers.put(schemaName, container);
 
-		// binary-content
-		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
-		schemaContainers.put("binary-content", binaryContentSchemaContainer);
-
-		// JsonObject schemasJson = loadJson("schemas");
-		// JsonArray dataArray = schemasJson.getJsonArray("data");
-		// for (int i = 0; i < dataArray.size(); i++) {
-		// JsonObject schemaJson = dataArray.getJsonObject(i);
-		//
-		// Schema schema = new SchemaImpl();
-		// schema.setName("blogpost");
-		// schema.setDisplayField("title");
-		// schema.setMeshVersion(Mesh.getVersion());
-		//
-		// StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-		// titleFieldSchema.setName("title");
-		// titleFieldSchema.setLabel("Title");
-		// schema.addField(titleFieldSchema);
-		//
-		// HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-		// titleFieldSchema.setName("content");
-		// titleFieldSchema.setLabel("Content");
-		// schema.addField(contentFieldSchema);
-		//
-		// SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-		// SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getAdmin());
-		// blogPostSchemaContainer.setSchema(schema);
-		//
-		// }
-
+			JsonArray projectsArray = schemaJson.getJsonArray("projects");
+			for (int e = 0; e < projectsArray.size(); e++) {
+				String projectName = projectsArray.getString(e);
+				Project project = getProject((String) projectName);
+				project.getSchemaContainerRoot().addSchemaContainer(container);
+			}
+		}
 	}
 
 	private void updatePermissions() {

@@ -27,9 +27,6 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 
 	@Autowired
 	private DemoDataProvider demoDataProvider;
-	//private TestDataProvider demoDataProvider;
-
-	//	private MeshRestClient client;
 
 	public CustomerVerticle() {
 		super("test");
@@ -43,42 +40,5 @@ public class CustomerVerticle extends AbstractCustomVerticle {
 		} else {
 			log.info("Demo graph was already setup once. Not invoking demo data setup.");
 		}
-
-		//		vertx.eventBus().consumer("mesh-startup-complete", mh -> {
-		//
-		//			client = MeshRestClient.create("localhost", config().getInteger("port"), vertx);
-		//			client.setLogin("joe1", "test123");
-		//			client.login();
-		//
-		//			Future<SchemaListResponse> schemasFuture = client.findSchemas(new PagingParameter(1, 100));
-		//			schemasFuture.setHandler(rh -> {
-		//				if (rh.failed()) {
-		//					log.error("Could not load schemas", rh.cause());
-		//				} else {
-		//					SchemaListResponse list = rh.result();
-		//					for (SchemaResponse schema : list.getData()) {
-		//						log.info("Found schema {" + schema.getName() + "}");
-		//						client.getClientSchemaStorage().addSchema(schema);
-		//					}
-		//				}
-		//			});
-		//			route("/*").handler(rc -> {
-		//				log.info("Custom Verticle is handling a request");
-		//				Future<NodeListResponse> fut = client.findNodes("dummy", new PagingParameter(1, 100));
-		//
-		//				fut.setHandler(rh -> {
-		//					if (rh.failed()) {
-		//						rc.fail(rh.cause());
-		//					} else {
-		//						NodeListResponse resp = rh.result();
-		//						for (NodeResponse node : resp.getData()) {
-		//							log.info("Found nodes {" + node.getUuid() + "}");
-		//						}
-		//					}
-		//				});
-		//				rc.response().end("test");
-		//			});
-		//		});
-
 	}
 }

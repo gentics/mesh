@@ -1,7 +1,11 @@
 {
  "data": [
-    { "name": "super-content1", "project": "dummy", "parent": "dummy.basenode",          "tags": ["red", "blue", "yellow"], "schema": "content" },
-    { "name": "super-content2", "project": "dummy", "parent": "super-content1", "tags": ["red", "blue", "yellow"], "schema": "content" },
-    { "name": "super-content3", "project": "dummy", "parent": "super-content2", "tags": ["red", "blue", "yellow"], "schema": "content" }
+    { "name": "Cars", "project": "demo", "parent": "demo.basenode",     "tags": ["red", "blue", "yellow"], "schema": "category" },
+    { "name": "Planes", "project": "demo", "parent": "demo.basenode",   "tags": ["red", "blue", "yellow"], "schema": "category" },
+    { "name": "Bicycles", "project": "demo", "parent": "demo.basenode", "tags": ["red", "blue", "yellow"], "schema": "category" },
+
+    { "name": "BMX" , "project": "demo", "parent": "Bicycles", "tags": ["red", "blue", "yellow"], "schema": "product" },
+    { "name": "Car1", "project": "demo", "parent": "Cars",     "tags": ["red", "blue", "yellow"], "schema": "product" },
+    { "name": "Car2", "project": "demo", "parent": "Cars",     "tags": ["red", "blue", "yellow"], "schema": "product" }
  ]
 }

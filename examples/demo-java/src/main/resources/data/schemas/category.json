@@ -1,7 +1,7 @@
 {
-  "name" : "product",
+  "name" : "category",
   "binary" : false,
-  "folder" : false,
+  "folder" : true,
   "displayField": "name",
   "fields" : [ {
     "name" : "name",
