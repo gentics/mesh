@@ -5,62 +5,48 @@ package com.gentics.mesh.etc.config;
  * @author philippguertler
  */
 public class AuthenticationOptions {
-	
-	public static final long DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; //1 hour
-	
-	public static final String DEFAULT_KEYSTORE_PATH = "keystore.jceks";
-	
-	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
-	
-	private String signatureSecret;
-	
-	private String keystorePath;
-
-	/**
-	 * Gets the time after which an authentication token should expire.
-	 * @return The expiration time in seconds
-	 */
-	public long getTokenExpirationTime() {
-		return tokenExpirationTime;
+	public static enum AuthenticationMethod {
+		BASIC_AUTH,
+		JWT
 	}
+	
+	public static final AuthenticationMethod DEFAULT_AUTHENTICATION_METHOD = AuthenticationMethod.BASIC_AUTH;
+	
+	private AuthenticationMethod authenticationMethod = DEFAULT_AUTHENTICATION_METHOD;
+	
+	private JWTAuthenticationOptions jwtAuthenticationOptions = new JWTAuthenticationOptions();
 
 	/**
-	 * Sets the time after which an authentication token should expire.
-	 * @param tokenExpirationTime The expiration time in seconds
-	 */
-	public void setTokenExpirationTime(long tokenExpirationTime) {
-		this.tokenExpirationTime = tokenExpirationTime;
-	}
-
-	/**
-	 * Gets the secret passphrase which is used when singing the authentication token 
+	 * Gets the authentication method
 	 * @return
 	 */
-	public String getSignatureSecret() {
-		return signatureSecret;
+	public AuthenticationMethod getAuthenticationMethod() {
+		return authenticationMethod;
 	}
 
 	/**
-	 * Sets the secret passphrase which is used when singing the authentication token 
+	 * Sets the authentication method
 	 * @return
 	 */
-	public void setSignatureSecret(String signatureSecret) {
-		this.signatureSecret = signatureSecret;
+	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
+		this.authenticationMethod = authenticationMethod;
 	}
 
 	/**
-	 * Gets the path to the keystore file
+	 * Gets the JWT authentication options
 	 * @return
 	 */
-	public String getKeystorePath() {
-		return keystorePath;
+	public JWTAuthenticationOptions getJwtAuthenticationOptions() {
+		return jwtAuthenticationOptions;
+	}
+
+	/**
+	 * Sets the JWT authentication options
+	 * @return
+	 */
+	public void setJwtAuthenticationOptions(JWTAuthenticationOptions jwtAuthenticationOptions) {
+		this.jwtAuthenticationOptions = jwtAuthenticationOptions;
 	}
 	
-	/**
-	 * Sets the path to the keystore file
-	 * @return
-	 */
-	public void setKeystorePath(String keystorePath) {
-		this.keystorePath = keystorePath;
-	}
+	
 }
