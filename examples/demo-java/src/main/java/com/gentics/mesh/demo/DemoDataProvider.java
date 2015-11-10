@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,9 +233,22 @@ public class DemoDataProvider {
 				String tagName = tagArray.getString(e);
 				node.addTag(getTag(tagName));
 			}
-
 			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
 			englishContainer.createString("name").setString(name);
+
+			JsonObject fieldsObject = nodeJson.getJsonObject("fields");
+			if (fieldsObject != null) {
+				for (String fieldName : fieldsObject.fieldNames()) {
+					Object obj = fieldsObject.getValue(fieldName);
+					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
+						englishContainer.createNumber(fieldName).setNumber(String.valueOf(obj));
+					} else if (obj instanceof String) {
+						englishContainer.createString(fieldName).setString((String) obj);
+					} else {
+						throw new RuntimeException("Demo data type {" + obj.getClass().getName() + "} for field {" + fieldName + "} is unknown.");
+					}
+				}
+			}
 			nodes.put(name, node);
 		}
 

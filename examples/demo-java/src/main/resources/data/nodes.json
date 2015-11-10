@@ -4,8 +4,8 @@
     { "name": "Planes", "project": "demo", "parent": "demo.basenode",   "tags": ["red", "blue", "yellow"], "schema": "category" },
     { "name": "Bicycles", "project": "demo", "parent": "demo.basenode", "tags": ["red", "blue", "yellow"], "schema": "category" },
 
-    { "name": "BMX" , "project": "demo", "parent": "Bicycles", "tags": ["red", "blue", "yellow"], "schema": "product" },
-    { "name": "Car1", "project": "demo", "parent": "Cars",     "tags": ["red", "blue", "yellow"], "schema": "product" },
-    { "name": "Car2", "project": "demo", "parent": "Cars",     "tags": ["red", "blue", "yellow"], "schema": "product" }
+    { "name": "BMX" , "project": "demo", "parent": "Bicycles", "fields": { "SKU": 200, "weight": 20, "price": 100.12 , "stocklevel": 20, "description": "A fancy bicycle" }, "tags": ["red", "blue", "yellow"], "schema": "product" },
+    { "name": "Car1", "project": "demo", "parent": "Cars",     "fields": { "SKU": 200, "weight": 20, "price": 100.12 , "stocklevel": 20, "description": "Super Car1" }, "tags": ["red", "blue", "yellow"], "schema": "product" },
+    { "name": "Car2", "project": "demo", "parent": "Cars",     "fields": { "SKU": 200, "weight": 20, "price": 100.12 , "stocklevel": 20, "description": "Super Car2" }, "tags": ["red", "blue", "yellow"], "schema": "product" }
  ]
 }
