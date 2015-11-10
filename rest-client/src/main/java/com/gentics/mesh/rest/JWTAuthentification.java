@@ -4,13 +4,9 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 public class JWTAuthentification extends AbstractAuthentification{
@@ -29,8 +25,7 @@ public class JWTAuthentification extends AbstractAuthentification{
 	public Observable<Void> addAuthentificationInformation(HttpClientRequest request) {
 		//TODO: request new Token when old one expires
 		
-		if (token != null) {
-			request.headers().add("Authorization", "Bearer " + token);
+		if (loginRequest == null) {
 			return Observable.just(null);
 		} else {
 			return loginRequest.map(x -> {
@@ -63,7 +58,9 @@ public class JWTAuthentification extends AbstractAuthentification{
 
 	@Override
 	public Observable<GenericMessageResponse> logout(HttpClient client) {
-		//No need to logout in JWT
+		token = null;
+		loginRequest = null;
+		//No need call any endpoint in JWT
 		return Observable.just(new GenericMessageResponse("OK"));
 	}
 

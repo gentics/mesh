@@ -48,6 +48,7 @@ import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
+import rx.Observable;
 
 public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
@@ -478,9 +479,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet enabled")
 	public void testReadByUuidMultithreaded() throws Exception {
 
-		Future<GenericMessageResponse> future = getClient().login();
-		latchFor(future);
-		assertSuccess(future);
+		Observable<GenericMessageResponse> future = getClient().login();
+		future.toBlocking().single();
 
 		int nJobs = 10;
 		String uuid = role().getUuid();
@@ -511,9 +511,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet enabled")
 	public void testCreateMultithreaded() throws Exception {
 
-		Future<GenericMessageResponse> future = getClient().login();
-		latchFor(future);
-		assertSuccess(future);
+		Observable<GenericMessageResponse> future = getClient().login();
+		future.toBlocking().single();
 
 		int nJobs = 20;
 		// CyclicBarrier barrier = prepareBarrier(1);
@@ -531,9 +530,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 
-		Future<GenericMessageResponse> loginFuture = getClient().login();
-		latchFor(loginFuture);
-		assertSuccess(loginFuture);
+		Observable<GenericMessageResponse> observable = getClient().login();
+		observable.toBlocking().single();
 
 		int nJobs = 400;
 		Set<Future<RoleResponse>> set = new HashSet<>();

@@ -2,6 +2,7 @@ package com.gentics.mesh.auth;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -24,12 +25,13 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	private static final String USERID_FIELD_NAME = "userUuid";
 	
 	public MeshJWTAuthProvider() {
-		String secret = Mesh.mesh().getOptions().getAuthenticationOptions().getSignatureSecret();
+		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
+		String secret = options.getSignatureSecret();
 		if (secret == null) {
 			throw new RuntimeException("Options file is missing the keystore secret password. This should be set in mesh.json: authenticationOptions.signatureSecret");
 		}
 		JsonObject config = new JsonObject().put("keyStore", new JsonObject()
-			    .put("path", "keystore.jceks")
+			    .put("path", options.getKeystorePath())
 			    .put("type", "jceks")
 			    .put("password", secret));
 	

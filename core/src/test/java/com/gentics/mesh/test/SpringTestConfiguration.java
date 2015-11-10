@@ -49,6 +49,8 @@ public class SpringTestConfiguration {
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
+		options.getAuthenticationOptions().setSignatureSecret("secret");
+		options.getAuthenticationOptions().setKeystorePath("keystore.jceks");
 		Mesh.mesh(options);
 	}
 
