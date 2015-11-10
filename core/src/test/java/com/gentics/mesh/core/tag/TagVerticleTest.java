@@ -312,7 +312,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("red");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
@@ -329,7 +329,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
@@ -357,7 +357,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		TagFamily tagFamily = tagFamilies().get("colors");
 		tagFamilyName = tagFamily.getName();
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
 		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
@@ -416,7 +416,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
 			request.getFields().setName("newcolor_" + i);
-			request.setTagFamilyReference(new TagFamilyReference().setName("colors"));
+			request.setTagFamily(new TagFamilyReference().setName("colors"));
 			set.add(getClient().createTag(PROJECT_NAME, request));
 		}
 		validateCreation(set, null);
@@ -442,7 +442,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		// Create
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);

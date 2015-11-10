@@ -95,7 +95,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				return;
 			}
 
-			TagFamilyReference reference = requestModel.getTagFamilyReference();
+			TagFamilyReference reference = requestModel.getTagFamily();
 			if (reference == null) {
 				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set")));
 				return;

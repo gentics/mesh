@@ -192,7 +192,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		TagFamilyReference reference = requestModel.getTagFamilyReference();
+		TagFamilyReference reference = requestModel.getTagFamily();
 		db.trx(txUpdate -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {
