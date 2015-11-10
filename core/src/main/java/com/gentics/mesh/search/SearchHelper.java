@@ -9,17 +9,15 @@ public class SearchHelper {
 	}
 
 	public void init() {
-		searchProvider.createIndex("user", "user");
-		searchProvider.createIndex("group", "group");
-		searchProvider.createIndex("role", "role");
+		searchProvider.createIndex("user");
+		searchProvider.createIndex("group");
+		searchProvider.createIndex("role");
 
-		//TODO handle other languages as well
-		searchProvider.createIndex("node", "node-en");
-		searchProvider.createIndex("node", "node-de");
-		searchProvider.createIndex("project", "project");
-		searchProvider.createIndex("tagfamily", "tagfamily");
-		searchProvider.createIndex("tag", "tag");
-		searchProvider.createIndex("schema", "schema");
+		searchProvider.createIndex("node");
+		searchProvider.createIndex("project");
+		searchProvider.createIndex("tagfamily");
+		searchProvider.createIndex("tag");
+		searchProvider.createIndex("schema");
 
 	}
 }

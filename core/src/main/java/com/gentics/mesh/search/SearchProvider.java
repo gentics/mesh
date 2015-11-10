@@ -18,12 +18,11 @@ public interface SearchProvider {
 	void refreshIndex();
 
 	/**
-	 * Create a search index with the given name and type.
+	 * Create a search index with the given name.
 	 * 
 	 * @param indexName
-	 * @param type
 	 */
-	void createIndex(String indexName, String type);
+	void createIndex(String indexName);
 
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
 	/**

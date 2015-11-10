@@ -19,6 +19,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
@@ -113,8 +114,9 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void createIndex(String indexName, String type) {
-		//TODO Add method which will be used to create an index and set a custom mapping 
+	public void createIndex(String indexName) {
+		//TODO Add method which will be used to create an index and set a custom mapping
+
 		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 		Map<String, Object> indexSettings = new HashMap<>();
 		Map<String, Object> analysisSettings = new HashMap<>();
@@ -125,9 +127,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		analysisSettings.put("analyzer", analyserSettings);
 		analyserSettings.put("default", defaultAnalyserSettings);
 		defaultAnalyserSettings.put("type", "keyword");
-
 		createIndexRequestBuilder.setSettings(indexSettings);
-
 		createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
 			@Override
@@ -137,7 +137,9 @@ public class ElasticSearchProvider implements SearchProvider {
 
 			@Override
 			public void onFailure(Throwable e) {
-				e.printStackTrace();
+				if (!(e instanceof IndexAlreadyExistsException)) {
+					log.error("Error while creating index {" + indexName + "}", e);
+				}
 			}
 
 		});

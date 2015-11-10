@@ -60,7 +60,7 @@ public class DemoDataProvider {
 	private Database db;
 
 	@Autowired
-	private BootstrapInitializer rootService;
+	private BootstrapInitializer boot;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
@@ -86,15 +86,15 @@ public class DemoDataProvider {
 	private DemoDataProvider() {
 	}
 
-	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
+	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		long start = System.currentTimeMillis();
 
 		db.noTrx(noTrx -> {
 			bootstrapInitializer.initMandatoryData();
 
-			root = rootService.meshRoot();
-			english = rootService.languageRoot().findByLanguageTag("en");
-			german = rootService.languageRoot().findByLanguageTag("de");
+			root = boot.meshRoot();
+			english = boot.languageRoot().findByLanguageTag("en");
+			german = boot.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
 
@@ -111,8 +111,16 @@ public class DemoDataProvider {
 
 		});
 		updatePermissions();
+		invokeFullIndex();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Setup took: {" + duration + "}");
+	}
+
+	private void invokeFullIndex() throws InterruptedException {
+		db.noTrx(noTrx -> {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			boot.meshRoot().getSearchQueue().processAll();
+		});
 	}
 
 	/**
@@ -296,13 +304,13 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject schemaJson = dataArray.getJsonObject(i);
 			String schemaName = schemaJson.getString("name");
-			SchemaContainer container = rootService.schemaContainerRoot().findByName(schemaName);
+			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName);
 			if (container == null) {
 				StringWriter writer = new StringWriter();
 				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
 				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaImpl.class);
-				container = rootService.schemaContainerRoot().create(schema, getAdmin());
+				container = boot.schemaContainerRoot().create(schema, getAdmin());
 			}
 			schemaContainers.put(schemaName, container);
 

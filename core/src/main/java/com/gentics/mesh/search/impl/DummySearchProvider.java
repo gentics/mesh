@@ -24,9 +24,9 @@ public class DummySearchProvider implements SearchProvider {
 	public void refreshIndex() {
 		// TODO Auto-generated method stub
 	}
-	
+
 	@Override
-	public void createIndex(String indexName, String type) {
+	public void createIndex(String indexName) {
 		// TODO Auto-generated method stub
 	}
 
