@@ -70,12 +70,25 @@ public class TagTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testReadFieldContainer() {
+		Tag tag = tags().get("red");
+		assertEquals(1, tag.getFieldContainers().size());
+	}
+
+	@Test
 	public void testSimpleTag() {
 		TagFamily root = tagFamily("basic");
 		Tag tag = root.create("test", project(), user());
 		assertEquals("test", tag.getName());
 		tag.setName("test2");
 		assertEquals("test2", tag.getName());
+	}
+
+	@Test
+	public void testProjectTag() {
+		TagFamily root = tagFamily("basic");
+		Tag tag = root.create("test", project(), user());
+		assertEquals(project(), tag.getProject());
 	}
 
 	@Test

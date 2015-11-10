@@ -317,15 +317,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	private void addProject(Map<String, Object> map, Project project) {
-		if (project != null) {
-			Map<String, String> projectFields = new HashMap<>();
-			projectFields.put("name", project.getName());
-			projectFields.put("uuid", project.getUuid());
-			map.put("project", projectFields);
-		}
-	}
-
 	private void addSchema(Map<String, Object> map, SchemaContainer schemaContainer) {
 		String name = schemaContainer.getName();
 		String uuid = schemaContainer.getUuid();

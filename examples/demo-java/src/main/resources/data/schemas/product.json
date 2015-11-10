@@ -9,6 +9,26 @@
     "required" : true,
     "type" : "string"
   }, {
+    "name" : "weight",
+    "label" : "Weight",
+    "required" : false,
+    "type" : "number"
+  }, {
+    "name" : "SKU",
+    "label" : "Stock Keeping Unit",
+    "required" : false,
+    "type" : "string"
+  }, {
+    "name" : "price",
+    "label" : "Price",
+    "required" : false,
+    "type" : "number"
+  }, {
+    "name" : "stocklevel",
+    "label" : "Stock Level",
+    "required" : false,
+    "type" : "number"
+  }, {
     "name" : "description",
     "label" : "Description",
     "required" : false,

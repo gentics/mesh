@@ -1,5 +1,6 @@
 package com.gentics.mesh.etc.config;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +39,8 @@ public class MeshOptions {
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
+
+	private String tempDirectory = new File("tmp").getAbsolutePath();
 
 	public MeshOptions() {
 	}
@@ -157,4 +160,24 @@ public class MeshOptions {
 	public void setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
 	}
+
+	/**
+	 * Returns the temporary directory.
+	 * 
+	 * @return Temporary filesystem directory
+	 */
+	public String getTempDirectory() {
+		return tempDirectory;
+	}
+
+	/**
+	 * Set the temporary directory.
+	 * 
+	 * @param tempDirectory
+	 *            Temporary filesystem directory
+	 */
+	public void setTempDirectory(String tempDirectory) {
+		this.tempDirectory = tempDirectory;
+	}
+
 }

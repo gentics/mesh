@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
@@ -99,6 +100,16 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 	public void setDescription(String description) {
 		setProperty("description", description);
 	}
+	
+	@Override
+	public void setProject(Project project) {
+		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+	}
+
+	@Override
+	public Project getProject() {
+		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+	}
 
 	@Override
 	public Tag findTagByName(String name) {
@@ -134,6 +145,7 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
+		tag.setProject(project);
 		addTag(tag);
 		// Add to global list of tags
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();

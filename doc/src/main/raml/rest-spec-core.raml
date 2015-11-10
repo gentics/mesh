@@ -488,6 +488,12 @@ traits:
       is: [ sortable, paged ]
       get:
         description: Load the tags that tag the node.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/TagListResponse.example.json
+    /tags/{tagUuuid}:
       put:
         description: Add the tag to the node.
       delete:

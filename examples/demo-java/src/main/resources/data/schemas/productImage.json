@@ -1,0 +1,17 @@
+{
+  "name" : "productImage",
+  "binary" : true,
+  "folder" : false,
+  "displayField": "name",
+  "fields" : [ {
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string"
+  }, {
+    "name" : "altText",
+    "label" : "Alternative Text",
+    "required" : false,
+    "type" : "string"
+  } ]
+}

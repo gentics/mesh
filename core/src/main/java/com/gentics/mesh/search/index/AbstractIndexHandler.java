@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -137,6 +138,15 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		tagFields.put("uuid", tagUuids);
 		tagFields.put("name", tagNames);
 		map.put("tags", tagFields);
+	}
+
+	protected void addProject(Map<String, Object> map, Project project) {
+		if (project != null) {
+			Map<String, String> projectFields = new HashMap<>();
+			projectFields.put("name", project.getName());
+			projectFields.put("uuid", project.getUuid());
+			map.put("project", projectFields);
+		}
 	}
 
 	/**

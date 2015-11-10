@@ -90,4 +90,18 @@ public interface TagFamily extends GenericVertex<TagFamilyResponse>, NamedVertex
 	 * @return
 	 */
 	TagFamilyRoot getTagFamilyRoot();
+
+	/**
+	 * Return the project to which the tag family has been assigned.
+	 * 
+	 * @return
+	 */
+	Project getProject();
+
+	/**
+	 * Set the project to which the tag family should be assigned.
+	 * 
+	 * @param project
+	 */
+	void setProject(Project project);
 }

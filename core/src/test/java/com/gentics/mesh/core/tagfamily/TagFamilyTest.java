@@ -45,6 +45,13 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testTagFamilyProject() {
+		TagFamily tagFamily = tagFamily("colors");
+		assertNotNull(tagFamily.getProject());
+		assertEquals(project(), tagFamily.getProject());
+	}
+
+	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		TagFamilyRoot root = meshRoot().getTagFamilyRoot();

@@ -48,6 +48,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		map.put("fields", tagFields);
 		addBasicReferences(map, tag);
 		addTagFamily(map, tag.getTagFamily());
+		addProject(map, tag.getProject());
 		return map;
 	}
 

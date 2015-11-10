@@ -53,7 +53,8 @@ public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVer
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo) throws InvalidArgumentException;
+	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
+			throws InvalidArgumentException;
 
 	/**
 	 * Return the tag graph field container that hold the tag name for the given language.
@@ -77,5 +78,19 @@ public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVer
 	 * @param tagFamily
 	 */
 	void setTagFamily(TagFamily tagFamily);
+
+	/**
+	 * Set the project to which tag is assigned to.
+	 * 
+	 * @param project
+	 */
+	void setProject(Project project);
+
+	/**
+	 * Return the project to which the tag was assigned to
+	 * 
+	 * @return
+	 */
+	Project getProject();
 
 }
