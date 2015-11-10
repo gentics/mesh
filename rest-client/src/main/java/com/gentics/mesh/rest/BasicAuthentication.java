@@ -10,7 +10,7 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import rx.Observable;
 
-public class BasicAuthentification extends AbstractAuthentification {
+public class BasicAuthentication extends AbstractAuthentication {
 
 	@Override
 	public Observable<Void> addAuthentificationInformation(HttpClientRequest request) {

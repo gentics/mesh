@@ -9,7 +9,7 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import rx.Observable;
 
-public class JWTAuthentification extends AbstractAuthentification{
+public class JWTAuthentification extends AbstractAuthentication{
 
 	private String token;
 	private Observable<GenericMessageResponse> loginRequest;

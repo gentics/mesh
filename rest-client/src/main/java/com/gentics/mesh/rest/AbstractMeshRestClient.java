@@ -23,7 +23,7 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 
 	protected HttpClient client;
 	
-	protected MeshRestClientAuthentification authentification;
+	protected MeshRestClientAuthentication authentification;
 	
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -69,11 +69,11 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		return this;
 	}
 
-	public MeshRestClientAuthentification getAuthentification() {
+	public MeshRestClientAuthentication getAuthentification() {
 		return authentification;
 	}
 
-	public void setAuthentification(MeshRestClientAuthentification authentification) {
+	public void setAuthentification(MeshRestClientAuthentication authentification) {
 		this.authentification = authentification;
 	}
 
