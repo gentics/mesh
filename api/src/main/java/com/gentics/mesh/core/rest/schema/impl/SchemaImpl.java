@@ -76,6 +76,21 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
+	public void removeField(String name) {
+		int elementToBeRemoved = -1;
+		for (int i = 0; i < fields.size(); i++) {
+			FieldSchema schema = fields.get(i);
+			if (schema.getName().equals(name)) {
+				elementToBeRemoved = i;
+				break;
+			}
+		}
+		if (elementToBeRemoved != -1) {
+			fields.remove(elementToBeRemoved);
+		}
+	}
+
+	@Override
 	public String getMeshVersion() {
 		return meshVersion;
 	}

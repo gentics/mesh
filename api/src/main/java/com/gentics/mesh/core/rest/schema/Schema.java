@@ -121,4 +121,11 @@ public interface Schema {
 	 */
 	void validate() throws MeshJsonException;
 
+	/**
+	 * Removes the field with the given name.
+	 * 
+	 * @param name
+	 */
+	public void removeField(String name);
+
 }
