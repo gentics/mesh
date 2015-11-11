@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 
 /**
@@ -13,7 +14,7 @@ public class RoleResponse extends AbstractGenericRestResponse {
 
 	private String name;
 
-	private List<GroupResponse> groups = new ArrayList<>();
+	private List<GroupReference> groups = new ArrayList<>();
 
 	public RoleResponse() {
 	}
@@ -38,21 +39,21 @@ public class RoleResponse extends AbstractGenericRestResponse {
 	}
 
 	/**
-	 * Return a list of groups to which the role was assigned.
+	 * Return a list of group references to which the role was assigned.
 	 * 
 	 * @return List of groups to which the role was assigned
 	 */
-	public List<GroupResponse> getGroups() {
+	public List<GroupReference> getGroups() {
 		return groups;
 	}
 
 	/**
-	 * Set a list of groups to which the role was assigned.
+	 * Set a list of group references to which the role was assigned.
 	 * 
 	 * @param groups
 	 *            List of groups to which the role was assigned
 	 */
-	public void setGroups(List<GroupResponse> groups) {
+	public void setGroups(List<GroupReference> groups) {
 		this.groups = groups;
 	}
 

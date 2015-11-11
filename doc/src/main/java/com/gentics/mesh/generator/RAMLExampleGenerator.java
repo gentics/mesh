@@ -13,7 +13,9 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -42,6 +44,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -210,6 +213,10 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		role.setEdited(getTimestamp());
 		role.setEditor(getUserReference());
 		role.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		List<GroupReference> groups = new ArrayList<>();
+		groups.add(new GroupReference().setName("editors").setUuid(randomUUID()));
+		groups.add(new GroupReference().setName("guests").setUuid(randomUUID()));
+		role.setGroups(groups);
 		write(role);
 
 		RoleResponse role2 = new RoleResponse();
@@ -566,6 +573,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		group.setEditor(getUserReference());
 		group.setName("Admin Group");
 		group.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		group.getRoles().add(new RoleReference().setName("admin").setUuid(randomUUID()));
 		write(group);
 
 		GroupResponse group2 = new GroupResponse();

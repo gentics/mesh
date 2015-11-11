@@ -90,6 +90,21 @@
 							</arguments>
 						</configuration>
 					</execution>
+					<execution>
+						<id>Generate JSON files</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-classes</phase>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath/>
+								<argument>com.gentics.mesh.generator.MeshJsonGenerator</argument>
+							</arguments>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -124,6 +139,20 @@
 							</descriptors>
 						</configuration>
 					</execution>
+					<execution>
+						<id>dist-json-package</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/mesh-json.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
@@ -138,25 +167,6 @@
 					<configuration>
 						<lifecycleMappingMetadata>
 							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.github.eirslett
-										</groupId>
-										<artifactId>
-											frontend-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.0.23,)
-										</versionRange>
-										<goals>
-											<goal>gulp</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
@@ -202,19 +212,6 @@
 										<versionRange>[1.9.4,)</versionRange>
 										<goals>
 											<goal>checkout</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.asciidoctor</groupId>
-										<artifactId>asciidoctor-maven-plugin</artifactId>
-										<versionRange>[1.5.2,)</versionRange>
-										<goals>
-											<goal>process-asciidoc</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>

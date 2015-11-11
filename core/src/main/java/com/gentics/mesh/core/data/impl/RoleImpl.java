@@ -133,10 +133,7 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 			restRole.setName(getName());
 
 			for (Group group : getGroups()) {
-				GroupResponse restGroup = new GroupResponse();
-				restGroup.setName(group.getName());
-				restGroup.setUuid(group.getUuid());
-				restRole.getGroups().add(restGroup);
+				restRole.getGroups().add(group.transformToReference(ac));
 			}
 
 			// Add common fields
