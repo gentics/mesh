@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.group.GroupResponse;
 
 /**
  * POJO for a role response model.
