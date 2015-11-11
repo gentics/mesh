@@ -19,6 +19,8 @@ public class DemoRunner {
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		System.setProperty("vertx.httpServiceFactory.cacheDir", "tmp");
+		System.setProperty("vertx.cacheDirBase", "tmp");
 	}
 
 	public static void main(String[] args) throws Exception {

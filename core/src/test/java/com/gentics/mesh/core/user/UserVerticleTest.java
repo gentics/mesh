@@ -259,10 +259,6 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		future = getClient().findUsers(new PagingParameter(-1, perPage));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		future = getClient().findUsers(new PagingParameter(1, -1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
@@ -286,6 +282,13 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
 		assertTrue(future.result().getMetainfo().getTotalCount() > 0);
+	}
+
+	@Test
+	public void testInvalidPageParameter2() {
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameter(-1, 25));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
 	}
 
 	// Update tests

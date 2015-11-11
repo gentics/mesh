@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.search.SearchHelper;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
@@ -179,11 +180,10 @@ public class MeshSpringConfiguration {
 	 */
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
-		// TODO maybe uploads should use a dedicated bodyhandler?
-		BodyHandler handler = BodyHandler.create();
+		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
+		BodyHandler handler = new MeshBodyHandlerImpl(tempDirectory);
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues
-		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
 		handler.setUploadsDirectory(tempDirectory);
 		return handler;
 	}

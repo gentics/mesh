@@ -97,7 +97,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>dist-package</id>
+						<id>dist-raml-package</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
@@ -107,6 +107,20 @@
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/main/assembly/raml.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>dist-es-package</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/elasticsearch-examples.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

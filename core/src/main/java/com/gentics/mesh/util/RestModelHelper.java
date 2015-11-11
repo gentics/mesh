@@ -23,7 +23,7 @@ public final class RestModelHelper {
 	}
 
 	public static void setRolePermissions(InternalActionContext ac, MeshVertex sourceElement, AbstractGenericRestResponse restModel) {
-		String rolePermissionParameter = ac.getRolePermisssionParameter();
+		String rolePermissionParameter = ac.getRolePermissionParameter();
 		if (!StringUtils.isEmpty(rolePermissionParameter)) {
 			Role role = loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM, MeshRootImpl.getInstance().getRoleRoot());
 			if (role != null) {
@@ -40,7 +40,7 @@ public final class RestModelHelper {
 	}
 
 	public static void setRolePermissions(InternalActionContext ac, SchemaContainerImpl sourceElement, SchemaResponse restSchema) {
-		String rolePermissionParameter = ac.getRolePermisssionParameter();
+		String rolePermissionParameter = ac.getRolePermissionParameter();
 
 		if (!StringUtils.isEmpty(rolePermissionParameter)) {
 			Role role = loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM, MeshRootImpl.getInstance().getRoleRoot());

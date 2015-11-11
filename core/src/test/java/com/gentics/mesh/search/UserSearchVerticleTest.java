@@ -72,6 +72,36 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testTokenzierIssueQuery2() throws InterruptedException, JSONException {
+		String impossibleName = "Jöhä@sRe";
+		user().setLastname(impossibleName);
+		fullIndex();
+		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*"));
+		latchFor(future);
+		assertSuccess(future);
+		UserListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+		assertEquals(1, response.getData().size());
+		assertEquals(impossibleName, response.getData().get(0).getLastname());
+	}
+
+	@Test
+	public void testTokenzierIssueLowercasedQuery() throws InterruptedException, JSONException {
+		String impossibleName = "Jöhä@sRe";
+		user().setLastname(impossibleName);
+		fullIndex();
+		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"));
+		latchFor(future);
+		assertSuccess(future);
+		UserListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+		assertEquals(1, response.getData().size());
+		assertEquals(impossibleName, response.getData().get(0).getLastname());
+	}
+
+	@Test
 	public void testSearchForUsamerByEmail() throws InterruptedException, JSONException {
 		String email = "testmail@test.com";
 

@@ -56,7 +56,7 @@ public interface InternalActionContext extends ActionContext {
 	 * 
 	 * @return
 	 */
-	String getRolePermisssionParameter();
+	String getRolePermissionParameter();
 
 	/**
 	 * Extract the paging parameter from the request parameters. The paging information contains information about the number of the page that is currently

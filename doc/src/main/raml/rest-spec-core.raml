@@ -61,9 +61,8 @@ traits:
           application/json:
             example: !include json/UserListResponse.example.json
 
-
   post:
-    description: Create new user.
+    description: Create a new user. Please note that users create requests may also contain a node reference which is useful when storing additional data next to the user is required.
     body:
       application/json:
         example: !include json/UserCreateRequest.example.json
@@ -186,6 +185,7 @@ traits:
             /:roleUuid/permissions/projects/:projectUuid/schemas
             /:roleUuid/permissions/projects/:projectUuid/nodes
             /:roleUuid/permissions/projects/:projectUuid
+            /:roleUuid/permissions/projects
         type: string
     get:
       description: |
@@ -195,7 +195,7 @@ traits:
           example: !include json/RolePermissionResponse.example.json
     put:
       description: |
-        Update the role permission to the given element and update the permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
+        Update the role permission to the given element and update the permission to the given element. This is useful when it is required to grant certain permissions on a given path segement / object.
       body:
         application/json:
           example: !include json/RolePermissionRequest.example.json

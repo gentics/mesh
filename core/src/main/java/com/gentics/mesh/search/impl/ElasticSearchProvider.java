@@ -126,7 +126,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		indexSettings.put("analysis", analysisSettings);
 		analysisSettings.put("analyzer", analyserSettings);
 		analyserSettings.put("default", defaultAnalyserSettings);
-		defaultAnalyserSettings.put("type", "keyword");
+		defaultAnalyserSettings.put("type", "standard");
 		createIndexRequestBuilder.setSettings(indexSettings);
 		createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 

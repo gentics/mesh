@@ -1,5 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -15,7 +16,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -58,7 +58,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	protected String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
 	}
-	
+
 	@Override
 	public Database getDatabase() {
 		return MeshSpringConfiguration.getInstance().database();
@@ -95,7 +95,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 
 	@Override
-	public String getRolePermisssionParameter() {
+	public String getRolePermissionParameter() {
 		Map<String, String> queryPairs = splitQuery();
 		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
@@ -128,10 +128,10 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 			perPageInt = NumberUtils.toInt(perPage, MeshOptions.DEFAULT_PAGE_SIZE);
 		}
 		if (pageInt < 1) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
+			error(this, BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		if (perPageInt < 0) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
+			error(this, BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		return new PagingParameter(pageInt, perPageInt);
 	}
