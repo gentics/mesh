@@ -25,7 +25,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	private static final String USERID_FIELD_NAME = "userUuid";
 	
 	public MeshJWTAuthProvider() {
-		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
+		JWTAuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions();
 		String secret = options.getSignatureSecret();
 		if (secret == null) {
 			throw new RuntimeException("Options file is missing the keystore secret password. This should be set in mesh.json: authenticationOptions.signatureSecret");
@@ -86,7 +86,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 				User user = rh.result();
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
 				
-				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -99,11 +99,11 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	public String generateToken(String userUuid) {
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, userUuid);
 		
-		return jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
+		return jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getJwtAuthenticationOptions().getTokenExpirationTime()));
 	}
 	
 	/**
-	 * Generates a new JWToken with the provided uuid
+	 * Generates a new JWToken with the user
 	 * @param user
 	 * @return The new token
 	 */

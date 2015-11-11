@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
@@ -18,7 +20,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private JWTAuthRestHandler restHandler;
+	private AuthenticationRestHandler restHandler;
 
 	public AuthenticationVerticle() {
 		super("auth");
@@ -40,9 +42,16 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 			restHandler.handleLogout(InternalActionContext.create(rc));
 		});
 		
-		route("/refresh").handler(springConfiguration.authHandler());
-		route("/refresh").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleRefresh(InternalActionContext.create(rc));
-		});
+		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.JWT) {
+			route("/refresh").handler(springConfiguration.authHandler());
+			route("/refresh").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+				if (restHandler instanceof JWTAuthRestHandler) {
+					JWTAuthRestHandler jwtRestHandler = (JWTAuthRestHandler)restHandler;
+					jwtRestHandler.handleRefresh(InternalActionContext.create(rc));
+				} else {
+					throw new IllegalStateException("RestHandler must be JWTAuthRestHandler. Check your java code!");
+				}
+			});
+		}
 	}
 }

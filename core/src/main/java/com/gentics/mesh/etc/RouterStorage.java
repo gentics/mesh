@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
 import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.handler.HttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
@@ -176,8 +177,11 @@ public class RouterStorage {
 			router.route().handler(springConfiguration.corsHandler());
 		}
 		router.route().handler(springConfiguration.bodyHandler());
-//		router.route().handler(CookieHandler.create());
-//		router.route().handler(springConfiguration.sessionHandler());
+		
+		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
+			router.route().handler(CookieHandler.create());
+			router.route().handler(springConfiguration.sessionHandler());
+		}
 	}
 
 	/**

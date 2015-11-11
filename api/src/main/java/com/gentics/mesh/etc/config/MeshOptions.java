@@ -39,7 +39,7 @@ public class MeshOptions {
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
 	
-	private JWTAuthenticationOptions authenticationOptions = new JWTAuthenticationOptions();
+	private AuthenticationOptions authenticationOptions = new AuthenticationOptions();
 
 	public MeshOptions() {
 	}
@@ -165,7 +165,7 @@ public class MeshOptions {
 	 * 
 	 * @return Authentication options
 	 */
-	public JWTAuthenticationOptions getAuthenticationOptions() {
+	public AuthenticationOptions getAuthenticationOptions() {
 		return authenticationOptions;
 	}
 
@@ -173,7 +173,7 @@ public class MeshOptions {
 	 * Set the authentication options
 	 * @param authenticationOptions Authentication options
 	 */
-	public void setAuthenticationOptions(JWTAuthenticationOptions authenticationOptions) {
+	public void setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		this.authenticationOptions = authenticationOptions;
 	}
  }
