@@ -50,10 +50,10 @@ public final class TraversalHelper {
 			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The page query parameter must always be positive");
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
 		}
 		if (pageSize < 0) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, "The pageSize query parameter must always be zero or greater than zero");
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pageSize));
 		}
 
 		// Internally we start with page 0

@@ -116,7 +116,7 @@ public class VerticleHelper {
 		if (batch == null) {
 			// TODO i18n
 			log.error("Batch was not set. Can't process search index batch.");
-			handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "indexing_not_possible"));
+			handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "indexing_not_possible"));
 		}
 
 		// 1. Remove the batch from the queue
@@ -146,7 +146,7 @@ public class VerticleHelper {
 								}
 							});
 							// Inform the caller that processing failed
-							handler.handle(failedFuture(ac, BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
+							handler.handle(failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
 						} else {
 							// Inform the caller that processing completed
 							handler.handle(Future.succeededFuture());
@@ -425,7 +425,7 @@ public class VerticleHelper {
 						vertex.delete();
 						txDelete.complete(batch);
 					} else {
-						txDelete.fail(error(ac, INTERNAL_SERVER_ERROR, "Could not determine object name"));
+						txDelete.fail(error(INTERNAL_SERVER_ERROR, "Could not determine object name"));
 					}
 				} , (AsyncResult<SearchQueueBatch> txDeleted) -> {
 					if (txDeleted.failed()) {
@@ -446,7 +446,7 @@ public class VerticleHelper {
 
 		String uuid = ac.getParameter(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "error_request_parameter_missing", uuidParameterName));
+			handler.handle(failedFuture(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName));
 		} else {
 			loadObjectByUuid(ac, uuid, perm, root, handler);
 		}
@@ -467,7 +467,7 @@ public class VerticleHelper {
 	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm,
 			RootVertex<T> root) {
 		if (root == null) {
-			throw error(ac, BAD_REQUEST, "error_root_node_not_found");
+			throw error(BAD_REQUEST, "error_root_node_not_found");
 		} else {
 
 			T object = root.findByUuidBlocking(uuid);
@@ -502,7 +502,7 @@ public class VerticleHelper {
 	public static <T extends GenericVertex<?>> void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
 			Handler<AsyncResult<T>> handler) {
 		if (root == null) {
-			throw error(ac, BAD_REQUEST, "error_root_node_not_found");
+			throw error(BAD_REQUEST, "error_root_node_not_found");
 		} else {
 			Database db = MeshSpringConfiguration.getInstance().database();
 			root.reload();
@@ -521,7 +521,7 @@ public class VerticleHelper {
 							db.noTrx(noTx -> {
 								if (ph.failed()) {
 									log.error("Error while checking permissions", ph.cause());
-									handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
+									handler.handle(failedFuture(BAD_REQUEST, "error_internal"));
 								} else if (ph.succeeded() && ph.result()) {
 									handler.handle(Future.succeededFuture(node));
 									return;

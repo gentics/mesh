@@ -2,8 +2,6 @@ package com.gentics.mesh.core.rest.common;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-
 /**
  * The {@link GenericMessageResponse} is used when a generic message should be returned to the requester.
  */
@@ -44,9 +42,9 @@ public class GenericMessageResponse {
 		this.internalMessage = internalMessage;
 	}
 
-	public GenericMessageResponse(HttpStatusCodeErrorException httpStatusError) {
-		this.message = httpStatusError.getMessage();
-		this.properties = httpStatusError.getProperties();
+	public GenericMessageResponse(String message, String internalMessage, Map<String, String> properties) {
+		this(message, internalMessage);
+		this.properties = properties;
 	}
 
 	/**

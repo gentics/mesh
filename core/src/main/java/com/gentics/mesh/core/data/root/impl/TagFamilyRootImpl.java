@@ -103,7 +103,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 
 			String name = requestModel.getName();
 			if (StringUtils.isEmpty(name)) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
+				handler.handle(failedFuture(BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
 			} else {
 
 				// Check whether the name is already in-use.

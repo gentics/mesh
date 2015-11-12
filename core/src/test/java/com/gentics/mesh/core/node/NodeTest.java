@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -60,7 +61,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 			latch.countDown();
 		});
 		failingLatch(latch);
-		//		assertEquals(node.getName(), reference.getName());
+		// assertEquals(node.getName(), reference.getName());
 	}
 
 	@Test
@@ -107,7 +108,22 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(1, newsNode.getChildren().size());
 		Node firstChild = newsNode.getChildren().iterator().next();
 		assertEquals(newSubNode.getUuid(), firstChild.getUuid());
+	}
 
+	@Test
+	public void testGetSegmentPath() {
+		Node newsNode = content("news overview");
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		assertNotNull(newsNode.getPathSegment(ac));
+	}
+
+	@Test
+	public void testGetFullSegmentPath() {
+		Node newsNode = content("news overview");
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		System.out.println(newsNode.getPath(ac));
 	}
 
 	@Test

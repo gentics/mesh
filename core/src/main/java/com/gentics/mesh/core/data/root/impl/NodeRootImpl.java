@@ -174,7 +174,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
-							txCreate.fail(error(ac, BAD_REQUEST, "language_not_found", requestModel.getLanguage()));
+							txCreate.fail(error(BAD_REQUEST, "language_not_found", requestModel.getLanguage()));
 							return;
 						}
 						try {
@@ -209,7 +209,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 							return;
 						} else if (ph.failed()) {
 							log.error("Error while checking permissions", ph.cause());
-							handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
+							handler.handle(failedFuture(BAD_REQUEST, "error_internal"));
 							return;
 						} else {
 							handler.handle(Future.failedFuture(new InvalidPermissionException(

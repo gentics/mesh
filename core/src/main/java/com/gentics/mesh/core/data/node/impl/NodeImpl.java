@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +45,7 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -112,6 +114,42 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return Node.TYPE;
 	}
 
+	@Override
+	public String getPathSegment(InternalActionContext ac) {
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
+		String fieldName = getSchema().getSegmentField();
+		if (container != null) {
+			StringGraphField field = container.getString(fieldName);
+			if (field != null) {
+				return field.getString();
+			}
+		}
+		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+	}
+
+	@Override
+	public String getPath(InternalActionContext ac) {
+		List<String> segments = new ArrayList<>();
+		segments.add(getPathSegment(ac));
+		Node current = this;
+		while (current != null) {
+			current = current.getParentNode();
+			if (current == null || current.getParentNode() == null) {
+				break;
+			}
+			segments.add(current.getPathSegment(ac));
+		}
+
+		Collections.reverse(segments);
+		StringBuilder builder = new StringBuilder();
+		Iterator<String> it = segments.iterator();
+		while (it.hasNext()) {
+			builder.append("/" + it.next());
+		}
+		return builder.toString();
+	}
+
+	@Override
 	public List<? extends Tag> getTags() {
 		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
 	}
@@ -228,13 +266,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
 			if (container == null) {
-				noTrx.fail(error(ac, BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
+				noTrx.fail(error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found."));
 			}
 			restNode.setPublished(isPublished());
 
 			Schema schema = container.getSchema();
 			if (schema == null) {
-				noTrx.fail(error(ac, BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
+				noTrx.fail(error(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found."));
 			} else {
 				restNode.setDisplayField(schema.getDisplayField());
 
@@ -309,9 +347,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 							+ langInfo + "}. Fields will be empty.");
 				}
-				//TODO The base node has no fields. We need to take care of that edgecase first
-//				noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
-//				return;
+				// TODO The base node has no fields. We need to take care of that edgecase first
+				// noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
+				// return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();
@@ -511,8 +549,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	@Override
 	public List<String> getAvailableLanguageNames() {
 		List<String> languageTags = new ArrayList<>();
-		//TODO it would be better to store the languagetag along with the edge
-		for(GraphFieldContainer container : getGraphFieldContainers()) {
+		// TODO it would be better to store the languagetag along with the edge
+		for (GraphFieldContainer container : getGraphFieldContainers()) {
 			languageTags.add(container.getLanguage().getLanguageTag());
 		}
 		return languageTags;
@@ -553,13 +591,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public String getFilePath() {
-		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath());
+		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getBinarySegmentedPath());
 		File binaryFile = new File(folder, getUuid() + ".bin");
 		return binaryFile.getAbsolutePath();
 	}
 
 	@Override
-	public String getSegmentedPath() {
+	public String getBinarySegmentedPath() {
 		String uuid = getUuid();
 		String[] parts = uuid.split("(?<=\\G.{4})");
 		StringBuffer buffer = new StringBuffer();
@@ -617,13 +655,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "error_language_not_set"));
+				handler.handle(failedFuture(BAD_REQUEST, "error_language_not_set"));
 				return;
 			}
 			db.trx(txUpdate -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
 				if (language == null) {
-					txUpdate.fail(error(ac, BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
+					txUpdate.fail(error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage()));
 					return;
 				}
 
@@ -637,7 +675,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} catch (MeshSchemaException e) {
 					// TODO i18n
-					txUpdate.fail(error(ac, BAD_REQUEST, "node_update_failed", e));
+					txUpdate.fail(error(BAD_REQUEST, "node_update_failed", e));
 					return;
 				}
 				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
@@ -652,7 +690,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 		} catch (IOException e1) {
 			log.error(e1);
-			handler.handle(failedFuture(ac, BAD_REQUEST, e1.getMessage(), e1));
+			handler.handle(failedFuture(BAD_REQUEST, e1.getMessage(), e1));
 		}
 	}
 
@@ -665,7 +703,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		Node parent = targetNode.getParentNode();
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
+				handler.handle(failedFuture(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children"));
 				return this;
 			}
 			parent = parent.getParentNode();
@@ -673,18 +711,18 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 		try {
 			if (!targetNode.getSchema().isFolder()) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
+				handler.handle(failedFuture(BAD_REQUEST, "node_move_error_targetnode_is_no_folder"));
 				return this;
 			}
 		} catch (Exception e) {
 			log.error("Could not load schema for target node during move action", e);
 			// TODO maybe add better i18n error
-			handler.handle(failedFuture(ac, BAD_REQUEST, "error"));
+			handler.handle(failedFuture(BAD_REQUEST, "error"));
 			return this;
 		}
 
 		if (getUuid().equals(targetNode.getUuid())) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "node_move_error_same_nodes"));
+			handler.handle(failedFuture(BAD_REQUEST, "node_move_error_same_nodes"));
 			return this;
 		}
 
@@ -712,7 +750,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		ac.getDatabase().trx(txDelete -> {
 			NodeGraphFieldContainer container = getGraphFieldContainer(language);
 			if (container == null) {
-				txDelete.fail(error(ac, NOT_FOUND, "node_no_language_found", language.getLanguageTag()));
+				txDelete.fail(error(NOT_FOUND, "node_no_language_found", language.getLanguageTag()));
 				return;
 			}
 			container.delete();

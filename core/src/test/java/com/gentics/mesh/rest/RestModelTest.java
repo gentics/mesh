@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -63,7 +62,7 @@ public class RestModelTest extends AbstractDBTest {
 		Schema schema = new SchemaImpl();
 		schema.setName("content");
 		schema.setDisplayField("title");
-		schema.setMeshVersion(Mesh.getVersion());
+//		schema.setMeshVersion(Mesh.getVersion());
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");

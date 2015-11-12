@@ -250,7 +250,7 @@ public class DemoDataProvider {
 				if (ins == null) {
 					throw new NullPointerException("Could not find binary file within path {" + path + "}");
 				}
-				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), node.getSegmentedPath());
+				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), node.getBinarySegmentedPath());
 				folder.mkdirs();
 				File outputFile = new File(folder, node.getUuid() + ".bin");
 				if (!outputFile.exists()) {

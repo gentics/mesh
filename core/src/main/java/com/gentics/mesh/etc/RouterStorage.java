@@ -140,7 +140,6 @@ public class RouterStorage {
 				rh.response().setStatusMessage("Not Found");
 				rh.response().end(JsonUtil.toJson(msg));
 			});
-			// TODO Still valid: somehow this failurehandler prevents authentication?
 			rootRouter.route().failureHandler(failureRoutingContext -> {
 				if (failureRoutingContext.statusCode() == 401) {
 					// Assume that it has been handled by the BasicAuthHandlerImpl
@@ -162,9 +161,9 @@ public class RouterStorage {
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
 					} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
 						HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
-						failureRoutingContext.response().setStatusCode(httpStatusError.getCode());
-
-						GenericMessageResponse msg = new GenericMessageResponse(httpStatusError);
+						failureRoutingContext.response().setStatusCode(httpStatusError.getStatus().code());
+						String i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
+						GenericMessageResponse msg = new GenericMessageResponse(i18nMsg, null, httpStatusError.getProperties());
 						failureRoutingContext.response().end(JsonUtil.toJson(msg));
 					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
@@ -193,7 +192,7 @@ public class RouterStorage {
 		}
 		if (failure instanceof HttpStatusCodeErrorException) {
 			HttpStatusCodeErrorException error = (HttpStatusCodeErrorException) failure;
-			return error.getCode();
+			return error.getStatus().code();
 		}
 		return 500;
 

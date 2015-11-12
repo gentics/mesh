@@ -82,7 +82,7 @@ import rx.subjects.AsyncSubject;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, UserReference>implements User {
+public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, UserReference> implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -134,15 +134,15 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
-	//	@Override
-	//	public List<? extends GenericVertexImpl> getEditedElements() {
-	//		return in(HAS_EDITOR).toList(GenericVertexImpl.class);
-	//	}
+	// @Override
+	// public List<? extends GenericVertexImpl> getEditedElements() {
+	// return in(HAS_EDITOR).toList(GenericVertexImpl.class);
+	// }
 	//
-	//	@Override
-	//	public List<? extends GenericVertexImpl> getCreatedElements() {
-	//		return in(HAS_CREATOR).toList(GenericVertexImpl.class);
-	//	}
+	// @Override
+	// public List<? extends GenericVertexImpl> getCreatedElements() {
+	// return in(HAS_CREATOR).toList(GenericVertexImpl.class);
+	// }
 
 	@Override
 	public String getFirstname() {
@@ -488,7 +488,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 
 	@Override
 	public void delete() {
-		//TODO don't allow this for the admin user
+		// TODO don't allow this for the admin user
 		disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
 		if (log.isDebugEnabled()) {
@@ -551,7 +551,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 					if (reference instanceof NodeReferenceImpl) {
 						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
 						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-							txUpdate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
+							txUpdate.fail(error(BAD_REQUEST, "user_incomplete_node_reference"));
 							return;
 						} else {
 							String referencedNodeUuid = basicReference.getUuid();
@@ -559,7 +559,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 							/* TODO decide whether we need to check perms on the project as well */
 							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 							if (project == null) {
-								txUpdate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
+								txUpdate.fail(error(BAD_REQUEST, "project_not_found", projectName));
 								return;
 							} else {
 								NodeRoot nodeRoot = project.getNodeRoot();

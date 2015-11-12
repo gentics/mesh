@@ -93,7 +93,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					String languageTag = ac.getParameter("languageTag");
 					Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 					if (language == null) {
-						tc.fail(error(ac, NOT_FOUND, "error_language_not_found", languageTag));
+						tc.fail(error(NOT_FOUND, "error_language_not_found", languageTag));
 						return;
 					}
 					node.deleteLanguageContainer(ac, language, dh -> {
@@ -218,7 +218,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 									String contentType = ul.contentType();
 									String fileName = ul.fileName();
 									String nodeUuid = node.getUuid();
-									hashAndMoveBinaryFile(ac, ul, nodeUuid, node.getSegmentedPath(), fh -> {
+									hashAndMoveBinaryFile(ac, ul, nodeUuid, node.getBinarySegmentedPath(), fh -> {
 										if (fh.failed()) {
 											ac.fail(fh.cause());
 										} else {
@@ -285,7 +285,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 										handler.handle(Future.succeededFuture(hashSum.get()));
 									} else {
 										log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-										handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+										handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
 										return;
 									}
 								});
@@ -300,7 +300,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								handler.handle(Future.succeededFuture(hashSum.get()));
 							} else {
 								log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-								handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+								handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
 							}
 						});
 					}
@@ -308,7 +308,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				});
 
 			} else {
-				handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
+				handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
 			}
 		};
 
@@ -327,7 +327,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 									targetFolderChecked.handle(Future.succeededFuture(folder));
 								} else {
 									log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}", mkh.cause());
-									handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_upload_failed"));
+									handler.handle(failedFuture(BAD_REQUEST, "node_error_upload_failed"));
 								}
 							});
 						} else {
@@ -335,11 +335,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						}
 					} else {
 						log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.", deh.cause());
-						handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_upload_failed", deh.cause()));
+						handler.handle(failedFuture(BAD_REQUEST, "node_error_upload_failed", deh.cause()));
 					}
 				});
 			} else {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_hashing_failed"));
+				handler.handle(failedFuture(BAD_REQUEST, "node_error_hashing_failed"));
 			}
 		});
 

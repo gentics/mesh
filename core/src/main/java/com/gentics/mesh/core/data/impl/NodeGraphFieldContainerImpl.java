@@ -324,7 +324,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			extraFields += "[" + key + "]";
 		}
 		if (!StringUtils.isEmpty(extraFields)) {
-			throw error(ac, BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
+			throw error(BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
 		}
 
 	}

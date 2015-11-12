@@ -37,9 +37,7 @@ import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
@@ -116,7 +114,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
 		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getUuid() + "/" + restSchema.getName());
-		//TODO actually also the used nodes should have been deleted
+		// TODO actually also the used nodes should have been deleted
 		assertThat(searchProvider).recordedDeleteEvents(1);
 		assertThat(searchProvider).recordedStoreEvents(1);
 
@@ -190,11 +188,11 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findSchemas(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		future = getClient().findSchemas(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findSchemas(new PagingParameter(4242, 25));
 		latchFor(future);

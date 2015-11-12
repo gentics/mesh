@@ -153,14 +153,14 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 						String projectName = basicReference.getProjectName();
 
 						if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
-							txCreate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
+							txCreate.fail(error(BAD_REQUEST, "user_incomplete_node_reference"));
 							return;
 						}
 
 						// TODO decide whether we need to check perms on the project as well
 						Project project = boot.projectRoot().findByName(projectName);
 						if (project == null) {
-							txCreate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
+							txCreate.fail(error(BAD_REQUEST, "project_not_found", projectName));
 							return;
 						}
 						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());

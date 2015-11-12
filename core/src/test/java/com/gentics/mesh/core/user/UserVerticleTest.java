@@ -261,7 +261,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findUsers(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findUsers(new PagingParameter(4242, 25));
 		latchFor(future);
@@ -288,7 +288,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testInvalidPageParameter2() {
 		Future<UserListResponse> future = getClient().findUsers(new PagingParameter(-1, 25));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
 
 	// Update tests

@@ -91,19 +91,19 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 			String tagName = requestModel.getFields().getName();
 			if (StringUtils.isEmpty(tagName)) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_name_not_set")));
+				handler.handle(failedFuture(BAD_REQUEST, ac.i18n("tag_name_not_set")));
 				return;
 			}
 
 			TagFamilyReference reference = requestModel.getTagFamily();
 			if (reference == null) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set")));
+				handler.handle(failedFuture(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_not_set")));
 				return;
 			}
 			boolean hasName = !isEmpty(reference.getName());
 			boolean hasUuid = !isEmpty(reference.getUuid());
 			if (!hasUuid && !hasName) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing")));
+				handler.handle(failedFuture(BAD_REQUEST, ac.i18n("tag_tagfamily_reference_uuid_or_name_missing")));
 				return;
 			}
 

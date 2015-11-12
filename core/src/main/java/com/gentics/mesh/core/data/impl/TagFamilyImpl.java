@@ -213,7 +213,7 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "tagfamily_name_not_set"));
+			handler.handle(failedFuture(BAD_REQUEST, "tagfamily_name_not_set"));
 		} else {
 			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {

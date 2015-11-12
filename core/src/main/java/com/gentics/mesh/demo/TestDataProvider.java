@@ -328,7 +328,7 @@ public class TestDataProvider {
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
-		addBlogPostSchema();
+//		addBlogPostSchema();
 	}
 
 	private void addBootstrapSchemas() {
@@ -350,28 +350,28 @@ public class TestDataProvider {
 
 	}
 
-	private void addBlogPostSchema() throws MeshSchemaException {
-		Schema schema = new SchemaImpl();
-		schema.setName("blogpost");
-		schema.setDisplayField("title");
-		schema.setMeshVersion(Mesh.getVersion());
-
-		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-		titleFieldSchema.setName("title");
-		titleFieldSchema.setLabel("Title");
-		schema.addField(titleFieldSchema);
-
-		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-		titleFieldSchema.setName("content");
-		titleFieldSchema.setLabel("Content");
-		schema.addField(contentFieldSchema);
-
-		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
-		blogPostSchemaContainer.setSchema(schema);
-
-		schemaContainers.put("blogpost", blogPostSchemaContainer);
-	}
+//	private void addBlogPostSchema() throws MeshSchemaException {
+//		Schema schema = new SchemaImpl();
+//		schema.setName("blogpost");
+//		schema.setDisplayField("title");
+//		schema.setMeshVersion(Mesh.getVersion());
+//
+//		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+//		titleFieldSchema.setName("title");
+//		titleFieldSchema.setLabel("Title");
+//		schema.addField(titleFieldSchema);
+//
+//		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
+//		titleFieldSchema.setName("content");
+//		titleFieldSchema.setLabel("Content");
+//		schema.addField(contentFieldSchema);
+//
+//		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
+//		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
+//		blogPostSchemaContainer.setSchema(schema);
+//
+//		schemaContainers.put("blogpost", blogPostSchemaContainer);
+//	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);

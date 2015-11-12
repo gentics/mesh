@@ -15,6 +15,7 @@ public class SchemaImpl implements RestModel, Schema {
 	private String name;
 	private String description;
 	private String displayField;
+	private String segmentField;
 	private boolean binary = false;
 	private boolean folder = false;
 	private String meshVersion;
@@ -48,6 +49,16 @@ public class SchemaImpl implements RestModel, Schema {
 	@Override
 	public void setDisplayField(String displayField) {
 		this.displayField = displayField;
+	}
+
+	@Override
+	public String getSegmentField() {
+		return segmentField;
+	}
+
+	@Override
+	public void setSegmentField(String segmentField) {
+		this.segmentField = segmentField;
 	}
 
 	@Override
@@ -90,15 +101,15 @@ public class SchemaImpl implements RestModel, Schema {
 		}
 	}
 
-	@Override
-	public String getMeshVersion() {
-		return meshVersion;
-	}
-
-	@Override
-	public void setMeshVersion(String meshVersion) {
-		this.meshVersion = meshVersion;
-	}
+//	@Override
+//	public String getMeshVersion() {
+//		return meshVersion;
+//	}
+//
+//	@Override
+//	public void setMeshVersion(String meshVersion) {
+//		this.meshVersion = meshVersion;
+//	}
 
 	@Override
 	public void addField(FieldSchema fieldSchema) {
@@ -107,7 +118,8 @@ public class SchemaImpl implements RestModel, Schema {
 
 	@Override
 	public void validate() throws MeshJsonException {
-		//TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for displayNames 
+		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
+		// displayNames
 
 		Set<String> fieldNames = new HashSet<>();
 		Set<String> fieldLabels = new HashSet<>();

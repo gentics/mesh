@@ -209,7 +209,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 								routerStorage.addProjectRouter(project.getName());
 							} catch (InvalidNameException e) {
 								// TODO should we really fail here?
-								handler.handle(failedFuture(ac, BAD_REQUEST, "Error while adding project to router storage", e));
+								handler.handle(failedFuture(BAD_REQUEST, "Error while adding project to router storage", e));
 								return;
 							}
 							if (log.isInfoEnabled()) {

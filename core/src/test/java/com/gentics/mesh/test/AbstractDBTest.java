@@ -39,6 +39,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestAssert;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
@@ -80,7 +81,7 @@ public abstract class AbstractDBTest {
 		db.clear();
 		DatabaseHelper helper = new DatabaseHelper(db);
 		helper.init();
-		//databaseService.getDatabase().reset();
+		// databaseService.getDatabase().reset();
 
 	}
 
@@ -252,6 +253,9 @@ public abstract class AbstractDBTest {
 
 		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 		when(rc.data()).thenReturn(map);
+		MultiMap headerMap = mock(MultiMap.class);
+		when(headerMap.get("Accept-Language")).thenReturn("en, en-gb;q=0.8, en;q=0.72");
+		when(request.headers()).thenReturn(headerMap);
 		when(rc.request()).thenReturn(request);
 		when(rc.session()).thenReturn(session);
 		JsonObject principal = new JsonObject();

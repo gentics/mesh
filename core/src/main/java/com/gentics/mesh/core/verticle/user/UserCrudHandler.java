@@ -93,7 +93,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 							MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
 								if (hasSucceeded(ac, vertex)) {
 									if (vertex.result() == null) {
-										ac.errorHandler().handle(failedFuture(ac, NOT_FOUND, "error_element_for_path_not_found", pathToElement));
+										ac.errorHandler().handle(failedFuture(NOT_FOUND, "error_element_for_path_not_found", pathToElement));
 										return;
 									}
 									MeshVertex targetElement = vertex.result();

@@ -45,7 +45,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private String displayField;
 
-	private String segmentField;
+//	private String segmentField;
 
 	private BinaryProperties binaryProperties;
 
@@ -244,24 +244,24 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.fileName = fileName;
 	}
 
-	/**
-	 * Return the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
-	 * 
-	 * @return Segment field name
-	 */
-	public String getSegmentField() {
-		return segmentField;
-	}
-
-	/**
-	 * Set the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
-	 * 
-	 * @param segmentField
-	 *            Segment field name
-	 */
-	public void setSegmentField(String segmentField) {
-		this.segmentField = segmentField;
-	}
+//	/**
+//	 * Return the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
+//	 * 
+//	 * @return Segment field name
+//	 */
+//	public String getSegmentField() {
+//		return segmentField;
+//	}
+//
+//	/**
+//	 * Set the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
+//	 * 
+//	 * @param segmentField
+//	 *            Segment field name
+//	 */
+//	public void setSegmentField(String segmentField) {
+//		this.segmentField = segmentField;
+//	}
 
 	/**
 	 * Return the project to which the node belongs.

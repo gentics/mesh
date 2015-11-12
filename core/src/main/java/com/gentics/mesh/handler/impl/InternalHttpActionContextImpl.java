@@ -128,10 +128,10 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 			perPageInt = NumberUtils.toInt(perPage, MeshOptions.DEFAULT_PAGE_SIZE);
 		}
 		if (pageInt < 1) {
-			error(this, BAD_REQUEST, "error_invalid_paging_parameters");
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		if (perPageInt < 0) {
-			error(this, BAD_REQUEST, "error_invalid_paging_parameters");
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		return new PagingParameter(pageInt, perPageInt);
 	}

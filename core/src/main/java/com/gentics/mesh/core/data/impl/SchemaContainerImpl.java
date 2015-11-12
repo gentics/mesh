@@ -14,7 +14,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.node.Node;
@@ -155,13 +154,13 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 		try {
 			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
+				handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 				return;
 			}
 
 			SchemaContainer foundSchema = root.findByName(requestModel.getName());
 			if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
+				handler.handle(failedFuture(BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
 				return;
 			}
 

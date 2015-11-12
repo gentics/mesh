@@ -279,7 +279,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @return
 	 */
-	String getSegmentedPath();
+	String getBinarySegmentedPath();
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -356,5 +356,20 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 */
 	Node deleteLanguageContainer(InternalActionContext ac, Language language, Handler<AsyncResult<Void>> handler);
+
+	/**
+	 * Return the path segment of this node.
+	 * 
+	 * @return
+	 */
+	String getPathSegment(InternalActionContext ac);
+
+	/**
+	 * Return the full path to this node.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	String getPath(InternalActionContext ac);
 
 }

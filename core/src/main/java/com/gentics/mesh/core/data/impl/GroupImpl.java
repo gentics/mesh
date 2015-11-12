@@ -222,7 +222,7 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
+				handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 				return;
 			}
 
