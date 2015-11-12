@@ -25,6 +25,8 @@ public class DemoRunner {
 
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
+		options.getHttpServerOptions().setEnableCors(true);
+		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
