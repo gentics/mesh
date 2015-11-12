@@ -5,14 +5,14 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.management.RuntimeErrorException;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -149,6 +150,11 @@ public class DemoDataProvider {
 			user.setLastname(lastname);
 			user.setEmailAddress(email);
 			users.put(username, user);
+
+			JsonArray groupArray = userJson.getJsonArray("groups");
+			for (int e = 0; e < groupArray.size(); e++) {
+				user.addGroup(getGroup(groupArray.getString(e)));
+			}
 		}
 
 	}
@@ -167,6 +173,11 @@ public class DemoDataProvider {
 
 			log.info("Creating group {" + name + "}");
 			Group group = root.getGroupRoot().create(name, getAdmin());
+
+			JsonArray rolesNode = groupJson.getJsonArray("roles");
+			for (int e = 0; e < rolesNode.size(); e++) {
+				group.addRole(getRole(rolesNode.getString(e)));
+			}
 			groups.put(name, group);
 		}
 	}
@@ -185,7 +196,6 @@ public class DemoDataProvider {
 
 			log.info("Creating role {" + name + "}");
 			Role role = root.getRoleRoot().create(name, getAdmin());
-			System.err.println("Created role: " + role.getElement().getId());
 			role.grantPermissions(role, READ_PERM);
 			roles.put(name, role);
 		}
@@ -227,6 +237,33 @@ public class DemoDataProvider {
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			Node node = parentNode.create(getAdmin(), schema, project);
+
+			JsonObject binNode = nodeJson.getJsonObject("bin");
+			if (binNode != null) {
+				String path = binNode.getString("path");
+				int height = binNode.getInteger("height");
+				int width = binNode.getInteger("width");
+				String sha512sum = binNode.getString("sha512sum");
+				String filenName = binNode.getString("filename");
+				String contentType = binNode.getString("contentType");
+				InputStream ins = getClass().getResourceAsStream("/data/" + path);
+				if (ins == null) {
+					throw new NullPointerException("Could not find binary file within path {" + path + "}");
+				}
+				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), node.getSegmentedPath());
+				folder.mkdirs();
+				File outputFile = new File(folder, node.getUuid() + ".bin");
+				if (!outputFile.exists()) {
+					IOUtils.copy(ins, new FileOutputStream(outputFile));
+				}
+				node.setBinaryImageWidth(width);
+				node.setBinaryImageHeight(height);
+				node.setBinaryContentType(contentType);
+				node.setBinaryImageDPI(300);
+				node.setBinaryFileName(filenName);
+				node.setBinarySHA512Sum(sha512sum);
+				node.setBinaryFileSize(outputFile.length());
+			}
 
 			JsonArray tagArray = nodeJson.getJsonArray("tags");
 			for (int e = 0; e < tagArray.size(); e++) {
@@ -340,17 +377,19 @@ public class DemoDataProvider {
 
 	private void updatePermissions() {
 		db.noTrx(tc -> {
-			Role role = getRole("admin");
-			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				if (log.isTraceEnabled()) {
-					log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+			for (Role role : roles.values()) {
+				for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
+					WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+					MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+					if (log.isTraceEnabled()) {
+						log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId()
+								+ "}");
+					}
+					role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 				}
-				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+				log.info("Added BasicPermissions to nodes for role {" + role.getName() + "}");
 			}
 		});
-		log.info("Added BasicPermissions to nodes");
 
 	}
 
@@ -402,6 +441,12 @@ public class DemoDataProvider {
 		Role role = roles.get(name);
 		Objects.requireNonNull(role, "Role with name {" + name + "} could not be found.");
 		return role;
+	}
+
+	private Group getGroup(String name) {
+		Group group = groups.get(name);
+		Objects.requireNonNull(group, "Group for name {" + name + "} could not be found.");
+		return group;
 	}
 
 	private User getUser(String name) {

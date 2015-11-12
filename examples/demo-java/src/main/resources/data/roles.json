@@ -1,6 +1,6 @@
 {
   "data": [
-    { "name": "editor" },
-    { "name": "super-editor" }
+    { "name": "Client Role" },
+    { "name": "Editor Role" }
   ]
 }
