@@ -32,6 +32,6 @@
     "name" : "description",
     "label" : "Description",
     "required" : false,
-    "type" : "string"
+    "type" : "html"
   } ]
 }

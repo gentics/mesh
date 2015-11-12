@@ -31,10 +31,78 @@
 			<artifactId>${mesh.database.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>net.lingala.zip4j</groupId>
+			<artifactId>zip4j</artifactId>
+			<version>1.3.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>target/extras</directory>
+				<includes>
+					<include>**/*.zip</include>
+				</includes>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>target/extras</directory>
+				<includes>
+					<include>**/*.zip</include>
+				</includes>
+			</testResource>
+		</testResources>
+
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<id>github-demo-clone</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<executable>git</executable>
+							<arguments>
+								<argument>clone</argument>
+								<argument>-b</argument>
+								<argument>master</argument>
+								<argument>git@github.com:gentics/mesh-angular-demo.git</argument>
+								<argument>target/mesh-angular-demo</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>dist-demo-package</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>false</attach>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/demo-zip.xml</descriptor>
+							</descriptors>
+							<outputDirectory>${project.basedir}/target/extras</outputDirectory>
+							<finalName>mesh-demo</finalName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
@@ -100,6 +168,9 @@
 							<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
 						</manifest>
 					</archive>
+					<includes>
+						<include>**/*.zip</include>
+					</includes>
 				</configuration>
 			</plugin>
 			<plugin>

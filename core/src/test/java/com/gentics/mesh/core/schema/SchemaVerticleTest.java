@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -66,9 +67,12 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
+
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<SchemaResponse> future = getClient().createSchema(request);
 		latchFor(future);
 		assertSuccess(future);
+		assertThat(searchProvider).recordedStoreEvents(1);
 		SchemaResponse restSchemaResponse = future.result();
 		test.assertSchema(request, restSchemaResponse);
 
@@ -89,12 +93,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateReadDelete() throws HttpStatusCodeErrorException, Exception {
 
+		assertThat(searchProvider).recordedStoreEvents(0);
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
 		Future<SchemaResponse> createFuture = getClient().createSchema(request);
 		latchFor(createFuture);
 		assertSuccess(createFuture);
+		assertThat(searchProvider).recordedStoreEvents(1);
 		SchemaResponse restSchema = createFuture.result();
 		test.assertSchema(request, restSchema);
 
@@ -110,6 +116,9 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
 		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getUuid() + "/" + restSchema.getName());
+		//TODO actually also the used nodes should have been deleted
+		assertThat(searchProvider).recordedDeleteEvents(1);
+		assertThat(searchProvider).recordedStoreEvents(1);
 
 	}
 

@@ -1,7 +1,7 @@
 package com.gentics.mesh.demo;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.demo.verticle.CustomerVerticle;
+import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DeploymentUtil;
@@ -31,7 +31,7 @@ public class DemoRunner {
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", 8080);
-			DeploymentUtil.deployAndWait(vertx, config, CustomerVerticle.class);
+			DeploymentUtil.deployAndWait(vertx, config, DemoVerticle.class);
 			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class);
 		});
 		mesh.run();
