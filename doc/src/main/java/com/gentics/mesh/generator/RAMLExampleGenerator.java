@@ -21,6 +21,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -152,6 +153,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		searchStatusJson();
 
 		genericResponseJson();
+		loginRequest();
 	}
 
 	private void searchStatusJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -351,6 +353,13 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getSchemaCreateRequest());
 		write(getSchemaUpdateRequest());
 		write(getSchemaListResponse());
+	}
+
+	private void loginRequest() throws JsonGenerationException, JsonMappingException, IOException {
+		LoginRequest request = new LoginRequest();
+		request.setUsername("admin");
+		request.setPassword("finger");
+		write(request);
 	}
 
 	private SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {

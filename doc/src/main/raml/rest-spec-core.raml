@@ -116,9 +116,11 @@ traits:
         get:
           description: |
             Return the user permissions to the given element.
-          body:
-            application/json:
-              example: !include json/UserPermissionResponse.example.json
+          responses:
+            200:
+              body:
+                application/json:
+                example: !include json/UserPermissionResponse.example.json
   
 
 #------------------------------------------------------------------------------
@@ -190,12 +192,14 @@ traits:
     get:
       description: |
         Return the role permission to the given element.
-      body:
-        application/json:
-          example: !include json/RolePermissionResponse.example.json
+      responses:
+        200:
+          body:
+            application/json:
+            example: !include json/RolePermissionResponse.example.json
     put:
       description: |
-        Update the role permission to the given element and update the permission to the given element. This is useful when it is required to grant certain permissions on a given path segement / object.
+        Update the role permission to the given element and update the permission to the given element. This is useful when it is required to grant certain permissions on a given path segment / object.
       body:
         application/json:
           example: !include json/RolePermissionRequest.example.json
@@ -510,7 +514,11 @@ traits:
       get:
         is: [ localized, sortable, paged, expandable ]
         description: Load child nodes for the given node.
-    /moveTo/{uuid}:
+    /moveTo/{targetNodeUuid}:
+      uriParameters:
+        targetNodeUuid:
+          description: Uuid of a the target node. This node will become the new parent of the source node.
+          type: string
       put:
         description: Move the node to the given node.
     /breadcrumb:
@@ -585,8 +593,11 @@ traits:
     /tags:
       get: 
         description: Load all tags which were assigned to this tag family.
-
-
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/TagListResponse.example.json
 
 
 #------------------------------------------------------------------------------
@@ -751,14 +762,6 @@ traits:
                         example: !include json/SearchStatusResponse.example.json
 
 #------------------------------------------------------------------------------
-# Move Verticle
-#------------------------------------------------------------------------------
-/move/{uuid}/to/{uuid}:
-  displayName: Move
-  put:
-    description: Move entities.
-
-#------------------------------------------------------------------------------
 # Authentication Verticle
 #------------------------------------------------------------------------------
 /auth:
@@ -775,8 +778,16 @@ traits:
   /login:
     post:
       description: Login the user using the provided credentials.
+       body:
+         application/json:
+             example: !include json/LoginRequest.example.json
   /logout:
     get:
       description: Logout the user.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
 
 

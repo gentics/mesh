@@ -10,6 +10,9 @@ public class LoginRequest implements RestModel {
 	private String username;
 	private String password;
 
+	public LoginRequest() {
+	}
+	
 	/**
 	 * Return the password.
 	 * 

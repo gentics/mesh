@@ -25,9 +25,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private List<String> availableLanguages;
 
-	private String path;
+//	private String path;
 
-	private String version;
+//	private String version;
 
 	private NodeReferenceImpl parentNode;
 
@@ -150,43 +150,43 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.published = published;
 	}
 
-	/**
-	 * Return the path of the node.
-	 * 
-	 * @return Localized path of the node for the node's language
-	 */
-	public String getPath() {
-		return path;
-	}
-
-	/**
-	 * Set the path of the node.
-	 * 
-	 * @param path
-	 *            Localized path of the node for the node's language
-	 */
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	/**
-	 * Return the version of the node.
-	 * 
-	 * @return Version of the node
-	 */
-	public String getVersion() {
-		return version;
-	}
-
-	/**
-	 * Set the version of the node.
-	 * 
-	 * @param version
-	 *            Version of the node
-	 */
-	public void setVersion(String version) {
-		this.version = version;
-	}
+//	/**
+//	 * Return the path of the node.
+//	 * 
+//	 * @return Localized path of the node for the node's language
+//	 */
+//	public String getPath() {
+//		return path;
+//	}
+//
+//	/**
+//	 * Set the path of the node.
+//	 * 
+//	 * @param path
+//	 *            Localized path of the node for the node's language
+//	 */
+//	public void setPath(String path) {
+//		this.path = path;
+//	}
+//
+//	/**
+//	 * Return the version of the node.
+//	 * 
+//	 * @return Version of the node
+//	 */
+//	public String getVersion() {
+//		return version;
+//	}
+//
+//	/**
+//	 * Set the version of the node.
+//	 * 
+//	 * @param version
+//	 *            Version of the node
+//	 */
+//	public void setVersion(String version) {
+//		this.version = version;
+//	}
 
 	/**
 	 * Return the display field name for the node.
