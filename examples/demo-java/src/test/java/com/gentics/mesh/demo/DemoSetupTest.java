@@ -1,5 +1,6 @@
 package com.gentics.mesh.demo;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
@@ -11,8 +12,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
-import com.gentics.mesh.demo.DemoDataProvider;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -55,5 +60,14 @@ public class DemoSetupTest {
 	@Test
 	public void testSetup() throws Exception {
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
+		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
+		assertNotNull(user);
+		Group group = user.getGroups().get(0);
+		assertNotNull(group);
+		Role role = group.getRoles().get(0);
+
+		assertTrue(role.hasPermission(GraphPermission.READ_PERM, user));
+		assertTrue(user.hasPermission(user, GraphPermission.READ_PERM));
+		assertTrue(user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
 	}
 }

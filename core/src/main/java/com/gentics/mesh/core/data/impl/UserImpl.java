@@ -312,8 +312,6 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 		}
 
 		return false;
-
-		//		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
 	@Override
