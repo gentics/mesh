@@ -1,4 +1,4 @@
 /jmeter
-tmp
-demo
-binaryFiles
+/tmp
+/demo
+/binaryFiles
