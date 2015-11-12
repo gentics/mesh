@@ -246,6 +246,27 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateNodeWithMissingSchemaPermission() {
+		Node node = folder("news");
+		String uuid = node.getUuid();
+		role().revokePermissions(schemaContainer("content"), READ_PERM);
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
+		request.setSchema(schemaReference);
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.setParentNodeUuid(uuid);
+
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid() + "/" + schemaContainer("content").getName());
+	}
+
+	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 		// Revoke create perm
 		Node node = folder("news");

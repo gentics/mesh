@@ -55,7 +55,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
+public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
@@ -85,7 +85,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 	}
 
 	@Override
-	public Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
+			throws InvalidArgumentException {
 		VertexTraversal<?, ?, ?> traversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
 		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
@@ -203,6 +204,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
 				if (containerByName != null) {
+					String schemaName = containerByName.getName();
+					String schemaUuid = containerByName.getUuid();
 					requestUser.hasPermission(ac, containerByName, GraphPermission.READ_PERM, ph -> {
 						if (ph.succeeded() && ph.result()) {
 							containerFoundHandler.handle(Future.succeededFuture(containerByName));
@@ -212,8 +215,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node>implements NodeRoot {
 							handler.handle(failedFuture(ac, BAD_REQUEST, "error_internal"));
 							return;
 						} else {
-							handler.handle(Future.failedFuture(new InvalidPermissionException(
-									ac.i18n("error_missing_perm", containerByName.getUuid() + "/" + schemaInfo.getSchema().getName()))));
+							handler.handle(Future
+									.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", schemaUuid + "/" + schemaName))));
 							return;
 						}
 					});
