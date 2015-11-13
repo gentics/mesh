@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,6 +34,7 @@ public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	@Ignore("Currently is no need to render the config file anymore")
 	public void testAdminConfigRendering() throws InterruptedException, ExecutionException, TimeoutException {
 
 		HttpClient client = createHttpClient();

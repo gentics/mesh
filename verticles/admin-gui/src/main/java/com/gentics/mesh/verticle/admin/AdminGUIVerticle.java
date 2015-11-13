@@ -54,6 +54,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 		route("/*").method(GET).handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion).setIndexPage("index.html"));
 	}
 
+	/*
 	private void addMeshConfigHandler() {
 		TemplateHandler javaScriptTemplateHandler = TemplateHandler.create(HandlebarsTemplateEngine.create(), "meshui-templates/config",
 				"application/javascript");
@@ -66,10 +67,10 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 
 		route(configFilePath).method(GET).handler(javaScriptTemplateHandler);
 	}
-
+	 */
 	@Override
 	public void registerEndPoints() throws Exception {
-		addMeshConfigHandler();
+		//addMeshConfigHandler();
 		addMeshUiStaticHandler();
 		addRedirectionHandler();
 	}
