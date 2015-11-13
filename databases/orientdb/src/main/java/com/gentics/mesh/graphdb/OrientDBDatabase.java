@@ -141,6 +141,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	private void configureGraphDB() {
+		log.info("Configuring orientdb...");
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			tx.setUseLightweightEdges(false);
