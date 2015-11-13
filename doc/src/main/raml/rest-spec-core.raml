@@ -120,7 +120,7 @@ traits:
             200:
               body:
                 application/json:
-                example: !include json/UserPermissionResponse.example.json
+                  example: !include json/UserPermissionResponse.example.json
   
 
 #------------------------------------------------------------------------------
@@ -196,7 +196,7 @@ traits:
         200:
           body:
             application/json:
-            example: !include json/RolePermissionResponse.example.json
+              example: !include json/RolePermissionResponse.example.json
     put:
       description: |
         Update the role permission to the given element and update the permission to the given element. This is useful when it is required to grant certain permissions on a given path segment / object.
