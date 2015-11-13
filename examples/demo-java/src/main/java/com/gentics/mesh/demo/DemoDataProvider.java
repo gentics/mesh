@@ -116,7 +116,6 @@ public class DemoDataProvider {
 		updatePermissions();
 		invokeFullIndex();
 		long duration = System.currentTimeMillis() - start;
-		log.info("Setup took: {" + duration + "}");
 	}
 
 	private void invokeFullIndex() throws InterruptedException {
