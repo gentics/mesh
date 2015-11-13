@@ -194,9 +194,6 @@
 							<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
 						</manifest>
 					</archive>
-					<includes>
-						<include>**/*.zip</include>
-					</includes>
 				</configuration>
 			</plugin>
 			<plugin>
