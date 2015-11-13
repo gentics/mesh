@@ -269,7 +269,7 @@ public class VerticleHelper {
 	 */
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(
 			InternalActionContext ac, Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
-		Set<ObservableFuture<TR>> futures = new HashSet<>();
+		List<ObservableFuture<TR>> futures = new ArrayList<>();
 
 		for (T node : page) {
 			ObservableFuture<TR> obs = RxHelper.observableFuture();
