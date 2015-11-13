@@ -178,7 +178,8 @@ public final class MockingUtils {
 		Schema schema = new SchemaImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
-
+		schema.setDisplayField("string");
+		schema.setBinary(false);
 		// basic types
 		schema.addField(new StringFieldSchemaImpl().setName("string").setRequired(true));
 		schema.addField(new NumberFieldSchemaImpl().setName("number").setRequired(true));
@@ -217,6 +218,7 @@ public final class MockingUtils {
 		when(node.getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
+		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 
 		return node;

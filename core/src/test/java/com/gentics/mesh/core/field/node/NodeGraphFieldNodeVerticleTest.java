@@ -16,11 +16,13 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 
@@ -90,6 +92,28 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		field = loadedNodeFuture.result().getField("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
 
+	}
+
+	@Test
+	public void createDeleteNodeField() {
+		final String fieldName = "nodeField";
+
+		NodeResponse response = createNode(fieldName, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse field = response.getField(fieldName);
+		assertEquals(folder("news").getUuid(), field.getUuid());
+
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.getFields().put(fieldName, null);
+
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest,
+				new NodeRequestParameter().setLanguages("en"));
+		latchFor(future);
+		assertSuccess(future);
+		response = future.result();
+
+		assertNull("The field should have been deleted", response.getField(fieldName));
 	}
 
 	@Test

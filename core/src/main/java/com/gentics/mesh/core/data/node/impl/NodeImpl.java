@@ -622,15 +622,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	public String getDisplayName(InternalActionContext ac) {
 		String displayFieldName = null;
 		try {
-			GraphFieldContainer container = findNextMatchingFieldContainer(ac);
+			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
 				}
 			} else {
 				// Determine the display field name and load the string value from that field.
-				displayFieldName = getSchema().getDisplayField();
-				return container.getString(displayFieldName).getString();
+				return container.getDisplayFieldValue(getSchema());
 			}
 		} catch (Exception e) {
 			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);

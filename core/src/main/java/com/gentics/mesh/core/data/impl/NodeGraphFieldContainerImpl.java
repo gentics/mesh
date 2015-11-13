@@ -88,6 +88,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
+	public String getDisplayFieldValue(Schema schema) {
+		String displayFieldName = schema.getDisplayField();
+		StringGraphField field = getString(displayFieldName);
+		if (field != null) {
+			return field.getString();
+		}
+		return null;
+	}
+
+	@Override
 	public void updateFieldsFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
