@@ -116,15 +116,14 @@
 						<image>
 							<name>registry.gentics.com/mesh-demo:${project.version}</name>
 							<alias>mesh-demo</alias>
+
 							<build>
-								<from>java:8u66</from>
 								<assembly>
-									<descriptor>assembly.xml</descriptor>
+									<mode>dir</mode>
+									<basedir>/opt/mesh</basedir>
+									<dockerFileDir>mesh-demo</dockerFileDir>
+									<descriptor>docker-assembly.xml</descriptor>
 								</assembly>
-								<ports>
-									<port>8080</port>
-								</ports>
-								<command>java -jar /maven/meshdemo.jar</command>
 							</build>
 							<run>
 								<ports>
@@ -150,7 +149,7 @@
 						<goals>
 							<goal>build</goal>
 							<goal>push</goal>
-							<!--  <goal>remove</goal>  -->
+							<!-- <goal>remove</goal> -->
 						</goals>
 					</execution>
 					<!-- <execution> <id>start</id> <phase>pre-integration-test</phase> <goals> <goal>build</goal> <goal>start</goal> </goals> </execution> <execution> <id>stop</id> <phase>post-integration-test</phase> 
