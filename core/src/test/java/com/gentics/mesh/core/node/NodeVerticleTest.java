@@ -218,10 +218,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folder("news").getUuid());
 
-
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("de");
-		
+
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request, parameters);
 		latchFor(future);
@@ -319,6 +318,30 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(getNodeCount(), restResponse.getData().size());
+	}
+
+	@Test
+	public void testReadMultipleAndAssertOrder() {
+		Node parentNode = folder("2015");
+		int nNodes = 20;
+		for (int i = 0; i < nNodes; i++) {
+			Node node = parentNode.create(user(), schemaContainer("content"), project());
+			assertNotNull(node);
+			role().grantPermissions(node, READ_PERM);
+		}
+
+		String firstUuid = null;
+		for (int i = 0; i < 10; i++) {
+			Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 100));
+			latchFor(future);
+			assertSuccess(future);
+			if (firstUuid == null) {
+				firstUuid = future.result().getData().get(0).getUuid();
+			}
+			assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid,
+					future.result().getData().get(0).getUuid());
+		}
+
 	}
 
 	@Test

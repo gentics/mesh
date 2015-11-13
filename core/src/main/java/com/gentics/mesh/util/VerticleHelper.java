@@ -11,9 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -204,21 +202,13 @@ public class VerticleHelper {
 		MeshAuthUser requestUser = ac.getUser();
 		try {
 			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
-			List<ObservableFuture<TR>> futures = new ArrayList<>();
+			List<ObservableFuture<TR>> transformedElements = new ArrayList<>();
 			for (T node : page) {
 				ObservableFuture<TR> obs = RxHelper.observableFuture();
-				futures.add(obs);
+				transformedElements.add(obs);
 				node.transformToRest(ac, obs.toHandler());
-				// rh -> {
-				// if (rh.succeeded()) {
-				// listResponse.getData().add(rh.result());
-				// } else {
-				// handler.handle(Future.failedFuture(rh.cause()));
-				// }
-				// // TODO handle async issue
-				// });
 			}
-			Observable.merge(futures).collect(() -> {
+			RxUtil.concatList(transformedElements).collect(() -> {
 				return listResponse;
 			} , (list, restElement) -> {
 				list.getData().add(restElement);
