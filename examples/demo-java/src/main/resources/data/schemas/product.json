@@ -33,5 +33,13 @@
     "label" : "Description",
     "required" : false,
     "type" : "html"
-  } ]
+  }, {
+      "name": "productImage",
+      "label": "Product Image",
+      "type": "node",
+      "allow": [
+        "productImage"
+      ]
+    }
+   ]
 }

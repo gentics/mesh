@@ -277,6 +277,10 @@ public class DemoDataProvider {
 			if (fieldsObject != null) {
 				for (String fieldName : fieldsObject.fieldNames()) {
 					Object obj = fieldsObject.getValue(fieldName);
+					if("productImage".equals(fieldName)) {
+						englishContainer.createNode(fieldName, getNode((String)obj));
+						continue;
+					}
 					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
 						englishContainer.createNumber(fieldName).setNumber(String.valueOf(obj));
 					} else if (obj instanceof String) {
@@ -308,7 +312,7 @@ public class DemoDataProvider {
 			TagFamily tagFamily = getTagFamily(tagFamilyName);
 			// TODO determine project of tag family automatically or use json field to assign it
 			Tag tag = tagFamily.create(name, getProject("demo"), getAdmin());
-			tags.put(name.toLowerCase(), tag);
+			tags.put(name, tag);
 		}
 	}
 

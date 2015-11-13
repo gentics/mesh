@@ -1,11 +1,32 @@
 {
  "data": [
-    { "name": "Automobiles", "project": "demo", "parent": "demo.basenode",   "tags": [], "schema": "category" },
-    { "name": "Aircraft",    "project": "demo", "parent": "demo.basenode",   "tags": [], "schema": "category" },
-    { "name": "Yachts",      "project": "demo", "parent": "demo.basenode",   "tags": [], "schema": "category" },
+    { "name": "Product Images"        , "project": "demo", "parent": "demo.basenode" ,   "tags": [], "schema": "folder" },
+    { "name": "Eclipse 500 Image"     , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/eclipse_500.jpg"                  , "filename": "eclipse_500.jpg"                  , "contentType": "image/jpeg", "width": 1024, "height": 683, "sha512sum": "abc" } },
+    { "name": "Indian Empress Image"  , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/Yacht_Indian_Empress.jpg"         , "filename": "Yacht_Indian_Empress.jpg"         , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Pelorus Image"         , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/Yacht_Pelorus_in_Croatia_-_02.jpg", "filename": "Yacht_Pelorus_in_Croatia_-_02.jpg", "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Fort GT Image"         , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/ford-gt.jpg"                      , "filename": "ford-gt.jpg"                      , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Gulfstream G550  Image", "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/gulfstream-g550.jpg"              , "filename": "gulfstream-g550.jpg"              , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Koenigsegg CCX Image"  , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/koenigsegg-ccx.jpg"               , "filename": "koenigsegg-ccx.jpg"               , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Tokai Challenger Image", "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/solar-tokai-challenger.jpg"       , "filename": "solar-tokai-challenger.jpg"       , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Tesla Roadster Image"  , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/tesla-roadster.jpg"               , "filename": "tesla-roadster.jpg"               , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Trabant Image"         , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/trabant.jpg"                      , "filename": "trabant.jpg"                      , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
+    { "name": "Space Shuttle Image"   , "project": "demo", "parent": "Product Images",   "tags": [], "schema": "productImage", "bin": { "path": "images/sts.jpg"                          , "filename": "sts.jpg"                          , "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" } },
 
-    { "name": "Ford GT" , "project": "demo", "parent": "Automobiles", "bin": { "path": "images/ford-gt.jpg", "filename": "ford-gt.jpg", "contentType": "image/jpeg", "width": 12, "height": 12, "sha512sum": "abc" }, "fields": { "SKU": 200, "weight": 20, "price": 100.12 , "stocklevel": 20, "description": "A fancy bicycle" }, "tags": ["red", "blue", "yellow"], "schema": "product" },
-    { "name": "Car1",     "project": "demo", "parent": "Automobiles",     "fields": { "SKU": 200, "weight": 20, "price": 100.12 , "stocklevel": 20, "description": "Super Car1" }, "tags": ["red", "blue", "yellow"], "schema": "product" },
-    { "name": "Car2",     "project": "demo", "parent": "Automobiles",     "fields": { "SKU": 200, "weight": 20, "price": 100.12 , "stocklevel": 20, "description": "Super Car2" }, "tags": ["red", "blue", "yellow"], "schema": "product" }
+    { "name": "Automobiles"      , "project": "demo", "parent": "demo.basenode", "tags": [], "schema": "category" },
+    { "name": "Ford GT"          , "project": "demo", "parent": "Automobiles"  , "fields": { "productImage": "Fort GT Image"         , "SKU": 1, "weight": 1520, "price": 139995.00 , "stocklevel": 20    , "description": "A classic" }, "tags": ["Gasoline", "Red"], "schema": "product" },
+    { "name": "Tesla Roadster"   , "project": "demo", "parent": "Automobiles"  , "fields": { "productImage": "Tesla Roadster Image"  , "SKU": 2, "weight": 1305, "price": 101500.00 , "stocklevel": 20    , "description": "-" }, "tags": ["Orange", "Electricity"], "schema": "product" },
+    { "name": "Koenigsegg CXX"   , "project": "demo", "parent": "Automobiles"  , "fields": { "productImage": "Koenigsegg CCX Image"  , "SKU": 3, "weight": 1456, "price": 135000.00 , "stocklevel": 4     , "description": "-" }, "tags": ["Gasoline", "Silver"], "schema": "product" },
+    { "name": "Trabant"          , "project": "demo", "parent": "Automobiles"  , "fields": { "productImage": "Trabant Image"         , "SKU": 4, "weight":  600, "price":   3000.00 , "stocklevel": 40215 , "description": "-" }, "tags": ["White", "Gasoline"], "schema": "product" },
+    { "name": "Tokai Challenger" , "project": "demo", "parent": "Automobiles"  , "fields": { "productImage": "Tokai Challenger Image", "SKU": 5, "weight":  160, "price": 185000.12 , "stocklevel": 1     , "description": "-" }, "tags": ["Blue", "Solar", "Electricity"], "schema": "product" },
+
+    { "name": "Aircraft"        , "project": "demo", "parent": "demo.basenode",   "tags": [], "schema": "category" },
+    { "name": "Eclipse 500"     , "project": "demo", "parent": "Aircraft", "fields": { "productImage": "Eclipse 500 Image"      ,"SKU": 6, "weight":  1610 , "price":      2200000.00 , "stocklevel": 6, "description": "-" }, "tags": ["Kerosene", "White"], "schema": "product" },
+    { "name": "Gulfstream G550" , "project": "demo", "parent": "Aircraft", "fields": { "productImage": "Gulfstream G550  Image" ,"SKU": 7, "weight":    20 , "price":     42000000.00 , "stocklevel": 5, "description": "-" }, "tags": ["Kerosene", "White"], "schema": "product" },
+    { "name": "Space Shuttle"   , "project": "demo", "parent": "Aircraft", "fields": { "productImage": "Space Shuttle Image"    ,"SKU": 8, "weight": 22700 , "price": 192000000000.12 , "stocklevel": 0, "description": "-" }, "tags": ["Black", "White", "Hydrogen"], "schema": "product" },
+
+    { "name": "Yachts"        , "project": "demo", "parent": "demo.basenode", "tags": [], "schema": "category" },
+    { "name": "Indian Empress", "project": "demo", "parent": "Yachts", "fields": { "productImage": "Indian Empress Image", "SKU":  9, "weight": 2271000.12, "price": 0 , "stocklevel": 1, "description": "-" }, "tags": ["Diesel", "White"], "schema": "product" },
+    { "name": "Pelorus"       , "project": "demo", "parent": "Yachts", "fields": { "productImage": "Pelorus Image"       , "SKU": 10, "weight": 5317000.22, "price": 0 , "stocklevel": 2, "description": "-" }, "tags": ["White", "Diesel"], "schema": "product" }
+    
  ]
 }

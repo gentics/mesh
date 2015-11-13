@@ -1,6 +1,6 @@
 {
   "data": [
-    { "name": "colors", "project": "demo" },
-    { "name": "vehicles", "project": "demo" }
+    { "name": "Colors", "project": "demo" },
+    { "name": "Fuels" , "project": "demo" }
   ]
 }
