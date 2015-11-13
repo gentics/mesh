@@ -90,7 +90,7 @@
 				<executions>
 					<execution>
 						<id>dist-demo-package</id>
-						<phase>process-resources</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
