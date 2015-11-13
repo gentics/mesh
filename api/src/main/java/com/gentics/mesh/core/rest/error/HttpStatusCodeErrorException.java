@@ -18,8 +18,6 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	/**
 	 * Create a i18n translated error exception.
 	 * 
-	 * @param ac
-	 *            Context
 	 * @param status
 	 *            Http status
 	 * @param i18nMessageKey
@@ -35,8 +33,6 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	/**
 	 * Create a i18n translated error exception.
 	 * 
-	 * @param ac
-	 *            Context
 	 * @param status
 	 *            Http status
 	 * @param i18nMessageKey
