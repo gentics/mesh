@@ -376,7 +376,7 @@ public class BootstrapInitializer {
 				// Scanner scanIn = new Scanner(System.in);
 				// String pw = scanIn.nextLine();
 				// TODO remove later on
-				String pw = "finger";
+				String pw = "admin";
 				// scanIn.close();
 				adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
 				log.info("Created admin user {" + adminUser.getUuid() + "}");

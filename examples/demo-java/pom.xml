@@ -59,29 +59,6 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>target/extras</directory>
-				<includes>
-					<include>**/*.zip</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>**/*</include>
-				</includes>
-			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<directory>target/extras</directory>
-				<includes>
-					<include>**/*.zip</include>
-				</includes>
-			</testResource>
-		</testResources>
-
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -123,7 +100,7 @@
 							<descriptors>
 								<descriptor>src/main/assembly/demo-zip.xml</descriptor>
 							</descriptors>
-							<outputDirectory>${project.basedir}/target/extras</outputDirectory>
+							<outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
 							<finalName>mesh-demo</finalName>
 						</configuration>
 					</execution>
@@ -173,6 +150,7 @@
 						<goals>
 							<goal>build</goal>
 							<goal>push</goal>
+							<goal>remove</goal>
 						</goals>
 					</execution>
 					<!-- <execution> <id>start</id> <phase>pre-integration-test</phase> <goals> <goal>build</goal> <goal>start</goal> </goals> </execution> <execution> <id>stop</id> <phase>post-integration-test</phase> 
@@ -237,7 +215,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
