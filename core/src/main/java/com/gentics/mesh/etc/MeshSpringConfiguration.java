@@ -170,6 +170,7 @@ public class MeshSpringConfiguration {
 		corsHandler.allowedMethod(HttpMethod.DELETE);
 		corsHandler.allowedHeader("Authorization");
 		corsHandler.allowedHeader("Content-Type");
+		corsHandler.allowedHeader("Set-Cookie");
 		return corsHandler;
 	}
 
