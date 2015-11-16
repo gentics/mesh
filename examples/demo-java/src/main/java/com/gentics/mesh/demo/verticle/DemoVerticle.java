@@ -11,11 +11,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.AbstractCustomVerticle;
+import com.gentics.mesh.core.AbstractWebVerticle;
 import com.gentics.mesh.demo.DemoDataProvider;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
 
 /**
@@ -24,7 +25,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 @Component
 @Scope("singleton")
 @SpringVerticle
-public class DemoVerticle extends AbstractCustomVerticle {
+public class DemoVerticle extends AbstractWebVerticle {
 
 	private static Logger log = LoggerFactory.getLogger(DemoVerticle.class);
 
@@ -32,7 +33,19 @@ public class DemoVerticle extends AbstractCustomVerticle {
 	private DemoDataProvider demoDataProvider;
 
 	public DemoVerticle() {
-		super("demo-verticle");
+		super("demo");
+	}
+
+	private void addRedirectionHandler() {
+		route().method(GET).handler(rc -> {
+			if ("/demo".equals(rc.request().path())) {
+				rc.response().setStatusCode(302);
+				rc.response().headers().set("Location", "/" + basePath + "/");
+				rc.response().end();
+			} else {
+				rc.next();
+			}
+		});
 	}
 
 	@Override
@@ -48,16 +61,14 @@ public class DemoVerticle extends AbstractCustomVerticle {
 		if (!outputDir.exists()) {
 			unzip("/mesh-demo.zip", outputDir.getAbsolutePath());
 		}
+
+		addRedirectionHandler();
 		StaticHandler staticHandler = StaticHandler.create("demo");
 		staticHandler.setDirectoryListing(false);
 		staticHandler.setCachingEnabled(false);
 		staticHandler.setIndexPage("index.html");
-		routerStorage.getRootRouter().route("/demo").handler(rc -> {
-			rc.response().setStatusCode(302);
-			rc.response().headers().set("Location", "/demo/index.html");
-			rc.response().end();
-		});
-		routerStorage.getRootRouter().route("/demo/*").method(GET).handler(staticHandler);
+
+		route("/*").method(GET).handler(staticHandler);
 
 		log.warn("--------------------------------");
 		log.warn("- Demo setup complete          -");
@@ -65,6 +76,13 @@ public class DemoVerticle extends AbstractCustomVerticle {
 		log.warn("- http://localhost:8080/demo   -");
 		log.warn("- Login: editor/editor         -");
 		log.warn("--------------------------------");
+	}
+
+	@Override
+	public Router setupLocalRouter() {
+		Router router = Router.router(vertx);
+		routerStorage.getRootRouter().mountSubRouter("/" + basePath, router);
+		return router;
 	}
 
 }

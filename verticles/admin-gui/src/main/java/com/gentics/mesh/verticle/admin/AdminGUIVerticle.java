@@ -41,6 +41,11 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	private void addRedirectionHandler() {
+		routerStorage.getRootRouter().route("/").method(GET).handler(rc -> {
+			rc.response().setStatusCode(302);
+			rc.response().headers().set("Location", "/" + basePath + "/");
+			rc.response().end();
+		});
 		route().method(GET).handler(rc -> {
 			if ("/mesh-ui".equals(rc.request().path())) {
 				rc.response().setStatusCode(302);
