@@ -12,7 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<mesh.admin-ui.version>0.1.0-nav-v2-SNAPSHOT</mesh.admin-ui.version>
+		<mesh.admin-ui.version>1.0.0-beta-rc1</mesh.admin-ui.version>
 
 		<gh-pages.url>http://gentics.github.io/mesh/</gh-pages.url>
 		<gh-url>https://github.com/gentics/mesh/tree/master</gh-url>

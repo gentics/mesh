@@ -17,7 +17,7 @@
     "name" : "SKU",
     "label" : "Stock Keeping Unit",
     "required" : false,
-    "type" : "string"
+    "type" : "number"
   }, {
     "name" : "price",
     "label" : "Price",

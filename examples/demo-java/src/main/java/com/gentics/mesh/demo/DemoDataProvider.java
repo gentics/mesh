@@ -143,7 +143,6 @@ public class DemoDataProvider {
 
 			log.info("Creating user {" + username + "}");
 			User user = root.getUserRoot().create(username, null);
-			// user.setUuid("UUIDOFUSER1");
 			user.setPassword(password);
 			user.setFirstname(firstname);
 			user.setLastname(lastname);
@@ -276,8 +275,12 @@ public class DemoDataProvider {
 			if (fieldsObject != null) {
 				for (String fieldName : fieldsObject.fieldNames()) {
 					Object obj = fieldsObject.getValue(fieldName);
-					if("productImage".equals(fieldName)) {
-						englishContainer.createNode(fieldName, getNode((String)obj));
+					if ("vehicleImage".equals(fieldName)) {
+						englishContainer.createNode(fieldName, getNode((String) obj));
+						continue;
+					}
+					if ("description".equals(fieldName)) {
+						englishContainer.createHTML(fieldName).setHtml(String.valueOf(obj));
 						continue;
 					}
 					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
