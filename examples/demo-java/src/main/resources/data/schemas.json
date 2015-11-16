@@ -1,7 +1,7 @@
 {
   "data": [
-    { "name": "product",       "projects": ["demo"] },
-    { "name": "productImage",  "projects": ["demo"] },
+    { "name": "vehicle",       "projects": ["demo"] },
+    { "name": "vehicleImage",  "projects": ["demo"] },
     { "name": "category",      "projects": ["demo"] },
     { "name": "folder",        "projects": ["demo"] },
     { "name": "content",       "projects": ["demo"] }

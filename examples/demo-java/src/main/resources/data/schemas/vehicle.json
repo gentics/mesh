@@ -1,5 +1,5 @@
 {
-  "name" : "product",
+  "name" : "vehicle",
   "binary" : false,
   "folder" : false,
   "displayField": "name",
@@ -34,11 +34,11 @@
     "required" : false,
     "type" : "html"
   }, {
-      "name": "productImage",
-      "label": "Product Image",
+      "name": "vehicleImage",
+      "label": "Vehicle Image",
       "type": "node",
       "allow": [
-        "productImage"
+        "vehicleImage"
       ]
     }
    ]

@@ -1,5 +1,5 @@
 {
-  "name" : "productImage",
+  "name" : "vehicleImage",
   "binary" : true,
   "folder" : false,
   "displayField": "name",
