@@ -381,7 +381,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 
 			Node node = getReferencedNode();
 			if (node != null) {
-				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
+				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
 				ObservableFuture<Void> obsNodeReference = RxHelper.observableFuture();
 				futures.add(obsNodeReference);
 				if (expandReference) {

@@ -354,7 +354,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();
 				for (FieldSchema fieldEntry : schema.getFields()) {
-					boolean expandField = fieldsToExpand.contains(fieldEntry.getName());
+					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 					ObservableFuture<Void> obsRestField = RxHelper.observableFuture();
 					futures.add(obsRestField);
 					fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField, rh -> {

@@ -89,4 +89,11 @@ public interface InternalActionContext extends ActionContext {
 	 */
 	Database getDatabase();
 
+	/**
+	 * Return the <code>expandAll</code> query parameter flag value.
+	 * 
+	 * @return
+	 */
+	boolean getExpandAllFlag();
+
 }

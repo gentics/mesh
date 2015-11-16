@@ -8,16 +8,42 @@ public class NodeRequestParameter implements QueryParameterProvider {
 
 	public static final String EXPANDFIELDS_QUERY_PARAM_KEY = "expand";
 	
+	public static final String EXPANDALL_QUERY_PARAM_KEY = "expandAll";
+
 	private String[] languages;
 	private String[] expandedFieldNames;
+	private Boolean expandAll;
 
+	/**
+	 * Set the <code>lang</code> request parameter values.
+	 * 
+	 * @param languages
+	 * @return
+	 */
 	public NodeRequestParameter setLanguages(String... languages) {
 		this.languages = languages;
 		return this;
 	}
 
+	/**
+	 * Set a list of field names which should be expanded.
+	 * 
+	 * @param fieldNames
+	 * @return
+	 */
 	public NodeRequestParameter setExpandedFieldNames(String... fieldNames) {
-		this.expandedFieldNames = fieldNames;
+		expandedFieldNames = fieldNames;
+		return this;
+	}
+
+	/**
+	 * Set the expandAll request parameter flag.
+	 * 
+	 * @param flag
+	 * @return
+	 */
+	public QueryParameterProvider setExpandAll(boolean flag) {
+		expandAll = flag;
 		return this;
 	}
 
@@ -25,7 +51,7 @@ public class NodeRequestParameter implements QueryParameterProvider {
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
 		if (languages != null && languages.length > 0) {
-			query.append(LANGUAGES_QUERY_PARAM_KEY+"=");
+			query.append(LANGUAGES_QUERY_PARAM_KEY + "=");
 			for (int i = 0; i < languages.length; i++) {
 				query.append(languages[i]);
 				if (i != languages.length - 1) {
@@ -33,7 +59,7 @@ public class NodeRequestParameter implements QueryParameterProvider {
 				}
 			}
 		}
-		
+
 		if (expandedFieldNames != null && expandedFieldNames.length > 0) {
 			if (query.length() != 0) {
 				query.append("&");
@@ -46,6 +72,14 @@ public class NodeRequestParameter implements QueryParameterProvider {
 				}
 			}
 		}
+
+		if (expandAll != null && expandAll == true) {
+			if (query.length() != 0) {
+				query.append("&");
+			}
+			query.append("expandAll=true");
+		}
 		return query.toString();
 	}
+
 }

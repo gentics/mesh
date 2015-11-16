@@ -1,6 +1,7 @@
 package com.gentics.mesh.handler.impl;
 
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDALL_QUERY_PARAM_KEY;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -95,6 +96,19 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 
 	@Override
+	public boolean getExpandAllFlag() {
+		Map<String, String> queryPairs = splitQuery();
+		if (queryPairs == null) {
+			return false;
+		}
+		String value = queryPairs.get(EXPANDALL_QUERY_PARAM_KEY);
+		if (value != null) {
+			return Boolean.valueOf(value);
+		}
+		return false;
+	}
+
+	@Override
 	public String getRolePermissionParameter() {
 		Map<String, String> queryPairs = splitQuery();
 		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
@@ -140,4 +154,5 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters) {
 		send(JsonUtil.toJson(new GenericMessageResponse(i18n(i18nMessage, i18nParameters))), status);
 	}
+
 }

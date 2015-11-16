@@ -39,7 +39,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<Field>> handler) {
 		// TODO handle null across all types
 		//if (getNode() != null) {
-		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey);
+		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
 		if (expandField) {
 			// TODO, FIXME don't use countdown latch here
 			CountDownLatch latch = new CountDownLatch(1);

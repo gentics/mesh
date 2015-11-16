@@ -148,6 +148,29 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
+	public void testReadNodeExpandAll() throws IOException {
+		resetClientSchemaStorage();
+		Node newsNode = folder("news");
+		Node node = folder("2015");
+
+		// Create test field
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		container.createNode("nodeField", newsNode);
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeRequestParameter().setExpandAll(true));
+		latchFor(future);
+		assertSuccess(future);
+
+		// Check expanded node field
+		NodeResponse deserializedExpandedNodeField = future.result().getField("nodeField", NodeResponse.class);
+		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
+		assertNotNull(expandedField);
+		assertEquals(newsNode.getUuid(), expandedField.getUuid());
+		assertNotNull(expandedField.getCreator());
+
+	}
+
+	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
 		resetClientSchemaStorage();
 		Node newsNode = folder("news");
