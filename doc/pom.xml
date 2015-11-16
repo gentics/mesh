@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.0.0-beta-SNAPSHOT</version>
+		<version>1.0.0-beta-rc1</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -70,7 +70,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>com.gentics.mesh.generator.RAMLExampleGenerator</argument>
 							</arguments>
 						</configuration>
@@ -85,7 +85,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>com.gentics.mesh.generator.SearchModelGenerator</argument>
 							</arguments>
 						</configuration>
@@ -100,7 +100,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>com.gentics.mesh.generator.MeshJsonGenerator</argument>
 							</arguments>
 						</configuration>
@@ -183,7 +183,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -202,7 +202,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -215,7 +215,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
