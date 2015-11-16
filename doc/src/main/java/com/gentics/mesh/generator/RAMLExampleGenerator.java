@@ -37,6 +37,9 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -124,20 +127,20 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	}
 
-	//	private File baseDir = new File("target", "raml2html");
+	// private File baseDir = new File("target", "raml2html");
 	//
-	//	@Before
-	//	public void setup() throws IOException {
-	//		FileUtils.deleteDirectory(baseDir);
-	//	}
+	// @Before
+	// public void setup() throws IOException {
+	// FileUtils.deleteDirectory(baseDir);
+	// }
 
-	//	@Test
-	//	public void testGenerator() throws IOException {
-	//		System.setProperty("baseDir", baseDir.getAbsolutePath());
-	//		File jsonDir = new File(baseDir, "json");
-	//		assertTrue(jsonDir.exists());
-	//		assertTrue(jsonDir.listFiles().length != 0);
-	//	}
+	// @Test
+	// public void testGenerator() throws IOException {
+	// System.setProperty("baseDir", baseDir.getAbsolutePath());
+	// File jsonDir = new File(baseDir, "json");
+	// assertTrue(jsonDir.exists());
+	// assertTrue(jsonDir.listFiles().length != 0);
+	// }
 
 	private void createJson() throws IOException {
 
@@ -154,6 +157,25 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		genericResponseJson();
 		loginRequest();
+
+		demoExamples();
+	}
+
+	private void demoExamples() throws JsonGenerationException, JsonMappingException, IOException {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(randomUUID());
+		nodeCreateRequest.setSchema(new SchemaReference().setName("vehicle"));
+		nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("DeLorean DMC-12"));
+		nodeCreateRequest.getFields().put("description", new HtmlFieldImpl().setHTML(
+				"The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."));
+		write(nodeCreateRequest, "demo.NodeCreateRequest.json");
+
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("vehicle"));
+		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber("1230"));
+		write(nodeUpdateRequest, "demo.NodeUpdateRequest.json");
 	}
 
 	private void searchStatusJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -681,11 +703,28 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
-		write(object, JsonUtil.getMapper());
+		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
+		write(object, JsonUtil.getMapper(), file);
 	}
 
-	private void write(Object object, ObjectMapper mapper) throws JsonGenerationException, JsonMappingException, IOException {
-		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
+	private void write(Object object, String filename) throws JsonGenerationException, JsonMappingException, IOException {
+		write(object, JsonUtil.getMapper(), new File(outputDir, filename));
+	}
+
+	/**
+	 * Write the example to disk.
+	 * 
+	 * @param object
+	 *            Object to be transformed to json
+	 * @param mapper
+	 *            ObjectMapper to be used
+	 * @param file
+	 *            Outputfile
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	private void write(Object object, ObjectMapper mapper, File file) throws JsonGenerationException, JsonMappingException, IOException {
 		System.out.println("Writing {" + object.getClass().getSimpleName() + "} to {" + file.getAbsolutePath() + "}");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 	}
