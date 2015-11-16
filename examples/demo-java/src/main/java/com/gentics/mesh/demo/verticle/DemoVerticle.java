@@ -59,12 +59,12 @@ public class DemoVerticle extends AbstractCustomVerticle {
 		});
 		routerStorage.getRootRouter().route("/demo/*").method(GET).handler(staticHandler);
 
-		log.info("--------------------------------");
-		log.info("- Demo setup complete          -");
-		log.info("--------------------------------");
-		log.info("- http://localhost:8080/demo   -");
-		log.info("- Login: editor/editor         -");
-		log.info("--------------------------------");
+		log.warn("--------------------------------");
+		log.warn("- Demo setup complete          -");
+		log.warn("--------------------------------");
+		log.warn("- http://localhost:8080/demo   -");
+		log.warn("- Login: editor/editor         -");
+		log.warn("--------------------------------");
 	}
 
 }

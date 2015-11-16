@@ -14,8 +14,6 @@ import com.gentics.mesh.core.AbstractWebVerticle;
 
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.TemplateHandler;
-import io.vertx.ext.web.templ.HandlebarsTemplateEngine;
 
 @Component
 @Scope("singleton")
@@ -43,10 +41,14 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	private void addRedirectionHandler() {
-		routerStorage.getRootRouter().route("/").method(GET).handler(rc -> {
-			rc.response().setStatusCode(302);
-			rc.response().headers().set("Location", "/" + basePath + "/");
-			rc.response().end();
+		route().method(GET).handler(rc -> {
+			if ("/mesh-ui".equals(rc.request().path())) {
+				rc.response().setStatusCode(302);
+				rc.response().headers().set("Location", "/" + basePath + "/");
+				rc.response().end();
+			} else {
+				rc.next();
+			}
 		});
 	}
 
@@ -55,24 +57,17 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	/*
-	private void addMeshConfigHandler() {
-		TemplateHandler javaScriptTemplateHandler = TemplateHandler.create(HandlebarsTemplateEngine.create(), "meshui-templates/config",
-				"application/javascript");
-		final String configFilePath = "/meshConfig.js";
-		int httpPort = config().getInteger("port");
-		route(configFilePath).method(GET).handler(rc -> {
-			rc.put("mesh_http_port", httpPort);
-			rc.next();
-		});
-
-		route(configFilePath).method(GET).handler(javaScriptTemplateHandler);
-	}
+	 * private void addMeshConfigHandler() { TemplateHandler javaScriptTemplateHandler = TemplateHandler.create(HandlebarsTemplateEngine.create(),
+	 * "meshui-templates/config", "application/javascript"); final String configFilePath = "/meshConfig.js"; int httpPort = config().getInteger("port");
+	 * route(configFilePath).method(GET).handler(rc -> { rc.put("mesh_http_port", httpPort); rc.next(); });
+	 * 
+	 * route(configFilePath).method(GET).handler(javaScriptTemplateHandler); }
 	 */
 	@Override
 	public void registerEndPoints() throws Exception {
+		addRedirectionHandler();
 		//addMeshConfigHandler();
 		addMeshUiStaticHandler();
-		addRedirectionHandler();
 	}
 
 	@Override
