@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.group.GroupReference;
 
 /**
  * User response model.
@@ -22,8 +23,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 
 	private boolean enabled;
 
-	//TODO we should use a reference here to include name and uuid
-	private List<String> groups = new ArrayList<>();
+	private List<GroupReference> groups = new ArrayList<>();
 
 	public UserResponse() {
 	}
@@ -105,23 +105,12 @@ public class UserResponse extends AbstractGenericRestResponse {
 	}
 
 	/**
-	 * Returns the groups of the user.
+	 * Returns the group references of the user.
 	 * 
-	 * @return List of group names of the user.
+	 * @return List of group references of the user.
 	 */
-	//TODO switch to group references
-	public List<String> getGroups() {
+	public List<GroupReference> getGroups() {
 		return groups;
-	}
-
-	/**
-	 * Add the given group name to the list of groups.
-	 * 
-	 * @param name
-	 *            Name of the group
-	 */
-	public void addGroup(String name) {
-		this.groups.add(name);
 	}
 
 	/**

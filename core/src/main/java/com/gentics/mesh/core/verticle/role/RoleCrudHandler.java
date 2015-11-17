@@ -29,8 +29,10 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -77,6 +79,48 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 		} , ac.errorHandler());
 	}
 
+	public void handlePermissionRead(InternalActionContext ac) {
+		db.asyncNoTrx(tc -> {
+			String roleUuid = ac.getParameter("param0");
+			String pathToElement = ac.getParameter("param1");
+			if (StringUtils.isEmpty(roleUuid)) {
+				ac.fail(BAD_REQUEST, "error_uuid_must_be_specified");
+			} else if (StringUtils.isEmpty(pathToElement)) {
+				ac.fail(BAD_REQUEST, "role_permission_path_missing");
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Handling permission request for element on path {" + pathToElement + "}");
+				}
+				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
+				loadObjectByUuid(ac, roleUuid, READ_PERM, boot.roleRoot(), rh -> {
+					if (hasSucceeded(ac, rh)) {
+
+						db.noTrx(noTx -> {
+							// 2. Resolve the path to element that is targeted
+							MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
+								if (hasSucceeded(ac, vertex)) {
+									if (vertex.result() == null) {
+										ac.errorHandler().handle(failedFuture(NOT_FOUND, "error_element_for_path_not_found", pathToElement));
+										return;
+									}
+									MeshVertex targetElement = vertex.result();
+									Role role = rh.result();
+									RolePermissionResponse response = new RolePermissionResponse();
+									for (GraphPermission perm : role.getPermissions(targetElement)) {
+										response.getPermissions().add(perm.getSimpleName());
+									}
+									ac.send(JsonUtil.toJson(response));
+								}
+							});
+
+						});
+
+					}
+				});
+			}
+		} , ac.errorHandler());
+	}
+
 	public void handlePermissionUpdate(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			String roleUuid = ac.getParameter("param0");
@@ -99,7 +143,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 							MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
 								if (hasSucceeded(ac, vertex)) {
 									if (vertex.result() == null) {
-										ac.errorHandler().handle(failedFuture(ac, NOT_FOUND, "error_element_for_path_not_found", pathToElement));
+										ac.errorHandler().handle(failedFuture(NOT_FOUND, "error_element_for_path_not_found", pathToElement));
 										return;
 									}
 									MeshVertex targetElement = vertex.result();

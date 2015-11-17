@@ -25,9 +25,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private List<String> availableLanguages;
 
-	private String path;
+//	private String path;
 
-	private String version;
+//	private String version;
 
 	private NodeReferenceImpl parentNode;
 
@@ -35,7 +35,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private ProjectResponse project;
 
-	private List<String> children;
+	private Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 
 	private SchemaReference schema;
 
@@ -45,7 +45,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private String displayField;
 
-	private String segmentField;
+//	private String segmentField;
 
 	private BinaryProperties binaryProperties;
 
@@ -104,22 +104,12 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	/**
-	 * List of child node uuids.
+	 * Return the children node info element.
 	 * 
-	 * @return Uuid list
+	 * @return
 	 */
-	public List<String> getChildren() {
-		return children;
-	}
-
-	/**
-	 * Set list of child node uuids.
-	 * 
-	 * @param children
-	 *            Uuid list
-	 */
-	public void setChildren(List<String> children) {
-		this.children = children;
+	public Map<String, NodeChildrenInfo> getChildrenInfo() {
+		return childrenInfo;
 	}
 
 	/**
@@ -160,43 +150,43 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.published = published;
 	}
 
-	/**
-	 * Return the path of the node.
-	 * 
-	 * @return Localized path of the node for the node's language
-	 */
-	public String getPath() {
-		return path;
-	}
-
-	/**
-	 * Set the path of the node.
-	 * 
-	 * @param path
-	 *            Localized path of the node for the node's language
-	 */
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	/**
-	 * Return the version of the node.
-	 * 
-	 * @return Version of the node
-	 */
-	public String getVersion() {
-		return version;
-	}
-
-	/**
-	 * Set the version of the node.
-	 * 
-	 * @param version
-	 *            Version of the node
-	 */
-	public void setVersion(String version) {
-		this.version = version;
-	}
+//	/**
+//	 * Return the path of the node.
+//	 * 
+//	 * @return Localized path of the node for the node's language
+//	 */
+//	public String getPath() {
+//		return path;
+//	}
+//
+//	/**
+//	 * Set the path of the node.
+//	 * 
+//	 * @param path
+//	 *            Localized path of the node for the node's language
+//	 */
+//	public void setPath(String path) {
+//		this.path = path;
+//	}
+//
+//	/**
+//	 * Return the version of the node.
+//	 * 
+//	 * @return Version of the node
+//	 */
+//	public String getVersion() {
+//		return version;
+//	}
+//
+//	/**
+//	 * Set the version of the node.
+//	 * 
+//	 * @param version
+//	 *            Version of the node
+//	 */
+//	public void setVersion(String version) {
+//		this.version = version;
+//	}
 
 	/**
 	 * Return the display field name for the node.
@@ -254,24 +244,24 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.fileName = fileName;
 	}
 
-	/**
-	 * Return the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
-	 * 
-	 * @return Segment field name
-	 */
-	public String getSegmentField() {
-		return segmentField;
-	}
-
-	/**
-	 * Set the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
-	 * 
-	 * @param segmentField
-	 *            Segment field name
-	 */
-	public void setSegmentField(String segmentField) {
-		this.segmentField = segmentField;
-	}
+//	/**
+//	 * Return the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
+//	 * 
+//	 * @return Segment field name
+//	 */
+//	public String getSegmentField() {
+//		return segmentField;
+//	}
+//
+//	/**
+//	 * Set the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
+//	 * 
+//	 * @param segmentField
+//	 *            Segment field name
+//	 */
+//	public void setSegmentField(String segmentField) {
+//		this.segmentField = segmentField;
+//	}
 
 	/**
 	 * Return the project to which the node belongs.

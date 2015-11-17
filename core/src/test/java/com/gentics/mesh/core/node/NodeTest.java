@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -45,6 +47,34 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		Node node = content();
+		InternalActionContext ac = getMockedInternalActionContext("");
+		CountDownLatch latch = new CountDownLatch(1);
+		node.transformToReference(ac, rh -> {
+			NodeReference reference = rh.result();
+			assertNotNull(reference);
+			assertEquals(node.getUuid(), reference.getUuid());
+			latch.countDown();
+		});
+		failingLatch(latch);
+		// assertEquals(node.getName(), reference.getName());
+	}
+
+	@Test
+	public void testTransformToBreadcrumb() throws Exception {
+		Node node = content();
+		InternalActionContext ac = getMockedInternalActionContext("");
+		CountDownLatch latch = new CountDownLatch(1);
+		node.transformToBreadcrumb(ac, rh -> {
+			assertNotNull(rh.result());
+			latch.countDown();
+		});
+		failingLatch(latch);
+	}
 
 	/**
 	 * Test linking two contents
@@ -78,7 +108,22 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(1, newsNode.getChildren().size());
 		Node firstChild = newsNode.getChildren().iterator().next();
 		assertEquals(newSubNode.getUuid(), firstChild.getUuid());
+	}
 
+	@Test
+	public void testGetSegmentPath() {
+		Node newsNode = content("news overview");
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		assertNotNull(newsNode.getPathSegment(ac));
+	}
+
+	@Test
+	public void testGetFullSegmentPath() {
+		Node newsNode = content("news overview");
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		System.out.println(newsNode.getPath(ac));
 	}
 
 	@Test

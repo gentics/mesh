@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -31,6 +32,16 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import io.vertx.ext.web.RoutingContext;
 
 public class ProjectTest extends AbstractBasicObjectTest {
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		InternalActionContext ac = getMockedInternalActionContext("");
+		ProjectReference reference = project().transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(project().getUuid(), reference.getUuid());
+		assertEquals(project().getName(), reference.getName());
+	}
 
 	@Test
 	@Override

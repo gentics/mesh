@@ -18,9 +18,15 @@ public class DummySearchProvider implements SearchProvider {
 	private Map<String, Map<String, Object>> updateEvents = new HashMap<>();
 	private List<String> deleteEvents = new ArrayList<>();
 	private Map<String, Map<String, Object>> storeEvents = new HashMap<>();
+	private List<String> getEvents = new ArrayList<>();
 
 	@Override
 	public void refreshIndex() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void createIndex(String indexName) {
 		// TODO Auto-generated method stub
 	}
 
@@ -33,6 +39,12 @@ public class DummySearchProvider implements SearchProvider {
 	@Override
 	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {
 		deleteEvents.add(index + "-" + type + "-" + uuid);
+		handler.handle(Future.succeededFuture());
+	}
+
+	@Override
+	public void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler) {
+		getEvents.add(index + "-" + type + "-" + uuid);
 		handler.handle(Future.succeededFuture());
 	}
 

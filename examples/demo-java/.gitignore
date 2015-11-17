@@ -1,1 +1,5 @@
 /jmeter
+/tmp
+/demo
+/binaryFiles
+src/main/resources/mesh-demo.zip

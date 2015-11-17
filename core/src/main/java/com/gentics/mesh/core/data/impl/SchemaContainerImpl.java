@@ -9,21 +9,18 @@ import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -39,13 +36,17 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>implements SchemaContainer {
+public class SchemaContainerImpl extends AbstractReferenceableCoreElement<SchemaResponse, SchemaReference> implements SchemaContainer {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
 	}
 
-	
+	@Override
+	protected SchemaReference createEmptyReferenceModel() {
+		return new SchemaReference();
+	}
+
 	@Override
 	public String getType() {
 		return SchemaContainer.TYPE;
@@ -57,20 +58,23 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);
 			restSchema.setUuid(getUuid());
 
-			// for (ProjectImpl project : getProjects()) {
+			// TODO Get list of projects to which the schema was assigned
+			// for (Project project : getProjects()) {
+			// }
 			// ProjectResponse restProject = new ProjectResponse();
-			// restProje	ct.setUuid(project.getUuid());
+			// restProje ct.setUuid(project.getUuid());
 			// restProject.setName(project.getName());
 			// schemaResponse.getProjects().add(restProject);
 			// }
 
 			// Sort the list by project name
-			Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
-				@Override
-				public int compare(ProjectResponse o1, ProjectResponse o2) {
-					return o1.getName().compareTo(o2.getName());
-				};
-			});
+			// restSchema.getProjects()
+			// Collections.sort(restSchema.getProjects(), new Comparator<ProjectResponse>() {
+			// @Override
+			// public int compare(ProjectResponse o1, ProjectResponse o2) {
+			// return o1.getName().compareTo(o2.getName());
+			// };
+			// });
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restSchema);
@@ -81,15 +85,6 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}
-		return this;
-	}
-
-	@Override
-	public SchemaContainer transformToReference(InternalActionContext ac, Handler<AsyncResult<SchemaReference>> handler) {
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName(getSchema().getName());
-		schemaReference.setUuid(getUuid());
-		handler.handle(Future.succeededFuture(schemaReference));
 		return this;
 	}
 
@@ -156,32 +151,36 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 		Database db = MeshSpringConfiguration.getInstance().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
 
-		SchemaUpdateRequest requestModel = ac.fromJson(SchemaUpdateRequest.class);
-		if (StringUtils.isEmpty(requestModel.getName())) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "error_name_must_be_set"));
-			return;
-		}
-
-		SchemaContainer foundSchema = root.findByName(requestModel.getName());
-		if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
-			return;
-		}
-
-		db.trx(txUpdate -> {
-			if (!getName().equals(requestModel.getName())) {
-				setName(requestModel.getName());
+		try {
+			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			if (StringUtils.isEmpty(requestModel.getName())) {
+				handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
+				return;
 			}
-			setSchema(requestModel);
-			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.complete(batch);
-		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
-			if (txUpdated.failed()) {
-				handler.handle(Future.failedFuture(txUpdated.cause()));
-			} else {
-				processOrFail2(ac, txUpdated.result(), handler);
+
+			SchemaContainer foundSchema = root.findByName(requestModel.getName());
+			if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
+				handler.handle(failedFuture(BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
+				return;
 			}
-		});
+
+			db.trx(txUpdate -> {
+				if (!getName().equals(requestModel.getName())) {
+					setName(requestModel.getName());
+				}
+				setSchema(requestModel);
+				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
+				txUpdate.complete(batch);
+			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
+				if (txUpdated.failed()) {
+					handler.handle(Future.failedFuture(txUpdated.cause()));
+				} else {
+					processOrFail2(ac, txUpdated.result(), handler);
+				}
+			});
+		} catch (Exception e) {
+			handler.handle(Future.failedFuture(e));
+		}
 
 	}
 
@@ -195,6 +194,5 @@ public class SchemaContainerImpl extends AbstractIndexedVertex<SchemaResponse>im
 			}
 		}
 	}
-
 
 }

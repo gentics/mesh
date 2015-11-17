@@ -105,7 +105,11 @@ public class MeshImpl implements Mesh {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				shutdown();
+				try {
+					shutdown();
+				} catch (Exception e) {
+					log.error("Error while shutting down mesh.", e);
+				}
 			}
 		});
 	}
@@ -124,7 +128,7 @@ public class MeshImpl implements Mesh {
 	private void printProductInformation() {
 		log.info("###############################################################");
 		log.info(infoLine("Mesh Version " + Mesh.getVersion()));
-		log.info(infoLine("Gentics Software GmbH"));
+		log.info(infoLine("Gentics Software"));
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
@@ -151,7 +155,7 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
-	public void shutdown() {
+	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
 		MeshSpringConfiguration.getInstance().database().stop();
 		MeshSpringConfiguration.getInstance().searchProvider().stop();

@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.service;
 
 public interface BasicObjectTestcases {
+	
+	void testTransformToReference() throws Exception;
 
 	void testFindAllVisible() throws Exception;
 

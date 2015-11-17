@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -56,13 +57,18 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class ProjectImpl extends AbstractIndexedVertex<ProjectResponse>implements Project {
+public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectResponse, ProjectReference>implements Project {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
 	public static void checkIndices(Database database) {
 		// TODO index to name + unique constraint
 		database.addVertexType(ProjectImpl.class);
+	}
+
+	@Override
+	protected ProjectReference createEmptyReferenceModel() {
+		return new ProjectReference();
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public class PagingParameter implements QueryParameterProvider {
 	 *            Per page count
 	 */
 	public PagingParameter(int page, int perPage) {
-		this(page, perPage, null, SortOrder.UNSORTED);
+		this(page, perPage, "uuid", SortOrder.ASCENDING);
 	}
 
 	/**

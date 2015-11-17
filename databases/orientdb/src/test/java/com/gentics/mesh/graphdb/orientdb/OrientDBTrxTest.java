@@ -30,7 +30,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 	private Person p;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		db.init(null, Vertx.vertx());
 	}
 

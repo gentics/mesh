@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 import com.gentics.mesh.query.impl.PagingParameter;
 
@@ -55,7 +56,7 @@ public interface InternalActionContext extends ActionContext {
 	 * 
 	 * @return
 	 */
-	String getRolePermisssionParameter();
+	String getRolePermissionParameter();
 
 	/**
 	 * Extract the paging parameter from the request parameters. The paging information contains information about the number of the page that is currently
@@ -80,5 +81,19 @@ public interface InternalActionContext extends ActionContext {
 	 * @param i18nParameters
 	 */
 	void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters);
+
+	/**
+	 * Return the currently used database.
+	 * 
+	 * @return
+	 */
+	Database getDatabase();
+
+	/**
+	 * Return the <code>expandAll</code> query parameter flag value.
+	 * 
+	 * @return
+	 */
+	boolean getExpandAllFlag();
 
 }

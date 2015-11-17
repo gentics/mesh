@@ -7,7 +7,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -17,8 +17,8 @@ public class MicroschemaVerticleTest extends AbstractRestVerticleTest {
 	private MicroschemaVerticle microschemaVerticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(microschemaVerticle);
 		return list;
 	}

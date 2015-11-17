@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -26,7 +27,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -50,8 +51,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	private SchemaVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -64,9 +65,12 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
+
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<SchemaResponse> future = getClient().createSchema(request);
 		latchFor(future);
 		assertSuccess(future);
+		assertThat(searchProvider).recordedStoreEvents(1);
 		SchemaResponse restSchemaResponse = future.result();
 		test.assertSchema(request, restSchemaResponse);
 
@@ -87,12 +91,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateReadDelete() throws HttpStatusCodeErrorException, Exception {
 
+		assertThat(searchProvider).recordedStoreEvents(0);
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
 		Future<SchemaResponse> createFuture = getClient().createSchema(request);
 		latchFor(createFuture);
 		assertSuccess(createFuture);
+		assertThat(searchProvider).recordedStoreEvents(1);
 		SchemaResponse restSchema = createFuture.result();
 		test.assertSchema(request, restSchema);
 
@@ -108,6 +114,9 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
 		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getUuid() + "/" + restSchema.getName());
+		// TODO actually also the used nodes should have been deleted
+		assertThat(searchProvider).recordedDeleteEvents(1);
+		assertThat(searchProvider).recordedStoreEvents(1);
 
 	}
 
@@ -179,11 +188,11 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findSchemas(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		future = getClient().findSchemas(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findSchemas(new PagingParameter(4242, 25));
 		latchFor(future);

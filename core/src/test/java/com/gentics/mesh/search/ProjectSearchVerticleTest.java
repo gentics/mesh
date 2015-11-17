@@ -11,7 +11,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
@@ -20,14 +20,14 @@ import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.Future;
 
-public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest {
+public class ProjectSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private ProjectVerticle projectVerticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(projectVerticle);
 		return list;

@@ -16,6 +16,8 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
+import com.gentics.mesh.search.SearchHelper;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
@@ -73,12 +75,16 @@ public class MeshSpringConfiguration {
 			log.error(message);
 			throw new RuntimeException(message);
 		}
-		StorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-		database.init(options, Mesh.vertx());
-		DatabaseHelper helper = new DatabaseHelper(database);
-		helper.init();
-		helper.migrate();
-		return database;
+		try {
+			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
+			database.init(options, Mesh.vertx());
+			DatabaseHelper helper = new DatabaseHelper(database);
+			helper.init();
+			helper.migrate();
+			return database;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Bean
@@ -89,17 +95,21 @@ public class MeshSpringConfiguration {
 	@Bean
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
-		if (options == null) {
-			return new DummySearchProvider();
+		SearchProvider searchProvider = null;
+		if (options == null || options.getDirectory() == null) {
+			searchProvider = new DummySearchProvider();
 		} else {
-			return new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
+			searchProvider = new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
 		}
+		SearchHelper helper = new SearchHelper(searchProvider);
+		helper.init();
+		return searchProvider;
 	}
 
 	@Bean
 	public SessionHandler sessionHandler() {
 		SessionStore store = LocalSessionStore.create(Mesh.vertx());
-		//TODO make session age configurable
+		// TODO make session age configurable
 		return new SessionHandlerImpl(MeshOptions.MESH_SESSION_KEY, 30 * 60 * 1000, false, DEFAULT_COOKIE_SECURE_FLAG, DEFAULT_COOKIE_HTTP_ONLY_FLAG,
 				store);
 	}
@@ -160,6 +170,7 @@ public class MeshSpringConfiguration {
 		corsHandler.allowedMethod(HttpMethod.DELETE);
 		corsHandler.allowedHeader("Authorization");
 		corsHandler.allowedHeader("Content-Type");
+		corsHandler.allowedHeader("Set-Cookie");
 		return corsHandler;
 	}
 
@@ -170,11 +181,10 @@ public class MeshSpringConfiguration {
 	 */
 	@Bean
 	public Handler<RoutingContext> bodyHandler() {
-		// TODO maybe uploads should use a dedicated bodyhandler?
-		BodyHandler handler = BodyHandler.create();
+		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
+		BodyHandler handler = new MeshBodyHandlerImpl(tempDirectory);
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues
-		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
 		handler.setUploadsDirectory(tempDirectory);
 		return handler;
 	}

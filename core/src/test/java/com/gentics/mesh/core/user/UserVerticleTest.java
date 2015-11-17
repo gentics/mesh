@@ -34,10 +34,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -45,6 +47,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
@@ -64,8 +67,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	private UserVerticle userVerticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(userVerticle);
 		return list;
 	}
@@ -86,6 +89,36 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertUser(user, restUser);
 		// TODO assert groups
 		// TODO assert perms
+	}
+
+	@Test
+	public void testReadPermissions() {
+		User user = user();
+		TagFamily tagFamily = tagFamily("colors");
+
+		// Add permission on own role
+		role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
+		assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+
+		String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
+		Future<UserPermissionResponse> future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+		latchFor(future);
+		assertSuccess(future);
+		UserPermissionResponse response = future.result();
+		assertNotNull(response);
+		assertEquals(4, response.getPermissions().size());
+
+		// Revoke single permission and check again
+		role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
+		assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+
+		future = getClient().readUserPermissions(user.getUuid(), pathToElement);
+		latchFor(future);
+		assertSuccess(future);
+		response = future.result();
+		assertNotNull(response);
+		assertEquals(3, response.getPermissions().size());
+
 	}
 
 	@Test
@@ -226,13 +259,9 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		future = getClient().findUsers(new PagingParameter(-1, perPage));
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
-
 		future = getClient().findUsers(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findUsers(new PagingParameter(4242, 25));
 		latchFor(future);
@@ -253,6 +282,13 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());
 		assertTrue(future.result().getMetainfo().getTotalCount() > 0);
+	}
+
+	@Test
+	public void testInvalidPageParameter2() {
+		Future<UserListResponse> future = getClient().findUsers(new PagingParameter(-1, 25));
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 	}
 
 	// Update tests

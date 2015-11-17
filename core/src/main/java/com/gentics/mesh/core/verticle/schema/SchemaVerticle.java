@@ -17,6 +17,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
+/**
+ * Verticle for /api/v1/schemas endpoint
+ */
 @Component
 @Scope("singleton")
 @SpringVerticle

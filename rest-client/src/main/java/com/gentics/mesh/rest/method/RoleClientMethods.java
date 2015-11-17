@@ -1,14 +1,15 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
+
+import io.vertx.core.Future;
 
 public interface RoleClientMethods {
 
@@ -65,7 +66,16 @@ public interface RoleClientMethods {
 	 *            Request that defines how the permissions should be changed
 	 * @return
 	 */
-	Future<GenericMessageResponse> updateRolePermission(String roleUuid, String pathToElement, RolePermissionRequest request);
+	Future<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request);
+
+	/**
+	 * Read the role permissions for the given path.
+	 * 
+	 * @param roleUuid
+	 * @param pathToElement
+	 * @return
+	 */
+	Future<RolePermissionResponse> readRolePermissions(String roleUuid, String pathToElement);
 
 	/**
 	 * Update the role using the given update request.

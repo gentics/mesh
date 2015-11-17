@@ -28,7 +28,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -54,8 +54,8 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	private TagVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -116,15 +116,15 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<TagListResponse> pageFuture = getClient().findTags(PROJECT_NAME, new PagingParameter(-1, perPage));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		pageFuture = getClient().findTags(PROJECT_NAME, new PagingParameter(0, perPage));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
 		pageFuture = getClient().findTags(PROJECT_NAME, new PagingParameter(1, -1));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		perPage = 25;
 		totalPages = (int) Math.ceil(totalTags / (double) perPage);
@@ -312,7 +312,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("red");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
@@ -329,7 +329,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
@@ -357,7 +357,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		TagFamily tagFamily = tagFamilies().get("colors");
 		tagFamilyName = tagFamily.getName();
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);
 		latchFor(future);
 		expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", tagFamilyName);
@@ -416,7 +416,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			TagCreateRequest request = new TagCreateRequest();
 			request.getFields().setName("newcolor_" + i);
-			request.setTagFamilyReference(new TagFamilyReference().setName("colors"));
+			request.setTagFamily(new TagFamilyReference().setName("colors"));
 			set.add(getClient().createTag(PROJECT_NAME, request));
 		}
 		validateCreation(set, null);
@@ -442,7 +442,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.getFields().setName("SomeName");
 		TagFamily tagFamily = tagFamilies().get("colors");
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		// Create
 		Future<TagResponse> future = getClient().createTag(PROJECT_NAME, tagCreateRequest);

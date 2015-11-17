@@ -12,10 +12,7 @@ securedBy: [oauth_2_0]
                 body:
                     application/json:
                         example: !include json/MicroschemaListResponse.example.json
-                        
-                        
-                        
-                        
+
   - pagedHeader:
       responses:
         200:
@@ -25,8 +22,6 @@ securedBy: [oauth_2_0]
                         A link header will be provided according to [RFC5988](http://tools.ietf.org/html/rfc5988#page-6). 
                example: |
                         Link: <https://localhost:8080/users?page=3&perPage=100>; rel="next", <https://localhost/users?page=50&perPage=100>; rel="last"
-                        
-
 
 #------------------------------------------------------------------------------
 # Navigation Verticle
@@ -36,6 +31,14 @@ securedBy: [oauth_2_0]
   displayName: Navigation
   get:
     description: Return the navigation.
+
+#------------------------------------------------------------------------------
+# Move Verticle
+#------------------------------------------------------------------------------
+/move/{uuid}/to/{uuid}:
+  displayName: Move
+  put:
+    description: Move entities.
 
 #------------------------------------------------------------------------------
 # Copy Verticle

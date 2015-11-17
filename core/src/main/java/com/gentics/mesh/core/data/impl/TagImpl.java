@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
@@ -104,6 +106,14 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
+	public TagReference transformToReference(InternalActionContext ac) {
+		TagReference tagReference = new TagReference();
+		tagReference.setName(getName());
+		tagReference.setUuid(getUuid());
+		return tagReference;
+	}
+
+	@Override
 	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -150,12 +160,22 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 
 	@Override
 	public void setTagFamily(TagFamily tagFamily) {
-		linkOut(tagFamily.getImpl(), HAS_TAGFAMILY_ROOT);
+		setLinkOutTo(tagFamily.getImpl(), HAS_TAGFAMILY_ROOT);
 	}
 
 	@Override
 	public TagFamily getTagFamily() {
 		return in(HAS_TAG).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
+	}
+
+	@Override
+	public void setProject(Project project) {
+		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+	}
+
+	@Override
+	public Project getProject() {
+		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -180,19 +200,11 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public TagReference tansformToTagReference() {
-		TagReference reference = new TagReference();
-		reference.setUuid(getUuid());
-		reference.setName(getName());
-		return reference;
-	}
-
-	@Override
 	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		TagFamilyReference reference = requestModel.getTagFamilyReference();
+		TagFamilyReference reference = requestModel.getTagFamily();
 		db.trx(txUpdate -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {

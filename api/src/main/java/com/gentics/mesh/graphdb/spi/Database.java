@@ -3,7 +3,7 @@ package com.gentics.mesh.graphdb.spi;
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.gentics.mesh.etc.StorageOptions;
+import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -50,13 +50,15 @@ public interface Database {
 
 	/**
 	 * Start the graph database.
+	 * @throws Exception 
 	 */
-	void start();
+	void start() throws Exception;
 
 	/**
 	 * Shortcut for stop/start. This will also drop the graph database.
+	 * @throws Exception 
 	 */
-	void reset();
+	void reset() throws Exception;
 
 	/**
 	 * Remove all edges and all vertices from the graph.
@@ -142,8 +144,9 @@ public interface Database {
 	 * 
 	 * @param options
 	 * @param vertx
+	 * @throws Exception 
 	 */
-	void init(StorageOptions options, Vertx vertx);
+	void init(GraphStorageOptions options, Vertx vertx) throws Exception;
 
 	/**
 	 * Reload the given mesh element.

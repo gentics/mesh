@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
 /**
  * Graph domain model interface for a role.
  */
-public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedVertex {
+public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedVertex, ReferenceableElement<RoleReference> {
 
 	public static final String TYPE = "role";
 

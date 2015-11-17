@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.impl.GenericVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -16,7 +15,7 @@ import io.vertx.core.Handler;
 /**
  * The User Domain Model class
  */
-public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex {
+public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex, ReferenceableElement<UserReference> {
 
 	public static final String TYPE = "user";
 
@@ -243,17 +242,9 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 	 */
 	void deactivate();
 
-	/**
-	 * Return a user reference object for the user.
-	 * 
-	 * @param handler
-	 * @return Fluent API
-	 */
-	User transformToUserReference(Handler<AsyncResult<UserReference>> handler);
+//	List<? extends GenericVertexImpl> getEditedElements();
 
-	List<? extends GenericVertexImpl> getEditedElements();
-
-	List<? extends GenericVertexImpl> getCreatedElements();
+//	List<? extends GenericVertexImpl> getCreatedElements();
 
 	boolean hasPermission(MeshVertex node, GraphPermission permission);
 

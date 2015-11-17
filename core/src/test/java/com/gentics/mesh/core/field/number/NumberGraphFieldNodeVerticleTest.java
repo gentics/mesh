@@ -61,7 +61,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
-		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
+		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);

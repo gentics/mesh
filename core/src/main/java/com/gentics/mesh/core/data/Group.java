@@ -3,11 +3,12 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-public interface Group extends GenericVertex<GroupResponse>, NamedVertex, IndexedVertex {
+public interface Group extends GenericVertex<GroupResponse>, NamedVertex, IndexedVertex, ReferenceableElement<GroupReference> {
 
 	public static final String TYPE = "group";
 

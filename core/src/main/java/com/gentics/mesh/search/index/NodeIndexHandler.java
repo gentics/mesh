@@ -14,7 +14,6 @@ import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
@@ -48,7 +47,7 @@ import rx.Observable;
 
 /**
  * 
- *TODO make it possible to use custom ES index configuration: http://stackoverflow.com/questions/6275727/define-custom-elasticsearch-analyzer-using-java-api
+ * TODO make it possible to use custom ES index configuration: http://stackoverflow.com/questions/6275727/define-custom-elasticsearch-analyzer-using-java-api
  */
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
@@ -115,6 +114,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.trace("Search index json:");
 				log.trace(json);
 			}
+
+			//Add display field value
+			Map<String, String> displayFieldMap = new HashMap<>();
+			displayFieldMap.put("key", node.getSchema().getDisplayField());
+			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
+			map.put("displayField", displayFieldMap);
 			searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
 
@@ -155,6 +160,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
+
 			searchProvider.updateDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
 
@@ -314,15 +320,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			if (key.startsWith("field.")) {
 				map.remove(key);
 			}
-		}
-	}
-
-	private void addProject(Map<String, Object> map, Project project) {
-		if (project != null) {
-			Map<String, String> projectFields = new HashMap<>();
-			projectFields.put("name", project.getName());
-			projectFields.put("uuid", project.getUuid());
-			map.put("project", projectFields);
 		}
 	}
 

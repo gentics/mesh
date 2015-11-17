@@ -1,11 +1,7 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -70,7 +66,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		}
 		return query;
 	}
-	
+
 	protected String getSimpleWildCardQuery(String key, String value) throws JSONException {
 		QueryBuilder qb = QueryBuilders.wildcardQuery(key, value);
 		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
@@ -87,17 +83,7 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 
 	protected void fullIndex() throws InterruptedException {
 		boot.meshRoot().getSearchQueue().addFullIndex();
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.meshRoot().getSearchQueue().processAll(rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch, 30);
+		boot.meshRoot().getSearchQueue().processAll();
 	}
-
-	abstract public void testDocumentDeletion() throws Exception;
-
-	abstract public void testDocumentCreation() throws Exception;
-
-	abstract public void testDocumentUpdate() throws Exception;
 
 }

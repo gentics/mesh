@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 
 /**
  * POJO that is used group response models.
@@ -12,7 +13,7 @@ public class GroupResponse extends AbstractGenericRestResponse {
 
 	private String name;
 
-	private List<String> roles = new ArrayList<>();
+	private List<RoleReference> roles = new ArrayList<>();
 
 	public GroupResponse() {
 	}
@@ -37,11 +38,11 @@ public class GroupResponse extends AbstractGenericRestResponse {
 	}
 
 	/**
-	 * Returns a list of roles which are assigned to the group.
+	 * Returns a list of role references which are assigned to the group.
 	 * 
-	 * @return List of roles
+	 * @return List of role references
 	 */
-	public List<String> getRoles() {
+	public List<RoleReference> getRoles() {
 		return roles;
 	}
 

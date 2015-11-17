@@ -83,6 +83,16 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 		});
 	}
 
+	public void handleReadProjectList(InternalActionContext ac) {
+		db.asyncNoTrx(tc -> {
+			loadTransformAndResponde(ac, ac.getProject().getSchemaContainerRoot(), new SchemaListResponse(), OK);
+		} , rh -> {
+			if (rh.failed()) {
+				ac.errorHandler().handle(rh);
+			}
+		});
+	}
+
 	public void handleAddProjectToSchema(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {

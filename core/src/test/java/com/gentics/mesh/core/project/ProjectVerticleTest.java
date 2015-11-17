@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -58,8 +58,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	private ProjectVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -109,6 +109,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 		role().grantPermissions(project().getBaseNode(), CREATE_PERM);
+		role().revokePermissions(meshRoot(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
 
 		// Create a new project
 		Future<ProjectResponse> createFuture = getClient().createProject(request);
@@ -116,6 +117,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(createFuture);
 		ProjectResponse restProject = createFuture.result();
 		test.assertProject(request, restProject);
+		assertEquals(4, restProject.getPermissions().length);
+
 		meshRoot().getProjectRoot().reload();
 		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
@@ -194,11 +197,11 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findProjects(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		future = getClient().findProjects(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findProjects(new PagingParameter(4242, 25));
 		latchFor(future);
@@ -425,7 +428,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nJobs = 100;
 		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
 
-		//CyclicBarrier barrier = prepareBarrier(nJobs);
+		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();

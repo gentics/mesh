@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-examples</artifactId>
-		<version>0.1.3-SNAPSHOT</version>
+		<version>1.0.4-beta-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -31,10 +31,81 @@
 			<artifactId>${mesh.database.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>net.lingala.zip4j</groupId>
+			<artifactId>zip4j</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<id>github-demo-clone</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<executable>git</executable>
+							<arguments>
+								<argument>clone</argument>
+								<argument>-b</argument>
+								<argument>master</argument>
+								<argument>git@github.com:gentics/mesh-angular-demo.git</argument>
+								<argument>target/mesh-angular-demo</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>dist-demo-package</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>false</attach>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/demo-zip.xml</descriptor>
+							</descriptors>
+							<outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
+							<finalName>mesh-demo</finalName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.jolokia</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
@@ -45,15 +116,14 @@
 						<image>
 							<name>registry.gentics.com/mesh-demo:${project.version}</name>
 							<alias>mesh-demo</alias>
+
 							<build>
-								<from>java:8u40</from>
 								<assembly>
-									<descriptor>assembly.xml</descriptor>
+									<mode>dir</mode>
+									<basedir>/opt/mesh</basedir>
+									<dockerFileDir>mesh-demo</dockerFileDir>
+									<descriptor>docker-assembly.xml</descriptor>
 								</assembly>
-								<ports>
-									<port>8080</port>
-								</ports>
-								<command>java -jar /maven/meshdemo.jar</command>
 							</build>
 							<run>
 								<ports>
@@ -79,6 +149,7 @@
 						<goals>
 							<goal>build</goal>
 							<goal>push</goal>
+							<!-- <goal>remove</goal> -->
 						</goals>
 					</execution>
 					<!-- <execution> <id>start</id> <phase>pre-integration-test</phase> <goals> <goal>build</goal> <goal>start</goal> </goals> </execution> <execution> <id>stop</id> <phase>post-integration-test</phase> 
@@ -141,5 +212,59 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.mojo
+										</groupId>
+										<artifactId>
+											exec-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.3.2,)
+										</versionRange>
+										<goals>
+											<goal>exec</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-assembly-plugin
+										</artifactId>
+										<versionRange>
+											[2.2-beta-5,)
+										</versionRange>
+										<goals>
+											<goal>single</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>

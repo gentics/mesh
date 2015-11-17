@@ -71,6 +71,7 @@ public final class MockingUtils {
 
 	public static Project mockProject(User user) {
 		Project project = mock(ProjectImpl.class);
+		when(project.getUuid()).thenReturn(randomUUID());
 		when(project.getName()).thenReturn("dummyProject");
 		when(project.getCreator()).thenReturn(user);
 		when(project.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
@@ -81,6 +82,7 @@ public final class MockingUtils {
 
 	public static Language mockLanguage(String code) {
 		Language language = mock(LanguageImpl.class);
+		when(language.getUuid()).thenReturn(randomUUID());
 		when(language.getLanguageTag()).thenReturn("de");
 		return language;
 	}
@@ -124,6 +126,7 @@ public final class MockingUtils {
 		when(user.getUsername()).thenReturn(username);
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
+		when(user.getEmailAddress()).thenReturn(username + "@nowhere.tld");
 		when(user.getUuid()).thenReturn(randomUUID());
 		when(user.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(user.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
@@ -134,7 +137,7 @@ public final class MockingUtils {
 		return user;
 	}
 
-	public static TagFamily mockTagFamily(String name, User user) {
+	public static TagFamily mockTagFamily(String name, User user, Project project) {
 		TagFamily tagFamily = mock(TagFamilyImpl.class);
 		when(tagFamily.getCreator()).thenReturn(user);
 		when(tagFamily.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
@@ -142,10 +145,11 @@ public final class MockingUtils {
 		when(tagFamily.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
+		when(tagFamily.getProject()).thenReturn(project);
 		return tagFamily;
 	}
 
-	public static Tag mockTag(String name, User user, TagFamily tagFamily) {
+	public static Tag mockTag(String name, User user, TagFamily tagFamily, Project project) {
 		Tag tag = mock(TagImpl.class);
 		when(tag.getCreator()).thenReturn(user);
 		when(tag.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
@@ -154,6 +158,7 @@ public final class MockingUtils {
 		when(tag.getName()).thenReturn(name);
 		when(tag.getUuid()).thenReturn(randomUUID());
 		when(tag.getTagFamily()).thenReturn(tagFamily);
+		when(tag.getProject()).thenReturn(project);
 		return tag;
 	}
 
@@ -173,7 +178,8 @@ public final class MockingUtils {
 		Schema schema = new SchemaImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
-
+		schema.setDisplayField("string");
+		schema.setBinary(false);
 		// basic types
 		schema.addField(new StringFieldSchemaImpl().setName("string").setRequired(true));
 		schema.addField(new NumberFieldSchemaImpl().setName("number").setRequired(true));
@@ -212,6 +218,7 @@ public final class MockingUtils {
 		when(node.getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
+		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 
 		return node;

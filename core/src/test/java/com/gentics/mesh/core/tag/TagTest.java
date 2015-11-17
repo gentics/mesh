@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -44,6 +45,17 @@ public class TagTest extends AbstractBasicObjectTest {
 	public static final String ENGLISH_NAME = "test english name";
 
 	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		Tag tag = tag("red");
+		InternalActionContext ac = getMockedInternalActionContext("");
+		TagReference reference = tag.transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(tag.getUuid(), reference.getUuid());
+		assertEquals(tag.getName(), reference.getName());
+	}
+
+	@Test
 	public void testTagFamilyTagCreation() {
 		final String TAG_FAMILY_NAME = "mycustomtagFamily";
 		TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
@@ -58,12 +70,25 @@ public class TagTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testReadFieldContainer() {
+		Tag tag = tags().get("red");
+		assertEquals(1, tag.getFieldContainers().size());
+	}
+
+	@Test
 	public void testSimpleTag() {
 		TagFamily root = tagFamily("basic");
 		Tag tag = root.create("test", project(), user());
 		assertEquals("test", tag.getName());
 		tag.setName("test2");
 		assertEquals("test2", tag.getName());
+	}
+
+	@Test
+	public void testProjectTag() {
+		TagFamily root = tagFamily("basic");
+		Tag tag = root.create("test", project(), user());
+		assertEquals(project(), tag.getProject());
 	}
 
 	@Test

@@ -61,9 +61,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 		User creator = getCreator();
 		if (creator != null) {
-			creator.transformToUserReference(rh -> {
-				model.setCreator(rh.result());
-			});
+			model.setCreator(creator.transformToReference(ac));
 		} else {
 			log.error("The object has no creator. Omitting creator field");
 			// TODO throw error and log something
@@ -71,9 +69,7 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 
 		User editor = getEditor();
 		if (editor != null) {
-			editor.transformToUserReference(rh -> {
-				model.setEditor(rh.result());
-			});
+			model.setEditor(editor.transformToReference(ac));
 		} else {
 			// TODO throw error and log something
 		}

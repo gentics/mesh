@@ -2,6 +2,7 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.api.common.SortOrder.DESCENDING;
 import static com.gentics.mesh.api.common.SortOrder.UNSORTED;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.syncleus.ferma.VertexFrame;
@@ -48,10 +50,10 @@ public final class TraversalHelper {
 			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
 
 		if (page < 1) {
-			throw new InvalidArgumentException("The page must always be positive");
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
 		}
 		if (pageSize < 0) {
-			throw new InvalidArgumentException("The pageSize must always be zero or greater than zero");
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pageSize));
 		}
 
 		// Internally we start with page 0

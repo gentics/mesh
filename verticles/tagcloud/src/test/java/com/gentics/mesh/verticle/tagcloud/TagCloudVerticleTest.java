@@ -9,9 +9,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
-import com.gentics.mesh.verticle.tagcloud.TagCloudVerticle;
 
 public class TagCloudVerticleTest extends AbstractRestVerticleTest {
 
@@ -19,8 +18,8 @@ public class TagCloudVerticleTest extends AbstractRestVerticleTest {
 	private TagCloudVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

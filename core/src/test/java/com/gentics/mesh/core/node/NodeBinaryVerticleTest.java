@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -43,8 +43,8 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 	private NodeVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -181,7 +181,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		node.setUuid(UUIDUtil.randomUUID());
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
 		node.setUuid(uuid);
-		String path = node.getSegmentedPath();
+		String path = node.getBinarySegmentedPath();
 		assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 	}
 

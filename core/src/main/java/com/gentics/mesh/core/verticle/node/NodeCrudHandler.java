@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.createObject;
 import static com.gentics.mesh.util.VerticleHelper.deleteObject;
@@ -15,6 +17,7 @@ import static com.gentics.mesh.util.VerticleHelper.updateObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
@@ -26,10 +29,12 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -40,6 +45,7 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.VerticleHelper;
 
@@ -76,6 +82,31 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				deleteObject(ac, "uuid", "node_deleted", ac.getProject().getNodeRoot());
 			}
 		} , ac.errorHandler());
+	}
+
+	public void handelDeleteLanguage(InternalActionContext ac) {
+		db.asyncNoTrx(tc -> {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", DELETE_PERM, project.getNodeRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+					String languageTag = ac.getParameter("languageTag");
+					Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+					if (language == null) {
+						tc.fail(error(NOT_FOUND, "error_language_not_found", languageTag));
+						return;
+					}
+					node.deleteLanguageContainer(ac, language, dh -> {
+						if (dh.failed()) {
+							tc.fail(dh.cause());
+						} else {
+							ac.sendMessage(OK, "node_deleted_language", node.getUuid(), languageTag);
+						}
+					});
+				}
+			});
+		} , ac.errorHandler());
+
 	}
 
 	@Override
@@ -187,7 +218,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 									String contentType = ul.contentType();
 									String fileName = ul.fileName();
 									String nodeUuid = node.getUuid();
-									hashAndMoveBinaryFile(ac, ul, nodeUuid, node.getSegmentedPath(), fh -> {
+									hashAndMoveBinaryFile(ac, ul, nodeUuid, node.getBinarySegmentedPath(), fh -> {
 										if (fh.failed()) {
 											ac.fail(fh.cause());
 										} else {
@@ -254,7 +285,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 										handler.handle(Future.succeededFuture(hashSum.get()));
 									} else {
 										log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-										handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+										handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
 										return;
 									}
 								});
@@ -269,7 +300,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 								handler.handle(Future.succeededFuture(hashSum.get()));
 							} else {
 								log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-								handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
+								handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
 							}
 						});
 					}
@@ -277,7 +308,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 				});
 
 			} else {
-				handler.handle(failedFuture(ac, INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
+				handler.handle(failedFuture(INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
 			}
 		};
 
@@ -296,7 +327,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 									targetFolderChecked.handle(Future.succeededFuture(folder));
 								} else {
 									log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}", mkh.cause());
-									handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_upload_failed"));
+									handler.handle(failedFuture(BAD_REQUEST, "node_error_upload_failed"));
 								}
 							});
 						} else {
@@ -304,11 +335,11 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 						}
 					} else {
 						log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.", deh.cause());
-						handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_upload_failed", deh.cause()));
+						handler.handle(failedFuture(BAD_REQUEST, "node_error_upload_failed", deh.cause()));
 					}
 				});
 			} else {
-				handler.handle(failedFuture(ac, BAD_REQUEST, "node_error_hashing_failed"));
+				handler.handle(failedFuture(BAD_REQUEST, "node_error_hashing_failed"));
 			}
 		});
 
@@ -421,8 +452,8 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					if (container == null) {
 						// TODO fail
 					} else {
-						//node.getSchema().getFields().
-						//container.getRestFieldFromGraph(ac, fieldKey, fieldSchema, expandField, handler);
+						// node.getSchema().getFields().
+						// container.getRestFieldFromGraph(ac, fieldKey, fieldSchema, expandField, handler);
 					}
 				}
 			});
@@ -511,4 +542,19 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 			});
 		} , ac.errorHandler());
 	}
+
+	public void handelReadBreadcrumb(InternalActionContext ac) {
+		db.asyncNoTrx(tc -> {
+			Project project = ac.getProject();
+			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
+				if (hasSucceeded(ac, rh)) {
+					Node node = rh.result();
+					node.transformToBreadcrumb(ac, th -> {
+						ac.send(JsonUtil.toJson(th.result()), OK);
+					});
+				}
+			});
+		} , ac.errorHandler());
+	}
+
 }

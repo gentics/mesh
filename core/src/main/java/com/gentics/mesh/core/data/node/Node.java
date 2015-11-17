@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -170,7 +171,8 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter) throws InvalidArgumentException;
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
+			throws InvalidArgumentException;
 
 	/**
 	 * Return the binary filename.
@@ -277,7 +279,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @return
 	 */
-	String getSegmentedPath();
+	String getBinarySegmentedPath();
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -335,5 +337,39 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param handler
 	 */
 	Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler);
+
+	/**
+	 * Transform information from the node into a breadcrumb rest model.
+	 * 
+	 * @param ac
+	 * @param handler
+	 * @return
+	 */
+	Node transformToBreadcrumb(InternalActionContext ac, Handler<AsyncResult<NodeBreadcrumbResponse>> handler);
+
+	/**
+	 * Delete the language container for the given language.
+	 * 
+	 * @param ac
+	 * @param language
+	 * @param handler
+	 * @return
+	 */
+	Node deleteLanguageContainer(InternalActionContext ac, Language language, Handler<AsyncResult<Void>> handler);
+
+	/**
+	 * Return the path segment of this node.
+	 * 
+	 * @return
+	 */
+	String getPathSegment(InternalActionContext ac);
+
+	/**
+	 * Return the full path to this node.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	String getPath(InternalActionContext ac);
 
 }

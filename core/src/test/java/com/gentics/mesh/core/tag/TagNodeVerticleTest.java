@@ -10,7 +10,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -23,8 +23,8 @@ public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 	private TagVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}

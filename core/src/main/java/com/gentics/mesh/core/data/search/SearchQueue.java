@@ -2,10 +2,6 @@ package com.gentics.mesh.core.data.search;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-
 /**
  * A search queue is a queue which holds search queue batches. Each batch is used to update the search index documents. Once a batch has been processed it
  * should be removed from the search queue.
@@ -50,12 +46,12 @@ public interface SearchQueue extends MeshVertex {
 	void addFullIndex();
 
 	/**
-	 * Process all search queue batches and invoke the handler when an error occurred or the batches were processed correctly.
+	 * Process all search queue batches.
 	 * 
-	 * @param handler
 	 * @throws InterruptedException
+	 * @return Amount of batches that have been processed
 	 */
-	void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException;
+	long processAll() throws InterruptedException;
 
 	/**
 	 * Remove the search queue batch from the queue.

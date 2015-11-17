@@ -21,3 +21,10 @@ examples/demo-java/data
 core/tmp
 mesh-searchindex
 mesh-graphdb
+/bower_components/
+/build
+/dist
+/node
+/node_modules
+/typings
+

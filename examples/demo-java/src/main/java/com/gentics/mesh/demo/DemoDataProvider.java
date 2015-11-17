@@ -5,7 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +21,12 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -31,9 +36,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -55,15 +63,13 @@ public class DemoDataProvider {
 	private Database db;
 
 	@Autowired
-	private BootstrapInitializer rootService;
+	private BootstrapInitializer boot;
 
 	@Autowired
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
 	private BootstrapInitializer bootstrapInitializer;
-
-	// References to dummy data
 
 	private Language english;
 
@@ -83,23 +89,23 @@ public class DemoDataProvider {
 	private DemoDataProvider() {
 	}
 
-	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
+	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		long start = System.currentTimeMillis();
 
 		db.noTrx(noTrx -> {
 			bootstrapInitializer.initMandatoryData();
 
-			root = rootService.meshRoot();
-			english = rootService.languageRoot().findByLanguageTag("en");
-			german = rootService.languageRoot().findByLanguageTag("de");
+			root = boot.meshRoot();
+			english = boot.languageRoot().findByLanguageTag("en");
+			german = boot.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
 
 			addRoles();
 			addGroups();
 			addUsers();
-			addProjects();
 
+			addProjects();
 			addTagFamilies();
 			addTags();
 
@@ -108,12 +114,19 @@ public class DemoDataProvider {
 
 		});
 		updatePermissions();
+		invokeFullIndex();
 		long duration = System.currentTimeMillis() - start;
-		log.info("Setup took: {" + duration + "}");
+	}
+
+	private void invokeFullIndex() throws InterruptedException {
+		db.noTrx(noTrx -> {
+			boot.meshRoot().getSearchQueue().addFullIndex();
+			boot.meshRoot().getSearchQueue().processAll();
+		});
 	}
 
 	/**
-	 * Load users json file and create users.
+	 * Load users JSON file and create users.
 	 * 
 	 * @throws IOException
 	 */
@@ -130,18 +143,22 @@ public class DemoDataProvider {
 
 			log.info("Creating user {" + username + "}");
 			User user = root.getUserRoot().create(username, null);
-			// user.setUuid("UUIDOFUSER1");
 			user.setPassword(password);
 			user.setFirstname(firstname);
 			user.setLastname(lastname);
 			user.setEmailAddress(email);
 			users.put(username, user);
+
+			JsonArray groupArray = userJson.getJsonArray("groups");
+			for (int e = 0; e < groupArray.size(); e++) {
+				user.addGroup(getGroup(groupArray.getString(e)));
+			}
 		}
 
 	}
 
 	/**
-	 * Add groups from json file to graph.
+	 * Add groups from JSON file to graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -154,12 +171,17 @@ public class DemoDataProvider {
 
 			log.info("Creating group {" + name + "}");
 			Group group = root.getGroupRoot().create(name, getAdmin());
+
+			JsonArray rolesNode = groupJson.getJsonArray("roles");
+			for (int e = 0; e < rolesNode.size(); e++) {
+				group.addRole(getRole(rolesNode.getString(e)));
+			}
 			groups.put(name, group);
 		}
 	}
 
 	/**
-	 * Load roles json file and add those roles to the graph.
+	 * Load roles JSON file and add those roles to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -172,7 +194,6 @@ public class DemoDataProvider {
 
 			log.info("Creating role {" + name + "}");
 			Role role = root.getRoleRoot().create(name, getAdmin());
-			System.err.println("Created role: " + role.getElement().getId());
 			role.grantPermissions(role, READ_PERM);
 			roles.put(name, role);
 		}
@@ -182,6 +203,8 @@ public class DemoDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
 	 */
 	private void addBootstrappedData() {
+		english = root.getLanguageRoot().findByLanguageTag("en");
+		german = root.getLanguageRoot().findByLanguageTag("de");
 		for (Group group : root.getGroupRoot().findAll()) {
 			groups.put(group.getName(), group);
 		}
@@ -194,7 +217,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Load nodes json file and add those nodes to the graph.
+	 * Load nodes JSON file and add those nodes to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -213,38 +236,69 @@ public class DemoDataProvider {
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			Node node = parentNode.create(getAdmin(), schema, project);
 
+			JsonObject binNode = nodeJson.getJsonObject("bin");
+			if (binNode != null) {
+				String path = binNode.getString("path");
+				int height = binNode.getInteger("height");
+				int width = binNode.getInteger("width");
+				String sha512sum = binNode.getString("sha512sum");
+				String filenName = binNode.getString("filename");
+				String contentType = binNode.getString("contentType");
+				InputStream ins = getClass().getResourceAsStream("/data/" + path);
+				if (ins == null) {
+					throw new NullPointerException("Could not find binary file within path {" + path + "}");
+				}
+				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), node.getBinarySegmentedPath());
+				folder.mkdirs();
+				File outputFile = new File(folder, node.getUuid() + ".bin");
+				if (!outputFile.exists()) {
+					IOUtils.copy(ins, new FileOutputStream(outputFile));
+				}
+				node.setBinaryImageWidth(width);
+				node.setBinaryImageHeight(height);
+				node.setBinaryContentType(contentType);
+				node.setBinaryImageDPI(300);
+				node.setBinaryFileName(filenName);
+				node.setBinarySHA512Sum(sha512sum);
+				node.setBinaryFileSize(outputFile.length());
+			}
+
 			JsonArray tagArray = nodeJson.getJsonArray("tags");
 			for (int e = 0; e < tagArray.size(); e++) {
 				String tagName = tagArray.getString(e);
 				node.addTag(getTag(tagName));
 			}
+			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+			englishContainer.createString("name").setString(name);
 
-			// if (englishContent != null) {
-			// NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			// englishContainer.createString("name").setString(name + " english name");
-			// englishContainer.createString("title").setString(name + " english title");
-			// englishContainer.createString("displayName").setString(name + " english displayName");
-			// englishContainer.createString("filename").setString(name + ".en.html");
-			// englishContainer.createHTML("content").setHtml(englishContent);
-			// }
-			//
-			// if (germanContent != null) {
-			// NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
-			// germanContainer.createString("name").setString(name + " german");
-			// germanContainer.createString("title").setString(name + " english title");
-			// germanContainer.createString("displayName").setString(name + " german");
-			// germanContainer.createString("filename").setString(name + ".de.html");
-			// germanContainer.createHTML("content").setHtml(germanContent);
-			// }
-			//
+			JsonObject fieldsObject = nodeJson.getJsonObject("fields");
+			if (fieldsObject != null) {
+				for (String fieldName : fieldsObject.fieldNames()) {
+					Object obj = fieldsObject.getValue(fieldName);
+					if ("vehicleImage".equals(fieldName)) {
+						englishContainer.createNode(fieldName, getNode((String) obj));
+						continue;
+					}
+					if ("description".equals(fieldName)) {
+						englishContainer.createHTML(fieldName).setHtml(String.valueOf(obj));
+						continue;
+					}
+					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
+						englishContainer.createNumber(fieldName).setNumber(String.valueOf(obj));
+					} else if (obj instanceof String) {
+						englishContainer.createString(fieldName).setString((String) obj);
+					} else {
+						throw new RuntimeException("Demo data type {" + obj.getClass().getName() + "} for field {" + fieldName + "} is unknown.");
+					}
+				}
+			}
 			nodes.put(name, node);
-
 		}
 
 	}
 
 	/**
-	 * Load tags json and add those tags to the graph.
+	 * Load tags JSON and add those tags to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -258,14 +312,14 @@ public class DemoDataProvider {
 
 			log.info("Creating tag {" + name + "} to family {" + tagFamilyName + "}");
 			TagFamily tagFamily = getTagFamily(tagFamilyName);
-			//TODO determine project of tag family automatically or use json field to assign it
-			Tag tag = tagFamily.create(name, projects.get(0), getAdmin());
-			tags.put(name.toLowerCase(), tag);
+			// TODO determine project of tag family automatically or use json field to assign it
+			Tag tag = tagFamily.create(name, getProject("demo"), getAdmin());
+			tags.put(name, tag);
 		}
 	}
 
 	/**
-	 * Load project json file and add those projects to the graph.
+	 * Load project JSON file and add those projects to the graph.
 	 * 
 	 * @throws IOException
 	 */
@@ -282,13 +336,7 @@ public class DemoDataProvider {
 			project.addLanguage(getGerman());
 			Node baseNode = project.getBaseNode();
 			nodes.put(name + ".basenode", baseNode);
-
-			// project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
-			// project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
-			// project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
-
 			projects.put(name, project);
-
 		}
 	}
 
@@ -305,63 +353,49 @@ public class DemoDataProvider {
 			tagFamily.setDescription("Description for basic tag family");
 			tagFamilies.put(name, tagFamily);
 		}
-
 	}
 
 	private void addSchemaContainers() throws MeshSchemaException, IOException {
-		// folder
-		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
-		schemaContainers.put("folder", folderSchemaContainer);
 
-		// content
-		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
-		schemaContainers.put("content", contentSchemaContainer);
+		JsonObject schemasJson = loadJson("schemas");
+		JsonArray dataArray = schemasJson.getJsonArray("data");
+		for (int i = 0; i < dataArray.size(); i++) {
+			JsonObject schemaJson = dataArray.getJsonObject(i);
+			String schemaName = schemaJson.getString("name");
+			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName);
+			if (container == null) {
+				StringWriter writer = new StringWriter();
+				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
+				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
+				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaImpl.class);
+				container = boot.schemaContainerRoot().create(schema, getAdmin());
+			}
+			schemaContainers.put(schemaName, container);
 
-		// binary-content
-		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
-		schemaContainers.put("binary-content", binaryContentSchemaContainer);
-
-		// JsonObject schemasJson = loadJson("schemas");
-		// JsonArray dataArray = schemasJson.getJsonArray("data");
-		// for (int i = 0; i < dataArray.size(); i++) {
-		// JsonObject schemaJson = dataArray.getJsonObject(i);
-		//
-		// Schema schema = new SchemaImpl();
-		// schema.setName("blogpost");
-		// schema.setDisplayField("title");
-		// schema.setMeshVersion(Mesh.getVersion());
-		//
-		// StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-		// titleFieldSchema.setName("title");
-		// titleFieldSchema.setLabel("Title");
-		// schema.addField(titleFieldSchema);
-		//
-		// HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-		// titleFieldSchema.setName("content");
-		// titleFieldSchema.setLabel("Content");
-		// schema.addField(contentFieldSchema);
-		//
-		// SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-		// SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getAdmin());
-		// blogPostSchemaContainer.setSchema(schema);
-		//
-		// }
-
+			JsonArray projectsArray = schemaJson.getJsonArray("projects");
+			for (int e = 0; e < projectsArray.size(); e++) {
+				String projectName = projectsArray.getString(e);
+				Project project = getProject((String) projectName);
+				project.getSchemaContainerRoot().addSchemaContainer(container);
+			}
+		}
 	}
 
 	private void updatePermissions() {
 		db.noTrx(tc -> {
-			Role role = getRole("admin");
-			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				if (log.isTraceEnabled()) {
-					log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+			for (Role role : roles.values()) {
+				for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
+					WrappedVertex wrappedVertex = (WrappedVertex) vertex;
+					MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+					if (log.isTraceEnabled()) {
+						log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId()
+								+ "}");
+					}
+					role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 				}
-				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+				log.info("Added BasicPermissions to nodes for role {" + role.getName() + "}");
 			}
 		});
-		log.info("Added BasicPermissions to nodes");
 
 	}
 
@@ -413,6 +447,12 @@ public class DemoDataProvider {
 		Role role = roles.get(name);
 		Objects.requireNonNull(role, "Role with name {" + name + "} could not be found.");
 		return role;
+	}
+
+	private Group getGroup(String name) {
+		Group group = groups.get(name);
+		Objects.requireNonNull(group, "Group for name {" + name + "} could not be found.");
+		return group;
 	}
 
 	private User getUser(String name) {

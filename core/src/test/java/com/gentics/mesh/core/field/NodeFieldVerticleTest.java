@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -34,8 +34,8 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 	private NodeVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -55,7 +55,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		Node parentNode = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
-		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
+		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
@@ -68,7 +68,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 
 		// 3. Update node
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-		nodeUpdateRequest.setSchema(new SchemaReference("folder", null));
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeUpdateRequest.setLanguage("en");
 
 		Future<NodeResponse> updateFuture = getClient().updateNode(PROJECT_NAME, future.result().getUuid(), nodeUpdateRequest,

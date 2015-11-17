@@ -27,7 +27,8 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, Microschem
 	 * @param expandField
 	 * @param handler
 	 */
-	void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField, Handler<AsyncResult<Field>> handler);
+	void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField,
+			Handler<AsyncResult<Field>> handler);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
@@ -43,5 +44,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, Microschem
 	 * Delete the field container. This will also delete linked elements like lists
 	 */
 	void delete();
+
+	/**
+	 * Return the display field value for this container.
+	 * 
+	 * @param schema
+	 * @return
+	 */
+	String getDisplayFieldValue(Schema schema);
 
 }

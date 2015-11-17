@@ -16,7 +16,7 @@ public class AbstractEmptyDBTest extends AbstractDBTest {
 	}
 
 	@After
-	public void cleanup() {
+	public void cleanup() throws Exception {
 		tx.close();
 		BootstrapInitializer.clearReferences();
 		databaseService.getDatabase().reset();

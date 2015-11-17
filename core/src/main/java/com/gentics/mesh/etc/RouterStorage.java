@@ -1,5 +1,6 @@
 package com.gentics.mesh.etc;
 
+import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -107,7 +109,37 @@ public class RouterStorage {
 		if (rootRouter == null) {
 			rootRouter = Router.router(vertx);
 
-			// TODO Still valid: somehow this failurehandler prevents authentication?
+			rootRouter.route().last().handler(rh -> {
+				GenericMessageResponse msg = new GenericMessageResponse();
+				String internalMessage = "The rest endpoint or resource for given path {" + rh.normalisedPath() + "} could not be found.";
+				String contentType = rh.request().getHeader("Content-Type");
+				if (contentType == null) {
+					switch (rh.request().method()) {
+					case PUT:
+					case POST:
+						internalMessage += " You tried to POST or PUT data but you did not specifiy any Content-Type within your request.";
+						break;
+					}
+				}
+				String acceptHeaderValue = rh.request().getHeader(HttpHeaders.ACCEPT);
+				if (acceptHeaderValue == null) {
+					internalMessage += " You did not set any accept header. Please make sure to add {" + APPLICATION_JSON
+							+ "} to your accept header.";
+				}
+
+				if (acceptHeaderValue != null) {
+					//TODO validate it and send a msg if the accept header is wrong.
+					internalMessage += " Please verify that your Accept header is set correctly. I got {" + acceptHeaderValue + "}. It must accept {"
+							+ APPLICATION_JSON + "}";
+				}
+
+				msg.setInternalMessage(internalMessage);
+				msg.setMessage("Not Found");
+				rh.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
+				rh.response().setStatusCode(404);
+				rh.response().setStatusMessage("Not Found");
+				rh.response().end(JsonUtil.toJson(msg));
+			});
 			rootRouter.route().failureHandler(failureRoutingContext -> {
 				if (failureRoutingContext.statusCode() == 401) {
 					// Assume that it has been handled by the BasicAuthHandlerImpl
@@ -129,9 +161,9 @@ public class RouterStorage {
 						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
 					} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
 						HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
-						failureRoutingContext.response().setStatusCode(httpStatusError.getCode());
-
-						GenericMessageResponse msg = new GenericMessageResponse(httpStatusError);
+						failureRoutingContext.response().setStatusCode(httpStatusError.getStatus().code());
+						String i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
+						GenericMessageResponse msg = new GenericMessageResponse(i18nMsg, null, httpStatusError.getProperties());
 						failureRoutingContext.response().end(JsonUtil.toJson(msg));
 					} else if (failure != null) {
 						int code = getResponseStatusCode(failure);
@@ -160,7 +192,7 @@ public class RouterStorage {
 		}
 		if (failure instanceof HttpStatusCodeErrorException) {
 			HttpStatusCodeErrorException error = (HttpStatusCodeErrorException) failure;
-			return error.getCode();
+			return error.getStatus().code();
 		}
 		return 500;
 

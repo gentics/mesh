@@ -13,25 +13,33 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -39,6 +47,8 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -60,6 +70,7 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -72,21 +83,26 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * Example generator for the RAML Documentation. This generator will use the rest model POJOs and populate them with fake data to generate example json
+ * responses.
+ */
 public class RAMLExampleGenerator extends AbstractGenerator {
 
 	public static void main(String[] args) throws IOException {
 		new RAMLExampleGenerator().run();
 	}
-	
+
 	public void run() throws IOException {
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "target" + File.separator + "site" + File.separator + "docs" + File.separator + "raml";
+			baseDirProp = "src" + File.separator + "main" + File.separator + "raml";
 		}
 		File baseDir = new File(baseDirProp);
 		outputDir = new File(baseDir, "json");
@@ -111,20 +127,20 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	}
 
-//	private File baseDir = new File("target", "raml2html");
-//
-//	@Before
-//	public void setup() throws IOException {
-//		FileUtils.deleteDirectory(baseDir);
-//	}
+	// private File baseDir = new File("target", "raml2html");
+	//
+	// @Before
+	// public void setup() throws IOException {
+	// FileUtils.deleteDirectory(baseDir);
+	// }
 
-//	@Test
-//	public void testGenerator() throws IOException {
-//		System.setProperty("baseDir", baseDir.getAbsolutePath());
-//		File jsonDir = new File(baseDir, "json");
-//		assertTrue(jsonDir.exists());
-//		assertTrue(jsonDir.listFiles().length != 0);
-//	}
+	// @Test
+	// public void testGenerator() throws IOException {
+	// System.setProperty("baseDir", baseDir.getAbsolutePath());
+	// File jsonDir = new File(baseDir, "json");
+	// assertTrue(jsonDir.exists());
+	// assertTrue(jsonDir.listFiles().length != 0);
+	// }
 
 	private void createJson() throws IOException {
 
@@ -137,8 +153,35 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		schemaJson();
 		microschemaJson();
 		projectJson();
+		searchStatusJson();
 
 		genericResponseJson();
+		loginRequest();
+
+		demoExamples();
+	}
+
+	private void demoExamples() throws JsonGenerationException, JsonMappingException, IOException {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(randomUUID());
+		nodeCreateRequest.setSchema(new SchemaReference().setName("vehicle"));
+		nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("DeLorean DMC-12"));
+		nodeCreateRequest.getFields().put("description", new HtmlFieldImpl().setHTML(
+				"The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."));
+		write(nodeCreateRequest, "demo.NodeCreateRequest.json");
+
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("vehicle"));
+		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber("1230"));
+		write(nodeUpdateRequest, "demo.NodeUpdateRequest.json");
+	}
+
+	private void searchStatusJson() throws JsonGenerationException, JsonMappingException, IOException {
+		SearchStatusResponse status = new SearchStatusResponse();
+		status.setBatchCount(42);
+		write(status);
 	}
 
 	private void genericResponseJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -194,6 +237,10 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		role.setEdited(getTimestamp());
 		role.setEditor(getUserReference());
 		role.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		List<GroupReference> groups = new ArrayList<>();
+		groups.add(new GroupReference().setName("editors").setUuid(randomUUID()));
+		groups.add(new GroupReference().setName("guests").setUuid(randomUUID()));
+		role.setGroups(groups);
 		write(role);
 
 		RoleResponse role2 = new RoleResponse();
@@ -217,7 +264,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		RoleCreateRequest roleCreate = new RoleCreateRequest();
 		roleCreate.setName("super editors");
-		roleCreate.setGroupUuid(randomUUID());
 		write(roleCreate);
 
 		RolePermissionRequest rolePermission = new RolePermissionRequest();
@@ -227,6 +273,13 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		rolePermission.getPermissions().add("update");
 		rolePermission.getPermissions().add("delete");
 		write(rolePermission);
+
+		RolePermissionResponse rolePermissionResponse = new RolePermissionResponse();
+		rolePermissionResponse.getPermissions().add("create");
+		rolePermissionResponse.getPermissions().add("read");
+		rolePermissionResponse.getPermissions().add("update");
+		rolePermissionResponse.getPermissions().add("delete");
+		write(rolePermissionResponse);
 	}
 
 	private void tagJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -250,7 +303,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
-		tagCreate.setTagFamilyReference(tagFamilyReference);
+		tagCreate.setTagFamily(tagFamilyReference);
 		write(tagCreate);
 
 		TagResponse tag2 = new TagResponse();
@@ -322,6 +375,13 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getSchemaCreateRequest());
 		write(getSchemaUpdateRequest());
 		write(getSchemaListResponse());
+	}
+
+	private void loginRequest() throws JsonGenerationException, JsonMappingException, IOException {
+		LoginRequest request = new LoginRequest();
+		request.setUsername("admin");
+		request.setPassword("finger");
+		write(request);
 	}
 
 	private SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {
@@ -399,6 +459,11 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schema;
 	}
 
+	private NodeBreadcrumbResponse getNodeBreadcrumbResponse() throws JsonGenerationException, JsonMappingException, IOException {
+		NodeBreadcrumbResponse response = new NodeBreadcrumbResponse();
+		return response;
+	}
+
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
@@ -430,7 +495,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -481,7 +546,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -500,7 +565,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField("100.1"));
 		fields.put("enabled-booleanField", createBooleanField(true));
-		fields.put("release-dateField", createDateField(System.currentTimeMillis()/1000));
+		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
@@ -527,6 +592,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getNodeCreateRequest());
 		write(getNodeListResponse());
 		write(getNodeUpdateRequest());
+		write(getNodeBreadcrumbResponse());
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -538,6 +604,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		group.setEditor(getUserReference());
 		group.setName("Admin Group");
 		group.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+		group.getRoles().add(new RoleReference().setName("admin").setUuid(randomUUID()));
 		write(group);
 
 		GroupResponse group2 = new GroupResponse();
@@ -568,8 +635,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
 		user2.setEmailAddress("j.roe@nowhere.com");
-		user2.addGroup("super-editors");
-		user2.addGroup("editors");
+		user2.getGroups().add(new GroupReference().setName("super-editors").setUuid(randomUUID()));
+		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user2.setEnabled(true);
 
 		UserListResponse userList = new UserListResponse();
@@ -587,6 +654,13 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		userUpdate.setNodeReference(user2.getNodeReference());
 		write(userUpdate);
+
+		UserPermissionResponse userPermResponse = new UserPermissionResponse();
+		userPermResponse.getPermissions().add("create");
+		userPermResponse.getPermissions().add("read");
+		userPermResponse.getPermissions().add("update");
+		userPermResponse.getPermissions().add("delete");
+		write(userPermResponse);
 
 		UserCreateRequest userCreate = new UserCreateRequest();
 		userCreate.setUsername("jdoe42");
@@ -623,17 +697,34 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		reference.setUuid(randomUUID());
 		user.setNodeReference(reference);
 		user.setEmailAddress("j.doe@nowhere.com");
-		user.addGroup("editors");
+		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		return user;
 	}
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
-		write(object, JsonUtil.getMapper());
+		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
+		write(object, JsonUtil.getMapper(), file);
 	}
 
-	private void write(Object object, ObjectMapper mapper) throws JsonGenerationException, JsonMappingException, IOException {
-		File file = new File(outputDir, object.getClass().getSimpleName() + ".example.json");
+	private void write(Object object, String filename) throws JsonGenerationException, JsonMappingException, IOException {
+		write(object, JsonUtil.getMapper(), new File(outputDir, filename));
+	}
+
+	/**
+	 * Write the example to disk.
+	 * 
+	 * @param object
+	 *            Object to be transformed to json
+	 * @param mapper
+	 *            ObjectMapper to be used
+	 * @param file
+	 *            Outputfile
+	 * @throws JsonGenerationException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 */
+	private void write(Object object, ObjectMapper mapper, File file) throws JsonGenerationException, JsonMappingException, IOException {
 		System.out.println("Writing {" + object.getClass().getSimpleName() + "} to {" + file.getAbsolutePath() + "}");
 		mapper.writerWithDefaultPrettyPrinter().writeValue(file, object);
 	}

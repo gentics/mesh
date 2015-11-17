@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -33,7 +34,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -65,8 +67,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	private NodeVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -83,12 +85,14 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(folder("news").getUuid());
+
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
+		assertThat(searchProvider).recordedStoreEvents(0);
 	}
 
 	@Test
@@ -101,18 +105,20 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(folder("news").getUuid());
+
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
+		assertThat(searchProvider).recordedStoreEvents(0);
 	}
 
 	@Test
 	public void testCreateNodeInBaseNode() {
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -120,11 +126,36 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(project().getBaseNode().getUuid());
 
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
+		assertThat(searchProvider).recordedStoreEvents(1);
+	}
+
+	@Test
+	public void testCreateFolder() {
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		assertNotNull(parentNode);
+		assertNotNull(parentNode.getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("folder").setUuid(schemaContainer("folder").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.setPublished(true);
+		request.setParentNodeUuid(uuid);
+
+		assertThat(searchProvider).recordedStoreEvents(0);
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(request, restNode);
+		assertThat(searchProvider).recordedStoreEvents(1);
 	}
 
 	@Test
@@ -136,7 +167,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -145,18 +176,16 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
-		assertEquals(0, searchProvider.getStoreEvents().size());
-
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
+		assertThat(searchProvider).recordedStoreEvents(1);
 
-		assertEquals(1, searchProvider.getStoreEvents().size());
-
-		SearchQueue searchQueue = meshRoot().getSearchQueue();
-		assertEquals("We created the node. The searchqueue batch should have been processed.", 0, searchQueue.getSize());
+		// We created the node. The searchqueue batch should have been processed
+		assertThat(meshRoot().getSearchQueue()).hasEntries(0);
 		// SearchQueueBatch batch = searchQueue.take();
 		// assertEquals(1, batch.getEntries().size());
 		// SearchQueueEntry entry = batch.getEntries().get(0);
@@ -189,12 +218,14 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folder("news").getUuid());
 
-		// Create node
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("de");
+
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request, parameters);
 		latchFor(future);
 		assertSuccess(future);
+		assertThat(searchProvider).recordedStoreEvents(1);
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
@@ -238,7 +269,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
@@ -274,18 +305,20 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().revokePermissions(node, CREATE_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
+		SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
 
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+		assertThat(searchProvider).recordedStoreEvents(0);
 	}
 
 	// Read tests
@@ -306,6 +339,30 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		assertEquals(getNodeCount(), restResponse.getData().size());
+	}
+
+	@Test
+	public void testReadMultipleAndAssertOrder() {
+		Node parentNode = folder("2015");
+		int nNodes = 20;
+		for (int i = 0; i < nNodes; i++) {
+			Node node = parentNode.create(user(), schemaContainer("content"), project());
+			assertNotNull(node);
+			role().grantPermissions(node, READ_PERM);
+		}
+
+		String firstUuid = null;
+		for (int i = 0; i < 10; i++) {
+			Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 100));
+			latchFor(future);
+			assertSuccess(future);
+			if (firstUuid == null) {
+				firstUuid = future.result().getData().get(0).getUuid();
+			}
+			assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid,
+					future.result().getData().get(0).getUuid());
+		}
+
 	}
 
 	@Test
@@ -425,7 +482,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		long nNodesFound = meshRoot().getNodeRoot().findAll().size();
 
 		NodeCreateRequest createRequest = new NodeCreateRequest();
-		createRequest.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		createRequest.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		createRequest.setLanguage("en");
 		createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
 		createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -506,7 +563,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -688,6 +745,27 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadNodeByUUIDNoLanguage() throws Exception {
+
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		Node parentNode = folder("products");
+		Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
+		Node node = parentNode.create(user(), schemaContainer("content"), project());
+		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(languageNl);
+		englishContainer.createString("name").setString("name");
+		englishContainer.createString("title").setString("title");
+		englishContainer.createString("displayName").setString("displayName");
+		englishContainer.createString("filename").setString("filename.nl.html");
+		englishContainer.createHTML("content").setHtml("nl content");
+
+		NodeRequestParameter parameters = new NodeRequestParameter();
+		parameters.setLanguages("nl");
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_no_language_found", "nl");
+	}
+
+	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 
 		Node node = folder("2015");
@@ -698,9 +776,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("blabla", "edgsdg");
 
+		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
+		assertThat(searchProvider).recordedStoreEvents(0);
 
 	}
 
@@ -826,7 +906,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("extrafield", FieldUtil.createStringField("some extra field value"));
@@ -854,7 +934,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		// non required title field is missing
 		// required name field is missing
@@ -878,7 +958,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		// title field is missing
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -951,13 +1031,10 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 
 		expectMessageResponse("node_deleted", future, uuid);
-
 		assertElement(meshRoot().getNodeRoot(), uuid, false);
-
-		assertEquals("Two documents within the index should have been deleted. (en,de)", 2, searchProvider.getDeleteEvents().size());
-
+		assertThat(searchProvider).recordedDeleteEvents(2);
 		SearchQueue searchQueue = meshRoot().getSearchQueue();
-		assertEquals("We deleted the item. A search queue entry should have been created.", 0, searchQueue.getSize());
+		assertThat(searchQueue).hasEntries(0);
 		// SearchQueueBatch batch = searchQueue.take();
 		// assertEquals(1, batch.getEntries().size());
 		// SearchQueueEntry entry = batch.getEntries().get(0);

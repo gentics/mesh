@@ -1,5 +1,7 @@
 package com.gentics.mesh.handler.impl;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDALL_QUERY_PARAM_KEY;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -17,8 +19,10 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -57,6 +61,11 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 
 	@Override
+	public Database getDatabase() {
+		return MeshSpringConfiguration.getInstance().database();
+	}
+
+	@Override
 	public MeshAuthUser getUser() {
 		RoutingContext rc = getRoutingContext();
 		if (user == null && rc.user() != null) {
@@ -87,7 +96,20 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 
 	@Override
-	public String getRolePermisssionParameter() {
+	public boolean getExpandAllFlag() {
+		Map<String, String> queryPairs = splitQuery();
+		if (queryPairs == null) {
+			return false;
+		}
+		String value = queryPairs.get(EXPANDALL_QUERY_PARAM_KEY);
+		if (value != null) {
+			return Boolean.valueOf(value);
+		}
+		return false;
+	}
+
+	@Override
+	public String getRolePermissionParameter() {
 		Map<String, String> queryPairs = splitQuery();
 		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
@@ -120,10 +142,10 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 			perPageInt = NumberUtils.toInt(perPage, MeshOptions.DEFAULT_PAGE_SIZE);
 		}
 		if (pageInt < 1) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		if (perPageInt < 0) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, i18n("error_invalid_paging_parameters"));
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		return new PagingParameter(pageInt, perPageInt);
 	}
@@ -132,4 +154,5 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters) {
 		send(JsonUtil.toJson(new GenericMessageResponse(i18n(i18nMessage, i18nParameters))), status);
 	}
+
 }

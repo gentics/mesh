@@ -1,11 +1,14 @@
 package com.gentics.mesh.graphdb;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -13,7 +16,9 @@ import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.mesh.etc.StorageOptions;
+import org.apache.commons.io.IOUtils;
+
+import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
@@ -29,6 +34,9 @@ import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.server.OServer;
+import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -67,7 +75,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(StorageOptions options, Vertx vertx) {
+	public void init(GraphStorageOptions options, Vertx vertx) throws Exception {
 		super.init(options, vertx);
 		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = options.getParameters().get("maxTransactionRetry").getAsInt();
@@ -86,7 +94,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		Orient.instance().startup();
 		if (options == null || options.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
@@ -94,12 +102,46 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
 		}
+		if (options != null && options.getStartServer()) {
+			startOrientServer();
+		}
 		configureGraphDB();
-		//		createIndices();
+	}
 
+	private InputStream getOrientServerConfig() throws IOException {
+		InputStream configIns = getClass().getResourceAsStream("/config/orientdb-server-config.xml");
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orient-plugins");
+		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
+		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
+		configString = configString.replaceAll("%MESH_DB_PATH%", "plocal:" + new File(options.getDirectory()).getAbsolutePath());
+		if (log.isDebugEnabled()) {
+			log.debug("Effective orientdb server configuration:" + configString);
+		}
+		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
+		return stream;
+	}
+
+	private void startOrientServer() throws Exception {
+		OServer server = OServerMain.create();
+
+		log.info("Extracting OrientDB Studio");
+		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.1.zip");
+		File pluginDirectory = new File("orient-plugins");
+		pluginDirectory.mkdirs();
+		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.1.zip")));
+
+		server.startup(getOrientServerConfig());
+		OServerPluginManager manager = new OServerPluginManager();
+		manager.config(server);
+		server.activate();
+		manager.startup();
 	}
 
 	private void configureGraphDB() {
+		log.info("Configuring orientdb...");
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			tx.setUseLightweightEdges(false);
@@ -143,6 +185,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
+		if (log.isDebugEnabled()) {
+			log.debug("Adding edge type for label {" + label + "}");
+		}
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			OrientEdgeType e = tx.getEdgeType(label);
@@ -161,6 +206,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addVertexType(Class<?> clazzOfVertex) {
+		if (log.isDebugEnabled()) {
+			log.debug("Adding vertex type for class {" + clazzOfVertex.getName() + "}");
+		}
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			OrientVertexType e = tx.getVertexType(clazzOfVertex.getSimpleName());
@@ -174,6 +222,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addEdgeIndexSource(String label) {
+		if (log.isDebugEnabled()) {
+			log.debug("Adding source edge index for label {" + label + "}");
+		}
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			OrientEdgeType e = tx.getEdgeType(label);
@@ -195,6 +246,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+		if (log.isDebugEnabled()) {
+			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
+		}
 		OrientGraphNoTx tx = factory.getNoTx();
 		try {
 			String name = clazzOfVertices.getSimpleName();
