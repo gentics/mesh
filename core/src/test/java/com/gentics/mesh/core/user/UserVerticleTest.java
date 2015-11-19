@@ -874,16 +874,14 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		try (Trx tx = db.trx()) {
 			User loadedUser = boot.userRoot().findByUuidBlocking(uuid);
-			assertNotNull("The user should not have been deleted. It should just be disabled.", loadedUser);
-			assertFalse(loadedUser.isEnabled());
+			assertNull("The user should have been deleted.", loadedUser);
 		}
 
 		// Load the user again and check whether it is disabled
 		Future<UserResponse> userFuture = getClient().findUserByUuid(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		assertNotNull(userFuture.result());
-		assertFalse(userFuture.result().getEnabled());
+		assertNull(userFuture.result());
 
 	}
 
