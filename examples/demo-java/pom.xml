@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-examples</artifactId>
-		<version>1.0.4-beta-SNAPSHOT</version>
+		<version>1.0.5-beta-SNAPSHOT</version>
 	</parent>
 
 	<properties>
