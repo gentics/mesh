@@ -283,12 +283,12 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().revokePermissions(schemaContainer("content"), READ_PERM);
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		SchemaReference schemaReference = new SchemaReference("content", schemaContainer("content").getUuid());
+		SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setSchema(new SchemaReference("content", schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
 
