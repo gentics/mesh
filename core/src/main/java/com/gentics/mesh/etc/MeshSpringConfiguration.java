@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
+import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -31,7 +32,6 @@ import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
-import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -121,7 +121,7 @@ public class MeshSpringConfiguration {
 	 */
 	@Bean
 	public AuthHandler authHandler() {
-		return BasicAuthHandler.create(authProvider(), BasicAuthHandler.DEFAULT_REALM);
+		return new MeshBasicAuthHandler(authProvider());
 	}
 
 	/**
