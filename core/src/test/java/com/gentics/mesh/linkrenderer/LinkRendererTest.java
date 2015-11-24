@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,16 +12,13 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
-import com.gentics.mesh.core.link.LinkReplacer;
-import com.gentics.mesh.core.link.LinkResolver;
-import com.gentics.mesh.core.link.LinkResolverFactory;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.util.UUIDUtil;
 
 public class LinkRendererTest extends AbstractBasicDBTest {
 
-	final String content = "some bla START<a href=\"${Page(2)}\">Test</a>   dasasdg <a href=\"${Page(3)}\">Test</a>DEN";
-
 	@Autowired
-	private LinkResolverFactory<LinkResolver> resolverFactory;
+	private WebRootLinkReplacer resolver;
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
@@ -41,16 +37,17 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 
-		LinkReplacer<LinkResolver> replacer = new LinkReplacer(resolverFactory);
-		replacer.replace("dgasd");
+		String output = resolver.replace("dgasd");
 	}
 
-	@Ignore("Disabled for now")
 	@Test
 	public void testRendering() throws IOException {
+		String uuid = UUIDUtil.randomUUID();
+		final String content = "some bla START<a href=\"{{mesh.link(\"" + uuid + "\")}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
+				+ "\")}}\">Test</a>DEN";
 		System.out.println(content);
-		int start = content.indexOf("#");
-		int stop = content.lastIndexOf(")");
+		int start = content.indexOf("{{mesh.link(");
+		int stop = content.lastIndexOf(")}}") +3;
 		int len = stop - start;
 		System.out.println("from " + start + " to " + stop + " len " + len);
 		InputStream in = IOUtils.toInputStream(content);

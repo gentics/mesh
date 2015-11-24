@@ -2,15 +2,10 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.handler.InternalActionContext;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 
 /**
  * A schema container is a graph element which stores the JSON schema data.

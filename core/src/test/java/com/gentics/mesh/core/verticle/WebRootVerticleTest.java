@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
