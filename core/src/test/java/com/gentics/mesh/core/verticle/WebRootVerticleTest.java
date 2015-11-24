@@ -7,6 +7,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	public void testReadFolderByPathAndResolveLinks() {
 		Node content = content("news_2015");
 
-		content.getGraphFieldContainer(english()).getHtml("content").setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
+		content.getGraphFieldContainer(english()).getHtml("content")
+				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 		String path = "/News/2015/News_2015_english_name";
 
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true).setLanguages("en"));
@@ -72,13 +74,13 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadContentByPath() throws Exception {
-		String path = "/News/2015/News_2015_english_name?lang=en,de";
-		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+		String path = "/News/2015/News_2015_english_name";
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 
-		Node node = folder("2015");
+		Node node = content("news_2015");
 		test.assertMeshNode(node, restNode);
 		// assertNotNull(restNode.getProperties());
 
@@ -86,8 +88,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testPathWithSpaces() throws Exception {
-		String path = "/News/2015/Special News_2014_english_name?lang=en,de";
-		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+		String path = "/News/2015/Special News_2014_english_name";
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);
 	}
@@ -98,6 +100,11 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", "blub");
+	}
+
+	@Test
+	public void testReadFolderWithLanguageFallbackInPath() {
+		fail("Not yet tested");
 	}
 
 	@Test

@@ -5,6 +5,8 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -460,6 +462,11 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	@Override
 	public Future<NodeResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
+		try {
+			path = URLEncoder.encode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return Future.failedFuture(e);
+		}
 		return invokeRequest(GET, "/" + projectName + "/webroot/" + path + getQuery(parameters), NodeResponse.class);
 	}
 

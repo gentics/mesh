@@ -6,6 +6,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,18 +39,25 @@ public class WebRootHandler {
 	public void handleGetPath(InternalActionContext ac) {
 
 		String path = ac.getParameter("param0");
+		try {
+			path = URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			ac.fail(e);
+			return;
+		}
+		final String decodedPath = path;
 		String projectName = ac.getProject().getName();
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
 		Mesh.vertx().executeBlocking((Future<Node> bch) -> {
 			try (Trx tx = db.trx()) {
-				Observable<Path> nodePath = webrootService.findByProjectPath(ac, projectName, path);
+				Observable<Path> nodePath = webrootService.findByProjectPath(ac, projectName, decodedPath);
 				PathSegment lastSegment = nodePath.toBlocking().last().getLast();
 
 				if (lastSegment != null) {
 					Node node = lastSegment.getNode();
 					if (node == null) {
-						throw error(NOT_FOUND, "node_not_found_for_path", path);
+						throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 					}
 
 					if (requestUser.hasPermission(ac, node, READ_PERM)) {
@@ -65,7 +75,7 @@ public class WebRootHandler {
 					// });
 
 				} else {
-					throw error(NOT_FOUND, "node_not_found_for_path", path);
+					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}
 			}
 		} , arh -> {
