@@ -121,14 +121,50 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	@Override
 	public String getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
-		String fieldName = getSchema().getSegmentField();
 		if (container != null) {
+			String fieldName = getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
 				return field.getString();
 			}
 		}
 		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+	}
+
+	@Override
+	public String getPathSegment(Language language) {
+		NodeGraphFieldContainer container = getGraphFieldContainer(language);
+		if (container != null) {
+			String fieldName = getSchema().getSegmentField();
+			StringGraphField field = container.getString(fieldName);
+			if (field != null) {
+				return field.getString();
+			}
+		}
+		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+	}
+
+	@Override
+	public String getPath(Language language) {
+		List<String> segments = new ArrayList<>();
+
+		segments.add(getPathSegment(language));
+		Node current = this;
+		while (current != null) {
+			current = current.getParentNode();
+			if (current == null || current.getParentNode() == null) {
+				break;
+			}
+			segments.add(current.getPathSegment(language));
+		}
+
+		Collections.reverse(segments);
+		StringBuilder builder = new StringBuilder();
+		Iterator<String> it = segments.iterator();
+		while (it.hasNext()) {
+			builder.append("/" + it.next());
+		}
+		return builder.toString();
 	}
 
 	@Override

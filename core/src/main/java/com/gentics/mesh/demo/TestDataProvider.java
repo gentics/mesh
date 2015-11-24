@@ -407,7 +407,7 @@ public class TestDataProvider {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			englishContainer.createString("name").setString(name + " english name");
+			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("filename").setString(name + ".en.html");

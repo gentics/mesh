@@ -391,4 +391,20 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 */
 	boolean hasSegment(String segment);
+
+	/**
+	 * Return the webroot path to the node in the given language.
+	 * 
+	 * @param language
+	 * @return
+	 */
+	String getPath(Language language);
+
+	/**
+	 * Return the path segment value of this node in the given language.
+	 * 
+	 * @param language
+	 * @return
+	 */
+	String getPathSegment(Language language);
 }

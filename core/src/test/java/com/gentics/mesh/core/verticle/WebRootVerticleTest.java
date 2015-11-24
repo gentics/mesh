@@ -6,6 +6,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -50,8 +53,26 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testReadFolderByPathAndResolveLinks() {
+		Node content = content("news_2015");
+
+		content.getGraphFieldContainer(english()).getHtml("content").setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
+		String path = "/News/2015/News_2015_english_name";
+
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true).setLanguages("en"));
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		HtmlFieldImpl contentField = restNode.getField("content", HtmlFieldImpl.class);
+		assertNotNull(contentField);
+		System.out.println(contentField.getHTML());
+
+		test.assertMeshNode(content, restNode);
+	}
+
+	@Test
 	public void testReadContentByPath() throws Exception {
-		String path = "/News/2015?lang=en,de";
+		String path = "/News/2015/News_2015_english_name?lang=en,de";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
 		assertSuccess(future);
@@ -61,6 +82,14 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		test.assertMeshNode(node, restNode);
 		// assertNotNull(restNode.getProperties());
 
+	}
+
+	@Test
+	public void testPathWithSpaces() throws Exception {
+		String path = "/News/2015/Special News_2014_english_name?lang=en,de";
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
+		latchFor(future);
+		assertSuccess(future);
 	}
 
 	@Test

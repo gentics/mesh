@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -392,7 +393,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						handler.handle(Future.failedFuture(th.cause()));
 						return;
 					} else {
-						handler.handle(Future.succeededFuture(th.result()));
+						StringField stringField = th.result();
+						if (ac.getResolveLinksFlag()) {
+							stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString()));
+						}
+						handler.handle(Future.succeededFuture(stringField));
 						return;
 					}
 				});
@@ -441,7 +446,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				handler.handle(Future.succeededFuture(new HtmlFieldImpl()));
 				return;
 			} else {
-				graphHtmlField.transformToRest(ac, wrap(handler));
+				graphHtmlField.transformToRest(ac,  rhRest -> {
+					if (rhRest.failed()) {
+						handler.handle(Future.failedFuture(rhRest.cause()));
+					} else {
+						// If needed resolve links within the html 
+						HtmlField field = rhRest.result();
+						if (ac.getResolveLinksFlag()) {
+							field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML()));
+						}
+						handler.handle(Future.succeededFuture(field));
+					}
+				});
 				return;
 			}
 		case LIST:

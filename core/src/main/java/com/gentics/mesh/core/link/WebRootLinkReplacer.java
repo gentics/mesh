@@ -4,9 +4,15 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
+
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.MeshRoot;
 
 import rx.Observable;
 
@@ -19,10 +25,21 @@ public class WebRootLinkReplacer {
 	private static final String START_TAG = "{{mesh.link(";
 	private static final String END_TAG = ")}}";
 
+	private static WebRootLinkReplacer instance;
+
+	@PostConstruct
+	public void setup() {
+		WebRootLinkReplacer.instance = this;
+	}
+
+	public static WebRootLinkReplacer getInstance() {
+		return instance;
+	}
+
 	/**
 	 * Replace the links in the content.
 	 */
-	public String replace(String content) throws InterruptedException, ExecutionException {
+	public String replace(String content) {
 
 		if (isEmpty(content)) {
 			return content;
@@ -35,16 +52,22 @@ public class WebRootLinkReplacer {
 		int nLink = 0;
 		// 1. Tokenize the content
 		while (s != -1) {
-			s = content.indexOf(START_TAG, s + START_TAG.length());
-			int e = content.indexOf(END_TAG, s);
+			int r = 0;
+			if (s != 0) {
+				r = s + START_TAG.length();
+			}
+			s = content.indexOf(START_TAG, r);
 			if (s == -1) {
 				break;
 			}
+			int e = content.indexOf(END_TAG, s);
 			segments[nLink][0] = s;
 			segments[nLink][1] = e + END_TAG.length();
 
 			// 2. Parse the link and invoke resolving
 			String link = content.substring(s + START_TAG.length(), e);
+			// Strip away the quotes. We only care about the argument values
+			link = link.replaceAll("'", "");
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
@@ -71,7 +94,16 @@ public class WebRootLinkReplacer {
 	}
 
 	private Observable<String> resolve(String uuid, String languageTag) {
+		if (languageTag == null) {
+			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
+		}
+		// Get rid of additional whitespaces
+		uuid  = uuid.trim();
+		languageTag = languageTag.trim();
+		Node node = MeshRoot.getInstance().getNodeRoot().findByUuidBlocking(uuid);
+		Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+		
 		System.out.println("Link:" + uuid + " lang " + languageTag);
-		return Observable.just("test");
+		return Observable.just("/webroot" + node.getPath(language));
 	}
 }

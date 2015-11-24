@@ -18,7 +18,7 @@ import com.gentics.mesh.util.UUIDUtil;
 public class LinkRendererTest extends AbstractBasicDBTest {
 
 	@Autowired
-	private WebRootLinkReplacer resolver;
+	private WebRootLinkReplacer replacer;
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
@@ -37,7 +37,18 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 
-		String output = resolver.replace("dgasd");
+		String output = replacer.replace("dgasd");
+	}
+
+	@Test
+	public void testResolving() throws InterruptedException, ExecutionException {
+		Node newsNode = content("news overview");
+		String uuid = newsNode.getUuid();
+		final String content = "some bla START<a href=\"{{mesh.link('" + uuid + "','en')}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
+				+ "\")}}\">Test</a>DEN";
+		System.out.println("From: " + content);
+		String output = replacer.replace(content);
+		System.out.println("To:   " + output);
 	}
 
 	@Test
@@ -47,7 +58,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 				+ "\")}}\">Test</a>DEN";
 		System.out.println(content);
 		int start = content.indexOf("{{mesh.link(");
-		int stop = content.lastIndexOf(")}}") +3;
+		int stop = content.lastIndexOf(")}}") + 3;
 		int len = stop - start;
 		System.out.println("from " + start + " to " + stop + " len " + len);
 		InputStream in = IOUtils.toInputStream(content);

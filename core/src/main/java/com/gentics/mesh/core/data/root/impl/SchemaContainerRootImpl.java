@@ -30,7 +30,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>implements SchemaContainerRoot {
+public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
@@ -108,6 +108,16 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_name"))));
 				return;
 			}
+			if (StringUtils.isEmpty(schema.getSegmentField())) {
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_segmentfield"))));
+				return;
+			}
+			if (StringUtils.isEmpty(schema.getDisplayField())) {
+				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_displayfield"))));
+				return;
+			}
+			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields 
+
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 				db.trx(txCreate -> {
 					try {

@@ -98,6 +98,16 @@ public class NodeTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testGetPath() {
+		Node newsNode = content("news overview");
+		String path = newsNode.getPath(english());
+		assertEquals("/News/News Overview english name", path);
+
+		String pathSegementFieldValue = newsNode.getPathSegment(english());
+		assertEquals("News Overview english name", pathSegementFieldValue);
+	}
+
+	@Test
 	public void testMeshNodeStructure() {
 		Node newsNode = content("news overview");
 		assertNotNull(newsNode);
