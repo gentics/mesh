@@ -35,7 +35,6 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Disabled")
 	public void testReadFolderByPath() throws Exception {
 		Node folder = folder("2015");
 		String path = "/News/2015";
@@ -52,22 +51,20 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Disabled")
 	public void testReadContentByPath() throws Exception {
-		String path = "/api/v1/" + PROJECT_NAME + "/webroot/Products/Concorde.en.html?lang=en,de";
+		String path = "/News/2015?lang=en,de";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse restNode = future.result();
 
-		Node concordeNode = content("concorde");
-		test.assertMeshNode(concordeNode, restNode);
+		Node node = folder("2015");
+		test.assertMeshNode(node, restNode);
 		// assertNotNull(restNode.getProperties());
 
 	}
 
 	@Test
-	@Ignore("Disabled")
 	public void testReadFolderWithBogusPath() throws Exception {
 		String path = "/blub";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
@@ -76,7 +73,6 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Disabled")
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "News/2015";
 		Node newsFolder;
@@ -89,7 +85,6 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Disabled")
 	public void testReadContentByInvalidPath() throws Exception {
 		String invalidPath = "News/2015/no-valid-content.html";
 
@@ -99,7 +94,6 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Disabled")
 	public void testReadContentByInvalidPath2() throws Exception {
 		String invalidPath = "News/no-valid-folder/no-valid-content.html";
 

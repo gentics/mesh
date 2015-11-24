@@ -38,6 +38,11 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-rx-java</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

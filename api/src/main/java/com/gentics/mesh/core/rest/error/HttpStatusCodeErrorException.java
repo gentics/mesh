@@ -5,6 +5,7 @@ import java.util.Map;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import rx.Observable;
 
 public class HttpStatusCodeErrorException extends RuntimeException {
 
@@ -51,6 +52,10 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 
 	public static <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters) {
 		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18nKey, parameters));
+	}
+
+	public static <T> Observable<T> errorObservable(HttpResponseStatus status, String i18nKey, String... parameters) {
+		return Observable.error(new HttpStatusCodeErrorException(status, i18nKey, parameters));
 	}
 
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String message, Throwable e) {

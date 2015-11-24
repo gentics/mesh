@@ -1,24 +1,23 @@
 package com.gentics.mesh.path;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.core.data.node.Node;
 
 public class PathSegment {
 
-	private Vertex vertex;
+	private Node node;
 
 	private String languageTag;
 
-	public PathSegment(Vertex vertex, String languageTag) {
-		this.vertex = vertex;
-		this.languageTag = languageTag;
+	public PathSegment(Node node) {
+		this.node = node;
 	}
 
 	public String getLanguageTag() {
 		return languageTag;
 	}
 
-	public Vertex getVertex() {
-		return vertex;
+	public Node getNode() {
+		return node;
 	}
 
 }

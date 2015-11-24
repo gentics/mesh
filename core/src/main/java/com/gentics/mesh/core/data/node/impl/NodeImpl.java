@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -68,6 +70,8 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RestModelHelper;
@@ -791,4 +795,45 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return batch;
 	}
 
+	@Override
+	public boolean hasSegment(String segment) {
+		Schema schema = getSchema();
+
+		// Check the binary field name
+		if (schema.isBinary() && segment.equals(getBinaryFileName())) {
+			return true;
+		}
+
+		// Check the different language versions
+		String segmentFieldName = schema.getSegmentField();
+		for (GraphFieldContainer container : getGraphFieldContainers()) {
+			String fieldValue = container.getString(segmentFieldName).getString();
+			if (segment.equals(fieldValue)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Observable<Path> resolvePath(Path path, Stack<String> pathStack) {
+		if (pathStack.isEmpty()) {
+			return Observable.just(path);
+		}
+		String segment = pathStack.pop();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving for path segment {" + segment + "}");
+		}
+
+		// Check all childnodes
+		for (Node childNode : getChildren()) {
+			if (childNode.hasSegment(segment)) {
+				path.addSegment(new PathSegment(childNode));
+				return childNode.resolvePath(path, pathStack);
+			}
+		}
+		return errorObservable(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
+
+	}
 }
