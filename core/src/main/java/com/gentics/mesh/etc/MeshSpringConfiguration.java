@@ -14,6 +14,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
+import com.gentics.mesh.core.image.ImageProvider;
+import com.gentics.mesh.core.image.ImageProviderService;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -61,6 +63,19 @@ public class MeshSpringConfiguration {
 	}
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
+
+
+	@Bean
+	public ImageProviderService imageProviderService() {
+		return ImageProviderService.getInstance();
+	}
+	
+	@Bean
+	public ImageProvider imageProvider() {
+		ImageProvider provider = imageProviderService().getImageProvider();
+		//TODO assert provider
+		return provider;
+	}
 
 	@Bean
 	public DatabaseService databaseService() {

@@ -664,12 +664,12 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid) {
+	public Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
 		Future<NodeDownloadResponse> future = Future.future();
-		String path = "/" + projectName + "/nodes/" + nodeUuid + "/bin";
+		String path = "/" + projectName + "/nodes/" + nodeUuid + "/bin" + getQuery(parameters);
 		String uri = BASEURI + path;
 
 		HttpClientRequest request = client.request(GET, uri, rh -> {
