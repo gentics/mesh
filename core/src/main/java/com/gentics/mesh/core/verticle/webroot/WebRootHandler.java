@@ -46,12 +46,11 @@ public class WebRootHandler {
 			return;
 		}
 		final String decodedPath = path;
-		String projectName = ac.getProject().getName();
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
 		Mesh.vertx().executeBlocking((Future<Node> bch) -> {
 			try (Trx tx = db.trx()) {
-				Observable<Path> nodePath = webrootService.findByProjectPath(ac, projectName, decodedPath);
+				Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
 				PathSegment lastSegment = nodePath.toBlocking().last().getLast();
 
 				if (lastSegment != null) {

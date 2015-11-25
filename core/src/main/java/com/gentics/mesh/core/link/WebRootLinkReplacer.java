@@ -98,12 +98,10 @@ public class WebRootLinkReplacer {
 			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
 		}
 		// Get rid of additional whitespaces
-		uuid  = uuid.trim();
+		uuid = uuid.trim();
 		languageTag = languageTag.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuidBlocking(uuid);
 		Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
-		
-		System.out.println("Link:" + uuid + " lang " + languageTag);
 		return Observable.just("/webroot" + node.getPath(language));
 	}
 }

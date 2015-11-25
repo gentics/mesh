@@ -6,6 +6,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -99,7 +100,30 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		String path = "/blub";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", "blub");
+		expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
+	}
+
+	@Test
+	public void testReadProjectBaseNode() {
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, "/");
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse response = future.result();
+		assertEquals(project().getBaseNode().getUuid(), response.getUuid());
+	}
+
+	@Test
+	public void testReadDoubleSlashes() {
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, "//");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_not_found_for_path", "//");
+	}
+
+	@Test
+	public void testReadWithEmptyPath() {
+		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, "");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_not_found_for_path", "");
 	}
 
 	@Test

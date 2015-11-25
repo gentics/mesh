@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -26,20 +27,32 @@ public class WebRootService {
 	@Autowired
 	private BootstrapInitializer boot;
 
-	public Observable<Path> findByProjectPath(InternalActionContext ac, String projectName, String path) {
+	/**
+	 * Find the element that corresponds to the given project webroot path.
+	 * 
+	 * @param ac
+	 * @param path
+	 * @return
+	 */
+	public Observable<Path> findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();
 		Node baseNode = project.getBaseNode();
+		Path nodePath = new Path();
+		nodePath.setTargetPath(path);
+
+		// Handle path to project root (baseNode) 
+		if ("/".equals(path)) {
+			nodePath.addSegment(new PathSegment(baseNode));
+			return Observable.just(nodePath);
+		}
 
 		// Prepare the stack which we use for resolving
-		path = path.replaceAll("^/+", "");
-		String[] elements = path.split("\\/");
+		String sanitizedPath = path.replaceAll("^/+", "");
+		String[] elements = sanitizedPath.split("\\/");
 		List<String> list = Arrays.asList(elements);
 		Stack<String> stack = new Stack<String>();
 		Collections.reverse(list);
 		stack.addAll(list);
-
-		Path nodePath = new Path();
-		nodePath.setTargetPath(path);
 
 		// Traverse the graph and buildup the result path while doing so
 		Observable<Path> obsNode = baseNode.resolvePath(nodePath, stack);
