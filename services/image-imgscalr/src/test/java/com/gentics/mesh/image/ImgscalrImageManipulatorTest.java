@@ -5,20 +5,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.query.impl.ImageRequestParameter;
 
@@ -32,12 +27,6 @@ public class ImgscalrImageManipulatorTest {
 	@Before
 	public void setup() {
 		manipulator = new ImgscalrImageManipulator();
-	}
-
-	@After
-	public void cleanup() throws IOException {
-		String cacheDir = Mesh.mesh().getOptions().getUploadOptions().getImageCacheDirectory();
-		FileUtils.deleteDirectory(new File(cacheDir));
 	}
 
 	@Test
@@ -61,7 +50,7 @@ public class ImgscalrImageManipulatorTest {
 
 	@Test
 	public void testResizeImage() {
-		//Width only
+		// Width only
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
 		bi = manipulator.resizeIfRequested(bi, new ImageRequestParameter().setWidth(200));
 		assertEquals(200, bi.getWidth());

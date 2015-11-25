@@ -227,13 +227,44 @@ public class ImageRequestParameter implements QueryParameterProvider {
 		return oneSet ? allSet : true;
 	}
 
-	
 	/**
 	 * Check whether all required crop parameters have been set.
+	 * 
 	 * @return
 	 */
 	public boolean hasAllCropParameters() {
-		return  croph != null && cropw != null && startx != null && starty != null;
+		return croph != null && cropw != null && startx != null && starty != null;
+	}
+
+	/**
+	 * Generate cache key.
+	 * 
+	 * @param parameters
+	 * @return
+	 */
+	public String getCacheKey() {
+
+		StringBuilder builder = new StringBuilder();
+
+		if (getStartx() != null) {
+			builder.append("cx" + getStartx());
+		}
+		if (getStarty() != null) {
+			builder.append("cy" + getStarty());
+		}
+		if (getCropw() != null) {
+			builder.append("cw" + getCropw());
+		}
+		if (getCroph() != null) {
+			builder.append("ch" + getCroph());
+		}
+		if (getWidth() != null) {
+			builder.append("rw" + getWidth());
+		}
+		if (getHeight() != null) {
+			builder.append("rh" + getHeight());
+		}
+		return builder.toString();
 	}
 
 }

@@ -46,4 +46,20 @@ public class ImageRequestParameterTest {
 		assertEquals(param.getHeight(), paramsFromQuery.getHeight());
 		assertTrue(paramsFromQuery.isSet());
 	}
+
+	@Test
+	public void testCacheKey() {
+		String cacheKey = new ImageRequestParameter().getCacheKey();
+		assertEquals("", cacheKey);
+
+		cacheKey = new ImageRequestParameter().setWidth(100).setHeight(200).getCacheKey();
+		assertEquals("rw100rh200", cacheKey);
+
+		System.out.println(cacheKey);
+
+		cacheKey = new ImageRequestParameter().setWidth(100).setHeight(200).setCroph(20).setCropw(21).setStartx(10).setStarty(22).getCacheKey();
+		assertEquals("cx10cy22cw21ch20rw100rh200", cacheKey);
+		System.out.println(cacheKey);
+
+	}
 }

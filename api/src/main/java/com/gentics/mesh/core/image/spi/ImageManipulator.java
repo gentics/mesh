@@ -33,4 +33,13 @@ public interface ImageManipulator {
 	 */
 	Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageRequestParameter parameters);
 
+	/**
+	 * Return the cache file for the given sha512 checksum and image manipulation parameters.
+	 * 
+	 * @param sha512sum
+	 * @param parameters
+	 * @return
+	 */
+	File getCacheFile(String sha512sum, ImageRequestParameter parameters);
+
 }

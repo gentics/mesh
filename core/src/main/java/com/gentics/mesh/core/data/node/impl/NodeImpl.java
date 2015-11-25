@@ -653,12 +653,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public String getBinarySegmentedPath() {
-		String uuid = getUuid();
-		String[] parts = uuid.split("(?<=\\G.{4})");
+		String[] parts = getUuid().split("(?<=\\G.{4})");
 		StringBuffer buffer = new StringBuffer();
-		buffer.append('/');
+		buffer.append(File.separator);
 		for (String part : parts) {
-			buffer.append(part + '/');
+			buffer.append(part + File.separator);
 		}
 		return buffer.toString();
 	}

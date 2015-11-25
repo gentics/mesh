@@ -46,12 +46,17 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 		FileUtils.deleteDirectory(tempDir);
 		tempDir.mkdirs();
 
+		File imageCacheDir = new File(Mesh.mesh().getOptions().getUploadOptions().getImageCacheDirectory());
+		FileUtils.deleteDirectory(imageCacheDir);
+		imageCacheDir.mkdirs();
+
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 	}
 
 	@After
 	public void cleanup() throws Exception {
 		super.cleanup();
+//		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getImageCacheDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 	}
