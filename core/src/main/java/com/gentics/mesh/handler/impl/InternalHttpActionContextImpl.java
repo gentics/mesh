@@ -125,6 +125,9 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	@Override
 	public String getRolePermissionParameter() {
 		Map<String, String> queryPairs = splitQuery();
+		if (queryPairs == null) {
+			return null;
+		}
 		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
 

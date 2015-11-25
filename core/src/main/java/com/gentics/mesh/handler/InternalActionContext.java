@@ -54,7 +54,7 @@ public interface InternalActionContext extends ActionContext {
 	/**
 	 * Return the role parameter value.
 	 * 
-	 * @return
+	 * @return parameter value or null when no parameter was set
 	 */
 	String getRolePermissionParameter();
 
