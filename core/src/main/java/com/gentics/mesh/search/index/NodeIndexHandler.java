@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -211,7 +212,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			case NUMBER:
 				NumberGraphField numberField = container.getNumber(name);
 				if (numberField != null) {
-					fieldsMap.put(name, numberField.getNumber());
+					fieldsMap.put(name, new BigDecimal(numberField.getNumber()));
 				}
 				break;
 			case NODE:

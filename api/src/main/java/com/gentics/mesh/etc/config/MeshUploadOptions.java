@@ -10,6 +10,8 @@ public class MeshUploadOptions {
 
 	private String directory = "binaryFiles";
 
+	private String imageCacheDirectory = "binaryImageCache";
+
 	private String tempDirectory = new File("tmp", "file-uploads").getAbsolutePath();
 
 	/**
@@ -69,4 +71,21 @@ public class MeshUploadOptions {
 		this.tempDirectory = tempDirectory;
 	}
 
+	/**
+	 * Return the binary image cache directory.
+	 * 
+	 * @return
+	 */
+	public String getImageCacheDirectory() {
+		return imageCacheDirectory;
+	}
+
+	/**
+	 * Set the binary image cache directory.
+	 * 
+	 * @param imageCacheDirectory
+	 */
+	public void setImageCacheDirectory(String imageCacheDirectory) {
+		this.imageCacheDirectory = imageCacheDirectory;
+	}
 }

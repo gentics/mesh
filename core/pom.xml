@@ -20,11 +20,13 @@
 
 	<dependencies>
 		<!-- Internal dependencies -->
+		<!-- 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-git</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		 -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-api</artifactId>
@@ -84,8 +86,13 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- Default Image Provider -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>${mesh.image.provider}</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-		<!-- Link Rendering -->
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>

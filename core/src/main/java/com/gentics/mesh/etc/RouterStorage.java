@@ -162,7 +162,8 @@ public class RouterStorage {
 					} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
 						HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
 						failureRoutingContext.response().setStatusCode(httpStatusError.getStatus().code());
-						String i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
+						String i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(),
+								httpStatusError.getI18nParameters());
 						GenericMessageResponse msg = new GenericMessageResponse(i18nMsg, null, httpStatusError.getProperties());
 						failureRoutingContext.response().end(JsonUtil.toJson(msg));
 					} else if (failure != null) {
@@ -207,6 +208,7 @@ public class RouterStorage {
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(springConfiguration.corsHandler());
 		}
+		//TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(springConfiguration.bodyHandler());
 		router.route().handler(CookieHandler.create());
 		router.route().handler(springConfiguration.sessionHandler());

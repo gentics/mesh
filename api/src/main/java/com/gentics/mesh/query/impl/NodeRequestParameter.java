@@ -102,4 +102,9 @@ public class NodeRequestParameter implements QueryParameterProvider {
 		return query.toString();
 	}
 
+	@Override
+	public String toString() {
+		return getQueryParameters();
+	}
+
 }

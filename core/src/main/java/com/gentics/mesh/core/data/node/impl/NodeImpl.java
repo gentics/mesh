@@ -503,6 +503,15 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
+	public boolean hasBinaryImage() {
+		String contentType = getBinaryContentType();
+		if (contentType == null) {
+			return false;
+		}
+		return contentType.startsWith("image/");
+	}
+
+	@Override
 	public Integer getBinaryImageWidth() {
 		return getProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
 	}
@@ -584,6 +593,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			}
 		});
 		return future;
+	}
+
+	@Override
+	public File getBinaryFile() {
+		File binaryFile = new File(getFilePath());
+		return binaryFile;
 	}
 
 	@Override

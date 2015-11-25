@@ -1,6 +1,11 @@
 package com.gentics.mesh.query.impl;
 
+import static com.gentics.mesh.util.NumberUtils.toInteger;
+
+import java.util.Map;
+
 import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.util.HttpQueryUtils;
 
 public class ImageRequestParameter implements QueryParameterProvider {
 
@@ -140,6 +145,18 @@ public class ImageRequestParameter implements QueryParameterProvider {
 		return this;
 	}
 
+	public static ImageRequestParameter fromQuery(String query) {
+		ImageRequestParameter parameter = new ImageRequestParameter();
+		Map<String, String> parameters = HttpQueryUtils.splitQuery(query);
+		parameter.setHeight(toInteger(parameters.get(HEIGHT_QUERY_PARAM_KEY), null));
+		parameter.setWidth(toInteger(parameters.get(WIDTH_QUERY_PARAM_KEY), null));
+		parameter.setCroph(toInteger(parameters.get(CROP_HEIGHT_QUERY_PARAM_KEY), null));
+		parameter.setCropw(toInteger(parameters.get(CROP_WIDTH_QUERY_PARAM_KEY), null));
+		parameter.setStartx(toInteger(parameters.get(CROP_X_QUERY_PARAM_KEY), null));
+		parameter.setStarty(toInteger(parameters.get(CROP_Y_QUERY_PARAM_KEY), null));
+		return parameter;
+	}
+
 	@Override
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
@@ -183,6 +200,40 @@ public class ImageRequestParameter implements QueryParameterProvider {
 		}
 
 		return query.toString();
+	}
+
+	/**
+	 * Check whether any of the parameters is set.
+	 * 
+	 * @return
+	 */
+	public boolean isSet() {
+		return width != null || height != null || croph != null || cropw != null || startx != null || starty != null;
+	}
+
+	@Override
+	public String toString() {
+		return getQueryParameters();
+	}
+
+	/**
+	 * Check whether all required crop parameters have been set when at least one crop parameter has been set.
+	 * 
+	 * @return
+	 */
+	public boolean hasValidOrNoneCropParameters() {
+		boolean oneSet = croph != null || cropw != null || startx != null || starty != null;
+		boolean allSet = hasAllCropParameters();
+		return oneSet ? allSet : true;
+	}
+
+	
+	/**
+	 * Check whether all required crop parameters have been set.
+	 * @return
+	 */
+	public boolean hasAllCropParameters() {
+		return  croph != null && cropw != null && startx != null && starty != null;
 	}
 
 }

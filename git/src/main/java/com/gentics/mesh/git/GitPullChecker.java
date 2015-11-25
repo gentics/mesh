@@ -1,16 +1,10 @@
 package com.gentics.mesh.git;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
 /**
  * Wrapper for a timer which will periodically invoke a git pull
- * 
- * @author jotschi
- *
  */
 public class GitPullChecker {
 	private static final Logger log = LoggerFactory.getLogger(GitPullChecker.class);

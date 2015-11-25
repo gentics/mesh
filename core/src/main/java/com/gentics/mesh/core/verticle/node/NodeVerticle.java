@@ -49,7 +49,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addFileDownloadHandler();
 
 		addBreadcrumbHandler();
-		
 		addLanguageHandlers();
 	}
 
@@ -57,7 +56,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		route("/:uuid/languages/:languageTag").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handelDeleteLanguage(InternalActionContext.create(rc));
 		});
-		
+
 	}
 
 	private void addBreadcrumbHandler() {
@@ -109,6 +108,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	}
 
+	/**
+	 * Handle download and image resize actions
+	 */
 	private void addFileDownloadHandler() {
 		route("/:uuid/bin").method(GET).handler(rc -> {
 			crudHandler.handleDownload(rc);

@@ -2,13 +2,9 @@ package com.gentics.mesh.handler.impl;
 
 import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDFIELDS_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,6 +13,7 @@ import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -54,25 +51,7 @@ public abstract class AbstractActionContext implements ActionContext {
 
 	protected Map<String, String> splitQuery() {
 		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
-			String query = query();
-			Map<String, String> queryPairs = new LinkedHashMap<String, String>();
-			if (query == null) {
-				return queryPairs;
-			}
-			String[] pairs = query.split("&");
-			for (String pair : pairs) {
-				int idx = pair.indexOf("=");
-				if (idx == -1) {
-					continue;
-				}
-				try {
-					queryPairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not decode query string pair {" + pair + "}", e);
-				}
-
-			}
-			return queryPairs;
+			return HttpQueryUtils.splitQuery(query());	
 		});
 		return (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
 	}

@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.git.GitUtils;
 
 public class GitWebHookVerticle extends AbstractCoreApiVerticle {
 

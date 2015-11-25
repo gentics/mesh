@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
+import com.gentics.mesh.query.impl.ImageRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -102,5 +103,12 @@ public interface InternalActionContext extends ActionContext {
 	 * @return
 	 */
 	public boolean getResolveLinksFlag();
+
+	/**
+	 * Return the image request (crop/resize) parameter.
+	 * 
+	 * @return
+	 */
+	public ImageRequestParameter getImageRequestParameter();
 
 }

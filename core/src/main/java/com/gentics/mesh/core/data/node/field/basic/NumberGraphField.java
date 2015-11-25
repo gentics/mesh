@@ -17,5 +17,6 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 	 * 
 	 * @return
 	 */
+	//TODO change this to big decimal
 	public String getNumber();
 }

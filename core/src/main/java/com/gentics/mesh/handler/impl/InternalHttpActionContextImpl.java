@@ -26,6 +26,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.ImageRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 
@@ -170,6 +171,12 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	@Override
 	public void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters) {
 		send(JsonUtil.toJson(new GenericMessageResponse(i18n(i18nMessage, i18nParameters))), status);
+	}
+	
+	@Override
+	public ImageRequestParameter getImageRequestParameter() {
+		//TODO return immutable object
+		return ImageRequestParameter.fromQuery(query());
 	}
 
 }

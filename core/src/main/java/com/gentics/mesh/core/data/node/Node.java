@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import java.io.File;
 import java.util.List;
 import java.util.Stack;
 
@@ -185,6 +186,13 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	String getBinaryFileName();
 
 	/**
+	 * Check whether the binary data represents an image.
+	 * 
+	 * @return
+	 */
+	boolean hasBinaryImage();
+
+	/**
 	 * Set the binary filename.
 	 * 
 	 * @param filenName
@@ -211,6 +219,13 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 */
 	Future<Buffer> getBinaryFileBuffer();
+
+	/**
+	 * Return the file that points to the binary file within the binary file storage.
+	 * 
+	 * @return Found file or null when no binary file could be found
+	 */
+	File getBinaryFile();
 
 	/**
 	 * Set the binary file size in bytes
@@ -407,4 +422,5 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 */
 	String getPathSegment(Language language);
+
 }

@@ -14,12 +14,13 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
-import com.gentics.mesh.core.image.ImageProvider;
-import com.gentics.mesh.core.image.ImageProviderService;
+import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
+import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.gentics.mesh.search.SearchHelper;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
@@ -66,15 +67,16 @@ public class MeshSpringConfiguration {
 
 
 	@Bean
-	public ImageProviderService imageProviderService() {
-		return ImageProviderService.getInstance();
+	public ImageManipulatorService imageProviderService() {
+		return ImageManipulatorService.getInstance();
 	}
 	
 	@Bean
-	public ImageProvider imageProvider() {
-		ImageProvider provider = imageProviderService().getImageProvider();
+	public ImageManipulator imageProvider() {
+//		ImageManipulator provider = imageProviderService().getImageProvider();
 		//TODO assert provider
-		return provider;
+//		return provider;
+		return new ImgscalrImageManipulator();
 	}
 
 	@Bean
