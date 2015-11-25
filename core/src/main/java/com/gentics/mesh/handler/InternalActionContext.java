@@ -97,7 +97,7 @@ public interface InternalActionContext extends ActionContext {
 	boolean getExpandAllFlag();
 
 	/**
-	 * Return the <code>resolveLinks<code> query parameter flag value.
+	 * Return the <code>resolveLinks</code> query parameter flag value.
 	 * 
 	 * @return
 	 */
