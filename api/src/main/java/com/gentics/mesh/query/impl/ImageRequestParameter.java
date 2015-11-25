@@ -239,7 +239,6 @@ public class ImageRequestParameter implements QueryParameterProvider {
 	/**
 	 * Generate cache key.
 	 * 
-	 * @param parameters
 	 * @return
 	 */
 	public String getCacheKey() {
