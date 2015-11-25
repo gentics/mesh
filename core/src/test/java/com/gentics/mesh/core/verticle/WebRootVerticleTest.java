@@ -69,7 +69,6 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		HtmlFieldImpl contentField = restNode.getField("content", HtmlFieldImpl.class);
 		assertNotNull(contentField);
 		System.out.println(contentField.getHTML());
-
 		test.assertMeshNode(content, restNode);
 	}
 

@@ -307,14 +307,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		CountDownLatch latch = new CountDownLatch(1);
-		root.getUserRoot().findByUuid(uuid, rh -> {
-			User foundUser = rh.result();
-			assertNotNull(foundUser);
-			assertFalse(foundUser.isEnabled());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		User foundUser = root.getUserRoot().findByUuidBlocking(uuid);
+		assertNull(foundUser);
 	}
 
 	@Test
@@ -498,15 +492,13 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		try (Trx tx = db.trx()) {
-			User user = user();
-			assertEquals(1, user.getGroups().size());
-			assertTrue(user.isEnabled());
-			user.delete();
-			assertFalse(user.isEnabled());
-			assertEquals(0, user.getGroups().size());
-			tx.success();
-		}
+		User user = user();
+		String uuid = user.getUuid();
+		assertEquals(1, user.getGroups().size());
+		assertTrue(user.isEnabled());
+		user.delete();
+		User foundUser = meshRoot().getUserRoot().findByUuidBlocking(uuid);
+		assertNull(foundUser);
 	}
 
 	@Test

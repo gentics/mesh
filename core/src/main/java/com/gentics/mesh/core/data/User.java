@@ -13,7 +13,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * The User Domain Model class
+ * The User Domain Model interface.
  */
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex, ReferenceableElement<UserReference> {
 
