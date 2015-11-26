@@ -34,14 +34,10 @@ public class WebRootVerticle extends AbstractProjectRestVerticle {
 		return getRouter().routeWithRegex("\\/(.*)");
 	}
 
-	// TODO findbyproject path should also handle files and contents and store the type of the segment
-	// TODO last segment can also be a file or a content. Handle this
 	private void addPathHandler() {
-
-		pathRoute().method(GET).produces(APPLICATION_JSON).handler(rc -> {
+		pathRoute().method(GET).handler(rc -> {
 			handler.handleGetPath(rc);
 		});
-
 	}
 
 }

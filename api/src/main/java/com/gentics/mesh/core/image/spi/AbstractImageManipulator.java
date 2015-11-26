@@ -9,7 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.impl.ImageRequestParameter;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -31,7 +31,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	
 	@Override
-	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageRequestParameter parameters) {
+	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameter parameters) {
 		try {
 		parameters.validate();
 		parameters.validateLimits(options);
@@ -48,7 +48,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public File getCacheFile(String sha512sum, ImageRequestParameter parameters) {
+	public File getCacheFile(String sha512sum, ImageManipulationParameter parameters) {
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");
 		StringBuffer buffer = new StringBuffer();

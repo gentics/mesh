@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -24,6 +25,7 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -57,6 +59,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.rest.AbstractMeshRestClient;
+import com.gentics.mesh.rest.MeshResponseHandler;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
 import io.vertx.core.Future;
@@ -462,14 +465,39 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<NodeResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
+	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		try {
 			path = URLEncoder.encode(path, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			return Future.failedFuture(e);
 		}
-		return invokeRequest(GET, "/" + projectName + "/webroot/" + path + getQuery(parameters), NodeResponse.class);
+		String requestUri = BASEURI +"/" + projectName + "/webroot/" + path + getQuery(parameters);
+		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, this, HttpMethod.GET, requestUri);
+		HttpClientRequest request = client.request(GET, requestUri, handler);
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking get request to {" + requestUri + "}");
+		}
+
+		if (getCookie() != null) {
+			request.headers().add("Cookie", getCookie());
+		} else {
+			request.headers().add("Authorization", "Basic " + authEnc);
+		}
+		request.headers().add("Accept", "*/*");
+		request.end();
+
+		Future<WebRootResponse> future = Future.future();
+		handler.getFuture().setHandler(rh -> {
+			if (rh.failed()) {
+				future.fail(rh.cause());
+			} else {
+				future.complete(new WebRootResponse(rh.result()));
+			}
+		});
+
+		return future;
+
 	}
 
 	@Override

@@ -26,7 +26,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.impl.ImageRequestParameter;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 
@@ -174,9 +174,9 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 	
 	@Override
-	public ImageRequestParameter getImageRequestParameter() {
+	public ImageManipulationParameter getImageRequestParameter() {
 		//TODO return immutable object
-		return ImageRequestParameter.fromQuery(query());
+		return ImageManipulationParameter.fromQuery(query());
 	}
 
 }

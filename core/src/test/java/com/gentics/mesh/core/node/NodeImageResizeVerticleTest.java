@@ -13,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -20,13 +22,16 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.impl.ImageRequestParameter;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -37,6 +42,16 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeVerticleTest.class);
 
+	@Autowired
+	private NodeVerticle nodeVerticle;
+
+	@Override
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
+		list.add(nodeVerticle);
+		return list;
+	}
+
 	@Test
 	public void testImageResize() throws Exception {
 		Node node = folder("news");
@@ -45,7 +60,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node);
 
 		// 2. Resize image
-		ImageRequestParameter params = new ImageRequestParameter().setWidth(100).setHeight(102);
+		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100).setHeight(102);
 		Future<NodeDownloadResponse> download = resizeImage(node, params);
 
 		// 3. Validate resize
@@ -60,7 +75,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node);
 
 		// 2. Resize image
-		ImageRequestParameter params = new ImageRequestParameter().setWidth(options.getMaxWidth() + 1).setHeight(102);
+		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(options.getMaxWidth() + 1).setHeight(102);
 		Future<NodeDownloadResponse> download = resizeImage(node, params);
 		expectException(download, BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()),
 				String.valueOf(options.getMaxWidth() + 1));
@@ -75,20 +90,20 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		uploadImage(node);
 
 		// 2. Resize image
-		ImageRequestParameter params = new ImageRequestParameter().setWidth(options.getMaxWidth()).setHeight(102);
+		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(options.getMaxWidth()).setHeight(102);
 		Future<NodeDownloadResponse> download = resizeImage(node, params);
 		validateResizeImage(download.result(), node, params, 2048, 102);
 
 	}
 
-	private Future<NodeDownloadResponse> resizeImage(Node node, ImageRequestParameter params) {
+	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameter params) {
 		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), params);
 		latchFor(downloadFuture);
 		return downloadFuture;
 	}
 
-	private void validateResizeImage(NodeDownloadResponse download, Node node, ImageRequestParameter params, int expectedWidth, int expectedHeight)
-			throws Exception {
+	private void validateResizeImage(NodeDownloadResponse download, Node node, ImageManipulationParameter params, int expectedWidth,
+			int expectedHeight) throws Exception {
 		node.reload();
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);

@@ -26,16 +26,6 @@ import io.vertx.test.core.TestUtils;
 
 public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTest {
 
-	@Autowired
-	private NodeVerticle verticle;
-
-	@Override
-	public List<AbstractSpringVerticle> getVertices() {
-		List<AbstractSpringVerticle> list = new ArrayList<>();
-		list.add(verticle);
-		return list;
-	}
-
 	@Before
 	public void setup() throws IOException {
 		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());

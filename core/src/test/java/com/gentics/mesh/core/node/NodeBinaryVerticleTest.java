@@ -11,20 +11,35 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
 
 public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
+
+	@Autowired
+	private NodeVerticle nodeVerticle;
+
+	@Override
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
+		list.add(nodeVerticle);
+		return list;
+	}
 
 	@Test
 	public void testUploadWithNoPerm() throws IOException {

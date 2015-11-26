@@ -15,7 +15,7 @@ import org.imgscalr.Scalr.Mode;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.query.impl.ImageRequestParameter;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
@@ -44,7 +44,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters
 	 * @return cropped image or return original image if no cropping is requested
 	 */
-	protected BufferedImage cropIfRequested(BufferedImage originalImage, ImageRequestParameter parameters) {
+	protected BufferedImage cropIfRequested(BufferedImage originalImage, ImageManipulationParameter parameters) {
 		parameters.validate();
 		if (parameters.hasAllCropParameters()) {
 			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
@@ -68,7 +68,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters
 	 * @return Resized image or original image if no resize operation was requested
 	 */
-	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageRequestParameter parameters) {
+	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageManipulationParameter parameters) {
 		int originalHeight = originalImage.getHeight();
 		int originalWidth = originalImage.getWidth();
 		double aspectRatio = (double) originalWidth / (double) originalHeight;
@@ -110,7 +110,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageRequestParameter parameters) {
+	public Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameter parameters) {
 		File cacheFile = getCacheFile(sha512sum, parameters);
 
 		// 1. Check the cache file directory

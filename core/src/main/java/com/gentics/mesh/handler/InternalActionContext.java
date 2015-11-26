@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
-import com.gentics.mesh.query.impl.ImageRequestParameter;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -109,6 +109,6 @@ public interface InternalActionContext extends ActionContext {
 	 * 
 	 * @return
 	 */
-	public ImageRequestParameter getImageRequestParameter();
+	public ImageManipulationParameter getImageRequestParameter();
 
 }

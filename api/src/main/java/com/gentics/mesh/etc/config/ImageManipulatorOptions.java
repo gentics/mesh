@@ -1,12 +1,15 @@
 package com.gentics.mesh.etc.config;
 
+/**
+ * Image manipulation options are used for image resize and image crop actions.
+ */
 public class ImageManipulatorOptions {
 
 	private String imageCacheDirectory = "binaryImageCache";
 
 	private Integer maxWidth = 2048;
 	private Integer maxHeight = 2048;
-	
+
 	/**
 	 * Return the binary image cache directory.
 	 * 
