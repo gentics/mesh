@@ -5,10 +5,10 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -29,11 +30,14 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -274,5 +278,48 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			assertNotNull(nodeResponse.getUuid());
 		}
 
+	}
+	
+	@Test
+	public void testSearchNumberRange() throws Exception {
+		addSpeed();
+		fullIndex();
+		
+		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
+		getClient().searchNodes(getRangeQuery("speed", 100, 9000)).setHandler(obs.toHandler());
+		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		assertEquals(1, resultCount);
+	}
+	
+	@Test
+	public void testSearchNumberRange2() throws Exception {
+		addSpeed();
+		fullIndex();
+		
+		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
+		getClient().searchNodes(getRangeQuery("speed", 900, 1500)).setHandler(obs.toHandler());
+		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		assertEquals(1, resultCount);
+	}
+	
+	@Test
+	public void testSearchNumberRange3() throws Exception {
+		addSpeed();
+		fullIndex();
+		
+		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
+		getClient().searchNodes(getRangeQuery("speed", 1000, 90)).setHandler(obs.toHandler());
+		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		assertEquals(0, resultCount);
+	}
+	
+	private void addSpeed() {
+		Node node = content("concorde");
+		
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
+		node.getSchemaContainer().setSchema(schema);
+		
+		node.getGraphFieldContainer(english()).createNumber("speed").setNumber("1200");
 	}
 }
