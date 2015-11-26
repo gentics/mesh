@@ -36,20 +36,16 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @return cropped image or return original image if no cropping is requested
 	 */
 	protected BufferedImage cropIfRequested(BufferedImage originalImage, ImageRequestParameter parameters) {
-		if (!parameters.hasValidOrNoneCropParameters()) {
-			// TODO i18n
-			throw error(BAD_REQUEST, "Not all crop parameters have been specified.");
-		}
-
+		parameters.validate();
 		if (parameters.hasAllCropParameters()) {
+			parameters.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
 				BufferedImage image = Scalr.crop(originalImage, parameters.getStartx(), parameters.getStarty(), parameters.getCropw(),
 						parameters.getCroph());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
-				// TODO catch potential errors early and return a nice i18n error
-				throw error(BAD_REQUEST, "Cropping failed.", e);
+				throw error(BAD_REQUEST, "image_error_cropping_failed", e);
 			}
 
 		}
@@ -97,8 +93,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
-				// TODO catch potential errors early and return a nice i18n error
-				throw error(BAD_REQUEST, "Resizing failed", e);
+				throw error(BAD_REQUEST, "image_error_resizing_failed", e);
 			}
 		}
 
@@ -115,23 +110,26 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath());
 		}
 
+		// 2. Read the image
+		BufferedImage bi = null;
 		try {
-			// 2. Read the image
-			BufferedImage bi = ImageIO.read(ins);
-			if (bi == null) {
-				// TODO i18n
-				throw error(BAD_REQUEST, "Can't handle image {" + sha512sum + "}");
-			}
+			bi = ImageIO.read(ins);
+		} catch (Exception e) {
+			throw error(BAD_REQUEST, "image_error_reading_failed", e);
+		}
+		if (bi == null) {
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		}
 
-			// 3. Manipulate image
-			bi = cropIfRequested(bi, parameters);
-			bi = resizeIfRequested(bi, parameters);
+		// 3. Manipulate image
+		bi = cropIfRequested(bi, parameters);
+		bi = resizeIfRequested(bi, parameters);
 
-			// 4. Write image
+		// 4. Write image
+		try {
 			ImageIO.write(bi, "jpg", cacheFile);
 		} catch (Exception e) {
-			// TODO i18n
-			throw error(BAD_REQUEST, "Can't handle image {" + sha512sum + "}", e);
+			throw error(BAD_REQUEST, "image_error_writing_failed", e);
 		}
 
 		// 5. Return buffer to written cache file

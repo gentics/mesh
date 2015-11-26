@@ -1,6 +1,8 @@
 package com.gentics.mesh.query.impl;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Map;
 
@@ -217,14 +219,43 @@ public class ImageRequestParameter implements QueryParameterProvider {
 	}
 
 	/**
-	 * Check whether all required crop parameters have been set when at least one crop parameter has been set.
-	 * 
-	 * @return
+	 * * Validate the set parameters and throw an exception when an invalid set of parameters has been detected.
 	 */
-	public boolean hasValidOrNoneCropParameters() {
-		boolean oneSet = croph != null || cropw != null || startx != null || starty != null;
-		boolean allSet = hasAllCropParameters();
-		return oneSet ? allSet : true;
+	public void validate() {
+		if (width != null && width < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageRequestParameter.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
+		}
+
+		if (height != null && height < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageRequestParameter.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
+		}
+
+		//  Check whether all required crop parameters have been set when at least one crop parameter has been set.
+		boolean hasOneCropParameter = croph != null || cropw != null || startx != null || starty != null;
+		if (hasOneCropParameter) {
+			//Check whether all required crop parameters have been set.
+			if (!hasAllCropParameters()) {
+				throw error(BAD_REQUEST, "image_error_incomplete_crop_parameters");
+			}
+
+			if (croph != null && croph <= 0) {
+				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageRequestParameter.CROP_HEIGHT_QUERY_PARAM_KEY, String.valueOf(croph));
+			}
+
+			if (cropw != null && cropw <= 0) {
+				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageRequestParameter.CROP_WIDTH_QUERY_PARAM_KEY, String.valueOf(cropw));
+			}
+
+			if (startx != null && startx <= -1) {
+				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageRequestParameter.CROP_X_QUERY_PARAM_KEY, String.valueOf(startx));
+			}
+
+			if (starty != null && starty <= -1) {
+				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageRequestParameter.CROP_Y_QUERY_PARAM_KEY, String.valueOf(starty));
+			}
+
+		}
+
 	}
 
 	/**
@@ -234,6 +265,18 @@ public class ImageRequestParameter implements QueryParameterProvider {
 	 */
 	public boolean hasAllCropParameters() {
 		return croph != null && cropw != null && startx != null && starty != null;
+	}
+
+	/**
+	 * Validate the image crop parameters and check whether those would exceed the source image dimensions.
+	 * 
+	 * @param imageWidth
+	 * @param imageHeight
+	 */
+	public void validateCropBounds(int imageWidth, int imageHeight) {
+		if (startx + cropw > imageWidth || starty + croph > imageHeight) {
+			throw error(BAD_REQUEST, "image_error_crop_out_of_bounds", String.valueOf(imageWidth), String.valueOf(imageHeight));
+		}
 	}
 
 	/**

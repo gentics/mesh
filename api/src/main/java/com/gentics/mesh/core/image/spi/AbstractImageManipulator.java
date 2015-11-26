@@ -22,6 +22,8 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	@Override
 	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageRequestParameter parameters) {
+		parameters.validate();
+		
 		try {
 			InputStream ins = new FileInputStream(binaryFile);
 			return handleResize(ins, sha512sum, parameters);
