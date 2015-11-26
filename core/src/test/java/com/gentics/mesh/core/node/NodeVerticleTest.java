@@ -111,7 +111,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
+		expectException(future, BAD_REQUEST, "language_not_found", "BOGUS");
 		assertThat(searchProvider).recordedStoreEvents(0);
 	}
 
