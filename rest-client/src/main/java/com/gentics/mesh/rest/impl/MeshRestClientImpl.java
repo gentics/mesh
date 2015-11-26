@@ -53,9 +53,11 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.rest.AbstractMeshRestClient;
+import com.gentics.mesh.rest.MeshRestClientHttpException;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -673,16 +675,43 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		String uri = BASEURI + path;
 
 		HttpClientRequest request = client.request(GET, uri, rh -> {
-			NodeDownloadResponse response = new NodeDownloadResponse();
-			String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
-			response.setContentType(contentType);
-			String disposition = rh.getHeader("content-disposition");
-			String filename = disposition.substring(disposition.indexOf("=") + 1);
-			response.setFilename(filename);
-			rh.bodyHandler(buffer -> {
-				response.setBuffer(buffer);
-				future.complete(response);
-			});
+
+			int code = rh.statusCode();
+			if (code >= 200 && code < 300) {
+				NodeDownloadResponse response = new NodeDownloadResponse();
+				String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
+				response.setContentType(contentType);
+				String disposition = rh.getHeader("content-disposition");
+				String filename = disposition.substring(disposition.indexOf("=") + 1);
+				response.setFilename(filename);
+
+				rh.bodyHandler(buffer -> {
+					response.setBuffer(buffer);
+					future.complete(response);
+				});
+			} else {
+				rh.bodyHandler(buffer -> {
+					String json = buffer.toString();
+					if (log.isDebugEnabled()) {
+						log.debug(json);
+					}
+					if (log.isDebugEnabled()) {
+						log.debug(
+								"Request failed with statusCode {" + rh.statusCode() + "} statusMessage {" + rh.statusMessage() + "} {" + json + ")");
+					}
+					GenericMessageResponse responseMessage = null;
+					try {
+						responseMessage = JsonUtil.readValue(json, GenericMessageResponse.class);
+					} catch (Exception e) {
+						if (log.isDebugEnabled()) {
+							log.debug("Could not deserialize response {" + json + "}.", e);
+						}
+						responseMessage = new GenericMessageResponse(json);
+					}
+					future.fail(new MeshRestClientHttpException(rh.statusCode(), rh.statusMessage(), responseMessage));
+
+				});
+			}
 		});
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");

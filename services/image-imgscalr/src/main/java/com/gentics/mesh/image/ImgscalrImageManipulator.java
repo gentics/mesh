@@ -14,6 +14,7 @@ import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.query.impl.ImageRequestParameter;
 
 import io.vertx.rxjava.core.Vertx;
@@ -25,7 +26,15 @@ import rx.Observable;
  */
 public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
+	Vertx vertx;
+
 	public ImgscalrImageManipulator() {
+		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
+	}
+
+	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
+		super(options);
+		this.vertx = vertx;
 	}
 
 	/**
@@ -102,7 +111,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	@Override
 	public Observable<Buffer> handleResize(InputStream ins, String sha512sum, ImageRequestParameter parameters) {
-		Vertx vertx = new Vertx(Mesh.vertx());
 		File cacheFile = getCacheFile(sha512sum, parameters);
 
 		// 1. Check the cache file directory

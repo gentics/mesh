@@ -5,28 +5,42 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.query.impl.ImageRequestParameter;
 
+import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Observable;
 
 public class ImgscalrImageManipulatorTest {
 
 	private ImgscalrImageManipulator manipulator;
+	private File cacheDir;
+	private ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 	@Before
 	public void setup() {
-		manipulator = new ImgscalrImageManipulator();
+		cacheDir = new File("target/cacheDir_" + System.currentTimeMillis());
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
+	}
+
+	@After
+	public void cleanup() throws IOException {
+		FileUtils.deleteDirectory(cacheDir);
 	}
 
 	@Test

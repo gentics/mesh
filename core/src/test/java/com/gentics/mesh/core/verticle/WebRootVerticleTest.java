@@ -37,6 +37,11 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 		list.add(verticle);
 		return list;
 	}
+	
+	@Test
+	public void testReadBinaryNode() {
+		fail("not yet tested");
+	}
 
 	@Test
 	public void testReadFolderByPath() throws Exception {

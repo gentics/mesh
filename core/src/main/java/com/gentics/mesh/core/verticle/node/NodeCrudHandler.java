@@ -199,12 +199,12 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 									// TODO encode filename?
 									rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
 									rc.response().end((Buffer) imageBuffer.getDelegate());
+								}, error -> {
+									rc.fail(error);
 								});
 							} else {
 								node.getBinaryFileBuffer().setHandler(bh -> {
-
 									Buffer buffer = bh.result();
-
 									rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 									rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 									// TODO encode filename?

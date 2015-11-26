@@ -40,6 +40,8 @@ public class MeshOptions {
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
 
+	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
+
 	private String tempDirectory = new File("tmp").getAbsolutePath();
 
 	public MeshOptions() {
@@ -178,6 +180,24 @@ public class MeshOptions {
 	 */
 	public void setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
+	}
+
+	/**
+	 * Return the image manipulation options.
+	 * 
+	 * @return
+	 */
+	public ImageManipulatorOptions getImageOptions() {
+		return imageOptions;
+	}
+
+	/**
+	 * Set the image manipulation options.
+	 * 
+	 * @param imageOptions
+	 */
+	public void setImageOptions(ImageManipulatorOptions imageOptions) {
+		this.imageOptions = imageOptions;
 	}
 
 }

@@ -50,7 +50,7 @@ public class SpringTestConfiguration {
 
 		String imageCacheDir = "target/image_cache_" + UUIDUtil.randomUUID();
 		new File(imageCacheDir).mkdirs();
-		options.getUploadOptions().setImageCacheDirectory(imageCacheDir);
+		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
 
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.

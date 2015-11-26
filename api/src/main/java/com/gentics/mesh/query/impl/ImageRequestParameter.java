@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Map;
 
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 
@@ -307,6 +308,16 @@ public class ImageRequestParameter implements QueryParameterProvider {
 			builder.append("rh" + getHeight());
 		}
 		return builder.toString();
+	}
+
+	public void validateLimits(ImageManipulatorOptions options) {
+		if (getWidth() != null && options.getMaxWidth() != null && options.getMaxWidth() > 0 && getWidth() > options.getMaxWidth()) {
+			throw error(BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(getWidth()));
+		}
+		if (getHeight() != null && options.getMaxHeight() != null && options.getMaxHeight() > 0 && getHeight() > options.getMaxHeight()) {
+			throw error(BAD_REQUEST, "image_error_height_limit_exceeded", String.valueOf(options.getMaxHeight()), String.valueOf(getHeight()));
+		}
+
 	}
 
 }

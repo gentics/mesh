@@ -8,7 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.query.impl.ImageRequestParameter;
 
 import io.vertx.core.logging.Logger;
@@ -16,20 +16,34 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Observable;
 
+/**
+ * Abstract image manipulator implementation.
+ */
 public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractImageManipulator.class);
 
+	protected ImageManipulatorOptions options;
+
+	public AbstractImageManipulator(ImageManipulatorOptions options) {
+		this.options = options;
+	}
+
+	
 	@Override
 	public Observable<Buffer> handleResize(File binaryFile, String sha512sum, ImageRequestParameter parameters) {
+		try {
 		parameters.validate();
-		
+		parameters.validateLimits(options);
+		} catch(Exception e) {
+			return Observable.error(e);
+		}
 		try {
 			InputStream ins = new FileInputStream(binaryFile);
 			return handleResize(ins, sha512sum, parameters);
 		} catch (FileNotFoundException e) {
-			// TODO i18n
-			throw error(BAD_REQUEST, "Can't handle image. File can't be opened. {" + binaryFile.getAbsolutePath() + "}", e);
+			log.error("Can't handle image. File can't be opened. {" + binaryFile.getAbsolutePath() + "}", e);
+			return Observable.error(error(BAD_REQUEST, "image_error_reading_failed", e));
 		}
 	}
 
@@ -42,8 +56,8 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		for (String part : parts) {
 			buffer.append(part + File.separator);
 		}
-		String imageCacheDirectoryPath = Mesh.mesh().getOptions().getUploadOptions().getImageCacheDirectory();
-		File baseFolder = new File(imageCacheDirectoryPath, buffer.toString());
+
+		File baseFolder = new File(options.getImageCacheDirectory(), buffer.toString());
 		if (!baseFolder.exists()) {
 			baseFolder.mkdirs();
 		}
