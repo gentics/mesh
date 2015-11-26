@@ -43,6 +43,11 @@
 			<artifactId>vertx-rx-java</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.2.5</version>
+		</dependency>
 	</dependencies>
 
 	<build>

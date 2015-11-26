@@ -1,4 +1,4 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.http;
 
 import org.apache.http.entity.ContentType;
 

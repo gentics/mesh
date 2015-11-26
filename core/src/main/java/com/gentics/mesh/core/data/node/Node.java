@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -400,12 +401,12 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	Observable<Path> resolvePath(Path nodePath, Stack<String> pathStack);
 
 	/**
-	 * Check whether the node provides the given segment for any language or binary attribute filename.
+	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
 	 * 
 	 * @param segment
-	 * @return
+	 * @return Segment information or null if this node is not providing the given segment
 	 */
-	boolean hasSegment(String segment);
+	PathSegment hasSegment(String segment);
 
 	/**
 	 * Return the webroot path to the node in the given language.

@@ -24,9 +24,6 @@ public class WebRootService {
 
 	private static Logger log = LoggerFactory.getLogger(WebRootService.class);
 
-	@Autowired
-	private BootstrapInitializer boot;
-
 	/**
 	 * Find the element that corresponds to the given project webroot path.
 	 * 
@@ -42,7 +39,7 @@ public class WebRootService {
 
 		// Handle path to project root (baseNode) 
 		if ("/".equals(path)) {
-			nodePath.addSegment(new PathSegment(baseNode));
+			nodePath.addSegment(new PathSegment(baseNode, false, null));
 			return Observable.just(nodePath);
 		}
 

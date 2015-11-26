@@ -56,7 +56,7 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 	@After
 	public void cleanup() throws Exception {
 		super.cleanup();
-//		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getImageCacheDirectory()));
+		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 	}

@@ -846,12 +846,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public boolean hasSegment(String segment) {
+	public PathSegment hasSegment(String segment) {
 		Schema schema = getSchema();
 
 		// Check the binary field name
 		if (schema.isBinary() && segment.equals(getBinaryFileName())) {
-			return true;
+			return new PathSegment(this, true, null);
 		}
 
 		// Check the different language versions
@@ -859,10 +859,10 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		for (GraphFieldContainer container : getGraphFieldContainers()) {
 			String fieldValue = container.getString(segmentFieldName).getString();
 			if (segment.equals(fieldValue)) {
-				return true;
+				return new PathSegment(this, false, container.getLanguage());
 			}
 		}
-		return false;
+		return null;
 	}
 
 	@Override
@@ -878,8 +878,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 		// Check all childnodes
 		for (Node childNode : getChildren()) {
-			if (childNode.hasSegment(segment)) {
-				path.addSegment(new PathSegment(childNode));
+			PathSegment pathSegment = childNode.hasSegment(segment);
+			if (pathSegment != null) {
+				path.addSegment(pathSegment);
 				return childNode.resolvePath(path, pathStack);
 			}
 		}

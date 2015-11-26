@@ -69,7 +69,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Autowired
-	ImageManipulator imageProvider;
+	private ImageManipulator imageManipulator;
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
@@ -171,48 +171,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	// TODO abstract rc away
 	public void handleDownload(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
+		NodeBinaryHandler binaryHandler = new NodeBinaryHandler(rc, imageManipulator);
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				db.noTrx(noTx -> {
 					if (hasSucceeded(ac, rh)) {
 						Node node = rh.result();
-						if (!node.getSchema().isBinary()) {
-							rc.fail(error(NOT_FOUND, "node_error_no_binary_node"));
-							return;
-						}
-						File binaryFile = node.getBinaryFile();
-						if (!binaryFile.exists()) {
-							rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
-							return;
-						} else {
-							String contentLength = String.valueOf(node.getBinaryFileSize());
-							String fileName = node.getBinaryFileName();
-							String contentType = node.getBinaryContentType();
-							// Resize the image if needed
-							if (node.hasBinaryImage() && ac.getImageRequestParameter().isSet()) {
-								Observable<io.vertx.rxjava.core.buffer.Buffer> buffer = imageProvider.handleResize(node.getBinaryFile(),
-										node.getBinarySHA512Sum(), ac.getImageRequestParameter());
-								buffer.subscribe(imageBuffer -> {
-									rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(imageBuffer.length()));
-									rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
-									// TODO encode filename?
-									rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
-									rc.response().end((Buffer) imageBuffer.getDelegate());
-								}, error -> {
-									rc.fail(error);
-								});
-							} else {
-								node.getBinaryFileBuffer().setHandler(bh -> {
-									Buffer buffer = bh.result();
-									rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-									rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-									// TODO encode filename?
-									rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
-									rc.response().end(buffer);
-								});
-							}
-						}
+						binaryHandler.handle(node);
 					}
 				});
 			});

@@ -1,6 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.Locale;
 import java.util.Map;

@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,29 +19,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class WebRootVerticleTest extends AbstractRestVerticleTest {
+public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Autowired
-	private WebRootVerticle verticle;
+	private WebRootVerticle webrootVerticle;
+
+	@Autowired
+	private NodeVerticle nodeVerticle;
 
 	@Override
 	public List<AbstractSpringVerticle> getVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(webrootVerticle);
+		list.add(nodeVerticle);
 		return list;
 	}
-	
+
 	@Test
-	public void testReadBinaryNode() {
-		fail("not yet tested");
+	public void testReadBinaryNode() throws IOException {
+		Node node = content("news_2015");
+		prepareSchema(node, true, "image/*");
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+
+		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+
+		String path = "/News/2015/somefile.dat";
+		Future<NodeResponse> webrootFuture = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true));
+		latchFor(webrootFuture);
+		assertSuccess(webrootFuture);
+		fail("Check download response");
+
 	}
 
 	@Test
@@ -65,8 +88,8 @@ public class WebRootVerticleTest extends AbstractRestVerticleTest {
 
 		content.getGraphFieldContainer(english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
-		String path = "/News/2015/News_2015_english_name";
 
+		String path = "/News/2015/News_2015_english_name";
 		Future<NodeResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true).setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
