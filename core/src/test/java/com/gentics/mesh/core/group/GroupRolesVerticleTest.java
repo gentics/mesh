@@ -86,8 +86,8 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
-		assertTrue(restGroup.getRoles().contains("extraRole"));
 
+		assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
 		Group group = group();
 		assertEquals(2, group.getRoles().size());
 	}

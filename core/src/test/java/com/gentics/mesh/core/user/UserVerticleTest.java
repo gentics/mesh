@@ -51,7 +51,6 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
-import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
@@ -953,15 +952,16 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
+		assertNull("The user was not deleted.", userRoot.findByUuidBlocking(uuid));
 
-		// Check whether the user was correctly disabled
-		try (NoTrx noTx = db.noTrx()) {
-			User user2 = userRoot.findByUuidBlocking(uuid);
-			user2.reload();
-			assertNotNull(user2);
-			assertFalse("The user should have been disabled", user2.isEnabled());
-			assertEquals(0, user2.getGroups().size());
-		}
+		//		// Check whether the user was correctly disabled
+		//		try (NoTrx noTx = db.noTrx()) {
+		//			User user2 = userRoot.findByUuidBlocking(uuid);
+		//			user2.reload();
+		//			assertNotNull(user2);
+		//			assertFalse("The user should have been disabled", user2.isEnabled());
+		//			assertEquals(0, user2.getGroups().size());
+		//		}
 	}
 
 	@Test

@@ -70,7 +70,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	public void testDefaultSchema() {
 		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
-		assertEquals(4, root.findAll().size());
+		assertEquals(schemaContainers().size(), root.findAll().size());
 	}
 
 	@Test

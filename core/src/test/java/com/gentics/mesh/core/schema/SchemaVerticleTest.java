@@ -65,6 +65,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
+		request.setSegmentField("name");
 
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<SchemaResponse> future = getClient().createSchema(request);
@@ -95,6 +96,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("new schema name");
 		request.setDisplayField("name");
+		request.setSegmentField("name");
 		Future<SchemaResponse> createFuture = getClient().createSchema(request);
 		latchFor(createFuture);
 		assertSuccess(createFuture);

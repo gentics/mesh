@@ -101,10 +101,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testGetPath() {
 		Node newsNode = content("news overview");
 		String path = newsNode.getPath(english());
-		assertEquals("/News/News Overview english name", path);
+		assertEquals("/News/News Overview.en.html", path);
 
 		String pathSegementFieldValue = newsNode.getPathSegment(english());
-		assertEquals("News Overview english name", pathSegementFieldValue);
+		assertEquals("News Overview.en.html", pathSegementFieldValue);
 	}
 
 	@Test
