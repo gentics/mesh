@@ -25,11 +25,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-navigation</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
 		</dependency>

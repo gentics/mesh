@@ -298,6 +298,17 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	}
 
 	@Override
+	public boolean hasAdminRole() {
+		for (Role role : getRolesViaShortcut()) {
+			System.out.println(role.getName());
+			if ("admin".equals(role.getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
@@ -489,12 +500,12 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	@Override
 	public void delete() {
 		// TODO don't allow this for the admin user
-//		disable();
+		//		disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
-//		if (log.isDebugEnabled()) {
-//			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
-//		}
-//		outE(HAS_USER).removeAll();
+		//		if (log.isDebugEnabled()) {
+		//			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
+		//		}
+		//		outE(HAS_USER).removeAll();
 		addIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}

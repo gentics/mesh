@@ -248,4 +248,5 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 
 	boolean hasPermission(MeshVertex node, GraphPermission permission);
 
+	boolean hasAdminRole();
 }

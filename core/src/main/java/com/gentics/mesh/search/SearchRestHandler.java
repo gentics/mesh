@@ -1,6 +1,8 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -49,6 +52,9 @@ import rx.Observable;
 public class SearchRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
+
+	@Autowired
+	private BootstrapInitializer boot;
 
 	@Autowired
 	private SearchProvider searchProvider;
@@ -208,9 +214,16 @@ public class SearchRestHandler {
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.noTrx(noTrx -> {
-			//TODO i18n entry
-			ac.sendMessage(OK, "search_admin_reindex_invoked");
+		db.asyncNoTrx(noTrx -> {
+			if (ac.getUser().hasAdminRole()) {
+				boot.meshRoot().getSearchQueue().addFullIndex();
+				boot.meshRoot().getSearchQueue().processAll();
+				ac.sendMessage(OK, "search_admin_reindex_invoked");
+			} else {
+				ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
+			}
+		} , rh -> {
+
 		});
 	}
 
