@@ -10,7 +10,7 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 	 * 
 	 * @param number
 	 */
-	public void setNumber(String number);
+	public void setNumber(Number number);
 
 	/**
 	 * Return the number that is stored in the graph field.
@@ -18,5 +18,5 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 	 * @return
 	 */
 	//TODO change this to double
-	public String getNumber();
+	public Number getNumber();
 }

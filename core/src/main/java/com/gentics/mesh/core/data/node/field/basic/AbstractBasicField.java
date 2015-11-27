@@ -31,11 +31,11 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 		return parentContainer;
 	}
 
-	public void setFieldProperty(String key, String value) {
+	public void setFieldProperty(String key, Object value) {
 		parentContainer.setProperty(fieldKey + "-" + key, value);
 	}
 
-	public String getFieldProperty(String key) {
+	public <T> T getFieldProperty(String key) {
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
 

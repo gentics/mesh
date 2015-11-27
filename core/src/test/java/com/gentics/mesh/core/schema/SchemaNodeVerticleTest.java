@@ -173,7 +173,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
-		nodeUpdateRequest.getFields().put("title", new NumberFieldImpl().setNumber("42.01"));
+		nodeUpdateRequest.getFields().put("title", new NumberFieldImpl().setNumber(42.01));
 		nodeFuture = getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest);
 		latchFor(nodeFuture);
 		assertSuccess(nodeFuture);

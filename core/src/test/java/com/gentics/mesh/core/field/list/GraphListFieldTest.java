@@ -88,10 +88,10 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		NumberGraphFieldList list = container.createNumberList("dummyList");
 
-		list.createNumber("1");
+		list.createNumber(1);
 		assertEquals(1, list.getList().size());
 
-		list.createNumber("2");
+		list.createNumber(2);
 		assertEquals(2, list.getList().size());
 		list.removeAll();
 		assertEquals(0, list.getSize());

@@ -41,6 +41,11 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 	}
 
 	@Test
+	public void testBinaryFieldLinkResolving() {
+		
+	}
+	
+	@Test
 	public void testResolving() throws InterruptedException, ExecutionException {
 		Node newsNode = content("news overview");
 		String uuid = newsNode.getUuid();

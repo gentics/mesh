@@ -326,6 +326,6 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().setSchema(schema);
 
-		node.getGraphFieldContainer(english()).createNumber("speed").setNumber(String.valueOf(number));
+		node.getGraphFieldContainer(english()).createNumber("speed").setNumber(number);
 	}
 }

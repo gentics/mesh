@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class GaphListFieldNodeTest extends AbstractBasicDBTest {
+public class GraphListFieldNodeTest extends AbstractBasicDBTest {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -83,8 +83,8 @@ public class GaphListFieldNodeTest extends AbstractBasicDBTest {
 		booleanList.createBoolean(false);
 
 		NumberGraphFieldList numberList = container.createNumberList("numberList");
-		numberList.createNumber("1");
-		numberList.createNumber("1.11");
+		numberList.createNumber(1);
+		numberList.createNumber(1.11);
 
 		DateGraphFieldList dateList = container.createDateList("dateList");
 		dateList.createDate(1L);

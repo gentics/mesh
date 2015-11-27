@@ -271,7 +271,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					} else {
 						graphNumberFieldList.removeAll();
 					}
-					for (String item : numberList.getItems()) {
+					for (Number item : numberList.getItems()) {
 						graphNumberFieldList.createNumber(item);
 					}
 				} else if (restField instanceof BooleanFieldListImpl) {

@@ -18,12 +18,12 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField>impleme
 	}
 
 	@Override
-	public void setNumber(String number) {
+	public void setNumber(Number number) {
 		setFieldProperty("number", number);
 	}
 
 	@Override
-	public String getNumber() {
+	public Number getNumber() {
 		return getFieldProperty("number");
 	}
 
