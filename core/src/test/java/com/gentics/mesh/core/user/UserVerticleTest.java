@@ -952,6 +952,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
+		userRoot.reload();
 		assertNull("The user was not deleted.", userRoot.findByUuidBlocking(uuid));
 
 		//		// Check whether the user was correctly disabled
