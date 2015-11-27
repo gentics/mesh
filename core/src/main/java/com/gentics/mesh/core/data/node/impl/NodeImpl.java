@@ -60,6 +60,7 @@ import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
@@ -857,9 +858,14 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		// Check the different language versions
 		String segmentFieldName = schema.getSegmentField();
 		for (GraphFieldContainer container : getGraphFieldContainers()) {
-			String fieldValue = container.getString(segmentFieldName).getString();
-			if (segment.equals(fieldValue)) {
-				return new PathSegment(this, false, container.getLanguage());
+			StringGraphField field = container.getString(segmentFieldName);
+			if (field == null) {
+				log.error("The node {" + getUuid() + "} did not contain a string field for segment field name {" + segmentFieldName + "}");
+			} else {
+				String fieldValue = field.getString();
+				if (segment.equals(fieldValue)) {
+					return new PathSegment(this, false, container.getLanguage());
+				}
 			}
 		}
 		return null;
