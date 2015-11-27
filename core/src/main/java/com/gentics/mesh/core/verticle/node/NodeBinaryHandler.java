@@ -48,7 +48,7 @@ public class NodeBinaryHandler implements Handler<Node> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(imageBuffer.length()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 					// TODO encode filename?
-					rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
+					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
 					rc.response().end((Buffer) imageBuffer.getDelegate());
 				} , error -> {
 					rc.fail(error);
