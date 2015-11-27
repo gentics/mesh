@@ -389,7 +389,7 @@ public class BootstrapInitializer {
 				schema.setName("content");
 				schema.setDisplayField("title");
 				schema.setSegmentField("filename");
-//				schema.setMeshVersion(Mesh.getVersion());
+				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -425,7 +425,7 @@ public class BootstrapInitializer {
 				schema.setName("folder");
 				schema.setDisplayField("name");
 				schema.setSegmentField("name");
-//				schema.setMeshVersion(Mesh.getVersion());
+				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -446,7 +446,7 @@ public class BootstrapInitializer {
 				schema.setName("binary-content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("filename");
-//				schema.setMeshVersion(Mesh.getVersion());
+				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
