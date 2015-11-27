@@ -94,7 +94,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		List<? extends SchemaContainer> schemaContainers = meshRoot().getSchemaContainerRoot().findAll();
 		assertNotNull(schemaContainers);
-		assertEquals(4, schemaContainers.size());
+		assertEquals(schemaContainers().size(), schemaContainers.size());
 	}
 
 	@Test
