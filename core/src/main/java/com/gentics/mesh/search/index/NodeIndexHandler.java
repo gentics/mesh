@@ -211,7 +211,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			case NUMBER:
 				NumberGraphField numberField = container.getNumber(name);
 				if (numberField != null) {
-					fieldsMap.put(name, Double.valueOf(numberField.getNumber()));
+					//TODO FIXME use double instead of string and make sure to recreate the whole index when changing the field type in the search documents. Double.valueOf(
+					fieldsMap.put(name, numberField.getNumber());
 				}
 				break;
 			case NODE:
