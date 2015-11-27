@@ -80,6 +80,11 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						log.debug(json);
 					}
 					try {
+						// Hack to fallback to node responses when dealing with object classes
+						if (classOfT.equals(Object.class)) {
+							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, client.getClientSchemaStorage());
+							future.complete((T) restObj);
+						}
 						if (isSchemaClass(classOfT)) {
 							T restObj = JsonUtil.readSchema(json, classOfT);
 							future.complete(restObj);

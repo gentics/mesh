@@ -94,7 +94,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		content.getGraphFieldContainer(english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
-		String path = "/News/2015/News_2015_english_name";
+		String path = "/News/2015/News_2015.en.html";
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true).setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
@@ -107,7 +107,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadContentByPath() throws Exception {
-		String path = "/News/2015/News_2015_english_name";
+		String path = "/News/2015/News_2015.en.html";
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);
@@ -121,7 +121,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testPathWithSpaces() throws Exception {
-		String path = "/News/2015/Special News_2014_english_name";
+		String path = "/News/2015/Special News_2014.en.html";
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);

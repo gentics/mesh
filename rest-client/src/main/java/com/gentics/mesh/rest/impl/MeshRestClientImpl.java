@@ -467,6 +467,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	@Override
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(path, "path must not be null");
 		try {
 			path = URLEncoder.encode(path, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
