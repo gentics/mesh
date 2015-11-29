@@ -180,7 +180,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		response = nodeFuture.result();
 		assertNotNull(response);
 		assertNotNull(response.getField("title"));
-		assertEquals("42.01", ((NumberFieldImpl) response.getField("title")).getNumber());
+		assertEquals(42.01, ((NumberFieldImpl) response.getField("title")).getNumber());
 
 	}
 }

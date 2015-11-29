@@ -51,7 +51,7 @@ public abstract class AbstractActionContext implements ActionContext {
 
 	protected Map<String, String> splitQuery() {
 		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
-			return HttpQueryUtils.splitQuery(query());	
+			return HttpQueryUtils.splitQuery(query());
 		});
 		return (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
 	}
@@ -76,7 +76,8 @@ public abstract class AbstractActionContext implements ActionContext {
 			}
 			return expandFieldnames;
 		});
-		return (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
+		List<String> fieldList = (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
+		return fieldList == null ? new ArrayList<>() : fieldList;
 	}
 
 	public static Locale getLocale(String header) {
