@@ -406,6 +406,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		schemaUpdateRequest.setBinary(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
+		schemaUpdateRequest.setSegmentField("name");
 		schemaUpdateRequest.setName("video-schema");
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
@@ -416,6 +417,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private SchemaResponse getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(randomUUID());
+		schema.setSegmentField("name");
+		schema.setDisplayField("name");
 		// schema.setDescription("Description of the schema");
 		// schema.setName("extended-content");
 		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
