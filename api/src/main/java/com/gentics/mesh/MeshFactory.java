@@ -2,6 +2,9 @@ package com.gentics.mesh;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Mesh factory which provides new instances of mesh.
+ */
 public interface MeshFactory {
 
 	/**

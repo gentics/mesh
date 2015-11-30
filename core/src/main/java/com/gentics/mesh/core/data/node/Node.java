@@ -277,10 +277,15 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	Integer getBinaryImageHeight();
 
+	/**
+	 * Set the image width of the binary image.
+	 * 
+	 * @param width
+	 */
 	void setBinaryImageWidth(Integer width);
 
 	/**
-	 * Return the width of the binary image
+	 * Return the width of the binary image.
 	 * 
 	 * @return
 	 */

@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.node.field.basic;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 
+/**
+ * A number graph field is a basic node field which can be used to store number values.
+ */
 public interface NumberGraphField extends ListableGraphField, BasicGraphField<NumberField> {
 
 	/**
@@ -17,6 +20,5 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 	 * 
 	 * @return
 	 */
-	//TODO change this to double
 	public Number getNumber();
 }

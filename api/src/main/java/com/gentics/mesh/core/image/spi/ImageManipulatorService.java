@@ -7,6 +7,9 @@ import java.util.ServiceLoader;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * SPI service provider for image manipulator implementations.
+ */
 public class ImageManipulatorService {
 
 	private static final Logger log = LoggerFactory.getLogger(ImageManipulatorService.class);

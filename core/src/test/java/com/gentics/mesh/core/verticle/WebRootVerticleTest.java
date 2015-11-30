@@ -162,6 +162,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadFolderWithLanguageFallbackInPath() {
+		// Test requesting a path that contains of mixed language segments: e.g: /Fahrzeuge/Cars/auto.html
 		fail("Not yet tested");
 	}
 
