@@ -52,6 +52,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		long start = System.currentTimeMillis();
 		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder();
+		elasticsearchSettings.put("threadpool.index.queue_size", -1);
 		elasticsearchSettings.put("http.enabled", options.isHttpEnabled());
 		elasticsearchSettings.put("path.data", options.getDirectory());
 		elasticsearchSettings.put("node.name", MeshNameProvider.getInstance().getName());
