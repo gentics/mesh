@@ -16,9 +16,10 @@ import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.ext.web.RoutingContext;
 
-public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
-		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods {
+public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods, SchemaClientMethods,
+		GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods {
 
 	static MeshRestClient create(String host, int port, Vertx vertx) {
 		return new MeshRestClientImpl(host, port, vertx);
@@ -45,7 +46,17 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	MeshRestClient setLogin(String username, String password);
 
 	/**
-	 * Return the client schema storage that is used to deserialize those responses that use a schema.
+	 * Set the login information according to the request headers of the
+	 * provided context
+	 * 
+	 * @param context
+	 * @return Fluent API
+	 */
+	MeshRestClient setLogin(RoutingContext context);
+
+	/**
+	 * Return the client schema storage that is used to deserialize those
+	 * responses that use a schema.
 	 * 
 	 * @return
 	 */
@@ -63,6 +74,5 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * Close the client.
 	 */
 	void close();
-
 
 }

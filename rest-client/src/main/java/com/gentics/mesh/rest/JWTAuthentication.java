@@ -7,25 +7,31 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
 public class JWTAuthentication extends AbstractAuthentication{
 
 	private String token;
+	private String authHeader;
 	private Observable<GenericMessageResponse> loginRequest;
-	
-//	public JWTAuthentication(HttpActionContext context) {
-//		
-//	}
 	
 	public JWTAuthentication() {
 	}
 
+	public JWTAuthentication(RoutingContext context) {
+		super();
+		this.authHeader = context.request().getHeader("Authorization");
+	}
+	
 	@Override
 	public Observable<Void> addAuthenticationInformation(HttpClientRequest request) {
 		//TODO: request new Token when old one expires
 		
-		if (loginRequest == null) {
+		if (authHeader != null) {
+			request.headers().add("Authorization", "Bearer " + token);
+			return Observable.just(null);
+		} else if (loginRequest == null) {
 			return Observable.just(null);
 		} else {
 			return loginRequest.map(x -> {

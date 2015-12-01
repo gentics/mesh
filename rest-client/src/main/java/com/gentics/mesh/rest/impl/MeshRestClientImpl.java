@@ -61,6 +61,7 @@ import com.gentics.mesh.rest.AbstractMeshRestClient;
 import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshResponseHandler;
+import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
 import io.vertx.core.Future;
@@ -70,6 +71,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.ext.web.RoutingContext;
 
 public class MeshRestClientImpl extends AbstractMeshRestClient {
 

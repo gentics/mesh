@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -20,7 +21,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private AuthenticationRestHandler restHandler;
+	private MeshSpringConfiguration springConfig;
 
 	public AuthenticationVerticle() {
 		super("auth");
@@ -28,6 +29,8 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		AuthenticationRestHandler restHandler = springConfig.authRestHandler();
+		
 		route("/me").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			restHandler.handleMe(InternalActionContext.create(rc));

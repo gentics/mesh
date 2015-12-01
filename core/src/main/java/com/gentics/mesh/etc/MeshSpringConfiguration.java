@@ -17,6 +17,9 @@ import com.gentics.mesh.auth.MeshBasicAuthHandler;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
+import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
+import com.gentics.mesh.core.verticle.auth.BasicAuthRestHandler;
+import com.gentics.mesh.core.verticle.auth.JWTAuthRestHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -145,6 +148,17 @@ public class MeshSpringConfiguration {
 		case BASIC_AUTH:
 		default:
 			return new MeshBasicAuthHandler(authProvider());
+		}
+	}
+
+	@Bean
+	public AuthenticationRestHandler authRestHandler() {
+		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
+		case JWT:
+			return new JWTAuthRestHandler();
+		case BASIC_AUTH:
+		default:
+			return new BasicAuthRestHandler();
 		}
 	}
 

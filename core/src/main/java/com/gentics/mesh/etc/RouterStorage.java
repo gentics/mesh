@@ -226,6 +226,7 @@ public class RouterStorage {
 		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
 			router.route().handler(CookieHandler.create());
 			router.route().handler(springConfiguration.sessionHandler());
+			router.route().handler(springConfiguration.userSessionHandler());
 		}
 	}
 
