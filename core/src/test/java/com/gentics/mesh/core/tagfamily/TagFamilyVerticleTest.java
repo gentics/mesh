@@ -30,7 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -53,8 +53,8 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	private TagFamilyVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -166,15 +166,15 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<TagFamilyListResponse> pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(-1, perPage));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(0, perPage));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
 		pageFuture = getClient().findTagFamilies(PROJECT_NAME, new PagingParameter(1, -1));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		perPage = 25;
 		totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);

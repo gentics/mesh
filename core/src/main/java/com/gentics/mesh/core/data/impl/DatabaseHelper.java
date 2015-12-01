@@ -167,6 +167,7 @@ public class DatabaseHelper {
 	 */
 	public void init() {
 
+		log.info("Creating database indices. This may take a few seconds...");
 		database.addVertexType(MeshRootImpl.class);
 
 		// Edges

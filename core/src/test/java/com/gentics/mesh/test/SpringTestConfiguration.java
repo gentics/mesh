@@ -41,11 +41,17 @@ public class SpringTestConfiguration {
 		MeshOptions options = new MeshOptions();
 
 		String uploads = "target/testuploads_" + UUIDUtil.randomUUID();
-		String targetTmpDir = "target/tmp_" + UUIDUtil.randomUUID();
 		new File(uploads).mkdirs();
-		new File(targetTmpDir).mkdirs();
 		options.getUploadOptions().setDirectory(uploads);
+
+		String targetTmpDir = "target/tmp_" + UUIDUtil.randomUUID();
+		new File(targetTmpDir).mkdirs();
 		options.getUploadOptions().setTempDirectory(targetTmpDir);
+
+		String imageCacheDir = "target/image_cache_" + UUIDUtil.randomUUID();
+		new File(imageCacheDir).mkdirs();
+		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
+
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);

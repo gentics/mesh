@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.user;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -13,13 +13,16 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.handler.InternalActionContext;
-
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class UserVerticle extends AbstractCoreApiVerticle {
+
+	private static final Logger log = LoggerFactory.getLogger(UserVerticle.class);
 
 	@Autowired
 	UserCrudHandler crudHandler;
@@ -35,6 +38,14 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addReadPermissionHandler();
+	}
+
+	private void addReadPermissionHandler() {
+		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handlePermissionRead(InternalActionContext.create(rc));
+		});
 	}
 
 	private void addReadHandler() {

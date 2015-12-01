@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -51,7 +50,7 @@ public class RestModelTest extends AbstractDBTest {
 		StringField stringField = new StringFieldImpl();
 		stringField.setString("some text");
 		response.getFields().put("name", stringField);
-		response.setSchema(new SchemaReference("content", UUIDUtil.randomUUID()));
+		response.setSchema(new SchemaReference().setName("content").setUuid(UUIDUtil.randomUUID()));
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
@@ -63,7 +62,7 @@ public class RestModelTest extends AbstractDBTest {
 		Schema schema = new SchemaImpl();
 		schema.setName("content");
 		schema.setDisplayField("title");
-		schema.setMeshVersion(Mesh.getVersion());
+//		schema.setMeshVersion(Mesh.getVersion());
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
@@ -89,7 +88,7 @@ public class RestModelTest extends AbstractDBTest {
 
 		NodeCreateRequest request = new NodeCreateRequest();
 
-		request.setSchema(new SchemaReference("content", UUIDUtil.randomUUID()));
+		request.setSchema(new SchemaReference().setName("content").setUuid(UUIDUtil.randomUUID()));
 		request.setLanguage("en");
 		request.setParentNodeUuid(UUIDUtil.randomUUID());
 
@@ -130,12 +129,12 @@ public class RestModelTest extends AbstractDBTest {
 			Schema contentSchema = schemaContainer("content").getSchema();
 
 			NodeResponse folder = new NodeResponse();
-			folder.setSchema(new SchemaReference(folderSchema.getName(), null));
+			folder.setSchema(new SchemaReference().setName(folderSchema.getName()));
 			folder.getFields().put("name", FieldUtil.createStringField("folder name"));
 			// folder.getFields().put("displayName", FieldUtil.createStringField("folder display name"));
 
 			NodeResponse content = new NodeResponse();
-			content.setSchema(new SchemaReference(contentSchema.getName(), null));
+			content.setSchema(new SchemaReference().setName(contentSchema.getName()));
 			content.getFields().put("name", FieldUtil.createStringField("content name"));
 			content.getFields().put("content", FieldUtil.createStringField("some content"));
 

@@ -4,17 +4,22 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
@@ -29,7 +34,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Elastic search provider class which implements the {@link SearchProvider} interface. 
+ * Elastic search provider class which implements the {@link SearchProvider} interface.
  */
 public class ElasticSearchProvider implements SearchProvider {
 
@@ -47,6 +52,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		long start = System.currentTimeMillis();
 		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder();
+		elasticsearchSettings.put("threadpool.index.queue_size", -1);
 		elasticsearchSettings.put("http.enabled", options.isHttpEnabled());
 		elasticsearchSettings.put("path.data", options.getDirectory());
 		elasticsearchSettings.put("node.name", MeshNameProvider.getInstance().getName());
@@ -107,9 +113,59 @@ public class ElasticSearchProvider implements SearchProvider {
 	private Client getSearchClient() {
 		return getNode().client();
 	}
-	
-	//TODO Add method which will be used to create an index and set a custom mapping 
-	//getSearchClient().admin().indices().prepareCreate("node").addMapping(type, source)
+
+	@Override
+	public void createIndex(String indexName) {
+		//TODO Add method which will be used to create an index and set a custom mapping
+
+		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
+		Map<String, Object> indexSettings = new HashMap<>();
+		Map<String, Object> analysisSettings = new HashMap<>();
+		Map<String, Object> analyserSettings = new HashMap<>();
+		Map<String, Object> defaultAnalyserSettings = new HashMap<>();
+
+		indexSettings.put("analysis", analysisSettings);
+		analysisSettings.put("analyzer", analyserSettings);
+		analyserSettings.put("default", defaultAnalyserSettings);
+		defaultAnalyserSettings.put("type", "standard");
+		createIndexRequestBuilder.setSettings(indexSettings);
+		createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
+
+			@Override
+			public void onResponse(CreateIndexResponse response) {
+				System.out.println(response.toString());
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				if (!(e instanceof IndexAlreadyExistsException)) {
+					log.error("Error while creating index {" + indexName + "}", e);
+				}
+			}
+
+		});
+	}
+
+	@Override
+	public void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler) {
+		getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
+
+			@Override
+			public void onResponse(GetResponse response) {
+				if (log.isDebugEnabled()) {
+					log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
+				}
+				handler.handle(Future.succeededFuture(response.getSourceAsMap()));
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
+				handler.handle(Future.failedFuture(e));
+			}
+
+		});
+	}
 
 	@Override
 	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {

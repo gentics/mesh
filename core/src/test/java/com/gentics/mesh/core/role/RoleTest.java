@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -42,6 +43,16 @@ import com.tinkerpop.blueprints.Edge;
 import io.vertx.ext.web.RoutingContext;
 
 public class RoleTest extends AbstractBasicObjectTest {
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		InternalActionContext ac = getMockedInternalActionContext("");
+		RoleReference reference = role().transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(role().getUuid(), reference.getUuid());
+		assertEquals(role().getName(), reference.getName());
+	}
 
 	@Test
 	@Override

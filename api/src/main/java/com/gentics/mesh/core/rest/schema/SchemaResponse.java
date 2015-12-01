@@ -1,10 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gentics.mesh.core.rest.common.RestResponse;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
 /**
@@ -17,8 +13,8 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	private String[] permissions = {};
 
 	private String[] rolePerms;
-
-	private List<ProjectResponse> projects = new ArrayList<>();
+	
+	//TODO maybe add creator and editor in here as well?
 
 	public SchemaResponse() {
 	}
@@ -77,25 +73,6 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	 */
 	public void setRolePerms(String... rolePerms) {
 		this.rolePerms = rolePerms;
-	}
-
-	/**
-	 * Return a list of projects to which the schema was linked.
-	 * 
-	 * @return Project list
-	 */
-	public List<ProjectResponse> getProjects() {
-		return projects;
-	}
-
-	/**
-	 * Set the list of project to which the schema is linked.
-	 * 
-	 * @param projects
-	 *            Project list
-	 */
-	public void setProjects(List<ProjectResponse> projects) {
-		this.projects = projects;
 	}
 
 }

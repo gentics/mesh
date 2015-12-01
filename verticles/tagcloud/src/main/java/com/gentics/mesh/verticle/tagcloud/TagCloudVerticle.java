@@ -1,6 +1,6 @@
 package com.gentics.mesh.verticle.tagcloud;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.vertx.core.http.HttpMethod.GET;
 

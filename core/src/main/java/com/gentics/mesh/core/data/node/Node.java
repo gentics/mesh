@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node;
 
+import java.io.File;
 import java.util.List;
+import java.util.Stack;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
@@ -12,10 +14,13 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -23,6 +28,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import rx.Observable;
 
 public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 
@@ -170,7 +176,8 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter) throws InvalidArgumentException;
+	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
+			throws InvalidArgumentException;
 
 	/**
 	 * Return the binary filename.
@@ -178,6 +185,13 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 */
 	String getBinaryFileName();
+
+	/**
+	 * Check whether the binary data represents an image.
+	 * 
+	 * @return
+	 */
+	boolean hasBinaryImage();
 
 	/**
 	 * Set the binary filename.
@@ -206,6 +220,13 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 */
 	Future<Buffer> getBinaryFileBuffer();
+
+	/**
+	 * Return the file that points to the binary file within the binary file storage.
+	 * 
+	 * @return Found file or null when no binary file could be found
+	 */
+	File getBinaryFile();
 
 	/**
 	 * Set the binary file size in bytes
@@ -256,10 +277,15 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 */
 	Integer getBinaryImageHeight();
 
+	/**
+	 * Set the image width of the binary image.
+	 * 
+	 * @param width
+	 */
 	void setBinaryImageWidth(Integer width);
 
 	/**
-	 * Return the width of the binary image
+	 * Return the width of the binary image.
 	 * 
 	 * @return
 	 */
@@ -277,7 +303,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @return
 	 */
-	String getSegmentedPath();
+	String getBinarySegmentedPath();
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -335,5 +361,72 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param handler
 	 */
 	Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler);
+
+	/**
+	 * Transform information from the node into a breadcrumb rest model.
+	 * 
+	 * @param ac
+	 * @param handler
+	 * @return
+	 */
+	Node transformToBreadcrumb(InternalActionContext ac, Handler<AsyncResult<NodeBreadcrumbResponse>> handler);
+
+	/**
+	 * Delete the language container for the given language.
+	 * 
+	 * @param ac
+	 * @param language
+	 * @param handler
+	 * @return
+	 */
+	Node deleteLanguageContainer(InternalActionContext ac, Language language, Handler<AsyncResult<Void>> handler);
+
+	/**
+	 * Return the path segment of this node.
+	 * 
+	 * @return
+	 */
+	String getPathSegment(InternalActionContext ac);
+
+	/**
+	 * Return the full path to this node.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	String getPath(InternalActionContext ac);
+
+	/**
+	 * Resolve the given path and return the path object that contains the resolved nodes.
+	 * 
+	 * @param nodePath
+	 * @param pathStack
+	 * @return
+	 */
+	Observable<Path> resolvePath(Path nodePath, Stack<String> pathStack);
+
+	/**
+	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
+	 * 
+	 * @param segment
+	 * @return Segment information or null if this node is not providing the given segment
+	 */
+	PathSegment hasSegment(String segment);
+
+	/**
+	 * Return the webroot path to the node in the given language.
+	 * 
+	 * @param language
+	 * @return
+	 */
+	String getPath(Language language);
+
+	/**
+	 * Return the path segment value of this node in the given language.
+	 * 
+	 * @param language
+	 * @return
+	 */
+	String getPathSegment(Language language);
 
 }

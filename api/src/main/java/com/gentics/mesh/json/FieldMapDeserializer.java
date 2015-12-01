@@ -146,7 +146,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			NumberField numberField = new NumberFieldImpl();
 			if (!jsonNode.isNull() && jsonNode.isNumber()) {
 				Number number = jsonNode.numberValue();
-				numberField.setNumber(number.toString());
+				numberField.setNumber(number);
 			}
 			if (!jsonNode.isNull() && !jsonNode.isNumber()) {
 				throw new MeshJsonException(
@@ -228,8 +228,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 					addBasicList(map, fieldKey, Long[].class, new DateFieldListImpl(), Long.class, itemsDateArray);
 					break;
 				case "number":
-					String[] itemsNumberArray = oc.treeToValue(jsonNode, String[].class);
-					addBasicList(map, fieldKey, String[].class, new NumberFieldListImpl(), String.class, itemsNumberArray);
+					Number[] itemsNumberArray = oc.treeToValue(jsonNode, Number[].class);
+					addBasicList(map, fieldKey, Number[].class, new NumberFieldListImpl(), Number.class, itemsNumberArray);
 					break;
 				case "boolean":
 					Boolean[] itemsBooleanArray = oc.treeToValue(jsonNode, Boolean[].class);

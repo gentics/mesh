@@ -4,8 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BAT
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -23,14 +24,8 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 
 public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
@@ -122,25 +117,29 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	}
 
 	@Override
-	public void processAll(Handler<AsyncResult<Future<Void>>> handler) throws InterruptedException {
+	public long processAll() throws InterruptedException {
+		AtomicLong processedBatchCount = new AtomicLong(0);
 		SearchQueueBatch batch;
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
 		while ((batch = take()) != null) {
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			batch.process(obs.toHandler());
-			futures.add(obs);
-		}
-		Observable.merge(futures).subscribe(item -> {
+			CountDownLatch latch = new CountDownLatch(1);
+			batch.process(rh -> {
+				if (rh.failed()) {
+					log.error("Error while processing queue batch.", rh.cause());
+				}
+				latch.countDown();
+				processedBatchCount.incrementAndGet();
+			});
+
+			int maxTime = 10;
+			if (!latch.await(maxTime, TimeUnit.SECONDS)) {
+				log.error("Batch processing exceeded timeout of {" + maxTime + "} seconds.");
+			}
 			if (log.isDebugEnabled()) {
 				log.debug("Proccessed batch.");
 			}
-		} , error -> {
-			log.error("Error while processing all remaining search queue batches.", error);
-			handler.handle(Future.failedFuture(error));
-		} , () -> {
-			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-			handler.handle(Future.succeededFuture());
-		});
+		}
+		MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+		return processedBatchCount.get();
 	}
 
 }

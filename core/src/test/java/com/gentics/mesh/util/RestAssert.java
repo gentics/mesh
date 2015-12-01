@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -36,7 +37,11 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 
+/**
+ * @deprecated use {@link MeshAssertions} instead.
+ */
 @Component
+@Deprecated
 public class RestAssert {
 
 	public void assertGroup(Group group, GroupResponse restGroup) {

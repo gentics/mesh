@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.git.GitPullChecker;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -27,7 +26,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	@Autowired
 	private AdminHandler handler;
 
-	private GitPullChecker gitChecker;
+//	private GitPullChecker gitChecker;
 
 	public AdminVerticle() {
 		super("admin");
@@ -35,9 +34,9 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		if (config().getBoolean(GIT_PULL_CHECKER_KEY, DEFAULT_GIT_CHECKER)) {
-			gitChecker = new GitPullChecker(config().getLong(GIT_PULL_CHECKER_INTERVAL_KEY, DEFAULT_GIT_CHECKER_INTERVAL));
-		}
+//		if (config().getBoolean(GIT_PULL_CHECKER_KEY, DEFAULT_GIT_CHECKER)) {
+//			gitChecker = new GitPullChecker(config().getLong(GIT_PULL_CHECKER_INTERVAL_KEY, DEFAULT_GIT_CHECKER_INTERVAL));
+//		}
 
 		addStatusHandler();
 
@@ -78,9 +77,9 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		if (gitChecker != null) {
-			gitChecker.close();
-		}
+//		if (gitChecker != null) {
+//			gitChecker.close();
+//		}
 	}
 
 	/**

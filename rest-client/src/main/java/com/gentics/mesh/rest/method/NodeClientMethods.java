@@ -1,13 +1,13 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
-
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
@@ -46,13 +46,23 @@ public interface NodeClientMethods {
 	Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, QueryParameterProvider... parameters);
 
 	/**
-	 * Delete the node with the given uuid.
+	 * Delete the node with the given uuid. All languages will be deleted.
 	 * 
 	 * @param projectName
 	 * @param uuid
 	 * @return
 	 */
 	Future<GenericMessageResponse> deleteNode(String projectName, String uuid);
+
+	/**
+	 * Delete the node with the given language.
+	 * 
+	 * @param projectName
+	 * @param uuid
+	 * @param languageTag
+	 * @return
+	 */
+	Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag);
 
 	/**
 	 * Find all nodes within the project with the given name. The query parameters can be used to set paging and language settings.
@@ -79,6 +89,7 @@ public interface NodeClientMethods {
 	 * Find all nodes that were tagged by the tag with the given tagUuid. The query parameters can be used to set paging and language settings.
 	 * 
 	 * @param projectName
+	 *            Name of the project which contains the nodes
 	 * @param tagUuid
 	 * @param parameters
 	 * @return
@@ -89,6 +100,8 @@ public interface NodeClientMethods {
 	 * Add with the given tagUuid to the node with the given nodeUuid. The query parameters can be used to set language settings.
 	 * 
 	 * @param projectName
+	 *            Name of the project which contains the node
+	 * 
 	 * @param nodeUuid
 	 * @param tagUuid
 	 * @param parameters
@@ -100,6 +113,8 @@ public interface NodeClientMethods {
 	 * Remove a tag with the given tagUuid from the node with the given nodeUuid. The query parameters can be used to set language settings.
 	 * 
 	 * @param projectName
+	 *            Name of the project which contains the node
+	 * 
 	 * @param nodeUuid
 	 * @param tagUuid
 	 * @param parameters
@@ -122,7 +137,9 @@ public interface NodeClientMethods {
 	 * Update the binary field for the node with the given nodeUuid in the given project using the provided data buffer.
 	 * 
 	 * @param projectName
+	 *            Name of the project which contains the node
 	 * @param nodeUuid
+	 *            Uuid of the node
 	 * @param fileData
 	 *            Buffer that serves the binary data.
 	 * @param fileName
@@ -136,7 +153,21 @@ public interface NodeClientMethods {
 	 * 
 	 * @param projectName
 	 * @param nodeUuid
+	 * @param parameters
 	 * @return Future with a download response that contains a reference to the byte buffer with the binary data
 	 */
-	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid);
+	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, QueryParameterProvider... parameters);
+
+	/**
+	 * Load the breadcrumb for the given node.
+	 * 
+	 * @param projectName
+	 *            Name of the project which contains the node
+	 * @param nodeUuid
+	 *            Uuid of the node
+	 * @param parameters
+	 * @return Future with the breadcrumb response
+	 */
+	Future<NodeBreadcrumbResponse> loadBreadcrumb(String projectName, String nodeUuid, QueryParameterProvider... parameters);
+
 }

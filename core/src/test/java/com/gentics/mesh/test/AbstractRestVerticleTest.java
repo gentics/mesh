@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -58,6 +58,8 @@ import com.gentics.mesh.search.impl.DummySearchProvider;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -66,7 +68,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	protected Vertx vertx;
 
-	private int port;
+	protected int port;
 
 	private MeshRestClient client;
 
@@ -93,7 +95,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		CountDownLatch latch = new CountDownLatch(getVertices().size());
 
 		// Inject spring config and start each verticle
-		for (AbstractWebVerticle verticle : getVertices()) {
+		for (AbstractSpringVerticle verticle : getVertices()) {
 			verticle.setSpringConfig(springConfig);
 			verticle.init(vertx, context);
 			Future<Void> future = Future.future();
@@ -111,13 +113,21 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		resetClientSchemaStorage();
 	}
 
+	public HttpClient createHttpClient() {
+		HttpClientOptions options = new HttpClientOptions();
+		options.setDefaultHost("localhost");
+		options.setDefaultPort(port);
+		HttpClient client = Mesh.vertx().createHttpClient(options);
+		return client;
+	}
+
 	@After
 	public void cleanup() throws Exception {
 		if (trx != null) {
 			trx.close();
 		}
 		searchProvider.reset();
-		for (AbstractWebVerticle verticle : getVertices()) {
+		for (AbstractSpringVerticle verticle : getVertices()) {
 			verticle.stop();
 		}
 		resetDatabase();
@@ -131,7 +141,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 	}
 
-	public abstract List<AbstractWebVerticle> getVertices();
+	public abstract List<AbstractSpringVerticle> getVertices();
 
 	@After
 	public void tearDown() throws Exception {
@@ -221,7 +231,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected RoleResponse createRole(String roleName, String groupUuid) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		roleCreateRequest.setGroupUuid(groupUuid);
 		Future<RoleResponse> future = getClient().createRole(roleCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
@@ -254,7 +263,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected TagResponse createTag(String projectName, String tagName, String tagFamilyName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
-		tagCreateRequest.setTagFamilyReference(new TagFamilyReference().setName(tagFamilyName));
+		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamilyName));
 		Future<TagResponse> future = getClient().createTag(projectName, tagCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
@@ -384,6 +393,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		schemaCreateRequest.setName(schemaName);
 		schemaCreateRequest.setDisplayField("name");
 		schemaCreateRequest.setDescription("Descriptive text");
+		schemaCreateRequest.setDisplayField("name");
+		schemaCreateRequest.setSegmentField("name");
 		Future<SchemaResponse> future = getClient().createSchema(schemaCreateRequest);
 		latchFor(future);
 		assertSuccess(future);

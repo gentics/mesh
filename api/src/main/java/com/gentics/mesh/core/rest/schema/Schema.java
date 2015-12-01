@@ -9,27 +9,27 @@ import com.gentics.mesh.json.MeshJsonException;
  */
 public interface Schema {
 
-	/**
-	 * Return the mesh version for this schema.
-	 * 
-	 * @return Mesh version
-	 */
-	public String getMeshVersion();
-
-	/**
-	 * Set the mesh version for this schema.
-	 * 
-	 * @param meshVersion
-	 *            Mesh version
-	 */
-	public void setMeshVersion(String meshVersion);
+//	/**
+//	 * Return the mesh version for this schema.
+//	 * 
+//	 * @return Mesh version
+//	 */
+//	String getMeshVersion();
+//
+//	/**
+//	 * Set the mesh version for this schema.
+//	 * 
+//	 * @param meshVersion
+//	 *            Mesh version
+//	 */
+//	void setMeshVersion(String meshVersion);
 
 	/**
 	 * Return the name of the schema.
 	 * 
 	 * @return Name of the schema
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * Set the schema name.
@@ -37,7 +37,7 @@ public interface Schema {
 	 * @param name
 	 *            Name of the schema
 	 */
-	public void setName(String name);
+	void setName(String name);
 
 	/**
 	 * Return the display field of the schema which nodes will inherit in order. This is useful when you want to unify the name that should be displayed for
@@ -45,7 +45,7 @@ public interface Schema {
 	 * 
 	 * @return Display field of the schema
 	 */
-	public String getDisplayField();
+	String getDisplayField();
 
 	/**
 	 * Set the display field value.
@@ -53,14 +53,14 @@ public interface Schema {
 	 * @param displayField
 	 *            Display field
 	 */
-	public void setDisplayField(String displayField);
+	void setDisplayField(String displayField);
 
 	/**
 	 * Return the binary folder flag.
 	 * 
 	 * @return Folder flag value
 	 */
-	public boolean isFolder();
+	boolean isFolder();
 
 	/**
 	 * Set the folder flag for this schema. Nodes that are created using a schema which has an enabled folder flag can be used as a parent for new nodes.
@@ -68,14 +68,14 @@ public interface Schema {
 	 * @param flag
 	 *            Folder flag value
 	 */
-	public void setFolder(boolean flag);
+	void setFolder(boolean flag);
 
 	/**
 	 * Return the binary flag.
 	 * 
 	 * @return Binary flag value
 	 */
-	public boolean isBinary();
+	boolean isBinary();
 
 	/**
 	 * Nodes which are created using a schema that has the binary flag enabled are able to store binary content.
@@ -83,21 +83,21 @@ public interface Schema {
 	 * @param flag
 	 *            Binary flag value
 	 */
-	public void setBinary(boolean flag);
+	void setBinary(boolean flag);
 
 	/**
 	 * Return the list of field schemas.
 	 * 
 	 * @return List of field schemas
 	 */
-	public List<? extends FieldSchema> getFields();
+	List<? extends FieldSchema> getFields();
 
 	/**
 	 * Add the given field schema to the list of field schemas.
 	 * 
 	 * @param fieldSchema
 	 */
-	public void addField(FieldSchema fieldSchema);
+	void addField(FieldSchema fieldSchema);
 
 	/**
 	 * Return the schema description.
@@ -120,5 +120,26 @@ public interface Schema {
 	 * @throws MeshJsonException
 	 */
 	void validate() throws MeshJsonException;
+
+	/**
+	 * Removes the field with the given name.
+	 * 
+	 * @param name
+	 */
+	void removeField(String name);
+
+	/**
+	 * Return the segment field name.
+	 * 
+	 * @return
+	 */
+	String getSegmentField();
+
+	/**
+	 * Set the segment field name.
+	 * 
+	 * @param segmentField
+	 */
+	void setSegmentField(String segmentField);
 
 }

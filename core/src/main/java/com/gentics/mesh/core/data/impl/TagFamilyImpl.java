@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
@@ -15,7 +16,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -56,12 +57,17 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>implements TagFamily {
+public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyResponse, TagFamilyReference>implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(TagFamilyImpl.class);
+	}
+
+	@Override
+	protected TagFamilyReference createEmptyReferenceModel() {
+		return new TagFamilyReference();
 	}
 
 	@Override
@@ -93,6 +99,16 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 	@Override
 	public void setDescription(String description) {
 		setProperty("description", description);
+	}
+	
+	@Override
+	public void setProject(Project project) {
+		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+	}
+
+	@Override
+	public Project getProject() {
+		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -129,6 +145,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
+		tag.setProject(project);
 		addTag(tag);
 		// Add to global list of tags
 		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
@@ -196,7 +213,7 @@ public class TagFamilyImpl extends AbstractIndexedVertex<TagFamilyResponse>imple
 		String newName = requestModel.getName();
 
 		if (StringUtils.isEmpty(newName)) {
-			handler.handle(failedFuture(ac, BAD_REQUEST, "tagfamily_name_not_set"));
+			handler.handle(failedFuture(BAD_REQUEST, "tagfamily_name_not_set"));
 		} else {
 			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {

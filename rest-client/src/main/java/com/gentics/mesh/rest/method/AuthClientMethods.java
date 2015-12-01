@@ -31,6 +31,19 @@ public interface AuthClientMethods {
 	 */
 	Future<UserResponse> me();
 
+	/**
+	 * Assign permissions in between the given role and the object uuid.
+	 * 
+	 * @param roleUuid
+	 *            Role uuid that is used to assign permission to
+	 * @param objectUuid
+	 *            Uuid of the object to which permissions are granted or revoked
+	 * @param permission
+	 *            Permissions to be assigned. Omitted permissions will be revoked
+	 * @param recursive
+	 *            Define whether nested elements or child element should also be affected
+	 * @return
+	 */
 	Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive);
 
 }

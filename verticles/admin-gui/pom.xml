@@ -9,23 +9,54 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-verticles</artifactId>
-		<version>0.1.2-SNAPSHOT</version>
+		<version>1.0.2-dev-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<frontend.maven.plugin.downloadRoot>http://nodejs.org/dist/</frontend.maven.plugin.downloadRoot>
-		<mesh.ui.version>0.1.0-SNAPSHOT</mesh.ui.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<artifactId>mesh-admin-ui</artifactId>
 			<groupId>com.gentics.mesh</groupId>
-			<version>${mesh.ui.version}</version>
+			<artifactId>mesh-admin-ui</artifactId>
+			<version>${mesh.admin-ui.version}</version>
 			<classifier>dist</classifier>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-templ-handlebars</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-orientdb</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/mesh-admin-gui.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
 
 </project>

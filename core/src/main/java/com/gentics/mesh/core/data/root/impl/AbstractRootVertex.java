@@ -46,10 +46,20 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 	 */
 	abstract protected String getRootLabel();
 
+	/**
+	 * Add the given item to the this root vertex.
+	 * 
+	 * @param item
+	 */
 	protected void addItem(T item) {
 		setLinkOutTo(item.getImpl(), getRootLabel());
 	}
 
+	/**
+	 * Remove the given item from this root vertex.
+	 * 
+	 * @param item
+	 */
 	protected void removeItem(T item) {
 		unlinkOut(item.getImpl(), getRootLabel());
 	}

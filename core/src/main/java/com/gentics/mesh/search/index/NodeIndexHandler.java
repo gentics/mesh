@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,7 +15,6 @@ import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
@@ -48,7 +48,7 @@ import rx.Observable;
 
 /**
  * 
- *TODO make it possible to use custom ES index configuration: http://stackoverflow.com/questions/6275727/define-custom-elasticsearch-analyzer-using-java-api
+ * TODO make it possible to use custom ES index configuration: http://stackoverflow.com/questions/6275727/define-custom-elasticsearch-analyzer-using-java-api
  */
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
@@ -115,6 +115,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.trace("Search index json:");
 				log.trace(json);
 			}
+
+			//Add display field value
+			Map<String, String> displayFieldMap = new HashMap<>();
+			displayFieldMap.put("key", node.getSchema().getDisplayField());
+			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
+			map.put("displayField", displayFieldMap);
 			searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
 
@@ -155,6 +161,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
+
 			searchProvider.updateDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
 		}
 
@@ -205,6 +212,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			case NUMBER:
 				NumberGraphField numberField = container.getNumber(name);
 				if (numberField != null) {
+
+					// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
+					// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.  
 					fieldsMap.put(name, numberField.getNumber());
 				}
 				break;
@@ -241,8 +251,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					case "number":
 						NumberGraphFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
 						if (graphNumberList != null) {
-							List<String> numberItems = new ArrayList<>();
+							List<Number> numberItems = new ArrayList<>();
 							for (NumberGraphField listItem : graphNumberList.getList()) {
+								//TODO Number can also be a big decimal. We need to convert those special objects into basic numbers or else ES will not be able to store them
 								numberItems.add(listItem.getNumber());
 							}
 							fieldsMap.put(fieldSchema.getName(), numberItems);
@@ -314,15 +325,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			if (key.startsWith("field.")) {
 				map.remove(key);
 			}
-		}
-	}
-
-	private void addProject(Map<String, Object> map, Project project) {
-		if (project != null) {
-			Map<String, String> projectFields = new HashMap<>();
-			projectFields.put("name", project.getName());
-			projectFields.put("uuid", project.getUuid());
-			map.put("project", projectFields);
 		}
 	}
 

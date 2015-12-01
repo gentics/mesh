@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.schema;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -17,6 +17,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
+/**
+ * Verticle for /api/v1/schemas endpoint
+ */
 @Component
 @Scope("singleton")
 @SpringVerticle

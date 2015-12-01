@@ -10,80 +10,35 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.test.core.TestUtils;
 
-public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
+public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Autowired
-	private NodeVerticle verticle;
+	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
-		list.add(verticle);
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
+		list.add(nodeVerticle);
 		return list;
-	}
-
-	@Before
-	public void setup() throws IOException {
-		File uploadDir = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory());
-		FileUtils.deleteDirectory(uploadDir);
-		uploadDir.mkdirs();
-
-		File tempDir = new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory());
-		FileUtils.deleteDirectory(tempDir);
-		tempDir.mkdirs();
-
-		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
-	}
-
-	@After
-	public void cleanup() throws Exception {
-		super.cleanup();
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
-	}
-
-	private void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
-		// Update the schema and enable binary support for folders
-		Schema schema = node.getSchemaContainer().getSchema();
-		schema.setBinary(binaryFlag);
-		// schema.set
-		// node.getSchemaContainer().setSchema(schema);
-	}
-
-	private Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
-
-		resetClientSchemaStorage();
-		// role().grantPermissions(node, UPDATE_PERM);
-		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-
-		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);
 	}
 
 	@Test
@@ -107,8 +62,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-		Node node;
-		node = folder("news");
+		Node node = folder("news");
 		prepareSchema(node, false, "image/.*");
 
 		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
@@ -181,7 +135,7 @@ public class NodeBinaryVerticleTest extends AbstractRestVerticleTest {
 		node.setUuid(UUIDUtil.randomUUID());
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
 		node.setUuid(uuid);
-		String path = node.getSegmentedPath();
+		String path = node.getBinarySegmentedPath();
 		assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 	}
 

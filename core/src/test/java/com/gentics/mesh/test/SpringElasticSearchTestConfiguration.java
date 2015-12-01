@@ -5,6 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.etc.ElasticSearchOptions;
+import com.gentics.mesh.search.SearchHelper;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
@@ -16,7 +17,10 @@ public class SpringElasticSearchTestConfiguration extends SpringTestConfiguratio
 	public SearchProvider searchProvider() {
 		ElasticSearchOptions options = new ElasticSearchOptions();
 		options.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
-		return new ElasticSearchProvider().init(options);
+		SearchProvider provider = new ElasticSearchProvider().init(options);
+		SearchHelper helper = new SearchHelper(provider);
+		helper.init();
+		return provider;
 	}
 
 }

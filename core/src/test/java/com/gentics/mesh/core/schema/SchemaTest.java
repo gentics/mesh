@@ -20,8 +20,10 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -31,6 +33,17 @@ public class SchemaTest extends AbstractBasicObjectTest {
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		SchemaContainer schema = schemaContainer("folder");
+		InternalActionContext ac = getMockedInternalActionContext("");
+		SchemaReference reference = schema.transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(schema.getUuid(), reference.getUuid());
+		assertEquals(schema.getName(), reference.getName());
+	}
 
 	@Test
 	@Override
@@ -57,7 +70,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	public void testDefaultSchema() {
 		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
-		assertEquals(4, root.findAll().size());
+		assertEquals(schemaContainers().size(), root.findAll().size());
 	}
 
 	@Test
@@ -81,7 +94,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		List<? extends SchemaContainer> schemaContainers = meshRoot().getSchemaContainerRoot().findAll();
 		assertNotNull(schemaContainers);
-		assertEquals(4, schemaContainers.size());
+		assertEquals(schemaContainers().size(), schemaContainers.size());
 	}
 
 	@Test

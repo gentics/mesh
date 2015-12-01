@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -47,6 +48,17 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	public void testCreatedUser() {
 		assertNotNull("The uuid of the user should not be null since the entity was reloaded.", user().getUuid());
+	}
+
+	@Test
+	@Override
+	public void testTransformToReference() throws Exception {
+		User user = user();
+		InternalActionContext ac = getMockedInternalActionContext("");
+		UserReference reference = user.transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals(user.getUuid(), reference.getUuid());
+		assertEquals(user.getName(), reference.getName());
 	}
 
 	@Test
@@ -295,14 +307,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		CountDownLatch latch = new CountDownLatch(1);
-		root.getUserRoot().findByUuid(uuid, rh -> {
-			User foundUser = rh.result();
-			assertNotNull(foundUser);
-			assertFalse(foundUser.isEnabled());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		User foundUser = root.getUserRoot().findByUuidBlocking(uuid);
+		assertNull(foundUser);
 	}
 
 	@Test
@@ -486,15 +492,13 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		try (Trx tx = db.trx()) {
-			User user = user();
-			assertEquals(1, user.getGroups().size());
-			assertTrue(user.isEnabled());
-			user.delete();
-			assertFalse(user.isEnabled());
-			assertEquals(0, user.getGroups().size());
-			tx.success();
-		}
+		User user = user();
+		String uuid = user.getUuid();
+		assertEquals(1, user.getGroups().size());
+		assertTrue(user.isEnabled());
+		user.delete();
+		User foundUser = meshRoot().getUserRoot().findByUuidBlocking(uuid);
+		assertNull(foundUser);
 	}
 
 	@Test

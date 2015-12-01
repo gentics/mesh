@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -59,8 +59,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	private AuthenticationVerticle authVerticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(authVerticle);
 		list.add(roleVerticle);
 		return list;
@@ -72,7 +72,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreate() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -99,7 +98,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		String name = "new_role";
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName(name);
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -115,7 +113,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateReadDelete() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> createFuture = getClient().createRole(request);
 		latchFor(createFuture);
@@ -131,17 +128,16 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testCreateWithNoPermissionOnGroup() throws Exception {
+	public void testCreateWithNoPermissionRoleRoot() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
-		request.setGroupUuid(group().getUuid());
 
 		// Add needed permission to group
-		role().revokePermissions(group(), CREATE_PERM);
+		role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", group().getUuid());
+		expectException(future, FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
 	}
 
 	@Test
@@ -153,18 +149,8 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
-	public void testCreateRoleWithNoGroupId() throws Exception {
-		RoleCreateRequest request = new RoleCreateRequest();
-		request.setName("new_role");
-		Future<RoleResponse> future = getClient().createRole(request);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "role_missing_parentgroup_field");
-	}
-
-	@Test
 	public void testCreateRoleWithNoName() throws Exception {
 		RoleCreateRequest request = new RoleCreateRequest();
-		request.setGroupUuid(group().getUuid());
 
 		Future<RoleResponse> future = getClient().createRole(request);
 		latchFor(future);
@@ -314,11 +300,11 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findRoles(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive" , "-1");
 
 		future = getClient().findRoles(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findRoles(new PagingParameter(4242, 25));
 		latchFor(future);
@@ -520,7 +506,6 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		for (int i = 0; i < nJobs; i++) {
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName("new_role_" + i);
-			request.setGroupUuid(group().getUuid());
 			set.add(getClient().createRole(request));
 		}
 		validateFutures(set);

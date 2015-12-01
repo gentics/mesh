@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.verticle.webroot;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -12,9 +16,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.error.EntityNotFoundException;
-import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.core.verticle.node.NodeBinaryHandler;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -22,6 +27,8 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
 import io.vertx.core.Future;
+import io.vertx.ext.web.RoutingContext;
+import rx.Observable;
 
 @Component
 public class WebRootHandler {
@@ -30,42 +37,49 @@ public class WebRootHandler {
 	private WebRootService webrootService;
 
 	@Autowired
+	private ImageManipulator imageManipulator;
+
+	@Autowired
 	private Database db;
 
-	public void handleGetPath(InternalActionContext ac) {
-
+	public void handleGetPath(RoutingContext rc) {
+		InternalActionContext ac = InternalActionContext.create(rc);
 		String path = ac.getParameter("param0");
-		String projectName = ac.getProject().getName();
+		try {
+			path = URLDecoder.decode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			ac.fail(e);
+			return;
+		}
+		final String decodedPath = path;
 		MeshAuthUser requestUser = ac.getUser();
-		//		List<String> languageTags = ac.getSelectedLanguageTags();
-		Mesh.vertx().executeBlocking((Future<Node> bch) -> {
-			try (Trx tx = db.trx()) {
-				Path nodePath = webrootService.findByProjectPath(ac, projectName, path);
-				PathSegment lastSegment = nodePath.getLast();
+		// List<String> languageTags = ac.getSelectedLanguageTags();
+		Mesh.vertx().executeBlocking((Future<PathSegment> bch) -> {
+			try (NoTrx tx = db.noTrx()) {
+				Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
+				PathSegment lastSegment = nodePath.toBlocking().last().getLast();
 
 				if (lastSegment != null) {
-					Node node = tx.getGraph().frameElement(lastSegment.getVertex(), Node.class);
+					Node node = lastSegment.getNode();
 					if (node == null) {
-						String message = ac.i18n("node_not_found_for_path", path);
-						throw new EntityNotFoundException(message);
+						throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 					}
-
 					if (requestUser.hasPermission(ac, node, READ_PERM)) {
-						bch.complete(node);
+						bch.complete(lastSegment);
 					} else {
 						bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
 					}
-					//					requestUser.isAuthorised(node, READ_PERM, rh -> {
-					//						languageTags.add(lastSegment.getLanguageTag());
-					//						if (rh.result()) {
-					//							bch.complete(node);
-					//						} else {
-					//							bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
-					//						}
-					//					});
+					// requestUser.isAuthorised(node, READ_PERM, rh -> {
+					// languageTags.add(lastSegment.getLanguageTag());
+					// if (rh.result()) {
+					// bch.complete(node);
+					// } else {
+					// bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
+					// }
+					// });
 
 				} else {
-					throw new EntityNotFoundException(ac.i18n("node_not_found_for_path", path));
+					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}
 			}
 		} , arh -> {
@@ -74,12 +88,22 @@ public class WebRootHandler {
 			}
 			/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
 			if (arh.succeeded()) {
-				Node node = arh.result();
-				node.transformToRest(ac, th -> {
-					if (hasSucceeded(ac, th)) {
-						ac.send(JsonUtil.toJson(th.result()), OK);
+				PathSegment lastSegment = arh.result();
+				Node node = lastSegment.getNode();
+				if (lastSegment.isBinarySegment()) {
+					try (NoTrx tx = db.noTrx()) {
+						NodeBinaryHandler handler = new NodeBinaryHandler(rc, imageManipulator);
+						handler.handle(node);
 					}
-				});
+				} else {
+					node.transformToRest(ac, rh -> {
+						if (rh.failed()) {
+							ac.fail(rh.cause());
+						} else {
+							ac.send(JsonUtil.toJson(rh.result()), OK);
+						}
+					});
+				}
 			}
 		});
 	}

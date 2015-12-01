@@ -58,7 +58,7 @@ public class BasicFieldSerializer<T extends Field> extends JsonSerializer<T> {
 				if (numberField.getNumber() == null) {
 					gen.writeNull();
 				} else {
-					gen.writeNumber(numberField.getNumber());
+					gen.writeNumber(numberField.getNumber().toString());
 				}
 				break;
 			case BOOLEAN:

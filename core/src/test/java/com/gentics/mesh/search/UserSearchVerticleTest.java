@@ -3,6 +3,8 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +13,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -23,7 +25,7 @@ import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
 
-public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
+public class UserSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private UserVerticle userVerticle;
@@ -32,8 +34,8 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 	private GroupVerticle groupVerticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(userVerticle);
 		list.add(groupVerticle);
@@ -52,6 +54,51 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest {
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
 
+	}
+
+	@Test
+	public void testTokenzierIssueQuery() throws InterruptedException, JSONException {
+		String impossibleName = "Jöhä@sRe2";
+		user().setLastname(impossibleName);
+		fullIndex();
+		Future<UserListResponse> future = getClient().searchUsers(getSimpleTermQuery("lastname", impossibleName));
+		latchFor(future);
+		assertSuccess(future);
+		UserListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+		assertEquals(1, response.getData().size());
+		assertEquals(impossibleName, response.getData().get(0).getLastname());
+	}
+
+	@Test
+	public void testTokenzierIssueQuery2() throws InterruptedException, JSONException {
+		String impossibleName = "Jöhä@sRe";
+		user().setLastname(impossibleName);
+		fullIndex();
+		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*"));
+		latchFor(future);
+		assertSuccess(future);
+		UserListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+		assertEquals(1, response.getData().size());
+		assertEquals(impossibleName, response.getData().get(0).getLastname());
+	}
+
+	@Test
+	public void testTokenzierIssueLowercasedQuery() throws InterruptedException, JSONException {
+		String impossibleName = "Jöhä@sRe";
+		user().setLastname(impossibleName);
+		fullIndex();
+		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"));
+		latchFor(future);
+		assertSuccess(future);
+		UserListResponse response = future.result();
+		assertNotNull(response);
+		assertFalse(response.getData().isEmpty());
+		assertEquals(1, response.getData().size());
+		assertEquals(impossibleName, response.getData().get(0).getLastname());
 	}
 
 	@Test

@@ -7,6 +7,8 @@ public class Path {
 
 	private List<PathSegment> segments = new ArrayList<>();
 
+	private String targetPath;
+
 	public List<PathSegment> getSegments() {
 		return segments;
 	}
@@ -24,7 +26,7 @@ public class Path {
 		if (segments.size() == 0) {
 			return null;
 		}
-		return segments.get(segments.size()-1);
+		return segments.get(segments.size() - 1);
 	}
 
 	/**
@@ -37,5 +39,13 @@ public class Path {
 			return null;
 		}
 		return segments.get(0);
+	}
+
+	public String getTargetPath() {
+		return targetPath;
+	}
+
+	public void setTargetPath(String targetPath) {
+		this.targetPath = targetPath;
 	}
 }

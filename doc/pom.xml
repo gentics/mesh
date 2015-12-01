@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>1.0.2-dev-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -15,32 +15,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<asciidoclet.version>1.5.1</asciidoclet.version>
-		<apacheds-protocol-dns.version>1.5.7</apacheds-protocol-dns.version>
-		<asciidoc.dir>${project.build.directory}/asciidoc</asciidoc.dir>
-		<github.global.server>github</github.global.server>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<artifactId>mesh-core</artifactId>
-			<groupId>${project.groupId}</groupId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<classifier>javadoc</classifier>
-		</dependency>
-		<dependency>
-			<artifactId>mesh-api</artifactId>
-			<groupId>${project.groupId}</groupId>
-			<version>${project.version}</version>
-			<type>jar</type>
-			<classifier>javadoc</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>highlightjs</artifactId>
-			<version>8.4-4</version>
-		</dependency>
 		<dependency>
 			<groupId>org.raml</groupId>
 			<artifactId>raml-parser</artifactId>
@@ -51,17 +28,6 @@
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-navigation</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-tagcloud</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<!-- <dependency> <groupId>com.gentics.mesh</groupId> <artifactId>mesh-admin</artifactId> <version>${project.version}</version> </dependency> -->
 
 		<!-- Generator dependencies -->
 		<dependency>
@@ -94,7 +60,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>com.gentics.mesh.generator.RAMLExampleGenerator</argument>
 							</arguments>
 						</configuration>
@@ -109,221 +75,73 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>com.gentics.mesh.generator.SearchModelGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>
 					<execution>
-						<id>github-wiki-clone</id>
+						<id>Generate JSON files</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>process-classes</phase>
 						<configuration>
-							<executable>git</executable>
+							<executable>java</executable>
 							<arguments>
-								<argument>clone</argument>
-								<argument>-b</argument>
-								<argument>master</argument>
-								<argument>git@github.com:gentics/mesh.wiki.git</argument>
-								<argument>target/github-wiki</argument>
+								<argument>-classpath</argument>
+								<classpath />
+								<argument>com.gentics.mesh.generator.MeshJsonGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Process all .adoc files -->
-			<plugin>
-				<groupId>org.asciidoctor</groupId>
-				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>1.5.2</version>
-				<configuration>
-					<backend>html</backend>
-					<doctype>book</doctype>
-					<relativeBaseDir>true</relativeBaseDir>
-					<preserveDirectories>true</preserveDirectories>
-					<eruby>erb</eruby>
-					<templateDir>${basedir}/src/main/docs/templates</templateDir>
-					<attributes>
-						<stylesheet>/stylesheets/docs.css</stylesheet>
-						<linkcss/>
-					</attributes>
-					<sourceHighlighter>prettify</sourceHighlighter>
-				</configuration>
-				<executions>
-					<execution>
-						<id>process-asciidocs</id>
-						<goals>
-							<goal>process-asciidoc</goal>
-						</goals>
-						<phase>process-resources</phase>
-						<configuration>
-							<attributes>
-								<toc>left</toc>
-							</attributes>
-							<sourceDirectory>${project.build.directory}/github-wiki</sourceDirectory>
-							<outputDirectory>${project.build.directory}/docs-generated</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Disabled since it does not support ssh-agent <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-scm-plugin</artifactId> <version>1.9.4</version> <configuration> 
-				<providerImplementations> <git>jgit</git> </providerImplementations> </configuration> <dependencies> <dependency> <groupId>org.apache.maven.scm</groupId> <artifactId>maven-scm-provider-jgit</artifactId> 
-				<version>1.9.4</version> </dependency> </dependencies> <executions> <execution> <id>clone-github-wiki</id> <goals> <goal>checkout</goal> </goals> <phase>generate-resources</phase> <configuration> 
-				<checkoutDirectory>${project.basedir}/target/github-wiki</checkoutDirectory> <connectionType>connection</connectionType> <connectionUrl>scm:git:git@github.com:gentics/mesh.wiki.git</connectionUrl> 
-				</configuration> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-					<skipDeploy>true</skipDeploy>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
-						<configuration>
-							<target>
-								<!-- Copy assets from webjars to site dir -->
-								<copy todir="${project.build.directory}/site/javascripts/styles" file="${project.build.directory}/webjars/META-INF/resources/webjars/highlightjs/8.4-4/styles/rainbow.min.css"/>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<phase>site</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<!-- unpack webjars -->
-					<execution>
-						<id>unpack-webjars</id>
-						<goals>
-							<goal>unpack-dependencies</goal>
-						</goals>
-						<phase>prepare-package</phase>
-						<configuration>
-							<includeGroupIds>org.webjars</includeGroupIds>
-							<includeArtifactIds>highlightjs</includeArtifactIds>
-							<includes>META-INF/resources/webjars/**/*</includes>
-							<useSubDirectoryPerArtifact>false</useSubDirectoryPerArtifact>
-							<outputDirectory>${project.build.directory}/webjars</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-javadoc</id>
+						<id>dist-raml-package</id>
 						<phase>package</phase>
 						<goals>
-							<goal>unpack</goal>
+							<goal>single</goal>
 						</goals>
 						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>mesh-core</artifactId>
-									<version>${project.version}</version>
-									<type>jar</type>
-									<classifier>javadoc</classifier>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.directory}/site/docs/javadoc</outputDirectory>
-								</artifactItem>
-								<artifactItem>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>mesh-api</artifactId>
-									<version>${project.version}</version>
-									<type>jar</type>
-									<classifier>javadoc</classifier>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.build.directory}/site/docs/javadoc-api</outputDirectory>
-								</artifactItem>
-							</artifactItems>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/raml.xml</descriptor>
+							</descriptors>
 						</configuration>
 					</execution>
-				</executions>
-			</plugin>
-			<!-- generate site (install node.js and run gulp) -->
-			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
-				<version>0.0.23</version>
-				<executions>
-					<!-- install node.js -->
 					<execution>
-						<id>install node and npm</id>
-						<goals>
-							<goal>install-node-and-npm</goal>
-						</goals>
+						<id>dist-es-package</id>
 						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
 						<configuration>
-							<nodeVersion>v0.12.2</nodeVersion>
-							<npmVersion>2.7.6</npmVersion>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/elasticsearch-examples.xml</descriptor>
+							</descriptors>
 						</configuration>
 					</execution>
-
-					<!-- install npm modules -->
 					<execution>
-						<id>npm install</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
+						<id>dist-json-package</id>
 						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
 						<configuration>
-							<arguments>install</arguments>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/mesh-json.xml</descriptor>
+							</descriptors>
 						</configuration>
-					</execution>
-
-					<!-- run gulp -->
-					<execution>
-						<id>gulp</id>
-						<goals>
-							<goal>gulp</goal>
-						</goals>
-						<phase>package</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.jolokia</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<configuration>
-					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
-					<registry>https://registry.gentics.com</registry>
-					<images>
-						<image>
-							<name>registry.gentics.com/mesh-website:${project.version}</name>
-							<alias>mesh-website</alias>
-							<build>
-								<assembly>
-									<mode>dir</mode>
-									<basedir>/opt/tvc</basedir>
-									<dockerFileDir>mesh-website</dockerFileDir>
-									<descriptor>docker-assembly.xml</descriptor>
-								</assembly>
-							</build>
-						</image>
-					</images>
-				</configuration>
-				<executions>
-					<execution>
-						<id>build-docker</id>
-						<phase>install</phase>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>push-docker</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>push</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -342,25 +160,6 @@
 								<pluginExecution>
 									<pluginExecutionFilter>
 										<groupId>
-											com.github.eirslett
-										</groupId>
-										<artifactId>
-											frontend-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.0.23,)
-										</versionRange>
-										<goals>
-											<goal>gulp</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
 											org.codehaus.mojo
 										</groupId>
 										<artifactId>
@@ -374,7 +173,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -393,7 +192,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -406,20 +205,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.asciidoctor</groupId>
-										<artifactId>asciidoctor-maven-plugin</artifactId>
-										<versionRange>[1.5.2,)</versionRange>
-										<goals>
-											<goal>process-asciidoc</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

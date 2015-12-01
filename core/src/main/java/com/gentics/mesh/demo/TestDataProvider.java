@@ -15,9 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -33,14 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -182,31 +173,6 @@ public class TestDataProvider {
 		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", contentSchema);
 
-		// Node porsche911 = addContent(folders.get("products"), "Porsche 911",
-		// "997 is the internal designation for the Porsche 911 model manufactured and sold by German manufacturer Porsche between 2004 (as Model Year 2005) and
-		// 2012.",
-		// "Porsche 997 ist die interne Modellbezeichnung von Porsche für das von 2004 bis Ende 2012 produzierte 911-Modell.", contentSchema);
-		// porsche911.addTag(tags.get("vehicle"));
-		// porsche911.addTag(tags.get("car"));
-		//
-		// Node nissanGTR = addContent(folders.get("products"), "Nissan GT-R",
-		// "The Nissan GT-R is a 2-door 2+2 sports coupé produced by Nissan and first released in Japan in 2007",
-		// "Der Nissan GT-R ist ein seit Dezember 2007 produziertes Sportcoupé des japanischen Automobilherstellers Nissan und der Nachfolger des Nissan Skyline
-		// GT-R R34.",
-		// contentSchema);
-		// nissanGTR.addTag(tags.get("vehicle"));
-		// nissanGTR.addTag(tags.get("car"));
-		// nissanGTR.addTag(tags.get("green"));
-
-		// Node bmwM3 = addContent(folders.get("products"), "BMW M3",
-		// "The BMW M3 (first launched in 1986) is a high-performance version of the BMW 3-Series, developed by BMW's in-house motorsport division, BMW M.",
-		// "Der BMW M3 ist ein Sportmodell der 3er-Reihe von BMW, das seit Anfang 1986 hergestellt wird. Dabei handelt es sich um ein Fahrzeug, welches von der
-		// BMW-Tochterfirma BMW M GmbH entwickelt und anfangs (E30 und E36) auch produziert wurde.",
-		// contentSchema);
-		// bmwM3.addTag(tags.get("vehicle"));
-		// bmwM3.addTag(tags.get("car"));
-		// bmwM3.addTag(tags.get("blue"));
-
 		Node concorde = addContent(folders.get("products"), "Concorde",
 				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
@@ -214,41 +180,6 @@ public class TestDataProvider {
 		concorde.addTag(tags.get("plane"));
 		concorde.addTag(tags.get("twinjet"));
 		concorde.addTag(tags.get("red"));
-
-		// Node boeing737 = addContent(folders.get("products"), "Boeing 737",
-		// "The Boeing 737 is a short- to medium-range twinjet narrow-body airliner. Originally developed as a shorter, lower-cost twin-engined airliner derived
-		// from Boeing's 707 and 727, the 737 has developed into a family of nine passenger models with a capacity of 85 to 215 passengers.",
-		// "Die Boeing 737 des US-amerikanischen Flugzeugherstellers Boeing ist die weltweit meistgebaute Familie strahlgetriebener Verkehrsflugzeuge.",
-		// contentSchema);
-		// boeing737.addTag(tags.get("plane"));
-		// boeing737.addTag(tags.get("twinjet"));
-
-		// Node a300 = addContent(folders.get("products"), "Airbus A300",
-		// "The Airbus A300 is a short- to medium-range wide-body twin-engine jet airliner that was developed and manufactured by Airbus. Released in 1972 as
-		// the world's first twin-engined widebody, it was the first product of Airbus Industrie, a consortium of European aerospace manufacturers, now a
-		// subsidiary of Airbus Group.",
-		// "Der Airbus A300 ist das erste zweistrahlige Großraumflugzeug der Welt, produziert vom europäischen Flugzeughersteller Airbus.",
-		// contentSchema);
-		// a300.addTag(tags.get("plane"));
-		// a300.addTag(tags.get("twinjet"));
-		// a300.addTag(tags.get("red"));
-
-		// Node wrangler = addContent(folders.get("products"), "Jeep Wrangler",
-		// "The Jeep Wrangler is a compact and mid-size (Wrangler Unlimited models) four-wheel drive off-road and sport utility vehicle (SUV), manufactured by
-		// American automaker Chrysler, under its Jeep marque – and currently in its third generation.",
-		// "Der Jeep Wrangler ist ein Geländewagen des US-amerikanischen Herstellers Jeep innerhalb des Chrysler-Konzerns.", contentSchema);
-		// wrangler.addTag(tags.get("vehicle"));
-		// wrangler.addTag(tags.get("jeep"));
-		//
-		// Node volvo = addContent(folders.get("products"), "Volvo B10M",
-		// "The Volvo B10M was a mid-engined bus and coach chassis manufactured by Volvo between 1978 and 2003.", null, contentSchema);
-		// volvo.addTag(tags.get("vehicle"));
-		// volvo.addTag(tags.get("bus"));
-		//
-		// Node hondact90 = addContent(folders.get("products"), "Honda CT90",
-		// "The Honda CT90 was a small step-through motorcycle manufactured by Honda from 1966 to 1979.", null, contentSchema);
-		// hondact90.addTag(tags.get("vehicle"));
-		// hondact90.addTag(tags.get("motorcycle"));
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
@@ -355,7 +286,6 @@ public class TestDataProvider {
 		project.addLanguage(getGerman());
 
 		// Guest Group / Role
-
 		Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
 		groups.put("guests", guestGroup);
 
@@ -364,40 +294,19 @@ public class TestDataProvider {
 		roles.put(guestRole.getName(), guestRole);
 
 		// Extra User
-		// for (int i = 0; i < 6 * multiplicator; i++) {
 		User user = userRoot.create("guest", userInfo.getUser());
 		user.addGroup(guestGroup);
-		// userService.setPassword(user, "guestpw" + i);
 		user.setFirstname("Guest Firstname");
 		user.setLastname("Guest Lastname");
 		user.setEmailAddress("guest@spam.gentics.com");
 		users.put(user.getUsername(), user);
-		// }
-		// Extra Groups
-		// for (int i = 0; i < 6 * multiplicator; i++) {
+
 		Group group = groupRoot.create("extra_group", userInfo.getUser());
 		groups.put(group.getName(), group);
-		// }
 
-		// Extra Roles
-		// for (int i = 0; i < 6 * multiplicator; i++) {
 		Role role = roleRoot.create("extra_role", userInfo.getUser());
 		roles.put(role.getName(), role);
-		// }
 	}
-
-	// private void addMicoSchemas() {
-	// SchemaRoot schemaRoot = root.getSchemaRoot();
-	// MicroPropertyType imageGallery = schemaService.createMicroPropertyTypeSchema("gallery");
-	// BasicPropertyType descriptionSchema = imageGallery.createBasicPropertyTypeSchema("description", PropertyType.STRING);
-	// imageGallery.addProperty(descriptionSchema);
-	//
-	// BasicPropertyType imagesSchemas = imageGallery.createListPropertyTypeSchema("images");
-	// // imagesSchemas.add(PropertyType.REFERENCE);
-	// imageGallery.addProperty(imagesSchemas);
-	// microSchemas.put("gallery", imageGallery);
-	//
-	// }
 
 	private void addTagFamilies() {
 		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic", userInfo.getUser());
@@ -407,12 +316,11 @@ public class TestDataProvider {
 		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors", userInfo.getUser());
 		colorTagFamily.setDescription("Description for color tag family");
 		tagFamilies.put("colors", colorTagFamily);
-
 	}
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
-		addBlogPostSchema();
+//		addBlogPostSchema();
 	}
 
 	private void addBootstrapSchemas() {
@@ -434,28 +342,28 @@ public class TestDataProvider {
 
 	}
 
-	private void addBlogPostSchema() throws MeshSchemaException {
-		Schema schema = new SchemaImpl();
-		schema.setName("blogpost");
-		schema.setDisplayField("title");
-		schema.setMeshVersion(Mesh.getVersion());
-
-		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-		titleFieldSchema.setName("title");
-		titleFieldSchema.setLabel("Title");
-		schema.addField(titleFieldSchema);
-
-		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-		titleFieldSchema.setName("content");
-		titleFieldSchema.setLabel("Content");
-		schema.addField(contentFieldSchema);
-
-		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
-		blogPostSchemaContainer.setSchema(schema);
-
-		schemaContainers.put("blogpost", blogPostSchemaContainer);
-	}
+//	private void addBlogPostSchema() throws MeshSchemaException {
+//		Schema schema = new SchemaImpl();
+//		schema.setName("blogpost");
+//		schema.setDisplayField("title");
+//		schema.setMeshVersion(Mesh.getVersion());
+//
+//		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+//		titleFieldSchema.setName("title");
+//		titleFieldSchema.setLabel("Title");
+//		schema.addField(titleFieldSchema);
+//
+//		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
+//		titleFieldSchema.setName("content");
+//		titleFieldSchema.setLabel("Content");
+//		schema.addField(contentFieldSchema);
+//
+//		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
+//		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
+//		blogPostSchemaContainer.setSchema(schema);
+//
+//		schemaContainers.put("blogpost", blogPostSchemaContainer);
+//	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
@@ -482,14 +390,6 @@ public class TestDataProvider {
 		return folderNode;
 	}
 
-	//	private void setCreatorEditor(GenericVertex<?> node) {
-	//		node.setCreator(userInfo.getUser());
-	//		node.setCreationTimestamp(System.currentTimeMillis());
-	//
-	//		node.setEditor(userInfo.getUser());
-	//		node.setLastEditedTimestamp(System.currentTimeMillis());
-	//	}
-
 	public Tag addTag(String name) {
 		return addTag(name, getTagFamily("demo"));
 	}
@@ -507,7 +407,7 @@ public class TestDataProvider {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			englishContainer.createString("name").setString(name + " english name");
+			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("filename").setString(name + ".en.html");

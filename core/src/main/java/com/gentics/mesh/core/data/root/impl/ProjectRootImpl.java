@@ -60,7 +60,7 @@ import io.vertx.core.logging.LoggerFactory;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.root.impl.ProjectRootImpl.jpg" alt="">
  * </p>
  */
-public class ProjectRootImpl extends AbstractRootVertex<Project>implements ProjectRoot {
+public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
@@ -189,15 +189,14 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 					db.trx(txCreate -> {
 						requestUser.reload();
 						Project project = create(requestModel.getName(), requestUser);
-						
 
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project);
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getBaseNode());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagFamilyRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getSchemaContainerRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project);
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
 						// TODO add microschema root crud perms
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getTagRoot());
-						requestUser.addCRUDPermissionOnRole(meshRoot, CREATE_PERM, project.getNodeRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagRoot());
+						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
 						SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						txCreate.complete(Tuple.tuple(batch, project));
@@ -205,18 +204,20 @@ public class ProjectRootImpl extends AbstractRootVertex<Project>implements Proje
 						if (txCreated.failed()) {
 							handler.handle(Future.failedFuture(txCreated.cause()));
 						} else {
-							Project project = txCreated.result().v2();
-							try {
-								routerStorage.addProjectRouter(project.getName());
-							} catch (InvalidNameException e) {
-								// TODO should we really fail here?
-								handler.handle(failedFuture(ac, BAD_REQUEST, "Error while adding project to router storage", e));
-								return;
-							}
-							if (log.isInfoEnabled()) {
-								log.info("Registered project {" + project.getName() + "}");
-							}
-							processOrFail(ac, txCreated.result().v1(), handler, project);
+							db.noTrx(tx -> {
+								Project project = txCreated.result().v2();
+								try {
+									routerStorage.addProjectRouter(project.getName());
+								} catch (InvalidNameException e) {
+									// TODO should we really fail here?
+									handler.handle(failedFuture(BAD_REQUEST, "Error while adding project to router storage", e));
+									return;
+								}
+								if (log.isInfoEnabled()) {
+									log.info("Registered project {" + project.getName() + "}");
+								}
+								processOrFail(ac, txCreated.result().v1(), handler, project);
+							});
 						}
 					});
 				}

@@ -19,7 +19,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 	private Person p;
 
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		db = new OrientDBDatabase();
 		db.init(null, Vertx.vertx());
 		setupData();

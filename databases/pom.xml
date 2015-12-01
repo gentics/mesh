@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.1.2-SNAPSHOT</version>
+		<version>1.0.2-dev-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -21,6 +21,7 @@
 		<module>orientdb</module>
 		<module>titandb</module>
 		<module>tinkergraph</module>
+		<module>bitsy</module>
 	</modules>
 
 	<dependencies>

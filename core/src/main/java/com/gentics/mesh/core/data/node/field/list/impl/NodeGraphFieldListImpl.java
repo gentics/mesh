@@ -48,7 +48,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<NodeFieldList>> handler) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
-		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey);
+		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
 		if (expandField) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.Locale;
 import java.util.Map;
@@ -18,7 +18,7 @@ import io.vertx.ext.web.RoutingContext;
 
 public class HttpActionContextImpl extends AbstractActionContext implements HttpActionContext {
 
-	private static final String LOCALE_MAP_DATA_KEY = "locale";
+	public static final String LOCALE_MAP_DATA_KEY = "locale";
 
 	private RoutingContext rc;
 

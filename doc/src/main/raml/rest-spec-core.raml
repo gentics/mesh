@@ -21,10 +21,35 @@ traits:
 
   - expandable:
       queryParameters:
+        expandAll:
+          description: Expand all fields which can be expanded.
+          type: boolean
+          required: false
         expand:
           description: Expand the fields with the given name.
           type: string
           required: false
+
+  - translatable:
+      queryParameters:
+        lang:
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
+          example: ?lang=de,en
+
+  - imagehandler:
+      queryParameters:
+        width:
+          description: Set image target width. The height is automatically calculated when the width is omitted.
+        height:
+          description: Set image target height. The width is automatically calculated when the height is omitted.
+        cropx:
+          description: Set image crop area x coordinate.
+        cropy:
+          description: Set image crop area y coordinate.
+        cropw:
+          description: Set image crop area width.
+        croph:
+          description: Set image crop area height.
 
   - sortable:
       queryParameters:
@@ -61,9 +86,8 @@ traits:
           application/json:
             example: !include json/UserListResponse.example.json
 
-
   post:
-    description: Create new user.
+    description: Create a new user. Please note that users create requests may also contain a node reference which is useful when storing additional data next to the user is required.
     body:
       application/json:
         example: !include json/UserCreateRequest.example.json
@@ -101,6 +125,28 @@ traits:
             application/json:
               example: !include json/GenericMessageResponse.example.json
 
+    /{uuid}/permissions/{pathToElement}:
+        uriParameters:
+          uuid:
+            description: Uuid of the user that should be used to read the permissions.
+            type: string
+          pathToElement:
+            description: Path to the element.
+            example: |
+                /:userUuid/permissions/projects/:projectUuid/schemas/:schemaUuid
+                /:userUuid/permissions/projects/:projectUuid/schemas
+                /:userUuid/permissions/projects/:projectUuid/nodes
+                /:userUuid/permissions/projects/:projectUuid
+            type: string
+        get:
+          description: |
+            Return the user permissions to the given element.
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include json/UserPermissionResponse.example.json
+  
 
 #------------------------------------------------------------------------------
 # Role Verticle
@@ -166,10 +212,19 @@ traits:
             /:roleUuid/permissions/projects/:projectUuid/schemas
             /:roleUuid/permissions/projects/:projectUuid/nodes
             /:roleUuid/permissions/projects/:projectUuid
+            /:roleUuid/permissions/projects
         type: string
+    get:
+      description: |
+        Return the role permission to the given element.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/RolePermissionResponse.example.json
     put:
       description: |
-        Update the role permission to the given element and update the permission to the given element. Possible paths are: roles/:uuid or projects/:uuid/schemas or projects
+        Update the role permission to the given element and update the permission to the given element. This is useful when it is required to grant certain permissions on a given path segment / object.
       body:
         application/json:
           example: !include json/RolePermissionRequest.example.json
@@ -388,6 +443,30 @@ traits:
                 example: !include json/GenericMessageResponse.example.json
 
 
+
+#------------------------------------------------------------------------------
+# WebRoot Verticle
+#------------------------------------------------------------------------------
+
+/{projectName}/webroot:
+  is: [ localized ]
+  displayName: WebRoot
+  /{path}:
+    is: [ localized, include_role_perms, imagehandler ]
+    uriParameters:
+      path:
+        description: Path to a node.
+        type: string
+    get:
+      description: Retrieves the node with the given path.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/NodeResponse.example.json
+              
+              
+
 #------------------------------------------------------------------------------
 # Node Verticle
 #------------------------------------------------------------------------------
@@ -420,12 +499,8 @@ traits:
         description: Uuid of a single node.
         type: string
     get:
-      is: [ expandable, include_role_perms ]
+      is: [ expandable, include_role_perms, translatable ]
       description: Retrieves the node with the given uuid.
-      queryParameters:
-        lang:
-          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{projectName}/nodes/?lang=de,en
       responses:
         200:
           body:
@@ -452,6 +527,7 @@ traits:
               example: !include json/GenericMessageResponse.example.json
         423:
     /bin:
+      is: [ imagehandler ]
       get:
         description: Load the binary property value.
       put: 
@@ -462,18 +538,43 @@ traits:
       is: [ sortable, paged ]
       get:
         description: Load the tags that tag the node.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/TagListResponse.example.json
+    /tags/{tagUuuid}:
       put:
         description: Add the tag to the node.
       delete:
         description: Remove the tag from the node.
+    /languages/{languageTag}:
+      delete:
+        description: Deletes the language from the given node.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/GenericMessageResponse.example.json 
     /children:
       get:
         is: [ localized, sortable, paged, expandable ]
         description: Load child nodes for the given node.
-    /moveTo/{uuid}:
+    /moveTo/{targetNodeUuid}:
+      uriParameters:
+        targetNodeUuid:
+          description: Uuid of a the target node. This node will become the new parent of the source node.
+          type: string
       put:
-        description: Move the node to the given node. 
-
+        description: Move the node to the given node.
+    /breadcrumb:
+      get:
+        description: Return a breadcrumb for the given node. 
+        responses:
+            200:
+              body:
+                application/json:
+                  example: !include json/NodeBreadcrumbResponse.example.json
 #------------------------------------------------------------------------------
 # TagFamily Verticle
 #------------------------------------------------------------------------------
@@ -538,8 +639,11 @@ traits:
     /tags:
       get: 
         description: Load all tags which were assigned to this tag family.
-
-
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/TagListResponse.example.json
 
 
 #------------------------------------------------------------------------------
@@ -693,14 +797,15 @@ traits:
                 body:
                     application/json:
                         example: !include json/SchemaListResponse.example.json
-
-#------------------------------------------------------------------------------
-# Move Verticle
-#------------------------------------------------------------------------------
-/move/{uuid}/to/{uuid}:
-  displayName: Move
-  put:
-    description: Move entities.
+  /status:
+   displayName: Search Status
+   get:
+     description: Load the search status information.
+     responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/SearchStatusResponse.example.json
 
 #------------------------------------------------------------------------------
 # Authentication Verticle
@@ -719,8 +824,16 @@ traits:
   /login:
     post:
       description: Login the user using the provided credentials.
+      body:
+        application/json:
+          example: !include json/LoginRequest.example.json
   /logout:
     get:
       description: Logout the user.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
 
 

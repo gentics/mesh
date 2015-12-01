@@ -5,12 +5,11 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
@@ -35,7 +34,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractIndexedVertex;
+import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -44,6 +43,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -82,7 +82,7 @@ import rx.subjects.AsyncSubject;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User {
+public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, UserReference> implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -100,6 +100,11 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(UserImpl.class);
+	}
+
+	@Override
+	protected UserReference createEmptyReferenceModel() {
+		return new UserReference();
 	}
 
 	@Override
@@ -129,15 +134,15 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
-	@Override
-	public List<? extends GenericVertexImpl> getEditedElements() {
-		return in(HAS_EDITOR).toList(GenericVertexImpl.class);
-	}
-
-	@Override
-	public List<? extends GenericVertexImpl> getCreatedElements() {
-		return in(HAS_CREATOR).toList(GenericVertexImpl.class);
-	}
+	// @Override
+	// public List<? extends GenericVertexImpl> getEditedElements() {
+	// return in(HAS_EDITOR).toList(GenericVertexImpl.class);
+	// }
+	//
+	// @Override
+	// public List<? extends GenericVertexImpl> getCreatedElements() {
+	// return in(HAS_CREATOR).toList(GenericVertexImpl.class);
+	// }
 
 	@Override
 	public String getFirstname() {
@@ -293,6 +298,17 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 	}
 
 	@Override
+	public boolean hasAdminRole() {
+		for (Role role : getRolesViaShortcut()) {
+			System.out.println(role.getName());
+			if ("admin".equals(role.getName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE, this.getId());
@@ -307,8 +323,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 		}
 
 		return false;
-
-//		return out(HAS_USER).in(HAS_ROLE).outE(permission.label()).mark().inV().retain(node.getImpl()).hasNext();
 	}
 
 	@Override
@@ -378,7 +392,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 			Node node = getReferencedNode();
 			if (node != null) {
-				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference");
+				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
 				ObservableFuture<Void> obsNodeReference = RxHelper.observableFuture();
 				futures.add(obsNodeReference);
 				if (expandReference) {
@@ -405,7 +419,8 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 			}
 			for (Group group : getGroups()) {
-				restUser.addGroup(group.getName());
+				GroupReference reference = group.transformToReference(ac);
+				restUser.getGroups().add(reference);
 			}
 
 			// Role permissions
@@ -433,15 +448,6 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 			handler.handle(rh);
 		});
 
-		return this;
-	}
-
-	@Override
-	public User transformToUserReference(Handler<AsyncResult<UserReference>> handler) {
-		UserReference reference = new UserReference();
-		reference.setName(getUsername());
-		reference.setUuid(getUuid());
-		handler.handle(Future.succeededFuture(reference));
 		return this;
 	}
 
@@ -493,12 +499,15 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 
 	@Override
 	public void delete() {
-		disable();
+		// TODO don't allow this for the admin user
+		//		disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
-		}
-		outE(HAS_USER).removeAll();
+		//		if (log.isDebugEnabled()) {
+		//			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
+		//		}
+		//		outE(HAS_USER).removeAll();
+		addIndexBatch(DELETE_ACTION);
+		getElement().remove();
 	}
 
 	/**
@@ -554,7 +563,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 					if (reference instanceof NodeReferenceImpl) {
 						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
 						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-							txUpdate.fail(error(ac, BAD_REQUEST, "user_incomplete_node_reference"));
+							txUpdate.fail(error(BAD_REQUEST, "user_incomplete_node_reference"));
 							return;
 						} else {
 							String referencedNodeUuid = basicReference.getUuid();
@@ -562,7 +571,7 @@ public class UserImpl extends AbstractIndexedVertex<UserResponse>implements User
 							/* TODO decide whether we need to check perms on the project as well */
 							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
 							if (project == null) {
-								txUpdate.fail(error(ac, BAD_REQUEST, "project_not_found", projectName));
+								txUpdate.fail(error(BAD_REQUEST, "project_not_found", projectName));
 								return;
 							} else {
 								NodeRoot nodeRoot = project.getNodeRoot();

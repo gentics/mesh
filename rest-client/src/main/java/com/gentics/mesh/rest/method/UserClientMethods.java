@@ -1,13 +1,14 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
+
+import io.vertx.core.Future;
 
 public interface UserClientMethods {
 
@@ -50,6 +51,7 @@ public interface UserClientMethods {
 	 * Update the user.
 	 * 
 	 * @param uuid
+	 *            User uuid
 	 * @param request
 	 * @param parameters
 	 * @return
@@ -60,6 +62,7 @@ public interface UserClientMethods {
 	 * Delete the user.
 	 * 
 	 * @param uuid
+	 *            User uuid
 	 * @return
 	 */
 	Future<GenericMessageResponse> deleteUser(String uuid);
@@ -73,4 +76,14 @@ public interface UserClientMethods {
 	 */
 	Future<UserListResponse> findUsersOfGroup(String groupUuid, QueryParameterProvider... parameters);
 
+	/**
+	 * Read the user permissions for the given path.
+	 * 
+	 * @param uuid
+	 *            User uuid
+	 * @param pathToElement
+	 *            Path to the element
+	 * @return
+	 */
+	Future<UserPermissionResponse> readUserPermissions(String uuid, String pathToElement);
 }

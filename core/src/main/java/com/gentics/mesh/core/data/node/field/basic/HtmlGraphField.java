@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.node.field.basic;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 
+/**
+ * A html graph field is a basic node field which can be used to store html string values.
+ */
 public interface HtmlGraphField extends ListableGraphField, BasicGraphField<HtmlField> {
 
 	/**

@@ -45,6 +45,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		map.put("name", tagFamily.getName());
 		addBasicReferences(map, tagFamily);
 		addTags(map, tagFamily.getTags());
+		addProject(map, tagFamily.getProject());
 		return map;
 	}
 

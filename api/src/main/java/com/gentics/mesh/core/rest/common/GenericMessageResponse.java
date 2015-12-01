@@ -2,12 +2,12 @@ package com.gentics.mesh.core.rest.common;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.handler.ActionContext;
 
 /**
  * The {@link GenericMessageResponse} is used when a generic message should be returned to the requester.
  */
-public class GenericMessageResponse {
+public class GenericMessageResponse implements RestModel {
 
 	private String message;
 
@@ -32,6 +32,18 @@ public class GenericMessageResponse {
 	}
 
 	/**
+	 * Generate a new message response.
+	 * 
+	 * @param ac
+	 * @param i18nMessage
+	 * @param i18nParameters
+	 * @return
+	 */
+	public static GenericMessageResponse message(ActionContext ac, String i18nMessage, String... i18nParameters) {
+		return new GenericMessageResponse(ac.i18n(i18nMessage, i18nParameters));
+	}
+
+	/**
 	 * Create a new generic message response pojo.
 	 * 
 	 * @param message
@@ -44,9 +56,9 @@ public class GenericMessageResponse {
 		this.internalMessage = internalMessage;
 	}
 
-	public GenericMessageResponse(HttpStatusCodeErrorException httpStatusError) {
-		this.message = httpStatusError.getMessage();
-		this.properties = httpStatusError.getProperties();
+	public GenericMessageResponse(String message, String internalMessage, Map<String, String> properties) {
+		this(message, internalMessage);
+		this.properties = properties;
 	}
 
 	/**
@@ -104,5 +116,10 @@ public class GenericMessageResponse {
 	 */
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
+	}
+
+	@Override
+	public String toString() {
+		return getMessage();
 	}
 }

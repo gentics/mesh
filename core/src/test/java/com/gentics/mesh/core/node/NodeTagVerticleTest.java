@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
@@ -18,7 +19,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -35,8 +36,8 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 	private NodeVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -61,11 +62,11 @@ public class NodeTagVerticleTest extends AbstractRestVerticleTest {
 		Tag tag = tag("red");
 		assertFalse(node.getTags().contains(tag));
 
-		Future<NodeResponse> future;
-
-		future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
+		assertThat(searchProvider).recordedStoreEvents(0);
+		Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);
 		assertSuccess(future);
+		assertThat(searchProvider).recordedStoreEvents(1);
 
 		future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid());
 		latchFor(future);

@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,6 +32,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -85,15 +89,30 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
+	public String getDisplayFieldValue(Schema schema) {
+		String displayFieldName = schema.getDisplayField();
+		StringGraphField field = getString(displayFieldName);
+		if (field != null) {
+			return field.getString();
+		}
+		return null;
+	}
+
+	@Override
 	public void updateFieldsFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+
+		// Initially all fields are not yet handled
+		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
+		unhandledFieldKeys.addAll(restFields.keySet());
 
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
 			Field restField = restFields.get(key);
-			restFields.remove(key);
+
+			unhandledFieldKeys.remove(key);
 
 			FieldTypes type = FieldTypes.valueByName(entry.getType());
 			switch (type) {
@@ -252,7 +271,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					} else {
 						graphNumberFieldList.removeAll();
 					}
-					for (String item : numberList.getItems()) {
+					for (Number item : numberList.getItems()) {
 						graphNumberFieldList.createNumber(item);
 					}
 				} else if (restField instanceof BooleanFieldListImpl) {
@@ -310,19 +329,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		}
 
+		// Some fields were specified within the json but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user about this.
 		String extraFields = "";
-		for (String key : restFields.keySet())
-
-		{
+		for (String key : unhandledFieldKeys) {
 			extraFields += "[" + key + "]";
 		}
-		if (!StringUtils.isEmpty(extraFields))
-
-		{
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_unhandled_fields", schema.getName(), extraFields));
-			// throw new MeshSchemaException("The following fields were not
-			// specified within the {" + schema.getName() + "} schema: " +
-			// extraFields);
+		if (!StringUtils.isEmpty(extraFields)) {
+			throw error(BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
 		}
 
 	}
@@ -380,7 +393,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						handler.handle(Future.failedFuture(th.cause()));
 						return;
 					} else {
-						handler.handle(Future.succeededFuture(th.result()));
+						StringField stringField = th.result();
+						if (ac.getResolveLinksFlag()) {
+							stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString()));
+						}
+						handler.handle(Future.succeededFuture(stringField));
 						return;
 					}
 				});
@@ -429,7 +446,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				handler.handle(Future.succeededFuture(new HtmlFieldImpl()));
 				return;
 			} else {
-				graphHtmlField.transformToRest(ac, wrap(handler));
+				graphHtmlField.transformToRest(ac,  rhRest -> {
+					if (rhRest.failed()) {
+						handler.handle(Future.failedFuture(rhRest.cause()));
+					} else {
+						// If needed resolve links within the html 
+						HtmlField field = rhRest.result();
+						if (ac.getResolveLinksFlag()) {
+							field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML()));
+						}
+						handler.handle(Future.succeededFuture(field));
+					}
+				});
 				return;
 			}
 		case LIST:

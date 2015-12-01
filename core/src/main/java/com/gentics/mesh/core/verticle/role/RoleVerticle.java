@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.role;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -38,8 +38,13 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addPermissionHandler() {
-		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).handler(rc -> {
-			crudHandler.handlePermissionUpdate(InternalActionContext.create(rc));
+		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON)
+				.handler(rc -> {
+					crudHandler.handlePermissionUpdate(InternalActionContext.create(rc));
+				});
+
+		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handlePermissionRead(InternalActionContext.create(rc));
 		});
 	}
 
@@ -56,20 +61,20 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	}
 
 	private void addReadHandler() {
-		route("/:uuid").method(GET).handler(rc -> {
+		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleRead(InternalActionContext.create(rc));
 		});
 
 		/*
 		 * List all roles when no parameter was specified
 		 */
-		route("/").method(GET).handler(rc -> {
+		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
 		});
 	}
 
 	private void addCreateHandler() {
-		route("/").method(POST).consumes(APPLICATION_JSON).handler(rc -> {
+		route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest;
 
+import com.gentics.mesh.rest.impl.MeshRestClientImpl;
 import com.gentics.mesh.rest.method.AdminClientMethods;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
@@ -62,5 +63,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * Close the client.
 	 */
 	void close();
+
 
 }

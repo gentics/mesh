@@ -1,0 +1,18 @@
+{
+  "name" : "category",
+  "binary" : false,
+  "folder" : true,
+  "displayField": "name",
+  "segmentField": "name",
+  "fields" : [ {
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string"
+  }, {
+    "name" : "description",
+    "label" : "Description",
+    "required" : false,
+    "type" : "string"
+  } ]
+}

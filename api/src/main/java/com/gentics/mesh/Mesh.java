@@ -8,6 +8,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import io.vertx.core.ServiceHelper;
 import io.vertx.core.Vertx;
 
+/**
+ * The main mesh interface which exposes various methods that can be used to initialize mesh and startup a new instance.
+ */
 public interface Mesh {
 
 	public static final String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
@@ -52,8 +55,10 @@ public interface Mesh {
 	 * Stop the the Mesh instance and release any resources held by it.
 	 * 
 	 * The instance cannot be used after it has been closed.
+	 * 
+	 * @throws Exception
 	 */
-	void shutdown();
+	void shutdown() throws Exception;
 
 	/**
 	 * Set a custom verticle loader that will be invoked once all major components have been initialized.

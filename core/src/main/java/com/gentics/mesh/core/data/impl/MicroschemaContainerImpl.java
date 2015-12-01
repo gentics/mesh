@@ -12,7 +12,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaResponse>implements MicroschemaContainer {
+public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaResponse> implements MicroschemaContainer {
 
 	@Override
 	public String getType() {
@@ -21,20 +21,18 @@ public class MicroschemaContainerImpl extends AbstractGenericVertex<MicroschemaR
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return getProperty("name");
 	}
 
 	@Override
 	public void setName(String name) {
-		// TODO Auto-generated method stub
-
+		setProperty("name", name);
 	}
 
 	@Override
 	public GenericVertex<MicroschemaResponse> transformToRest(InternalActionContext ac, Handler<AsyncResult<MicroschemaResponse>> handler) {
 		MicroschemaResponse response = new MicroschemaResponse();
-		//fillRest(response, rc);
+		// fillRest(response, rc);
 		handler.handle(Future.succeededFuture(response));
 		return this;
 	}

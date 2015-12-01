@@ -1,0 +1,9 @@
+{
+  "data": [
+    { "name": "vehicle",       "projects": ["demo"] },
+    { "name": "vehicleImage",  "projects": ["demo"] },
+    { "name": "category",      "projects": ["demo"] },
+    { "name": "folder",        "projects": ["demo"] },
+    { "name": "content",       "projects": ["demo"] }
+  ]
+}

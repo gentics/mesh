@@ -1,13 +1,13 @@
 package com.gentics.mesh.graphdb;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import com.gentics.mesh.graphdb.spi.Database;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * SPI provider for graph databases.
@@ -50,6 +50,9 @@ public class DatabaseService {
 			}
 		} catch (ServiceConfigurationError serviceError) {
 			serviceError.printStackTrace();
+		}
+		if (database == null) {
+			throw new RuntimeException("Could not find image provider.");
 		}
 		return database;
 	}

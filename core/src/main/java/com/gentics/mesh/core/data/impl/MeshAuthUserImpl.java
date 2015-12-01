@@ -96,7 +96,6 @@ public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, U
 	}
 
 	public VertexTraversal<?, ?, ?> getPermTraversal(GraphPermission permission) {
-		// TODO out/in/out!
 		return out(HAS_USER).in(HAS_ROLE).out(permission.label());
 	}
 

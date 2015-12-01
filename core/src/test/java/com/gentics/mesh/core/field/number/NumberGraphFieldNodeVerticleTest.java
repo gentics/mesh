@@ -61,7 +61,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
-		nodeCreateRequest.setSchema(new SchemaReference("folder", null));
+		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
@@ -76,20 +76,20 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber("42"));
+		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber(42));
 		NumberFieldImpl field = response.getField("numberField");
-		assertEquals("42", field.getNumber());
-		response = updateNode("numberField", new NumberFieldImpl().setNumber("43"));
+		assertEquals(42, field.getNumber());
+		response = updateNode("numberField", new NumberFieldImpl().setNumber(43));
 		field = response.getField("numberField");
-		assertEquals("43", field.getNumber());
+		assertEquals(43, field.getNumber());
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("numberField", new NumberFieldImpl().setNumber("1.21"));
+		NodeResponse response = createNode("numberField", new NumberFieldImpl().setNumber(1.21));
 		NumberFieldImpl numberField = response.getField("numberField");
-		assertEquals("1.21", numberField.getNumber());
+		assertEquals(1.21, numberField.getNumber());
 	}
 
 	@Test
@@ -99,13 +99,13 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		NumberGraphField numberField = container.createNumber("numberField");
-		numberField.setNumber("100.9");
+		numberField.setNumber(100.9f);
 
 		NodeResponse response = readNode(node);
 
 		NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
 		assertNotNull(deserializedNumberField);
-		assertEquals("100.9", deserializedNumberField.getNumber());
+		assertEquals(100.9, deserializedNumberField.getNumber());
 	}
 
 }

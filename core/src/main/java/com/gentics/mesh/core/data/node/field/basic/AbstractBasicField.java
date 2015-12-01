@@ -7,6 +7,10 @@ import com.syncleus.ferma.AbstractVertexFrame;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
+/**
+ * Abstract class for basic fields. All basic fields should implement this class in order to provide various methods that can be used to access basic field
+ * values.
+ */
 public abstract class AbstractBasicField<T extends Field> implements BasicGraphField<T> {
 
 	private String fieldKey;
@@ -31,11 +35,11 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 		return parentContainer;
 	}
 
-	public void setFieldProperty(String key, String value) {
+	public void setFieldProperty(String key, Object value) {
 		parentContainer.setProperty(fieldKey + "-" + key, value);
 	}
 
-	public String getFieldProperty(String key) {
+	public <T> T getFieldProperty(String key) {
 		return parentContainer.getProperty(fieldKey + "-" + key);
 	}
 

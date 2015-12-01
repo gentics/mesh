@@ -1,6 +1,7 @@
 package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.mock.MockingUtils.mockGroup;
+
 import static com.gentics.mesh.mock.MockingUtils.mockLanguage;
 import static com.gentics.mesh.mock.MockingUtils.mockNode;
 import static com.gentics.mesh.mock.MockingUtils.mockNodeBasic;
@@ -10,8 +11,10 @@ import static com.gentics.mesh.mock.MockingUtils.mockSchemaContainer;
 import static com.gentics.mesh.mock.MockingUtils.mockTag;
 import static com.gentics.mesh.mock.MockingUtils.mockTagFamily;
 import static com.gentics.mesh.mock.MockingUtils.mockUser;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -62,10 +65,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "target" + File.separator + "site" + File.separator + "docs" + File.separator + "search";
+			baseDirProp = "target" + File.separator + "elasticsearch-examples";
 		}
-		File baseDir = new File(baseDirProp);
-		outputDir = new File(baseDir, "json");
+		outputDir = new File(baseDirProp);
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
 		outputDir.mkdirs();
 
@@ -91,10 +93,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 	private void writeNodeDocumentExample() throws Exception {
 		Language language = mockLanguage("de");
 		User user = mockUser("joe1", "Joe", "Doe");
-		TagFamily tagFamily = mockTagFamily("colors", user);
-		Tag tagA = mockTag("green", user, tagFamily);
-		Tag tagB = mockTag("red", user, tagFamily);
 		Project project = mockProject(user);
+		TagFamily tagFamily = mockTagFamily("colors", user, project);
+		Tag tagA = mockTag("green", user, tagFamily, project);
+		Tag tagB = mockTag("red", user, tagFamily, project);
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
@@ -146,7 +148,14 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeTagFamilyDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		TagFamily tagFamily = mockTagFamily("colors", user);
+		Project project = mockProject(user);
+		TagFamily tagFamily = mockTagFamily("colors", user, project);
+		List<Tag> tagList = new ArrayList<>();
+		tagList.add(mockTag("red", user, tagFamily, project));
+		tagList.add(mockTag("green", user, tagFamily, project));
+		when(tagFamily.getTags()).then(answer -> {
+			return tagList;
+		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = ctx.getBean(TagFamilyIndexHandler.class);
 		tagFamilyIndexHandler.store(tagFamily, "tagFamily", rh -> {
 		});
@@ -165,8 +174,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeTagDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		TagFamily tagFamily = mockTagFamily("colors", user);
-		Tag tag = mockTag("red", user, tagFamily);
+		Project project = mockProject(user);
+		TagFamily tagFamily = mockTagFamily("colors", user, project);
+		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = ctx.getBean(TagIndexHandler.class);
 		tagIndexHandler.store(tag, "tag", rh -> {
 		});

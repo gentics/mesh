@@ -17,7 +17,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -36,8 +36,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 	private NodeVerticle verticle;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;
 	}
@@ -107,9 +107,11 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
-		int nChildren = 2;
-		assertTrue("The node should have more than {" + nChildren + "} children. But it got {" + restNode.getChildren().size() + "}",
-				restNode.getChildren().size() > nChildren);
+		long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
+		assertEquals("The node should have more than {" + subFolderCount + "} children. But it got {" + subFolderCount + "}", 2, subFolderCount);
+
+		long subContentCount = restNode.getChildrenInfo().get("content").getCount();
+		assertEquals("The node should have more than {" + subContentCount + "} children. But it got {" + subContentCount + "}", 1, subContentCount);
 	}
 
 	@Test
@@ -118,7 +120,6 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		int nChildren = node.getChildren().size();
 		role().revokePermissions(folder("2015"), READ_PERM);
 
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
@@ -128,7 +129,11 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
-		assertEquals("Only the n-1 children should be listed in the response", nChildren - 1, restNode.getChildren().size());
+		long subFolderCount = restNode.getChildrenInfo().get("folder").getCount();
+		assertEquals("The node should have more than {" + subFolderCount + "} children. But it got {" + subFolderCount + "}", 1, subFolderCount);
+
+		long subContentCount = restNode.getChildrenInfo().get("content").getCount();
+		assertEquals("The node should have more than {" + subContentCount + "} children. But it got {" + subContentCount + "}", 1, subContentCount);
 	}
 
 	@Test
@@ -144,7 +149,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		test.assertMeshNode(node, restNode);
 		assertFalse(restNode.isContainer());
-		assertNull(restNode.getChildren());
+		assertNull(restNode.getChildrenInfo().get("folder"));
 	}
 
 	@Test
@@ -155,7 +160,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(), new NodeRequestParameter());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
+				new NodeRequestParameter());
 		latchFor(future);
 		assertSuccess(future);
 
@@ -191,7 +197,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		role().revokePermissions(node, READ_PERM);
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(), new NodeRequestParameter());
+		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
+				new NodeRequestParameter());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 

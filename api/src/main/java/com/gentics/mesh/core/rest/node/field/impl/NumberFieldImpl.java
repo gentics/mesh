@@ -5,15 +5,15 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 
 public class NumberFieldImpl implements NumberField {
 
-	private String number;
+	private Number number;
 
 	@Override
-	public String getNumber() {
+	public Number getNumber() {
 		return number;
 	}
 
 	@Override
-	public NumberField setNumber(String number) {
+	public NumberField setNumber(Number number) {
 		this.number = number;
 		return this;
 	}

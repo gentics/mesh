@@ -54,6 +54,7 @@ import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
+import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
@@ -102,15 +103,19 @@ public class BootstrapInitializer {
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
 	public BootstrapInitializer() {
+
+		// User Group Role verticles
 		addMandatoryVerticle(UserVerticle.class);
 		addMandatoryVerticle(GroupVerticle.class);
 		addMandatoryVerticle(RoleVerticle.class);
 
+		// Project specific verticles
 		addMandatoryVerticle(TagVerticle.class);
 		addMandatoryVerticle(NodeVerticle.class);
 		addMandatoryVerticle(TagFamilyVerticle.class);
-		addMandatoryVerticle(WebRootVerticle.class);
+		addMandatoryVerticle(ProjectSchemaVerticle.class);
 
+		addMandatoryVerticle(WebRootVerticle.class);
 		addMandatoryVerticle(ProjectVerticle.class);
 		addMandatoryVerticle(SchemaVerticle.class);
 		addMandatoryVerticle(SearchVerticle.class);
@@ -250,22 +255,34 @@ public class BootstrapInitializer {
 	@Autowired
 	private RouterStorage routerStorage;
 
+	private static MeshRoot meshRoot;
+
+	public static boolean isInitialSetup = true;
+
 	/**
 	 * Return the mesh root node. This method will also create the node if it could not be found within the graph.
 	 * 
 	 * @return
 	 */
 	public MeshRoot meshRoot() {
-		// Check reference graph and finally create the node when it can't be found.
-		MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-		if (foundMeshRoot == null) {
-			foundMeshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
-			foundMeshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
-			if (log.isInfoEnabled()) {
-				log.info("Created mesh root {" + foundMeshRoot.getUuid() + "}");
+		if (meshRoot == null) {
+			synchronized (BootstrapInitializer.class) {
+				// Check reference graph and finally create the node when it can't be found.
+				MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
+				if (foundMeshRoot == null) {
+
+					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
+					if (log.isInfoEnabled()) {
+						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
+					}
+				} else {
+					isInitialSetup = false;
+					meshRoot = foundMeshRoot;
+				}
 			}
 		}
-		return foundMeshRoot;
+		return meshRoot;
 	}
 
 	public SchemaContainerRoot findSchemaContainerRoot() {
@@ -313,6 +330,7 @@ public class BootstrapInitializer {
 	}
 
 	public static void clearReferences() {
+		BootstrapInitializer.meshRoot = null;
 		MeshRootImpl.clearReferences();
 	}
 
@@ -358,7 +376,7 @@ public class BootstrapInitializer {
 				// Scanner scanIn = new Scanner(System.in);
 				// String pw = scanIn.nextLine();
 				// TODO remove later on
-				String pw = "finger";
+				String pw = "admin";
 				// scanIn.close();
 				adminUser.setPasswordHash(springConfiguration.passwordEncoder().encode(pw));
 				log.info("Created admin user {" + adminUser.getUuid() + "}");
@@ -370,7 +388,8 @@ public class BootstrapInitializer {
 				Schema schema = new SchemaImpl();
 				schema.setName("content");
 				schema.setDisplayField("title");
-				schema.setMeshVersion(Mesh.getVersion());
+				schema.setSegmentField("filename");
+				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -405,7 +424,8 @@ public class BootstrapInitializer {
 				Schema schema = new SchemaImpl();
 				schema.setName("folder");
 				schema.setDisplayField("name");
-				schema.setMeshVersion(Mesh.getVersion());
+				schema.setSegmentField("name");
+				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -425,7 +445,8 @@ public class BootstrapInitializer {
 				Schema schema = new SchemaImpl();
 				schema.setName("binary-content");
 				schema.setDisplayField("name");
-				schema.setMeshVersion(Mesh.getVersion());
+				schema.setSegmentField("filename");
+				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");

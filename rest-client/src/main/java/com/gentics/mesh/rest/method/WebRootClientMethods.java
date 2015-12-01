@@ -1,9 +1,9 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-
-import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
+
+import io.vertx.core.Future;
 
 public interface WebRootClientMethods {
 
@@ -15,6 +15,6 @@ public interface WebRootClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeResponse> webroot(String projectName, String path, QueryParameterProvider... parameters);
+	Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters);
 
 }

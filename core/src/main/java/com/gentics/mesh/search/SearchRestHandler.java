@@ -1,6 +1,8 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
@@ -16,14 +18,18 @@ import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -46,6 +52,9 @@ import rx.Observable;
 public class SearchRestHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
+
+	@Autowired
+	private BootstrapInitializer boot;
 
 	@Autowired
 	private SearchProvider searchProvider;
@@ -193,6 +202,29 @@ public class SearchRestHandler {
 			}
 		});
 
+	}
+
+	public void handleStatus(InternalActionContext ac) {
+		db.noTrx(noTrx -> {
+			SearchQueue queue = MeshRoot.getInstance().getSearchQueue();
+			SearchStatusResponse statusResponse = new SearchStatusResponse();
+			statusResponse.setBatchCount(queue.getSize());
+			ac.send(JsonUtil.toJson(statusResponse), OK);
+		});
+	}
+
+	public void handleReindex(InternalActionContext ac) {
+		db.asyncNoTrx(noTrx -> {
+			if (ac.getUser().hasAdminRole()) {
+				boot.meshRoot().getSearchQueue().addFullIndex();
+				boot.meshRoot().getSearchQueue().processAll();
+				ac.sendMessage(OK, "search_admin_reindex_invoked");
+			} else {
+				ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
+			}
+		} , rh -> {
+
+		});
 	}
 
 }

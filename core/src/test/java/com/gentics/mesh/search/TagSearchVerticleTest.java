@@ -14,7 +14,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.AbstractWebVerticle;
+import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.tag.TagVerticle;
@@ -22,7 +22,7 @@ import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.Future;
 
-public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
+public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
 	private TagVerticle tagVerticle;
@@ -31,8 +31,8 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest {
 	private TagIndexHandler tagIndexHandler;
 
 	@Override
-	public List<AbstractWebVerticle> getVertices() {
-		List<AbstractWebVerticle> list = new ArrayList<>();
+	public List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(tagVerticle);
 		return list;
