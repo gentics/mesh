@@ -59,7 +59,7 @@ import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.rest.AbstractMeshRestClient;
 import com.gentics.mesh.rest.BasicAuthentication;
-import com.gentics.mesh.rest.JWTAuthentification;
+import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshResponseHandler;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
@@ -84,11 +84,11 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		this.client = vertx.createHttpClient(options);
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			setAuthentification(new JWTAuthentification());
+			setAuthentication(new JWTAuthentication());
 			break;
 		case BASIC_AUTH:
 		default:
-			setAuthentification(new BasicAuthentication());	
+			setAuthentication(new BasicAuthentication());	
 		}
 		
 	}
@@ -490,7 +490,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 			log.debug("Invoking get request to {" + requestUri + "}");
 		}
 
-		authentification.addAuthentificationInformation(request);
+		authentication.addAuthenticationInformation(request);
 		request.headers().add("Accept", "*/*");
 		request.end();
 
@@ -655,7 +655,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
-		authentification.addAuthentificationInformation(request).subscribe(x -> {
+		authentication.addAuthenticationInformation(request).subscribe(x -> {
 			request.headers().add("Accept", "application/json");
 			request.end();
 		});
@@ -737,7 +737,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
 
-		authentification.addAuthentificationInformation(request).subscribe(x -> {
+		authentication.addAuthenticationInformation(request).subscribe(x -> {
 			request.headers().add("Accept", "application/json");
 			request.end();
 		});

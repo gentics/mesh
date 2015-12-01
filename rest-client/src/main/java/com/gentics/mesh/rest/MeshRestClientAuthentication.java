@@ -20,7 +20,7 @@ public interface MeshRestClientAuthentication {
 	 * @param request
 	 * @return 
 	 */
-	public Observable<Void> addAuthentificationInformation(HttpClientRequest request);
+	public Observable<Void> addAuthenticationInformation(HttpClientRequest request);
 
 	/**
 	 * Logs the user in with the credentials that were set with {@link setLogin}

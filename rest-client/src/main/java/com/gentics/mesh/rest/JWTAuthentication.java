@@ -9,20 +9,20 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import rx.Observable;
 
-public class JWTAuthentification extends AbstractAuthentication{
+public class JWTAuthentication extends AbstractAuthentication{
 
 	private String token;
 	private Observable<GenericMessageResponse> loginRequest;
 	
-//	public JWTAuthentification(HttpActionContext context) {
+//	public JWTAuthentication(HttpActionContext context) {
 //		
 //	}
 	
-	public JWTAuthentification() {
+	public JWTAuthentication() {
 	}
 
 	@Override
-	public Observable<Void> addAuthentificationInformation(HttpClientRequest request) {
+	public Observable<Void> addAuthenticationInformation(HttpClientRequest request) {
 		//TODO: request new Token when old one expires
 		
 		if (loginRequest == null) {

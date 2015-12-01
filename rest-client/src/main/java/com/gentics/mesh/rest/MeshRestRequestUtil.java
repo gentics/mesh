@@ -18,7 +18,7 @@ public class MeshRestRequestUtil {
 	private static final Logger log = LoggerFactory.getLogger(MeshRestRequestUtil.class);
 	public static final String BASEURI = "/api/v1";
 	
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType, HttpClient client, MeshRestClientAuthentication authentification, SchemaStorage schemaStorage) {
+	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType, HttpClient client, MeshRestClientAuthentication authentication, SchemaStorage schemaStorage) {
 		String uri = BASEURI + path;
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, method, uri, schemaStorage);
 
@@ -27,8 +27,8 @@ public class MeshRestRequestUtil {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
 
-		if (authentification != null) {
-			authentification.addAuthentificationInformation(request).subscribe(x -> {
+		if (authentication != null) {
+			authentication.addAuthenticationInformation(request).subscribe(x -> {
 				request.headers().add("Accept", "application/json");
 
 				if (bodyData.length() != 0) {
@@ -56,27 +56,27 @@ public class MeshRestRequestUtil {
 		return handler.getFuture();
 	}
 
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, RestModel restModel, HttpClient client, MeshRestClientAuthentication authentification, SchemaStorage schemaStorage) {
+	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, RestModel restModel, HttpClient client, MeshRestClientAuthentication authentication, SchemaStorage schemaStorage) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}
 		buffer.appendString(json);
-		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentification, schemaStorage);
+		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication, schemaStorage);
 	}
 
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, String jsonBodyData, HttpClient client, MeshRestClientAuthentication authentification, SchemaStorage schemaStorage) {
+	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, String jsonBodyData, HttpClient client, MeshRestClientAuthentication authentication, SchemaStorage schemaStorage) {
 
 		Buffer buffer = Buffer.buffer();
 		if (!StringUtils.isEmpty(jsonBodyData)) {
 			buffer.appendString(jsonBodyData);
 		}
 
-		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentification, schemaStorage);
+		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication, schemaStorage);
 	}
 
-	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, HttpClient client, MeshRestClientAuthentication authentification, SchemaStorage schemaStorage) {
-		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentification, schemaStorage);
+	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, HttpClient client, MeshRestClientAuthentication authentication, SchemaStorage schemaStorage) {
+		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication, schemaStorage);
 	}
 }

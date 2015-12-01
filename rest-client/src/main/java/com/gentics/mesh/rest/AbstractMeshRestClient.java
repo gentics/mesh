@@ -23,11 +23,11 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 
 	protected HttpClient client;
 	
-	protected MeshRestClientAuthentication authentification;
+	protected MeshRestClientAuthentication authentication;
 	
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
-		authentification.setLogin(username, password);
+		authentication.setLogin(username, password);
 		return this;
 	}
 
@@ -51,12 +51,12 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 
 	@Override
 	public Observable<GenericMessageResponse> login() {
-		return authentification.login(getClient());
+		return authentication.login(getClient());
 	}
 
 	@Override
 	public Observable<GenericMessageResponse> logout() {
-		return authentification.logout(getClient());
+		return authentication.logout(getClient());
 	}
 
 	@Override
@@ -69,28 +69,28 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		return this;
 	}
 
-	public MeshRestClientAuthentication getAuthentification() {
-		return authentification;
+	public MeshRestClientAuthentication getAuthentication() {
+		return authentication;
 	}
 
-	public void setAuthentification(MeshRestClientAuthentication authentification) {
-		this.authentification = authentification;
+	public void setAuthentication(MeshRestClientAuthentication authentication) {
+		this.authentication = authentication;
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, Buffer bodyData, String contentType) {
-		return MeshRestRequestUtil.handleRequest(method, path, classOfT, bodyData, contentType, client, authentification, getClientSchemaStorage());
+		return MeshRestRequestUtil.handleRequest(method, path, classOfT, bodyData, contentType, client, authentication, getClientSchemaStorage());
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, RestModel restModel) {
-		return MeshRestRequestUtil.handleRequest(method, path, classOfT, restModel, client, authentification, getClientSchemaStorage());
+		return MeshRestRequestUtil.handleRequest(method, path, classOfT, restModel, client, authentication, getClientSchemaStorage());
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT, String jsonBodyData) {
-		return MeshRestRequestUtil.handleRequest(method, path, classOfT, jsonBodyData, client, authentification, getClientSchemaStorage());
+		return MeshRestRequestUtil.handleRequest(method, path, classOfT, jsonBodyData, client, authentication, getClientSchemaStorage());
 	}
 
 	protected <T> Future<T> handleRequest(HttpMethod method, String path, Class<T> classOfT) {
-		return MeshRestRequestUtil.handleRequest(method, path, classOfT, client, authentification, getClientSchemaStorage());
+		return MeshRestRequestUtil.handleRequest(method, path, classOfT, client, authentication, getClientSchemaStorage());
 	}
 
 	/**

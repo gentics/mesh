@@ -13,7 +13,7 @@ import rx.Observable;
 public class BasicAuthentication extends AbstractAuthentication {
 
 	@Override
-	public Observable<Void> addAuthentificationInformation(HttpClientRequest request) {
+	public Observable<Void> addAuthenticationInformation(HttpClientRequest request) {
 		if (getUsername() != null && getPassword() != null) {
 			String authStringEnc = getUsername() + ":" + getPassword();
 			String authEnc = new String(Base64.encodeBase64(authStringEnc.getBytes()));
