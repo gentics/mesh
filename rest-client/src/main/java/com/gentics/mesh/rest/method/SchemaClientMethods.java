@@ -3,6 +3,7 @@ package com.gentics.mesh.rest.method;
 import io.vertx.core.Future;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -84,6 +85,14 @@ public interface SchemaClientMethods {
 	 * @return
 	 */
 	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
+
+	/**
+	 * Load multiple microschemas
+	 * 
+	 * @param parameters
+	 * @return
+	 */
+	Future<MicroschemaListResponse> findMicroschemas(QueryParameterProvider... parameters);
 
 	/**
 	 * Initialize the schema storage. This will effectively load all schemas into the {@link ClientSchemaStorage} of the {@link MeshRestClient} that is

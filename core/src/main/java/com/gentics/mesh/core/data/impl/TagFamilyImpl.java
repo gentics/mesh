@@ -157,7 +157,7 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 	}
 
 	@Override
-	public TagFamily transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
 			Set<ObservableFuture<Void>> futures = new HashSet<>();
@@ -189,7 +189,6 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 		} , (AsyncResult<TagFamilyResponse> rh) -> {
 			handler.handle(rh);
 		});
-		return this;
 	}
 
 	@Override

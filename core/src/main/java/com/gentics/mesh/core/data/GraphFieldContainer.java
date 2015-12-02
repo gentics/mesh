@@ -9,11 +9,12 @@ import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 
@@ -46,6 +47,10 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 
 	BooleanGraphField createBoolean(String key);
 
+	MicronodeGraphField getMicronode(String key);
+
+	MicronodeGraphField createMicronode(String key, MicroschemaContainer microschema);
+
 	DateGraphFieldList createDateList(String fieldKey);
 
 	DateGraphFieldList getDateList(String fieldKey);
@@ -70,9 +75,9 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 
 	BooleanGraphFieldList getBooleanList(String fieldKey);
 
-	MicroschemaGraphFieldList createMicroschemaFieldList(String fieldKey);
+	MicronodeGraphFieldList createMicronodeFieldList(String fieldKey);
 
-	MicroschemaGraphFieldList getMicroschemaList(String fieldKey);
+	MicronodeGraphFieldList getMicronodeList(String fieldKey);
 
 	<T extends ListableGraphField> SelectGraphField<T> createSelect(String key);
 

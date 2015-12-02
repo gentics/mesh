@@ -152,7 +152,7 @@ public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectRespons
 	}
 
 	@Override
-	public Project transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
 			Set<ObservableFuture<Void>> futures = new HashSet<>();
@@ -184,7 +184,6 @@ public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectRespons
 		} , (AsyncResult<ProjectResponse> rh) -> {
 			handler.handle(rh);
 		});
-		return this;
 	}
 
 	@Override

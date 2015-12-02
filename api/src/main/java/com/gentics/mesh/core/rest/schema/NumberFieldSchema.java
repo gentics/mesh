@@ -4,7 +4,7 @@ package com.gentics.mesh.core.rest.schema;
  * A number field schema is a schema definition for a number field.
  *
  */
-public interface NumberFieldSchema extends MicroschemaListableFieldSchema {
+public interface NumberFieldSchema extends FieldSchema {
 
 	/**
 	 * Return the stepping for the numbers.

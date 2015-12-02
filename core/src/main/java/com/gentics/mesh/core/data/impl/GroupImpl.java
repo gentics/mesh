@@ -150,7 +150,7 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 	}
 
 	@Override
-	public Group transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
 
@@ -202,9 +202,6 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 		} , (AsyncResult<GroupResponse> rh) -> {
 			handler.handle(rh);
 		});
-
-		return this;
-
 	}
 
 	@Override

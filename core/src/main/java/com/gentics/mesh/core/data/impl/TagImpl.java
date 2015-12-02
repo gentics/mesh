@@ -114,7 +114,7 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public Tag transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(trx -> {
@@ -154,8 +154,6 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 		} , (AsyncResult<TagResponse> rh) -> {
 			resultHandler.handle(rh);
 		});
-
-		return this;
 	}
 
 	@Override

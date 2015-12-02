@@ -122,7 +122,7 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 	}
 
 	@Override
-	public Role transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		db.asyncNoTrx(noTrx -> {
@@ -158,7 +158,6 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 		} , (AsyncResult<RoleResponse> rh) -> {
 			handler.handle(rh);
 		});
-		return this;
 	}
 
 	@Override

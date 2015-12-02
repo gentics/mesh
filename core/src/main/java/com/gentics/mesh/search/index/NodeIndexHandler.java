@@ -269,10 +269,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							fieldsMap.put(fieldSchema.getName(), booleanItems);
 						}
 						break;
-					case "microschema":
+					case "micronode":
 						// TODO implement microschemas
-						throw new NotImplementedException();
-						// break;
+						// throw new NotImplementedException();
+						break;
 					case "string":
 						StringGraphFieldList graphStringList = container.getStringList(fieldSchema.getName());
 						if (graphStringList != null) {
@@ -306,10 +306,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// TODO implement lists
 				// break;
 				throw new NotImplementedException();
-			case MICROSCHEMA:
+			case MICRONODE:
 				// TODO implement microschemas
 				// break;
-				throw new NotImplementedException();
+//				throw new NotImplementedException();
+				break;
 			default:
 				// TODO error?
 				break;

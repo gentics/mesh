@@ -1,9 +1,28 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 
-public interface MicroschemaContainer extends GenericVertex<MicroschemaResponse>, NamedVertex {
+/**
+ * A microschema container is a graph element which stores the JSON microschema data.
+ *
+ */
+public interface MicroschemaContainer extends GenericVertex<MicroschemaResponse>, NamedVertex, IndexedVertex, ReferenceableElement<MicroschemaReference> {
 
 	public static final String TYPE = "microschema";
 
+	/**
+	 * Get the microschema stored in this container
+	 * 
+	 * @return microschema instance
+	 */
+	Microschema getMicroschema();
+
+	/**
+	 * Set the microschema for this container
+	 * 
+	 * @param microschema microschema instance
+	 */
+	void setMicroschema(Microschema microschema);
 }

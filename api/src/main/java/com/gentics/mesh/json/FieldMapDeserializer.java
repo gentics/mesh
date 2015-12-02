@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -21,27 +23,27 @@ import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.MicroschemaField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.MicroschemaFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -62,7 +64,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 		// 1. Load the schema name that was identified by another deserializer and put into the context.
 		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
-		if (schemaName == null) {
+		String microschemaName = (String)ctxt.findInjectableValue("microschemaName", null, null);
+		if (schemaName == null && microschemaName == null) {
 			throw new MeshJsonException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
 		}
 		// 2. Load the schema storage that holds the schema for the handled node
@@ -70,9 +73,19 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 
-		Schema schema = schemaStorage.getSchema(schemaName);
-		if (schema == null) {
-			throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
+		List<? extends FieldSchema> fields = null;
+		if (schemaName != null) {
+			Schema schema = schemaStorage.getSchema(schemaName);
+			if (schema == null) {
+				throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
+			}
+			fields = schema.getFields();
+		} else {
+			Microschema microschema = schemaStorage.getMicroschema(microschemaName);
+			if (microschema == null) {
+				throw new MeshJsonException("Can't find microschema {" + microschemaName + "} within the schema storage.");
+			}
+			fields = microschema.getFields();
 		}
 
 		// 3. Iterate over all fields and load the field schema from 
@@ -84,9 +97,13 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 			// Check whether the field with the given key could be found in the schema
 			FieldSchema fieldSchema = null;
-			for (FieldSchema currentFieldSchema : schemaStorage.getSchema(schemaName).getFields()) {
+			for (FieldSchema currentFieldSchema : fields) {
 				if (currentFieldSchema.getName() == null) {
-					log.info("Can't handle field schema in schema {" + schemaName + "} because the field schema name was not set.");
+					if (schemaName != null) {
+						log.info("Can't handle field schema in schema {" + schemaName + "} because the field schema name was not set.");
+					} else {
+						log.info("Can't handle field schema in microschema {" + microschemaName + "} because the field schema name was not set.");
+					}
 				} else if (currentFieldSchema.getName().equals(fieldKey)) {
 					fieldSchema = currentFieldSchema;
 				}
@@ -94,7 +111,11 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 			if (fieldSchema != null) {
 				addField(map, fieldKey, fieldSchema, currentEntry.getValue(), jsonParser, schemaStorage);
 			} else {
-				throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
+				if (schemaName != null) {
+					throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
+				} else {
+					throw new MeshJsonException("Can't handle field {" + fieldKey + "} The microschema {" + microschemaName + "} does not specify this key.");
+				}
 			}
 		}
 		return map;
@@ -211,8 +232,17 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 					map.put(fieldKey, nodeListField);
 					break;
 
-				case "microschema":
-					map.put(fieldKey, oc.treeToValue(jsonNode, MicroschemaFieldListImpl.class));
+				case "micronode":
+					MicronodeFieldList micronodeFieldList = new MicronodeFieldListImpl();
+					for (JsonNode node : jsonNode) {
+						try {
+							micronodeFieldList.getItems().add(JsonUtil.readNode(node.toString(), MicronodeResponse.class, schemaStorage));
+						} catch (IOException e) {
+							throw new MeshJsonException("", e);
+						}
+					}
+
+					map.put(fieldKey, micronodeFieldList);
 					break;
 				// Basic types
 				case "string":
@@ -260,9 +290,17 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
 			}
 			break;
-		case MICROSCHEMA:
-			MicroschemaField MicroschemaField = new MicroschemaFieldImpl();
-			// TODO impl
+		case MICRONODE:
+			try {
+				if (jsonNode.isNull()) {
+					map.put(fieldKey, new NullMicronodeResponse());
+				} else {
+					MicronodeResponse field = JsonUtil.readNode(jsonNode.toString(), MicronodeResponse.class, schemaStorage);
+					map.put(fieldKey, field);
+				}
+			} catch (IOException e) {
+				throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
+			}
 			break;
 		default:
 			// TODO handle unknown type situation

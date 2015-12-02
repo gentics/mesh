@@ -29,8 +29,23 @@ public class ClientSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
+	public Microschema getMicroschema(String name) {
+		return microschemaMap.get(name);
+	}
+
+	@Override
+	public void addMicroschema(Microschema microschema) {
+		microschemaMap.put(microschema.getName(), microschema);
+	}
+
+	@Override
+	public void removeMicroschema(String name) {
+		microschemaMap.remove(name);
+	}
+
+	@Override
 	public int size() {
-		return schemaMap.size();
+		return schemaMap.size() + microschemaMap.size();
 	}
 
 	@Override

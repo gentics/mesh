@@ -66,7 +66,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addFieldHandlers() {
-
+		// TODO add languages/:languageTag
 		route("/:uuid/fields/:fieldName").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleReadField(InternalActionContext.create(rc));
 		});

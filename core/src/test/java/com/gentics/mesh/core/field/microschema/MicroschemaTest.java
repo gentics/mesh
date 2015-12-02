@@ -2,6 +2,8 @@ package com.gentics.mesh.core.field.microschema;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -15,10 +17,14 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -36,23 +42,21 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		fail("Not yet implemented");
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 
-		Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, 10));
+		int expectedMicroschemaContainers = microschemaContainers().size();
 
-		assertEquals(getNodeCount(), page.getTotalElements());
-		assertEquals(10, page.getSize());
+		for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
+			Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, i));
 
-		page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, 15));
-		assertEquals(getNodeCount(), page.getTotalElements());
-		assertEquals(15, page.getSize());
+			assertEquals(microschemaContainers().size(), page.getTotalElements());
+			assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());
+		}
 	}
 
 	@Ignore("Not yet implemented")
@@ -62,18 +66,34 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		fail("Not yet implemented");
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
 	public void testFindByName() {
-		fail("Not yet implemented");
+		String invalidName = "thereIsNoMicroschemaWithThisName";
+
+		for (String name : microschemaContainers().keySet()) {
+			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name);
+			assertNotNull("Could not find microschema container for name " + name, container);
+			Microschema microschema = container.getMicroschema();
+			assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
+			assertEquals("Check microschema name", name, microschema.getName());
+		}
+
+		assertNull("Must not find microschema with name " + invalidName, boot.microschemaContainerRoot().findByName(invalidName));
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
 	public void testFindByUUID() {
-		fail("Not yet implemented");
+		String invalidUUID = UUIDUtil.randomUUID();
+
+		MicroschemaContainerRoot root = boot.microschemaContainerRoot();
+		for (MicroschemaContainer container : microschemaContainers().values()) {
+			String uuid = container.getUuid();
+			assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuidBlocking(uuid));
+		}
+
+		assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuidBlocking(invalidUUID));
 	}
 
 	@Ignore("Not yet implemented")
@@ -104,37 +124,41 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		fail("Not yet implemented");
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
-	public void testReadPermission() {
-		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(GraphPermission.READ_PERM, microschema);
+	public void testReadPermission() throws MeshJsonException {
+		Microschema microschema = new MicroschemaImpl();
+		microschema.setName("someNewMicroschema");
+		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+		testPermission(GraphPermission.READ_PERM, microschemaContainer);
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
-	public void testDeletePermission() {
-		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(GraphPermission.DELETE_PERM, microschema);
+	public void testDeletePermission() throws MeshJsonException {
+		Microschema microschema = new MicroschemaImpl();
+		microschema.setName("someNewMicroschema");
+		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+		testPermission(GraphPermission.DELETE_PERM, microschemaContainer);
 
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
-	public void testUpdatePermission() {
-		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(GraphPermission.UPDATE_PERM, microschema);
+	public void testUpdatePermission() throws MeshJsonException {
+		Microschema microschema = new MicroschemaImpl();
+		microschema.setName("someNewMicroschema");
+		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+		testPermission(GraphPermission.UPDATE_PERM, microschemaContainer);
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
-	public void testCreatePermission() {
-		MicroschemaContainer microschema = meshRoot().getMicroschemaContainerRoot().create("someNewContainer", user());
-		testPermission(GraphPermission.CREATE_PERM, microschema);
+	public void testCreatePermission() throws MeshJsonException {
+		Microschema microschema = new MicroschemaImpl();
+		microschema.setName("someNewMicroschema");
+		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
+		testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
 	}
 
 	@Ignore("Not yet implemented")
@@ -153,16 +177,18 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		fail("Not yet implemented");
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
-	public void testCRUDPermissions() {
+	public void testCRUDPermissions() throws MeshJsonException {
 		MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
-		InternalActionContext ac = getMockedInternalActionContext("");
-		MicroschemaContainer container = root.create("newContainer", user());
-		assertFalse(user().hasPermission(ac, container, GraphPermission.CREATE_PERM));
-		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, container);
-		assertTrue(user().hasPermission(ac, container, GraphPermission.CREATE_PERM));
-	}
 
+		Microschema microschema = new MicroschemaImpl();
+		microschema.setName("someNewMicroschema");
+		MicroschemaContainer container = root.create(microschema, user());
+
+		assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
+		getRequestUser().addCRUDPermissionOnRole(meshRoot().getMicroschemaContainerRoot(), GraphPermission.CREATE_PERM, container);
+		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
+				role().hasPermission(GraphPermission.CREATE_PERM, container));
+	}
 }

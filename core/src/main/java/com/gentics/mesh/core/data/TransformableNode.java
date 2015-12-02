@@ -21,8 +21,7 @@ public interface TransformableNode<T extends RestModel> {
 	 *            Context of the calling action
 	 * @param handler
 	 *            Handler that is invoked when transformation failed or succeeded.
-	 * @return
 	 */
-	GenericVertex<T> transformToRest(InternalActionContext ac, Handler<AsyncResult<T>> handler);
+	void transformToRest(InternalActionContext ac, Handler<AsyncResult<T>> handler);
 
 }

@@ -18,7 +18,9 @@ public class AbstractBasicDBTest extends AbstractDBTest {
 
 	@After
 	public void cleanup() {
-		tx.close();
+		if (tx != null) {
+			tx.close();
+		}
 		resetDatabase();
 	}
 

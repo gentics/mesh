@@ -299,7 +299,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
@@ -415,8 +415,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 								log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
 							} else {
 								restNode.getFields().put(fieldEntry.getName(), restField);
-								obsRestField.toHandler().handle(Future.succeededFuture());
 							}
+							obsRestField.toHandler().handle(Future.succeededFuture());
 						}
 					});
 				}
@@ -467,9 +467,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		{
 			handler.handle(rh);
 		});
-
-		return this;
-
 	}
 
 	@Override

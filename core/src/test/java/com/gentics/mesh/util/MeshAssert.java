@@ -40,7 +40,7 @@ public final class MeshAssert {
 		CountDownLatch latch = new CountDownLatch(1);
 		root.findByUuid(uuid, rh -> {
 			if (exists) {
-				assertNotNull("The element should not exist.", rh.result());
+				assertNotNull("The element should exist.", rh.result());
 			} else {
 				assertNull("The element should not exist.", rh.result());
 			}

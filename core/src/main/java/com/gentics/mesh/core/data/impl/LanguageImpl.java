@@ -59,7 +59,7 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 	}
 
 	@Override
-	public Language transformToRest(InternalActionContext ac, Handler<AsyncResult<LanguageResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<LanguageResponse>> handler) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());
@@ -67,7 +67,6 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 		model.setNativeName(getNativeName());
 
 		handler.handle(Future.succeededFuture(model));
-		return this;
 	}
 
 	@Override

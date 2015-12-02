@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-public interface ListFieldSchema extends MicroschemaListableFieldSchema {
+public interface ListFieldSchema extends FieldSchema {
 
 	String[] getAllowedSchemas();
 
