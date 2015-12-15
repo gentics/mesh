@@ -41,9 +41,14 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 
 		Map<String, String> map = getProperties("item");
 		List<T> list = new ArrayList<>();
-		for (String itemKey : map.keySet()) {
+		// TODO sorting is not very efficient, because the keys are transformed to their order too often
+		map.keySet().stream().sorted((key1, key2) -> {
+			int index1 = Integer.parseInt(key1.substring("item-".length(), key1.lastIndexOf("-")));
+			int index2 = Integer.parseInt(key2.substring("item-".length(), key2.lastIndexOf("-")));
+			return index1 - index2;
+		}).forEachOrdered(itemKey -> {
 			list.add(convertBasicValue(itemKey));
-		}
+		});
 		return list;
 	}
 }

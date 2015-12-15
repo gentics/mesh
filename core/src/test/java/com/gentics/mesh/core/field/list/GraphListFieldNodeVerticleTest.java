@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -101,6 +102,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeResponse response = createNode("listField", listField);
 		StringFieldListImpl listFromResponse = response.getField("listField");
 		assertEquals(3, listFromResponse.getItems().size());
+		assertEquals(Arrays.asList("A", "B", "C").toString(), listFromResponse.getItems().toString());
 	}
 
 	@Test
