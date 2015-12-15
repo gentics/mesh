@@ -180,6 +180,7 @@ public class TestDataProvider {
 		SchemaContainer contentSchema = schemaContainers.get("content");
 
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!", contentSchema);
+		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014", contentSchema);
 
 		addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
 
@@ -220,7 +221,7 @@ public class TestDataProvider {
 		news2015.addTag(tags.get("jeep"));
 
 		Node news2014 = addFolder(news, "2014", null);
-		addFolder(news2014, "March", null);
+		addFolder(news2014, "March", "März");
 
 		addFolder(baseNode, "Products", "Produkte");
 		addFolder(baseNode, "Deals", "Angebote");

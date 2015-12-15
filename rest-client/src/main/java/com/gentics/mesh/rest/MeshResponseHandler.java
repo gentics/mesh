@@ -90,8 +90,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						if (classOfT.equals(Object.class)) {
 							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, client.getClientSchemaStorage());
 							future.complete((T) restObj);
-						}
-						if (isSchemaClass(classOfT)) {
+						} else if (isSchemaClass(classOfT)) {
 							T restObj = JsonUtil.readSchema(json, classOfT);
 							future.complete(restObj);
 						} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {

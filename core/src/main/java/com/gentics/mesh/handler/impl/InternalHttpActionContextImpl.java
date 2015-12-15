@@ -18,6 +18,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -111,16 +112,16 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	}
 
 	@Override
-	public boolean getResolveLinksFlag() {
+	public WebRootLinkReplacer.Type getResolveLinksType() {
 		Map<String, String> queryPairs = splitQuery();
 		if (queryPairs == null) {
-			return false;
+			return WebRootLinkReplacer.Type.OFF;
 		}
 		String value = queryPairs.get(RESOLVE_LINKS_QUERY_PARAM_KEY);
 		if (value != null) {
-			return Boolean.valueOf(value);
+			return WebRootLinkReplacer.Type.valueOf(value.toUpperCase());
 		}
-		return false;
+		return WebRootLinkReplacer.Type.OFF;
 	}
 
 	@Override

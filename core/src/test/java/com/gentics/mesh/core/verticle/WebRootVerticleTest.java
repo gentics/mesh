@@ -10,10 +10,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 
 import io.vertx.core.Future;
 
@@ -62,7 +63,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
 
 		String path = "/News/2015/somefile.dat";
-		Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true));
+		Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(LinkType.FULL));
 		latchFor(webrootFuture);
 		assertSuccess(webrootFuture);
 		NodeDownloadResponse downloadResponse = webrootFuture.result().getDownloadResponse();
@@ -95,13 +96,13 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
 		String path = "/News/2015/News_2015.en.html";
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(true).setLanguages("en"));
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		WebRootResponse restNode = future.result();
 		HtmlFieldImpl contentField = restNode.getNodeResponse().getField("content", HtmlFieldImpl.class);
 		assertNotNull(contentField);
-		System.out.println(contentField.getHTML());
+		assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>", contentField.getHTML());
 		test.assertMeshNode(content, restNode.getNodeResponse());
 	}
 
@@ -121,7 +122,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testPathWithSpaces() throws Exception {
-		String path = "/News/2015/Special News_2014.en.html";
+		String[] path = new String[] {"News", "2015", "Special News_2014.en.html"};
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);
@@ -163,7 +164,22 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadFolderWithLanguageFallbackInPath() {
 		// Test requesting a path that contains of mixed language segments: e.g: /Fahrzeuge/Cars/auto.html
-		fail("Not yet tested");
+		String name = "New_in_March_2014";
+		for (String path1 : Arrays.asList("News", "Neuigkeiten")) {
+			for (String path2 : Arrays.asList("2014")) {
+				for (String path3 : Arrays.asList(/* "March", */ "März")) {
+					for (String language : Arrays.asList("en", "de")) {
+						Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME,
+								new String[] { path1, path2, path3, name + "." + language + ".html" });
+						latchFor(future);
+						assertSuccess(future);
+						WebRootResponse response = future.result();
+
+						assertEquals("Check response language", "en", response.getNodeResponse().getLanguage());
+					}
+				}
+			}
+		}
 	}
 
 	@Test

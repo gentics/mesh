@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
@@ -98,11 +99,12 @@ public interface InternalActionContext extends ActionContext {
 	boolean getExpandAllFlag();
 
 	/**
-	 * Return the <code>resolveLinks</code> query parameter flag value.
+	 * Return the <code>resolveLinks</code> query parameter value.
+	 * This will never return null
 	 * 
 	 * @return
 	 */
-	public boolean getResolveLinksFlag();
+	public WebRootLinkReplacer.Type getResolveLinksType();
 
 	/**
 	 * Return the image request (crop/resize) parameter.

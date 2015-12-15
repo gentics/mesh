@@ -15,7 +15,7 @@ public class NodeRequestParameter implements QueryParameterProvider {
 	private String[] languages;
 	private String[] expandedFieldNames;
 	private Boolean expandAll;
-	private Boolean resolveLinks;
+	private LinkType resolveLinks;
 
 	/**
 	 * Set the <code>lang</code> request parameter values.
@@ -51,12 +51,12 @@ public class NodeRequestParameter implements QueryParameterProvider {
 	}
 
 	/**
-	 * Set the <code>resolveLinks</code> request parameter flag.
+	 * Set the <code>resolveLinks</code> request parameter.
 	 * 
-	 * @param flag
+	 * @param type
 	 */
-	public NodeRequestParameter setResolveLinks(boolean flag) {
-		this.resolveLinks = flag;
+	public NodeRequestParameter setResolveLinks(LinkType type) {
+		this.resolveLinks = type;
 		return this;
 	}
 
@@ -93,11 +93,11 @@ public class NodeRequestParameter implements QueryParameterProvider {
 			query.append(EXPANDALL_QUERY_PARAM_KEY + "=true");
 		}
 
-		if (resolveLinks != null && resolveLinks == true) {
+		if (resolveLinks != null) {
 			if (query.length() != 0) {
 				query.append("&");
 			}
-			query.append(RESOLVE_LINKS_QUERY_PARAM_KEY + "=true");
+			query.append(RESOLVE_LINKS_QUERY_PARAM_KEY + "=" + resolveLinks.toString().toLowerCase());
 		}
 		return query.toString();
 	}
@@ -107,4 +107,28 @@ public class NodeRequestParameter implements QueryParameterProvider {
 		return getQueryParameters();
 	}
 
+	/**
+	 * Link Replacing type
+	 */
+	public static enum LinkType {
+		/**
+		 * No link replacing
+		 */
+		OFF,
+
+		/**
+		 * Link replacing without the API prefix and without the project name
+		 */
+		SHORT,
+
+		/**
+		 * Link replacing without the API prefix, but with the project name
+		 */
+		MEDIUM,
+
+		/**
+		 * Link replacing with API prefix and project name
+		 */
+		FULL
+	}
 }

@@ -18,6 +18,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -146,7 +148,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public String getPath(Language language) {
+	public String getPath(Language language) throws UnsupportedEncodingException {
 		List<String> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(language));
@@ -163,7 +165,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		StringBuilder builder = new StringBuilder();
 		Iterator<String> it = segments.iterator();
 		while (it.hasNext()) {
-			builder.append("/" + it.next());
+			builder.append("/").append(URLEncoder.encode(it.next(), "UTF-8"));
 		}
 		return builder.toString();
 	}

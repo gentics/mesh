@@ -2,6 +2,7 @@ package com.gentics.mesh.core.link;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.etc.RouterStorage;
 
 import rx.Observable;
 
@@ -38,62 +40,75 @@ public class WebRootLinkReplacer {
 
 	/**
 	 * Replace the links in the content.
+	 * @param content content containing links to replace
+	 * @param type replacing type
+	 * 
+	 * @return content with links (probably) replaced
 	 */
-	public String replace(String content) {
-
-		if (isEmpty(content)) {
+	public String replace(String content, Type type) {
+		if (isEmpty(content) || type == Type.OFF || type == null) {
 			return content;
 		}
 
-		StringBuilder builder = new StringBuilder(content.length());
-		final List<Observable<String>> renderedLinks = new ArrayList<>();
-		int[][] segments = new int[5000][2];
-		int s = 0;
-		int nLink = 0;
+		List<Observable<String>> segments = new ArrayList<>();
+		int pos = 0;
+		int lastPos = 0;
+		int length = content.length();
+
 		// 1. Tokenize the content
-		while (s != -1) {
-			int r = 0;
-			if (s != 0) {
-				r = s + START_TAG.length();
-			}
-			s = content.indexOf(START_TAG, r);
-			if (s == -1) {
+		while (lastPos < length) {
+			pos = content.indexOf(START_TAG, lastPos);
+			if (pos == -1) {
+				// add last string segment
+				if (lastPos < length) {
+					segments.add(Observable.just(content.substring(lastPos)));
+				}
 				break;
 			}
-			int e = content.indexOf(END_TAG, s);
-			segments[nLink][0] = s;
-			segments[nLink][1] = e + END_TAG.length();
+			int endPos = content.indexOf(END_TAG, pos);
+			if (endPos == -1) {
+				// add last string segment
+				if (lastPos < length) {
+					segments.add(Observable.just(content.substring(lastPos)));
+				}
+				break;
+			}
+
+			// add intermediate string segment
+			if (lastPos < pos) {
+				segments.add(Observable.just(content.substring(lastPos, pos)));
+			}
 
 			// 2. Parse the link and invoke resolving
-			String link = content.substring(s + START_TAG.length(), e);
+			String link = content.substring(pos + START_TAG.length(), endPos);
 			// Strip away the quotes. We only care about the argument values
 			link = link.replaceAll("'", "");
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
-				renderedLinks.add(resolve(linkArguments[0], linkArguments[1]));
+				segments.add(resolve(linkArguments[0], linkArguments[1], type));
 			} else {
-				renderedLinks.add(resolve(linkArguments[0], null));
+				segments.add(resolve(linkArguments[0], null, type));
 			}
-			nLink++;
+
+			lastPos = endPos + END_TAG.length();
 		}
-		int maxLinks = nLink;
-		nLink = 0;
-		int lastStart = 0;
 
 		// 3.: Buildup the new content
-		for (int i = 0; i < maxLinks; i++) {
-			builder.append(content.substring(lastStart, segments[nLink][0]));
-			builder.append(renderedLinks.get(nLink).toBlocking().first());
-			lastStart = segments[nLink][1];
-			nLink++;
-		}
-		builder.append(content.substring(lastStart, content.length()));
-		return builder.toString();
+		StringBuilder renderedContent = new StringBuilder(length);
+		segments.stream().forEachOrdered(obs -> renderedContent.append(obs.toBlocking().first()));
 
+		return renderedContent.toString();
 	}
 
-	private Observable<String> resolve(String uuid, String languageTag) {
+	/**
+	 * Resolve the link to the node with uuid (in the given language) into an observable
+	 * @param uuid target uuid
+	 * @param languageTag optional language
+	 * @param type link type
+	 * @return observable of the rendered link
+	 */
+	private Observable<String> resolve(String uuid, String languageTag, Type type) {
 		if (languageTag == null) {
 			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
 		}
@@ -102,6 +117,45 @@ public class WebRootLinkReplacer {
 		languageTag = languageTag.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuidBlocking(uuid);
 		Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
-		return Observable.just("/webroot" + node.getPath(language));
+		try {
+			switch (type) {
+			case SHORT:
+				return Observable.just(node.getPath(language));
+			case MEDIUM:
+				return Observable.just("/" + node.getProject().getName() + node.getPath(language));
+			case FULL:
+				return Observable.just(RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot"
+						+ node.getPath(language));
+			default:
+				return Observable.error(new Exception("Cannot render link with type " + type));
+			}
+		} catch (UnsupportedEncodingException e) {
+			return Observable.error(e);
+		}
+	}
+
+	/**
+	 * Link Replacing type
+	 */
+	public static enum Type {
+		/**
+		 * No link replacing
+		 */
+		OFF,
+
+		/**
+		 * Link replacing without the API prefix and without the project name
+		 */
+		SHORT,
+
+		/**
+		 * Link replacing without the API prefix, but with the project name
+		 */
+		MEDIUM,
+
+		/**
+		 * Link replacing with API prefix and project name
+		 */
+		FULL
 	}
 }

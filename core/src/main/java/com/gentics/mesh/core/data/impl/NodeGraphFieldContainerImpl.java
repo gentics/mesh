@@ -455,8 +455,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						return;
 					} else {
 						StringField stringField = th.result();
-						if (ac.getResolveLinksFlag()) {
-							stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString()));
+						if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+							stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType()));
 						}
 						handler.handle(Future.succeededFuture(stringField));
 						return;
@@ -513,8 +513,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					} else {
 						// If needed resolve links within the html 
 						HtmlField field = rhRest.result();
-						if (ac.getResolveLinksFlag()) {
-							field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML()));
+						if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+							field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(), ac.getResolveLinksType()));
 						}
 						handler.handle(Future.succeededFuture(field));
 					}
