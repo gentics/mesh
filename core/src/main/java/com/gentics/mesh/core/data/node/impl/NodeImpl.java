@@ -56,6 +56,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
@@ -454,6 +455,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 					obsCommonFiields.toHandler().handle(Future.succeededFuture());
 				}
 			});
+
+			// Add webroot url
+			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+				// TODO what about the language?
+				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), null, ac.getResolveLinksType())
+						.toBlocking().first());
+			}
 
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {

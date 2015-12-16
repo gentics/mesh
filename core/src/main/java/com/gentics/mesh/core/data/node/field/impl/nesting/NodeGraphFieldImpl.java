@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -56,7 +57,13 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			handler.handle(Future.succeededFuture(reference.get()));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
-			nodeField.setUuid(getNode().getUuid());
+			Node node = getNode();
+			nodeField.setUuid(node.getUuid());
+			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+				// TODO what about the language?
+				nodeField.setUrl(WebRootLinkReplacer.getInstance()
+						.resolve(node.getUuid(), null, ac.getResolveLinksType()).toBlocking().first());
+			}
 			handler.handle(Future.succeededFuture(nodeField));	
 		}
 	}

@@ -108,7 +108,7 @@ public class WebRootLinkReplacer {
 	 * @param type link type
 	 * @return observable of the rendered link
 	 */
-	private Observable<String> resolve(String uuid, String languageTag, Type type) {
+	public Observable<String> resolve(String uuid, String languageTag, Type type) {
 		if (languageTag == null) {
 			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
 		}
