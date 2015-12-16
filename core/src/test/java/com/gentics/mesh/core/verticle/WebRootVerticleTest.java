@@ -167,7 +167,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String name = "New_in_March_2014";
 		for (String path1 : Arrays.asList("News", "Neuigkeiten")) {
 			for (String path2 : Arrays.asList("2014")) {
-				for (String path3 : Arrays.asList(/* "March", */ "März")) {
+				for (String path3 : Arrays.asList("March", "März")) {
 					for (String language : Arrays.asList("en", "de")) {
 						Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME,
 								new String[] { path1, path2, path3, name + "." + language + ".html" });

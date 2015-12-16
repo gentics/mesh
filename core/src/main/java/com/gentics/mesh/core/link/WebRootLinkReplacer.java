@@ -116,6 +116,7 @@ public class WebRootLinkReplacer {
 		uuid = uuid.trim();
 		languageTag = languageTag.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuidBlocking(uuid);
+		// TODO check for null
 		Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 		try {
 			switch (type) {

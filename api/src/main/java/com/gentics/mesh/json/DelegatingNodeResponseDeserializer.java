@@ -64,6 +64,7 @@ public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 			throw new MeshJsonException("The " + schemaFieldName
 					+ " reference field could not be found within the json that represents the node. This field is mandatory for deserialisation.");
 		}
+		// TODO also get schema/microschema by uuid
 		String schemaName = schemaNode.get("name").textValue();
 		if (StringUtils.isEmpty(schemaName)) {
 			throw new MeshJsonException(
