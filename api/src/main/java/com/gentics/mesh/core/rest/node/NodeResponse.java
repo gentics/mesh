@@ -53,6 +53,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private FieldMap fields = new FieldMapImpl();
 
+	private String url;
+
 	public NodeResponse() {
 	}
 
@@ -355,6 +357,20 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	public void setAvailableLanguages(List<String> availableLanguages) {
 		this.availableLanguages = availableLanguages;
+	}
+
+	@Override
+	public String getUrl() {
+		return url;
+	}
+
+	/**
+	 * Set the webroot URL
+	 * 
+	 * @param url webroot URL
+	 */
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	@JsonIgnore

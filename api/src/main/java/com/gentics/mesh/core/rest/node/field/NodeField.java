@@ -9,4 +9,10 @@ public interface NodeField extends ListableField, MicroschemaListableField {
 	 */
 	String getUuid();
 
+	/**
+	 * Get the webroot URL to the node
+	 * 
+	 * @return webroot URL
+	 */
+	String getUrl();
 }

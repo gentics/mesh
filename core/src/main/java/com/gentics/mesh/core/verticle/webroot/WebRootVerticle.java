@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.verticle.webroot;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;

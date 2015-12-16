@@ -473,11 +473,6 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
-		try {
-			path = URLEncoder.encode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			return Future.failedFuture(e);
-		}
 		String requestUri = BASEURI +"/" + projectName + "/webroot/" + path + getQuery(parameters);
 		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, this, HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
@@ -504,6 +499,23 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 		return future;
 
+	}
+
+	@Override
+	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments,
+			QueryParameterProvider... parameters) {
+		StringBuilder path = new StringBuilder();
+		for (String segment : pathSegments) {
+			if (path.length() > 0) {
+				path.append("/");
+			}
+			try {
+				path.append(URLEncoder.encode(segment, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				return Future.failedFuture(e);
+			}
+		}
+		return webroot(projectName, path.toString(), parameters);
 	}
 
 	@Override
