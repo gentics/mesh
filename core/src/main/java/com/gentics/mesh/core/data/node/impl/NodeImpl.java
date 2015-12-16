@@ -18,6 +18,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,6 +56,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
@@ -146,7 +149,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public String getPath(Language language) {
+	public String getPath(Language language) throws UnsupportedEncodingException {
 		List<String> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(language));
@@ -163,7 +166,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		StringBuilder builder = new StringBuilder();
 		Iterator<String> it = segments.iterator();
 		while (it.hasNext()) {
-			builder.append("/" + it.next());
+			builder.append("/").append(URLEncoder.encode(it.next(), "UTF-8"));
 		}
 		return builder.toString();
 	}
@@ -299,7 +302,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public Node transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<NodeResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
@@ -415,8 +418,8 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 								log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
 							} else {
 								restNode.getFields().put(fieldEntry.getName(), restField);
-								obsRestField.toHandler().handle(Future.succeededFuture());
 							}
+							obsRestField.toHandler().handle(Future.succeededFuture());
 						}
 					});
 				}
@@ -453,6 +456,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				}
 			});
 
+			// Add webroot url
+			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+				// TODO what about the language?
+				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), null, ac.getResolveLinksType())
+						.toBlocking().first());
+			}
+
 			// Merge and complete
 			Observable.merge(futures).last().subscribe(lastItem -> {
 				noTrx.complete(restNode);
@@ -467,9 +477,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		{
 			handler.handle(rh);
 		});
-
-		return this;
-
 	}
 
 	@Override

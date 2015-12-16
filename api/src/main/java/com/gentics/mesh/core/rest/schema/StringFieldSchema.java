@@ -1,5 +1,5 @@
 package com.gentics.mesh.core.rest.schema;
 
-public interface StringFieldSchema extends MicroschemaListableFieldSchema {
+public interface StringFieldSchema extends FieldSchema {
 
 }

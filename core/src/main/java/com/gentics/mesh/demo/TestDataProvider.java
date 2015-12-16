@@ -19,6 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -32,12 +33,20 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.MeshJsonException;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -75,6 +84,7 @@ public class TestDataProvider {
 	private MeshRoot root;
 
 	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
+	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
@@ -89,9 +99,10 @@ public class TestDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 
-		db.noTrx(noTrx -> {
+		Future<Object> setupResult = db.noTrx(noTrx -> {
 			bootstrapInitializer.initMandatoryData();
 			schemaContainers.clear();
+			microschemaContainers.clear();
 			tagFamilies.clear();
 			contents.clear();
 			folders.clear();
@@ -107,22 +118,27 @@ public class TestDataProvider {
 			addBootstrappedData();
 			addUserGroupRoleProject();
 			addSchemaContainers();
+			addMicroschemaContainers();
 
 			addTagFamilies();
 			addTags();
 			addFolderStructure();
 			addContents();
 
-			log.info("Nodes:    " + getNodeCount());
-			log.info("Folders:  " + folders.size());
-			log.info("Contents: " + contents.size());
-			log.info("Tags:     " + tags.size());
-			log.info("Schemas: " + schemaContainers.size());
-			log.info("TagFamilies: " + tagFamilies.size());
-			log.info("Users:    " + users.size());
-			log.info("Groups:   " + groups.size());
-			log.info("Roles:    " + roles.size());
+			log.info("Nodes:        " + getNodeCount());
+			log.info("Folders:      " + folders.size());
+			log.info("Contents:     " + contents.size());
+			log.info("Tags:         " + tags.size());
+			log.info("Schemas:      " + schemaContainers.size());
+			log.info("Microschemas: " + microschemaContainers.size());
+			log.info("TagFamilies:  " + tagFamilies.size());
+			log.info("Users:        " + users.size());
+			log.info("Groups:       " + groups.size());
+			log.info("Roles:        " + roles.size());
 		});
+		if (setupResult.failed()) {
+			throw new IOException(setupResult.cause());
+		}
 		updatePermissions();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Setup took: {" + duration + "}");
@@ -164,6 +180,7 @@ public class TestDataProvider {
 		SchemaContainer contentSchema = schemaContainers.get("content");
 
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!", contentSchema);
+		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014", contentSchema);
 
 		addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
 
@@ -204,7 +221,7 @@ public class TestDataProvider {
 		news2015.addTag(tags.get("jeep"));
 
 		Node news2014 = addFolder(news, "2014", null);
-		addFolder(news2014, "March", null);
+		addFolder(news2014, "March", "März");
 
 		addFolder(baseNode, "Products", "Produkte");
 		addFolder(baseNode, "Deals", "Angebote");
@@ -340,6 +357,80 @@ public class TestDataProvider {
 		project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
+	}
+
+	/**
+	 * Add microschemas
+	 * @throws MeshJsonException 
+	 */
+	private void addMicroschemaContainers() throws MeshJsonException {
+		addVCardMicroschema();
+		addCaptionedImageMicroschema();
+	}
+
+	/**
+	 * Add microschema "vcard" to db
+	 * @throws MeshJsonException 
+	 */
+	private void addVCardMicroschema() throws MeshJsonException {
+		Microschema vcardMicroschema = new MicroschemaImpl();
+		vcardMicroschema.setName("vcard");
+		vcardMicroschema.setDescription("Microschema for a vcard");
+
+		// firstname field
+		StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
+		firstNameFieldSchema.setName("firstName");
+		firstNameFieldSchema.setLabel("First Name");
+		firstNameFieldSchema.setRequired(true);
+		vcardMicroschema.addField(firstNameFieldSchema);
+
+		// lastname field
+		StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
+		lastNameFieldSchema.setName("lastName");
+		lastNameFieldSchema.setLabel("Last Name");
+		lastNameFieldSchema.setRequired(true);
+		vcardMicroschema.addField(lastNameFieldSchema);
+
+		// address field
+		StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
+		addressFieldSchema.setName("address");
+		addressFieldSchema.setLabel("Address");
+		vcardMicroschema.addField(addressFieldSchema);
+
+		// postcode field
+		StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
+		postcodeFieldSchema.setName("postcode");
+		postcodeFieldSchema.setLabel("Post Code");
+		vcardMicroschema.addField(postcodeFieldSchema);
+
+		MicroschemaContainer vcardMicroschemaContainer = rootService.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
+		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
+	}
+
+	/**
+	 * Add microschema "captionedImage" to db
+	 * @throws MeshJsonException
+	 */
+	private void addCaptionedImageMicroschema() throws MeshJsonException {
+		Microschema captionedImageMicroschema = new MicroschemaImpl();
+		captionedImageMicroschema.setName("captionedImage");
+		captionedImageMicroschema.setDescription("Microschema for a captioned image");
+
+		// image field
+		NodeFieldSchema imageFieldSchema = new NodeFieldSchemaImpl();
+		imageFieldSchema.setName("image");
+		imageFieldSchema.setLabel("Image");
+		imageFieldSchema.setAllowedSchemas("image");
+		captionedImageMicroschema.addField(imageFieldSchema);
+
+		// caption field
+		StringFieldSchema captionFieldSchema = new StringFieldSchemaImpl();
+		captionFieldSchema.setName("caption");
+		captionFieldSchema.setLabel("Caption");
+		captionedImageMicroschema.addField(captionFieldSchema);
+
+		MicroschemaContainer microschemaContainer = rootService.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
+		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 	}
 
 //	private void addBlogPostSchema() throws MeshSchemaException {
@@ -502,6 +593,10 @@ public class TestDataProvider {
 
 	public Map<String, SchemaContainer> getSchemaContainers() {
 		return schemaContainers;
+	}
+
+	public Map<String, MicroschemaContainer> getMicroschemaContainers() {
+		return microschemaContainers;
 	}
 
 	public MeshRoot getMeshRoot() {

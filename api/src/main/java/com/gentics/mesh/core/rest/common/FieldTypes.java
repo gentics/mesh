@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.rest.common;
 
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.ListField;
-import com.gentics.mesh.core.rest.node.field.MicroschemaField;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.SelectField;
@@ -14,7 +15,6 @@ import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.MicroschemaFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicroschemaFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
@@ -52,8 +52,8 @@ public enum FieldTypes {
 							BooleanFieldImpl.class), SELECT(SelectFieldSchema.class, SelectFieldSchemaImpl.class, SelectField.class,
 									SelectFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class, NodeField.class,
 											NodeFieldImpl.class), LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListField.class,
-													ListFieldImpl.class), MICROSCHEMA(MicroschemaFieldSchema.class, MicroschemaFieldSchemaImpl.class,
-															MicroschemaField.class, MicroschemaFieldImpl.class);
+													ListFieldImpl.class), MICRONODE(MicronodeFieldSchema.class, MicronodeFieldSchemaImpl.class,
+															MicronodeField.class, MicronodeResponse.class);
 
 	private Class<? extends FieldSchema> schemaInterfaceClazz;
 

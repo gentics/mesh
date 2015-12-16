@@ -1,17 +1,48 @@
 package com.gentics.mesh.core.schema;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
-import org.junit.Ignore;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
-import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
-public class MicroschemaVerticleTest extends AbstractRestVerticleTest {
+import io.vertx.core.Future;
+
+public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
 	private MicroschemaVerticle microschemaVerticle;
@@ -23,10 +54,246 @@ public class MicroschemaVerticleTest extends AbstractRestVerticleTest {
 		return list;
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
-	public void testCreateDelete() {
+	@Override
+	public void testUpdateMultithreaded() throws Exception {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreaded() throws Exception {
+		int nJobs = 10;
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+		String uuid = vcardContainer.getUuid();
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findMicroschemaByUuid(uuid));
+		}
+		validateSet(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDMultithreaded() throws Exception {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testCreateMultithreaded() throws Exception {
+		int nJobs = 5;
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+		request.setName("new microschema name");
+
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().createMicroschema(request));
+		}
+		validateCreation(set, barrier);
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
+		int nJobs = 200;
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+		String uuid = vcardContainer.getUuid();
+
+		Set<Future<MicroschemaResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findMicroschemaByUuid(uuid));
+		}
+		for (Future<MicroschemaResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreate() throws Exception {
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+		request.setName("new microschema name");
+		request.setDescription("microschema description");
+
+		assertThat(searchProvider).recordedStoreEvents(0);
+		Future<MicroschemaResponse> future = getClient().createMicroschema(request);
+		latchFor(future);
+		assertSuccess(future);
+		assertThat(searchProvider).recordedStoreEvents(1);
+		MicroschemaResponse microschemaResponse = future.result();
+		assertThat((Microschema)microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
+	}
+
+	@Test
+	@Override
+	public void testCreateReadDelete() throws Exception {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testReadByUUID() throws Exception {
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+		Future<MicroschemaResponse> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		MicroschemaResponse microschemaResponse = future.result();
+		assertThat((Microschema)microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getMicroschema(), "name", "description");
+	}
+
+	@Test
+	@Override
+	public void testReadByUuidWithRolePerms() {
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+		String uuid = vcardContainer.getUuid();
+
+		Future<MicroschemaResponse> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
+	}
+
+	@Test
+	@Override
+	public void testReadByUUIDWithMissingPermission() throws Exception {
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+
+		role().grantPermissions(vcardContainer, DELETE_PERM);
+		role().grantPermissions(vcardContainer, UPDATE_PERM);
+		role().grantPermissions(vcardContainer, CREATE_PERM);
+		role().revokePermissions(vcardContainer, READ_PERM);
+
+		Future<MicroschemaResponse> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
+	}
+
+	@Test
+	@Override
+	public void testReadMultiple() throws Exception {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	@Override
+	public void testUpdate() throws Exception {
+		String name = "new-name";
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName(name);
+
+		Future<MicroschemaResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		MicroschemaResponse restSchema = future.result();
+		assertEquals(request.getName(), restSchema.getName());
+		vcardContainer.reload();
+		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid(), rh -> {
+			MicroschemaContainer reloaded = rh.result();
+			assertEquals("The name should have been updated", name, reloaded.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
 
 	}
 
+	@Test
+	@Override
+	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		MicroschemaContainer microschema = microschemaContainers().get("vcard");
+		assertNotNull(microschema);
+		role().revokePermissions(microschema, UPDATE_PERM);
+
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName("new-name");
+
+		Future<MicroschemaResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
+	}
+
+	@Test
+	@Override
+	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
+		MicroschemaContainer microschema = microschemaContainers().get("vcard");
+		assertNotNull(microschema);
+		String oldName = microschema.getName();
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName("new-name");
+
+		Future<MicroschemaResponse> future = getClient().updateMicroschema("bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+
+		CountDownLatch latch = new CountDownLatch(1);
+		boot.microschemaContainerRoot().findByUuid(microschema.getUuid(), rh -> {
+			MicroschemaContainer reloaded = rh.result();
+			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
+			latch.countDown();
+		});
+		failingLatch(latch);
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUID() throws Exception {
+		MicroschemaContainer microschema = microschemaContainers().get("vcard");
+		assertNotNull(microschema);
+
+		Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid());
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("microschema_deleted", future, microschema.getUuid() + "/" + microschema.getName());
+
+		boot.microschemaContainerRoot().findByUuid(microschema.getUuid(), rh -> {
+			MicroschemaContainer reloaded = rh.result();
+			assertNull("The microschema should have been deleted.", reloaded);
+		});
+	}
+
+	@Test
+	@Override
+	public void testDeleteByUUIDWithNoPermission() throws Exception {
+		MicroschemaContainer microschema = microschemaContainers().get("vcard");
+		assertNotNull(microschema);
+
+		role().revokePermissions(microschema, DELETE_PERM);
+
+		Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid());
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
+
+		assertElement(boot.microschemaContainerRoot(), microschema.getUuid(), true);
+	}
+
+	@Test
+	public void testUpdateWithConflictingName() {
+		String name = "captionedImage";
+		String originalSchemaName = "vcard";
+		MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
+		assertNotNull(microschema);
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName(name);
+
+		Future<MicroschemaResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "microschema_conflicting_name", name);
+		microschema.reload();
+		assertEquals("The name of the microschema was updated", originalSchemaName, microschema.getName());
+	}
 }

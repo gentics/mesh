@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 
 public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVerticleTest {
@@ -68,6 +70,22 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		return future.result();
 	}
 
+	protected void createNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+		Node node = folder("2015");
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(node.getUuid());
+		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
+		nodeCreateRequest.setLanguage("en");
+		if (fieldKey != null) {
+			nodeCreateRequest.getFields().put(fieldKey, field);
+		}
+
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
+				new NodeRequestParameter().setLanguages("en"));
+		latchFor(future);
+		expectException(future, status, bodyMessageI18nKey, i18nParams);
+	}
+
 	protected NodeResponse updateNode(String fieldKey, Field field) {
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -82,6 +100,19 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		assertNotNull("The response could not be found in the result of the future.", future.result());
 		assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
 		return future.result();
+	}
+
+	protected void updateNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+		Node node = folder("2015");
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.getFields().put(fieldKey, field);
+
+		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
+				new NodeRequestParameter().setLanguages("en"));
+		latchFor(future);
+		expectException(future, status, bodyMessageI18nKey, i18nParams);
 	}
 
 	/**

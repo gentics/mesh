@@ -180,6 +180,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		}
 		db.noTrx(tc -> {
 			if (requestUser.hasPermission(ac, boot.projectRoot(), CREATE_PERM)) {
+				// TODO instead of this check, a constraint in the db should be added
 				Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());
 				if (conflictingProject != null) {
 					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingProject.getUuid(), projectName, "project_conflicting_name");

@@ -8,6 +8,8 @@ public class NodeFieldImpl implements NodeField {
 
 	private String uuid;
 
+	private String url;
+
 	@Override
 	public String getUuid() {
 		return uuid;
@@ -15,6 +17,22 @@ public class NodeFieldImpl implements NodeField {
 
 	public NodeField setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
+	}
+
+	@Override
+	public String getUrl() {
+		return url;
+	}
+
+	/**
+	 * Set the webroot URL
+	 * 
+	 * @param url webroot URL
+	 * @return this instance
+	 */
+	public NodeField setUrl(String url) {
+		this.url = url;
 		return this;
 	}
 

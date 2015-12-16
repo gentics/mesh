@@ -19,6 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -151,6 +152,10 @@ public abstract class AbstractDBTest {
 
 	public Map<String, SchemaContainer> schemaContainers() {
 		return dataProvider.getSchemaContainers();
+	}
+
+	public Map<String, MicroschemaContainer> microschemaContainers() {
+		return dataProvider.getMicroschemaContainers();
 	}
 
 	public int getNodeCount() {

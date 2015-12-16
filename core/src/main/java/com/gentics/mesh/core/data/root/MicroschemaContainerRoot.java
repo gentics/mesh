@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.json.MeshJsonException;
 
 public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
 
@@ -24,11 +26,12 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	/**
 	 * Create a new microschema container.
 	 * 
-	 * @param name
+	 * @param microschema
 	 * @param user
 	 *            User that is used to set creator and editor references.
 	 * @return
+	 * @throws MeshJsonException 
 	 */
-	MicroschemaContainer create(String name, User user);
+	MicroschemaContainer create(Microschema microschema, User user) throws MeshJsonException;
 
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest;
 
+import java.util.Arrays;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -8,6 +10,10 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -84,8 +90,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						if (classOfT.equals(Object.class)) {
 							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, client.getClientSchemaStorage());
 							future.complete((T) restObj);
-						}
-						if (isSchemaClass(classOfT)) {
+						} else if (isSchemaClass(classOfT)) {
 							T restObj = JsonUtil.readSchema(json, classOfT);
 							future.complete(restObj);
 						} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
@@ -187,11 +192,11 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @return
 	 */
 	private boolean isSchemaClass(Class<?> clazz) {
-		if (clazz.isAssignableFrom(SchemaResponse.class) || clazz.isAssignableFrom(SchemaCreateRequest.class)
-				|| clazz.isAssignableFrom(SchemaUpdateRequest.class) || clazz.isAssignableFrom(SchemaListResponse.class)) {
-			return true;
-		}
-		return false;
+		return Arrays
+				.asList(SchemaResponse.class, SchemaCreateRequest.class, SchemaUpdateRequest.class,
+						SchemaListResponse.class, MicroschemaResponse.class, MicroschemaCreateRequest.class,
+						MicroschemaUpdateRequest.class, MicroschemaListResponse.class)
+				.stream().anyMatch(c -> clazz.isAssignableFrom(c));
 	}
 
 	/**

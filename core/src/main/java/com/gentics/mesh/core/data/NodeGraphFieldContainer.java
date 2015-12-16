@@ -16,7 +16,7 @@ import io.vertx.core.Handler;
  * A node field container is a aggregation node that holds localized fields.
  *
  */
-public interface NodeGraphFieldContainer extends GraphFieldContainer, MicroschemaGraphFieldContainer {
+public interface NodeGraphFieldContainer extends GraphFieldContainer {
 
 	/**
 	 * Locate the field with the given fieldkey in this container and return the rest model for this field.

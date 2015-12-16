@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import java.util.List;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
@@ -18,26 +19,29 @@ import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.nesting.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.nesting.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.nesting.SelectGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
-import com.gentics.mesh.core.data.node.field.list.impl.MicroschemaGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 
@@ -134,6 +138,27 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
+	public MicronodeGraphField createMicronode(String key, MicroschemaContainer microschema) {
+		// delete existing micronode
+		MicronodeGraphField existing = getMicronode(key);
+		if (existing != null) {
+			existing.getMicronode().delete();
+		}
+
+		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
+		micronode.setMicroschemaContainer(microschema);
+		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
+		field.setFieldKey(key);
+		return field;
+	}
+
+	@Override
+	public MicronodeGraphField getMicronode(String key) {
+		return outE(HAS_FIELD).has(MicronodeGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(MicronodeGraphFieldImpl.class, null);
+	}
+
+	@Override
 	public <T extends ListableGraphField> SelectGraphField<T> createSelect(String key) {
 		SelectGraphFieldImpl<T> field = getGraph().addFramedVertex(SelectGraphFieldImpl.class);
 		field.setFieldKey(key);
@@ -187,13 +212,13 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public MicroschemaGraphFieldList createMicroschemaFieldList(String fieldKey) {
-		return createList(MicroschemaGraphFieldListImpl.class, fieldKey);
+	public MicronodeGraphFieldList createMicronodeFieldList(String fieldKey) {
+		return createList(MicronodeGraphFieldListImpl.class, fieldKey);
 	}
 
 	@Override
-	public MicroschemaGraphFieldList getMicroschemaList(String fieldKey) {
-		return getList(MicroschemaGraphFieldListImpl.class, fieldKey);
+	public MicronodeGraphFieldList getMicronodeList(String fieldKey) {
+		return getList(MicronodeGraphFieldListImpl.class, fieldKey);
 	}
 
 	@Override

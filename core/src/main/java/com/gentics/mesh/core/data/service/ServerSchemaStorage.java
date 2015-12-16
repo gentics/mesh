@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
@@ -39,6 +40,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	private Map<String, Schema> schemas = new HashMap<>();
 
+	private Map<String, Microschema> microschemas = new HashMap<>();
+
 	public void init() {
 		//Iterate over all schemas and load them into the storage
 		for (SchemaContainer container : boot.schemaContainerRoot().findAll()) {
@@ -50,16 +53,21 @@ public class ServerSchemaStorage implements SchemaStorage {
 //				e.printStackTrace();
 //			}
 		}
+
+		// load all microschemas and add to storage
+		boot.microschemaContainerRoot().findAll().stream()
+				.forEach(container -> addMicroschema(container.getMicroschema()));
 	}
 
 	@Override
 	public void clear() {
 		schemas.clear();
+		microschemas.clear();
 	}
 
 	@Override
 	public int size() {
-		return schemas.size();
+		return schemas.size() + microschemas.size();
 	}
 
 	@Override
@@ -82,4 +90,23 @@ public class ServerSchemaStorage implements SchemaStorage {
 		}
 	}
 
+	@Override
+	public Microschema getMicroschema(String name) {
+		return microschemas.get(name);
+	}
+
+	@Override
+	public void addMicroschema(Microschema microschema) {
+		if (microschemas.containsKey(microschema.getName())) {
+			log.error("Microschema " + microschema.getName() + " is already stored.");
+			return;
+		} else {
+			microschemas.put(microschema.getName(), microschema);
+		}
+	}
+
+	@Override
+	public void removeMicroschema(String name) {
+		microschemas.remove(name);
+	}
 }

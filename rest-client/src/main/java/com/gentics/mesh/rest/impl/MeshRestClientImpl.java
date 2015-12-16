@@ -10,7 +10,6 @@ import java.net.URLEncoder;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -36,7 +35,10 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
@@ -69,6 +71,9 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class MeshRestClientImpl extends AbstractMeshRestClient {
 
@@ -468,11 +473,6 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
-		try {
-			path = URLEncoder.encode(path, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			return Future.failedFuture(e);
-		}
 		String requestUri = BASEURI +"/" + projectName + "/webroot/" + path + getQuery(parameters);
 		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, this, HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
@@ -499,6 +499,23 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 		return future;
 
+	}
+
+	@Override
+	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments,
+			QueryParameterProvider... parameters) {
+		StringBuilder path = new StringBuilder();
+		for (String segment : pathSegments) {
+			if (path.length() > 0) {
+				path.append("/");
+			}
+			try {
+				path.append(URLEncoder.encode(segment, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				return Future.failedFuture(e);
+			}
+		}
+		return webroot(projectName, path.toString(), parameters);
 	}
 
 	@Override
@@ -548,20 +565,41 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<Void> initSchemaStorage() {
 		// TODO handle paging correctly
 		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingParameter(1, 100));
-		Future<Void> future = Future.future();
-		schemasFuture.setHandler(rh -> {
-			if (rh.failed()) {
-				log.error("Could not load schemas", rh.cause());
-				future.fail(rh.cause());
-			} else {
-				SchemaListResponse list = rh.result();
-				for (SchemaResponse schema : list.getData()) {
-					getClientSchemaStorage().addSchema(schema);
-					log.info("Added schema {" + schema.getName() + "} to schema storage.");
-				}
-				future.complete();
+		ObservableFuture<SchemaListResponse> schemasObservable = RxHelper.observableFuture();
+		schemasFuture.setHandler(schemasObservable.toHandler());
+		schemasObservable.doOnNext(list -> {
+			for (SchemaResponse schema : list.getData()) {
+				getClientSchemaStorage().addSchema(schema);
+				log.info("Added schema {" + schema.getName() + "} to schema storage.");
 			}
 		});
+
+		Future<MicroschemaListResponse> microschemasFuture = findMicroschemas(new PagingParameter(1, 100));
+		ObservableFuture<MicroschemaListResponse> microschemasObservable = RxHelper.observableFuture();
+		microschemasFuture.setHandler(microschemasObservable.toHandler());
+		microschemasObservable.doOnNext(list -> {
+			for (MicroschemaResponse microschema : list.getData()) {
+				getClientSchemaStorage().addMicroschema(microschema);
+				log.info("Added microschema {" + microschema.getName() + "} to schema storage.");
+			}
+		});
+
+		Future<Void> future = Future.future();
+		Observable.merge(schemasObservable, microschemasObservable).doOnCompleted(() -> future.complete()).doOnError(e -> future.fail(e)).subscribe();
+
+//		schemasFuture.setHandler(rh -> {
+//			if (rh.failed()) {
+//				log.error("Could not load schemas", rh.cause());
+//				future.fail(rh.cause());
+//			} else {
+//				SchemaListResponse list = rh.result();
+//				for (SchemaResponse schema : list.getData()) {
+//					getClientSchemaStorage().addSchema(schema);
+//					log.info("Added schema {" + schema.getName() + "} to schema storage.");
+//				}
+//				future.complete();
+//			}
+//		});
 		return future;
 	}
 
@@ -772,4 +810,31 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		return invokeRequest(GET, "/roles/" + roleUuid + "/permissions/" + pathToElement, RolePermissionResponse.class);
 	}
 
+	@Override
+	public Future<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request) {
+		return invokeRequest(POST, "/microschemas", MicroschemaResponse.class, request);
+	}
+
+	@Override
+	public Future<MicroschemaResponse> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return invokeRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaResponse.class);
+	}
+
+	@Override
+	public Future<MicroschemaListResponse> findMicroschemas(QueryParameterProvider... parameters) {
+		return invokeRequest(GET, "/microschemas" + getQuery(parameters), MicroschemaListResponse.class);
+	}
+
+	@Override
+	public Future<MicroschemaResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return invokeRequest(PUT, "/microschemas/" + uuid, MicroschemaResponse.class, request);
+	}
+
+	@Override
+	public Future<GenericMessageResponse> deleteMicroschema(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return invokeRequest(DELETE, "/microschemas/" + uuid, GenericMessageResponse.class);
+	}
 }

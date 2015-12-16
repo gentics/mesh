@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -138,6 +139,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		getClient().getClientSchemaStorage().clear();
 		for (SchemaContainer container : schemaContainers().values()) {
 			getClient().getClientSchemaStorage().addSchema(container.getSchema());
+		}
+		for (MicroschemaContainer container : microschemaContainers().values()) {
+			getClient().getClientSchemaStorage().addMicroschema(container.getMicroschema());
 		}
 	}
 

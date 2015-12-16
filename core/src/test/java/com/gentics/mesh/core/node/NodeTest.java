@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,10 +99,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
-	public void testGetPath() {
+	public void testGetPath() throws UnsupportedEncodingException {
 		Node newsNode = content("news overview");
 		String path = newsNode.getPath(english());
-		assertEquals("/News/News Overview.en.html", path);
+		assertEquals("/News/News+Overview.en.html", path);
 
 		String pathSegementFieldValue = newsNode.getPathSegment(english());
 		assertEquals("News Overview.en.html", pathSegementFieldValue);

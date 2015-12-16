@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.test.AbstractDBTest;
 
-public class MicroschemaGraphFieldNodeTest extends AbstractDBTest {
+public class MicronodeGraphFieldNodeTest extends AbstractDBTest {
 
 //	@Autowired
 //	private ServerSchemaStorage schemaStorage;

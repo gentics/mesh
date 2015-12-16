@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
 
@@ -418,8 +419,9 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @param language
 	 * @return
+	 * @throws UnsupportedEncodingException 
 	 */
-	String getPath(Language language);
+	String getPath(Language language) throws UnsupportedEncodingException;
 
 	/**
 	 * Return the path segment value of this node in the given language.

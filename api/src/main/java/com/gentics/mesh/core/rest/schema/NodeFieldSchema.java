@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
-public interface NodeFieldSchema extends MicroschemaListableFieldSchema {
+public interface NodeFieldSchema extends FieldSchema {
 
 	/**
 	 * Return the allowed schemas for the node field.

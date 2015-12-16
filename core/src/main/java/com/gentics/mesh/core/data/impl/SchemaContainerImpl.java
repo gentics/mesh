@@ -53,7 +53,7 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 	}
 
 	@Override
-	public SchemaContainer transformToRest(InternalActionContext ac, Handler<AsyncResult<SchemaResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<SchemaResponse>> handler) {
 		try {
 			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);
 			restSchema.setUuid(getUuid());
@@ -85,7 +85,6 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 		} catch (IOException e) {
 			handler.handle(Future.failedFuture(e));
 		}
-		return this;
 	}
 
 	@Override

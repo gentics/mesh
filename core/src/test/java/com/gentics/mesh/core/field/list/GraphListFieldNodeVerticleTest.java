@@ -188,6 +188,9 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeResponse response = createNode("listField", listField);
 		StringFieldListImpl listFromResponse = response.getField("listField");
 		assertEquals(3, listFromResponse.getItems().size());
+		for (int i = 0; i < listField.getItems().size(); i++) {
+			assertEquals("Check item #" +(i+1), listField.getItems().get(i), listFromResponse.getItems().get(i));
+		}
 
 		// Add another item to the list and update the node
 		listField.add("D");

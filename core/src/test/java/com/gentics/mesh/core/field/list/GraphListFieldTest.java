@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicroschemaGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
@@ -129,7 +129,7 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 	@Test
 	public void testMicroschemaList() {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		MicroschemaGraphFieldList list = container.createMicroschemaFieldList("dummyList");
+		MicronodeGraphFieldList list = container.createMicronodeFieldList("dummyList");
 		assertNotNull(list);
 	}
 

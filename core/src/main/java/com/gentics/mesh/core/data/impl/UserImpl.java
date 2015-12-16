@@ -377,7 +377,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	}
 
 	@Override
-	public User transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
+	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		db.asyncNoTrx(noTrx -> {
@@ -447,8 +447,6 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 		} , (AsyncResult<UserResponse> rh) -> {
 			handler.handle(rh);
 		});
-
-		return this;
 	}
 
 	@Override

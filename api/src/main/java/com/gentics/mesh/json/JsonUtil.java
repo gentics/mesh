@@ -5,16 +5,22 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -109,13 +115,22 @@ public final class JsonUtil {
 		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
 		module.addSerializer(FieldList.class, new FieldListSerializer());
+		module.addSerializer(NullMicronodeResponse.class, new JsonSerializer<NullMicronodeResponse>() {
+			@Override
+			public void serialize(NullMicronodeResponse value, JsonGenerator gen, SerializerProvider serializers)
+					throws IOException, JsonProcessingException {
+				gen.writeNull();
+			}
+		});
 
 		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
-		module.addDeserializer(NodeResponse.class, new DelegatingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class));
+		module.addDeserializer(NodeResponse.class, new DelegatingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class, false));
 		module.addDeserializer(NodeCreateRequest.class,
-				new DelegatingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class));
+				new DelegatingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class, false));
 		module.addDeserializer(NodeUpdateRequest.class,
-				new DelegatingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, NodeUpdateRequest.class));
+				new DelegatingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, NodeUpdateRequest.class, false));
+		module.addDeserializer(MicronodeResponse.class,
+				new DelegatingNodeResponseDeserializer<MicronodeResponse>(nodeMapper, MicronodeResponse.class, true));
 		defaultMapper.registerModule(module);
 
 	}

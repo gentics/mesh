@@ -304,6 +304,7 @@ public class RouterStorage {
 					+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
 		}
 		Router projectRouter = projectRouters.get(name);
+		// TODO synchronize access to projectRouters
 		if (projectRouter == null) {
 			projectRouter = Router.router(vertx);
 			projectRouters.put(name, projectRouter);
