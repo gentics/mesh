@@ -44,14 +44,14 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, RoleReference>implements Role {
+public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, RoleReference> implements Role {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(RoleImpl.class);
 	}
-	
+
 	@Override
 	protected RoleReference createEmptyReferenceModel() {
 		return new RoleReference();
@@ -169,15 +169,16 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 
 	@Override
 	public void delete() {
-		//TODO don't allow deletion of admin role
+		// TODO don't allow deletion of admin role
 		addIndexBatch(DELETE_ACTION);
 		getVertex().remove();
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		Database db = MeshSpringConfiguration.getInstance().database();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
@@ -185,8 +186,7 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
 				HttpStatusCodeErrorException conflictError = conflict(ac, roleWithSameName.getUuid(), requestModel.getName(),
 						"role_conflicting_name");
-				handler.handle(Future.failedFuture(conflictError));
-				return;
+				return Observable.error(conflictError);
 			}
 
 			db.trx(tc -> {
@@ -195,13 +195,13 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 				tc.complete(batch);
 			} , (AsyncResult<SearchQueueBatch> rh) -> {
 				if (rh.failed()) {
-					handler.handle(Future.failedFuture(rh.cause()));
+					obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {
-					processOrFail2(ac, rh.result(), handler);
+					processOrFail2(ac, rh.result(), obsFut.toHandler());
 				}
 			});
 		}
-
+		return obsFut;
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.Handler;
+import rx.Observable;
 
 public class GenericVertexImpl extends AbstractGenericVertex {
 
@@ -19,9 +20,9 @@ public class GenericVertexImpl extends AbstractGenericVertex {
 	}
 
 	@Override
-	public void update(InternalActionContext cc, Handler handler) {
+	public Observable<Void> update(InternalActionContext cc) {
 		// TODO Auto-generated method stub
-
+		return null;
 	}
 
 }

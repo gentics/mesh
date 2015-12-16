@@ -223,9 +223,11 @@ public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectRespons
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
+
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
 		db.trx(txUpdate -> {
 			// Check for conflicting project name
@@ -245,11 +247,12 @@ public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectRespons
 			txUpdate.complete(batch);
 		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
 			if (txUpdated.failed()) {
-				handler.handle(Future.failedFuture(txUpdated.cause()));
+				obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 			} else {
-				processOrFail2(ac, txUpdated.result(), handler);
+				processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
 			}
 		});
+		return obsFut;
 	}
 
 	@Override

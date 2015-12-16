@@ -212,14 +212,15 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 		db.noTrx(trc -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
+				obsFut.toHandler().handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
 				return;
 			}
 
@@ -228,7 +229,7 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					HttpStatusCodeErrorException conflictError = conflict(ac, groupWithSameName.getUuid(), requestModel.getName(),
 							"group_conflicting_name", requestModel.getName());
-					handler.handle(Future.failedFuture(conflictError));
+					obsFut.toHandler().handle(Future.failedFuture(conflictError));
 					return;
 				}
 
@@ -238,14 +239,15 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 					tc.complete(batch);
 				} , (AsyncResult<SearchQueueBatch> rh) -> {
 					if (rh.failed()) {
-						handler.handle(Future.failedFuture(rh.cause()));
+						obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
 					} else {
-						processOrFail2(ac, rh.result(), handler);
+						processOrFail2(ac, rh.result(), obsFut.toHandler());
 					}
 				});
 
 			}
 		});
+		return obsFut;
 
 	}
 

@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -35,6 +35,9 @@ import com.gentics.mesh.util.RestModelHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class SchemaContainerImpl extends AbstractReferenceableCoreElement<SchemaResponse, SchemaReference> implements SchemaContainer {
 
@@ -146,21 +149,20 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
 		try {
 			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
-				return;
+				return errorObservable(BAD_REQUEST, "error_name_must_be_set");
 			}
 
 			SchemaContainer foundSchema = root.findByName(requestModel.getName());
 			if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
-				handler.handle(failedFuture(BAD_REQUEST, "schema_conflicting_name", requestModel.getName()));
-				return;
+				return errorObservable(BAD_REQUEST, "schema_conflicting_name", requestModel.getName());
 			}
 
 			db.trx(txUpdate -> {
@@ -172,14 +174,15 @@ public class SchemaContainerImpl extends AbstractReferenceableCoreElement<Schema
 				txUpdate.complete(batch);
 			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
 				if (txUpdated.failed()) {
-					handler.handle(Future.failedFuture(txUpdated.cause()));
+					obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 				} else {
-					processOrFail2(ac, txUpdated.result(), handler);
+					processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
 				}
 			});
 		} catch (Exception e) {
-			handler.handle(Future.failedFuture(e));
+			obsFut.toHandler().handle(Future.failedFuture(e));
 		}
+		return obsFut;
 
 	}
 

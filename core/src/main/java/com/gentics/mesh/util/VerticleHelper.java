@@ -372,16 +372,14 @@ public class VerticleHelper {
 		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
 				GenericVertex<?> vertex = rh.result();
-				vertex.update(ac, rh2 -> {
-					if (rh2.failed()) {
-						ac.fail(rh2.cause());
-					} else {
+				vertex.update(ac).subscribe(done -> {
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
 						db.noTrx(noTx -> {
 							vertex.reload();
 							transformAndResponde(ac, vertex, OK);
 						});
-					}
+				}, error -> {
+					ac.fail(error);
 				});
 			}
 		});

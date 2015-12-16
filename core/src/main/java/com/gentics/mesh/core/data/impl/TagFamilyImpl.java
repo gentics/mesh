@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.loadObject;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
@@ -57,7 +57,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyResponse, TagFamilyReference>implements TagFamily {
+public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyResponse, TagFamilyReference> implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
@@ -100,7 +100,7 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 	public void setDescription(String description) {
 		setProperty("description", description);
 	}
-	
+
 	@Override
 	public void setProject(Project project) {
 		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
@@ -205,14 +205,15 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Project project = ac.getProject();
 		Database db = MeshSpringConfiguration.getInstance().database();
 		String newName = requestModel.getName();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
 		if (StringUtils.isEmpty(newName)) {
-			handler.handle(failedFuture(BAD_REQUEST, "tagfamily_name_not_set"));
+			return errorObservable(BAD_REQUEST, "tagfamily_name_not_set");
 		} else {
 			loadObject(ac, "uuid", UPDATE_PERM, project.getTagFamilyRoot(), rh -> {
 				if (hasSucceeded(ac, rh)) {
@@ -221,7 +222,7 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
 						HttpStatusCodeErrorException conflictError = conflict(ac, tagFamilyWithSameName.getUuid(), newName,
 								"tagfamily_conflicting_name", newName);
-						handler.handle(Future.failedFuture(conflictError));
+						obsFut.toHandler().handle(Future.failedFuture(conflictError));
 						return;
 					}
 					db.trx(txUpdate -> {
@@ -230,14 +231,15 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 						txUpdate.complete(batch);
 					} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
 						if (txUpdated.failed()) {
-							handler.handle(Future.failedFuture(txUpdated.cause()));
+							obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 						} else {
-							processOrFail2(ac, txUpdated.result(), handler);
+							processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
 						}
 					});
 				}
 			});
 		}
+		return obsFut;
 
 	}
 

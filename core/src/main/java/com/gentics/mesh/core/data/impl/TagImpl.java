@@ -55,7 +55,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Tag, IndexedVertex {
+public class TagImpl extends GenericFieldContainerNode<TagResponse> implements Tag, IndexedVertex {
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
@@ -198,11 +198,13 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamily();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
+
 		db.trx(txUpdate -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {
@@ -238,11 +240,12 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse>implements Ta
 			txUpdate.complete(batch);
 		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
 			if (txUpdated.failed()) {
-				handler.handle(Future.failedFuture(txUpdated.cause()));
+				obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 			} else {
-				processOrFail2(ac, txUpdated.result(), handler);
+				processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
 			}
 		});
+		return obsFut;
 
 	}
 

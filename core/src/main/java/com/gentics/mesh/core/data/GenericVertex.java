@@ -3,8 +3,7 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
 
@@ -72,12 +71,11 @@ public interface GenericVertex<T extends RestModel> extends MeshVertex, Transfor
 	void setCreationTimestamp(long timestamp);
 
 	/**
-	 * Update the vertex using the action context information and invoke the handler once the update has been completed.
+	 * Update the vertex using the action context information.
 	 * 
 	 * @param ac
-	 * @param handler
 	 */
-	void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler);
+	Observable<Void> update(InternalActionContext ac);
 
 	/**
 	 * Set the editor and creator references and update the timestamps for created and edited fields.

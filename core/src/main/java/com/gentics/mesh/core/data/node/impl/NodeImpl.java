@@ -710,13 +710,13 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				handler.handle(failedFuture(BAD_REQUEST, "error_language_not_set"));
-				return;
+				return errorObservable(BAD_REQUEST, "error_language_not_set");
 			}
 			db.trx(txUpdate -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
@@ -742,16 +742,17 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 				txUpdate.complete(batch);
 			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
 				if (txUpdated.failed()) {
-					handler.handle(Future.failedFuture(txUpdated.cause()));
+					obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 				} else {
-					processOrFail2(ac, txUpdated.result(), handler);
+					processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
 				}
 			});
 
 		} catch (IOException e1) {
 			log.error(e1);
-			handler.handle(failedFuture(BAD_REQUEST, e1.getMessage(), e1));
+			obsFut.toHandler().handle(failedFuture(BAD_REQUEST, e1.getMessage(), e1));
 		}
+		return obsFut;
 	}
 
 	@Override

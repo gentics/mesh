@@ -519,9 +519,10 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 		try {
 			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			db.trx(txUpdate -> {
@@ -530,8 +531,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 						HttpStatusCodeErrorException conflictError = conflict(ac, conflictingUser.getUuid(), requestModel.getUsername(),
 								"user_conflicting_username");
-						handler.handle(Future.failedFuture(conflictError));
-						return;
+						obsFut.toHandler().handle(Future.failedFuture(conflictError));
 					}
 					setUsername(requestModel.getUsername());
 				}
@@ -587,15 +587,16 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 				}
 			} , (AsyncResult<SearchQueueBatch> userUpdated) -> {
 				if (userUpdated.failed()) {
-					handler.handle(Future.failedFuture(userUpdated.cause()));
+					obsFut.toHandler().handle(Future.failedFuture(userUpdated.cause()));
 				} else {
-					processOrFail2(ac, userUpdated.result(), handler);
+					processOrFail2(ac, userUpdated.result(), obsFut.toHandler());
 				}
 			});
 
 		} catch (IOException e) {
-			handler.handle(Future.failedFuture(e));
+			obsFut.toHandler().handle(Future.failedFuture(e));
 		}
+		return obsFut;
 
 	}
 

@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -29,6 +29,9 @@ import com.gentics.mesh.util.RestModelHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public class MicroschemaContainerImpl extends AbstractReferenceableCoreElement<MicroschemaResponse, MicroschemaReference> implements MicroschemaContainer {
 
@@ -98,9 +101,10 @@ public class MicroschemaContainerImpl extends AbstractReferenceableCoreElement<M
 	}
 
 	@Override
-	public void update(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		MicroschemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getMicroschemaContainerRoot();
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
 		try {
 			MicroschemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaUpdateRequest.class);
@@ -108,8 +112,7 @@ public class MicroschemaContainerImpl extends AbstractReferenceableCoreElement<M
 
 			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName());
 			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {
-				handler.handle(failedFuture(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName()));
-				return;
+				return errorObservable(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
 			}
 
 			db.trx(txUpdate -> {
@@ -121,14 +124,15 @@ public class MicroschemaContainerImpl extends AbstractReferenceableCoreElement<M
 				txUpdate.complete(batch);
 			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
 				if (txUpdated.failed()) {
-					handler.handle(Future.failedFuture(txUpdated.cause()));
+					obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 				} else {
-					processOrFail2(ac, txUpdated.result(), handler);
+					processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
 				}
 			});
 		} catch (Exception e) {
-			handler.handle(Future.failedFuture(e));
+			return Observable.error(e);
 		}
+		return obsFut;
 	}
 
 	@Override

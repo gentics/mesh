@@ -11,6 +11,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import rx.Observable;
 
 public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
 
@@ -80,7 +81,7 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 	}
 
 	@Override
-	public void update(InternalActionContext rc, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> update(InternalActionContext rc) {
 		throw new NotImplementedException();
 	}
 
