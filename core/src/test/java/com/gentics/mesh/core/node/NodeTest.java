@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +41,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.ext.web.RoutingContext;
+import rx.Observable;
 
 public class NodeTest extends AbstractBasicObjectTest {
 
@@ -99,13 +99,21 @@ public class NodeTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
-	public void testGetPath() throws UnsupportedEncodingException {
+	public void testGetPath() throws Exception {
 		Node newsNode = content("news overview");
-		String path = newsNode.getPath(english());
-		assertEquals("/News/News+Overview.en.html", path);
+		CountDownLatch latch = new CountDownLatch(2);
+		Observable<String> path = newsNode.getPath(english());
+		path.subscribe(s -> {
+			assertEquals("/News/News+Overview.en.html", s);
+			latch.countDown();
+		});
 
-		String pathSegementFieldValue = newsNode.getPathSegment(english());
-		assertEquals("News Overview.en.html", pathSegementFieldValue);
+		Observable<String> pathSegementFieldValue = newsNode.getPathSegment(english());
+		pathSegementFieldValue.subscribe(s -> {
+			assertEquals("News Overview.en.html", s);
+			latch.countDown();
+		});
+		failingLatch(latch);
 	}
 
 	@Test

@@ -121,7 +121,7 @@ public class WebRootLinkReplacer {
 		try {
 			switch (type) {
 			case SHORT:
-				return Observable.just(node.getPath(language));
+				return node.getPath(language);
 			case MEDIUM:
 				return Observable.just("/" + node.getProject().getName() + node.getPath(language));
 			case FULL:

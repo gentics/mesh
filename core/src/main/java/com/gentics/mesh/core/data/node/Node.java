@@ -387,7 +387,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * 
 	 * @return
 	 */
-	String getPathSegment(InternalActionContext ac);
+	Observable<String> getPathSegment(InternalActionContext ac);
 
 	/**
 	 * Return the full path to this node.
@@ -395,7 +395,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param ac
 	 * @return
 	 */
-	String getPath(InternalActionContext ac);
+	Observable<String> getPath(InternalActionContext ac);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -421,7 +421,7 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return
 	 * @throws UnsupportedEncodingException 
 	 */
-	String getPath(Language language) throws UnsupportedEncodingException;
+	Observable<String> getPath(Language language) throws UnsupportedEncodingException;
 
 	/**
 	 * Return the path segment value of this node in the given language.
@@ -429,6 +429,6 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @param language
 	 * @return
 	 */
-	String getPathSegment(Language language);
+	Observable<String> getPathSegment(Language language);
 
 }

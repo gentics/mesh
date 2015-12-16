@@ -63,7 +63,6 @@ import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
@@ -79,6 +78,7 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RestModelHelper;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -123,34 +123,34 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public String getPathSegment(InternalActionContext ac) {
+	public Observable<String> getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
 		if (container != null) {
 			String fieldName = getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
-				return field.getString();
+				return Observable.just(field.getString());
 			}
 		}
 		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
 	}
 
 	@Override
-	public String getPathSegment(Language language) {
+	public Observable<String> getPathSegment(Language language) {
 		NodeGraphFieldContainer container = getGraphFieldContainer(language);
 		if (container != null) {
 			String fieldName = getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
-				return field.getString();
+				return Observable.just(field.getString());
 			}
 		}
 		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
 	}
 
 	@Override
-	public String getPath(Language language) throws UnsupportedEncodingException {
-		List<String> segments = new ArrayList<>();
+	public Observable<String> getPath(Language language) throws UnsupportedEncodingException {
+		List<Observable<String>> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(language));
 		Node current = this;
@@ -163,17 +163,20 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		}
 
 		Collections.reverse(segments);
-		StringBuilder builder = new StringBuilder();
-		Iterator<String> it = segments.iterator();
-		while (it.hasNext()) {
-			builder.append("/").append(URLEncoder.encode(it.next(), "UTF-8"));
-		}
-		return builder.toString();
+		return RxUtil.concatList(segments).reduce((a, b) -> {
+			try {
+				String aEnc = URLEncoder.encode(a, "UTF-8");
+				String bEnc = URLEncoder.encode(b, "UTF-8");
+				return "/" + aEnc + "/" + bEnc;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
 	}
 
 	@Override
-	public String getPath(InternalActionContext ac) {
-		List<String> segments = new ArrayList<>();
+	public Observable<String> getPath(InternalActionContext ac) {
+		List<Observable<String>> segments = new ArrayList<>();
 		segments.add(getPathSegment(ac));
 		Node current = this;
 		while (current != null) {
@@ -185,12 +188,9 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		}
 
 		Collections.reverse(segments);
-		StringBuilder builder = new StringBuilder();
-		Iterator<String> it = segments.iterator();
-		while (it.hasNext()) {
-			builder.append("/" + it.next());
-		}
-		return builder.toString();
+		return RxUtil.concatList(segments).reduce((a, b) -> {
+			return "/" + a + "/" + b;
+		});
 	}
 
 	@Override
@@ -459,8 +459,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 			// Add webroot url
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 				// TODO what about the language?
-				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), null, ac.getResolveLinksType())
-						.toBlocking().first());
+				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), null, ac.getResolveLinksType()).toBlocking().first());
 			}
 
 			// Merge and complete
