@@ -414,7 +414,6 @@ public class BootstrapInitializer {
 				contentFieldSchema.setLabel("Content");
 				schema.addField(contentFieldSchema);
 
-				schema.setBinary(false);
 				schema.setFolder(false);
 				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser);
 				log.info("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
@@ -434,7 +433,6 @@ public class BootstrapInitializer {
 				nameFieldSchema.setLabel("Name");
 				schema.addField(nameFieldSchema);
 
-				schema.setBinary(false);
 				schema.setFolder(true);
 				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser);
 				log.info("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
@@ -460,7 +458,6 @@ public class BootstrapInitializer {
 				nameFieldSchema.setLabel("Filename");
 				schema.addField(filenameFieldSchema);
 
-				schema.setBinary(true);
 				schema.setFolder(false);
 				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
 				log.info("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");

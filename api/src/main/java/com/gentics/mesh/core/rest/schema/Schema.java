@@ -9,21 +9,6 @@ import com.gentics.mesh.json.MeshJsonException;
  */
 public interface Schema {
 
-//	/**
-//	 * Return the mesh version for this schema.
-//	 * 
-//	 * @return Mesh version
-//	 */
-//	String getMeshVersion();
-//
-//	/**
-//	 * Set the mesh version for this schema.
-//	 * 
-//	 * @param meshVersion
-//	 *            Mesh version
-//	 */
-//	void setMeshVersion(String meshVersion);
-
 	/**
 	 * Return the name of the schema.
 	 * 
@@ -69,21 +54,6 @@ public interface Schema {
 	 *            Folder flag value
 	 */
 	void setFolder(boolean flag);
-
-	/**
-	 * Return the binary flag.
-	 * 
-	 * @return Binary flag value
-	 */
-	boolean isBinary();
-
-	/**
-	 * Nodes which are created using a schema that has the binary flag enabled are able to store binary content.
-	 * 
-	 * @param flag
-	 *            Binary flag value
-	 */
-	void setBinary(boolean flag);
 
 	/**
 	 * Return the list of field schemas.
@@ -141,5 +111,13 @@ public interface Schema {
 	 * @param segmentField
 	 */
 	void setSegmentField(String segmentField);
+
+	/**
+	 * Return the field schema with the given name.
+	 * 
+	 * @param fieldName
+	 * @return
+	 */
+	FieldSchema getFieldSchema(String fieldName);
 
 }

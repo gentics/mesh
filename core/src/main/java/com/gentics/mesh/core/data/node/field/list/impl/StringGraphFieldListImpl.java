@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;

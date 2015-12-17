@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.verticle.project;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -46,7 +43,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(noTrx -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.projectRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.projectRoot(), OK);
 		} , rh -> {
 			ac.errorHandler().handle(rh);
 		});
@@ -55,7 +52,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(noTrx -> {
-			loadTransformAndResponde(ac, boot.projectRoot(), new ProjectListResponse(), OK);
+			loadTransformAndRespond(ac, boot.projectRoot(), new ProjectListResponse(), OK);
 		} , rh -> {
 			ac.errorHandler().handle(rh);
 		});

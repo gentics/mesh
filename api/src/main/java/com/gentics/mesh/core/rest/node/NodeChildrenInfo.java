@@ -12,16 +12,18 @@ public class NodeChildrenInfo implements RestModel {
 		return schemaUuid;
 	}
 
-	public void setSchemaUuid(String schemaUuid) {
+	public NodeChildrenInfo setSchemaUuid(String schemaUuid) {
 		this.schemaUuid = schemaUuid;
+		return this;
 	}
 
 	public long getCount() {
 		return count;
 	}
 
-	public void setCount(long count) {
+	public NodeChildrenInfo setCount(long count) {
 		this.count = count;
+		return this;
 	}
 
 }

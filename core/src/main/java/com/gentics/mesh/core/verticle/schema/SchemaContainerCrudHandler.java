@@ -2,13 +2,9 @@ package com.gentics.mesh.core.verticle.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
+import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -64,7 +60,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.schemaContainerRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.schemaContainerRoot(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);
@@ -75,7 +71,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.schemaContainerRoot(), new SchemaListResponse(), OK);
+			loadTransformAndRespond(ac, boot.schemaContainerRoot(), new SchemaListResponse(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);
@@ -85,7 +81,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	public void handleReadProjectList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, ac.getProject().getSchemaContainerRoot(), new SchemaListResponse(), OK);
+			loadTransformAndRespond(ac, ac.getProject().getSchemaContainerRoot(), new SchemaListResponse(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);
@@ -95,9 +91,9 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	public void handleAddProjectToSchema(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+			boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM, rh -> {
 				if (hasSucceeded(ac, rh)) {
-					loadObject(ac, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
+					boot.schemaContainerRoot().loadObject(ac, "schemaUuid", READ_PERM, srh -> {
 						if (hasSucceeded(ac, srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
@@ -108,7 +104,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 								if (rtx.failed()) {
 									ac.fail(rtx.cause());
 								} else {
-									transformAndResponde(ac, rtx.result(), OK);
+									transformAndRespond(ac, rtx.result(), OK);
 								}
 							});
 						}
@@ -125,10 +121,10 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	public void handleRemoveProjectFromSchema(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "projectUuid", UPDATE_PERM, boot.projectRoot(), rh -> {
+			boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM, rh -> {
 				if (hasSucceeded(ac, rh)) {
 					// TODO check whether schema is assigned to project
-					loadObject(ac, "schemaUuid", READ_PERM, boot.schemaContainerRoot(), srh -> {
+					boot.schemaContainerRoot().loadObject(ac, "schemaUuid", READ_PERM, srh -> {
 						if (hasSucceeded(ac, srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
@@ -139,7 +135,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 								if (schemaRemoved.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(schemaRemoved.cause()));
 								} else {
-									transformAndResponde(ac, schemaRemoved.result(), OK);
+									transformAndRespond(ac, schemaRemoved.result(), OK);
 								}
 							});
 						}

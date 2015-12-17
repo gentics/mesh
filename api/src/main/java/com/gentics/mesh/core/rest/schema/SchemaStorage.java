@@ -24,7 +24,7 @@ public interface SchemaStorage {
 	Schema getSchema(String name);
 
 	/**
-	 * Add the given schema to the storage.
+	 * Add the given schema to the storage. Existing schemas will be updated.
 	 * 
 	 * @param schema
 	 *            Schema
@@ -34,7 +34,8 @@ public interface SchemaStorage {
 	/**
 	 * Get the microschema with the given name
 	 * 
-	 * @param name microschema name
+	 * @param name
+	 *            microschema name
 	 * @return microschema instance or null if the schema could not be found
 	 */
 	Microschema getMicroschema(String name);
@@ -42,14 +43,16 @@ public interface SchemaStorage {
 	/**
 	 * Add the given microschema to the storage
 	 * 
-	 * @param microschema microschema instance
+	 * @param microschema
+	 *            microschema instance
 	 */
 	void addMicroschema(Microschema microschema);
 
 	/**
 	 * Remove the microschema with the given name from the storage
 	 * 
-	 * @param name microschema name
+	 * @param name
+	 *            microschema name
 	 */
 	void removeMicroschema(String name);
 

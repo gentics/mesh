@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 

@@ -7,8 +7,8 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 
 public class HtmlGraphFieldTest extends AbstractEmptyDBTest {

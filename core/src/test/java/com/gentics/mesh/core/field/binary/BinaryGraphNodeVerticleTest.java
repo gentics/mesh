@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.node;
+package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
@@ -21,15 +21,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
 
-public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
+public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Autowired
 	private NodeVerticle nodeVerticle;
@@ -48,10 +50,10 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, true, "");
+		prepareSchema(node, "");
 		role().revokePermissions(node, UPDATE_PERM);
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
 	}
@@ -63,9 +65,9 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, false, "image/.*");
+		prepareSchema(node, "image/.*");
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
 	}
@@ -77,13 +79,13 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node = folder("news");
-		prepareSchema(node, true, "");
+		prepareSchema(node, "");
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
 
-		future = uploadFile(node, binaryLen, contentType, fileName);
+		future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -96,9 +98,9 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node = folder("news");
-		prepareSchema(node, false, "");
+		prepareSchema(node, "");
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
 	}
@@ -122,9 +124,9 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node = folder("news");
-		prepareSchema(node, true, "");
+		prepareSchema(node, "");
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
 	}
@@ -135,7 +137,7 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		node.setUuid(UUIDUtil.randomUUID());
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
 		node.setUuid(uuid);
-		String path = node.getBinarySegmentedPath();
+		String path = node.getGraphFieldContainer(english()).getBinary("binary").getSegmentedPath();
 		assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 	}
 
@@ -146,30 +148,31 @@ public class NodeBinaryVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, true, "");
+		prepareSchema(node, "");
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
 
 		node.reload();
-		assertEquals(fileName, node.getBinaryFileName());
 
 		Future<NodeResponse> responseFuture = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
 		latchFor(responseFuture);
 		assertSuccess(responseFuture);
 		NodeResponse response = responseFuture.result();
 
-		assertEquals("The filename should be set in the response.", fileName, response.getFileName());
-		assertEquals("The contentType was correctly set in the response.", contentType, response.getBinaryProperties().getMimeType());
-		assertEquals("The binary length was not correctly set in the response.", binaryLen, response.getBinaryProperties().getFileSize());
-		assertNotNull("The hashsum was not found in the response.", response.getBinaryProperties().getSha512sum());
-		assertNull("The data did not contain image information.", response.getBinaryProperties().getDpi());
-		assertNull("The data did not contain image information.", response.getBinaryProperties().getWidth());
-		assertNull("The data did not contain image information.", response.getBinaryProperties().getHeight());
+		BinaryField binaryField = response.getField("binary", BinaryField.class);
+		assertEquals(fileName, binaryField.getFileName());
+		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
+		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
+		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
+		assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
+		assertNull("The data did not contain image information.", binaryField.getDpi());
+		assertNull("The data did not contain image information.", binaryField.getWidth());
+		assertNull("The data did not contain image information.", binaryField.getHeight());
 
-		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid());
+		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary");
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
 		NodeDownloadResponse downloadResponse = downloadFuture.result();

@@ -1,6 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,11 +16,11 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;

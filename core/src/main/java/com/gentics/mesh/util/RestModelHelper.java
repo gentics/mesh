@@ -1,7 +1,6 @@
 package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
@@ -28,7 +27,7 @@ public final class RestModelHelper {
 	public static void setRolePermissions(InternalActionContext ac, MeshVertex sourceElement, AbstractGenericRestResponse restModel) {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 		if (!isEmpty(rolePermissionParameter)) {
-			Role role = loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM, MeshRootImpl.getInstance().getRoleRoot());
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();
@@ -46,7 +45,7 @@ public final class RestModelHelper {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 
 		if (!StringUtils.isEmpty(rolePermissionParameter)) {
-			Role role = loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM, MeshRootImpl.getInstance().getRoleRoot());
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();
@@ -64,7 +63,7 @@ public final class RestModelHelper {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 
 		if (!StringUtils.isEmpty(rolePermissionParameter)) {
-			Role role = loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM, MeshRootImpl.getInstance().getRoleRoot());
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();

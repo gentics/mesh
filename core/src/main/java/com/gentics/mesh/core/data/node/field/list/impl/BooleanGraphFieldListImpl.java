@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;

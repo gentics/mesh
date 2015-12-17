@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;

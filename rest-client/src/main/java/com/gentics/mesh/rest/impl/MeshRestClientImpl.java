@@ -473,7 +473,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
-		String requestUri = BASEURI +"/" + projectName + "/webroot/" + path + getQuery(parameters);
+		String requestUri = BASEURI + "/" + projectName + "/webroot/" + path + getQuery(parameters);
 		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, this, HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		if (log.isDebugEnabled()) {
@@ -502,8 +502,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments,
-			QueryParameterProvider... parameters) {
+	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments, QueryParameterProvider... parameters) {
 		StringBuilder path = new StringBuilder();
 		for (String segment : pathSegments) {
 			if (path.length() > 0) {
@@ -587,19 +586,19 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Future<Void> future = Future.future();
 		Observable.merge(schemasObservable, microschemasObservable).doOnCompleted(() -> future.complete()).doOnError(e -> future.fail(e)).subscribe();
 
-//		schemasFuture.setHandler(rh -> {
-//			if (rh.failed()) {
-//				log.error("Could not load schemas", rh.cause());
-//				future.fail(rh.cause());
-//			} else {
-//				SchemaListResponse list = rh.result();
-//				for (SchemaResponse schema : list.getData()) {
-//					getClientSchemaStorage().addSchema(schema);
-//					log.info("Added schema {" + schema.getName() + "} to schema storage.");
-//				}
-//				future.complete();
-//			}
-//		});
+		//		schemasFuture.setHandler(rh -> {
+		//			if (rh.failed()) {
+		//				log.error("Could not load schemas", rh.cause());
+		//				future.fail(rh.cause());
+		//			} else {
+		//				SchemaListResponse list = rh.result();
+		//				for (SchemaResponse schema : list.getData()) {
+		//					getClientSchemaStorage().addSchema(schema);
+		//					log.info("Added schema {" + schema.getName() + "} to schema storage.");
+		//				}
+		//				future.complete();
+		//			}
+		//		});
 		return future;
 	}
 
@@ -710,8 +709,8 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName,
-			String contentType) {
+	public Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			Buffer fileData, String fileName, String contentType) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
@@ -728,17 +727,18 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		String footer = "\r\n--" + boundary + "--\r\n";
 		multiPartFormData.appendString(footer);
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
-		return invokeRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/bin", GenericMessageResponse.class, multiPartFormData,
-				bodyContentType);
+		return invokeRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey,
+				GenericMessageResponse.class, multiPartFormData, bodyContentType);
 	}
 
 	@Override
-	public Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
+	public Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
 		Future<NodeDownloadResponse> future = Future.future();
-		String path = "/" + projectName + "/nodes/" + nodeUuid + "/bin" + getQuery(parameters);
+		String path = "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey + getQuery(parameters);
 		String uri = BASEURI + path;
 
 		HttpClientRequest request = client.request(GET, uri, rh -> {

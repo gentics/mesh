@@ -3,6 +3,9 @@ package com.gentics.mesh.core;
 import java.util.Iterator;
 import java.util.List;
 
+import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.PagingMetaInfo;
+
 public class Page<T> implements Iterable<T> {
 
 	private List<? extends T> wrappedList;
@@ -48,5 +51,21 @@ public class Page<T> implements Iterable<T> {
 
 	public long getPerPage() {
 		return perPage;
+	}
+
+	/**
+	 * Set the paging parameters into the given list response by examining the given page.
+	 * 
+	 * @param response
+	 *            List response that will be updated
+	 * @param page
+	 *            Page that will be used to extract the paging parameters
+	 */
+	public void setPaging(AbstractListResponse<?> response) {
+		PagingMetaInfo info = response.getMetainfo();
+		info.setCurrentPage(getNumber());
+		info.setPageCount(getTotalPages());
+		info.setPerPage(getPerPage());
+		info.setTotalCount(getTotalElements());
 	}
 }

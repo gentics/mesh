@@ -9,8 +9,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 
 public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 

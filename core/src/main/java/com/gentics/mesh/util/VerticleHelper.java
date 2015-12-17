@@ -1,38 +1,25 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.json.JsonUtil.toJson;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
-import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NamedVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.error.EntityNotFoundException;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -49,6 +36,11 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
+/**
+ * 
+ * @deprecated Please don't add stuff to this class since it should be removed anyway.
+ *
+ */
 public class VerticleHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
@@ -60,7 +52,7 @@ public class VerticleHelper {
 	 * @param root
 	 * @param listResponse
 	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndResponde(InternalActionContext ac, RootVertex<T> root,
+	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndRespond(InternalActionContext ac, RootVertex<T> root,
 			AbstractListResponse<TR> listResponse, HttpResponseStatus statusCode) {
 		loadObjects(ac, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -69,21 +61,7 @@ public class VerticleHelper {
 		} , listResponse);
 	}
 
-	/**
-	 * Set the paging parameters into the given list response by examining the given page.
-	 * 
-	 * @param response
-	 *            List response that will be updated
-	 * @param page
-	 *            Page that will be used to extract the paging parameters
-	 */
-	public static void setPaging(AbstractListResponse<?> response, Page<?> page) {
-		PagingMetaInfo info = response.getMetainfo();
-		info.setCurrentPage(page.getNumber());
-		info.setPageCount(page.getTotalPages());
-		info.setPerPage(page.getPerPage());
-		info.setTotalCount(page.getTotalElements());
-	}
+
 
 	// TODO merge with prev method
 	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
@@ -181,7 +159,7 @@ public class VerticleHelper {
 
 		}
 	}
-
+	
 	/**
 	 * Asynchronously load the objects and populate the given list response.
 	 * 
@@ -193,7 +171,7 @@ public class VerticleHelper {
 	 *            Handler which will be invoked once all objects have been loaded and transformed and the list response is completed
 	 * @param listResponse
 	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
+	private static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
 			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 
 		// TODO use reflection to create the empty list response
@@ -213,7 +191,7 @@ public class VerticleHelper {
 			} , (list, restElement) -> {
 				list.getData().add(restElement);
 			}).subscribe(list -> {
-				setPaging(listResponse, page);
+				page.setPaging(listResponse);
 				handler.handle(Future.succeededFuture(listResponse));
 			} , error -> {
 				handler.handle(Future.failedFuture(error));
@@ -223,7 +201,8 @@ public class VerticleHelper {
 		}
 	}
 
-	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndResponde(InternalActionContext ac, String uuidParameterName,
+
+	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndRespond(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, HttpResponseStatus status) {
 		loadAndTransform(ac, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -240,7 +219,7 @@ public class VerticleHelper {
 	 * @param listResponse
 	 * @param status
 	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndResponde(
+	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndRespond(
 			InternalActionContext ac, Page<T> page, RL listResponse, HttpResponseStatus status) {
 		transformPage(ac, page, th -> {
 			if (hasSucceeded(ac, th)) {
@@ -273,7 +252,7 @@ public class VerticleHelper {
 		} , (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {
-			setPaging(listResponse, page);
+			page.setPaging(listResponse);
 			handler.handle(Future.succeededFuture(listResponse));
 		} , error -> {
 			handler.handle(Future.failedFuture(error));
@@ -292,7 +271,7 @@ public class VerticleHelper {
 	 */
 	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
-		loadObject(ac, uuidParameterName, permission, root, rh -> {
+		root.loadObject(ac, uuidParameterName, permission, rh -> {
 			if (hasSucceeded(ac, rh)) {
 				// TODO handle nested exceptions differently
 				try {
@@ -317,7 +296,7 @@ public class VerticleHelper {
 	 * @param vertex
 	 * @param statusCode
 	 */
-	public static <T extends RestModel> void transformAndResponde(InternalActionContext ac, GenericVertex<T> vertex, HttpResponseStatus statusCode) {
+	public static <T extends RestModel> void transformAndRespond(InternalActionContext ac, GenericVertex<T> vertex, HttpResponseStatus statusCode) {
 		vertex.transformToRest(ac, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()), statusCode);
@@ -332,199 +311,10 @@ public class VerticleHelper {
 	 * @param i18nKey
 	 * @param parameters
 	 */
-	public static void responde(ActionContext ac, String i18nKey, HttpResponseStatus statusCode, String... parameters) {
+	public static void respond(ActionContext ac, String i18nKey, HttpResponseStatus statusCode, String... parameters) {
 		GenericMessageResponse msg = new GenericMessageResponse();
 		msg.setMessage(ac.i18n(i18nKey, parameters));
 		ac.send(toJson(msg), statusCode);
-	}
-
-	/**
-	 * Create an object using the given aggregation node and respond with a transformed object.
-	 * 
-	 * @param ac
-	 * @param root
-	 *            Aggregation node that should be used to create the object.
-	 */
-	public static <T extends GenericVertex<?>> void createObject(InternalActionContext ac, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-
-		root.create(ac, rh -> {
-			if (hasSucceeded(ac, rh)) {
-				GenericVertex<?> vertex = rh.result();
-				// Transform the vertex using a fresh transaction in order to start with a clean cache
-				db.noTrx(noTx -> {
-					vertex.reload();
-					transformAndResponde(ac, vertex, CREATED);
-				});
-			}
-		});
-	}
-
-	/**
-	 * Update the object which is identified by the uuid parameter name and the aggregation root node.
-	 * 
-	 * @param ac
-	 * @param uuidParameterName
-	 * @param root
-	 */
-	public static <T extends GenericVertex<?>> void updateObject(InternalActionContext ac, String uuidParameterName, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		loadObject(ac, uuidParameterName, UPDATE_PERM, root, rh -> {
-			if (hasSucceeded(ac, rh)) {
-				GenericVertex<?> vertex = rh.result();
-				vertex.update(ac).subscribe(done -> {
-						// Transform the vertex using a fresh transaction in order to start with a clean cache
-						db.noTrx(noTx -> {
-							vertex.reload();
-							transformAndResponde(ac, vertex, OK);
-						});
-				}, error -> {
-					ac.fail(error);
-				});
-			}
-		});
-	}
-
-	/**
-	 * Delete the object that is identified by the uuid and the aggregation root node.
-	 * 
-	 * @param ac
-	 * @param uuidParameterName
-	 * @param i18nMessageKey
-	 *            I18n message key that will be used to create a specific generic message response.
-	 * @param root
-	 */
-	public static <T extends GenericVertex<? extends RestModel>> void deleteObject(InternalActionContext ac, String uuidParameterName,
-			String i18nMessageKey, RootVertex<T> root) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-
-		loadObject(ac, uuidParameterName, DELETE_PERM, root, rh -> {
-			if (hasSucceeded(ac, rh)) {
-				GenericVertex<?> vertex = rh.result();
-				String uuid = vertex.getUuid();
-				String name = null;
-				if (vertex instanceof NamedVertex) {
-					name = ((NamedVertex) vertex).getName();
-				}
-				final String objectName = name;
-				db.trx(txDelete -> {
-					if (vertex instanceof IndexedVertex) {
-						SearchQueueBatch batch = ((IndexedVertex) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
-						vertex.delete();
-						txDelete.complete(batch);
-					} else {
-						txDelete.fail(error(INTERNAL_SERVER_ERROR, "Could not determine object name"));
-					}
-				} , (AsyncResult<SearchQueueBatch> txDeleted) -> {
-					if (txDeleted.failed()) {
-						ac.errorHandler().handle(Future.failedFuture(txDeleted.cause()));
-					} else {
-						String id = objectName != null ? uuid + "/" + objectName : uuid;
-						VerticleHelper.processOrFail2(ac, txDeleted.result(), brh -> {
-							ac.sendMessage(OK, i18nMessageKey, id);
-						});
-					}
-				});
-			}
-		});
-	}
-
-	public static <T extends GenericVertex<?>> void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm,
-			RootVertex<T> root, Handler<AsyncResult<T>> handler) {
-
-		String uuid = ac.getParameter(uuidParameterName);
-		if (StringUtils.isEmpty(uuid)) {
-			handler.handle(failedFuture(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName));
-		} else {
-			loadObjectByUuid(ac, uuid, perm, root, handler);
-		}
-	}
-
-	/**
-	 * Return the object with the given uuid if found within the specified root vertex. This method will not return null. Instead a
-	 * {@link HttpStatusCodeErrorException} will be thrown when the object could not be found.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param perm
-	 * @param root
-	 * @return The found object
-	 * @deprecated Use {@link #loadObjectByUuid(InternalActionContext, String, GraphPermission, RootVertex, Handler)} instead
-	 */
-	@Deprecated
-	public static <T extends GenericVertex<?>> T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm,
-			RootVertex<T> root) {
-		if (root == null) {
-			throw error(BAD_REQUEST, "error_root_node_not_found");
-		} else {
-
-			T object = root.findByUuidBlocking(uuid);
-			if (object == null) {
-				throw new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid));
-			} else {
-				MeshAuthUser requestUser = ac.getUser();
-				if (requestUser.hasPermission(ac, object, perm)) {
-					return object;
-				} else {
-					throw new InvalidPermissionException(ac.i18n("error_missing_perm", object.getUuid()));
-				}
-
-			}
-		}
-	}
-
-	/**
-	 * Load the object by uuid and check the given permission.
-	 * 
-	 * @param ac
-	 *            Context to be used in order to check user permissions
-	 * @param uuid
-	 *            Uuid of the object that should be loaded
-	 * @param perm
-	 *            Permission that must be granted in order to load the object
-	 * @param root
-	 *            Aggregation root vertex that should be used to find the element
-	 * @param handler
-	 *            handler that should be called when the object was successfully loaded or when an error occurred (401,404)
-	 */
-	public static <T extends GenericVertex<?>> void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, RootVertex<T> root,
-			Handler<AsyncResult<T>> handler) {
-		if (root == null) {
-			throw error(BAD_REQUEST, "error_root_node_not_found");
-		} else {
-			Database db = MeshSpringConfiguration.getInstance().database();
-			root.reload();
-			root.findByUuid(uuid, rh -> {
-				if (rh.failed()) {
-					handler.handle(Future.failedFuture(rh.cause()));
-					return;
-				} else if (rh.result() == null) {
-					handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
-					return;
-				} else {
-					db.noTrx(tc -> {
-						T node = rh.result();
-						MeshAuthUser requestUser = ac.getUser();
-						requestUser.hasPermission(ac, node, perm, ph -> {
-							db.noTrx(noTx -> {
-								if (ph.failed()) {
-									log.error("Error while checking permissions", ph.cause());
-									handler.handle(failedFuture(BAD_REQUEST, "error_internal"));
-								} else if (ph.succeeded() && ph.result()) {
-									handler.handle(Future.succeededFuture(node));
-									return;
-								} else {
-									handler.handle(
-											Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
-									return;
-								}
-							});
-						});
-					});
-				}
-			});
-		}
-
 	}
 
 	/**

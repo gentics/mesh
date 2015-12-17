@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -141,7 +140,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 					SearchQueueBatch batch = user.addIndexBatch(CREATE_ACTION);
 
 					if (!isEmpty(groupUuid)) {
-						Group parentGroup = loadObjectByUuidBlocking(ac, groupUuid, CREATE_PERM, boot.groupRoot());
+						Group parentGroup = boot.groupRoot().loadObjectByUuidBlocking(ac, groupUuid, CREATE_PERM);
 						parentGroup.addUser(user);
 						batch.addEntry(parentGroup, UPDATE_ACTION);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
@@ -163,7 +162,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 							txCreate.fail(error(BAD_REQUEST, "project_not_found", projectName));
 							return;
 						}
-						Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, project.getNodeRoot());
+						Node node = project.getNodeRoot().loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM);
 						user.setReferencedNode(node);
 					} else if (reference != null) {
 						// TODO handle user create using full node rest model.

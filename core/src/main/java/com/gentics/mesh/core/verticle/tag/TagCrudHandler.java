@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
+import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -50,7 +46,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, "uuid", READ_PERM, project.getTagRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, project.getTagRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -58,7 +54,7 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, project.getTagRoot(), new TagListResponse(), OK);
+			loadTransformAndRespond(ac, project.getTagRoot(), new TagListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -70,13 +66,13 @@ public class TagCrudHandler extends AbstractCrudHandler {
 	public void handleTaggedNodesList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			loadObject(ac, "uuid", READ_PERM, project.getTagRoot(), rh -> {
+			project.getTagRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
 				if (hasSucceeded(ac, rh)) {
 					Tag tag = rh.result();
 					Page<? extends Node> page;
 					try {
 						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-						transformAndResponde(ac, page, new NodeListResponse(), OK);
+						transformAndRespond(ac, page, new NodeListResponse(), OK);
 					} catch (Exception e) {
 						//TODO i18n - exception handling
 						ac.fail(BAD_REQUEST, "Could not load nodes");

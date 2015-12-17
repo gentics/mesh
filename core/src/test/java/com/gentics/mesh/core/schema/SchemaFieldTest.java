@@ -32,7 +32,6 @@ public class SchemaFieldTest extends AbstractBasicDBTest {
 	public void testSimpleSchema() throws IOException {
 		Schema schema = new SchemaImpl();
 		schema.setName("dummySchema");
-		schema.setBinary(true);
 		schema.setFolder(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
 		validateSchema(schema);
@@ -42,7 +41,6 @@ public class SchemaFieldTest extends AbstractBasicDBTest {
 	public void testComplexSchema() throws IOException {
 		Schema schema = new SchemaImpl();
 		schema.setName("dummySchema");
-		schema.setBinary(true);
 		schema.setFolder(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("label_1").setName("name_1").setRequired(true));
 		schema.addField(new StringFieldSchemaImpl().setLabel("label_2").setName("name_2").setRequired(true));
@@ -84,7 +82,6 @@ public class SchemaFieldTest extends AbstractBasicDBTest {
 	public void testConflictingFieldName() throws MeshJsonException {
 		Schema schema = new SchemaImpl();
 		schema.setName("dummySchema");
-		schema.setBinary(true);
 		schema.setFolder(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label1").setName("name").setRequired(true));
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label2").setName("name").setRequired(true));
@@ -95,7 +92,6 @@ public class SchemaFieldTest extends AbstractBasicDBTest {
 	public void testConflictingFieldLabel() throws MeshJsonException {
 		Schema schema = new SchemaImpl();
 		schema.setName("dummySchema");
-		schema.setBinary(true);
 		schema.setFolder(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("name1").setRequired(true));
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("name2").setRequired(true));

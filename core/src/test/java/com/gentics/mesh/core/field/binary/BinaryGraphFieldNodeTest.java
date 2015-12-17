@@ -1,0 +1,58 @@
+package com.gentics.mesh.core.field.binary;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
+
+public class BinaryGraphFieldNodeTest extends AbstractBasicDBTest {
+
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
+
+	@Test
+	public void testNodeFieldTransformation() throws Exception {
+		Node node = folder("2015");
+		Schema schema = node.getSchema();
+		BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
+		binaryFieldSchema.setName("binaryField");
+		binaryFieldSchema.setAllowedMimeTypes("image/jpg", "text/plain");
+		schema.addField(binaryFieldSchema);
+		node.getSchemaContainer().setSchema(schema);
+
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		BinaryGraphField field = container.createBinary("binaryField");
+		field.setMimeType("image/jpg");
+		field.setSHA512Sum(
+				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+		field.setImageHeight(200);
+		field.setImageWidth(300);
+
+		String json = getJson(node);
+		System.out.println(json);
+		assertNotNull(json);
+		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		assertNotNull(response);
+
+		BinaryField deserializedNodeField = response.getField("binaryField", BinaryFieldImpl.class);
+		assertNotNull(deserializedNodeField);
+		assertEquals(200, deserializedNodeField.getHeight().intValue());
+		assertEquals(300, deserializedNodeField.getWidth().intValue());
+
+	}
+
+}

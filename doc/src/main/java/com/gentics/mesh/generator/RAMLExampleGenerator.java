@@ -30,13 +30,15 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -403,7 +405,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private SchemaCreateRequest getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
 		schemaUpdateRequest.setFolder(true);
-		schemaUpdateRequest.setBinary(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
 		schemaUpdateRequest.setSegmentField("name");
@@ -479,16 +480,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setCreator(getUserReference());
 		nodeResponse.setPublished(true);
 
-		nodeResponse.setFileName("flower.jpg");
-		BinaryProperties binaryProperties = new BinaryProperties();
-		binaryProperties.setDpi(200);
-		binaryProperties.setFileSize(95365);
-		binaryProperties.setWidth(800);
-		binaryProperties.setHeight(600);
-		binaryProperties.setMimeType("image/jpeg");
-		binaryProperties.setSha512sum(
-				"ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
-		nodeResponse.setBinaryProperties(binaryProperties);
+		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(randomUUID()));
+		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(randomUUID()));
 
 		Map<String, Field> fields = nodeResponse.getFields();
 		fields.put("name-stringField", createStringField("Name for language tag de-DE"));
@@ -502,10 +495,24 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
+		fields.put("binary-binaryField", createBinaryField());
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		return nodeResponse;
+	}
+
+	private Field createBinaryField() {
+		BinaryField binaryField = new BinaryFieldImpl();
+		binaryField.setFileName("flower.jpg");
+		binaryField.setDpi(200);
+		binaryField.setFileSize(95365);
+		binaryField.setWidth(800);
+		binaryField.setHeight(600);
+		binaryField.setMimeType("image/jpeg");
+		binaryField.setSha512sum(
+				"ec582eb760034dd91d5fd33656c0b56f082b7365d32e2a139dd9c87ebc192bff3525f32ff4c4137463a31cad020ac19e6e356508db2b90e32d737b6d725e14c1");
+		return binaryField;
 	}
 
 	private NodeResponse getNodeResponse2() throws JsonGenerationException, JsonMappingException, IOException {

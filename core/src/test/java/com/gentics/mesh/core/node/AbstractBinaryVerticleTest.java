@@ -4,20 +4,14 @@ import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -51,21 +45,25 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 	}
 
-	protected void prepareSchema(Node node, boolean binaryFlag, String contentTypeWhitelist) throws IOException {
+	protected void prepareSchema(Node node, String mimeTypeWhitelist) throws IOException {
 		// Update the schema and enable binary support for folders
 		Schema schema = node.getSchemaContainer().getSchema();
-		schema.setBinary(binaryFlag);
+		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName("binary").setLabel("Binary content"));
+		node.getSchemaContainer().setSchema(schema);
+		
+		getClient().getClientSchemaStorage().addSchema(schema);
 		// schema.set
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	protected Future<GenericMessageResponse> uploadFile(Node node, int binaryLen, String contentType, String fileName) throws IOException {
+	protected Future<GenericMessageResponse> updateBinaryField(Node node, String languageTag, String fieldKey, int binaryLen, String contentType, String fileName)
+			throws IOException {
 
 		resetClientSchemaStorage();
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 
-		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), buffer, fileName, contentType);
+		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag,  fieldKey, buffer, fileName, contentType);
 	}
 
 }

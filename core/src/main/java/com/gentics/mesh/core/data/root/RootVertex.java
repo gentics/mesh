@@ -7,6 +7,7 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -76,5 +77,11 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	 * @return
 	 */
 	T findByUuidBlocking(String uuid);
+
+	T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm);
+
+	void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, Handler<AsyncResult<T>> handler);
+
+	void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, Handler<AsyncResult<T>> handler);
 
 }

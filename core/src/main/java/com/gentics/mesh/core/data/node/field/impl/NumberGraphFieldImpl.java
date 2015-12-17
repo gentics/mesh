@@ -1,10 +1,10 @@
-package com.gentics.mesh.core.data.node.field.impl.basic;
+package com.gentics.mesh.core.data.node.field.impl;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
-import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.AbstractBasicField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.handler.ActionContext;

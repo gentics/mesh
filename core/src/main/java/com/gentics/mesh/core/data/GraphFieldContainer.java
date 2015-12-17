@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
@@ -26,6 +27,10 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	StringGraphField getString(String key);
 
 	StringGraphField createString(String key);
+
+	BinaryGraphField getBinary(String key);
+
+	BinaryGraphField createBinary(String key);
 
 	NodeGraphField getNode(String key);
 

@@ -16,9 +16,7 @@ public class SchemaImpl implements RestModel, Schema {
 	private String description;
 	private String displayField;
 	private String segmentField;
-	private boolean binary = false;
 	private boolean folder = false;
-	private String meshVersion;
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
@@ -72,16 +70,6 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
-	public boolean isBinary() {
-		return binary;
-	}
-
-	@Override
-	public void setBinary(boolean flag) {
-		this.binary = flag;
-	}
-
-	@Override
 	public List<FieldSchema> getFields() {
 		return fields;
 	}
@@ -100,16 +88,6 @@ public class SchemaImpl implements RestModel, Schema {
 			fields.remove(elementToBeRemoved);
 		}
 	}
-
-//	@Override
-//	public String getMeshVersion() {
-//		return meshVersion;
-//	}
-//
-//	@Override
-//	public void setMeshVersion(String meshVersion) {
-//		this.meshVersion = meshVersion;
-//	}
 
 	@Override
 	public void addField(FieldSchema fieldSchema) {
@@ -138,6 +116,11 @@ public class SchemaImpl implements RestModel, Schema {
 			}
 		}
 
+	}
+
+	@Override
+	public FieldSchema getFieldSchema(String fieldName) {
+		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
 	}
 
 }

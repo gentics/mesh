@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.node;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
@@ -26,9 +25,7 @@ import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import rx.Observable;
 
 public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
@@ -180,131 +177,6 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
 			throws InvalidArgumentException;
 
-	/**
-	 * Return the binary filename.
-	 * 
-	 * @return
-	 */
-	String getBinaryFileName();
-
-	/**
-	 * Check whether the binary data represents an image.
-	 * 
-	 * @return
-	 */
-	boolean hasBinaryImage();
-
-	/**
-	 * Set the binary filename.
-	 * 
-	 * @param filenName
-	 */
-	void setBinaryFileName(String filenName);
-
-	/**
-	 * Return the binary content type of the node.
-	 * 
-	 * @return
-	 */
-	String getBinaryContentType();
-
-	/**
-	 * Set the binary content type of the node.
-	 * 
-	 * @param contentType
-	 */
-	void setBinaryContentType(String contentType);
-
-	/**
-	 * Return future that holds a buffer reference to the binary file data.
-	 * 
-	 * @return
-	 */
-	Future<Buffer> getBinaryFileBuffer();
-
-	/**
-	 * Return the file that points to the binary file within the binary file storage.
-	 * 
-	 * @return Found file or null when no binary file could be found
-	 */
-	File getBinaryFile();
-
-	/**
-	 * Set the binary file size in bytes
-	 * 
-	 * @param sizeInBytes
-	 */
-	void setBinaryFileSize(long sizeInBytes);
-
-	/**
-	 * Return the binary file size in bytes
-	 * 
-	 * @return
-	 */
-	long getBinaryFileSize();
-
-	/**
-	 * Set the binary SHA 512 checksum.
-	 * 
-	 * @param sha512HashSum
-	 */
-	void setBinarySHA512Sum(String sha512HashSum);
-
-	/**
-	 * Return the binary SHA 512 checksum.
-	 * 
-	 * @return
-	 */
-	String getBinarySHA512Sum();
-
-	/**
-	 * Set the binary image DPI.
-	 * 
-	 * @param dpi
-	 */
-	void setBinaryImageDPI(Integer dpi);
-
-	/**
-	 * Return the binary image DPI.
-	 * 
-	 * @return
-	 */
-	Integer getBinaryImageDPI();
-
-	/**
-	 * Return the binary image height.
-	 * 
-	 * @return
-	 */
-	Integer getBinaryImageHeight();
-
-	/**
-	 * Set the image width of the binary image.
-	 * 
-	 * @param width
-	 */
-	void setBinaryImageWidth(Integer width);
-
-	/**
-	 * Return the width of the binary image.
-	 * 
-	 * @return
-	 */
-	Integer getBinaryImageWidth();
-
-	/**
-	 * Set the with of the binary image. You can set this null to indicate that the binary data has no height.
-	 * 
-	 * @param heigth
-	 */
-	void setBinaryImageHeight(Integer heigth);
-
-	/**
-	 * Returns the segmented path that points to the binary file within the binary file location. The segmented path is build using the uuid of the node.
-	 * 
-	 * @return
-	 */
-	String getBinarySegmentedPath();
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -323,13 +195,6 @@ public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
 	 * @return Next matching field container or null when no language matched
 	 */
 	NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac);
-
-	/**
-	 * Return the file path for the binary file location of the node.
-	 * 
-	 * @return
-	 */
-	String getFilePath();
 
 	/**
 	 * Set the published flag.

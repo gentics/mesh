@@ -3,10 +3,14 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GenericVertex;
@@ -17,6 +21,12 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.error.EntityNotFoundException;
+import com.gentics.mesh.error.InvalidPermissionException;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -132,6 +142,96 @@ public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestM
 			}
 		}
 		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+	}
+
+	/**
+	 * Return the object with the given uuid if found within the specified root vertex. This method will not return null. Instead a
+	 * {@link HttpStatusCodeErrorException} will be thrown when the object could not be found.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @param root
+	 * @return The found object
+	 * @deprecated Use {@link #loadObjectByUuid(InternalActionContext, String, GraphPermission, RootVertex, Handler)} instead
+	 */
+	@Deprecated
+	@Override
+	public T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm) {
+
+		T object = findByUuidBlocking(uuid);
+		if (object == null) {
+			throw new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid));
+		} else {
+			MeshAuthUser requestUser = ac.getUser();
+			if (requestUser.hasPermission(ac, object, perm)) {
+				return object;
+			} else {
+				throw new InvalidPermissionException(ac.i18n("error_missing_perm", object.getUuid()));
+			}
+
+		}
+
+	}
+
+	/**
+	 * Load the object by uuid and check the given permission.
+	 * 
+	 * @param ac
+	 *            Context to be used in order to check user permissions
+	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param perm
+	 *            Permission that must be granted in order to load the object
+	 * @param root
+	 *            Aggregation root vertex that should be used to find the element
+	 * @param handler
+	 *            handler that should be called when the object was successfully loaded or when an error occurred (401,404)
+	 */
+	@Override
+	public void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, Handler<AsyncResult<T>> handler) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		reload();
+		findByUuid(uuid, rh -> {
+			if (rh.failed()) {
+				handler.handle(Future.failedFuture(rh.cause()));
+				return;
+			} else if (rh.result() == null) {
+				handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("object_not_found_for_uuid", uuid))));
+				return;
+			} else {
+				db.noTrx(tc -> {
+					T node = rh.result();
+					MeshAuthUser requestUser = ac.getUser();
+					requestUser.hasPermission(ac, node, perm, ph -> {
+						db.noTrx(noTx -> {
+							if (ph.failed()) {
+								log.error("Error while checking permissions", ph.cause());
+								handler.handle(failedFuture(BAD_REQUEST, "error_internal"));
+							} else if (ph.succeeded() && ph.result()) {
+								handler.handle(Future.succeededFuture(node));
+								return;
+							} else {
+								handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", node.getUuid()))));
+								return;
+							}
+						});
+					});
+				});
+			}
+		});
+
+	}
+
+	@Override
+	public void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, Handler<AsyncResult<T>> handler) {
+
+		String uuid = ac.getParameter(uuidParameterName);
+		if (StringUtils.isEmpty(uuid)) {
+			handler.handle(failedFuture(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName));
+		} else {
+			loadObjectByUuid(ac, uuid, perm, handler);
+		}
 	}
 
 }

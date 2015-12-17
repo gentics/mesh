@@ -3,14 +3,16 @@ package com.gentics.mesh.rest.method;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
 
+import io.vertx.core.Future;
+
+/**
+ * Interface for Node specific rest API methods.
+ */
 public interface NodeClientMethods {
 
 	/**
@@ -132,31 +134,6 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid);
-
-	/**
-	 * Update the binary field for the node with the given nodeUuid in the given project using the provided data buffer.
-	 * 
-	 * @param projectName
-	 *            Name of the project which contains the node
-	 * @param nodeUuid
-	 *            Uuid of the node
-	 * @param fileData
-	 *            Buffer that serves the binary data.
-	 * @param fileName
-	 * @param contentType
-	 * @return
-	 */
-	Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, Buffer fileData, String fileName, String contentType);
-
-	/**
-	 * Download the binary field of the given node in the given project.
-	 * 
-	 * @param projectName
-	 * @param nodeUuid
-	 * @param parameters
-	 * @return Future with a download response that contains a reference to the byte buffer with the binary data
-	 */
-	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load the breadcrumb for the given node.

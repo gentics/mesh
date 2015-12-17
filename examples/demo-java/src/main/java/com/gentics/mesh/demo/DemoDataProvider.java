@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
@@ -237,6 +238,14 @@ public class DemoDataProvider {
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			Node node = parentNode.create(getAdmin(), schema, project);
 
+			JsonArray tagArray = nodeJson.getJsonArray("tags");
+			for (int e = 0; e < tagArray.size(); e++) {
+				String tagName = tagArray.getString(e);
+				node.addTag(getTag(tagName));
+			}
+			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+			englishContainer.createString("name").setString(name);
+
 			JsonObject binNode = nodeJson.getJsonObject("bin");
 			if (binNode != null) {
 				String path = binNode.getString("path");
@@ -249,28 +258,23 @@ public class DemoDataProvider {
 				if (ins == null) {
 					throw new NullPointerException("Could not find binary file within path {" + path + "}");
 				}
-				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), node.getBinarySegmentedPath());
+				
+				BinaryGraphField binaryField = englishContainer.createBinary("binary");
+				
+				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), binaryField.getSegmentedPath());
 				folder.mkdirs();
 				File outputFile = new File(folder, node.getUuid() + ".bin");
 				if (!outputFile.exists()) {
 					IOUtils.copy(ins, new FileOutputStream(outputFile));
 				}
-				node.setBinaryImageWidth(width);
-				node.setBinaryImageHeight(height);
-				node.setBinaryContentType(contentType);
-				node.setBinaryImageDPI(300);
-				node.setBinaryFileName(filenName);
-				node.setBinarySHA512Sum(sha512sum);
-				node.setBinaryFileSize(outputFile.length());
+				binaryField.setImageWidth(width);
+				binaryField.setImageHeight(height);
+				binaryField.setMimeType(contentType);
+				binaryField.setImageDPI(300);
+				binaryField.setFileName(filenName);
+				binaryField.setSHA512Sum(sha512sum);
+				binaryField.setFileSize(outputFile.length());
 			}
-
-			JsonArray tagArray = nodeJson.getJsonArray("tags");
-			for (int e = 0; e < tagArray.size(); e++) {
-				String tagName = tagArray.getString(e);
-				node.addTag(getTag(tagName));
-			}
-			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			englishContainer.createString("name").setString(name);
 
 			JsonObject fieldsObject = nodeJson.getJsonObject("fields");
 			if (fieldsObject != null) {

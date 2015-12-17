@@ -2,13 +2,8 @@ package com.gentics.mesh.core.verticle.user;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -59,8 +54,8 @@ public class UserCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
-			loadObject(ac, "uuid", READ_PERM, boot.userRoot(), rh -> {
-				loadTransformAndResponde(ac, "uuid", READ_PERM, boot.userRoot(), OK);
+			boot.userRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
+				loadTransformAndRespond(ac, "uuid", READ_PERM, boot.userRoot(), OK);
 			});
 		} , ac.errorHandler());
 	}
@@ -68,7 +63,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
-			loadTransformAndResponde(ac, boot.userRoot(), new UserListResponse(), OK);
+			loadTransformAndRespond(ac, boot.userRoot(), new UserListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -85,7 +80,7 @@ public class UserCrudHandler extends AbstractCrudHandler {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				loadObjectByUuid(ac, userUuid, READ_PERM, boot.userRoot(), rh -> {
+				boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM, rh -> {
 					if (hasSucceeded(ac, rh)) {
 
 						db.noTrx(noTx -> {

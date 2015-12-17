@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.verticle.microschema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -52,7 +49,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.microschemaContainerRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.microschemaContainerRoot(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);
@@ -63,7 +60,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.microschemaContainerRoot(), new MicroschemaListResponse(), OK);
+			loadTransformAndRespond(ac, boot.microschemaContainerRoot(), new MicroschemaListResponse(), OK);
 		} , rh -> {
 			if (rh.failed()) {
 				ac.errorHandler().handle(rh);

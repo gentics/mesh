@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.node.field.nesting;
 
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 
 public interface NestingGraphField extends GraphField {
 

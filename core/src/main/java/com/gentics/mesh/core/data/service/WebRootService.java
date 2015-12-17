@@ -5,10 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -39,7 +37,7 @@ public class WebRootService {
 
 		// Handle path to project root (baseNode) 
 		if ("/".equals(path)) {
-			nodePath.addSegment(new PathSegment(baseNode, false, null));
+			nodePath.addSegment(new PathSegment(baseNode, null, null));
 			return Observable.just(nodePath);
 		}
 

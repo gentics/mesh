@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.verticle.tagfamily;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
+import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -50,7 +46,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -58,7 +54,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			Project project = ac.getProject();
-			loadTransformAndResponde(ac, project.getTagFamilyRoot(), new TagFamilyListResponse(), OK);
+			loadTransformAndRespond(ac, project.getTagFamilyRoot(), new TagFamilyListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -69,12 +65,12 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 			PagingParameter pagingInfo = ac.getPagingParameter();
 
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
-			loadObject(ac, "tagFamilyUuid", READ_PERM, project.getTagFamilyRoot(), rh -> {
+			project.getTagFamilyRoot().loadObject(ac, "tagFamilyUuid", READ_PERM, rh -> {
 				if (hasSucceeded(ac, rh)) {
 					TagFamily tagFamily = rh.result();
 					try {
 						Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-						transformAndResponde(ac, tagPage, new TagListResponse(), OK);
+						transformAndRespond(ac, tagPage, new TagListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}

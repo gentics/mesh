@@ -7,9 +7,9 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 
 public class DateGraphFieldTest extends AbstractBasicDBTest {

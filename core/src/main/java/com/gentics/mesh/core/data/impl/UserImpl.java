@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -573,7 +572,7 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 								return;
 							} else {
 								NodeRoot nodeRoot = project.getNodeRoot();
-								Node node = loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM, nodeRoot);
+								Node node = nodeRoot.loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM);
 								setReferencedNode(node);
 								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
 								txUpdate.complete(batch);

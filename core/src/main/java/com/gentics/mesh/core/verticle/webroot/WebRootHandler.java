@@ -15,10 +15,13 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.verticle.node.NodeBinaryHandler;
+import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -90,12 +93,8 @@ public class WebRootHandler {
 			if (arh.succeeded()) {
 				PathSegment lastSegment = arh.result();
 				Node node = lastSegment.getNode();
-				if (lastSegment.isBinarySegment()) {
-					try (NoTrx tx = db.noTrx()) {
-						NodeBinaryHandler handler = new NodeBinaryHandler(rc, imageManipulator);
-						handler.handle(node);
-					}
-				} else {
+				GraphField field = lastSegment.getPathField();
+				if (field instanceof StringGraphField) {
 					node.transformToRest(ac, rh -> {
 						if (rh.failed()) {
 							ac.fail(rh.cause());
@@ -103,6 +102,13 @@ public class WebRootHandler {
 							ac.send(JsonUtil.toJson(rh.result()), OK);
 						}
 					});
+				}
+				if (field instanceof BinaryGraphField) {
+					BinaryGraphField binaryField = (BinaryGraphField) field;
+					try (NoTrx tx = db.noTrx()) {
+						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+						handler.handle(binaryField);
+					}
 				}
 			}
 		});

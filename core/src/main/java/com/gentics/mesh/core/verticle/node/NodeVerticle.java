@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
 import com.gentics.mesh.handler.InternalActionContext;
-import com.gentics.mesh.handler.InternalHttpActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -28,6 +27,9 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	@Autowired
 	private NodeCrudHandler crudHandler;
+
+	@Autowired
+	private NodeFieldAPIHandler fieldAPIHandler;
 
 	public NodeVerticle() {
 		super("nodes");
@@ -44,9 +46,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addTagsHandler();
 		addMoveHandler();
 		addFieldHandlers();
-
-		addFileuploadHandler();
-		addFileDownloadHandler();
 
 		addBreadcrumbHandler();
 		addLanguageHandlers();
@@ -66,39 +65,38 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addFieldHandlers() {
-		// TODO add languages/:languageTag
-		route("/:uuid/fields/:fieldName").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleReadField(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName").method(POST).produces(APPLICATION_JSON).handler(rc -> {
+			fieldAPIHandler.handleCreateField(rc);
 		});
 
-		route("/:uuid/fields/:fieldName").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdateField(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName").method(GET).handler(rc -> {
+			fieldAPIHandler.handleReadField(rc);
 		});
 
-		route("/:uuid/fields/:fieldName").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRemoveField(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
+			fieldAPIHandler.handleUpdateField(InternalActionContext.create(rc));
+		});
+
+		route("/:uuid/languages/:languageTag/fields/:fieldName").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+			fieldAPIHandler.handleRemoveField(InternalActionContext.create(rc));
 		});
 
 		// List methods
 
-		route("/:uuid/fields/:fieldName").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleAddFieldItem(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
+			fieldAPIHandler.handleRemoveFieldItem(InternalActionContext.create(rc));
 		});
 
-		route("/:uuid/fields/:fieldName/:itemIndex").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRemoveFieldItem(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(GET).handler(rc -> {
+			fieldAPIHandler.handleReadFieldItem(InternalActionContext.create(rc));
 		});
 
-		route("/:uuid/fields/:fieldName/:itemIndex").method(GET).handler(rc -> {
-			crudHandler.handleReadFieldItem(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(PUT).handler(rc -> {
+			fieldAPIHandler.handleUpdateFieldItem(InternalActionContext.create(rc));
 		});
 
-		route("/:uuid/fields/:fieldName/:itemIndex").method(PUT).handler(rc -> {
-			crudHandler.handleUpdateFieldItem(InternalActionContext.create(rc));
-		});
-
-		route("/:uuid/fields/:fieldName/:itemIndex/move/:newItemIndex").method(POST).handler(rc -> {
-			crudHandler.handleMoveFieldItem(InternalActionContext.create(rc));
+		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex/move/:newItemIndex").method(POST).handler(rc -> {
+			fieldAPIHandler.handleMoveFieldItem(InternalActionContext.create(rc));
 		});
 
 		// TODO copy?
@@ -106,21 +104,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		// crudHandler.handleMoveFieldItem(ActionContext.create(rc));
 		// });
 
-	}
-
-	/**
-	 * Handle download and image resize actions
-	 */
-	private void addFileDownloadHandler() {
-		route("/:uuid/bin").method(GET).handler(rc -> {
-			crudHandler.handleDownload(rc);
-		});
-	}
-
-	private void addFileuploadHandler() {
-		route("/:uuid/bin").method(POST).method(PUT).handler(rc -> {
-			crudHandler.handleUpload(InternalHttpActionContext.create(rc));
-		});
 	}
 
 	private void addMoveHandler() {

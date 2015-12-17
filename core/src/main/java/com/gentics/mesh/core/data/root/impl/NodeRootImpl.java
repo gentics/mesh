@@ -6,8 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -169,7 +167,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						requestUser.reload();
 						project.reload();
 						// Load the parent node in order to create the node
-						Node parentNode = loadObjectByUuidBlocking(ac, requestModel.getParentNodeUuid(), CREATE_PERM, project.getNodeRoot());
+						Node parentNode = project.getNodeRoot().loadObjectByUuidBlocking(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
 						Node node = parentNode.create(requestUser, schemaContainer, project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());
@@ -226,7 +224,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					return;
 				}
 			} else {
-				loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM, project.getSchemaContainerRoot(), rh -> {
+				project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM, rh -> {
 					if (hasSucceeded(ac, rh)) {
 						//TODO check permissions
 						SchemaContainer schemaContainer = rh.result();

@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -64,7 +66,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 		// 1. Load the schema name that was identified by another deserializer and put into the context.
 		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
-		String microschemaName = (String)ctxt.findInjectableValue("microschemaName", null, null);
+		String microschemaName = (String) ctxt.findInjectableValue("microschemaName", null, null);
 		if (schemaName == null && microschemaName == null) {
 			throw new MeshJsonException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
 		}
@@ -114,7 +116,8 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				if (schemaName != null) {
 					throw new MeshJsonException("Can't handle field {" + fieldKey + "} The schema {" + schemaName + "} does not specify this key.");
 				} else {
-					throw new MeshJsonException("Can't handle field {" + fieldKey + "} The microschema {" + microschemaName + "} does not specify this key.");
+					throw new MeshJsonException(
+							"Can't handle field {" + fieldKey + "} The microschema {" + microschemaName + "} does not specify this key.");
 				}
 			}
 		}
@@ -134,10 +137,10 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 	 *            JsonNode of the current field
 	 * @param jsonParser
 	 * @param schemaStorage
-	 * @throws JsonProcessingException
+	 * @throws IOException
 	 */
 	private void addField(Map<String, Field> map, String fieldKey, FieldSchema fieldSchema, JsonNode jsonNode, JsonParser jsonParser,
-			SchemaStorage schemaStorage) throws JsonProcessingException {
+			SchemaStorage schemaStorage) throws IOException {
 		ObjectCodec oc = jsonParser.getCodec();
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 
@@ -162,6 +165,10 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 				throw new MeshJsonException("The field value for {" + fieldKey + "} is not a text value. The value was {" + jsonNode.asText() + "}");
 			}
 			map.put(fieldKey, stringField);
+			break;
+		case BINARY:
+			BinaryField binaryField = JsonUtil.readValue(jsonNode.toString(), BinaryFieldImpl.class);
+			map.put(fieldKey, binaryField);
 			break;
 		case NUMBER:
 			NumberField numberField = new NumberFieldImpl();

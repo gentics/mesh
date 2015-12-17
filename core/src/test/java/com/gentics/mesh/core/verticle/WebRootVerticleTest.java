@@ -52,12 +52,12 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadBinaryNode() throws IOException {
 		Node node = content("news_2015");
-		prepareSchema(node, true, "image/*");
+		prepareSchema(node, "image/*");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		Future<GenericMessageResponse> future = uploadFile(node, binaryLen, contentType, fileName);
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
@@ -96,7 +96,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 
 		String path = "/News/2015/News_2015.en.html";
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("en"));
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path,
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		WebRootResponse restNode = future.result();
@@ -122,7 +123,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testPathWithSpaces() throws Exception {
-		String[] path = new String[] {"News", "2015", "Special News_2014.en.html"};
+		String[] path = new String[] { "News", "2015", "Special News_2014.en.html" };
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);

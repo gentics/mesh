@@ -5,12 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuid;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -61,7 +57,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.roleRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.roleRoot(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -75,7 +71,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.roleRoot(), new RoleListResponse(), OK);
+			loadTransformAndRespond(ac, boot.roleRoot(), new RoleListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -92,7 +88,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				loadObjectByUuid(ac, roleUuid, READ_PERM, boot.roleRoot(), rh -> {
+				boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM, rh -> {
 					if (hasSucceeded(ac, rh)) {
 
 						db.noTrx(noTx -> {
@@ -134,7 +130,7 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 				// 1. Load the role that should be used
-				loadObjectByUuid(ac, roleUuid, UPDATE_PERM, boot.roleRoot(), rh -> {
+				boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM, rh -> {
 					if (hasSucceeded(ac, rh)) {
 
 						db.noTrx(noTx -> {

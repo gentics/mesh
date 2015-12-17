@@ -1,7 +1,7 @@
-package com.gentics.mesh.core.data.node.field.impl.basic;
+package com.gentics.mesh.core.data.node.field.impl;
 
-import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.AbstractBasicField;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -11,7 +11,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField>implements BooleanGraphField {
+public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
 	public BooleanGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);

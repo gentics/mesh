@@ -25,10 +25,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private List<String> availableLanguages;
 
-//	private String path;
-
-//	private String version;
-
 	private NodeReferenceImpl parentNode;
 
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
@@ -44,12 +40,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	private boolean isContainer;
 
 	private String displayField;
-
-//	private String segmentField;
-
-	private BinaryProperties binaryProperties;
-
-	private String fileName;
 
 	private FieldMap fields = new FieldMapImpl();
 
@@ -152,44 +142,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.published = published;
 	}
 
-//	/**
-//	 * Return the path of the node.
-//	 * 
-//	 * @return Localized path of the node for the node's language
-//	 */
-//	public String getPath() {
-//		return path;
-//	}
-//
-//	/**
-//	 * Set the path of the node.
-//	 * 
-//	 * @param path
-//	 *            Localized path of the node for the node's language
-//	 */
-//	public void setPath(String path) {
-//		this.path = path;
-//	}
-//
-//	/**
-//	 * Return the version of the node.
-//	 * 
-//	 * @return Version of the node
-//	 */
-//	public String getVersion() {
-//		return version;
-//	}
-//
-//	/**
-//	 * Set the version of the node.
-//	 * 
-//	 * @param version
-//	 *            Version of the node
-//	 */
-//	public void setVersion(String version) {
-//		this.version = version;
-//	}
-
 	/**
 	 * Return the display field name for the node.
 	 * 
@@ -208,62 +160,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	public void setDisplayField(String displayField) {
 		this.displayField = displayField;
 	}
-
-	/**
-	 * Return binary properties of the node.
-	 * 
-	 * @return
-	 */
-	public BinaryProperties getBinaryProperties() {
-		return binaryProperties;
-	}
-
-	/**
-	 * Set the binary properties of the node.
-	 * 
-	 * @param binaryProperties
-	 */
-	public void setBinaryProperties(BinaryProperties binaryProperties) {
-		this.binaryProperties = binaryProperties;
-	}
-
-	/**
-	 * Return the binary filename of the node (may be null when no binary value was set)
-	 * 
-	 * @return Filename
-	 */
-	public String getFileName() {
-		return fileName;
-	}
-
-	/**
-	 * Set the binary filename
-	 * 
-	 * @param fileName
-	 *            Filename
-	 */
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-	}
-
-//	/**
-//	 * Return the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
-//	 * 
-//	 * @return Segment field name
-//	 */
-//	public String getSegmentField() {
-//		return segmentField;
-//	}
-//
-//	/**
-//	 * Set the segment field name which is used to determine the field value that is used when building a path segment for webroot api calls.
-//	 * 
-//	 * @param segmentField
-//	 *            Segment field name
-//	 */
-//	public void setSegmentField(String segmentField) {
-//		this.segmentField = segmentField;
-//	}
 
 	/**
 	 * Return the project to which the node belongs.
@@ -367,7 +263,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	/**
 	 * Set the webroot URL
 	 * 
-	 * @param url webroot URL
+	 * @param url
+	 *            webroot URL
 	 */
 	public void setUrl(String url) {
 		this.url = url;

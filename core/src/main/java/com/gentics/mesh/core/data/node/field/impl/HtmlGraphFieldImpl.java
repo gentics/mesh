@@ -1,7 +1,7 @@
-package com.gentics.mesh.core.data.node.field.impl.basic;
+package com.gentics.mesh.core.data.node.field.impl;
 
-import com.gentics.mesh.core.data.node.field.basic.AbstractBasicField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.AbstractBasicField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.handler.ActionContext;

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.node.field.impl.nesting;
+package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.node.field.impl.nesting;
+package com.gentics.mesh.core.data.node.field.impl;
 
 import java.util.List;
 

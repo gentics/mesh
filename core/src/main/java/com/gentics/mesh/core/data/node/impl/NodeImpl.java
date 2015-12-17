@@ -16,7 +16,6 @@ import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -30,7 +29,6 @@ import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -49,7 +47,8 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -58,7 +57,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.BinaryProperties;
 import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -86,7 +84,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
@@ -95,23 +92,9 @@ import rx.Observable;
 
 public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
-
-	private static final String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
-
-	private static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
-
-	private static final String BINARY_SHA512SUM_PROPERTY_KEY = "binarySha512Sum";
-
-	private static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
-
-	private static final String BINARY_IMAGE_DPI_PROPERTY_KEY = "binaryImageDPI";
-
-	private static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
-
-	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
-
 	private static final String PUBLISHED_PROPERTY_KEY = "published";
+
+	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeImpl.class);
@@ -340,21 +323,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 					restNode.setContainer(true);
 
 				}
-				if (schema.isBinary()) {
-					restNode.setFileName(getBinaryFileName());
-					BinaryProperties binaryProperties = new BinaryProperties();
-					binaryProperties.setMimeType(getBinaryContentType());
-					binaryProperties.setFileSize(getBinaryFileSize());
-					binaryProperties.setSha512sum(getBinarySHA512Sum());
-					// TODO determine whether file is an image
-					// binaryProperties.setDpi(getImageDpi());
-					getBinaryImageDPI();
-					getBinaryImageHeight();
-					getBinaryImageWidth();
-					// binaryProperties.setHeight(getImageHeight());
-					// binaryProperties.setWidth(getImageWidth());
-					restNode.setBinaryProperties(binaryProperties);
-				}
+
 			}
 
 			// Schema reference
@@ -510,105 +479,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
-	public boolean hasBinaryImage() {
-		String contentType = getBinaryContentType();
-		if (contentType == null) {
-			return false;
-		}
-		return contentType.startsWith("image/");
-	}
-
-	@Override
-	public Integer getBinaryImageWidth() {
-		return getProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setBinaryImageWidth(Integer width) {
-		setProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
-	}
-
-	@Override
-	public Integer getBinaryImageHeight() {
-		return getProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setBinaryImageHeight(Integer heigth) {
-		setProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
-	}
-
-	@Override
-	public Integer getBinaryImageDPI() {
-		return getProperty(BINARY_IMAGE_DPI_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setBinaryImageDPI(Integer dpi) {
-		setProperty(BINARY_IMAGE_DPI_PROPERTY_KEY, dpi);
-	}
-
-	@Override
-	public String getBinarySHA512Sum() {
-		return getProperty(BINARY_SHA512SUM_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setBinarySHA512Sum(String sha512HashSum) {
-		setProperty(BINARY_SHA512SUM_PROPERTY_KEY, sha512HashSum);
-	}
-
-	@Override
-	public long getBinaryFileSize() {
-		Long size = getProperty(BINARY_FILESIZE_PROPERTY_KEY);
-		return size == null ? 0 : size;
-	}
-
-	@Override
-	public void setBinaryFileSize(long sizeInBytes) {
-		setProperty(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
-	}
-
-	@Override
-	public void setBinaryFileName(String filenName) {
-		setProperty(BINARY_FILENAME_PROPERTY_KEY, filenName);
-	}
-
-	@Override
-	public String getBinaryFileName() {
-		return getProperty(BINARY_FILENAME_PROPERTY_KEY);
-	}
-
-	@Override
-	public String getBinaryContentType() {
-		return getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setBinaryContentType(String contentType) {
-		setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
-	}
-
-	@Override
-	public Future<Buffer> getBinaryFileBuffer() {
-		Future<Buffer> future = Future.future();
-		Mesh.vertx().fileSystem().readFile(getFilePath(), rh -> {
-			if (rh.succeeded()) {
-				future.complete(rh.result());
-			} else {
-				future.fail(rh.cause());
-			}
-		});
-		return future;
-	}
-
-	@Override
-	public File getBinaryFile() {
-		File binaryFile = new File(getFilePath());
-		return binaryFile;
-	}
-
-	@Override
 	public List<String> getAvailableLanguageNames() {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
@@ -649,24 +519,6 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, ac.getPagingParameter(), TagImpl.class);
-	}
-
-	@Override
-	public String getFilePath() {
-		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getBinarySegmentedPath());
-		File binaryFile = new File(folder, getUuid() + ".bin");
-		return binaryFile.getAbsolutePath();
-	}
-
-	@Override
-	public String getBinarySegmentedPath() {
-		String[] parts = getUuid().split("(?<=\\G.{4})");
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(File.separator);
-		for (String part : parts) {
-			buffer.append(part + File.separator);
-		}
-		return buffer.toString();
 	}
 
 	@Override
@@ -857,21 +709,27 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	public PathSegment hasSegment(String segment) {
 		Schema schema = getSchema();
 
-		// Check the binary field name
-		if (schema.isBinary() && segment.equals(getBinaryFileName())) {
-			return new PathSegment(this, true, null);
-		}
-
 		// Check the different language versions
 		String segmentFieldName = schema.getSegmentField();
 		for (GraphFieldContainer container : getGraphFieldContainers()) {
+			// First check whether a string field exists for the given name
 			StringGraphField field = container.getString(segmentFieldName);
-			if (field == null) {
-				log.error("The node {" + getUuid() + "} did not contain a string field for segment field name {" + segmentFieldName + "}");
-			} else {
+			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
-					return new PathSegment(this, false, container.getLanguage());
+					return new PathSegment(this, field, container.getLanguage());
+				}
+			}
+			
+			// No luck yet  - lets check whether a binary field matches the segmentField 
+			BinaryGraphField binaryField = container.getBinary(segmentFieldName);
+			if (binaryField == null) {
+				log.error(
+						"The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName + "}");
+			} else {
+				String binaryFilename = binaryField.getFileName();
+				if (segment.equals(binaryFilename)) {
+					return new PathSegment(this, field, container.getLanguage());
 				}
 			}
 		}

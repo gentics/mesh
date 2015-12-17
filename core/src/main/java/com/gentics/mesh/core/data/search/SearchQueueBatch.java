@@ -4,8 +4,10 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
 /**
@@ -96,5 +98,17 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @return
 	 */
 	long getTimestamp();
+
+
+	/**
+	 * Process the given batch and call the handler when the batch was processed.
+	 * 
+	 * @param ac
+	 * @param batch
+	 *            Batch to be processed
+	 * @param handler
+	 *            Result handler that will be invoked on completion or error
+	 */
+	void processBatch(ActionContext ac, Handler<AsyncResult<Future<Void	>>> handler);
 
 }

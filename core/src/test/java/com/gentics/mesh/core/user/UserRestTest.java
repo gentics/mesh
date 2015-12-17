@@ -36,7 +36,6 @@ public class UserRestTest {
 
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(UUIDUtil.randomUUID());
-		nodeResponse.setFileName("somename");
 		nodeResponse.setSchema(new SchemaReference().setName("content"));
 		response.setNodeReference(nodeResponse);
 		String json = JsonUtil.toJson(response);

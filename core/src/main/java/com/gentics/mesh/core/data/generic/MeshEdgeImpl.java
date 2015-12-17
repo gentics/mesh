@@ -15,7 +15,6 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	private Object id;
-	//public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedEdge) getGraph().getEdge(id)).getBaseElement());
 
 	@Override
 	protected void init() {

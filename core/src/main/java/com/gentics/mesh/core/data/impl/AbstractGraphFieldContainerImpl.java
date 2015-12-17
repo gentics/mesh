@@ -7,21 +7,24 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
-import com.gentics.mesh.core.data.node.field.impl.basic.BooleanGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.DateGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.HtmlGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.NumberGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.nesting.MicronodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.nesting.NodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.nesting.SelectGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.SelectGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
@@ -42,6 +45,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.util.TraversalHelper;
 
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 
@@ -74,7 +78,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField getNode(String key) {
-		return outE(HAS_FIELD).has(NodeGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(NodeGraphFieldImpl.class, null);
+		return outE(HAS_FIELD).has(NodeGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(NodeGraphFieldImpl.class, null);
 	}
 
 	@Override
@@ -159,6 +164,22 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
+	public BinaryGraphField createBinary(String key) {
+		BinaryGraphFieldImpl field = getGraph().addFramedVertex(BinaryGraphFieldImpl.class);
+		field.setFieldKey(key);
+
+		MeshEdgeImpl edge = getGraph().addFramedEdge(this, field, HAS_FIELD, MeshEdgeImpl.class);
+		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		return field;
+	}
+
+	@Override
+	public BinaryGraphField getBinary(String key) {
+		return out(HAS_FIELD).has(BinaryGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
+	}
+
+	@Override
 	public <T extends ListableGraphField> SelectGraphField<T> createSelect(String key) {
 		SelectGraphFieldImpl<T> field = getGraph().addFramedVertex(SelectGraphFieldImpl.class);
 		field.setFieldKey(key);
@@ -168,7 +189,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public <T extends ListableGraphField> SelectGraphField<T> getSelect(String key) {
-		return outE(HAS_FIELD).has(SelectGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(SelectGraphFieldImpl.class, null);
+		return outE(HAS_FIELD).has(SelectGraphFieldImpl.class).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
+				.nextOrDefaultExplicit(SelectGraphFieldImpl.class, null);
 	}
 
 	@Override
@@ -241,11 +263,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		return getList(DateGraphFieldListImpl.class, fieldKey);
 	}
 
-	private <T extends ListGraphField<?,?>> T getList(Class<T> classOfT, String fieldKey) {
+	private <T extends ListGraphField<?, ?>> T getList(Class<T> classOfT, String fieldKey) {
 		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
 	}
 
-	private <T extends ListGraphField<?,?>> T createList(Class<T> classOfT, String fieldKey) {
+	private <T extends ListGraphField<?, ?>> T createList(Class<T> classOfT, String fieldKey) {
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
 		linkOut(list.getImpl(), HAS_LIST);

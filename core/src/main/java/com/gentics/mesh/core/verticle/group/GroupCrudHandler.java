@@ -3,13 +3,9 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.util.VerticleHelper.createObject;
-import static com.gentics.mesh.util.VerticleHelper.deleteObject;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadObject;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.transformAndResponde;
-import static com.gentics.mesh.util.VerticleHelper.updateObject;
+import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
+import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
@@ -60,14 +56,14 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	@Override
 	public void handleRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, "uuid", READ_PERM, boot.groupRoot(), OK);
+			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.groupRoot(), OK);
 		} , ac.errorHandler());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadTransformAndResponde(ac, boot.groupRoot(), new GroupListResponse(), OK);
+			loadTransformAndRespond(ac, boot.groupRoot(), new GroupListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -75,10 +71,10 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
-			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
+			boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM, grh -> {
 				try {
 					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-					transformAndResponde(ac, rolePage, new RoleListResponse(), OK);
+					transformAndRespond(ac, rolePage, new RoleListResponse(), OK);
 				} catch (InvalidArgumentException e) {
 					ac.fail(e);
 				}
@@ -88,9 +84,9 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	public void handleAddRoleToGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
 				if (hasSucceeded(ac, grh)) {
-					loadObject(ac, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
+					boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM, rrh -> {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
@@ -103,7 +99,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
 									VerticleHelper.processOrFail(ac, txAdded.result().v1(), ch -> {
-										transformAndResponde(ac, txAdded.result().v2(), OK);
+										transformAndRespond(ac, txAdded.result().v2(), OK);
 									} , txAdded.result().v2());
 
 								}
@@ -117,10 +113,10 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
 				if (hasSucceeded(ac, grh)) {
 					// TODO check whether the role is actually part of the group
-					loadObject(ac, "roleUuid", READ_PERM, boot.roleRoot(), rrh -> {
+					boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM, rrh -> {
 						if (hasSucceeded(ac, rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
@@ -132,7 +128,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (txRemoved.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
 								} else {
-									transformAndResponde(ac, txRemoved.result().v2(), OK);
+									transformAndRespond(ac, txRemoved.result().v2(), OK);
 								}
 							});
 						}
@@ -146,12 +142,12 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
-			loadObject(ac, "groupUuid", READ_PERM, boot.groupRoot(), grh -> {
+			boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM, grh -> {
 				if (hasSucceeded(ac, grh)) {
 					try {
 						Group group = grh.result();
 						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						transformAndResponde(ac, userPage, new UserListResponse(), OK);
+						transformAndRespond(ac, userPage, new UserListResponse(), OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}
@@ -163,9 +159,9 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 	public void handleAddUserToGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 
-			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
 				if (hasSucceeded(ac, grh)) {
-					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
+					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
 						if (hasSucceeded(ac, urh)) {
 							db.trx(txAdd -> {
 								Group group = grh.result();
@@ -178,7 +174,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									transformAndResponde(ac, txAdded.result().v2(), OK);
+									transformAndRespond(ac, txAdded.result().v2(), OK);
 								}
 							});
 						}
@@ -190,9 +186,9 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			loadObject(ac, "groupUuid", UPDATE_PERM, boot.groupRoot(), grh -> {
+			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
 				if (hasSucceeded(ac, grh)) {
-					loadObject(ac, "userUuid", READ_PERM, boot.userRoot(), urh -> {
+					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
 						if (hasSucceeded(ac, urh)) {
 							db.trx(tcRemove -> {
 								Group group = grh.result();
@@ -205,7 +201,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 								if (txRemoved.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
 								} else {
-									transformAndResponde(ac, txRemoved.result().v2(), OK);
+									transformAndRespond(ac, txRemoved.result().v2(), OK);
 								}
 							});
 						}

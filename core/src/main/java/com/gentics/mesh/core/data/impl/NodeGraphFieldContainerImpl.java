@@ -18,12 +18,13 @@ import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.basic.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.basic.DateGraphField;
-import com.gentics.mesh.core.data.node.field.basic.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.basic.NumberGraphField;
-import com.gentics.mesh.core.data.node.field.basic.StringGraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
@@ -37,6 +38,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -46,6 +48,7 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -147,11 +150,30 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				// Create new graph field if no existing one could be found
 				if (graphStringField == null) {
-					createString(key).setString(stringField.getString());
-				} else {
-					graphStringField.setString(stringField.getString());
+					graphStringField = createString(key);
 				}
+				graphStringField.setString(stringField.getString());
+
 				break;
+			case BINARY:
+				BinaryGraphField graphBinaryField = getBinary(key);
+				failOnMissingMandatoryField(ac, graphBinaryField, restField, entry, key, schema);
+
+				BinaryField binaryField = (BinaryFieldImpl) restField;
+				if (restField == null) {
+					continue;
+				}
+				// Create new graph field if no existing one could be found
+				if (graphBinaryField == null) {
+					graphBinaryField = createBinary(key);
+				}
+				graphBinaryField.setImageDPI(binaryField.getDpi());
+				graphBinaryField.setFileName(binaryField.getFileName());
+				graphBinaryField.setMimeType(binaryField.getMimeType());
+				// Don't update image width, height, SHA checksum - those are immutable
+
+				break;
+
 			case NUMBER:
 				NumberGraphField numberGraphField = getNumber(key);
 				failOnMissingMandatoryField(ac, numberGraphField, restField, entry, key, schema);
@@ -311,7 +333,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				} else if (restField instanceof MicronodeFieldListImpl) {
 					MicronodeGraphFieldList micronodeGraphFieldList = getMicronodeList(key);
 					failOnMissingMandatoryField(ac, micronodeGraphFieldList, restField, entry, key, schema);
-					MicronodeFieldList micronodeList = (MicronodeFieldList)restField;
+					MicronodeFieldList micronodeList = (MicronodeFieldList) restField;
 
 					if (micronodeGraphFieldList == null) {
 						micronodeGraphFieldList = createMicronodeFieldList(key);
@@ -336,12 +358,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				throw new NotImplementedException();
 				// break;
 			case MICRONODE:
-				MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema)entry;
+				MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) entry;
 				failOnMissingMandatoryField(ac, getMicronode(key), restField, entry, key, schema);
 				if (restField == null) {
 					continue;
 				}
-				MicronodeField micronodeField = (MicronodeField)restField;
+				MicronodeField micronodeField = (MicronodeField) restField;
 				MicroschemaReference microschemaReference = micronodeField.getMicroschema();
 				// TODO check for null
 				if (microschemaReference == null) {
@@ -356,10 +378,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 					// check whether microschema is allowed
 					if (microschemaFieldSchema.getAllowedMicroSchemas() == null
-							|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas())
-									.contains(microschemaContainer.getName())) {
-						throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n(
-								"node_error_invalid_microschema_field_value", key, microschemaContainer.getName()));
+							|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
+						throw new HttpStatusCodeErrorException(BAD_REQUEST,
+								ac.i18n("node_error_invalid_microschema_field_value", key, microschemaContainer.getName()));
 					}
 
 					// graphfield not set -> create one
@@ -374,8 +395,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						MicroschemaContainer existingContainer = micronode.getMicroschemaContainer();
 						if ((!StringUtils.isEmpty(micronodeField.getUuid())
 								&& !StringUtils.equalsIgnoreCase(micronode.getUuid(), micronodeField.getUuid()))
-								|| !StringUtils.equalsIgnoreCase(microschemaContainer.getUuid(),
-										existingContainer.getUuid())) {
+								|| !StringUtils.equalsIgnoreCase(microschemaContainer.getUuid(), existingContainer.getUuid())) {
 							micronodeGraphField = createMicronode(key, microschemaContainer);
 							micronode = micronodeGraphField.getMicronode();
 						}
@@ -392,9 +412,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				if (!StringUtils.isEmpty(microschemaName)) {
 					updateAction.call(boot.microschemaContainerRoot().findByName(microschemaName));
 				} else {
-					boot.microschemaContainerRoot().findByUuid(microschemaUuid,
-							RxHelper.toFuture(updateAction, throwable -> {
-								// TODO fail here
+					boot.microschemaContainerRoot().findByUuid(microschemaUuid, RxHelper.toFuture(updateAction, throwable -> {
+						// TODO fail here
 					}));
 				}
 
@@ -464,6 +483,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				});
 				return;
 			}
+
+		case BINARY:
+			BinaryGraphField graphBinaryField = getBinary(fieldKey);
+			if (graphBinaryField == null) {
+				handler.handle(Future.succeededFuture(new BinaryFieldImpl()));
+				return;
+			} else {
+				graphBinaryField.transformToRest(ac, wrap(handler));
+				return;
+			}
 		case NUMBER:
 			NumberGraphField graphNumberField = getNumber(fieldKey);
 			if (graphNumberField == null) {
@@ -507,7 +536,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				handler.handle(Future.succeededFuture(new HtmlFieldImpl()));
 				return;
 			} else {
-				graphHtmlField.transformToRest(ac,  rhRest -> {
+				graphHtmlField.transformToRest(ac, rhRest -> {
 					if (rhRest.failed()) {
 						handler.handle(Future.failedFuture(rhRest.cause()));
 					} else {
