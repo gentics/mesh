@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +33,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements TagFamilyRoot {
+public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
@@ -128,7 +127,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily>implements T
 						if (txCreated.failed()) {
 							handler.handle(Future.failedFuture(txCreated.cause()));
 						} else {
-							processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+							txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
 						}
 					});
 				} else {

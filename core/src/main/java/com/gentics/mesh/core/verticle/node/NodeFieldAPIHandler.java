@@ -153,7 +153,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 										if (txUpdated.failed()) {
 											ac.errorHandler().handle(Future.failedFuture(txUpdated.cause()));
 										} else {
-											VerticleHelper.processOrFail(ac, txUpdated.result().v1(), ch -> {
+											txUpdated.result().v1().processOrFail(ac, ch -> {
 												ac.sendMessage(OK, "node_binary_field_updated", node.getUuid());
 											} , txUpdated.result().v2());
 										}

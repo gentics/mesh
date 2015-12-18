@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 
 import java.util.HashSet;
 import java.util.List;
@@ -196,7 +195,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 				if (rh.failed()) {
 					obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
 				} else {
-					processOrFail2(ac, rh.result(), obsFut.toHandler());
+					rh.result().process(ac, obsFut.toHandler());
 				}
 			});
 		}

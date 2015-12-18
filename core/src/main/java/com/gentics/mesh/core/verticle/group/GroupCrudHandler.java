@@ -20,7 +20,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -69,7 +68,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 								if (txAdded.failed()) {
 									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 								} else {
-									VerticleHelper.processOrFail(ac, txAdded.result().v1(), ch -> {
+									txAdded.result().v1().processOrFail(ac, ch -> {
 										transformAndRespond(ac, txAdded.result().v2(), OK);
 									} , txAdded.result().v2());
 

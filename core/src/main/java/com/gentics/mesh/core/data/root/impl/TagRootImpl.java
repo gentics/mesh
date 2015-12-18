@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -36,7 +35,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
+public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_TAG);
@@ -150,7 +149,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag>implements TagRoot {
 				if (rh.failed()) {
 					handler.handle(Future.failedFuture(rh.cause()));
 				} else {
-					processOrFail(ac, rh.result().v1(), handler, rh.result().v2());
+					rh.result().v1().processOrFail(ac, handler, rh.result().v2());
 				}
 			});
 		});

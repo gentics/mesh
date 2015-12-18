@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -596,7 +595,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				if (txUpdated.failed()) {
 					obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 				} else {
-					processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
+					txUpdated.result().process(ac, obsFut.toHandler());
 				}
 			});
 
@@ -652,7 +651,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (txMoved.failed()) {
 				handler.handle(Future.failedFuture(txMoved.cause()));
 			} else {
-				processOrFail2(ac, txMoved.result(), handler);
+				txMoved.result().process(ac, handler);
 			}
 		});
 		return this;
@@ -673,7 +672,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (txDeleted.failed()) {
 				handler.handle(Future.failedFuture(txDeleted.cause()));
 			} else {
-				processOrFail2(ac, txDeleted.result(), handler);
+				txDeleted.result().process(ac, handler);
 			}
 		});
 		return this;
@@ -721,7 +720,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 			}
 
-			// No luck yet  - lets check whether a binary field matches the segmentField 
+			// No luck yet - lets check whether a binary field matches the segmentField
 			BinaryGraphField binaryField = container.getBinary(segmentFieldName);
 			if (binaryField == null) {
 				log.error(

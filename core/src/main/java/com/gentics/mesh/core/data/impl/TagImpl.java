@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -241,7 +240,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			if (txUpdated.failed()) {
 				obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 			} else {
-				processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
+				txUpdated.result().process(ac, obsFut.toHandler());
 			}
 		});
 		return obsFut;

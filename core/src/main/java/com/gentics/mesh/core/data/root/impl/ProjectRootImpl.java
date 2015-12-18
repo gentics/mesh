@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Stack;
@@ -217,7 +216,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 								if (log.isInfoEnabled()) {
 									log.info("Registered project {" + project.getName() + "}");
 								}
-								processOrFail(ac, txCreated.result().v1(), handler, project);
+								txCreated.result().v1().processOrFail(ac, handler, project);
 							});
 						}
 					});

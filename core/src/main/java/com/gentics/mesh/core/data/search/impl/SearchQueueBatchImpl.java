@@ -15,9 +15,11 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.AsyncResult;
@@ -149,7 +151,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void processBatch(ActionContext ac, Handler<AsyncResult<Future<Void>>> handler) {
+	public void process(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -176,7 +178,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 								txAddBack.complete(this);
 							} , txAddedBack -> {
 								if (txAddedBack.failed()) {
-									log.error("Failed to add batch {" + this.getBatchId() + "} batck to search queue.", txAddedBack.cause());
+									log.error("Failed to add batch {" + this.getBatchId() + "} back to search queue.", txAddedBack.cause());
 								}
 							});
 							// Inform the caller that processing failed
@@ -189,6 +191,27 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				});
 			}
 		});
+	}
+
+	@Override
+	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void processOrFail(InternalActionContext ac,
+			Handler<AsyncResult<T>> handler, T element) {
+
+		if (element == null) {
+			// TODO log
+			// TODO i18n
+			ac.fail(BAD_REQUEST, "element creation failed");
+			return;
+		} else {
+			process(ac, rh -> {
+				if (rh.failed()) {
+					handler.handle(Future.failedFuture(rh.cause()));
+				} else {
+					handler.handle(Future.succeededFuture(element));
+				}
+			});
+
+		}
 	}
 
 }

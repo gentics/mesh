@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -67,20 +66,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 
 	}
 
-	//	@Override
-	//	public void handleUpdate(InternalActionContext ac) {
-	//		updateElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
-	//	}
+	// @Override
+	// public void handleUpdate(InternalActionContext ac) {
+	// updateElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
+	// }
 	//
-	//	@Override
-	//	public void handleRead(InternalActionContext ac) {
-	//		readElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
-	//	}
+	// @Override
+	// public void handleRead(InternalActionContext ac) {
+	// readElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
+	// }
 	//
-	//	@Override
-	//	public void handleReadList(InternalActionContext ac) {
-	//		readElementList(ac, () -> ac.getProject().getNodeRoot());
-	//	}
+	// @Override
+	// public void handleReadList(InternalActionContext ac) {
+	// readElementList(ac, () -> ac.getProject().getNodeRoot());
+	// }
 
 	public void handleMove(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
@@ -166,7 +165,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 									if (txAdded.failed()) {
 										ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 									} else {
-										processOrFail(ac, txAdded.result().v1(), ch -> {
+										txAdded.result().v1().processOrFail(ac, ch -> {
 											transformAndRespond(ac, ch.result(), OK);
 										} , txAdded.result().v2());
 									}
@@ -197,7 +196,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 							if (txAdded.failed()) {
 								ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
 							} else {
-								processOrFail(ac, txAdded.result().v1(), ch -> {
+								txAdded.result().v1().processOrFail(ac, ch -> {
 									transformAndRespond(ac, ch.result(), OK);
 								} , txAdded.result().v2());
 							}

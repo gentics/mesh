@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.TrxHandler2;
 import com.gentics.mesh.handler.InternalActionContext;
-import com.gentics.mesh.util.VerticleHelper;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -139,7 +138,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 						if (txDeleted.failed()) {
 							ac.errorHandler().handle(Future.failedFuture(txDeleted.cause()));
 						} else {
-							VerticleHelper.processOrFail2(ac, txDeleted.result().v2(), brh -> {
+							txDeleted.result().v2().process(ac, brh -> {
 								ac.sendMessage(OK, responseMessage, txDeleted.result().v1());
 							});
 						}
@@ -195,7 +194,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 
 	}
 
-	//<E extends MeshCoreVertex<TR, E>, TR extends RestModel>
+	// <E extends MeshCoreVertex<TR, E>, TR extends RestModel>
 	protected void readElementList(InternalActionContext ac, TrxHandler2<RootVertex<T>> handler) {
 		db.asyncNoTrx(noTrx -> {
 			RootVertex<T> root = handler.call();

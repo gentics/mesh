@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -108,6 +110,9 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param handler
 	 *            Result handler that will be invoked on completion or error
 	 */
-	void processBatch(ActionContext ac, Handler<AsyncResult<Future<Void>>> handler);
+	void process(InternalActionContext ac, Handler<AsyncResult<Void>> handler);
+
+	 <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void processOrFail(InternalActionContext ac, Handler<AsyncResult<T>> handler, T element);
+
 
 }

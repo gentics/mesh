@@ -9,8 +9,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -249,7 +247,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			if (txUpdated.failed()) {
 				obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
 			} else {
-				processOrFail2(ac, txUpdated.result(), obsFut.toHandler());
+				txUpdated.result().process(ac, obsFut.toHandler());
 			}
 		});
 		return obsFut;

@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -27,7 +25,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer>implements MicroschemaContainerRoot {
+public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
 	@Override
 	protected Class<? extends MicroschemaContainer> getPersistanceClass() {
@@ -77,7 +75,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 			requestUser.hasPermission(ac, this, GraphPermission.CREATE_PERM, rh -> {
 				if (rh.failed()) {
-					
+
 				} else {
 					db.trx(txCreate -> {
 						try {
@@ -93,7 +91,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 						if (txCreated.failed()) {
 							handler.handle(Future.failedFuture(txCreated.cause()));
 						} else {
-							processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+							txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
 						}
 					});
 				}

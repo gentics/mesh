@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
@@ -206,7 +205,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public void delete() {
-		//TODO don't allow deletion of the admin group
+		// TODO don't allow deletion of the admin group
 		addIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
@@ -241,7 +240,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 					if (rh.failed()) {
 						obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
 					} else {
-						processOrFail2(ac, rh.result(), obsFut.toHandler());
+						rh.result().process(ac, obsFut.toHandler());
 					}
 				});
 

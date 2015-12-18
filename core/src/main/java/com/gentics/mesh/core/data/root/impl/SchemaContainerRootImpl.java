@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.StringUtils;
@@ -116,7 +115,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("schema_missing_displayfield"))));
 				return;
 			}
-			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields 
+			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields
 
 			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
 				db.trx(txCreate -> {
@@ -133,7 +132,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 					if (txCreated.failed()) {
 						handler.handle(Future.failedFuture(txCreated.cause()));
 					} else {
-						processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+						txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
 					}
 				});
 			}

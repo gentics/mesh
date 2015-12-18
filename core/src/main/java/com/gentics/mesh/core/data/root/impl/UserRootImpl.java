@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -40,7 +39,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 
-public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
+public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_USER);
@@ -175,7 +174,7 @@ public class UserRootImpl extends AbstractRootVertex<User>implements UserRoot {
 					if (txCreated.failed()) {
 						handler.handle(Future.failedFuture(txCreated.cause()));
 					} else {
-						processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+						txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
 					}
 				});
 			});

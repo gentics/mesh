@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -583,7 +582,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				if (userUpdated.failed()) {
 					obsFut.toHandler().handle(Future.failedFuture(userUpdated.cause()));
 				} else {
-					processOrFail2(ac, userUpdated.result(), obsFut.toHandler());
+					userUpdated.result().process(ac, obsFut.toHandler());
 				}
 			});
 
@@ -603,8 +602,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// batch.addEntry(element, UPDATE_ACTION);
 		// }
 	}
-	
-	
+
 	@Override
 	public UserReference createEmptyReferenceModel() {
 		return new UserReference();

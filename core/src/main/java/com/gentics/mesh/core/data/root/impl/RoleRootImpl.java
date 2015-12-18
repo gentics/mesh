@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -106,7 +105,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 				if (txCreated.failed()) {
 					handler.handle(Future.failedFuture(txCreated.cause()));
 				} else {
-					processOrFail(ac, txCreated.result().v1(), handler, txCreated.result().v2());
+					txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
 				}
 			});
 		} else {
