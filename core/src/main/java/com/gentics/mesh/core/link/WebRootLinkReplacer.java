@@ -123,10 +123,9 @@ public class WebRootLinkReplacer {
 			case SHORT:
 				return node.getPath(language);
 			case MEDIUM:
-				return Observable.just("/" + node.getProject().getName() + node.getPath(language));
+				return node.getPath(language).map(path -> "/" + node.getProject().getName() + path);
 			case FULL:
-				return Observable.just(RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot"
-						+ node.getPath(language));
+				return node.getPath(language).map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
 			default:
 				return Observable.error(new Exception("Cannot render link with type " + type));
 			}
