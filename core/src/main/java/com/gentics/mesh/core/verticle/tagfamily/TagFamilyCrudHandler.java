@@ -40,8 +40,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		Project project = ac.getProject();
-		readElementList(ac, () -> project.getTagFamilyRoot());
+		readElementList(ac, () -> ac.getProject().getTagFamilyRoot());
 	}
 
 	public void handleReadTagList(InternalActionContext ac) {

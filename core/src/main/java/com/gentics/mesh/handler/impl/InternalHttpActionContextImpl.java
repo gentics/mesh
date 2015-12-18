@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
@@ -173,7 +174,12 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters) {
 		send(JsonUtil.toJson(new GenericMessageResponse(i18n(i18nMessage, i18nParameters))), status);
 	}
-	
+
+	@Override
+	public void respond(RestModel restModel, HttpResponseStatus status) {
+		send(JsonUtil.toJson(restModel), status);
+	}
+
 	@Override
 	public ImageManipulationParameter getImageRequestParameter() {
 		//TODO return immutable object

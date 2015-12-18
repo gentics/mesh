@@ -70,8 +70,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		Project project = ac.getProject();
-		updateElement(ac, "uuid", () -> project.getNodeRoot());
+		updateElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
 	}
 
 	@Override
@@ -81,8 +80,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		Project project = ac.getProject();
-		readElementList(ac, () -> project.getNodeRoot());
+		readElementList(ac, () -> ac.getProject().getNodeRoot());
 	}
 
 	public void handleMove(InternalActionContext ac) {

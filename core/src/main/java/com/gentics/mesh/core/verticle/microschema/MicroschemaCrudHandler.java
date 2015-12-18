@@ -15,7 +15,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> boot.microschemaContainerRoot(), "uuid", "schema_deleted");
+		deleteElement(ac, () -> boot.microschemaContainerRoot(), "uuid", "microschema_deleted");
 	}
 
 	@Override

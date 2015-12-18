@@ -5,6 +5,7 @@ import java.util.List;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
@@ -99,18 +100,25 @@ public interface InternalActionContext extends ActionContext {
 	boolean getExpandAllFlag();
 
 	/**
-	 * Return the <code>resolveLinks</code> query parameter value.
-	 * This will never return null
+	 * Return the <code>resolveLinks</code> query parameter value. This will never return null
 	 * 
 	 * @return
 	 */
-	public WebRootLinkReplacer.Type getResolveLinksType();
+	WebRootLinkReplacer.Type getResolveLinksType();
 
 	/**
 	 * Return the image request (crop/resize) parameter.
 	 * 
 	 * @return
 	 */
-	public ImageManipulationParameter getImageRequestParameter();
+	ImageManipulationParameter getImageRequestParameter();
+
+	/**
+	 * Transform the rest model to JSON and send the JSON as a respond with the given status code.
+	 * 
+	 * @param restModel
+	 * @param status
+	 */
+	void respond(RestModel result, HttpResponseStatus status);
 
 }
