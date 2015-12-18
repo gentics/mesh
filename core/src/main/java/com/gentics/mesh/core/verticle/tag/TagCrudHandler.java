@@ -22,30 +22,10 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag> {
 		return ac.getProject().getTagRoot();
 	}
 
-//	@Override
-//	public void handleCreate(InternalActionContext ac) {
-//		createElement(ac, () -> getRootVertex(ac));
-//	}
-
 	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> ac.getProject().getTagRoot(), "uuid", "tag_deleted");
 	}
-
-//	@Override
-//	public void handleUpdate(InternalActionContext ac) {
-//		updateElement(ac, "uuid", () -> ac.getProject().getTagRoot());
-//	}
-//
-//	@Override
-//	public void handleReadList(InternalActionContext ac) {
-//		readElementList(ac, () -> ac.getProject().getTagRoot());
-//	}
-//
-//	@Override
-//	public void handleRead(InternalActionContext ac) {
-//		readElement(ac, "uuid", () -> ac.getProject().getTagRoot());
-//	}
 
 	/**
 	 * Add the handler that returns a node list for a specified tag.

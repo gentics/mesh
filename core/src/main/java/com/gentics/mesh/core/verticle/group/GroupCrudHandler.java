@@ -34,28 +34,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 	}
 
 	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
-
-	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "group_deleted");
-	}
-
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> getRootVertex(ac));
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac) {
@@ -178,9 +158,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (ac.failOnError( grh)) {
+				if (ac.failOnError(grh)) {
 					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
-						if (ac.failOnError( urh)) {
+						if (ac.failOnError(urh)) {
 							db.trx(tcRemove -> {
 								Group group = grh.result();
 								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);

@@ -25,28 +25,8 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
-
-	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> boot.schemaContainerRoot(), "uuid", "schema_deleted");
-	}
-
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> boot.schemaContainerRoot());
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> boot.schemaContainerRoot());
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> boot.schemaContainerRoot());
 	}
 
 	public void handleReadProjectList(InternalActionContext ac) {

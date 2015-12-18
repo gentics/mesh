@@ -16,28 +16,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
-
-	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "microschema_deleted");
-	}
-
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> getRootVertex(ac));
 	}
 
 }

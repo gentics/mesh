@@ -39,11 +39,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 	}
 
 	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
-
-	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
 	}
@@ -51,7 +46,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 	public void handelDeleteLanguage(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM, rh -> {
-				if (ac.failOnError( rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 					String languageTag = ac.getParameter("languageTag");
 					Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
@@ -72,20 +67,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 
 	}
 
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> ac.getProject().getNodeRoot());
-	}
+	//	@Override
+	//	public void handleUpdate(InternalActionContext ac) {
+	//		updateElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
+	//	}
+	//
+	//	@Override
+	//	public void handleRead(InternalActionContext ac) {
+	//		readElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
+	//	}
+	//
+	//	@Override
+	//	public void handleReadList(InternalActionContext ac) {
+	//		readElementList(ac, () -> ac.getProject().getNodeRoot());
+	//	}
 
 	public void handleMove(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {

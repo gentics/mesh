@@ -24,28 +24,8 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily> {
 	}
 
 	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
-
-	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "tagfamily_deleted");
-	}
-
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> getRootVertex(ac));
 	}
 
 	public void handleReadTagList(InternalActionContext ac) {

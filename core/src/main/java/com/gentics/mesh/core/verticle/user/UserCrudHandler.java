@@ -36,26 +36,6 @@ public class UserCrudHandler extends AbstractCrudHandler<User> {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "user_deleted");
 	}
 
-	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> getRootVertex(ac));
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> getRootVertex(ac));
-	}
-
 	public void handlePermissionRead(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			String userUuid = ac.getParameter("param0");
@@ -70,12 +50,12 @@ public class UserCrudHandler extends AbstractCrudHandler<User> {
 				}
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
 				boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM, rh -> {
-					if (ac.failOnError( rh)) {
+					if (ac.failOnError(rh)) {
 
 						db.noTrx(noTx -> {
 							// 2. Resolve the path to element that is targeted
 							MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
-								if (ac.failOnError( vertex)) {
+								if (ac.failOnError(vertex)) {
 									if (vertex.result() == null) {
 										ac.errorHandler().handle(failedFuture(NOT_FOUND, "error_element_for_path_not_found", pathToElement));
 										return;
