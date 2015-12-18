@@ -85,9 +85,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final String PUBLISHED_PROPERTY_KEY = "published";
 
-	public static final String AC_LANGUAGE_KEY = "meshFieldContainerLanguage";
-
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
+
+	public static final String AC_LANGUAGE_KEY = "meshFieldContainerLanguage";
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeImpl.class);
@@ -351,7 +351,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-
 				// store the language in the actioncontext
 				ac.put(AC_LANGUAGE_KEY, fieldContainer.getLanguage());
 

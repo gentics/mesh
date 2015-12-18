@@ -10,8 +10,6 @@ import org.elasticsearch.node.Node;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import rx.Observable;
 
 public class DummySearchProvider implements SearchProvider {

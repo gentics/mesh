@@ -112,8 +112,37 @@ public class WebRootLinkReplacer {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().first();
+		languageTag = languageTag.trim();
 		// TODO check for null
-		Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+		return resolve(node, languageTag, type);
+	}
+
+	/**
+	 * Resolve the link to the given node
+	 * @param node target node
+	 * @param languageTag optional language
+	 * @param type link type
+	 * @return observable of the rendered link
+	 */
+	public Observable<String> resolve(Node node, String languageTag, Type type) {
+		if (languageTag == null) {
+			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
+		}
+		languageTag = languageTag.trim();
+		return resolve(node, MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag), type);
+	}
+
+	/**
+	 * Resolve the link to the given node
+	 * @param node target node
+	 * @param languageTag optional language
+	 * @param type link type
+	 * @return observable of the rendered link
+	 */
+	public Observable<String> resolve(Node node, Language language, Type type) {
+		if (language == null) {
+			MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
+		}
 		try {
 			switch (type) {
 			case SHORT:

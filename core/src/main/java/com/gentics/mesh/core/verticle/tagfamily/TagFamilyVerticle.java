@@ -18,7 +18,6 @@ import com.gentics.mesh.handler.InternalActionContext;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
 
 @Component
 @Scope("singleton")
