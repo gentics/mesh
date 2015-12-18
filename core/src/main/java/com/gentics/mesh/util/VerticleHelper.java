@@ -10,14 +10,14 @@ import java.util.List;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -34,7 +34,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 
 /**
  * 
@@ -45,26 +44,8 @@ public class VerticleHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(VerticleHelper.class);
 
-	/**
-	 * Load the objects from the root vertex using the paging parameter from the action context and send a JSON transformed response.
-	 * 
-	 * @param ac
-	 * @param root
-	 * @param listResponse
-	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel> void loadTransformAndRespond(InternalActionContext ac, RootVertex<T> root,
-			AbstractListResponse<TR> listResponse, HttpResponseStatus statusCode) {
-		loadObjects(ac, root, rh -> {
-			if (hasSucceeded(ac, rh)) {
-				ac.send(toJson(rh.result()), statusCode);
-			}
-		} , listResponse);
-	}
-
-
-
 	// TODO merge with prev method
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail2(ActionContext ac,
+	public static <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void processOrFail2(ActionContext ac,
 			SearchQueueBatch batch, Handler<AsyncResult<Void>> handler) {
 
 		processBatch(ac, batch, rh -> {
@@ -140,8 +121,8 @@ public class VerticleHelper {
 	 * @param handler
 	 * @param element
 	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void processOrFail(
-			InternalActionContext ac, SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
+	public static <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void processOrFail(InternalActionContext ac,
+			SearchQueueBatch batch, Handler<AsyncResult<T>> handler, T element) {
 
 		if (element == null) {
 			// TODO log
@@ -159,103 +140,13 @@ public class VerticleHelper {
 
 		}
 	}
-	
-	/**
-	 * Asynchronously load the objects and populate the given list response.
-	 * 
-	 * @param ac
-	 *            Action context that will be used to extract the paging parameters from
-	 * @param root
-	 *            Aggregation node that should be used to load the objects
-	 * @param handler
-	 *            Handler which will be invoked once all objects have been loaded and transformed and the list response is completed
-	 * @param listResponse
-	 */
-	private static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void loadObjects(InternalActionContext ac,
-			RootVertex<T> root, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
 
-		// TODO use reflection to create the empty list response
-
-		PagingParameter pagingInfo = ac.getPagingParameter();
-		MeshAuthUser requestUser = ac.getUser();
-		try {
-			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
-			List<ObservableFuture<TR>> transformedElements = new ArrayList<>();
-			for (T node : page) {
-				ObservableFuture<TR> obs = RxHelper.observableFuture();
-				transformedElements.add(obs);
-				node.transformToRest(ac, obs.toHandler());
-			}
-			RxUtil.concatList(transformedElements).collect(() -> {
-				return listResponse;
-			} , (list, restElement) -> {
-				list.getData().add(restElement);
-			}).subscribe(list -> {
-				page.setPaging(listResponse);
-				handler.handle(Future.succeededFuture(listResponse));
-			} , error -> {
-				handler.handle(Future.failedFuture(error));
-			});
-		} catch (InvalidArgumentException e) {
-			handler.handle(Future.failedFuture(e));
-		}
-	}
-
-
-	public static <T extends GenericVertex<? extends RestModel>> void loadTransformAndRespond(InternalActionContext ac, String uuidParameterName,
+	public static <T extends MeshCoreVertex<? extends RestModel, T>> void loadTransformAndRespond(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, HttpResponseStatus status) {
 		loadAndTransform(ac, uuidParameterName, permission, root, rh -> {
 			if (hasSucceeded(ac, rh)) {
 				ac.send(toJson(rh.result()), status);
 			}
-		});
-	}
-
-	/**
-	 * Transform the given page to a rest page and send it to the client.
-	 * 
-	 * @param ac
-	 * @param page
-	 * @param listResponse
-	 * @param status
-	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformAndRespond(
-			InternalActionContext ac, Page<T> page, RL listResponse, HttpResponseStatus status) {
-		transformPage(ac, page, th -> {
-			if (hasSucceeded(ac, th)) {
-				ac.send(toJson(th.result()), status);
-			}
-		} , listResponse);
-	}
-
-	/**
-	 * Transform the page into a list response.
-	 * 
-	 * @param ac
-	 * @param page
-	 * @param handler
-	 * @param listResponse
-	 */
-	public static <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void transformPage(
-			InternalActionContext ac, Page<T> page, Handler<AsyncResult<AbstractListResponse<TR>>> handler, RL listResponse) {
-		List<ObservableFuture<TR>> futures = new ArrayList<>();
-
-		for (T node : page) {
-			ObservableFuture<TR> obs = RxHelper.observableFuture();
-			futures.add(obs);
-			node.transformToRest(ac, obs.toHandler());
-		}
-
-		// Wait for all async processes to complete
-		Observable.merge(futures).collect(() -> {
-			return listResponse.getData();
-		} , (x, y) -> {
-			x.add(y);
-		}).subscribe(list -> {
-			page.setPaging(listResponse);
-			handler.handle(Future.succeededFuture(listResponse));
-		} , error -> {
-			handler.handle(Future.failedFuture(error));
 		});
 	}
 
@@ -269,7 +160,7 @@ public class VerticleHelper {
 	 * @param root
 	 * @param handler
 	 */
-	public static <T extends GenericVertex<? extends RestModel>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
+	public static <T extends MeshCoreVertex<? extends RestModel, T>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		root.loadObject(ac, uuidParameterName, permission, rh -> {
 			if (hasSucceeded(ac, rh)) {
@@ -296,7 +187,8 @@ public class VerticleHelper {
 	 * @param vertex
 	 * @param statusCode
 	 */
-	public static <T extends RestModel> void transformAndRespond(InternalActionContext ac, GenericVertex<T> vertex, HttpResponseStatus statusCode) {
+	public static <T extends RestModel> void transformAndRespond(InternalActionContext ac, MeshCoreVertex<?, ?> vertex,
+			HttpResponseStatus statusCode) {
 		vertex.transformToRest(ac, th -> {
 			if (hasSucceeded(ac, th)) {
 				ac.send(toJson(th.result()), statusCode);
@@ -331,6 +223,48 @@ public class VerticleHelper {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Asynchronously load the objects and populate the given list response.
+	 * 
+	 * @param ac
+	 *            Action context that will be used to extract the paging parameters from
+	 * @param root
+	 *            Aggregation node that should be used to load the objects
+	 * @param handler
+	 *            Handler which will be invoked once all objects have been loaded and transformed and the list response is completed
+	 */
+	public static <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void loadObjects(InternalActionContext ac,
+			RootVertex<T> root, Handler<AsyncResult<ListResponse<TR>>> handler) {
+
+		// TODO use reflection to create the empty list response
+
+		PagingParameter pagingInfo = ac.getPagingParameter();
+		MeshAuthUser requestUser = ac.getUser();
+		try {
+			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
+			List<ObservableFuture<TR>> transformedElements = new ArrayList<>();
+			for (T node : page) {
+				ObservableFuture<TR> obs = RxHelper.observableFuture();
+				transformedElements.add(obs);
+				node.transformToRest(ac, obs.toHandler());
+			}
+			ListResponse<TR> listResponse = new ListResponse<>();
+
+			RxUtil.concatList(transformedElements).collect(() -> {
+				return listResponse;
+			} , (list, restElement) -> {
+				list.getData().add(restElement);
+			}).subscribe(list -> {
+				page.setPaging(listResponse);
+				handler.handle(Future.succeededFuture(listResponse));
+			} , error -> {
+				handler.handle(Future.failedFuture(error));
+			});
+		} catch (InvalidArgumentException e) {
+			handler.handle(Future.failedFuture(e));
+		}
 	}
 
 }

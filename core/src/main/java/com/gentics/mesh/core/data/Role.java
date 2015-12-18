@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 /**
  * Graph domain model interface for a role.
  */
-public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedVertex, ReferenceableElement<RoleReference> {
+public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference> {
 
 	public static final String TYPE = "role";
 
@@ -52,6 +52,6 @@ public interface Role extends GenericVertex<RoleResponse>, NamedVertex, IndexedV
 	 * @param element
 	 * @return
 	 */
-	boolean hasPermission(GraphPermission permission, GenericVertex<?> element);
+	boolean hasPermission(GraphPermission permission, MeshVertex element);
 
 }

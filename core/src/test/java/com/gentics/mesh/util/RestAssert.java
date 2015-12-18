@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.assertj.MeshAssertions;
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -138,7 +138,7 @@ public class RestAssert {
 
 	}
 
-	public void assertGenericNode(GenericVertex<?> node, AbstractGenericRestResponse model) {
+	public void assertGenericNode(MeshCoreVertex<?, ?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());

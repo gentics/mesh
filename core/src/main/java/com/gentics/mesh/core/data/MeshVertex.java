@@ -21,19 +21,6 @@ public interface MeshVertex extends MeshElement {
 	 */
 	void delete();
 
-//	/**
-//	 * Returns all the edges from the current Vertex to another one.
-//	 *
-//	 * @param target
-//	 *            The target vertex
-//	 * @param direction
-//	 *            the direction of the edges to retrieve
-//	 * @param labels
-//	 *            the labels of the edges to retrieve
-//	 * @return an iterable of incident edges
-//	 */
-//	Iterable<Edge> getEdges(MeshVertex target, Direction direction, String... labels);
-
 	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
 	 * 

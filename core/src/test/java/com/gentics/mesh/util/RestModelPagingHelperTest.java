@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 public class RestModelPagingHelperTest {
 
@@ -43,6 +43,6 @@ public class RestModelPagingHelperTest {
 }
 
 @SuppressWarnings("rawtypes")
-class TestListResponse extends AbstractListResponse {
+class TestListResponse extends ListResponse {
 
 }

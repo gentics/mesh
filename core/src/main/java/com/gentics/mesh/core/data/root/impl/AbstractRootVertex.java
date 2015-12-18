@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -13,13 +14,14 @@ import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.EntityNotFoundException;
@@ -29,6 +31,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -37,8 +40,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
 
-public abstract class AbstractRootVertex<T extends GenericVertex<? extends RestModel>> extends MeshVertexImpl implements RootVertex<T> {
+public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertexImpl implements RootVertex<T> {
 
 	private static Logger log = LoggerFactory.getLogger(AbstractRootVertex.class);
 

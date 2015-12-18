@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -39,14 +39,14 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class SchemaContainerImpl extends AbstractReferenceableCoreElement<SchemaResponse, SchemaReference> implements SchemaContainer {
+public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, SchemaContainer> implements SchemaContainer {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
 	}
 
 	@Override
-	protected SchemaReference createEmptyReferenceModel() {
+	public SchemaReference createEmptyReferenceModel() {
 		return new SchemaReference();
 	}
 

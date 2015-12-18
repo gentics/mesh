@@ -3,12 +3,13 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.graphdb.model.MeshElement;
 
 /**
- * An {@link IndexedVertex} is an a vertex which can be added to the search index.
+ * An {@link IndexableElement} is an a vertex which can be added to the search index.
  *
  */
-public interface IndexedVertex {
+public interface IndexableElement extends MeshElement {
 
 	/**
 	 * Create a new search queue batch for the given action and add the batch to the search queue. This method can enhance the created batch by calling

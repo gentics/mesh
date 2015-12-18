@@ -4,10 +4,11 @@ import java.util.List;
 import java.util.Stack;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -19,7 +20,7 @@ import io.vertx.core.Handler;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends GenericVertex<? extends RestModel>> extends MeshVertex {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertex {
 
 	/**
 	 * Return a list of all elements.
@@ -83,5 +84,6 @@ public interface RootVertex<T extends GenericVertex<? extends RestModel>> extend
 	void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, Handler<AsyncResult<T>> handler);
 
 	void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, Handler<AsyncResult<T>> handler);
+
 
 }

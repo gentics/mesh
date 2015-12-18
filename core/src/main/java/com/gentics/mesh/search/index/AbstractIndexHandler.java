@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
@@ -25,7 +25,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Component
-public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
+public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
@@ -96,7 +96,7 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 	 * @param map
 	 * @param vertex
 	 */
-	protected void addBasicReferences(Map<String, Object> map, GenericVertex<?> vertex) {
+	protected void addBasicReferences(Map<String, Object> map, MeshCoreVertex<?, ?> vertex) {
 		// TODO make sure field names match node response
 		map.put("uuid", vertex.getUuid());
 		addUser(map, "creator", vertex.getCreator());
@@ -116,7 +116,8 @@ public abstract class AbstractIndexHandler<T extends GenericVertex<?>> {
 		if (user != null) {
 			// TODO make sure field names match response UserResponse field names..
 			Map<String, Object> userFields = new HashMap<>();
-			// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being modified.
+			// For now we are not adding the user field to the indexed field since this would cause huge cascaded updates when the user object is being
+			// modified.
 			// userFields.put("username", user.getUsername());
 			// userFields.put("emailadress", user.getEmailAddress());
 			// userFields.put("firstname", user.getFirstname());

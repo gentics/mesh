@@ -3,25 +3,21 @@ package com.gentics.mesh.core.data.search.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.AsyncResult;
@@ -57,7 +53,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void addEntry(GenericVertex<?> vertex, SearchQueueEntryAction action) {
+	public void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action) {
 		addEntry(vertex.getUuid(), vertex.getType(), action);
 	}
 

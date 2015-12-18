@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.rest.role;
 
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 
-public class RoleListResponse extends AbstractListResponse<RoleResponse> {
+@Deprecated
+public class RoleListResponse extends ListResponse<RoleResponse> {
 
 	public RoleListResponse() {
 	}

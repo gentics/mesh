@@ -6,11 +6,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -25,8 +23,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -39,22 +35,12 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			createObject(ac, boot.meshRoot().getNodeRoot());
-		} , ac.errorHandler());
+		createElement(ac, () -> boot.meshRoot().getNodeRoot());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			String uuid = ac.getParameter("uuid");
-			Project project = ac.getProject();
-			if (project.getBaseNode().getUuid().equals(uuid)) {
-				ac.fail(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
-			} else {
-				deleteObject(ac, "uuid", "node_deleted", ac.getProject().getNodeRoot());
-			}
-		} , ac.errorHandler());
+		deleteElement(ac, () -> ac.getProject().getNodeRoot(), "uuid", "node_deleted");
 	}
 
 	public void handelDeleteLanguage(InternalActionContext ac) {
@@ -84,26 +70,19 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			updateObject(ac, "uuid", project.getNodeRoot());
-		} , ac.errorHandler());
+		Project project = ac.getProject();
+		updateElement(ac, "uuid", () -> project.getNodeRoot());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			loadTransformAndRespond(ac, "uuid", READ_PERM, project.getNodeRoot(), OK);
-		} , ac.errorHandler());
+		readElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			loadTransformAndRespond(ac, project.getNodeRoot(), new NodeListResponse(), OK);
-		} , ac.errorHandler());
+		Project project = ac.getProject();
+		readElementList(ac, () -> project.getNodeRoot());
 	}
 
 	public void handleMove(InternalActionContext ac) {
@@ -137,12 +116,12 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	public void handleReadChildren(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
-			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM,  rh -> {
+			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
 				if (hasSucceeded(ac, rh)) {
 					Node node = rh.result();
 					try {
 						Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-						transformAndRespond(ac, page, new NodeListResponse(), OK);
+						page.transformAndRespond(ac, OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}
@@ -159,7 +138,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 					Node node = rh.result();
 					try {
 						Page<? extends Tag> tagPage = node.getTags(ac);
-						transformAndRespond(ac, tagPage, new TagListResponse(), OK);
+						tagPage.transformAndRespond(ac, OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}

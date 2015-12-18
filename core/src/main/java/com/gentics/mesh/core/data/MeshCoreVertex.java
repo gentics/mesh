@@ -5,7 +5,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
-public interface GenericVertex<T extends RestModel> extends MeshVertex, TransformableNode<T> {
+public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertex, IndexableElement, TransformableElement<T> {
 
 	/**
 	 * Return the type of the vertex.

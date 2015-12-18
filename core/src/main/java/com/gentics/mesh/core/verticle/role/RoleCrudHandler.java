@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -23,7 +22,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
@@ -42,37 +40,27 @@ public class RoleCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			createObject(ac, boot.roleRoot());
-		} , ac.errorHandler());
+		createElement(ac, () -> boot.roleRoot());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			deleteObject(ac, "uuid", "role_deleted", boot.roleRoot());
-		} , ac.errorHandler());
+		deleteElement(ac, () -> boot.roleRoot(), "uuid", "role_deleted");
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.roleRoot(), OK);
-		} , ac.errorHandler());
+		readElement(ac, "uuid", () -> boot.roleRoot());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			updateObject(ac, "uuid", boot.roleRoot());
-		} , ac.errorHandler());
+		updateElement(ac, "uuid", () -> boot.roleRoot());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, boot.roleRoot(), new RoleListResponse(), OK);
-		} , ac.errorHandler());
+		readElementList(ac, () -> boot.roleRoot());
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {

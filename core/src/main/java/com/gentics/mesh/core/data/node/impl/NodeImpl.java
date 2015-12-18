@@ -41,7 +41,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
@@ -90,7 +90,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements Node {
+public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
 	private static final String PUBLISHED_PROPERTY_KEY = "published";
 

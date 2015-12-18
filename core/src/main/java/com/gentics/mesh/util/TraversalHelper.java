@@ -9,8 +9,10 @@ import java.util.List;
 
 import com.gentics.mesh.api.common.SortOrder;
 import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -46,8 +48,9 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	private static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal, String sortBy,
-			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
+	private static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+			VertexTraversal<?, ?, ?> countTraversal, String sortBy, SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT)
+					throws InvalidArgumentException {
 
 		if (page < 1) {
 			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
@@ -107,8 +110,8 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	public static <T> Page<? extends T> getPagedResult(VertexTraversal<?, ?, ?> traversal, VertexTraversal<?, ?, ?> countTraversal,
-			PagingParameter pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+			VertexTraversal<?, ?, ?> countTraversal, PagingParameter pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
 		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}

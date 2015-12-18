@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.rest.project;
 
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 
-public class ProjectListResponse extends AbstractListResponse<ProjectResponse> {
+@Deprecated
+public class ProjectListResponse extends ListResponse<ProjectResponse> {
 
 	public ProjectListResponse() {
 	}

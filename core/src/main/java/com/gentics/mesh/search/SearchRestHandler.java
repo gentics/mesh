@@ -19,13 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -75,7 +75,7 @@ public class SearchRestHandler {
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
 	 */
-	public <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void handleSearch(InternalActionContext ac,
+	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
 			RootVertex<T> rootVertex, Class<RL> classOfRL)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 

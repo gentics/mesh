@@ -5,14 +5,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class AbstractListResponse<T> {
+public class ListResponse<T> {
 
 	private List<T> data = new ArrayList<>();
 
 	@JsonProperty("_metainfo")
 	private PagingMetaInfo metainfo = new PagingMetaInfo();
 
-	public AbstractListResponse() {
+	public ListResponse() {
 	}
 
 	/**

@@ -12,7 +12,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 /**
  * Graph Domain Model interface for a tag.
  */
-public interface Tag extends GenericVertex<TagResponse>, NamedVertex, IndexedVertex, ReferenceableElement<TagReference> {
+public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference> {
 
 	public static final String TYPE = "tag";
 

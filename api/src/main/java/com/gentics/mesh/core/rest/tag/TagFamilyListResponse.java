@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.tag;
 
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 
-public class TagFamilyListResponse extends AbstractListResponse<TagFamilyResponse> {
+public class TagFamilyListResponse extends ListResponse<TagFamilyResponse> {
 
 	public TagFamilyListResponse() {
 	}

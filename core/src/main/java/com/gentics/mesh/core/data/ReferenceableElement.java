@@ -9,12 +9,19 @@ import com.gentics.mesh.handler.InternalActionContext;
  * @param
  * 			<TR>
  */
-public interface ReferenceableElement<TR extends NameUuidReference<TR>> {
+public interface ReferenceableElement<TR extends NameUuidReference<TR>> extends NamedElement {
+
+	TR createEmptyReferenceModel();
 
 	/**
 	 * Transform the element to a rest model that represents a references.
 	 * 
 	 * @param ac
 	 */
-	TR transformToReference(InternalActionContext ac);
+	default TR transformToReference(InternalActionContext ac) {
+		TR reference = createEmptyReferenceModel();
+		reference.setName(getName());
+		reference.setUuid(getUuid());
+		return reference;
+	}
 }

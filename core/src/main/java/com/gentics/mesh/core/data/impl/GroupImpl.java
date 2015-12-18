@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -46,7 +46,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, GroupReference>implements Group {
+public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
 
 	public static final String NAME_KEY = "name";
 
@@ -54,7 +54,7 @@ public class GroupImpl extends AbstractReferenceableCoreElement<GroupResponse, G
 		database.addVertexType(GroupImpl.class);
 	}
 
-	protected GroupReference createEmptyReferenceModel() {
+	public GroupReference createEmptyReferenceModel() {
 		return new GroupReference();
 	}
 

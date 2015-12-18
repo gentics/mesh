@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 
-public class MicroschemaListResponse extends AbstractListResponse<MicroschemaResponse> {
+public class MicroschemaListResponse extends ListResponse<MicroschemaResponse> {
 
 }

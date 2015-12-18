@@ -13,11 +13,10 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -44,7 +43,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, RoleReference> implements Role {
+public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
 
@@ -53,7 +52,7 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 	}
 
 	@Override
-	protected RoleReference createEmptyReferenceModel() {
+	public RoleReference createEmptyReferenceModel() {
 		return new RoleReference();
 	}
 
@@ -92,7 +91,7 @@ public class RoleImpl extends AbstractReferenceableCoreElement<RoleResponse, Rol
 	 */
 	@Override
 	@Deprecated
-	public boolean hasPermission(GraphPermission permission, GenericVertex<?> node) {
+	public boolean hasPermission(GraphPermission permission, MeshVertex node) {
 		return out(permission.label()).retain(node.getImpl()).hasNext();
 	}
 

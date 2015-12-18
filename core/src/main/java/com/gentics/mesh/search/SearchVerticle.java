@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -86,7 +86,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
-	private <T extends GenericVertex<TR>, TR extends RestModel, RL extends AbstractListResponse<TR>> void registerSearchHandler(String typeName,
+	private <T extends MeshCoreVertex<TR,T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
 			RootVertex<T> root, Class<RL> classOfRL) {
 		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {

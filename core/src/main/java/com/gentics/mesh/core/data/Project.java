@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
-public interface Project extends GenericVertex<ProjectResponse>, NamedVertex, IndexedVertex, ReferenceableElement<ProjectReference> {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference> {
 
 	public static final String TYPE = "project";
 

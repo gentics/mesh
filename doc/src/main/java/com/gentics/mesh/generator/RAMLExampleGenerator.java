@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
-import com.gentics.mesh.core.rest.common.AbstractListResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -353,7 +353,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return new Date().getTime();
 	}
 
-	public void setPaging(AbstractListResponse<?> response, long currentPage, long pageCount, long perPage, long totalCount) {
+	public void setPaging(ListResponse<?> response, long currentPage, long pageCount, long perPage, long totalCount) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(currentPage);
 		info.setPageCount(pageCount);

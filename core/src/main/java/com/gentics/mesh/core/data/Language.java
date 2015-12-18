@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
-public interface Language extends GenericVertex<LanguageResponse>, NamedVertex {
+public interface Language extends MeshCoreVertex<LanguageResponse, Language>, NamedElement {
 
 	public static final String TYPE = "language";
 

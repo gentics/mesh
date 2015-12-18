@@ -2,8 +2,6 @@ package com.gentics.mesh.core.verticle.tagfamily;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
-import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -13,8 +11,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -24,38 +20,28 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			createObject(ac, ac.getProject().getTagFamilyRoot());
-		} , ac.errorHandler());
+		createElement(ac, () -> ac.getProject().getTagFamilyRoot());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			deleteObject(ac, "uuid", "tagfamily_deleted", ac.getProject().getTagFamilyRoot());
-		} , ac.errorHandler());
+		deleteElement(ac, () -> ac.getProject().getTagFamilyRoot(), "uuid", "tagfamily_deleted");
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			updateObject(ac, "uuid", ac.getProject().getTagFamilyRoot());
-		} , ac.errorHandler());
+		updateElement(ac, "uuid", () -> ac.getProject().getTagFamilyRoot());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			loadTransformAndRespond(ac, "uuid", READ_PERM, ac.getProject().getTagFamilyRoot(), OK);
-		} , ac.errorHandler());
+		readElement(ac, "uuid", () -> ac.getProject().getTagFamilyRoot());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			Project project = ac.getProject();
-			loadTransformAndRespond(ac, project.getTagFamilyRoot(), new TagFamilyListResponse(), OK);
-		} , ac.errorHandler());
+		Project project = ac.getProject();
+		readElementList(ac, () -> project.getTagFamilyRoot());
 	}
 
 	public void handleReadTagList(InternalActionContext ac) {
@@ -70,7 +56,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler {
 					TagFamily tagFamily = rh.result();
 					try {
 						Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-						transformAndRespond(ac, tagPage, new TagListResponse(), OK);
+						tagPage.transformAndRespond(ac, OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}

@@ -3,6 +3,7 @@ package com.gentics.mesh.util;
 import java.util.List;
 
 import rx.Observable;
+import rx.functions.Func2;
 
 public final class RxUtil {
 
@@ -22,4 +23,14 @@ public final class RxUtil {
 		}
 		return merged;
 	}
+
+	public static <T> void noopAction(T nix) {
+
+	}
+
+	public final static <T1, T2, R extends Observable<R2>, R2> Observable<R> flatZip(Observable<? extends T1> o1, Observable<? extends T2> o2,
+			final Func2<? super T1, ? super T2, Observable<R>> zipFunction) {
+		return Observable.zip(o1, o2, zipFunction).flatMap(x -> x);
+	}
+
 }

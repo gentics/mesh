@@ -3,10 +3,8 @@ package com.gentics.mesh.core.verticle.user;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -15,7 +13,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -31,40 +28,27 @@ public class UserCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			// TODO invalidate active sessions for this user
-			deleteObject(ac, "uuid", "user_deleted", boot.userRoot());
-		} , ac.errorHandler());
+		deleteElement(ac, () -> boot.userRoot(), "uuid", "user_deleted");
 	}
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			createObject(ac, boot.userRoot());
-		} , ac.errorHandler());
+		createElement(ac, () -> boot.userRoot());
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			updateObject(ac, "uuid", boot.userRoot());
-		} , ac.errorHandler());
+		updateElement(ac, "uuid", () -> boot.userRoot());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			boot.userRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				loadTransformAndRespond(ac, "uuid", READ_PERM, boot.userRoot(), OK);
-			});
-		} , ac.errorHandler());
+		readElement(ac, "uuid", () -> boot.userRoot());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
-			loadTransformAndRespond(ac, boot.userRoot(), new UserListResponse(), OK);
-		} , ac.errorHandler());
+		readElementList(ac, () -> boot.userRoot());
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {

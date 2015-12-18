@@ -20,14 +20,13 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
-import com.gentics.mesh.core.data.generic.GenericFieldContainerNode;
+import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -55,7 +54,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class TagImpl extends GenericFieldContainerNode<TagResponse> implements Tag, IndexedVertex {
+public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Tag> implements Tag {
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
@@ -257,4 +256,8 @@ public class TagImpl extends GenericFieldContainerNode<TagResponse> implements T
 		batch.addEntry(getTagFamily(), UPDATE_ACTION);
 	}
 
+	@Override
+	public TagReference createEmptyReferenceModel() {
+		return new TagReference();
+	}
 }

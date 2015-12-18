@@ -5,7 +5,7 @@ import java.util.Map;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.TransformableNode;
+import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -17,7 +17,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
-public interface Micronode extends GraphFieldContainer, MeshVertex, TransformableNode<MicronodeResponse> {
+public interface Micronode extends GraphFieldContainer, MeshVertex, TransformableElement<MicronodeResponse> {
 	public static final String TYPE = "micronode";
 
 	/**

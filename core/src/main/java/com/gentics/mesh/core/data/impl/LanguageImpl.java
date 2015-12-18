@@ -3,8 +3,11 @@ package com.gentics.mesh.core.data.impl;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.generic.AbstractGenericVertex;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -13,7 +16,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import rx.Observable;
 
-public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>implements Language {
+public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Language> implements Language {
 
 	public static final String LANGUAGE_TAG_PROPERTY_KEY = "languageTag";
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
@@ -78,6 +81,11 @@ public class LanguageImpl extends AbstractGenericVertex<LanguageResponse>impleme
 	@Override
 	public void delete() {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+		new NotImplementedException();
 	}
 
 	@Override

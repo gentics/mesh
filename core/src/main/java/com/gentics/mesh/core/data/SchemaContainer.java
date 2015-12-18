@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.schema.SchemaResponse;
  * A schema container is a graph element which stores the JSON schema data.
  *
  */
-public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedVertex, IndexedVertex, ReferenceableElement<SchemaReference> {
+public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaContainer>, ReferenceableElement<SchemaReference> {
 
 	public static final String TYPE = "schemaContainer";
 
@@ -35,16 +35,5 @@ public interface SchemaContainer extends GenericVertex<SchemaResponse>, NamedVer
 	 * @return
 	 */
 	List<? extends Node> getNodes();
-
-//	/**
-//	 * Transform the schema container to a schema reference.
-//	 * 
-//	 * @param ac
-//	 * @param handler
-//	 * @return
-//	 */
-//	//SchemaContainer transformToReference(InternalActionContext ac, Handler<AsyncResult<SchemaReference>> handler);
-
-//	SchemaContainerImpl getImpl();
 
 }

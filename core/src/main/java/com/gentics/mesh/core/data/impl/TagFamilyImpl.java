@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -56,7 +56,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyResponse, TagFamilyReference> implements TagFamily {
+public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, TagFamily> implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
@@ -65,7 +65,7 @@ public class TagFamilyImpl extends AbstractReferenceableCoreElement<TagFamilyRes
 	}
 
 	@Override
-	protected TagFamilyReference createEmptyReferenceModel() {
+	public TagFamilyReference createEmptyReferenceModel() {
 		return new TagFamilyReference();
 	}
 

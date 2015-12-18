@@ -23,23 +23,23 @@ public class TagCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			createObject(ac, boot.tagRoot());
-		} , ac.errorHandler());
+		createElement(ac, () -> boot.tagRoot());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			deleteObject(ac, "uuid", "tag_deleted", ac.getProject().getTagRoot());
-		} , ac.errorHandler());
+		deleteElement(ac, () -> ac.getProject().getTagRoot(), "uuid", "tag_deleted");
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			updateObject(ac, "uuid", ac.getProject().getTagRoot());
-		} , ac.errorHandler());
+		updateElement(ac, "uuid", () -> ac.getProject().getTagRoot());
+	}
+
+	@Override
+	public void handleReadList(InternalActionContext ac) {
+		Project project = ac.getProject();
+		readElementList(ac, () -> project.getTagRoot());
 	}
 
 	@Override
@@ -47,14 +47,6 @@ public class TagCrudHandler extends AbstractCrudHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadTransformAndRespond(ac, "uuid", READ_PERM, project.getTagRoot(), OK);
-		} , ac.errorHandler());
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			loadTransformAndRespond(ac, project.getTagRoot(), new TagListResponse(), OK);
 		} , ac.errorHandler());
 	}
 
@@ -72,9 +64,9 @@ public class TagCrudHandler extends AbstractCrudHandler {
 					Page<? extends Node> page;
 					try {
 						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-						transformAndRespond(ac, page, new NodeListResponse(), OK);
+						page.transformAndRespond(ac, OK);
 					} catch (Exception e) {
-						//TODO i18n - exception handling
+						// TODO i18n - exception handling
 						ac.fail(BAD_REQUEST, "Could not load nodes");
 					}
 				}

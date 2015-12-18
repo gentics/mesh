@@ -23,70 +23,31 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			createObject(ac, boot.schemaContainerRoot());
-		} , rh -> {
-			if (rh.failed()) {
-				ac.errorHandler().handle(rh);
-			}
-		});
-
+		createElement(ac, () -> boot.schemaContainerRoot());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			deleteObject(ac, "uuid", "schema_deleted", boot.schemaContainerRoot());
-		} , rh -> {
-			if (rh.failed()) {
-				ac.errorHandler().handle(rh);
-			}
-		});
-
+		deleteElement(ac, () -> boot.schemaContainerRoot(), "uuid", "schema_deleted");
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			updateObject(ac, "uuid", boot.schemaContainerRoot());
-		} , rh -> {
-			if (rh.failed()) {
-				ac.errorHandler().handle(rh);
-			}
-		});
-
+		updateElement(ac, "uuid", () -> boot.schemaContainerRoot());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.schemaContainerRoot(), OK);
-		} , rh -> {
-			if (rh.failed()) {
-				ac.errorHandler().handle(rh);
-			}
-		});
+		readElement(ac, "uuid", () -> boot.schemaContainerRoot());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, boot.schemaContainerRoot(), new SchemaListResponse(), OK);
-		} , rh -> {
-			if (rh.failed()) {
-				ac.errorHandler().handle(rh);
-			}
-		});
+		readElementList(ac, () -> boot.schemaContainerRoot());
 	}
 
 	public void handleReadProjectList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, ac.getProject().getSchemaContainerRoot(), new SchemaListResponse(), OK);
-		} , rh -> {
-			if (rh.failed()) {
-				ac.errorHandler().handle(rh);
-			}
-		});
+		readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
 	}
 
 	public void handleAddProjectToSchema(InternalActionContext ac) {

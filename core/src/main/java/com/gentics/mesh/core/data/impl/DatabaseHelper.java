@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 
 import org.apache.commons.lang.StringUtils;
 
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
@@ -56,7 +56,7 @@ public class DatabaseHelper {
 	 * @param rootVertex
 	 * @param clazzOfT
 	 */
-	private <T extends GenericVertex<?>> void migrateType(RootVertex<T> rootVertex, Class<? extends T> clazzOfT) {
+	private <T extends MeshCoreVertex<?,T>> void migrateType(RootVertex<T> rootVertex, Class<? extends T> clazzOfT) {
 		try (Trx trx = database.trx()) {
 			for (T vertex : rootVertex.findAll()) {
 				log.info(

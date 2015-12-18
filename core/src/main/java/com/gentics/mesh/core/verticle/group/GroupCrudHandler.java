@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
-import static com.gentics.mesh.util.VerticleHelper.loadTransformAndRespond;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -17,9 +16,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.group.GroupListResponse;
-import com.gentics.mesh.core.rest.role.RoleListResponse;
-import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -34,37 +30,27 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			createObject(ac, boot.groupRoot());
-		} , ac.errorHandler());
+		createElement(ac, () -> boot.groupRoot());
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			deleteObject(ac, "uuid", "group_deleted", boot.groupRoot());
-		} , ac.errorHandler());
+		deleteElement(ac, () -> boot.groupRoot(), "uuid", "group_deleted");
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			updateObject(ac, "uuid", boot.groupRoot());
-		} , ac.errorHandler());
+		updateElement(ac, "uuid", () -> boot.groupRoot());
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, "uuid", READ_PERM, boot.groupRoot(), OK);
-		} , ac.errorHandler());
+		readElement(ac, "uuid", () -> boot.groupRoot());
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			loadTransformAndRespond(ac, boot.groupRoot(), new GroupListResponse(), OK);
-		} , ac.errorHandler());
+		readElementList(ac, () -> boot.groupRoot());
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac) {
@@ -74,7 +60,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 			boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM, grh -> {
 				try {
 					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-					transformAndRespond(ac, rolePage, new RoleListResponse(), OK);
+					rolePage.transformAndRespond(ac, OK);
 				} catch (InvalidArgumentException e) {
 					ac.fail(e);
 				}
@@ -147,7 +133,7 @@ public class GroupCrudHandler extends AbstractCrudHandler {
 					try {
 						Group group = grh.result();
 						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						transformAndRespond(ac, userPage, new UserListResponse(), OK);
+						userPage.transformAndRespond(ac, OK);
 					} catch (Exception e) {
 						ac.fail(e);
 					}

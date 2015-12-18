@@ -11,7 +11,8 @@ import java.io.IOException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -33,10 +34,10 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class MicroschemaContainerImpl extends AbstractReferenceableCoreElement<MicroschemaResponse, MicroschemaReference> implements MicroschemaContainer {
+public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<MicroschemaResponse, MicroschemaContainer> implements MicroschemaContainer {
 
 	@Override
-	protected MicroschemaReference createEmptyReferenceModel() {
+	public MicroschemaReference createEmptyReferenceModel() {
 		return new MicroschemaReference();
 	}
 

@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -57,7 +57,7 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectResponse, ProjectReference>implements Project {
+public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project> implements Project {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
@@ -67,7 +67,7 @@ public class ProjectImpl extends AbstractReferenceableCoreElement<ProjectRespons
 	}
 
 	@Override
-	protected ProjectReference createEmptyReferenceModel() {
+	public ProjectReference createEmptyReferenceModel() {
 		return new ProjectReference();
 	}
 

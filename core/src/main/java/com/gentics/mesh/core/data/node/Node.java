@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Stack;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericVertex;
-import com.gentics.mesh.core.data.IndexedVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -28,7 +27,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import rx.Observable;
 
-public interface Node extends GenericVertex<NodeResponse>, IndexedVertex {
+public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 
 	public static final String TYPE = "node";
 

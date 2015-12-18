@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.search;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.handler.ActionContext;
 
@@ -33,7 +33,7 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param vertex
 	 * @param action
 	 */
-	void addEntry(GenericVertex<?> vertex, SearchQueueEntryAction action);
+	void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action);
 
 	/**
 	 * Add an entry to this batch.
@@ -99,7 +99,6 @@ public interface SearchQueueBatch extends MeshVertex {
 	 */
 	long getTimestamp();
 
-
 	/**
 	 * Process the given batch and call the handler when the batch was processed.
 	 * 
@@ -109,6 +108,6 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param handler
 	 *            Result handler that will be invoked on completion or error
 	 */
-	void processBatch(ActionContext ac, Handler<AsyncResult<Future<Void	>>> handler);
+	void processBatch(ActionContext ac, Handler<AsyncResult<Future<Void>>> handler);
 
 }

@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.AbstractReferenceableCoreElement;
+import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -81,7 +81,7 @@ import rx.subjects.AsyncSubject;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, UserReference> implements User {
+public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -99,11 +99,6 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(UserImpl.class);
-	}
-
-	@Override
-	protected UserReference createEmptyReferenceModel() {
-		return new UserReference();
 	}
 
 	@Override
@@ -169,6 +164,11 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	}
 
 	@Override
+	public void setName(String name) {
+		setUsername(name);
+	}
+
+	@Override
 	public String getUsername() {
 		return getProperty(USERNAME_PROPERTY_KEY);
 	}
@@ -176,11 +176,6 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	@Override
 	public void setUsername(String name) {
 		setProperty(USERNAME_PROPERTY_KEY, name);
-	}
-
-	@Override
-	public void setName(String name) {
-		setUsername(name);
 	}
 
 	@Override
@@ -497,12 +492,12 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 	@Override
 	public void delete() {
 		// TODO don't allow this for the admin user
-		//		disable();
+		// disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
-		//		if (log.isDebugEnabled()) {
-		//			log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
-		//		}
-		//		outE(HAS_USER).removeAll();
+		// if (log.isDebugEnabled()) {
+		// log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
+		// }
+		// outE(HAS_USER).removeAll();
 		addIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
@@ -607,6 +602,12 @@ public class UserImpl extends AbstractReferenceableCoreElement<UserResponse, Use
 		// for (GenericVertex<?> element : getEditedElements()) {
 		// batch.addEntry(element, UPDATE_ACTION);
 		// }
+	}
+	
+	
+	@Override
+	public UserReference createEmptyReferenceModel() {
+		return new UserReference();
 	}
 
 }

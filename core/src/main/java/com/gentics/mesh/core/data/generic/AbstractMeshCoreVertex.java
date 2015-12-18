@@ -3,12 +3,17 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 
-import com.gentics.mesh.core.data.GenericVertex;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -16,9 +21,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVertexImpl implements GenericVertex<T> {
+public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends AbstractMeshVertex<T> implements MeshCoreVertex<T, R> {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractGenericVertex.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
 	private static final String CREATION_TIMESTAMP_PROPERTY_KEY = "creation_timestamp";
 	private static final String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
@@ -87,12 +92,21 @@ public abstract class AbstractGenericVertex<T extends RestModel> extends MeshVer
 		});
 
 	}
-
+	
 	@Override
 	public void setEditor(User user) {
 		setLinkOut(user.getImpl(), HAS_EDITOR);
 	}
 
+	@Override
+	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		batch.addEntry(this, action);
+		addRelatedEntries(batch, action);
+		return batch;
+	}
+	
 	@Override
 	public void setLastEditedTimestamp(long timestamp) {
 		setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
