@@ -181,7 +181,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 						assertSuccess(future);
 						WebRootResponse response = future.result();
 
-						assertEquals("Check response language", "en", response.getNodeResponse().getLanguage());
+						assertEquals("Check response language", language, response.getNodeResponse().getLanguage());
 					}
 				}
 			}

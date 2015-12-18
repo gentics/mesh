@@ -419,6 +419,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac) {
 		NodeGraphFieldContainer fieldContainer = null;
+
+		// first try the language stored in the actioncontext
+		Language requestedLanguage = ac.get(AC_LANGUAGE_KEY);
+		if (requestedLanguage != null) {
+			fieldContainer = getGraphFieldContainer(requestedLanguage);
+			if (fieldContainer != null) {
+				return fieldContainer;
+			}
+		}
+
 		List<String> languageTags = ac.getSelectedLanguageTags();
 		for (String languageTag : languageTags) {
 			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
