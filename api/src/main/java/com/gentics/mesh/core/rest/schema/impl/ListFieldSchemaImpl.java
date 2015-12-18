@@ -9,7 +9,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	private Integer min;
 	private Integer max;
 
-	@JsonProperty("allowed")
+	@JsonProperty("allow")
 	private String[] allowedSchemas;
 
 	private String listType;
