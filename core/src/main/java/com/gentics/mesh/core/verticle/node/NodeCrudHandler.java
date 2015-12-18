@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
@@ -31,22 +32,26 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 
 @Component
-public class NodeCrudHandler extends AbstractCrudHandler {
+public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 
 	@Override
+	public RootVertex<Node> getRootVertex(InternalActionContext ac) {
+		return ac.getProject().getNodeRoot();
+	}
+	
+	@Override
 	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> boot.meshRoot().getNodeRoot());
+		createElement(ac, () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> ac.getProject().getNodeRoot(), "uuid", "node_deleted");
+		deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
 	}
 
 	public void handelDeleteLanguage(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			project.getNodeRoot().loadObject(ac, "uuid", DELETE_PERM, rh -> {
+			getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM, rh -> {
 				if (hasSucceeded(ac, rh)) {
 					Node node = rh.result();
 					String languageTag = ac.getParameter("languageTag");
@@ -183,6 +188,7 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 
 	public void handleRemoveTag(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
+
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM, srh -> {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -17,11 +18,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 
 @Component
-public class SchemaContainerCrudHandler extends AbstractCrudHandler {
+public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer> {
+
+	@Override
+	public RootVertex<SchemaContainer> getRootVertex(InternalActionContext ac) {
+		return boot.schemaContainerRoot();
+	}
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> boot.schemaContainerRoot());
+		createElement(ac, () -> getRootVertex(ac));
 	}
 
 	@Override

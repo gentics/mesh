@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -22,33 +23,38 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Component
-public class UserCrudHandler extends AbstractCrudHandler {
+public class UserCrudHandler extends AbstractCrudHandler<User> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);
 
 	@Override
+	public RootVertex<User> getRootVertex(InternalActionContext ac) {
+		return boot.userRoot();
+	}
+
+	@Override
 	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> boot.userRoot(), "uuid", "user_deleted");
+		deleteElement(ac, () -> getRootVertex(ac), "uuid", "user_deleted");
 	}
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> boot.userRoot());
+		createElement(ac, () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> boot.userRoot());
+		updateElement(ac, "uuid", () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> boot.userRoot());
+		readElement(ac, "uuid", () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> boot.userRoot());
+		readElementList(ac, () -> getRootVertex(ac));
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {

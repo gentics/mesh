@@ -30,14 +30,24 @@ import io.vertx.core.Future;
 /**
  * Abstract class for CRUD REST handlers.
  */
-public abstract class AbstractCrudHandler extends AbstractHandler {
+public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends RestModel, T>> extends AbstractHandler {
+
+	/**
+	 * Return the main root vertex that is used to handle CRUD for the elements that are used in combination with this handler.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	abstract public RootVertex<T> getRootVertex(InternalActionContext ac);
 
 	/**
 	 * Handle create requests.
 	 * 
 	 * @param ac
 	 */
-	abstract public void handleCreate(InternalActionContext ac);
+	public void handleCreate(InternalActionContext ac) {
+		createElement(ac, () -> getRootVertex(ac));
+	}
 
 	/**
 	 * Handle delete requests.
@@ -47,25 +57,31 @@ public abstract class AbstractCrudHandler extends AbstractHandler {
 	abstract public void handleDelete(InternalActionContext ac);
 
 	/**
-	 * Handle update requests.
-	 * 
-	 * @param ac
-	 */
-	abstract public void handleUpdate(InternalActionContext ac);
-
-	/**
 	 * Handle read requests that target a single object.
 	 * 
 	 * @param ac
 	 */
-	abstract public void handleRead(InternalActionContext ac);
+	public void handleRead(InternalActionContext ac) {
+		readElement(ac, "uuid", () -> getRootVertex(ac));
+	}
+
+	/**
+	 * Handle update requests.
+	 * 
+	 * @param ac
+	 */
+	public void handleUpdate(InternalActionContext ac) {
+		updateElement(ac, "uuid", () -> getRootVertex(ac));
+	}
 
 	/**
 	 * Handle read list requests.
 	 * 
 	 * @param ac
 	 */
-	abstract public void handleReadList(InternalActionContext ac);
+	public void handleReadList(InternalActionContext ac) {
+		readElementList(ac, () -> getRootVertex(ac));
+	}
 
 	/**
 	 * Create an object using the given aggregation node and respond with a transformed object.
@@ -74,25 +90,29 @@ public abstract class AbstractCrudHandler extends AbstractHandler {
 	 * @param handler
 	 */
 	protected void createElement(InternalActionContext ac, TrxHandler2<RootVertex<?>> handler) {
-		RootVertex<?> root;
-		try {
-			root = handler.call();
-			root.create(ac, rh -> {
-				if (hasSucceeded(ac, rh)) {
-					MeshCoreVertex vertex = rh.result();
-					// Transform the vertex using a fresh transaction in order to start with a clean cache
-					db.noTrx(noTx -> {
-						vertex.reload();
-						transformAndRespond(ac, vertex, CREATED);
-					});
-				}
-			});
-		} catch (Exception e) {
-			ac.fail(e);
-		}
+		db.asyncNoTrx(noTrx -> {
+			RootVertex<?> root;
+			try {
+				root = handler.call();
+				root.create(ac, rh -> {
+					if (hasSucceeded(ac, rh)) {
+						MeshCoreVertex vertex = rh.result();
+						// Transform the vertex using a fresh transaction in order to start with a clean cache
+						db.noTrx(noTx -> {
+							vertex.reload();
+							transformAndRespond(ac, vertex, CREATED);
+						});
+					}
+				});
+			} catch (Exception e) {
+				ac.fail(e);
+			}
+		} , rh -> {
+			ac.errorHandler().handle(rh);
+		});
 	}
 
-	protected <T extends MeshCoreVertex<?, T>> void deleteElement(InternalActionContext ac, TrxHandler2<RootVertex<T>> handler,
+	protected <E extends MeshCoreVertex<?, E>> void deleteElement(InternalActionContext ac, TrxHandler2<RootVertex<E>> handler,
 			String uuidParameterName, String responseMessage) {
 
 		db.asyncNoTrx(noTrx -> {
@@ -176,11 +196,11 @@ public abstract class AbstractCrudHandler extends AbstractHandler {
 
 	}
 
-	protected <T extends MeshCoreVertex<TR, T>, TR extends RestModel> void readElementList(InternalActionContext ac,
-			TrxHandler2<RootVertex<T>> handler) {
+	//<E extends MeshCoreVertex<TR, E>, TR extends RestModel>
+	protected void readElementList(InternalActionContext ac, TrxHandler2<RootVertex<T>> handler) {
 		db.asyncNoTrx(noTrx -> {
 			RootVertex<T> root = handler.call();
-			VerticleHelper.loadObjects(ac, root, rh -> {
+			root.loadObjects(ac, rh -> {
 				if (hasSucceeded(ac, rh)) {
 					ac.send(toJson(rh.result()), OK);
 				}

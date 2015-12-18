@@ -239,4 +239,53 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		}
 	}
 
+	/**
+	 * Asynchronously load the objects and populate the given list response.
+	 * 
+	 * @param ac
+	 *            Action context that will be used to extract the paging parameters from
+	 * @param root
+	 *            Aggregation node that should be used to load the objects
+	 * @param handler
+	 *            Handler which will be invoked once all objects have been loaded and transformed and the list response is completed
+	 */
+	@Override
+	//<T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> 
+	public void loadObjects(InternalActionContext ac, Handler<AsyncResult<ListResponse<? extends RestModel>>> handler) {
+
+		// TODO use reflection to create the empty list response
+
+		PagingParameter pagingInfo = ac.getPagingParameter();
+		MeshAuthUser requestUser = ac.getUser();
+		try {
+			Page<? extends T> page = findAll(requestUser, pagingInfo);
+			List<ObservableFuture<RestModel>> transformedElements = new ArrayList<>();
+			for (T node : page) {
+				ObservableFuture<RestModel> obs = RxHelper.observableFuture();
+				transformedElements.add(obs);
+				node.transformToRest(ac, th -> {
+					if (th.failed()) {
+						obs.toHandler().handle(Future.failedFuture(th.cause()));
+					} else {
+						obs.toHandler().handle(Future.succeededFuture(th.result()));
+					}
+				});
+			}
+			ListResponse<RestModel> listResponse = new ListResponse<>();
+
+			RxUtil.concatList(transformedElements).collect(() -> {
+				return listResponse;
+			} , (list, restElement) -> {
+				list.getData().add(restElement);
+			}).subscribe(list -> {
+				page.setPaging(listResponse);
+				handler.handle(Future.succeededFuture(listResponse));
+			} , error -> {
+				handler.handle(Future.failedFuture(error));
+			});
+		} catch (InvalidArgumentException e) {
+			handler.handle(Future.failedFuture(e));
+		}
+	}
+
 }

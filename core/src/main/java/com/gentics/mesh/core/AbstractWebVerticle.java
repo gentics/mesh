@@ -1,14 +1,17 @@
 package com.gentics.mesh.core;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -97,6 +100,21 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 	 * @return
 	 */
 	public abstract Router setupLocalRouter();
+
+	protected Route addUuidHandler(String i18nNotFoundMessage) {
+		return route("/:uuid").handler(rh -> {
+			InternalActionContext ac = InternalActionContext.create(rh);
+			String uuid = ac.getParameter("uuid");
+			Node node = boot.meshRoot().getNodeRoot().findByUuidBlocking(uuid);
+			if (node == null) {
+				ac.fail(NOT_FOUND, i18nNotFoundMessage, uuid);
+				return;
+			} else {
+				ac.data().put("rootElement", node);
+			}
+			rh.next();
+		});
+	}
 
 	@Override
 	public void stop() throws Exception {

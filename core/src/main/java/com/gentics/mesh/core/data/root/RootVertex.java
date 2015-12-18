@@ -85,5 +85,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 	void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, Handler<AsyncResult<T>> handler);
 
+	void loadObjects(InternalActionContext ac, Handler<AsyncResult<ListResponse<? extends RestModel>>> handler);
 
 }

@@ -11,15 +11,21 @@ import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
-public class TagCrudHandler extends AbstractCrudHandler {
+public class TagCrudHandler extends AbstractCrudHandler<Tag> {
+
+	@Override
+	public RootVertex<Tag> getRootVertex(InternalActionContext ac) {
+		return boot.tagRoot();
+	}
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> boot.tagRoot());
+		createElement(ac, () -> getRootVertex(ac));
 	}
 
 	@Override

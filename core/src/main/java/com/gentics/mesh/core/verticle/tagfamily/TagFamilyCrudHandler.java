@@ -11,36 +11,42 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 @Component
-public class TagFamilyCrudHandler extends AbstractCrudHandler {
+public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily> {
+
+	@Override
+	public RootVertex<TagFamily> getRootVertex(InternalActionContext ac) {
+		return ac.getProject().getTagFamilyRoot();
+	}
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> ac.getProject().getTagFamilyRoot());
+		createElement(ac, () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> ac.getProject().getTagFamilyRoot(), "uuid", "tagfamily_deleted");
+		deleteElement(ac, () -> getRootVertex(ac), "uuid", "tagfamily_deleted");
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> ac.getProject().getTagFamilyRoot());
+		updateElement(ac, "uuid", () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> ac.getProject().getTagFamilyRoot());
+		readElement(ac, "uuid", () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> ac.getProject().getTagFamilyRoot());
+		readElementList(ac, () -> getRootVertex(ac));
 	}
 
 	public void handleReadTagList(InternalActionContext ac) {

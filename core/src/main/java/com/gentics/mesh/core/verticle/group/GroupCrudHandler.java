@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -26,31 +27,37 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 
 @Component
-public class GroupCrudHandler extends AbstractCrudHandler {
+public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 
 	@Override
+	public RootVertex<Group> getRootVertex(InternalActionContext ac) {
+	return boot.groupRoot();
+	}
+	
+	
+	@Override
 	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> boot.groupRoot());
+		createElement(ac, () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> boot.groupRoot(), "uuid", "group_deleted");
+		deleteElement(ac, () -> getRootVertex(ac), "uuid", "group_deleted");
 	}
 
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> boot.groupRoot());
+		updateElement(ac, "uuid", () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> boot.groupRoot());
+		readElement(ac, "uuid", () -> getRootVertex(ac));
 	}
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> boot.groupRoot());
+		readElementList(ac, () -> getRootVertex(ac));
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac) {

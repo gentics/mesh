@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -34,33 +35,18 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Component
-public class RoleCrudHandler extends AbstractCrudHandler {
+public class RoleCrudHandler extends AbstractCrudHandler<Role> {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
 
 	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> boot.roleRoot());
+	public RootVertex<Role> getRootVertex(InternalActionContext ac) {
+		return boot.roleRoot();
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> boot.roleRoot(), "uuid", "role_deleted");
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> boot.roleRoot());
-	}
-
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> boot.roleRoot());
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> boot.roleRoot());
+		deleteElement(ac, () -> getRootVertex(ac), "uuid", "role_deleted");
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {

@@ -38,6 +38,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
+//		addUuidHandler("node_not_found_for_uuid");
+
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
@@ -49,7 +51,10 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		addBreadcrumbHandler();
 		addLanguageHandlers();
+
 	}
+
+
 
 	private void addLanguageHandlers() {
 		route("/:uuid/languages/:languageTag").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {

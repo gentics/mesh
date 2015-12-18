@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.verticle.admin;
 
-import static com.gentics.mesh.util.VerticleHelper.respond;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -13,8 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.HttpActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -35,10 +33,10 @@ public class AdminHandler extends AbstractHandler {
 	 * @param rc
 	 */
 	public void handleBackup(RoutingContext rc) {
-		ActionContext ac = HttpActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		try {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
-			respond(ac, "backup_finished", OK);
+			ac.sendMessage(OK, "backup_finished");
 		} catch (IOException e) {
 			log.error("Backup failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "backup_failed");
@@ -46,11 +44,11 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleRestore(RoutingContext rc) {
-		ActionContext ac = HttpActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		try {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
-			respond(ac, "restore_finished", OK);
+			ac.sendMessage(OK, "restore_finished");
 		} catch (IOException e) {
 			log.error("Restore failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "restore_failed");
@@ -58,10 +56,10 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleExport(RoutingContext rc) {
-		ActionContext ac = HttpActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		try {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
-			respond(ac, "export_finished", OK);
+			ac.sendMessage(OK, "export_finished");
 		} catch (IOException e) {
 			log.error("Export failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "export_failed");
@@ -69,11 +67,11 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleImport(RoutingContext rc) {
-		ActionContext ac = HttpActionContext.create(rc);
+		InternalActionContext ac = InternalActionContext.create(rc);
 		try {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());
-			respond(ac, "import_finished", OK);
+			ac.sendMessage(OK, "import_finished");
 		} catch (IOException e) {
 			log.error("Import failed", e);
 			ac.fail(INTERNAL_SERVER_ERROR, "import_failed");
