@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.tagfamily;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -57,7 +56,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily> {
 
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
 			project.getTagFamilyRoot().loadObject(ac, "tagFamilyUuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					TagFamily tagFamily = rh.result();
 					try {
 						Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);

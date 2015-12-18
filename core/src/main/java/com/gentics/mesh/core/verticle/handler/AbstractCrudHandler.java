@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -95,7 +94,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 			try {
 				root = handler.call();
 				root.create(ac, rh -> {
-					if (hasSucceeded(ac, rh)) {
+					if (ac.failOnError(rh)) {
 						MeshCoreVertex vertex = rh.result();
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
 						db.noTrx(noTx -> {
@@ -118,7 +117,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 		db.asyncNoTrx(noTrx -> {
 			RootVertex<?> root = handler.call();
 			root.loadObject(ac, uuidParameterName, DELETE_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					db.trx(txDelete -> {
 						MeshCoreVertex<?, ?> vertex = rh.result();
 						String uuid = vertex.getUuid();
@@ -158,7 +157,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 		db.asyncNoTrx(noTrx -> {
 			RootVertex<?> root = handler.call();
 			root.loadObject(ac, uuidParameterName, UPDATE_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					MeshCoreVertex<?, ?> vertex = rh.result();
 					vertex.update(ac).subscribe(done -> {
 						// Transform the vertex using a fresh transaction in order to start with a clean cache
@@ -182,9 +181,9 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 		db.asyncNoTrx(noTrx -> {
 			RootVertex<?> root = handler.call();
 			root.loadObject(ac, uuidParameterName, READ_PERM, lh -> {
-				if (hasSucceeded(ac, lh)) {
+				if (ac.failOnError(lh)) {
 					lh.result().transformToRest(ac, th -> {
-						if (hasSucceeded(ac, th)) {
+						if (ac.failOnError(th)) {
 							ac.respond(th.result(), OK);
 						}
 					});
@@ -201,7 +200,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 		db.asyncNoTrx(noTrx -> {
 			RootVertex<T> root = handler.call();
 			root.loadObjects(ac, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					ac.send(toJson(rh.result()), OK);
 				}
 			});

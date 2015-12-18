@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -225,7 +224,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				}
 			} else {
 				project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM, rh -> {
-					if (hasSucceeded(ac, rh)) {
+					if (ac.failOnError( rh)) {
 						//TODO check permissions
 						SchemaContainer schemaContainer = rh.result();
 						containerFoundHandler.handle(Future.succeededFuture(schemaContainer));

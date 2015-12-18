@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -60,7 +59,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			String languageTag = ac.getParameter("languageTag");
 			String fieldName = ac.getParameter("fieldName");
 			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 					Language language = boot.languageRoot().findByLanguageTag(languageTag);
 					if (language == null) {
@@ -94,7 +93,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			String fieldName = ac.getParameter("fieldName");
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, (AsyncResult<Node> rh) -> {
 				// TODO Update SQB
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 					Language language = boot.languageRoot().findByLanguageTag(languageTag);
 					if (language == null) {
@@ -179,7 +178,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				// TODO Update SQB
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 				}
 			});
@@ -191,7 +190,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				// TODO Update SQB
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 				}
 			});
@@ -203,7 +202,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				// TODO Update SQB
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 				}
 			});
@@ -215,7 +214,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				// TODO Update SQB
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 				}
 			});
@@ -226,7 +225,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 				}
 			});
@@ -238,7 +237,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				// TODO Update SQB
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 				}
 			});

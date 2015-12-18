@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -20,33 +19,33 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag> {
 
 	@Override
 	public RootVertex<Tag> getRootVertex(InternalActionContext ac) {
-		return boot.tagRoot();
+		return ac.getProject().getTagRoot();
 	}
 
-	@Override
-	public void handleCreate(InternalActionContext ac) {
-		createElement(ac, () -> getRootVertex(ac));
-	}
+//	@Override
+//	public void handleCreate(InternalActionContext ac) {
+//		createElement(ac, () -> getRootVertex(ac));
+//	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> ac.getProject().getTagRoot(), "uuid", "tag_deleted");
 	}
 
-	@Override
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> ac.getProject().getTagRoot());
-	}
-
-	@Override
-	public void handleReadList(InternalActionContext ac) {
-		readElementList(ac, () -> ac.getProject().getTagRoot());
-	}
-
-	@Override
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> ac.getProject().getTagRoot());
-	}
+//	@Override
+//	public void handleUpdate(InternalActionContext ac) {
+//		updateElement(ac, "uuid", () -> ac.getProject().getTagRoot());
+//	}
+//
+//	@Override
+//	public void handleReadList(InternalActionContext ac) {
+//		readElementList(ac, () -> ac.getProject().getTagRoot());
+//	}
+//
+//	@Override
+//	public void handleRead(InternalActionContext ac) {
+//		readElement(ac, "uuid", () -> ac.getProject().getTagRoot());
+//	}
 
 	/**
 	 * Add the handler that returns a node list for a specified tag.
@@ -57,7 +56,7 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag> {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			project.getTagRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Tag tag = rh.result();
 					Page<? extends Node> page;
 					try {

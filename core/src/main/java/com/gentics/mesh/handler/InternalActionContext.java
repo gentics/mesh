@@ -121,4 +121,6 @@ public interface InternalActionContext extends ActionContext {
 	 */
 	void respond(RestModel result, HttpResponseStatus status);
 
+	boolean failOnError(AsyncResult<?> result);
+
 }

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -38,7 +37,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 	public RootVertex<Node> getRootVertex(InternalActionContext ac) {
 		return ac.getProject().getNodeRoot();
 	}
-	
+
 	@Override
 	public void handleCreate(InternalActionContext ac) {
 		createElement(ac, () -> getRootVertex(ac));
@@ -52,7 +51,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 	public void handelDeleteLanguage(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError( rh)) {
 					Node node = rh.result();
 					String languageTag = ac.getParameter("languageTag");
 					Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
@@ -95,9 +94,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 			String uuid = ac.getParameter("uuid");
 			String toUuid = ac.getParameter("toUuid");
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, sourceNodeHandler -> {
-				if (hasSucceeded(ac, sourceNodeHandler)) {
+				if (ac.failOnError(sourceNodeHandler)) {
 					project.getNodeRoot().loadObject(ac, "toUuid", UPDATE_PERM, targetNodeHandler -> {
-						if (hasSucceeded(ac, targetNodeHandler)) {
+						if (ac.failOnError(targetNodeHandler)) {
 							Node sourceNode = sourceNodeHandler.result();
 							Node targetNode = targetNodeHandler.result();
 							// TODO Update SQB
@@ -120,7 +119,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 					try {
 						Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
@@ -137,7 +136,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 					try {
 						Page<? extends Tag> tagPage = node.getTags(ac);
@@ -158,11 +157,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 				// TODO i18n error
 			} else {
 				project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
-					if (hasSucceeded(ac, rh)) {
+					if (ac.failOnError(rh)) {
 						Node node = rh.result();
 						project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM, th -> {
 							// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-							if (hasSucceeded(ac, th)) {
+							if (ac.failOnError(th)) {
 								Tag tag = th.result();
 								db.trx(txAdd -> {
 									SearchQueueBatch batch = node.addIndexBatch(UPDATE_ACTION);
@@ -192,7 +191,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
 				project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM, srh -> {
-					if (hasSucceeded(ac, srh) && hasSucceeded(ac, rh)) {
+					if (ac.failOnError(srh) && ac.failOnError(rh)) {
 						Node node = rh.result();
 						Tag tag = srh.result();
 						db.trx(txRemove -> {
@@ -218,7 +217,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					Node node = rh.result();
 					node.transformToBreadcrumb(ac, th -> {
 						ac.send(JsonUtil.toJson(th.result()), OK);

@@ -135,7 +135,7 @@ public class VerticleHelper {
 	public static <T extends MeshCoreVertex<? extends RestModel, T>> void loadTransformAndRespond(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, HttpResponseStatus status) {
 		loadAndTransform(ac, uuidParameterName, permission, root, rh -> {
-			if (hasSucceeded(ac, rh)) {
+			if (ac.failOnError(rh)) {
 				ac.send(toJson(rh.result()), status);
 			}
 		});
@@ -154,11 +154,11 @@ public class VerticleHelper {
 	public static <T extends MeshCoreVertex<? extends RestModel, T>> void loadAndTransform(InternalActionContext ac, String uuidParameterName,
 			GraphPermission permission, RootVertex<T> root, Handler<AsyncResult<RestModel>> handler) {
 		root.loadObject(ac, uuidParameterName, permission, rh -> {
-			if (hasSucceeded(ac, rh)) {
+			if (ac.failOnError(rh)) {
 				// TODO handle nested exceptions differently
 				try {
 					rh.result().transformToRest(ac, th -> {
-						if (hasSucceeded(ac, th)) {
+						if (ac.failOnError(th)) {
 							handler.handle(Future.succeededFuture(th.result()));
 						} else {
 							handler.handle(Future.failedFuture("Not authorized"));
@@ -181,26 +181,10 @@ public class VerticleHelper {
 	public static <T extends RestModel> void transformAndRespond(InternalActionContext ac, MeshCoreVertex<?, ?> vertex,
 			HttpResponseStatus statusCode) {
 		vertex.transformToRest(ac, th -> {
-			if (hasSucceeded(ac, th)) {
+			if (ac.failOnError(th)) {
 				ac.send(toJson(th.result()), statusCode);
 			}
 		});
-	}
-
-	/**
-	 * Check the result object and fail early when the result failed as well.
-	 * 
-	 * @param ac
-	 * @param result
-	 *            Result that will be checked
-	 * @return false when the result failed, otherwise true
-	 */
-	public static boolean hasSucceeded(InternalActionContext ac, AsyncResult<?> result) {
-		if (result.failed()) {
-			ac.fail(result.cause());
-			return false;
-		}
-		return true;
 	}
 
 }

@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -57,9 +56,9 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleAddProjectToSchema(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					boot.schemaContainerRoot().loadObject(ac, "schemaUuid", READ_PERM, srh -> {
-						if (hasSucceeded(ac, srh)) {
+						if (ac.failOnError(srh)) {
 							Project project = rh.result();
 							SchemaContainer schema = srh.result();
 							db.trx(addTx -> {
@@ -87,10 +86,10 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleRemoveProjectFromSchema(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM, rh -> {
-				if (hasSucceeded(ac, rh)) {
+				if (ac.failOnError(rh)) {
 					// TODO check whether schema is assigned to project
 					boot.schemaContainerRoot().loadObject(ac, "schemaUuid", READ_PERM, srh -> {
-						if (hasSucceeded(ac, srh)) {
+						if (ac.failOnError(srh)) {
 							SchemaContainer schema = srh.result();
 							Project project = rh.result();
 							db.trx(tcRemove -> {

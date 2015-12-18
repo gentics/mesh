@@ -28,6 +28,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
@@ -186,6 +187,23 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public ImageManipulationParameter getImageRequestParameter() {
 		//TODO return immutable object
 		return ImageManipulationParameter.fromQuery(query());
+	}
+
+	/**
+	 * Check the result object and fail early when the result failed as well.
+	 * 
+	 * @param ac
+	 * @param result
+	 *            Result that will be checked
+	 * @return false when the result failed, otherwise true
+	 */
+	@Override
+	public boolean failOnError(AsyncResult<?> result) {
+		if (result.failed()) {
+			fail(result.cause());
+			return false;
+		}
+		return true;
 	}
 
 }

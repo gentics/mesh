@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -63,12 +62,12 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role> {
 				}
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
 				boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM, rh -> {
-					if (hasSucceeded(ac, rh)) {
+					if (ac.failOnError( rh)) {
 
 						db.noTrx(noTx -> {
 							// 2. Resolve the path to element that is targeted
 							MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
-								if (hasSucceeded(ac, vertex)) {
+								if (ac.failOnError( vertex)) {
 									if (vertex.result() == null) {
 										ac.errorHandler().handle(failedFuture(NOT_FOUND, "error_element_for_path_not_found", pathToElement));
 										return;
@@ -105,13 +104,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role> {
 				}
 				// 1. Load the role that should be used
 				boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM, rh -> {
-					if (hasSucceeded(ac, rh)) {
+					if (ac.failOnError( rh)) {
 
 						db.noTrx(noTx -> {
 							RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 							// 2. Resolve the path to element that is targeted
 							MeshRoot.getInstance().resolvePathToElement(pathToElement, vertex -> {
-								if (hasSucceeded(ac, vertex)) {
+								if (ac.failOnError( vertex)) {
 									if (vertex.result() == null) {
 										ac.errorHandler().handle(failedFuture(NOT_FOUND, "error_element_for_path_not_found", pathToElement));
 										return;

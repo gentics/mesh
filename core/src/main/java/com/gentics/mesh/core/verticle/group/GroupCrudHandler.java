@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.util.VerticleHelper.hasSucceeded;
 import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -31,10 +30,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 
 	@Override
 	public RootVertex<Group> getRootVertex(InternalActionContext ac) {
-	return boot.groupRoot();
+		return boot.groupRoot();
 	}
-	
-	
+
 	@Override
 	public void handleCreate(InternalActionContext ac) {
 		createElement(ac, () -> getRootVertex(ac));
@@ -78,9 +76,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 	public void handleAddRoleToGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (hasSucceeded(ac, grh)) {
+				if (ac.failOnError(grh)) {
 					boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM, rrh -> {
-						if (hasSucceeded(ac, rrh)) {
+						if (ac.failOnError(rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
 							db.trx(txAdd -> {
@@ -107,10 +105,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (hasSucceeded(ac, grh)) {
+				if (ac.failOnError(grh)) {
 					// TODO check whether the role is actually part of the group
 					boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM, rrh -> {
-						if (hasSucceeded(ac, rrh)) {
+						if (ac.failOnError(rrh)) {
 							Group group = grh.result();
 							Role role = rrh.result();
 							db.trx(txRemove -> {
@@ -136,7 +134,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM, grh -> {
-				if (hasSucceeded(ac, grh)) {
+				if (ac.failOnError(grh)) {
 					try {
 						Group group = grh.result();
 						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
@@ -153,9 +151,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 		db.asyncNoTrx(tc -> {
 
 			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (hasSucceeded(ac, grh)) {
+				if (ac.failOnError(grh)) {
 					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
-						if (hasSucceeded(ac, urh)) {
+						if (ac.failOnError(urh)) {
 							db.trx(txAdd -> {
 								Group group = grh.result();
 								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
@@ -180,9 +178,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
 		db.asyncNoTrx(tc -> {
 			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (hasSucceeded(ac, grh)) {
+				if (ac.failOnError( grh)) {
 					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
-						if (hasSucceeded(ac, urh)) {
+						if (ac.failOnError( urh)) {
 							db.trx(tcRemove -> {
 								Group group = grh.result();
 								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
