@@ -52,16 +52,21 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadBinaryNode() throws IOException {
 		Node node = content("news_2015");
+
+		// 1. Transform the node into a binary content
+		node.setSchemaContainer(schemaContainer("binary-content"));
 		prepareSchema(node, "image/*");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
+		// 2. Update the binary data
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
 		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
 
+		// 3. Try to resolve the path
 		String path = "/News/2015/somefile.dat";
 		Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setResolveLinks(LinkType.FULL));
 		latchFor(webrootFuture);

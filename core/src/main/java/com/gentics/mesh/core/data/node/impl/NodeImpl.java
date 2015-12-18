@@ -706,7 +706,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public PathSegment hasSegment(String segment) {
+	public PathSegment getSegment(String segment) {
 		Schema schema = getSchema();
 
 		// Check the different language versions
@@ -720,7 +720,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					return new PathSegment(this, field, container.getLanguage());
 				}
 			}
-			
+
 			// No luck yet  - lets check whether a binary field matches the segmentField 
 			BinaryGraphField binaryField = container.getBinary(segmentFieldName);
 			if (binaryField == null) {
@@ -729,7 +729,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
-					return new PathSegment(this, field, container.getLanguage());
+					return new PathSegment(this, binaryField, container.getLanguage());
 				}
 			}
 		}
@@ -749,7 +749,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Check all childnodes
 		for (Node childNode : getChildren()) {
-			PathSegment pathSegment = childNode.hasSegment(segment);
+			PathSegment pathSegment = childNode.getSegment(segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
 				return childNode.resolvePath(path, pathStack);

@@ -276,7 +276,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @param segment
 	 * @return Segment information or null if this node is not providing the given segment
 	 */
-	PathSegment hasSegment(String segment);
+	PathSegment getSegment(String segment);
 
 	/**
 	 * Return the webroot path to the node in the given language.

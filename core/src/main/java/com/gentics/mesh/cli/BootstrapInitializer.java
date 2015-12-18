@@ -42,9 +42,11 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -445,7 +447,7 @@ public class BootstrapInitializer {
 				Schema schema = new SchemaImpl();
 				schema.setName("binary-content");
 				schema.setDisplayField("name");
-				schema.setSegmentField("filename");
+				schema.setSegmentField("binary");
 				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
@@ -453,10 +455,10 @@ public class BootstrapInitializer {
 				nameFieldSchema.setLabel("Name");
 				schema.addField(nameFieldSchema);
 
-				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-				nameFieldSchema.setName("filename");
-				nameFieldSchema.setLabel("Filename");
-				schema.addField(filenameFieldSchema);
+				BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
+				binaryFieldSchema.setName("binary");
+				binaryFieldSchema.setLabel("Binary Data");
+				schema.addField(binaryFieldSchema);
 
 				schema.setFolder(false);
 				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser);
