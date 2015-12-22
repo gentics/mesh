@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -11,11 +10,14 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import rx.Observable;
+
 @Component
-public class TagCrudHandler extends AbstractCrudHandler<Tag> {
+public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 
 	@Override
 	public RootVertex<Tag> getRootVertex(InternalActionContext ac) {
@@ -33,22 +35,17 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag> {
 	 * @param ac
 	 */
 	public void handleTaggedNodesList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 			Project project = ac.getProject();
-			project.getTagRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					Tag tag = rh.result();
-					Page<? extends Node> page;
-					try {
-						page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-						page.transformAndRespond(ac, OK);
-					} catch (Exception e) {
-						// TODO i18n - exception handling
-						ac.fail(BAD_REQUEST, "Could not load nodes");
-					}
+			return project.getTagRoot().loadObject(ac, "uuid", READ_PERM).flatMap(tag -> {
+				try {
+					Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
+					return page.transformToRest(ac);
+				} catch (Exception e) {
+					return Observable.error(e);
 				}
-			});
-		} , ac.errorHandler());
+			}).toBlocking().last();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 }

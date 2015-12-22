@@ -19,9 +19,6 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -129,7 +126,7 @@ public class Neo4jDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> T trx(TrxHandler<T> txHandler) {
 		// TODO Auto-generated method stub
 		return null;
 	}

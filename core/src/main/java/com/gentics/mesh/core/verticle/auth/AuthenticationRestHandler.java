@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.verticle.auth;
 
-import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
@@ -25,10 +24,10 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		db.asyncNoTrx(tx -> {
+		db.asyncNoTrx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
-			transformAndRespond(ac, requestUser, OK);
-		} , ac.errorHandler());
+			return requestUser.transformToRest(ac).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	/**

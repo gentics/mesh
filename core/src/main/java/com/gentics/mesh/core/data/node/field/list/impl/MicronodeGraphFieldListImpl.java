@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -24,14 +23,10 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RxUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList> implements MicronodeGraphFieldList {
+public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList>
+		implements MicronodeGraphFieldList {
 
 	@Override
 	public Class<? extends MicronodeGraphField> getListType() {
@@ -39,33 +34,20 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, String fieldKey,
-			Handler<AsyncResult<MicronodeFieldList>> handler) {
+	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey) {
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
-		List<ObservableFuture<MicronodeResponse>> futures = new ArrayList<>();
+		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		for (MicronodeGraphField item : getList()) {
-			ObservableFuture<MicronodeResponse> obsItemTransformed = RxHelper.observableFuture();
-			futures.add(obsItemTransformed);
-			item.getMicronode().transformToRest(ac, rh -> {
-				if (rh.failed()) {
-					obsItemTransformed.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsItemTransformed.toHandler().handle(Future.succeededFuture(rh.result()));
-				}
-			});
+			obs.add(item.getMicronode().transformToRest(ac));
 		}
 
-		RxUtil.concatList(futures).collect(() -> {
+		return RxUtil.concatList(obs).collect(() -> {
 			return restModel.getItems();
 		} , (x, y) -> {
 			x.add(y);
-		}).subscribe(list -> {
-			handler.handle(Future.succeededFuture(restModel));
-		} , error -> {
-			handler.handle(Future.failedFuture(error));
-		});
+		}).map(i -> restModel);
 	}
 
 	@Override
@@ -82,15 +64,15 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
 			return field.getMicronode().getUuid();
-		}, field -> {
+		} , field -> {
 			return field.getMicronode();
-		}, (a, b) -> {
+		} , (a, b) -> {
 			return a;
 		}));
 
 		return Observable.create(subscriber -> {
-			Observable.from(list.getItems()).flatMap(node -> {
-				MicroschemaReference microschemaReference = node.getMicroschema();
+			Observable.from(list.getItems()).flatMap(item -> {
+				MicroschemaReference microschemaReference = item.getMicroschema();
 				if (microschemaReference == null) {
 					return Observable.error(new NullPointerException("Found micronode without microschema reference"));
 				}
@@ -98,11 +80,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				String microschemaName = microschemaReference.getName();
 				String microschemaUuid = microschemaReference.getUuid();
 				if (!StringUtils.isEmpty(microschemaName)) {
-					return Observable.just(boot.microschemaContainerRoot().findByName(microschemaName));
+					return boot.microschemaContainerRoot().findByName(microschemaName);
 				} else {
-					ObservableFuture<MicroschemaContainer> microschemaContainer = RxHelper.observableFuture();
-					boot.microschemaContainerRoot().findByUuid(microschemaUuid, microschemaContainer.toHandler());
-					return microschemaContainer;
+					return boot.microschemaContainerRoot().findByUuid(microschemaUuid);
 				}
 			} , (node, microschemaContainer) -> {
 				Micronode micronode = existing.get(node.getUuid());
@@ -110,8 +90,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					micronode = getGraph().addFramedVertex(MicronodeImpl.class);
 					micronode.setMicroschemaContainer(microschemaContainer);
 				} else {
-					if (!StringUtils.equalsIgnoreCase(micronode.getMicroschemaContainer().getUuid(),
-							microschemaContainer.getUuid())) {
+					if (!StringUtils.equalsIgnoreCase(micronode.getMicroschemaContainer().getUuid(), microschemaContainer.getUuid())) {
 						// TODO proper exception
 						throw new Error();
 					}
@@ -130,9 +109,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					addItem(String.valueOf(counter++), micronode);
 				}
 				existing.values().stream().forEach(Micronode::delete);
-			}, e -> {
+			} , e -> {
 				subscriber.onError(e);
-			}, () -> {
+			} , () -> {
 				subscriber.onNext(true);
 				subscriber.onCompleted();
 			});

@@ -16,13 +16,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RxUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
-public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList>implements NodeGraphFieldList {
+public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList> implements NodeGraphFieldList {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeGraphFieldListImpl.class);
@@ -45,34 +41,24 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<NodeFieldList>> handler) {
+	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
 		if (expandField) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 
-			List<ObservableFuture<NodeResponse>> futures = new ArrayList<>();
+			List<Observable<NodeResponse>> futures = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				ObservableFuture<NodeResponse> obsItemTransformed = RxHelper.observableFuture();
-				futures.add(obsItemTransformed);
-				item.getNode().transformToRest(ac, rh -> {
-					if (rh.failed()) {
-						obsItemTransformed.toHandler().handle(Future.failedFuture(rh.cause()));
-					} else {
-						obsItemTransformed.toHandler().handle(Future.succeededFuture(rh.result()));
-					}
-				});
+				futures.add(item.getNode().transformToRest(ac));
 			}
 
-			RxUtil.concatList(futures).collect(() -> {
+			return RxUtil.concatList(futures).collect(() -> {
 				return restModel.getItems();
 			} , (x, y) -> {
 				x.add(y);
-			}).subscribe(list -> {
-				handler.handle(Future.succeededFuture(restModel));
-			} , error -> {
-				handler.handle(Future.failedFuture(error));
+			}).map(i -> {
+				return restModel;
 			});
 
 		} else {
@@ -82,7 +68,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 				restModel.add(listItem);
 			}
-			handler.handle(Future.succeededFuture(restModel));
+			return Observable.just(restModel);
 
 		}
 

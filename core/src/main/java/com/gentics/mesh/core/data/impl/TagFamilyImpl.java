@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
@@ -45,13 +44,8 @@ import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, TagFamily> implements TagFamily {
@@ -154,37 +148,24 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<TagFamilyResponse>> handler) {
+	public Observable<TagFamilyResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(noTrx -> {
-			Set<ObservableFuture<Void>> futures = new HashSet<>();
+
+		return db.asyncNoTrx(() -> {
+			Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
 
 			TagFamilyResponse restTagFamily = new TagFamilyResponse();
 			restTagFamily.setName(getName());
 
 			// Add common fields
-			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
-			futures.add(obsFieldSet);
-			fillCommonRestFields(restTagFamily, ac, rh -> {
-				if (rh.failed()) {
-					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsFieldSet.toHandler().handle(Future.succeededFuture());
-				}
-			});
+			obs.add(fillCommonRestFields(restTagFamily, ac));
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restTagFamily);
 
 			// Merge and complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(restTagFamily);
-			} , error -> {
-				noTrx.fail(error);
-			});
+			return Observable.merge(obs).toBlocking().first();
 
-		} , (AsyncResult<TagFamilyResponse> rh) -> {
-			handler.handle(rh);
 		});
 	}
 
@@ -202,42 +183,35 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<TagFamily> update(InternalActionContext ac) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		Project project = ac.getProject();
 		Database db = MeshSpringConfiguration.getInstance().database();
-		String newName = requestModel.getName();
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
+		return db.trx(() -> {
+			Project project = ac.getProject();
+			String newName = requestModel.getName();
 
-		if (StringUtils.isEmpty(newName)) {
-			return errorObservable(BAD_REQUEST, "tagfamily_name_not_set");
-		} else {
-			project.getTagFamilyRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
-					TagFamily tagFamily = rh.result();
-					if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
-						HttpStatusCodeErrorException conflictError = conflict(ac, tagFamilyWithSameName.getUuid(), newName,
-								"tagfamily_conflicting_name", newName);
-						obsFut.toHandler().handle(Future.failedFuture(conflictError));
-						return;
-					}
-					db.trx(txUpdate -> {
-						tagFamily.setName(newName);
-						SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-						txUpdate.complete(batch);
-					} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
-						if (txUpdated.failed()) {
-							obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
-						} else {
-							txUpdated.result().process(ac, obsFut.toHandler());
-						}
-					});
+			if (StringUtils.isEmpty(newName)) {
+				throw error(BAD_REQUEST, "tagfamily_name_not_set");
+			}
+
+			Observable<TagFamily> tagFamilyObs = project.getTagFamilyRoot().loadObject(ac, "uuid", UPDATE_PERM);
+			Observable<TagFamily> tagFamilyWithSameNameObs = project.getTagFamilyRoot().findByName(newName);
+
+			Observable<TagFamily> obs = Observable.zip(tagFamilyObs, tagFamilyWithSameNameObs, (tagFamily, tagFamilyWithSameName) -> {
+				if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
+					throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 				}
-			});
-		}
-		return obsFut;
+				SearchQueueBatch batch = db.trx(() -> {
+					tagFamily.setName(newName);
+					return addIndexBatch(UPDATE_ACTION);
+				});
 
+				// TODO i have no clue why map(i-> tagFamily) is not working.
+				batch.process().toBlocking().first();
+				return tagFamily;
+			});
+			return obs;
+		});
 	}
 
 	@Override

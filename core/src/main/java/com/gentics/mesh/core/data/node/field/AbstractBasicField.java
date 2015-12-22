@@ -4,8 +4,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * Abstract class for basic fields. All basic fields should implement this class in order to provide various methods that can be used to access basic field
@@ -46,6 +45,6 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	/**
 	 * Transform the field into the rest response model.
 	 */
-	abstract public void transformToRest(ActionContext ac, Handler<AsyncResult<T>> handler);
+	abstract public Observable<T> transformToRest(ActionContext ac);
 
 }

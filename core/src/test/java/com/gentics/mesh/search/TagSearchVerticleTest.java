@@ -2,13 +2,11 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
@@ -83,11 +81,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		String name = tag.getName();
 		String uuid = tag.getUuid();
 		// Add the tag to the index
-		CountDownLatch latch = new CountDownLatch(1);
-		tagIndexHandler.store(tag, Tag.TYPE, rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch);
+		tagIndexHandler.store(tag, Tag.TYPE).toBlocking().first();
 		searchProvider.refreshIndex();
 
 		// 1. Verify that the tag is indexed

@@ -3,11 +3,6 @@ package com.gentics.mesh.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -100,19 +95,7 @@ public class MeshRootTest extends AbstractBasicDBTest {
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {
-		CountDownLatch latch = new CountDownLatch(1);
-		AtomicReference<MeshVertex> vertex = new AtomicReference<>();
-		MeshRoot.getInstance().resolvePathToElement(pathToElement, rh -> {
-			if (rh.failed()) {
-				rh.cause().printStackTrace();
-			}
-			vertex.set(rh.result());
-			latch.countDown();
-		});
-		if (!latch.await(1, TimeUnit.SECONDS)) {
-			fail("Timeout reached for path {" + pathToElement + "}");
-		}
-		return vertex.get();
+		return MeshRoot.getInstance().resolvePathToElement(pathToElement).toBlocking().first();
 	}
 
 }

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -14,8 +13,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -62,14 +59,9 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role createdRole = root.create(roleName, user());
 		assertNotNull(createdRole);
 		String uuid = createdRole.getUuid();
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.roleRoot().findByUuid(uuid, rh -> {
-			Role role = rh.result();
-			assertNotNull(role);
-			assertEquals(roleName, role.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Role role = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull(role);
+		assertEquals(roleName, role.getName());
 	}
 
 	@Test
@@ -122,7 +114,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		int nRuns = 2000;
 		for (int i = 0; i < nRuns; i++) {
-			user.hasPermission(ac, folder("news"), READ_PERM);
+			user.hasPermissionAsync(ac, folder("news"), READ_PERM);
 		}
 	}
 
@@ -169,7 +161,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		User user = user();
 		assertFalse("The create permission to the groups root node should have been revoked.",
-				user.hasPermission(ac, meshRoot().getGroupRoot(), CREATE_PERM));
+				user.hasPermissionSync(ac, meshRoot().getGroupRoot(), CREATE_PERM));
 	}
 
 	@Test
@@ -268,29 +260,20 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		boot.roleRoot().findByUuid(role().getUuid(), rh -> {
-			assertNotNull(rh.result());
-		});
-		boot.roleRoot().findByUuid("bogus", rh -> {
-			assertNull(rh.result());
-		});
+		Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().first();
+		assertNotNull(role);
+		role = boot.roleRoot().findByUuid("bogus").toBlocking().first();
+		assertNull(role);
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
 		Role role = role();
-		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		CompletableFuture<RoleResponse> cf = new CompletableFuture<>();
-		role.transformToRest(ac, rh -> {
-			cf.complete(rh.result());
-			latch.countDown();
-		});
+		RoleResponse restModel = role.transformToRest(ac).toBlocking().first();
 
-		failingLatch(latch);
-		RoleResponse restModel = cf.get();
 		assertNotNull(restModel);
 		assertEquals(role.getName(), restModel.getName());
 		assertEquals(role.getUuid(), restModel.getUuid());
@@ -305,17 +288,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		Role role = root.create(roleName, user());
 		String uuid = role.getUuid();
-		CountDownLatch latch = new CountDownLatch(2);
-		boot.roleRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			role.delete();
-			boot.roleRoot().findByUuid(uuid, rh2 -> {
-				assertNull(rh2.result());
-				latch.countDown();
-			});
-			latch.countDown();
-		});
-		failingLatch(latch);
+		role = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull(role);
+		role.delete();
+		Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		assertNull(foundRole);
 
 	}
 
@@ -325,10 +302,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 		MeshRoot root = meshRoot();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		Role role = root.getRoleRoot().create("SuperUser", user());
-		assertFalse(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().first());
 		user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
 		ac.data().clear();
-		assertTrue(user().hasPermission(ac, role, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermissionAsync(ac, role, GraphPermission.CREATE_PERM).toBlocking().first());
 	}
 
 	@Test

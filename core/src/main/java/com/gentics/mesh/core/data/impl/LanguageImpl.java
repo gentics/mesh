@@ -7,13 +7,9 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
-import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import rx.Observable;
 
 public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Language> implements Language {
@@ -63,14 +59,13 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<LanguageResponse>> handler) {
+	public Observable<LanguageResponse> transformToRest(InternalActionContext ac) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());
 		model.setName(getName());
 		model.setNativeName(getNativeName());
-
-		handler.handle(Future.succeededFuture(model));
+		return Observable.just(model);
 	}
 
 	@Override
@@ -89,7 +84,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext rc) {
+	public Observable<Language> update(InternalActionContext rc) {
 		throw new NotImplementedException();
 	}
 

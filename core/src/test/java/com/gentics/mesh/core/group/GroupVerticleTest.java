@@ -130,9 +130,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		GroupResponse restGroup = future.result();
 		test.assertGroup(request, restGroup);
 
-		boot.groupRoot().findByUuid(restGroup.getUuid(), rh -> {
-			assertNotNull("Group should have been created.", rh.result());
-		});
+		Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().first();
+		assertNotNull("Group should have been created.", foundGroup);
 
 		Future<GroupResponse> readFuture = getClient().findGroupByUuid(restGroup.getUuid());
 		latchFor(readFuture);
@@ -167,7 +166,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		rootUuid = root.getUuid();
 		role().revokePermissions(root, CREATE_PERM);
 		User user = user();
-		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(ac, root, CREATE_PERM));
+		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().first());
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -324,7 +323,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertGroup(request, restGroup);
 
 		try (Trx tx = db.trx()) {
-			Group reloadedGroup = boot.groupRoot().findByUuidBlocking(restGroup.getUuid());
+			Group reloadedGroup = boot.groupRoot().findByUuid(restGroup.getUuid()).toBlocking().first();
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -355,10 +354,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-		boot.groupRoot().findByUuid(group.getUuid(), rh -> {
-			Group reloadedGroup = rh.result();
-			assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
-		});
+		Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid()).toBlocking().first();
+		assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 	}
 
 	@Test
@@ -376,7 +373,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, CONFLICT, "group_conflicting_name", alreadyUsedName);
 
-		Group reloadedGroup = groupRoot.findByUuidBlocking(group().getUuid());
+		Group reloadedGroup = groupRoot.findByUuid(group().getUuid()).toBlocking().first();
 		assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 	}
 

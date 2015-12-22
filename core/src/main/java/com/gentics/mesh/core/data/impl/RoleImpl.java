@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -33,13 +32,8 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
@@ -120,11 +114,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<RoleResponse>> handler) {
-
+	public Observable<RoleResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(noTrx -> {
-			Set<ObservableFuture<Void>> futures = new HashSet<>();
+		return db.asyncNoTrx(() -> {
+			Set<Observable<RoleResponse>> obs = new HashSet<>();
 
 			RoleResponse restRole = new RoleResponse();
 			restRole.setName(getName());
@@ -134,27 +127,13 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			}
 
 			// Add common fields
-			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
-			futures.add(obsFieldSet);
-			fillCommonRestFields(restRole, ac, rh -> {
-				if (rh.failed()) {
-					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsFieldSet.toHandler().handle(Future.succeededFuture());
-				}
-			});
+			obs.add(fillCommonRestFields(restRole, ac));
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restRole);
 
 			// Merge and complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(restRole);
-			} , error -> {
-				noTrx.fail(error);
-			});
-		} , (AsyncResult<RoleResponse> rh) -> {
-			handler.handle(rh);
+			return Observable.merge(obs).toBlocking().last();
 		});
 	}
 
@@ -173,33 +152,24 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<? extends Role> update(InternalActionContext ac) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		Database db = MeshSpringConfiguration.getInstance().database();
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
-			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName());
+			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName()).toBlocking().first();
 			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
-				HttpStatusCodeErrorException conflictError = conflict(ac, roleWithSameName.getUuid(), requestModel.getName(),
-						"role_conflicting_name");
-				return Observable.error(conflictError);
+				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
 			}
 
-			db.trx(tc -> {
+			return db.trx(() -> {
 				setName(requestModel.getName());
-				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-				tc.complete(batch);
-			} , (AsyncResult<SearchQueueBatch> rh) -> {
-				if (rh.failed()) {
-					obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					rh.result().process(ac, obsFut.toHandler());
-				}
-			});
+				return addIndexBatch(UPDATE_ACTION);
+			}).process().map(b -> this);
 		}
-		return obsFut;
+		// No update required
+		return Observable.just(this);
 	}
 
 	@Override

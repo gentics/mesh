@@ -9,8 +9,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * A node field container is a aggregation node that holds localized fields.
@@ -19,16 +18,14 @@ import io.vertx.core.Handler;
 public interface NodeGraphFieldContainer extends GraphFieldContainer {
 
 	/**
-	 * Locate the field with the given fieldkey in this container and return the rest model for this field.
+	 * Locate the field with the given fieldkey in this container and return an observable with the rest model for this field.
 	 * 
 	 * @param ac
 	 * @param fieldKey
 	 * @param fieldSchema
 	 * @param expandField
-	 * @param handler
 	 */
-	void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField,
-			Handler<AsyncResult<Field>> handler);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.

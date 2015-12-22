@@ -2,7 +2,6 @@ package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -97,9 +96,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily root = tagFamily("basic");
 		Tag tag = root.create(ENGLISH_NAME, project(), user());
 		String uuid = tag.getUuid();
-		meshRoot().getTagRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-		});
+		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
 
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
@@ -116,24 +113,20 @@ public class TagTest extends AbstractBasicObjectTest {
 
 		// 4. Reload the tag and inspect the tagged nodes
 		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
-			Tag reloadedTag = rh.result();
-			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
-			Node contentFromTag = reloadedTag.getNodes().iterator().next();
-			NodeGraphFieldContainer fieldContainer = contentFromTag.getGraphFieldContainer(german);
+		Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first();
+		assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
+		Node contentFromTag = reloadedTag.getNodes().iterator().next();
+		NodeGraphFieldContainer fieldContainer = contentFromTag.getGraphFieldContainer(german);
 
-			assertNotNull(contentFromTag);
-			assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
-			String filename = fieldContainer.getString("displayName").getString();
-			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
+		assertNotNull(contentFromTag);
+		assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());
+		String filename = fieldContainer.getString("displayName").getString();
+		assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
-			// Remove the file/content and check whether the content was really removed
-			reloadedTag.removeNode(contentFromTag);
-			// TODO verify for removed node
-			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		// Remove the file/content and check whether the content was really removed
+		reloadedTag.removeNode(contentFromTag);
+		// TODO verify for removed node
+		assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes().size());
 
 	}
 
@@ -146,19 +139,14 @@ public class TagTest extends AbstractBasicObjectTest {
 		Node node = folder("news");
 		node.addTag(tag);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.nodeRoot().findByUuid(node.getUuid(), rh -> {
-			Node reloadedNode = rh.result();
-			boolean found = false;
-			for (Tag currentTag : reloadedNode.getTags()) {
-				if (currentTag.getUuid().equals(tag.getUuid())) {
-					found = true;
-				}
+		Node reloadedNode = boot.nodeRoot().findByUuid(node.getUuid()).toBlocking().first();
+		boolean found = false;
+		for (Tag currentTag : reloadedNode.getTags()) {
+			if (currentTag.getUuid().equals(tag.getUuid())) {
+				found = true;
 			}
-			assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
-			latch.countDown();
-		});
-		failingLatch(latch);
+		}
+		assertTrue("The tag {" + tag.getUuid() + "} was not found within the node tags.", found);
 
 	}
 
@@ -237,7 +225,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByName() {
 		Tag tag = tag("car");
-		Tag foundTag = meshRoot().getTagRoot().findByName("Car");
+		Tag foundTag = meshRoot().getTagRoot().findByName("Car").toBlocking().first();
 		assertNotNull(foundTag);
 		assertEquals("Car", foundTag.getName());
 		assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()));
@@ -248,16 +236,8 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		Tag tag = tag("car");
-		CountDownLatch latch = new CountDownLatch(2);
-		meshRoot().getTagRoot().findByUuid(tag.getUuid(), rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
-		meshRoot().getTagRoot().findByUuid("bogus", rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first());
+		assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus").toBlocking().first());
 	}
 
 	@Test
@@ -268,16 +248,13 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getTagRoot().findByUuid(uuid, rh -> {
-			Tag loadedTag = rh.result();
-			assertNotNull("The folder could not be found.", loadedTag);
-			String name = loadedTag.getName();
-			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagFamily.getTags().size());
-			latch.countDown();
-		});
-		failingLatch(latch);
-		Tag projectTag = project().getTagRoot().findByUuidBlocking(uuid);
+		Tag loadedTag = meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull("The folder could not be found.", loadedTag);
+		String name = loadedTag.getName();
+		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
+		assertEquals(10, tagFamily.getTags().size());
+		latch.countDown();
+		Tag projectTag = project().getTagRoot().findByUuid(uuid).toBlocking().first();
 		assertNotNull("The tag should also be assigned to the project tag root", projectTag);
 
 	}
@@ -295,22 +272,15 @@ public class TagTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("lang=de,en");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		int nTransformations = 100;
-		CountDownLatch latch = new CountDownLatch(nTransformations);
 		for (int i = 0; i < nTransformations; i++) {
 			long start = System.currentTimeMillis();
-			tag.transformToRest(ac, th -> {
-				if (th.failed()) {
-					rc.fail(th.cause());
-				}
-				TagResponse response = th.result();
-				assertNotNull(response);
-				long dur = System.currentTimeMillis() - start;
-				log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
-				JsonUtil.toJson(response);
-				latch.countDown();
-			});
+			TagResponse response = tag.transformToRest(ac).toBlocking().first();
+
+			assertNotNull(response);
+			long dur = System.currentTimeMillis() - start;
+			log.info("Transformation with depth {" + depth + "} took {" + dur + "} [ms]");
+			JsonUtil.toJson(response);
 		}
-		failingLatch(latch);
 		// assertEquals(2, response.getChildTags().size());
 		// assertEquals(4, response.getPerms().length);
 
@@ -322,17 +292,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create("someTag", project(), user());
 		String uuid = tag.getUuid();
-		CountDownLatch latch = new CountDownLatch(2);
-		meshRoot().getTagRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			tag.delete();
-			meshRoot().getTagRoot().findByUuid(uuid, rh2 -> {
-				assertNull(rh2.result());
-				latch.countDown();
-			});
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+		tag.delete();
+		assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
 	}
 
 	@Test
@@ -341,11 +303,11 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = tagFamily("basic");
 		InternalActionContext ac = getMockedInternalActionContext("");
 		Tag tag = tagFamily.create("someTag", project(), user());
-		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.READ_PERM));
-		assertFalse(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
+		assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.READ_PERM).toBlocking().first());
+		assertFalse(user().hasPermissionAsync(ac, tag, GraphPermission.READ_PERM).toBlocking().first());
 		getRequestUser().addCRUDPermissionOnRole(tagFamily, GraphPermission.CREATE_PERM, tag);
 		ac.data().clear();
-		assertTrue(user().hasPermission(ac, tag, GraphPermission.READ_PERM));
+		assertTrue(user().hasPermissionAsync(ac, tag, GraphPermission.READ_PERM).toBlocking().first());
 	}
 
 	@Test

@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Ignore;
@@ -75,16 +73,11 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaResponse restSchemaResponse = future.result();
 		test.assertSchema(request, restSchemaResponse);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid(), rh -> {
-			SchemaContainer schemaContainer = rh.result();
-			assertNotNull(schemaContainer);
-			assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
-			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
-			// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid()).toBlocking().first();
+		assertNotNull(schemaContainer);
+		assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
+		// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
+		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
 	}
 
@@ -276,13 +269,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(request.getName(), restSchema.getName());
 		schema.reload();
 		assertEquals("The name of the schema was not updated", name, schema.getName());
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			assertEquals("The name should have been updated", name, reloaded.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first();
+		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 
@@ -313,13 +301,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first();
+		assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 	}
 
 	// Delete Tests
@@ -334,10 +317,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
 
-		boot.schemaContainerRoot().findByUuid(schema.getUuid(), rh -> {
-			SchemaContainer reloaded = rh.result();
-			assertNull("The schema should have been deleted.", reloaded);
-		});
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first();
+		assertNull("The schema should have been deleted.", reloaded);
 	}
 
 	@Test

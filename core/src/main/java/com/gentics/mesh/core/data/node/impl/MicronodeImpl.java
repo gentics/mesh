@@ -3,13 +3,12 @@ package com.gentics.mesh.core.data.node.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -75,78 +74,53 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
 	@Override
-	public void transformToRest(InternalActionContext ac,
-			Handler<AsyncResult<MicronodeResponse>> handler) {
+	public Observable<MicronodeResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
 
-		db.asyncNoTrx(noTrx -> {
+		return db.asyncNoTrx(() -> {
+			List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 			MicronodeResponse restMicronode = new MicronodeResponse();
 			MicroschemaContainer microschemaContainer = getMicroschemaContainer();
 			if (microschemaContainer == null) {
-				noTrx.fail(error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found."));
+				throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 			}
 
 			Microschema microschema = microschemaContainer.getMicroschema();
 			if (microschema == null) {
-				noTrx.fail(error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found."));
-			} else {
-				// Microschema Reference
-				restMicronode.setMicroschema(microschemaContainer.transformToReference(ac));
+				throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
+			}
+			// Microschema Reference
+			restMicronode.setMicroschema(microschemaContainer.transformToReference(ac));
 
-				// set uuid
-				restMicronode.setUuid(getUuid());
+			// set uuid
+			restMicronode.setUuid(getUuid());
 
-				for (FieldSchema fieldEntry : microschema.getFields()) {
-					ObservableFuture<Void> obsRestField = RxHelper.observableFuture();
-					futures.add(obsRestField);
-
-					getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, rh -> {
-						if (rh.failed()) {
-							obsRestField.toHandler().handle(Future.failedFuture(rh.cause()));
-						} else {
-							Field restField = rh.result();
-							if (fieldEntry.isRequired() && restField == null) {
-								/* TODO i18n */
-								// TODO no trx fail. Instead let obsRestField fail
-								noTrx.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "The field {" + fieldEntry.getName()
-										+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag."));
-								obsRestField.toHandler().handle(Future.failedFuture("Field not set"));
-								return;
-							}
-							if (restField == null) {
-								log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-							} else {
-								restMicronode.getFields().put(fieldEntry.getName(), restField);
-								obsRestField.toHandler().handle(Future.succeededFuture());
-							}
-						}
-					});
-				}
+			for (FieldSchema fieldEntry : microschema.getFields()) {
+				Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry).map(restField -> {
+					if (fieldEntry.isRequired() && restField == null) {
+						/* TODO i18n */
+						// TODO no trx fail. Instead let obsRestField fail
+						throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+								+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
+					}
+					if (restField == null) {
+						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+					} else {
+						restMicronode.getFields().put(fieldEntry.getName(), restField);
+					}
+					return restMicronode;
+				});
+				obs.add(obsRestField);
 			}
 
-			// Prevent errors in which no futures have been added
-			ObservableFuture<Void> dummyFuture = RxHelper.observableFuture();
-			futures.add(dummyFuture);
-			dummyFuture.toHandler().handle(Future.succeededFuture());
+			return Observable.merge(obs).toBlocking().last();
 
-			// Merge and complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(restMicronode);
-			} , error -> {
-				noTrx.fail(error);
-			});
-
-		} , (AsyncResult<MicronodeResponse> rh) -> {
-			handler.handle(rh);
 		});
 	}
 
@@ -166,9 +140,9 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			Handler<AsyncResult<Field>> handler) {
-		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.getRestFieldFromGraph(InternalActionContext, String, FieldSchema, boolean, Handler<AsyncResult<Field>>))
+	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema) {
+		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.getRestFieldFromGraph(InternalActionContext, String,
+		// FieldSchema, boolean, Handler<AsyncResult<Field>>))
 		// find a better solution for this
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
@@ -178,81 +152,56 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			// fieldKey, this);
 			StringGraphField graphStringField = getString(fieldKey);
 			if (graphStringField == null) {
-				handler.handle(Future.succeededFuture(new StringFieldImpl()));
-				return;
+				return Observable.just(new StringFieldImpl());
 			} else {
-				graphStringField.transformToRest(ac, th -> {
-					if (th.failed()) {
-						handler.handle(Future.failedFuture(th.cause()));
-						return;
-					} else {
-						StringField stringField = th.result();
-						if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-							stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
-									ac.getResolveLinksType()));
-						}
-						handler.handle(Future.succeededFuture(stringField));
-						return;
+				return graphStringField.transformToRest(ac).map(stringField -> {
+					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType()));
 					}
+					return stringField;
 				});
-				return;
 			}
 		case NUMBER:
 			NumberGraphField graphNumberField = getNumber(fieldKey);
 			if (graphNumberField == null) {
-				handler.handle(Future.succeededFuture(new NumberFieldImpl()));
-				return;
+				return Observable.just(new NumberFieldImpl());
 			} else {
-				graphNumberField.transformToRest(ac, wrap(handler));
-				return;
+				return graphNumberField.transformToRest(ac);
 			}
 
 		case DATE:
 			DateGraphField graphDateField = getDate(fieldKey);
 			if (graphDateField == null) {
-				handler.handle(Future.succeededFuture(new DateFieldImpl()));
-				return;
+				return Observable.just(new DateFieldImpl());
 			} else {
-				graphDateField.transformToRest(ac, wrap(handler));
-				return;
+				return graphDateField.transformToRest(ac);
 			}
 		case BOOLEAN:
 			BooleanGraphField graphBooleanField = getBoolean(fieldKey);
 			if (graphBooleanField == null) {
-				handler.handle(Future.succeededFuture(new BooleanFieldImpl()));
-				return;
+				return Observable.just(new BooleanFieldImpl());
 			} else {
-				graphBooleanField.transformToRest(ac, wrap(handler));
-				return;
+				return graphBooleanField.transformToRest(ac);
 			}
 		case NODE:
 			NodeGraphField graphNodeField = getNode(fieldKey);
 			if (graphNodeField == null) {
-				handler.handle(Future.succeededFuture(new NodeFieldImpl()));
-				return;
+				return Observable.just(new NodeFieldImpl());
 			} else {
-				graphNodeField.transformToRest(ac, fieldKey, handler);
-				return;
+				return graphNodeField.transformToRest(ac, fieldKey);
 			}
 		case HTML:
 			HtmlGraphField graphHtmlField = getHtml(fieldKey);
 			if (graphHtmlField == null) {
-				handler.handle(Future.succeededFuture(new HtmlFieldImpl()));
-				return;
+				return Observable.just(new HtmlFieldImpl());
 			} else {
-				graphHtmlField.transformToRest(ac,  rhRest -> {
-					if (rhRest.failed()) {
-						handler.handle(Future.failedFuture(rhRest.cause()));
-					} else {
-						// If needed resolve links within the html 
-						HtmlField field = rhRest.result();
-						if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-							field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(), ac.getResolveLinksType()));
-						}
-						handler.handle(Future.succeededFuture(field));
+				return graphHtmlField.transformToRest(ac).map(field -> {
+					// If needed resolve links within the html
+					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(), ac.getResolveLinksType()));
 					}
+					return field;
 				});
-				return;
 			}
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
@@ -261,65 +210,53 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			case NodeGraphFieldList.TYPE:
 				NodeGraphFieldList nodeFieldList = getNodeList(fieldKey);
 				if (nodeFieldList == null) {
-					handler.handle(Future.succeededFuture(new NodeFieldListImpl()));
-					return;
+					return Observable.just(new NodeFieldListImpl());
 				} else {
-					nodeFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return nodeFieldList.transformToRest(ac, fieldKey);
 				}
 			case NumberGraphFieldList.TYPE:
 				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
-					handler.handle(Future.succeededFuture(new NumberFieldListImpl()));
-					return;
+					return Observable.just(new NumberFieldListImpl());
 				} else {
-					numberFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return numberFieldList.transformToRest(ac, fieldKey);
+
 				}
 			case BooleanGraphFieldList.TYPE:
 				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
 				if (booleanFieldList == null) {
-					handler.handle(Future.succeededFuture(new BooleanFieldListImpl()));
-					return;
+					return Observable.just(new BooleanFieldListImpl());
+
 				} else {
-					booleanFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return booleanFieldList.transformToRest(ac, fieldKey);
 				}
 			case HtmlGraphFieldList.TYPE:
 				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
-					handler.handle(Future.succeededFuture(new HtmlFieldListImpl()));
-					return;
+					return Observable.just(new HtmlFieldListImpl());
 				} else {
-					htmlFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return htmlFieldList.transformToRest(ac, fieldKey);
 				}
 			case MicronodeGraphFieldList.TYPE:
 				MicronodeGraphFieldList graphMicroschemaField = getMicronodeList(fieldKey);
 				if (graphMicroschemaField == null) {
-					handler.handle(Future.succeededFuture(new MicronodeFieldListImpl()));
-					return;
+					return Observable.just(new MicronodeFieldListImpl());
 				} else {
-					graphMicroschemaField.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return graphMicroschemaField.transformToRest(ac, fieldKey);
 				}
 			case StringGraphFieldList.TYPE:
 				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
-					handler.handle(Future.succeededFuture(new StringFieldListImpl()));
-					return;
+					return Observable.just(new StringFieldListImpl());
 				} else {
-					stringFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return stringFieldList.transformToRest(ac, fieldKey);
 				}
 			case DateGraphFieldList.TYPE:
 				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
-					handler.handle(Future.succeededFuture(new DateFieldListImpl()));
-					return;
+					return Observable.just(new DateFieldListImpl());
 				} else {
-					dateFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return dateFieldList.transformToRest(ac, fieldKey);
 				}
 			}
 			break;
@@ -337,11 +274,15 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			// TODO this is not allowed
 			break;
 		}
+
+		return errorObservable(BAD_REQUEST, "type unknown");
+
 	}
 
 	@Override
 	public void updateFieldsFromRest(ActionContext ac, Map<String, Field> fields) throws MeshSchemaException {
-		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.updateFieldsFromRest(ActionContext, Map<String, Field>, Schema))
+		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.updateFieldsFromRest(ActionContext, Map<String,
+		// Field>, Schema))
 		// find a better solution for this
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -435,10 +376,9 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				if (restField == null) {
 					continue;
 				}
-				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
-					Node node = rh.result();
+				boot.nodeRoot().findByUuid(nodeField.getUuid()).map(node -> {
 					if (node == null) {
-						//TODO We want to delete the field when the field has been explicitly set to null
+						// TODO We want to delete the field when the field has been explicitly set to null
 						if (log.isDebugEnabled()) {
 							log.debug("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 						}
@@ -457,6 +397,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 							createNode(key, node);
 						}
 					}
+					return null;
 				});
 				break;
 			case LIST:
@@ -475,7 +416,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 					// Add the listed items
 					AtomicInteger integer = new AtomicInteger();
 					for (NodeFieldListItem item : nodeList.getItems()) {
-						Node node = boot.nodeRoot().findByUuidBlocking(item.getUuid());
+						Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
 						graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
 					}
 				} else if (restField instanceof StringFieldListImpl) {
@@ -567,7 +508,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			}
 		}
 
-		// Some fields were specified within the json but were not specified in the microschema. Those fields can't be handled. We throw an error to inform the user about this.
+		// Some fields were specified within the json but were not specified in the microschema. Those fields can't be handled. We throw an error to inform the
+		// user about this.
 		String extraFields = "";
 		for (String key : unhandledFieldKeys) {
 			extraFields += "[" + key + "]";
@@ -596,8 +538,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	private void failOnMissingMandatoryField(ActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key)
 			throws MeshSchemaException {
 		if (field == null && fieldSchema.isRequired() && restField == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST,
-					ac.i18n("node_error_missing_mandatory_field_value", key, getMicroschema().getName()));
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_error_missing_mandatory_field_value", key, getMicroschema().getName()));
 		}
 	}
 

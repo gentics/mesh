@@ -76,14 +76,14 @@ public interface InternalActionContext extends ActionContext {
 	 */
 	<T> Handler<AsyncResult<T>> errorHandler();
 
-	/**
-	 * Send a generic message response with the given message.
-	 * 
-	 * @param status
-	 * @param i18nMessage
-	 * @param i18nParameters
-	 */
-	void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters);
+//	/**
+//	 * Send a generic message response with the given message.
+//	 * 
+//	 * @param status
+//	 * @param i18nMessage
+//	 * @param i18nParameters
+//	 */
+//	void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters);
 
 	/**
 	 * Return the currently used database.

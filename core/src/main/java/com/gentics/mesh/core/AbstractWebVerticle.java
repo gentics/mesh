@@ -105,7 +105,7 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 		return route("/:uuid").handler(rh -> {
 			InternalActionContext ac = InternalActionContext.create(rh);
 			String uuid = ac.getParameter("uuid");
-			Node node = boot.meshRoot().getNodeRoot().findByUuidBlocking(uuid);
+			Node node = boot.meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().first();
 			if (node == null) {
 				ac.fail(NOT_FOUND, i18nNotFoundMessage, uuid);
 				return;

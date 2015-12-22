@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.tag;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -51,15 +48,10 @@ public class AtomicTagTest extends AbstractEmptyDBTest {
 		tag.setName("renamed tag");
 		assertEquals("renamed tag", tag.getName());
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.tagRoot().findByUuid(uuid, rh -> {
-			Tag reloadedTag = rh.result();
-			assertNotNull(reloadedTag);
-			assertNotNull(reloadedTag.getFieldContainers());
-			assertEquals(1, reloadedTag.getFieldContainers().size());
-			assertEquals("renamed tag", reloadedTag.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Tag reloadedTag = boot.tagRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull(reloadedTag);
+		assertNotNull(reloadedTag.getFieldContainers());
+		assertEquals(1, reloadedTag.getFieldContainers().size());
+		assertEquals("renamed tag", reloadedTag.getName());
 	}
 }

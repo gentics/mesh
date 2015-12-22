@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -53,27 +52,17 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testTransformToReference() throws Exception {
 		Node node = content();
 		InternalActionContext ac = getMockedInternalActionContext("");
-		CountDownLatch latch = new CountDownLatch(1);
-		node.transformToReference(ac, rh -> {
-			NodeReference reference = rh.result();
-			assertNotNull(reference);
-			assertEquals(node.getUuid(), reference.getUuid());
-			latch.countDown();
-		});
-		failingLatch(latch);
-		// assertEquals(node.getName(), reference.getName());
+		NodeReference reference = node.transformToReference(ac).toBlocking().first();
+		assertNotNull(reference);
+		assertEquals(node.getUuid(), reference.getUuid());
 	}
 
 	@Test
 	public void testTransformToBreadcrumb() throws Exception {
 		Node node = content();
 		InternalActionContext ac = getMockedInternalActionContext("");
-		CountDownLatch latch = new CountDownLatch(1);
-		node.transformToBreadcrumb(ac, rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNotNull(node.transformToBreadcrumb(ac).toBlocking().first());
+		//TODO add more asserts
 	}
 
 	/**
@@ -220,14 +209,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		Node newsNode = content("news overview");
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.nodeRoot().findByUuid(newsNode.getUuid(), rh -> {
-			Node node = rh.result();
-			assertNotNull(node);
-			assertEquals(newsNode.getUuid(), node.getUuid());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Node node = boot.nodeRoot().findByUuid(newsNode.getUuid()).toBlocking().first();
+		assertNotNull(node);
+		assertEquals(newsNode.getUuid(), node.getUuid());
 	}
 
 	@Test
@@ -237,15 +221,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		Node newsNode = content("concorde");
 
-		CountDownLatch latch = new CountDownLatch(1);
-		AtomicReference<NodeResponse> reference = new AtomicReference<>();
-		newsNode.transformToRest(ac, rh -> {
-			reference.set(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
-		NodeResponse response = reference.get();
-
+		NodeResponse response = newsNode.transformToRest(ac).toBlocking().first();
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
@@ -268,10 +244,10 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() {
 		Node node = folder("2015").create(user(), getSchemaContainer(), project());
 		InternalActionContext ac = getMockedInternalActionContext("");
-		assertFalse(user().hasPermission(ac, node, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().first());
 		user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
 		ac.data().clear();
-		assertTrue(user().hasPermission(ac, node, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().first());
 	}
 
 	@Test

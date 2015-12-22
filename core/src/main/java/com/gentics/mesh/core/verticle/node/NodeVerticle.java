@@ -58,7 +58,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private void addLanguageHandlers() {
 		route("/:uuid/languages/:languageTag").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handelDeleteLanguage(InternalActionContext.create(rc));
+			crudHandler.handleDeleteLanguage(InternalActionContext.create(rc));
 		});
 
 	}

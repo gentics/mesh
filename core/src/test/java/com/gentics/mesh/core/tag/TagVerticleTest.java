@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -20,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -278,13 +276,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.tagRoot().findByUuid(uuid, rh -> {
-			assertNull("The tag should have been deleted", rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
-		Project project = boot.projectRoot().findByName(PROJECT_NAME);
+		tag = boot.tagRoot().findByUuid(uuid).toBlocking().first();
+		assertNull("The tag should have been deleted", tag);
+
+		Project project = boot.projectRoot().findByName(PROJECT_NAME).toBlocking().first();
 		assertNotNull(project);
 	}
 
@@ -299,12 +294,8 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(messageFut);
 		expectException(messageFut, FORBIDDEN, "error_missing_perm", uuid);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.tagRoot().findByUuid(uuid, rh -> {
-			assertNotNull("The tag should not have been deleted", rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		tag = boot.tagRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull("The tag should not have been deleted", tag);
 	}
 
 	@Test
@@ -337,9 +328,9 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals("SomeName", future.result().getFields().getName());
 
 		assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
-				meshRoot().getTagRoot().findByUuidBlocking(future.result().getUuid()));
+				meshRoot().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().first());
 		assertNotNull("The tag could not be found within the project.tagRoot node.",
-				project().getTagRoot().findByUuidBlocking(future.result().getUuid()));
+				project().getTagRoot().findByUuid(future.result().getUuid()).toBlocking().first());
 
 		future = getClient().findTagByUuid(PROJECT_NAME, future.result().getUuid());
 		latchFor(future);

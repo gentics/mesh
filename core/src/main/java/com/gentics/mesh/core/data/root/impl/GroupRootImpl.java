@@ -3,8 +3,9 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -19,19 +20,14 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
-import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
-public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot {
+public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	public static void checkIndices(Database database) {
 		database.addEdgeIndex(HAS_GROUP);
@@ -74,7 +70,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 	}
 
 	@Override
-	public void create(InternalActionContext ac, Handler<AsyncResult<Group>> handler) {
+	public Observable<Group> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
@@ -82,40 +78,31 @@ public class GroupRootImpl extends AbstractRootVertex<Group>implements GroupRoot
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
-			return;
+			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
-		db.noTrx(noTrx -> {
+
+		return db.noTrx(() -> {
 			MeshRoot root = boot.meshRoot();
-			if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
-				Group groupWithSameName = findByName(requestModel.getName()); 
-				if ( groupWithSameName!= null &&! groupWithSameName.getUuid().equals(getUuid())) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
-					handler.handle(Future.failedFuture(conflictError));
-					return;
+			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+				Group groupWithSameName = findByName(requestModel.getName()).toBlocking().first();
+				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
+					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}
-				db.trx(txCreate -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					requestUser.reload();
 					Group group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
 					SearchQueueBatch batch = group.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-					txCreate.complete(Tuple.tuple(batch, group));
-				} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txCreated) -> {
-					if (txCreated.failed()) {
-						handler.handle(Future.failedFuture(txCreated.cause()));
-					} else {
-						txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
-					}
+					return Tuple.tuple(batch, group);
 				});
-
-				return;
+				SearchQueueBatch batch = tuple.v1();
+				Group group = tuple.v2();
+				return batch.process().map(i -> group);
 			} else {
-				handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
-				return;
+				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 			}
 
 		});
-
 	}
 
 }

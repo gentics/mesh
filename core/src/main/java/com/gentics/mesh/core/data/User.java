@@ -11,6 +11,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * The User Domain Model interface.
@@ -29,7 +30,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Set the username.
 	 * 
-	 * @param string Username
+	 * @param string
+	 *            Username
 	 */
 	void setUsername(String string);
 
@@ -43,7 +45,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Set the email address.
 	 * 
-	 * @param email Email address
+	 * @param email
+	 *            Email address
 	 */
 	void setEmailAddress(String email);
 
@@ -85,7 +88,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Set the password hash.
 	 * 
-	 * @param hash Password hash
+	 * @param hash
+	 *            Password hash
 	 */
 	// TODO change this to an async call since hashing of the password is blocking
 	void setPasswordHash(String hash);
@@ -118,10 +122,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param vertex
 	 * @param permission
 	 * @return
-	 * @deprecated use {@link #hasPermission(InternalActionContext, MeshVertex, GraphPermission, Handler)} instead.
+	 * @deprecated use {@link #hasPermissionAsync(InternalActionContext, MeshVertex, GraphPermission)} instead.
 	 */
-	@Deprecated
-	boolean hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
+	boolean hasPermissionSync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 
 	/**
 	 * Check whether the user has the given permission for the given vertex. Invoke the handler with the result.
@@ -129,10 +132,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param ac
 	 * @param vertex
 	 * @param permission
-	 * @param handler
-	 * @return Fluent API
 	 */
-	User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler);
+	Observable<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 
 	/**
 	 * Return an array of human readable permissions for the given vertex.
@@ -242,9 +243,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 */
 	void deactivate();
 
-//	List<? extends GenericVertexImpl> getEditedElements();
+	// List<? extends GenericVertexImpl> getEditedElements();
 
-//	List<? extends GenericVertexImpl> getCreatedElements();
+	// List<? extends GenericVertexImpl> getCreatedElements();
 
 	boolean hasPermission(MeshVertex node, GraphPermission permission);
 

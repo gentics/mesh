@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,13 +77,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.RxHelper;
-import rx.functions.Action1;
+import rx.Observable;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
 
@@ -220,10 +218,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				if (restField == null) {
 					continue;
 				}
-				BootstrapInitializer.getBoot().nodeRoot().findByUuid(nodeField.getUuid(), rh -> {
-					Node node = rh.result();
+				Observable<Node> obsNode = boot.nodeRoot().findByUuid(nodeField.getUuid());
+				obsNode.subscribe(node -> {
 					if (node == null) {
-						//TODO We want to delete the field when the field has been explicitly set to null
+						// TODO We want to delete the field when the field has been explicitly set to null
 						if (log.isDebugEnabled()) {
 							log.debug("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 						}
@@ -242,7 +240,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 							createNode(key, node);
 						}
 					}
-				});
+				} , ac::fail);
 				break;
 			case LIST:
 				if (restField instanceof NodeFieldListImpl) {
@@ -259,7 +257,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// Add the listed items
 					AtomicInteger integer = new AtomicInteger();
 					for (NodeFieldListItem item : nodeList.getItems()) {
-						Node node = boot.nodeRoot().findByUuidBlocking(item.getUuid());
+						Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
 						graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
 					}
 				} else if (restField instanceof StringFieldListImpl) {
@@ -339,9 +337,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						micronodeGraphFieldList = createMicronodeFieldList(key);
 					}
 
-					micronodeGraphFieldList.update(ac, micronodeList).doOnError(e -> {
-						e.printStackTrace();
-					}).subscribe();
+					micronodeGraphFieldList.update(ac, micronodeList);
 
 				} else {
 					if (restField == null) {
@@ -371,50 +367,65 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				String microschemaName = microschemaReference.getName();
 				String microschemaUuid = microschemaReference.getUuid();
+				MicroschemaContainer microschemaContainer = null;
 
-				Action1<MicroschemaContainer> updateAction = microschemaContainer -> {
-					Micronode micronode = null;
-					MicronodeGraphField micronodeGraphField = getMicronode(key);
+				if (isEmpty(microschemaName) && isEmpty(microschemaUuid)) {
+					//TODO i18n
+					throw error(BAD_REQUEST, "No valid microschema reference could be found for field {" + key + "}");
+				}
+				// Load microschema by name
+				if (!isEmpty(microschemaName)) {
+					microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().first();
+//					if (microschemaContainer == null) {
+//						//TODO i18n
+//						throw error(BAD_REQUEST, "Could not find microschema for name {" + microschemaName + "}");
+//					}
+				}
 
-					// check whether microschema is allowed
-					if (microschemaFieldSchema.getAllowedMicroSchemas() == null
-							|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
-						throw new HttpStatusCodeErrorException(BAD_REQUEST,
-								ac.i18n("node_error_invalid_microschema_field_value", key, microschemaContainer.getName()));
-					}
+				if (isEmpty(microschemaUuid)) {
+					microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().first();
+//					if (microschemaContainer == null) {
+//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
+//					}
+				}
 
-					// graphfield not set -> create one
-					if (micronodeGraphField == null) {
+//				if (microschemaContainer == null) {
+//					//TODO i18n
+//					throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}");
+//				}
+
+				Micronode micronode = null;
+				MicronodeGraphField micronodeGraphField = getMicronode(key);
+
+				// check whether microschema is allowed
+				if (microschemaFieldSchema.getAllowedMicroSchemas() == null
+						|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
+					throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", key, microschemaContainer.getName());
+				}
+
+				// graphfield not set -> create one
+				if (micronodeGraphField == null) {
+					micronodeGraphField = createMicronode(key, microschemaContainer);
+					micronode = micronodeGraphField.getMicronode();
+				} else {
+					// check whether uuid is equal
+					micronode = micronodeGraphField.getMicronode();
+					// TODO check whether micronode is null
+
+					MicroschemaContainer existingContainer = micronode.getMicroschemaContainer();
+					if ((!StringUtils.isEmpty(micronodeField.getUuid())
+							&& !StringUtils.equalsIgnoreCase(micronode.getUuid(), micronodeField.getUuid()))
+							|| !StringUtils.equalsIgnoreCase(microschemaContainer.getUuid(), existingContainer.getUuid())) {
 						micronodeGraphField = createMicronode(key, microschemaContainer);
 						micronode = micronodeGraphField.getMicronode();
-					} else {
-						// check whether uuid is equal
-						micronode = micronodeGraphField.getMicronode();
-						// TODO check whether micronode is null
-
-						MicroschemaContainer existingContainer = micronode.getMicroschemaContainer();
-						if ((!StringUtils.isEmpty(micronodeField.getUuid())
-								&& !StringUtils.equalsIgnoreCase(micronode.getUuid(), micronodeField.getUuid()))
-								|| !StringUtils.equalsIgnoreCase(microschemaContainer.getUuid(), existingContainer.getUuid())) {
-							micronodeGraphField = createMicronode(key, microschemaContainer);
-							micronode = micronodeGraphField.getMicronode();
-						}
 					}
+				}
 
-					try {
-						micronode.updateFieldsFromRest(ac, micronodeField.getFields());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				};
-
-				if (!StringUtils.isEmpty(microschemaName)) {
-					updateAction.call(boot.microschemaContainerRoot().findByName(microschemaName));
-				} else {
-					boot.microschemaContainerRoot().findByUuid(microschemaUuid, RxHelper.toFuture(updateAction, throwable -> {
-						// TODO fail here
-					}));
+				try {
+					micronode.updateFieldsFromRest(ac, micronodeField.getFields());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 
 				break;
@@ -422,12 +433,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		}
 
-		// Some fields were specified within the json but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user about this.
+		// Some fields were specified within the json but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user
+		// about this.
 		String extraFields = "";
-		for (String key : unhandledFieldKeys) {
+		for (String key : unhandledFieldKeys)
+
+		{
 			extraFields += "[" + key + "]";
 		}
-		if (!StringUtils.isEmpty(extraFields)) {
+		if (!StringUtils.isEmpty(extraFields))
+
+		{
 			throw error(BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
 		}
 
@@ -440,23 +456,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 	}
 
-	private static <T extends Field> Handler<AsyncResult<T>> wrap(Handler<AsyncResult<Field>> handler) {
-		Handler<AsyncResult<T>> returnHandler = ele -> {
-			if (ele.failed()) {
-				handler.handle(Future.failedFuture(ele.cause()));
-			} else {
-				handler.handle(Future.succeededFuture(ele.result()));
-			}
-		};
-		return returnHandler;
-	}
-
 	@Override
-	public void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField,
-			Handler<AsyncResult<Field>> handler) {
+	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
+			boolean expandField) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
-		//		db.asyncNoTrx(noTrx -> {
+		// db.asyncNoTrx(noTrx -> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:
@@ -465,90 +470,64 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			// fieldKey, this);
 			StringGraphField graphStringField = getString(fieldKey);
 			if (graphStringField == null) {
-				handler.handle(Future.succeededFuture(new StringFieldImpl()));
-				return;
+				return Observable.just(new StringFieldImpl());
 			} else {
-				graphStringField.transformToRest(ac, th -> {
-					if (th.failed()) {
-						handler.handle(Future.failedFuture(th.cause()));
-						return;
-					} else {
-						StringField stringField = th.result();
-						if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-							stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType()));
-						}
-						handler.handle(Future.succeededFuture(stringField));
-						return;
+				return graphStringField.transformToRest(ac).map(stringField -> {
+					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType()));
 					}
+					return stringField;
 				});
-				return;
 			}
 
 		case BINARY:
 			BinaryGraphField graphBinaryField = getBinary(fieldKey);
 			if (graphBinaryField == null) {
-				handler.handle(Future.succeededFuture(new BinaryFieldImpl()));
-				return;
+				return Observable.just(new BinaryFieldImpl());
 			} else {
-				graphBinaryField.transformToRest(ac, wrap(handler));
-				return;
+				return graphBinaryField.transformToRest(ac);
 			}
 		case NUMBER:
 			NumberGraphField graphNumberField = getNumber(fieldKey);
 			if (graphNumberField == null) {
-				handler.handle(Future.succeededFuture(new NumberFieldImpl()));
-				return;
+				return Observable.just(new NumberFieldImpl());
 			} else {
-				graphNumberField.transformToRest(ac, wrap(handler));
-				return;
+				return graphNumberField.transformToRest(ac);
 			}
 
 		case DATE:
 			DateGraphField graphDateField = getDate(fieldKey);
 			if (graphDateField == null) {
-				handler.handle(Future.succeededFuture(new DateFieldImpl()));
-				return;
+				return Observable.just(new DateFieldImpl());
 			} else {
-				graphDateField.transformToRest(ac, wrap(handler));
-				return;
+				return graphDateField.transformToRest(ac);
 			}
 		case BOOLEAN:
 			BooleanGraphField graphBooleanField = getBoolean(fieldKey);
 			if (graphBooleanField == null) {
-				handler.handle(Future.succeededFuture(new BooleanFieldImpl()));
-				return;
+				return Observable.just(new BooleanFieldImpl());
 			} else {
-				graphBooleanField.transformToRest(ac, wrap(handler));
-				return;
+				return graphBooleanField.transformToRest(ac);
 			}
 		case NODE:
 			NodeGraphField graphNodeField = getNode(fieldKey);
 			if (graphNodeField == null) {
-				handler.handle(Future.succeededFuture(new NodeFieldImpl()));
-				return;
+				return Observable.just(new NodeFieldImpl());
 			} else {
-				graphNodeField.transformToRest(ac, fieldKey, handler);
-				return;
+				return graphNodeField.transformToRest(ac, fieldKey);
 			}
 		case HTML:
 			HtmlGraphField graphHtmlField = getHtml(fieldKey);
 			if (graphHtmlField == null) {
-				handler.handle(Future.succeededFuture(new HtmlFieldImpl()));
-				return;
+				return Observable.just(new HtmlFieldImpl());
 			} else {
-				graphHtmlField.transformToRest(ac, rhRest -> {
-					if (rhRest.failed()) {
-						handler.handle(Future.failedFuture(rhRest.cause()));
-					} else {
-						// If needed resolve links within the html 
-						HtmlField field = rhRest.result();
-						if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-							field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(), ac.getResolveLinksType()));
-						}
-						handler.handle(Future.succeededFuture(field));
+				return graphHtmlField.transformToRest(ac).map(model -> {
+					// If needed resolve links within the html
+					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(), ac.getResolveLinksType()));
 					}
+					return model;
 				});
-				return;
 			}
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
@@ -557,65 +536,51 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			case NodeGraphFieldList.TYPE:
 				NodeGraphFieldList nodeFieldList = getNodeList(fieldKey);
 				if (nodeFieldList == null) {
-					handler.handle(Future.succeededFuture(new NodeFieldListImpl()));
-					return;
+					return Observable.just(new NodeFieldListImpl());
 				} else {
-					nodeFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return nodeFieldList.transformToRest(ac, fieldKey);
 				}
 			case NumberGraphFieldList.TYPE:
 				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
-					handler.handle(Future.succeededFuture(new NumberFieldListImpl()));
-					return;
+					return Observable.just(new NumberFieldListImpl());
 				} else {
-					numberFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return numberFieldList.transformToRest(ac, fieldKey);
 				}
 			case BooleanGraphFieldList.TYPE:
 				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
 				if (booleanFieldList == null) {
-					handler.handle(Future.succeededFuture(new BooleanFieldListImpl()));
-					return;
+					return Observable.just(new BooleanFieldListImpl());
 				} else {
-					booleanFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return booleanFieldList.transformToRest(ac, fieldKey);
 				}
 			case HtmlGraphFieldList.TYPE:
 				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
-					handler.handle(Future.succeededFuture(new HtmlFieldListImpl()));
-					return;
+					return Observable.just(new HtmlFieldListImpl());
 				} else {
-					htmlFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return htmlFieldList.transformToRest(ac, fieldKey);
 				}
 			case MicronodeGraphFieldList.TYPE:
 				MicronodeGraphFieldList graphMicroschemaField = getMicronodeList(fieldKey);
 				if (graphMicroschemaField == null) {
-					handler.handle(Future.succeededFuture(new MicronodeFieldListImpl()));
-					return;
+					return Observable.just(new MicronodeFieldListImpl());
 				} else {
-					graphMicroschemaField.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return graphMicroschemaField.transformToRest(ac, fieldKey);
 				}
 			case StringGraphFieldList.TYPE:
 				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
-					handler.handle(Future.succeededFuture(new StringFieldListImpl()));
-					return;
+					return Observable.just(new StringFieldListImpl());
 				} else {
-					stringFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return stringFieldList.transformToRest(ac, fieldKey);
 				}
 			case DateGraphFieldList.TYPE:
 				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
-					handler.handle(Future.succeededFuture(new DateFieldListImpl()));
-					return;
+					return Observable.just(new DateFieldListImpl());
 				} else {
-					dateFieldList.transformToRest(ac, fieldKey, wrap(handler));
-					return;
+					return dateFieldList.transformToRest(ac, fieldKey);
 				}
 			}
 			// String listType = listFielSchema.getListType();
@@ -633,17 +598,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		case MICRONODE:
 			MicronodeGraphField micronodeGraphField = getMicronode(fieldKey);
 			if (micronodeGraphField == null) {
-				handler.handle(Future.succeededFuture(new NullMicronodeResponse()));
-				return;
+				return Observable.just(new NullMicronodeResponse());
 			} else {
-				micronodeGraphField.transformToRest(ac, fieldKey, wrap(handler));
-				return;
+				return micronodeGraphField.transformToRest(ac, fieldKey);
 			}
 		}
 
-		//		} , rh -> {
-		//
-		//		});
+		return errorObservable(BAD_REQUEST, "type unknown");
+
 	}
 
 	@Override

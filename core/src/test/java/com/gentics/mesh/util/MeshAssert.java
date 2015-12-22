@@ -37,16 +37,13 @@ public final class MeshAssert {
 
 	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
 		root.reload();
-		CountDownLatch latch = new CountDownLatch(1);
-		root.findByUuid(uuid, rh -> {
-			if (exists) {
-				assertNotNull("The element should exist.", rh.result());
-			} else {
-				assertNull("The element should not exist.", rh.result());
-			}
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Object element = root.findByUuid(uuid).toBlocking().first();
+		if (exists) {
+			assertNotNull("The element should exist.", element);
+		} else {
+			assertNull("The element should not exist.", element);
+		}
+
 	}
 
 	public static int getTimeout() throws UnknownHostException {

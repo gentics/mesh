@@ -27,7 +27,7 @@ public final class RestModelHelper {
 	public static void setRolePermissions(InternalActionContext ac, MeshVertex sourceElement, AbstractGenericRestResponse restModel) {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 		if (!isEmpty(rolePermissionParameter)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM);
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).toBlocking().first();
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();
@@ -44,8 +44,8 @@ public final class RestModelHelper {
 	public static void setRolePermissions(InternalActionContext ac, SchemaContainerImpl sourceElement, SchemaResponse restSchema) {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 
-		if (!StringUtils.isEmpty(rolePermissionParameter)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM);
+		if (!isEmpty(rolePermissionParameter)) {
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).toBlocking().first();
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();
@@ -63,7 +63,7 @@ public final class RestModelHelper {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 
 		if (!StringUtils.isEmpty(rolePermissionParameter)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM);
+			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).toBlocking().first();
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
 				Set<String> humanNames = new HashSet<>();

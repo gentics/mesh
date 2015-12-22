@@ -14,8 +14,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public interface Micronode extends GraphFieldContainer, MeshVertex, TransformableElement<MicronodeResponse> {
 	public static final String TYPE = "micronode";
@@ -26,10 +25,8 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 * @param ac
 	 * @param fieldKey
 	 * @param fieldSchema
-	 * @param handler
 	 */
-	void getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			Handler<AsyncResult<Field>> handler);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
@@ -50,7 +47,8 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	/**
 	 * Set the microschema container that is used in combination with this micronode.
 	 * 
-	 * @param microschema microschema container
+	 * @param microschema
+	 *            microschema container
 	 */
 	void setMicroschemaContainer(MicroschemaContainer microschema);
 

@@ -6,7 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -38,11 +37,6 @@ import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
@@ -149,11 +143,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<GroupResponse>> handler) {
+	public Observable<GroupResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(noTrx -> {
+		return db.asyncNoTrx(() -> {
 
-			Set<ObservableFuture<Void>> futures = new HashSet<>();
+			Set<Observable<GroupResponse>> obs = new HashSet<>();
 
 			GroupResponse restGroup = new GroupResponse();
 			restGroup.setName(getName());
@@ -179,27 +173,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			// }
 
 			// Add common fields
-			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
-			futures.add(obsFieldSet);
-			fillCommonRestFields(restGroup, ac, rh -> {
-				if (rh.failed()) {
-					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsFieldSet.toHandler().handle(Future.succeededFuture());
-				}
-			});
+			obs.add(fillCommonRestFields(restGroup, ac));
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restGroup);
 
 			// Merge and complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(restGroup);
-			} , error -> {
-				noTrx.fail(error);
-			});
-		} , (AsyncResult<GroupResponse> rh) -> {
-			handler.handle(rh);
+			return Observable.merge(obs).toBlocking().first();
 		});
 	}
 
@@ -211,42 +191,31 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<? extends Group> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
-		db.noTrx(trc -> {
+		return db.noTrx(() -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 			if (StringUtils.isEmpty(requestModel.getName())) {
-				obsFut.toHandler().handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
-				return;
+				throw error(BAD_REQUEST, "error_name_must_be_set");
 			}
 
 			if (!getName().equals(requestModel.getName())) {
-				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
+				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().first();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, groupWithSameName.getUuid(), requestModel.getName(),
-							"group_conflicting_name", requestModel.getName());
-					obsFut.toHandler().handle(Future.failedFuture(conflictError));
-					return;
+					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}
 
-				db.trx(tc -> {
+				return db.trx(() -> {
 					setName(requestModel.getName());
-					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-					tc.complete(batch);
-				} , (AsyncResult<SearchQueueBatch> rh) -> {
-					if (rh.failed()) {
-						obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
-					} else {
-						rh.result().process(ac, obsFut.toHandler());
-					}
-				});
+					return addIndexBatch(UPDATE_ACTION);
+				}).process().map(i -> this);
 
+			} else {
+				return Observable.just(this);
 			}
 		});
-		return obsFut;
 
 	}
 

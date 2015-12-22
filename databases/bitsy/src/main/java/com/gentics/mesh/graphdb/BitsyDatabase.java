@@ -14,12 +14,10 @@ import com.lambdazen.bitsy.BitsyGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
 /**
  * OrientDB specific mesh graph database implementation.
@@ -96,7 +94,7 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> T trx(TrxHandler<T> txHandler) {
 		throw new NotImplementedException();
 	}
 

@@ -8,17 +8,14 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
-public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl>implements StringGraphFieldList {
+public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl> implements StringGraphFieldList {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(StringGraphFieldListImpl.class);
 	}
 
-	
 	@Override
 	public StringGraphField createString(String string) {
 		StringGraphField field = createField();
@@ -47,13 +44,12 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<StringFieldListImpl>> handler) {
+	public Observable<StringFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
 		StringFieldListImpl restModel = new StringFieldListImpl();
 		for (StringGraphField item : getList()) {
 			restModel.add(item.getString());
 		}
-		handler.handle(Future.succeededFuture(restModel));
+		return Observable.just(restModel);
 	}
-
 
 }

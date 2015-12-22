@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -35,9 +35,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
@@ -98,35 +96,30 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public void create(InternalActionContext ac, Handler<AsyncResult<User>> handler) {
+	public Observable<User> create(InternalActionContext ac) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		Database db = MeshSpringConfiguration.getInstance().database();
-		UserCreateRequest requestModel;
+
 		try {
-			requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			UserCreateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (requestModel == null) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_parse_request_json_error"))));
-				return;
+				return errorObservable(BAD_REQUEST, "error_parse_request_json_error");
 			}
 			if (isEmpty(requestModel.getPassword())) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_password"))));
-				return;
+				return errorObservable(BAD_REQUEST, "user_missing_password");
 			}
 			if (isEmpty(requestModel.getUsername())) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("user_missing_username"))));
-				return;
+				return errorObservable(BAD_REQUEST, "user_missing_username");
 			}
 			String groupUuid = requestModel.getGroupUuid();
-			db.noTrx(noTrx -> {
+			User createdUser = db.noTrx(() -> {
 				String userName = requestModel.getUsername();
 				User conflictingUser = findByUsername(userName);
 				if (conflictingUser != null) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingUser.getUuid(), userName, "user_conflicting_username");
-					handler.handle(Future.failedFuture(conflictError));
-					return;
+					throw conflict(conflictingUser.getUuid(), userName, "user_conflicting_username");
 				}
 
-				db.trx(txCreate -> {
+				Tuple<SearchQueueBatch, User> tuple = db.trx(() -> {
 					MeshAuthUser requestUser = ac.getUser();
 					User user = create(requestModel.getUsername(), requestUser);
 					user.setFirstname(requestModel.getFirstname());
@@ -139,7 +132,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					SearchQueueBatch batch = user.addIndexBatch(CREATE_ACTION);
 
 					if (!isEmpty(groupUuid)) {
-						Group parentGroup = boot.groupRoot().loadObjectByUuidBlocking(ac, groupUuid, CREATE_PERM);
+						Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM).toBlocking().first();
 						parentGroup.addUser(user);
 						batch.addEntry(parentGroup, UPDATE_ACTION);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
@@ -151,35 +144,37 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 						String projectName = basicReference.getProjectName();
 
 						if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
-							txCreate.fail(error(BAD_REQUEST, "user_incomplete_node_reference"));
-							return;
+							throw error(BAD_REQUEST, "user_incomplete_node_reference");
 						}
 
 						// TODO decide whether we need to check perms on the project as well
-						Project project = boot.projectRoot().findByName(projectName);
+						Project project = boot.projectRoot().findByName(projectName).toBlocking().first();
 						if (project == null) {
-							txCreate.fail(error(BAD_REQUEST, "project_not_found", projectName));
-							return;
+							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}
-						Node node = project.getNodeRoot().loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM);
+						Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().first();
 						user.setReferencedNode(node);
 					} else if (reference != null) {
 						// TODO handle user create using full node rest model.
-						txCreate.fail("Create of users with expanded node reference field is not yet implemented.");
-						return;
+						throw error(BAD_REQUEST, "Creation of users with expanded node reference field is not yet implemented.");
 					}
 
-					txCreate.complete(Tuple.tuple(batch, user));
-				} , (AsyncResult<Tuple<SearchQueueBatch, User>> txCreated) -> {
-					if (txCreated.failed()) {
-						handler.handle(Future.failedFuture(txCreated.cause()));
-					} else {
-						txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
-					}
+					return Tuple.tuple(batch, user);
 				});
+
+				SearchQueueBatch batch = tuple.v1();
+
+				return batch.process().map(done -> {
+					return tuple.v2();
+				}).toBlocking().first();
+
 			});
+			
+			return Observable.just(createdUser);
+			
+			
 		} catch (IOException e) {
-			handler.handle(Future.failedFuture(e));
+			return Observable.error(e);
 		}
 
 	}

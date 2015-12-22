@@ -67,7 +67,7 @@ public class WebRootHandler {
 					if (node == null) {
 						throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 					}
-					if (requestUser.hasPermission(ac, node, READ_PERM)) {
+					if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
 						bch.complete(lastSegment);
 					} else {
 						bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
@@ -95,12 +95,10 @@ public class WebRootHandler {
 				Node node = lastSegment.getNode();
 				GraphField field = lastSegment.getPathField();
 				if (field instanceof StringGraphField) {
-					node.transformToRest(ac, rh -> {
-						if (rh.failed()) {
-							ac.fail(rh.cause());
-						} else {
-							ac.send(JsonUtil.toJson(rh.result()), OK);
-						}
+					node.transformToRest(ac).subscribe(model -> {
+						ac.send(JsonUtil.toJson(model), OK);
+					}, error -> {
+						ac.fail(error);
 					});
 				}
 				if (field instanceof BinaryGraphField) {
@@ -112,6 +110,6 @@ public class WebRootHandler {
 				}
 			}
 		});
-	}
+}
 
 }

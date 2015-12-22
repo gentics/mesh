@@ -2,13 +2,9 @@ package com.gentics.mesh.graphdb.orientdb;
 
 import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.run;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,7 +17,6 @@ import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
 
 public class OrientDBTrxTest extends AbstractOrientDBTest {
@@ -36,25 +31,22 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 
 	@Test
 	public void testAsyncTrxRetryHandling() throws Exception {
-		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
+
 		AtomicInteger e = new AtomicInteger(0);
-		db.asyncTrx(trx -> {
+		String result = db.asyncTrx(() -> {
 			e.incrementAndGet();
 			if (e.get() == 1) {
 				String msg = "Cannot UPDATE the record #13:8 because the version is not the latest. Probably you are updating an old record or it has been modified by another user (db=v7 your=v6)";
 				// "test #9:1 blub adsd"
 				throw new OConcurrentModificationException(msg);
 			} else {
-				trx.complete("OK");
+				return "OK";
 			}
-		} , rh -> {
-			fut.complete(rh);
-		});
-		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
+		}).toBlocking().first();
+
 		assertEquals(2, e.get());
-		assertEquals("OK", result.result());
-		assertTrue(result.succeeded());
-		assertNull(result.cause());
+		assertEquals("OK", result);
+
 	}
 
 	@Test
@@ -72,32 +64,28 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		run(() -> {
-			db.trx(tx -> {
+			db.trx(() -> {
 				i.incrementAndGet();
 
 				System.out.println("Trx1");
 				addFriend(Database.getThreadLocalGraph(), p);
-				tx.complete();
 				if (i.get() <= 2) {
 					b.await();
 				}
-			} , rh -> {
-				System.out.println("Completed");
+				return null;
 			});
 		});
 
 		run(() -> {
-			db.trx(tx -> {
+			db.trx(() -> {
 				i.incrementAndGet();
 
 				System.out.println("Trx2");
 				addFriend(Database.getThreadLocalGraph(), p);
-				tx.complete();
 				if (i.get() <= 2) {
 					b.await();
 				}
-			} , rh -> {
-				System.out.println("Completed");
+				return null;
 			});
 		});
 

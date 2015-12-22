@@ -49,12 +49,13 @@ import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 /**
  * OrientDB specific mesh graph database implementation.
@@ -281,27 +282,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> T trx(TrxHandler<T> txHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.
 		 */
-		Future<T> currentTransactionCompleted = null;
+		T handlerResult = null;
+		boolean handlerFinished = false;
 		for (int retry = 0; retry < maxRetry; retry++) {
-			currentTransactionCompleted = Future.future();
+
 			try (Trx tx = trx()) {
-				// TODO FIXME get rid of the countdown latch
-				CountDownLatch latch = new CountDownLatch(1);
-				currentTransactionCompleted.setHandler(rh -> {
-					if (rh.succeeded()) {
-						tx.success();
-					} else {
-						tx.failure();
-					}
-					latch.countDown();
-				});
-				txHandler.handle(currentTransactionCompleted);
-				latch.await(30, TimeUnit.SECONDS);
+				handlerResult = txHandler.call();
+				handlerFinished = true;
 				break;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
@@ -312,21 +304,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
+				// Reset previous result
+				handlerFinished = false;
+				handlerResult = null;
 			} catch (Exception e) {
 				log.error("Error handling transaction", e);
-				resultHandler.handle(Future.failedFuture(e));
-				return this;
+				throw new RuntimeException("Transaction error", e);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 		}
-		if (currentTransactionCompleted != null && currentTransactionCompleted.isComplete()) {
-			resultHandler.handle(currentTransactionCompleted);
-			return this;
+		if (handlerFinished == true) {
+			return handlerResult;
+		} else {
+			throw new RuntimeException("Retry limit for trx exceeded");
 		}
-		resultHandler.handle(Future.failedFuture("retry limit for trx exceeded"));
-		return this;
 
 	}
 

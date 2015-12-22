@@ -1,13 +1,15 @@
 package com.gentics.mesh.graphdb.spi;
 
-@FunctionalInterface
-public interface TrxHandler<E> {
+import java.util.concurrent.Callable;
 
-	/**
-	 * Something has happened, so handle it.
-	 *
-	 * @param event
-	 *            the event to handle
-	 */
-	void handle(E event) throws Exception;
+import rx.functions.Function;
+
+/**
+ * Represents a function with zero arguments.
+ */
+@FunctionalInterface
+public interface TrxHandler<T> extends Function, Callable<T> {
+
+	T call() throws Exception;
+
 }

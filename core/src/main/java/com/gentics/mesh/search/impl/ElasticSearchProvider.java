@@ -27,11 +27,12 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -57,7 +58,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		elasticsearchSettings.put("path.data", options.getDirectory());
 		elasticsearchSettings.put("node.name", MeshNameProvider.getInstance().getName());
 		NodeBuilder builder = NodeBuilder.nodeBuilder();
-		//TODO configure ES cluster options
+		// TODO configure ES cluster options
 		node = builder.local(true).settings(elasticsearchSettings.build()).node();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
@@ -116,7 +117,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void createIndex(String indexName) {
-		//TODO Add method which will be used to create an index and set a custom mapping
+		// TODO Add method which will be used to create an index and set a custom mapping
 
 		CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 		Map<String, Object> indexSettings = new HashMap<>();
@@ -147,7 +148,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler) {
+	public Observable<Map<String, Object>> getDocument(String index, String type, String uuid) {
+		ObservableFuture<Map<String, Object>> fut = RxHelper.observableFuture();
 		getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
 
 			@Override
@@ -155,20 +157,21 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
 				}
-				handler.handle(Future.succeededFuture(response.getSourceAsMap()));
+				fut.toHandler().handle(Future.succeededFuture(response.getSourceAsMap()));
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
-				handler.handle(Future.failedFuture(e));
+				fut.toHandler().handle(Future.failedFuture(e));
 			}
-
 		});
+		return fut;
 	}
 
 	@Override
-	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> deleteDocument(String index, String type, String uuid) {
+		ObservableFuture<Void> fut = RxHelper.observableFuture();
 		getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 
 			@Override
@@ -176,25 +179,27 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted object {" + uuid + ":" + type + "} from index {" + index + "}");
 				}
-				handler.handle(Future.succeededFuture());
+				fut.toHandler().handle(Future.succeededFuture());
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
-				handler.handle(Future.failedFuture(e));
+				fut.toHandler().handle(Future.failedFuture(e));
 			}
 		});
+		return fut;
 	}
 
 	@Override
-	public void updateDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> map) {
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Updating object {" + uuid + ":" + type + "} to index.");
 		}
 		UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, type, uuid);
 		builder.setDoc(map);
+		ObservableFuture<Void> fut = RxHelper.observableFuture();
 		builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
 			@Override
@@ -202,21 +207,21 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-				handler.handle(Future.succeededFuture());
+				fut.toHandler().handle(Future.succeededFuture());
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
 						e);
-				handler.handle(Future.failedFuture(e));
+				fut.toHandler().handle(Future.failedFuture(e));
 			}
 		});
-
+		return fut;
 	}
 
 	@Override
-	public void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
 		long start = System.currentTimeMillis();
 		if (log.isDebugEnabled()) {
 			log.debug("Adding object {" + uuid + ":" + type + "} to index.");
@@ -224,6 +229,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
 		builder.setSource(map);
+		ObservableFuture<Void> fut = RxHelper.observableFuture();
 		builder.execute().addListener(new ActionListener<IndexResponse>() {
 
 			@Override
@@ -231,15 +237,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-				handler.handle(Future.succeededFuture());
+				fut.toHandler().handle(Future.succeededFuture());
 			}
 
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-				handler.handle(Future.failedFuture(e));
+				fut.toHandler().handle(Future.failedFuture(e));
 			}
 		});
+		return fut;
 
 	}
 }

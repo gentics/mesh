@@ -7,11 +7,9 @@ import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
-public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl>implements HtmlGraphFieldList {
+public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl> implements HtmlGraphFieldList {
 
 	@Override
 	public HtmlGraphField createHTML(String html) {
@@ -41,11 +39,11 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<HtmlFieldListImpl>> handler) {
+	public Observable<HtmlFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
 		HtmlFieldListImpl restModel = new HtmlFieldListImpl();
 		for (HtmlGraphField item : getList()) {
 			restModel.add(item.getHTML());
 		}
-		handler.handle(Future.succeededFuture(restModel));
+		return Observable.just(restModel);
 	}
 }

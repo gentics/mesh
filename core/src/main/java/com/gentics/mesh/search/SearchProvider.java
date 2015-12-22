@@ -4,8 +4,7 @@ import java.util.Map;
 
 import org.elasticsearch.node.Node;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.
@@ -35,10 +34,8 @@ public interface SearchProvider {
 	 * @param uuid
 	 *            Uuid of the document
 	 * @param transformToDocumentMap
-	 * @param handler
-	 *            Completion handler
 	 */
-	void updateDocument(String index, String type, String uuid, Map<String, Object> transformToDocumentMap, Handler<AsyncResult<Void>> handler);
+	Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> transformToDocumentMap);
 
 	/**
 	 * Delete the given document and invoke the handler when the document has been deleted or an error occurred.
@@ -49,10 +46,8 @@ public interface SearchProvider {
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
-	 * @param handler
-	 *            Completion handler
 	 */
-	void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler);
+	Observable<Void> deleteDocument(String index, String type, String uuid);
 
 	/**
 	 * Store the given document and invoke the handler when the document has been stored or an error occurred.
@@ -65,10 +60,8 @@ public interface SearchProvider {
 	 *            Uuid for the document
 	 * @param map
 	 *            Map that holds the document properties
-	 * @param handler
-	 *            Completion handler
 	 */
-	void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler);
+	Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map);
 
 	/**
 	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
@@ -79,10 +72,8 @@ public interface SearchProvider {
 	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
-	 * @param handler
-	 *            Completion handler
 	 */
-	void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler);
+	Observable<Map<String, Object>> getDocument(String index, String type, String uuid);
 
 	/**
 	 * Start the search provider.
@@ -104,7 +95,7 @@ public interface SearchProvider {
 	 * 
 	 * @return
 	 */
-	//TODO get rid of the elastic search dependency within the interface
+	// TODO get rid of the elastic search dependency within the interface
 	Node getNode();
 
 }

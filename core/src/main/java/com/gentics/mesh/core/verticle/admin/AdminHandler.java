@@ -1,10 +1,9 @@
 package com.gentics.mesh.core.verticle.admin;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,48 +33,38 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleBackup(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		try {
+		db.asyncNoTrx(() -> {
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
-			ac.sendMessage(OK, "backup_finished");
-		} catch (IOException e) {
-			log.error("Backup failed", e);
-			ac.fail(INTERNAL_SERVER_ERROR, "backup_failed");
-		}
+			return message(ac, "backup_finished");
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRestore(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		try {
+		db.asyncNoTrx(() -> {
 			File backupFile = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory(), "");
 			db.restoreGraph(backupFile.getAbsolutePath());
-			ac.sendMessage(OK, "restore_finished");
-		} catch (IOException e) {
-			log.error("Restore failed", e);
-			ac.fail(INTERNAL_SERVER_ERROR, "restore_failed");
-		}
+			return message(ac, "restore_finished");
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleExport(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		try {
+		db.asyncNoTrx(() -> {
 			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
-			ac.sendMessage(OK, "export_finished");
-		} catch (IOException e) {
-			log.error("Export failed", e);
-			ac.fail(INTERNAL_SERVER_ERROR, "export_failed");
-		}
+			return message(ac, "export_finished");
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 	public void handleImport(RoutingContext rc) {
+
 		InternalActionContext ac = InternalActionContext.create(rc);
-		try {
+		db.asyncNoTrx(() -> {
 			File importFile = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory(), "");
 			db.importGraph(importFile.getAbsolutePath());
-			ac.sendMessage(OK, "import_finished");
-		} catch (IOException e) {
-			log.error("Import failed", e);
-			ac.fail(INTERNAL_SERVER_ERROR, "import_failed");
-		}
+			return message(ac, "import_finished");
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 }

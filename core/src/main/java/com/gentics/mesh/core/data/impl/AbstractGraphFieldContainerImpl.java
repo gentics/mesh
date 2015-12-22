@@ -45,7 +45,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.util.TraversalHelper;
 
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 

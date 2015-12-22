@@ -107,7 +107,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 		extraProject.getSchemaContainerRoot().reload();
-		assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuidBlocking(schema.getUuid()));
+		assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first());
 	}
 
 	@Test

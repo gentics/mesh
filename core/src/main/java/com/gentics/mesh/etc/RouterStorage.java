@@ -1,12 +1,8 @@
 package com.gentics.mesh.etc;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
@@ -16,18 +12,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.service.I18NUtil;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.error.EntityNotFoundException;
-import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.handler.HttpActionContext;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -113,101 +99,13 @@ public class RouterStorage {
 
 			// Root handlers
 			rootRouter.route().handler(LoggerHandler.create());
-			rootRouter.route().last().handler(rh -> {
-				GenericMessageResponse msg = new GenericMessageResponse();
-				String internalMessage = "The rest endpoint or resource for given path {" + rh.normalisedPath() + "} could not be found.";
-				String contentType = rh.request().getHeader("Content-Type");
-				if (contentType == null) {
-					switch (rh.request().method()) {
-					case PUT:
-					case POST:
-						internalMessage += " You tried to POST or PUT data but you did not specifiy any Content-Type within your request.";
-						break;
-					}
-				}
-				String acceptHeaderValue = rh.request().getHeader(HttpHeaders.ACCEPT);
-				if (acceptHeaderValue == null) {
-					internalMessage += " You did not set any accept header. Please make sure to add {" + APPLICATION_JSON
-							+ "} to your accept header.";
-				}
-
-				if (acceptHeaderValue != null) {
-					//TODO validate it and send a msg if the accept header is wrong.
-					internalMessage += " Please verify that your Accept header is set correctly. I got {" + acceptHeaderValue + "}. It must accept {"
-							+ APPLICATION_JSON + "}";
-				}
-
-				msg.setInternalMessage(internalMessage);
-				msg.setMessage("Not Found");
-				rh.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
-				rh.response().setStatusCode(404);
-				rh.response().setStatusMessage("Not Found");
-				rh.response().end(JsonUtil.toJson(msg));
-			});
-			rootRouter.route().failureHandler(failureRoutingContext -> {
-				if (failureRoutingContext.statusCode() == 401) {
-					// Assume that it has been handled by the BasicAuthHandlerImpl
-					if (log.isDebugEnabled()) {
-						log.debug("Got failure with 401 code.");
-					}
-					failureRoutingContext.next();
-				} else {
-					log.error("Error for request in path: " + failureRoutingContext.normalisedPath());
-					Throwable failure = failureRoutingContext.failure();
-					if (failure != null) {
-						log.error("Error:", failure);
-					}
-					//TODO wrap this instead into a try/catch and throw the failure
-					failureRoutingContext.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
-					if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
-						failureRoutingContext.response().setStatusCode(400);
-						String msg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), "error_parse_request_json_error");
-						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
-					} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
-						HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
-						failureRoutingContext.response().setStatusCode(httpStatusError.getStatus().code());
-
-						String i18nMsg = httpStatusError.getMessage();
-						try {
-							i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(),
-									httpStatusError.getI18nParameters());
-						} catch (MissingResourceException e) {
-							log.error("Did not find i18n message for key {" + httpStatusError.getMessage() + "}", e);
-						}
-
-						GenericMessageResponse msg = new GenericMessageResponse(i18nMsg, null, httpStatusError.getProperties());
-						failureRoutingContext.response().end(JsonUtil.toJson(msg));
-					} else if (failure != null) {
-						int code = getResponseStatusCode(failure);
-						failureRoutingContext.response().setStatusCode(code);
-						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
-					} else {
-						String msg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), "error_internal");
-						failureRoutingContext.response().setStatusCode(500);
-						failureRoutingContext.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
-					}
-				}
-
-			});
-
+			// TODO add a dedicated error for api router that informs about APPLICATION_JSON requirements. This may not be true for other routes (eg. custom
+			// routes)
+			rootRouter.route().last().handler(DefaultNotFoundHandler.create());
+			rootRouter.route().failureHandler(FailureHandler.create());
 			coreRouters.put(ROOT_ROUTER_KEY, rootRouter);
 		}
 		return rootRouter;
-	}
-
-	private int getResponseStatusCode(Throwable failure) {
-		if (failure instanceof EntityNotFoundException) {
-			return 404;
-		}
-		if (failure instanceof InvalidPermissionException) {
-			return 403;
-		}
-		if (failure instanceof HttpStatusCodeErrorException) {
-			HttpStatusCodeErrorException error = (HttpStatusCodeErrorException) failure;
-			return error.getStatus().code();
-		}
-		return 500;
-
 	}
 
 	/**
@@ -219,7 +117,7 @@ public class RouterStorage {
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(springConfiguration.corsHandler());
 		}
-		//TODO It would be good to have two body handler. One for fileuploads and one for post data handling
+		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(springConfiguration.bodyHandler());
 		router.route().handler(CookieHandler.create());
 		router.route().handler(springConfiguration.sessionHandler());

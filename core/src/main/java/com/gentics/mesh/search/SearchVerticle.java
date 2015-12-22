@@ -49,7 +49,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		db.noTrx(noTx -> {
+		db.noTrx(() -> {
 			registerSearchHandler("users", boot.meshRoot().getUserRoot(), UserListResponse.class);
 			registerSearchHandler("groups", boot.meshRoot().getGroupRoot(), GroupListResponse.class);
 			registerSearchHandler("roles", boot.meshRoot().getRoleRoot(), RoleListResponse.class);
@@ -60,6 +60,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			registerSearchHandler("schemas", boot.meshRoot().getSchemaContainerRoot(), SchemaListResponse.class);
 			registerSearchHandler("microschemas", boot.meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class);
 			addAdminHandlers();
+			return null;
 		});
 	}
 
@@ -86,7 +87,7 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
-	private <T extends MeshCoreVertex<TR,T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
+	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
 			RootVertex<T> root, Class<RL> classOfRL) {
 		Route postRoute = route("/" + typeName).method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		postRoute.handler(rc -> {

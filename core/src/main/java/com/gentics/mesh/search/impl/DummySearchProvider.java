@@ -9,9 +9,7 @@ import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class DummySearchProvider implements SearchProvider {
 
@@ -31,27 +29,27 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void updateDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> map) {
 		updateEvents.put(index + "-" + type + "-" + uuid, map);
-		handler.handle(Future.succeededFuture());
+		return Observable.just(null);
 	}
 
 	@Override
-	public void deleteDocument(String index, String type, String uuid, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> deleteDocument(String index, String type, String uuid) {
 		deleteEvents.add(index + "-" + type + "-" + uuid);
-		handler.handle(Future.succeededFuture());
+		return Observable.just(null);
 	}
 
 	@Override
-	public void getDocument(String index, String type, String uuid, Handler<AsyncResult<Map<String, Object>>> handler) {
+	public Observable<Map<String, Object>> getDocument(String index, String type, String uuid) {
 		getEvents.add(index + "-" + type + "-" + uuid);
-		handler.handle(Future.succeededFuture());
+		return Observable.just(null);
 	}
 
 	@Override
-	public void storeDocument(String index, String type, String uuid, Map<String, Object> map, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> storeDocument(String index, String type, String uuid, Map<String, Object> map) {
 		storeEvents.put(index + "-" + type + "-" + uuid, map);
-		handler.handle(Future.succeededFuture());
+		return Observable.just(null);
 	}
 
 	@Override

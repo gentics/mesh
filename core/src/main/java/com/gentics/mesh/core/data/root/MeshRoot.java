@@ -4,8 +4,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -97,9 +96,8 @@ public interface MeshRoot extends MeshVertex {
 	 * This method will try to resolve the given path and return the element that is matching the path.
 	 * 
 	 * @param pathToElement
-	 * @param resultHandler
 	 */
-	void resolvePathToElement(String pathToElement, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
+	Observable<? extends MeshVertex> resolvePathToElement(String pathToElement);
 
 	/**
 	 * Return the database version.

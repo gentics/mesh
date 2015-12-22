@@ -15,13 +15,15 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
-public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends AbstractMeshVertex<T> implements MeshCoreVertex<T, R> {
+public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends AbstractMeshVertex<T>
+		implements MeshCoreVertex<T, R> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
@@ -58,9 +60,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * 
 	 * @param model
 	 * @param ac
-	 * @param handler
 	 */
-	protected <R extends AbstractGenericRestResponse> void fillCommonRestFields(R model, InternalActionContext ac, Handler<AsyncResult<R>> handler) {
+	protected <R extends AbstractGenericRestResponse> Observable<R> fillCommonRestFields(R model, InternalActionContext ac) {
+		ObservableFuture<R> obsFut = RxHelper.observableFuture();
 
 		model.setUuid(getUuid());
 
@@ -83,16 +85,18 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		ac.getUser().getPermissionNames(ac, this, ph -> {
 			if (ph.failed()) {
-				handler.handle(Future.failedFuture(ph.cause()));
+				obsFut.toHandler().handle(Future.failedFuture(ph.cause()));
 			} else {
 				String[] names = ph.result().toArray(new String[ph.result().size()]);
 				model.setPermissions(names);
-				handler.handle(Future.succeededFuture(model));
+				obsFut.toHandler().handle(Future.succeededFuture(model));
 			}
 		});
 
+		return obsFut;
+
 	}
-	
+
 	@Override
 	public void setEditor(User user) {
 		setLinkOut(user.getImpl(), HAS_EDITOR);
@@ -106,7 +110,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		addRelatedEntries(batch, action);
 		return batch;
 	}
-	
+
 	@Override
 	public void setLastEditedTimestamp(long timestamp) {
 		setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);

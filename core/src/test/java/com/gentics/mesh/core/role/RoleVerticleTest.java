@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -21,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -76,7 +74,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		Role createdRole = meshRoot().getRoleRoot().findByUuidBlocking(future.result().getUuid());
+		Role createdRole = meshRoot().getRoleRoot().findByUuid(future.result().getUuid()).toBlocking().first();
 		assertTrue(user().hasPermission(createdRole, UPDATE_PERM));
 		assertTrue(user().hasPermission(createdRole, READ_PERM));
 		assertTrue(user().hasPermission(createdRole, DELETE_PERM));
@@ -299,7 +297,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findRoles(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive" , "-1");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		future = getClient().findRoles(new PagingParameter(1, -1));
 		latchFor(future);
@@ -346,7 +344,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(roleUuid, restRole.getUuid());
 
 		// Check that the extra role was updated as expected
-		Role reloadedRole = roleRoot.findByUuidBlocking(roleUuid);
+		Role reloadedRole = roleRoot.findByUuid(roleUuid).toBlocking().first();
 		reloadedRole.reload();
 		assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 	}
@@ -399,14 +397,9 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 
 		// Check that the role was updated
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.roleRoot().findByUuid(uuid, rh -> {
-			Role reloadedRole = rh.result();
-			reloadedRole.reload();
-			assertEquals(restRole.getName(), reloadedRole.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Role reloadedRole = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		reloadedRole.reload();
+		assertEquals(restRole.getName(), reloadedRole.getName());
 
 	}
 

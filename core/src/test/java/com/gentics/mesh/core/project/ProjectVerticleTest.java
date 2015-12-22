@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -20,9 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.junit.Ignore;
@@ -83,20 +80,13 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		CountDownLatch latch = new CountDownLatch(1);
-		AtomicReference<Project> reference = new AtomicReference<>();
-		meshRoot().getProjectRoot().findByUuid(restProject.getUuid(), rh -> {
-			reference.set(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
-		Project project = reference.get();
+		Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid()).toBlocking().first();
 		assertNotNull(project);
-		assertTrue(user().hasPermission(ac, project, CREATE_PERM));
-		assertTrue(user().hasPermission(ac, project.getBaseNode(), CREATE_PERM));
-		assertTrue(user().hasPermission(ac, project.getTagFamilyRoot(), CREATE_PERM));
-		assertTrue(user().hasPermission(ac, project.getTagRoot(), CREATE_PERM));
-		assertTrue(user().hasPermission(ac, project.getNodeRoot(), CREATE_PERM));
+		assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().first());
+		assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().first());
+		assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().first());
+		assertTrue(user().hasPermissionAsync(ac, project.getTagRoot(), CREATE_PERM).toBlocking().first());
+		assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().first());
 	}
 
 	@Test
@@ -292,14 +282,9 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertProject(request, restProject);
 		assertTrue(searchProvider.getStoreEvents().size() != 0);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			Project reloadedProject = rh.result();
-			reloadedProject.reload();
-			assertEquals("New Name", reloadedProject.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		reloadedProject.reload();
+		assertEquals("New Name", reloadedProject.getName());
 	}
 
 	@Test
@@ -330,13 +315,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			Project reloadedProject = rh.result();
-			assertEquals("The name should not have been changed", name, reloadedProject.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		assertEquals("The name should not have been changed", name, reloadedProject.getName());
 	}
 
 	// Delete Tests
@@ -370,12 +350,8 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			assertNotNull("The project should not have been deleted", rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull("The project should not have been deleted", project);
 	}
 
 	@Test

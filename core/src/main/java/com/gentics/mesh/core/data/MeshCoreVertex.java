@@ -8,13 +8,6 @@ import rx.Observable;
 public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertex, IndexableElement, TransformableElement<T> {
 
 	/**
-	 * Return the type of the vertex.
-	 * 
-	 * @return Vertex type
-	 */
-	String getType();
-
-	/**
 	 * Return the creator of the vertex.
 	 * 
 	 * @return Creator
@@ -75,7 +68,7 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	 * 
 	 * @param ac
 	 */
-	Observable<Void> update(InternalActionContext ac);
+	Observable<? extends R> update(InternalActionContext ac);
 
 	/**
 	 * Set the editor and creator references and update the timestamps for created and edited fields.

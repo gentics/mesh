@@ -23,8 +23,6 @@ import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import rx.Observable;
 
 public interface Node extends MeshCoreVertex<NodeResponse, Node> {
@@ -176,7 +174,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
 			throws InvalidArgumentException;
 
-
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
 	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
@@ -214,37 +211,33 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * 
 	 * @param ac
 	 * @param targetNode
-	 * @param handler
 	 * @return
 	 */
-	Node moveTo(InternalActionContext ac, Node targetNode, Handler<AsyncResult<Void>> handler);
+	Observable<Void> moveTo(InternalActionContext ac, Node targetNode);
 
 	/**
 	 * Transform the node into a node reference rest model.
 	 * 
 	 * @param ac
-	 * @param handler
 	 */
-	Node transformToReference(InternalActionContext ac, Handler<AsyncResult<NodeReferenceImpl>> handler);
+	Observable<NodeReferenceImpl> transformToReference(InternalActionContext ac);
 
 	/**
 	 * Transform information from the node into a breadcrumb rest model.
 	 * 
 	 * @param ac
-	 * @param handler
 	 * @return
 	 */
-	Node transformToBreadcrumb(InternalActionContext ac, Handler<AsyncResult<NodeBreadcrumbResponse>> handler);
+	Observable<NodeBreadcrumbResponse> transformToBreadcrumb(InternalActionContext ac);
 
 	/**
 	 * Delete the language container for the given language.
 	 * 
 	 * @param ac
 	 * @param language
-	 * @param handler
 	 * @return
 	 */
-	Node deleteLanguageContainer(InternalActionContext ac, Language language, Handler<AsyncResult<Void>> handler);
+	Observable<? extends Node> deleteLanguageContainer(InternalActionContext ac, Language language);
 
 	/**
 	 * Return the path segment of this node.
@@ -283,7 +276,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * 
 	 * @param language
 	 * @return
-	 * @throws UnsupportedEncodingException 
+	 * @throws UnsupportedEncodingException
 	 */
 	Observable<String> getPath(Language language) throws UnsupportedEncodingException;
 

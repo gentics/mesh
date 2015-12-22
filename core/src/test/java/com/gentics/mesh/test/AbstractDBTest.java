@@ -1,14 +1,10 @@
 package com.gentics.mesh.test;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +26,6 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -219,16 +214,7 @@ public abstract class AbstractDBTest {
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		CountDownLatch latch = new CountDownLatch(1);
-		AtomicReference<String> reference = new AtomicReference<>();
-		node.transformToRest(ac, rh -> {
-			NodeResponse response = rh.result();
-			reference.set(JsonUtil.toJson(response));
-			assertNotNull(response);
-			latch.countDown();
-		});
-		failingLatch(latch);
-		return reference.get();
+		return JsonUtil.toJson(node.transformToRest(ac).toBlocking().first());
 	}
 
 	protected InternalActionContext getMockedVoidInternalActionContext(String query) {

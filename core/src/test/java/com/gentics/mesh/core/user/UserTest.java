@@ -14,7 +14,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -42,6 +43,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import rx.Observable;
 
 public class UserTest extends AbstractBasicObjectTest {
 
@@ -80,7 +82,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			long start = System.currentTimeMillis();
 			int nChecks = 50000;
 			for (int i = 0; i < nChecks; i++) {
-				assertTrue(user.hasPermission(ac, language, READ_PERM));
+				assertTrue(user.hasPermissionAsync(ac, language, READ_PERM).toBlocking().first());
 			}
 			long duration = System.currentTimeMillis() - start;
 			System.out.println("Duration: " + duration);
@@ -94,26 +96,25 @@ public class UserTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = getMockedVoidInternalActionContext("");
 		User user = user();
 		Language language = english();
+		Set<Observable<Boolean>> obs = new HashSet<>();
 		for (int e = 0; e < 10; e++) {
 			long start = System.currentTimeMillis();
 			int nChecks = 1000;
-			CountDownLatch latch = new CountDownLatch(nChecks);
 			for (int i = 0; i < nChecks; i++) {
-				user.hasPermission(ac, language, READ_PERM, rh -> {
-					if (rh.failed()) {
-						rh.cause().printStackTrace();
-						fail(rh.cause().getMessage());
-					}
-					assertTrue(rh.result());
-					latch.countDown();
-				});
+				Observable<Boolean> permObs = user.hasPermissionAsync(ac, language, READ_PERM);
+				obs.add(permObs);
 			}
-			long duration = System.currentTimeMillis() - start;
-			System.out.println("Dispatched: " + duration);
-			failingLatch(latch);
-			duration = System.currentTimeMillis() - start;
-			System.out.println("Duration: " + duration);
-			System.out.println("Duration per check: " + ((double) duration / (double) nChecks));
+
+			Observable.merge(obs).subscribe(result -> {
+				assertTrue(result);
+			} , error -> {
+				fail(error.getMessage());
+			} , () -> {
+				long duration = System.currentTimeMillis() - start;
+				System.out.println("Duration: " + duration);
+				System.out.println("Duration per check: " + ((double) duration / (double) nChecks));
+			});
+
 		}
 	}
 
@@ -266,29 +267,19 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		String uuid = user().getUuid();
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.userRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			assertEquals(uuid, rh.result().getUuid());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull(foundUser);
+		assertEquals(uuid, foundUser.getUuid());
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		CompletableFuture<UserResponse> cf = new CompletableFuture<>();
-		user().transformToRest(ac, rh -> {
-			cf.complete(rh.result());
 
-			latch.countDown();
-		});
-		failingLatch(latch);
-		UserResponse restUser = cf.get();
+		UserResponse restUser = user().transformToRest(ac).toBlocking().first();
+
 		assertNotNull(restUser);
 		assertEquals(user().getUsername(), restUser.getUsername());
 		assertEquals(user().getUuid(), restUser.getUuid());
@@ -307,7 +298,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		User foundUser = root.getUserRoot().findByUuidBlocking(uuid);
+		User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().first();
 		assertNull(foundUser);
 	}
 
@@ -318,10 +309,10 @@ public class UserTest extends AbstractBasicObjectTest {
 		User user = user();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		User newUser = root.getUserRoot().create("Anton", user());
-		assertFalse(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
+		assertFalse(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().first());
 		user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
 		ac.data().clear();
-		assertTrue(user.hasPermission(ac, newUser, GraphPermission.CREATE_PERM));
+		assertTrue(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().first());
 	}
 
 	@Test
@@ -373,7 +364,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			assertTrue(
 					"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
 							+ perm.name() + "}",
-					newUser.hasPermission(ac, targetNode, perm));
+					newUser.hasPermissionSync(ac, targetNode, perm));
 		}
 
 		// roleWithAllPerm
@@ -476,17 +467,12 @@ public class UserTest extends AbstractBasicObjectTest {
 		user.setPasswordHash(PASSWDHASH);
 		assertTrue(user.isEnabled());
 
-		CountDownLatch latch = new CountDownLatch(1);
-		userRoot.findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();
-			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
-			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
-			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
-			assertEquals("The email address did not match.", EMAIL, reloadedUser.getEmailAddress());
-			assertEquals("The password did not match.", PASSWDHASH, reloadedUser.getPasswordHash());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		User reloadedUser = userRoot.findByUuid(user.getUuid()).toBlocking().first();
+		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
+		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
+		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
+		assertEquals("The email address did not match.", EMAIL, reloadedUser.getEmailAddress());
+		assertEquals("The password did not match.", PASSWDHASH, reloadedUser.getPasswordHash());
 	}
 
 	@Test
@@ -497,7 +483,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertEquals(1, user.getGroups().size());
 		assertTrue(user.isEnabled());
 		user.delete();
-		User foundUser = meshRoot().getUserRoot().findByUuidBlocking(uuid);
+		User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().first();
 		assertNull(foundUser);
 	}
 

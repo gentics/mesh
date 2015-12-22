@@ -12,6 +12,13 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 public interface IndexableElement extends MeshElement {
 
 	/**
+	 * Return the type of the vertex.
+	 * 
+	 * @return Vertex type
+	 */
+	String getType();
+
+	/**
 	 * Create a new search queue batch for the given action and add the batch to the search queue. This method can enhance the created batch by calling
 	 * {@link #addRelatedEntries(SearchQueueBatch, SearchQueueEntryAction)} and thus adding entries for affected related object to the batch.
 	 * 

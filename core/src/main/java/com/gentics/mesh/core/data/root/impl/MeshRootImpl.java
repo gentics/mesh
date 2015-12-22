@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -38,11 +37,9 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
@@ -328,15 +325,13 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public void resolvePathToElement(String pathToElement, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
+	public Observable<? extends MeshVertex> resolvePathToElement(String pathToElement) {
 		MeshRoot root = BootstrapInitializer.getBoot().meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
-			resultHandler.handle(Future.failedFuture("Could not resolve path. The path must must not be empty or null."));
-			return;
+			return Observable.error(new Exception("Could not resolve path. The path must must not be empty or null."));
 		}
 		if (pathToElement.endsWith("/")) {
-			resultHandler.handle(Future.failedFuture("Could not resolve path. The path must not end with a slash."));
-			return;
+			return Observable.error(new Exception("Could not resolve path. The path must not end with a slash."));
 		}
 
 		// Prepare the stack which we use for resolving
@@ -356,27 +351,22 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		switch (rootNodeSegment) {
 		case ProjectRoot.TYPE:
 			root.getProjectRoot().reload();
-			root.getProjectRoot().resolveToElement(stack, resultHandler);
-			return;
+			return root.getProjectRoot().resolveToElement(stack);
 		case UserRoot.TYPE:
 			root.getUserRoot().reload();
-			root.getUserRoot().resolveToElement(stack, resultHandler);
-			return;
+			return root.getUserRoot().resolveToElement(stack);
 		case GroupRoot.TYPE:
 			root.getGroupRoot().reload();
-			root.getGroupRoot().resolveToElement(stack, resultHandler);
-			return;
+			return root.getGroupRoot().resolveToElement(stack);
 		case RoleRoot.TYPE:
 			root.getRoleRoot().reload();
-			root.getRoleRoot().resolveToElement(stack, resultHandler);
-			return;
+			return root.getRoleRoot().resolveToElement(stack);
 		case SchemaContainerRoot.TYPE:
 			root.getSchemaContainerRoot().reload();
-			root.getSchemaContainerRoot().resolveToElement(stack, resultHandler);
-			return;
+			return root.getSchemaContainerRoot().resolveToElement(stack);
 		default:
-			resultHandler.handle(Future.failedFuture("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
-			return;
+			// TOOO i18n
+			return Observable.error(new Exception("Could not resolve given path. Unknown element {" + rootNodeSegment + "}"));
 		}
 	}
 

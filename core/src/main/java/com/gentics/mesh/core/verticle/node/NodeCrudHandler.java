@@ -4,9 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -22,15 +22,15 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
-import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import rx.Observable;
 
 @Component
-public class NodeCrudHandler extends AbstractCrudHandler<Node> {
+public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Override
 	public RootVertex<Node> getRootVertex(InternalActionContext ac) {
@@ -42,183 +42,131 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node> {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
 	}
 
-	public void handelDeleteLanguage(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					Node node = rh.result();
-					String languageTag = ac.getParameter("languageTag");
-					Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
-					if (language == null) {
-						tc.fail(error(NOT_FOUND, "error_language_not_found", languageTag));
-						return;
-					}
-					node.deleteLanguageContainer(ac, language, dh -> {
-						if (dh.failed()) {
-							tc.fail(dh.cause());
-						} else {
-							ac.sendMessage(OK, "node_deleted_language", node.getUuid(), languageTag);
-						}
-					});
+	public void handleDeleteLanguage(InternalActionContext ac) {
+		db.asyncNoTrx(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM).flatMap(node -> {
+				//TODO Don't we need a trx here?!
+				String languageTag = ac.getParameter("languageTag");
+				Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
-			});
-		} , ac.errorHandler());
+				Observable<? extends Node> obs = node.deleteLanguageContainer(ac, language);
+				return obs.map(updatedNode -> {
+					return message(ac, "node_deleted_language", updatedNode.getUuid(), languageTag);
+				});
+
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
-	// @Override
-	// public void handleUpdate(InternalActionContext ac) {
-	// updateElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
-	// }
-	//
-	// @Override
-	// public void handleRead(InternalActionContext ac) {
-	// readElement(ac, "uuid", () -> ac.getProject().getNodeRoot());
-	// }
-	//
-	// @Override
-	// public void handleReadList(InternalActionContext ac) {
-	// readElementList(ac, () -> ac.getProject().getNodeRoot());
-	// }
-
 	public void handleMove(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
 			String uuid = ac.getParameter("uuid");
 			String toUuid = ac.getParameter("toUuid");
-			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, sourceNodeHandler -> {
-				if (ac.failOnError(sourceNodeHandler)) {
-					project.getNodeRoot().loadObject(ac, "toUuid", UPDATE_PERM, targetNodeHandler -> {
-						if (ac.failOnError(targetNodeHandler)) {
-							Node sourceNode = sourceNodeHandler.result();
-							Node targetNode = targetNodeHandler.result();
-							// TODO Update SQB
-							sourceNode.moveTo(ac, targetNode, mh -> {
-								if (mh.failed()) {
-									ac.fail(mh.cause());
-								} else {
-									ac.sendMessage(OK, "node_moved_to", uuid, toUuid);
-								}
-							});
 
-						}
-					});
-				}
-			});
-		} , ac.errorHandler());
+			Observable<Node> obsSourceNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
+			Observable<Node> obsTargetNode = project.getNodeRoot().loadObject(ac, "toUuid", UPDATE_PERM);
+
+			return Observable.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
+				// TODO Update SQB
+				Observable<Void> obs1 = sourceNode.moveTo(ac, targetNode);
+				Observable<GenericMessageResponse> obs2 = obs1.map(er -> {
+					return message(ac, "node_moved_to", uuid, toUuid);
+				});
+				return obs2;
+			}).flatMap(x -> x).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 	public void handleReadChildren(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					Node node = rh.result();
-					try {
-						Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-						page.transformAndRespond(ac, OK);
-					} catch (Exception e) {
-						ac.fail(e);
-					}
+		db.asyncNoTrx(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+				try {
+					Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
+					return page.transformToRest(ac);
+				} catch (Exception e) {
+					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
 				}
-			});
-		} , ac.errorHandler());
+			}).flatMap(x -> x).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void readTags(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			Project project = ac.getProject();
-			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					Node node = rh.result();
-					try {
-						Page<? extends Tag> tagPage = node.getTags(ac);
-						tagPage.transformAndRespond(ac, OK);
-					} catch (Exception e) {
-						ac.fail(e);
-					}
+		db.asyncNoTrx(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+				try {
+					Page<? extends Tag> tagPage = node.getTags(ac);
+					return tagPage.transformToRest(ac);
+				} catch (Exception e) {
+					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
-			});
-		} , ac.errorHandler());
+			}).flatMap(x -> x).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleAddTag(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 			Project project = ac.getProject();
-			if (project == null) {
-				ac.fail(BAD_REQUEST, "Project not found");
-				// TODO i18n error
-			} else {
-				project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
-					if (ac.failOnError(rh)) {
-						Node node = rh.result();
-						project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM, th -> {
-							// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
-							if (ac.failOnError(th)) {
-								Tag tag = th.result();
-								db.trx(txAdd -> {
-									SearchQueueBatch batch = node.addIndexBatch(UPDATE_ACTION);
-									node.addTag(tag);
-									txAdd.complete(Tuple.tuple(batch, node));
-								} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txAdded) -> {
-									if (txAdded.failed()) {
-										ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
-									} else {
-										txAdded.result().v1().processOrFail(ac, ch -> {
-											transformAndRespond(ac, ch.result(), OK);
-										} , txAdded.result().v2());
-									}
-								});
+			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
+			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
 
-							}
-						});
-					}
+			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
+			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
+				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
+					node.addTag(tag);
+					SearchQueueBatch batch = node.addIndexBatch(UPDATE_ACTION);
+					return Tuple.tuple(batch, node);
 				});
-			}
-		} , ac.errorHandler());
+
+				SearchQueueBatch batch = tuple.v1();
+				Node updatedNode = tuple.v2();
+				return batch.process().flatMap(i -> updatedNode.transformToRest(ac));
+
+			});
+			return obs.flatMap(x -> x).toBlocking().first();
+
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 	public void handleRemoveTag(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 
 			Project project = ac.getProject();
-			project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM, rh -> {
-				project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM, srh -> {
-					if (ac.failOnError(srh) && ac.failOnError(rh)) {
-						Node node = rh.result();
-						Tag tag = srh.result();
-						db.trx(txRemove -> {
-							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
-							node.removeTag(tag);
-							txRemove.complete(Tuple.tuple(batch, node));
-						} , (AsyncResult<Tuple<SearchQueueBatch, Node>> txAdded) -> {
-							if (txAdded.failed()) {
-								ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
-							} else {
-								txAdded.result().v1().processOrFail(ac, ch -> {
-									transformAndRespond(ac, ch.result(), OK);
-								} , txAdded.result().v2());
-							}
-						});
-					}
+			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
+			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
+
+			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
+				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
+					SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+					node.removeTag(tag);
+					return Tuple.tuple(batch, node);
 				});
+
+				SearchQueueBatch batch = tuple.v1();
+				Node updatedNode = tuple.v2();
+
+				return batch.process(ac).flatMap(i -> updatedNode.transformToRest(ac));
+
 			});
-		} , ac.errorHandler());
+			return obs.flatMap(x -> x).toBlocking().first();
+
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 	public void handelReadBreadcrumb(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 			Project project = ac.getProject();
-			project.getNodeRoot().loadObject(ac, "uuid", READ_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					Node node = rh.result();
-					node.transformToBreadcrumb(ac, th -> {
-						ac.send(JsonUtil.toJson(th.result()), OK);
-					});
-				}
-			});
-		} , ac.errorHandler());
+			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).flatMap(node -> {
+				return node.transformToBreadcrumb(ac);
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 }

@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -263,12 +261,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid;
 		TagFamily basicTagFamily = tagFamily("basic");
 		uuid = basicTagFamily.getUuid();
-		CountDownLatch latch = new CountDownLatch(1);
-		project().getTagFamilyRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNotNull(project().getTagFamilyRoot().findByUuid(uuid).toBlocking().first());
 
 		Future<GenericMessageResponse> future = getClient().deleteTagFamily(PROJECT_NAME, uuid);
 		latchFor(future);

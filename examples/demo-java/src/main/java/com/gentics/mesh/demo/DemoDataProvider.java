@@ -16,7 +16,6 @@ import java.util.Objects;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -94,7 +93,7 @@ public class DemoDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		long start = System.currentTimeMillis();
 
-		db.noTrx(noTrx -> {
+		db.noTrx(() -> {
 			bootstrapInitializer.initMandatoryData();
 
 			root = boot.meshRoot();
@@ -113,7 +112,7 @@ public class DemoDataProvider {
 
 			addSchemaContainers();
 			addNodes();
-
+			return null;
 		});
 		updatePermissions();
 		invokeFullIndex();
@@ -121,9 +120,10 @@ public class DemoDataProvider {
 	}
 
 	private void invokeFullIndex() throws InterruptedException {
-		db.noTrx(noTrx -> {
+		db.noTrx(() -> {
 			boot.meshRoot().getSearchQueue().addFullIndex();
 			boot.meshRoot().getSearchQueue().processAll();
+			return null;
 		});
 	}
 
@@ -258,9 +258,9 @@ public class DemoDataProvider {
 				if (ins == null) {
 					throw new NullPointerException("Could not find binary file within path {" + path + "}");
 				}
-				
+
 				BinaryGraphField binaryField = englishContainer.createBinary("binary");
-				
+
 				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), binaryField.getSegmentedPath());
 				folder.mkdirs();
 				File outputFile = new File(folder, node.getUuid() + ".bin");
@@ -367,7 +367,7 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject schemaJson = dataArray.getJsonObject(i);
 			String schemaName = schemaJson.getString("name");
-			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName);
+			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName).toBlocking().first();
 			if (container == null) {
 				StringWriter writer = new StringWriter();
 				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
@@ -387,7 +387,7 @@ public class DemoDataProvider {
 	}
 
 	private void updatePermissions() {
-		db.noTrx(tc -> {
+		db.noTrx(() -> {
 			for (Role role : roles.values()) {
 				for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
 					WrappedVertex wrappedVertex = (WrappedVertex) vertex;
@@ -400,6 +400,7 @@ public class DemoDataProvider {
 				}
 				log.info("Added BasicPermissions to nodes for role {" + role.getName() + "}");
 			}
+			return null;
 		});
 
 	}

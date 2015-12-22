@@ -15,6 +15,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 public abstract class AbstractDatabase implements Database {
 
@@ -65,44 +68,34 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Database asyncTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
+		ObservableFuture<T> obsFut = RxHelper.observableFuture();
 		vertx.executeBlocking(bh -> {
-			trx(txHandler, rh -> {
-				if (rh.succeeded()) {
-					bh.complete(rh.result());
-				} else {
-					bh.fail(rh.cause());
-				}
-			});
-		} , false, resultHandler);
-		return this;
+			T result = trx(txHandler);
+			bh.complete(result);
+		} , false, obsFut.toHandler());
+		return obsFut;
 	}
 
 	@Override
-	public <T> Future<T> noTrx(TrxHandler<Future<T>> txHandler) {
-		Future<T> future = Future.future();
+	public <T> T noTrx(TrxHandler<T> txHandler) {
 		try (NoTrx noTx = noTrx()) {
-			txHandler.handle(future);
+			T result = txHandler.call();
+			return result;
 		} catch (Exception e) {
 			log.error("Error while handling no-transaction.", e);
-			return Future.failedFuture(e);
+			throw new RuntimeException(e);
 		}
-		return future;
 	}
 
 	@Override
-	public <T> Database asyncNoTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> Observable<T> asyncNoTrx(TrxHandler<T> txHandler) {
+		ObservableFuture<T> obsFut = RxHelper.observableFuture();
 		vertx.executeBlocking(bh -> {
-			Future<T> future = noTrx(txHandler);
-			future.setHandler(rh -> {
-				if (rh.failed()) {
-					bh.fail(rh.cause());
-				} else {
-					bh.complete(rh.result());
-				}
-			});
-		} , false, resultHandler);
-		return this;
+			T result = noTrx(txHandler);
+			bh.complete(result);
+		} , false, obsFut.toHandler());
+		return obsFut;
 	}
 
 }

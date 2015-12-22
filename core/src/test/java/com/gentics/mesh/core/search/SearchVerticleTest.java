@@ -1,16 +1,13 @@
 package com.gentics.mesh.core.search;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,25 +74,9 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		for (int i = 0; i < 10; i++) {
 			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, "node", SearchQueueEntryAction.CREATE_ACTION);
 		}
-		CountDownLatch latch = new CountDownLatch(1);
-		searchProvider.deleteDocument("node", "node-en", uuid, rh -> {
-			if (rh.failed()) {
-				fail(rh.cause().getMessage());
-			}
-			latch.countDown();
-		});
-		failingLatch(latch);
+		searchProvider.deleteDocument("node", "node-en", uuid).toBlocking().first();
 		processor.process();
-
-		CountDownLatch getLatch = new CountDownLatch(1);
-		searchProvider.getDocument("node", "node-en", uuid, rh -> {
-			if (rh.failed()) {
-				fail(rh.cause().getMessage());
-			}
-			assertNotNull(rh.result());
-			getLatch.countDown();
-		});
-		failingLatch(getLatch);
+		assertNotNull(searchProvider.getDocument("node", "node-en", uuid).toBlocking().first());
 	}
 
 }

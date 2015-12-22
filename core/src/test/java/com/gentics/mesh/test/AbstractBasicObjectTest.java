@@ -14,23 +14,34 @@ import io.vertx.ext.web.RoutingContext;
 
 public abstract class AbstractBasicObjectTest extends AbstractBasicDBTest implements BasicObjectTestcases {
 
-	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> node) {
+	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+
 		try (Trx tx = db.trx()) {
-			role().grantPermissions(node, perm);
+			role().grantPermissions(element, perm);
 			tx.success();
 		}
 
 		try (Trx tx = db.trx()) {
-			RoutingContext rc = getMockedRoutingContext("");
-			InternalActionContext ac = InternalActionContext.create(rc);
-			assertTrue(role().hasPermission(perm, node));
-			assertTrue("The user has no {" + perm.getSimpleName() + "} permission on node {" + node.getUuid() + "/" + node.getType() + "}",
-					getRequestUser().hasPermission(ac, node, perm));
-			role().revokePermissions(node, perm);
+			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
+					+ "} although we granted those permissions.", role().hasPermission(perm, element));
+			assertTrue("The user has no {" + perm.getSimpleName() + "} permission on node {" + element.getUuid() + "/" + element.getType() + "}",
+					getRequestUser().hasPermissionAsync(ac, element, perm).toBlocking().first());
+		}
+
+		try (Trx tx = db.trx()) {
+			role().revokePermissions(element, perm);
 			rc.data().clear();
-			assertFalse("The user still got {" + perm.getSimpleName() + "} permission on node {" + node.getUuid() + "/" + node.getType()
-					+ "} although we revoked it.", role().hasPermission(perm, node));
-			assertFalse(getRequestUser().hasPermission(ac, node, perm));
+		}
+
+		try (Trx tx = db.trx()) {
+			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getSimpleName() + "} permission on node {" + element.getUuid()
+					+ "/" + element.getType() + "} although we revoked it.", role().hasPermission(perm, element));
+
+			boolean hasPerm = getRequestUser().hasPermissionAsync(ac, element, perm).toBlocking().first();
+			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getSimpleName() + "} permission on node {"
+					+ element.getUuid() + "/" + element.getType() + "} although we revoked it.", hasPerm);
 		}
 	}
 

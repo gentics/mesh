@@ -3,13 +3,14 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -17,20 +18,16 @@ import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
-public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
+public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
@@ -73,8 +70,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 		return role;
 	}
 
-	public void create(InternalActionContext ac, Handler<AsyncResult<Role>> handler) {
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+	public Observable<Role> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
@@ -82,35 +78,31 @@ public class RoleRootImpl extends AbstractRootVertex<Role>implements RoleRoot {
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (StringUtils.isEmpty(roleName)) {
-			handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_name_must_be_set"))));
-			return;
+			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 
-		Role conflictingRole = findByName(roleName);
+		Role conflictingRole = findByName(roleName).toBlocking().first();
 		if (conflictingRole != null) {
-			HttpStatusCodeErrorException conflictError = conflict(ac, conflictingRole.getUuid(), roleName, "role_conflicting_name");
-			handler.handle(Future.failedFuture(conflictError));
-			return;
+			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
 		}
 
 		// TODO use non-blocking code here
-		if (requestUser.hasPermission(this, CREATE_PERM)) {
-			db.trx(txCreate -> {
-				requestUser.reload();
-				Role role = create(requestModel.getName(), requestUser);
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-				SearchQueueBatch batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-				txCreate.complete(Tuple.tuple(batch, role));
-			} , (AsyncResult<Tuple<SearchQueueBatch, Role>> txCreated) -> {
-				if (txCreated.failed()) {
-					handler.handle(Future.failedFuture(txCreated.cause()));
-				} else {
-					txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
-				}
-			});
-		} else {
-			handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
+		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
+
+		Tuple<SearchQueueBatch, Role> tuple = db.trx(() -> {
+			requestUser.reload();
+			Role role = create(requestModel.getName(), requestUser);
+			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
+			SearchQueueBatch batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+			return Tuple.tuple(batch, role);
+		});
+
+		SearchQueueBatch batch = tuple.v1();
+		Role createdRole = tuple.v2();
+
+		return batch.process().map(i -> createdRole);
 
 	}
 

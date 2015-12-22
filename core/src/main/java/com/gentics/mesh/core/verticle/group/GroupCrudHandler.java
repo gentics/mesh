@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.group;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
@@ -16,16 +15,16 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.util.InvalidArgumentException;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import rx.Observable;
 
 @Component
-public class GroupCrudHandler extends AbstractCrudHandler<Group> {
+public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
 
 	@Override
 	public RootVertex<Group> getRootVertex(InternalActionContext ac) {
@@ -38,147 +37,118 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group> {
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
+			Observable<Group> obsGroup = getRootVertex(ac).loadObject(ac, "groupUuid", READ_PERM);
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
-			boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM, grh -> {
+			Observable<RestModel> obs = obsGroup.flatMap(group -> {
 				try {
-					Page<? extends Role> rolePage = grh.result().getRoles(requestUser, pagingInfo);
-					rolePage.transformAndRespond(ac, OK);
-				} catch (InvalidArgumentException e) {
-					ac.fail(e);
+					Page<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+					return rolePage.transformToRest(ac);
+				} catch (Exception e) {
+					return Observable.error(e);
 				}
 			});
-		} , ac.errorHandler());
+			return obs.toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleAddRoleToGroup(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (ac.failOnError(grh)) {
-					boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM, rrh -> {
-						if (ac.failOnError(rrh)) {
-							Group group = grh.result();
-							Role role = rrh.result();
-							db.trx(txAdd -> {
-								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
-								group.addRole(role);
-								txAdd.complete(Tuple.tuple(batch, group));
-							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txAdded) -> {
-								if (txAdded.failed()) {
-									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
-								} else {
-									txAdded.result().v1().processOrFail(ac, ch -> {
-										transformAndRespond(ac, txAdded.result().v2(), OK);
-									} , txAdded.result().v2());
+		db.asyncNoTrx(() -> {
+			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
+			Observable<Role> obsRole = boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM);
 
-								}
-							});
-						}
-					});
-				}
+			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsRole, (group, role) -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					group.addRole(role);
+					return Tuple.tuple(batch, group);
+				});
+				SearchQueueBatch batch = tuple.v1();
+				Group updatedGroup = tuple.v2();
+				return batch.process().flatMap(done -> {
+					return updatedGroup.transformToRest(ac);
+				});
 			});
-		} , ac.errorHandler());
+
+			return obs.flatMap(x -> x).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (ac.failOnError(grh)) {
-					// TODO check whether the role is actually part of the group
-					boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM, rrh -> {
-						if (ac.failOnError(rrh)) {
-							Group group = grh.result();
-							Role role = rrh.result();
-							db.trx(txRemove -> {
-								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
-								group.removeRole(role);
-								txRemove.complete(Tuple.tuple(batch, group));
-							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txRemoved) -> {
-								if (txRemoved.failed()) {
-									ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
-								} else {
-									transformAndRespond(ac, txRemoved.result().v2(), OK);
-								}
-							});
-						}
-					});
-				}
-			});
-		} , ac.errorHandler());
+		db.asyncNoTrx(() -> {
+			// TODO check whether the role is actually part of the group
+			Observable<Group> obsGroup = getRootVertex(ac).loadObject(ac, "groupUuid", UPDATE_PERM);
+			Observable<Role> obsRole = boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM);
+
+			return Observable.zip(obsGroup, obsRole, (group, role) -> {
+
+				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					group.removeRole(role);
+					return Tuple.tuple(batch, group);
+				});
+
+				SearchQueueBatch batch = tuple.v1();
+				Group updatedGroup = tuple.v2();
+
+				return batch.process().map(done -> {
+					return updatedGroup.transformToRest(ac);
+				}).flatMap(x -> x).toBlocking().first();
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleGroupUserList(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
-			boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM, grh -> {
-				if (ac.failOnError(grh)) {
-					try {
-						Group group = grh.result();
-						Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-						userPage.transformAndRespond(ac, OK);
-					} catch (Exception e) {
-						ac.fail(e);
-					}
+			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM);
+			return obsGroup.flatMap(group -> {
+				try {
+					Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+					return userPage.transformToRest(ac);
+				} catch (Exception e) {
+					return Observable.error(e);
 				}
-			});
-		} , ac.errorHandler());
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleAddUserToGroup(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 
-			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (ac.failOnError(grh)) {
-					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
-						if (ac.failOnError(urh)) {
-							db.trx(txAdd -> {
-								Group group = grh.result();
-								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
-								User user = urh.result();
-								batch.addEntry(user, UPDATE_ACTION);
-								group.addUser(user);
-								txAdd.complete(Tuple.tuple(batch, group));
-							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txAdded) -> {
-								if (txAdded.failed()) {
-									ac.errorHandler().handle(Future.failedFuture(txAdded.cause()));
-								} else {
-									transformAndRespond(ac, txAdded.result().v2(), OK);
-								}
-							});
-						}
-					});
-				}
-			});
-		} , ac.errorHandler());
+			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
+			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
+			return Observable.zip(obsGroup, obsUser, (group, user) -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					batch.addEntry(user, UPDATE_ACTION);
+					group.addUser(user);
+					return Tuple.tuple(batch, group);
+				});
+				// BUG Add SQB processing
+				return tuple.v2().transformToRest(ac);
+			}).flatMap(x -> x).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
-		db.asyncNoTrx(tc -> {
-			boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM, grh -> {
-				if (ac.failOnError(grh)) {
-					boot.userRoot().loadObject(ac, "userUuid", READ_PERM, urh -> {
-						if (ac.failOnError(urh)) {
-							db.trx(tcRemove -> {
-								Group group = grh.result();
-								SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
-								User user = urh.result();
-								batch.addEntry(user, UPDATE_ACTION);
-								group.removeUser(user);
-								tcRemove.complete(Tuple.tuple(batch, group));
-							} , (AsyncResult<Tuple<SearchQueueBatch, Group>> txRemoved) -> {
-								if (txRemoved.failed()) {
-									ac.errorHandler().handle(Future.failedFuture(txRemoved.cause()));
-								} else {
-									transformAndRespond(ac, txRemoved.result().v2(), OK);
-								}
-							});
-						}
-					});
-				}
-			});
-		} , ac.errorHandler());
+		db.asyncNoTrx(() -> {
+			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
+			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
+			return Observable.zip(obsUser, obsGroup, (user, group) -> {
+				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
+					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					batch.addEntry(user, UPDATE_ACTION);
+					group.removeUser(user);
+					return Tuple.tuple(batch, group);
+				});
+				// BUG Add SQB processing
+				return tuple.v2().transformToRest(ac);
+			}).flatMap(x -> x).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 }

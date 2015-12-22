@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -156,7 +154,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 10;
 		String uuid = user().getUuid();
-		//		CyclicBarrier barrier = prepareBarrier(nJobs);
+		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findUserByUuid(uuid));
@@ -423,7 +421,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Node node = folder("2015");
 		InternalActionContext ac = getMockedInternalActionContext("");
-		assertTrue(user().hasPermission(ac, node, READ_PERM));
+		assertTrue(user().hasPermissionAsync(ac, node, READ_PERM).toBlocking().first());
 
 		NodeReferenceImpl reference = new NodeReferenceImpl();
 		reference.setProjectName(PROJECT_NAME);
@@ -611,10 +609,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
 
-		boot.userRoot().findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();
-			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-		});
+		User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
+		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 	}
 
 	@Test
@@ -633,15 +629,10 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<UserResponse> future = getClient().updateUser(user.getUuid(), updatedUser);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.userRoot().findByUuid(user.getUuid(), rh -> {
-			User reloadedUser = rh.result();
-			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
-			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
-			latch.countDown();
-		});
-		latch.await();
+		User reloadedUser = boot.userRoot().findByUuid(user.getUuid()).toBlocking().first();
+		assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+		assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
+		assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
 	}
 
 	@Test
@@ -770,13 +761,8 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserResponse restUser = future.result();
 		test.assertUser(request, restUser);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.userRoot().findByUuid(restUser.getUuid(), rh -> {
-			User user = rh.result();
-			test.assertUser(user, restUser);
-			latch.countDown();
-		});
-		failingLatch(latch);
+		User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().first();
+		test.assertUser(user, restUser);
 	}
 
 	@Test
@@ -872,7 +858,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 
 		try (Trx tx = db.trx()) {
-			User loadedUser = boot.userRoot().findByUuidBlocking(uuid);
+			User loadedUser = boot.userRoot().findByUuid(uuid).toBlocking().first();
 			assertNull("The user should have been deleted.", loadedUser);
 		}
 
@@ -915,9 +901,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		userRoot = meshRoot().getUserRoot();
-		userRoot.findByUuid(uuid, rh -> {
-			assertNotNull("The user should not have been deleted", rh.result());
-		});
+		assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid).toBlocking().first());
 	}
 
 	@Test(expected = NullPointerException.class)
@@ -944,7 +928,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertTrue(role().hasPermission(DELETE_PERM, extraUser));
 
-		User user = userRoot.findByUuidBlocking(uuid);
+		User user = userRoot.findByUuid(uuid).toBlocking().first();
 		assertEquals(1, user.getGroups().size());
 		assertTrue("The user should be enabled", user.isEnabled());
 
@@ -953,16 +937,16 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("user_deleted", future, uuid + "/" + name);
 		userRoot.reload();
-		assertNull("The user was not deleted.", userRoot.findByUuidBlocking(uuid));
+		assertNull("The user was not deleted.", userRoot.findByUuid(uuid).toBlocking().first());
 
-		//		// Check whether the user was correctly disabled
-		//		try (NoTrx noTx = db.noTrx()) {
-		//			User user2 = userRoot.findByUuidBlocking(uuid);
-		//			user2.reload();
-		//			assertNotNull(user2);
-		//			assertFalse("The user should have been disabled", user2.isEnabled());
-		//			assertEquals(0, user2.getGroups().size());
-		//		}
+		// // Check whether the user was correctly disabled
+		// try (NoTrx noTx = db.noTrx()) {
+		// User user2 = userRoot.findByUuidBlocking(uuid);
+		// user2.reload();
+		// assertNotNull(user2);
+		// assertFalse("The user should have been disabled", user2.isEnabled());
+		// assertEquals(0, user2.getGroups().size());
+		// }
 	}
 
 	@Test

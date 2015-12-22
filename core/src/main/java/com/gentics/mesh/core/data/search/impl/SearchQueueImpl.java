@@ -4,10 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BAT
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
@@ -118,28 +114,18 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	@Override
 	public long processAll() throws InterruptedException {
-		AtomicLong processedBatchCount = new AtomicLong(0);
 		SearchQueueBatch batch;
+		long count = 0;
 		while ((batch = take()) != null) {
-			CountDownLatch latch = new CountDownLatch(1);
-			batch.process(rh -> {
-				if (rh.failed()) {
-					log.error("Error while processing queue batch.", rh.cause());
-				}
-				latch.countDown();
-				processedBatchCount.incrementAndGet();
-			});
+			batch.process().toBlocking().last();
 
-			int maxTime = 10;
-			if (!latch.await(maxTime, TimeUnit.SECONDS)) {
-				log.error("Batch processing exceeded timeout of {" + maxTime + "} seconds.");
-			}
 			if (log.isDebugEnabled()) {
 				log.debug("Proccessed batch.");
 			}
+			count++;
 		}
 		MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-		return processedBatchCount.get();
+		return count;	
 	}
 
 }

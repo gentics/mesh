@@ -18,11 +18,12 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
 
 @Component
 public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
@@ -46,44 +47,52 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 
 	abstract protected Map<String, Object> transformToDocumentMap(T object);
 
-	public void update(T object, Handler<AsyncResult<Void>> handler) {
-		searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object), handler);
+	public Observable<Void> update(T object) {
+		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
 	}
 
-	public void update(String uuid, String type, Handler<AsyncResult<Void>> handler) {
-		getRootVertex().findByUuid(uuid, rh -> {
-			if (rh.failed()) {
-				handler.handle(Future.failedFuture(rh.cause()));
-			} else if (rh.result() == null) {
-				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + type + "} could not be found within graph."));
+	public Observable<Void> update(String uuid, String type) {
+		ObservableFuture<Void> fut = RxHelper.observableFuture();
+		getRootVertex().findByUuid(uuid).map(element -> {
+			if (element == null) {
+				return Observable.error(new Exception("Element {" + uuid + "} for index type {" + type + "} could not be found within graph."));
 			} else {
-				update(rh.result(), handler);
+				return update(element);
 			}
 		});
+		return fut;
 	}
 
-	public void store(T object, String type, Handler<AsyncResult<Void>> handler) {
-		searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object), handler);
+	public Observable<Void> store(T object, String type) {
+		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object));
 	}
 
-	public void delete(String uuid, String type, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> delete(String uuid, String type) {
 		// We don't need to resolve the uuid and load the graph object in this case.
-		searchProvider.deleteDocument(getIndex(), type, uuid, handler);
+		return searchProvider.deleteDocument(getIndex(), type, uuid);
 	}
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 */
-	public void store(String uuid, String indexType, Handler<AsyncResult<Void>> handler) {
-		getRootVertex().findByUuid(uuid, rh -> {
-			if (rh.failed()) {
-				handler.handle(Future.failedFuture(rh.cause()));
-			} else if (rh.result() == null) {
-				handler.handle(Future.failedFuture("Element {" + uuid + "} for index type {" + indexType + "} could not be found within graph."));
+	public Observable<Void> store(String uuid, String indexType) {
+		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
+
+		getRootVertex().findByUuid(uuid).subscribe(element -> {
+			if (element == null) {
+				obsFut.toHandler().handle(Future
+						.failedFuture(new Exception("Element {" + uuid + "} for index type {" + indexType + "} could not be found within graph.")));
 			} else {
-				store(rh.result(), indexType, handler);
+				store(element, indexType).subscribe(done -> {
+					obsFut.toHandler().handle(Future.succeededFuture(done));
+				} , error -> {
+					obsFut.toHandler().handle(Future.failedFuture(error));
+				});
 			}
+		} , error -> {
+			obsFut.toHandler().handle(Future.failedFuture(error));
 		});
+		return obsFut;
 	}
 
 	protected boolean isSearchClientAvailable() {
@@ -159,15 +168,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 	 *            Type of the action (delete, update, create)
 	 * @param indexType
 	 *            Type of the index
-	 * @param handler
-	 *            Handler that is invoked once the action has terminated
 	 */
-	public void handleAction(String uuid, String actionName, String indexType, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> handleAction(String uuid, String actionName, String indexType) {
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);
-			handler.handle(Future.failedFuture(msg));
-			return;
+			return Observable.error(new Exception(msg));
 		}
 
 		if (indexType == null) {
@@ -176,17 +182,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
 		case CREATE_ACTION:
-			store(uuid, indexType, handler);
-			break;
+			return store(uuid, indexType);
 		case DELETE_ACTION:
-			delete(uuid, indexType, handler);
-			break;
+			return delete(uuid, indexType);
 		case UPDATE_ACTION:
 			// update(uuid, handler);
-			store(uuid, indexType, handler);
-			break;
+			return store(uuid, indexType);
 		default:
-			handler.handle(Future.failedFuture("Action type {" + action + "} is unknown."));
+			return Observable.error(new Exception("Action type {" + action + "} is unknown."));
 		}
 	}
 

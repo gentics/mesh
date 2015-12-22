@@ -4,8 +4,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public interface MicronodeGraphField extends ListableReferencingGraphField {
 	/**
@@ -22,5 +21,5 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 	 * @param fieldKey
 	 * @param handler
 	 */
-	void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<Field>> handler);
+	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey);
 }

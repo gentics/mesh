@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -9,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +46,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() throws IOException {
-		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
+		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().first();
 		assertNotNull(schemaContainer);
 		assertEquals("content", schemaContainer.getSchema().getName());
 		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235"));
@@ -101,12 +99,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().first());
 	}
 
 	@Test
@@ -114,13 +107,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testDelete() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
 		getSchemaContainer().delete();
-
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().first());
 	}
 
 	@Test
@@ -144,13 +131,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
 		newContainer.delete();
-
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getSchemaContainerRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().first());
 	}
 
 	@Test
@@ -181,7 +162,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws IOException {
-		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
+		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().first();
 		Schema schema = schemaContainer.getSchema();
 		schema.setName("changed");
 		schemaContainer.setSchema(schema);

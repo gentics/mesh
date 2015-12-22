@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -105,9 +106,10 @@ public class SearchRestHandler {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
+			//TODO BUG we need to filter by one index only
 			builder = client.prepareSearch().setSource(queryStringObject.toString());
 		} catch (Exception e) {
-			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("search_query_not_parsable"), e));
+			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
 		}
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
@@ -115,34 +117,34 @@ public class SearchRestHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				db.noTrx(noTrx -> {
+				db.noTrx(() -> {
 					rootVertex.reload();
 
-					List<ObservableFuture<T>> futures = new ArrayList<>();
+					List<ObservableFuture<T>> obs = new ArrayList<>();
 					for (SearchHit hit : response.getHits()) {
 						String uuid = hit.getId();
-						ObservableFuture<T> obs = RxHelper.observableFuture();
-						futures.add(obs);
+						ObservableFuture<T> obsFut = RxHelper.observableFuture();
+						obs.add(obsFut);
 
 						// Locate the node
-						rootVertex.findByUuid(uuid, rh -> {
-							if (rh.failed()) {
-								obs.toHandler().handle(Future.failedFuture(rh.cause()));
-							} else if (rh.result() == null) {
+						rootVertex.findByUuid(uuid).subscribe(element -> {
+							if (element == null) {
 								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
 										+ "}");
-								obs.toHandler().handle(Future.succeededFuture());
+								obsFut.toHandler().handle(Future.succeededFuture());
 							} else {
-								T element = rh.result();
-								obs.toHandler().handle(Future.succeededFuture(element));
+								obsFut.toHandler().handle(Future.succeededFuture(element));
 							}
+						} , error -> {
+							obsFut.toHandler().handle(Future.failedFuture(error));
+
 						});
 					}
-					Observable.merge(futures).collect(() -> {
+					Observable.merge(obs).collect(() -> {
 						return new ArrayList<T>();
 					} , (x, y) -> {
 						// Check permissions
-						if (y != null && requestUser.hasPermission(ac, y, GraphPermission.READ_PERM)) {
+						if (y != null && requestUser.hasPermissionSync(ac, y, GraphPermission.READ_PERM)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -153,14 +155,12 @@ public class SearchRestHandler {
 						int upper = low + pagingInfo.getPerPage() - 1;
 
 						int n = 0;
-						List<ObservableFuture<TR>> transformedElements = new ArrayList<>();
+						List<Observable<TR>> transformedElements = new ArrayList<>();
 						for (T element : list) {
 							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
-								ObservableFuture<TR> obs = RxHelper.observableFuture();
-								transformedElements.add(obs);
+								transformedElements.add(element.transformToRest(ac));
 								// Transform node and add it to the list of nodes
-								element.transformToRest(ac, obs.toHandler());
 							}
 							n++;
 						}
@@ -191,7 +191,7 @@ public class SearchRestHandler {
 						log.error("Error while processing search response items", error);
 						ac.fail(error);
 					});
-
+					return null;
 				});
 			}
 
@@ -205,26 +205,25 @@ public class SearchRestHandler {
 	}
 
 	public void handleStatus(InternalActionContext ac) {
-		db.noTrx(noTrx -> {
+		db.noTrx(() -> {
 			SearchQueue queue = MeshRoot.getInstance().getSearchQueue();
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
 			statusResponse.setBatchCount(queue.getSize());
-			ac.send(JsonUtil.toJson(statusResponse), OK);
-		});
+			return Observable.just(statusResponse);
+		}).subscribe(message -> ac.respond(message, OK), ac::fail);
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.asyncNoTrx(noTrx -> {
+		db.asyncNoTrx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				boot.meshRoot().getSearchQueue().addFullIndex();
 				boot.meshRoot().getSearchQueue().processAll();
-				ac.sendMessage(OK, "search_admin_reindex_invoked");
+				return message(ac, "search_admin_reindex_invoked");
 			} else {
-				ac.fail(error(FORBIDDEN, "error_admin_permission_required"));
+				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-		} , rh -> {
+		}).subscribe(message -> ac.respond(message, OK), ac::fail);
 
-		});
 	}
 
 }

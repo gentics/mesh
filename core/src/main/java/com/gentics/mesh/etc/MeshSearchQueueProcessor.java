@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -21,15 +20,12 @@ public class MeshSearchQueueProcessor {
 	private Database database;
 
 	@Autowired
-	private SearchProvider searchProvider;
-
-	@Autowired
 	private BootstrapInitializer initalizer;
 
 	@PostConstruct
 	public void process() throws InterruptedException {
 		if (database != null) {
-			database.noTrx(tx -> {
+			database.noTrx(() -> {
 				long start = System.currentTimeMillis();
 				try {
 					initalizer.meshRoot().getSearchQueue().processAll();
@@ -38,6 +34,7 @@ public class MeshSearchQueueProcessor {
 				}
 				long duration = System.currentTimeMillis() - start;
 				log.info("Completed processing of remaining search queue entries. Processing took {" + duration + "} ms.");
+				return null;
 			});
 		}
 	}

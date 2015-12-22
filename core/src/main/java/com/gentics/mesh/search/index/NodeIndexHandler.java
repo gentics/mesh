@@ -10,7 +10,6 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.action.ActionResponse;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -36,13 +35,8 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 /**
@@ -86,7 +80,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public void store(Node node, String type, Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> store(Node node, String type) {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -94,15 +88,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
+		Set<Observable<Void>> obs = new HashSet<>();
 
 		// The basenode has no parent.
 		if (node.getParentNode() != null) {
 			addParentNodeInfo(map, node.getParentNode());
 		}
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			futures.add(obs);
+
 			removeFieldEntries(map);
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
@@ -115,29 +108,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.trace(json);
 			}
 
-			//Add display field value
+			// Add display field value
 			Map<String, String> displayFieldMap = new HashMap<>();
 			displayFieldMap.put("key", node.getSchema().getDisplayField());
 			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
 			map.put("displayField", displayFieldMap);
-			searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
+			obs.add(searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map));
 		}
 
-		Observable.merge(futures).subscribe(item -> {
+		return Observable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
 			}
-		} , error -> {
-			log.error("Error while storing node document.", error);
-			handler.handle(Future.failedFuture(error));
-		} , () -> {
 			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-			handler.handle(Future.succeededFuture());
 		});
 
 	}
 
-	public void update(Node node, Handler<AsyncResult<ActionResponse>> handler) {
+	public Observable<Void> update(Node node) {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -145,10 +133,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
+		Set<Observable<Void>> obs = new HashSet<>();
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			futures.add(obs);
 
 			removeFieldEntries(map);
 			map.remove("language");
@@ -161,19 +147,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.debug(json);
 			}
 
-			searchProvider.updateDocument(getIndex(), getType() + "-" + language, node.getUuid(), map, obs.toHandler());
+			obs.add(searchProvider.updateDocument(getIndex(), getType() + "-" + language, node.getUuid(), map));
 		}
 
-		Observable.merge(futures).subscribe(item -> {
+		return Observable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Updated node in index.");
 			}
-		} , error -> {
-			log.error("Error while updating node document.", error);
-			handler.handle(Future.failedFuture(error));
-		} , () -> {
 			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-			handler.handle(Future.succeededFuture());
 		});
 	}
 
@@ -213,7 +194,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				if (numberField != null) {
 
 					// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
-					// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.  
+					// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.
 					fieldsMap.put(name, numberField.getNumber());
 				}
 				break;
@@ -252,7 +233,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						if (graphNumberList != null) {
 							List<Number> numberItems = new ArrayList<>();
 							for (NumberGraphField listItem : graphNumberList.getList()) {
-								//TODO Number can also be a big decimal. We need to convert those special objects into basic numbers or else ES will not be able to store them
+								// TODO Number can also be a big decimal. We need to convert those special objects into basic numbers or else ES will not be
+								// able to store them
 								numberItems.add(listItem.getNumber());
 							}
 							fieldsMap.put(fieldSchema.getName(), numberItems);
@@ -308,7 +290,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			case MICRONODE:
 				// TODO implement microschemas
 				// break;
-//				throw new NotImplementedException();
+				// throw new NotImplementedException();
 				break;
 			default:
 				// TODO error?
@@ -340,7 +322,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put("uuid", parentNode.getUuid());
-		//TODO check whether nesting of nested elements would also work
+		// TODO check whether nesting of nested elements would also work
 		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
 		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		map.put("parentNode", parentNodeInfo);

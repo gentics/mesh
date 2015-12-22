@@ -8,14 +8,12 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -35,18 +33,16 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param name
 	 * @return
 	 */
-	T findByName(String name);
+	Observable<T> findByName(String name);
 
 	/**
 	 * Find the element with the given uuid and call the result handler.
 	 * 
 	 * @param uuid
 	 *            Uuid of the element to be located.
-	 * @param resultHandler
-	 *            Handler that is being invoked when search finished.
 	 * @return this root vertex - fluent API
 	 */
-	RootVertex<T> findByUuid(String uuid, Handler<AsyncResult<T>> resultHandler);
+	Observable<T> findByUuid(String uuid);
 
 	/**
 	 * Find the visible elements and return a paged result.
@@ -61,30 +57,43 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	Page<? extends T> findAll(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
-	void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler);
+	/**
+	 * Resolve the given stack to the vertex.
+	 * 
+	 * @param stack
+	 * @return
+	 */
+	Observable<? extends MeshVertex> resolveToElement(Stack<String> stack);
 
 	/**
 	 * Create a new object within this aggregation vertex.
 	 * 
 	 * @param ac
-	 * @param handler
 	 */
-	void create(InternalActionContext ac, Handler<AsyncResult<T>> handler);
+	Observable<T> create(InternalActionContext ac);
 
 	/**
-	 * Find the object by uuid.
+	 * Load the object by uuid and check the given permission.
 	 * 
+	 * @param ac
+	 *            Context to be used in order to check user permissions
 	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param perm
+	 *            Permission that must be granted in order to load the object
+	 * @param root
+	 *            Aggregation root vertex that should be used to find the element
+	 */
+	Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+
+	/**
+	 * Load object by extracting the uuid from the given uuid parameter name using the action context.
+	 * 
+	 * @param ac
+	 * @param uuidParameterName
+	 * @param perm
 	 * @return
 	 */
-	T findByUuidBlocking(String uuid);
-
-	T loadObjectByUuidBlocking(InternalActionContext ac, String uuid, GraphPermission perm);
-
-	void loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, Handler<AsyncResult<T>> handler);
-
-	void loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm, Handler<AsyncResult<T>> handler);
-
-	void loadObjects(InternalActionContext ac, Handler<AsyncResult<ListResponse<? extends RestModel>>> handler);
+	Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm);
 
 }

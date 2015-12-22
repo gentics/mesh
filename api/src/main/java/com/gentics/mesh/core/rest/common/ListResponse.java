@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ListResponse<T> {
+public class ListResponse<T> implements RestModel {
 
 	private List<T> data = new ArrayList<>();
 

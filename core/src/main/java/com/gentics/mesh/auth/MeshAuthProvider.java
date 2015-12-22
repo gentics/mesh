@@ -20,7 +20,7 @@ import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 
 /**
- * Mesh auth provider 
+ * Mesh auth provider
  */
 @Component
 public class MeshAuthProvider implements AuthProvider {
@@ -38,7 +38,7 @@ public class MeshAuthProvider implements AuthProvider {
 
 	@Override
 	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
-		db.asyncNoTrx(tc -> {
+		db.asyncNoTrx(() -> {
 			String username = authInfo.getString("username");
 			String password = authInfo.getString("password");
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
@@ -69,11 +69,14 @@ public class MeshAuthProvider implements AuthProvider {
 				// TODO Don't let the user know that we know that he did not exist?
 				resultHandler.handle(Future.failedFuture(new VertxException("Invalid credentials!")));
 			}
-		} , rh -> {
-			if (rh.failed()) {
-				log.error("Error while authenticating user.", rh.cause());
-				resultHandler.handle(Future.failedFuture(rh.cause()));
-			}
+			
+//			 , rh -> {
+//					if (rh.failed()) {
+//						log.error("Error while authenticating user.", rh.cause());
+//						resultHandler.handle(Future.failedFuture(rh.cause()));
+//					}
+//				});
+			return null;
 		});
 
 	}

@@ -7,9 +7,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements NumberGraphFieldList {
 
@@ -41,12 +39,12 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<NumberFieldListImpl>> handler) {
+	public Observable<NumberFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
 		NumberFieldListImpl restModel = new NumberFieldListImpl();
 		for (NumberGraphField item : getList()) {
 			restModel.add(item.getNumber());
 		}
-		handler.handle(Future.succeededFuture(restModel));
+		return Observable.just(restModel);
 	}
 
 }

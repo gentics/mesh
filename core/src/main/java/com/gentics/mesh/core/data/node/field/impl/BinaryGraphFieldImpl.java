@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import rx.Observable;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
@@ -28,8 +29,8 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
 
-	public void transformToRest(com.gentics.mesh.handler.ActionContext ac,
-			io.vertx.core.Handler<io.vertx.core.AsyncResult<com.gentics.mesh.core.rest.node.field.BinaryField>> handler) {
+	@Override
+	public Observable<BinaryField> transformToRest(com.gentics.mesh.handler.ActionContext ac) {
 
 		BinaryField restModel = new BinaryFieldImpl();
 		restModel.setFileName(getFileName());
@@ -39,7 +40,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		restModel.setDpi(getImageDPI());
 		restModel.setWidth(getImageWidth());
 		restModel.setHeight(getImageHeight());
-		handler.handle(Future.succeededFuture(restModel));
+		return Observable.just(restModel);
 
 	}
 

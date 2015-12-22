@@ -229,14 +229,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getNodeRoot().findByUuid(restNode.getUuid(), rh -> {
-			Node node = rh.result();
-			assertNotNull(node);
-			test.assertMeshNode(request, node);
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid()).toBlocking().first();
+		assertNotNull(node);
+		test.assertMeshNode(request, node);
 
 		// Load the node again
 		Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
@@ -250,13 +245,9 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(deleteFut);
 		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
 
-		CountDownLatch latch2 = new CountDownLatch(1);
 		meshRoot().getNodeRoot().reload();
-		meshRoot().getNodeRoot().findByUuid(restNode2.getUuid(), rh2 -> {
-			assertNull("The node should have been deleted.", rh2.result());
-			latch2.countDown();
-		});
-		failingLatch(latch2);
+		Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().first();
+		assertNull("The node should have been deleted.", deletedNode);
 	}
 
 	@Test
@@ -1016,12 +1007,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-			assertNotNull("The node should still exist.", rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull("The node should still exist.", foundNode);
 	}
 
 	@Test
@@ -1057,11 +1044,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getNodeRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertNotNull(meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().first());
 	}
 }

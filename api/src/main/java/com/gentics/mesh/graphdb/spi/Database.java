@@ -11,10 +11,8 @@ import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import rx.Observable;
 
 /**
  * Main description of a graph database.
@@ -50,13 +48,15 @@ public interface Database {
 
 	/**
 	 * Start the graph database.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	void start() throws Exception;
 
 	/**
 	 * Shortcut for stop/start. This will also drop the graph database.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	void reset() throws Exception;
 
@@ -87,22 +87,19 @@ public interface Database {
 	 * 
 	 * @param txHandler
 	 *            Handler that will be executed within the scope of the transaction.
-	 * @param resultHandler
-	 *            Handler that is being invoked when the transaction has been committed
-	 * @return
+	 * @return Object which was returned by the handler
 	 */
-	<T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
-
+	<T> T trx(TrxHandler<T> txHandler);
+	
 	/**
 	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
 	 * fails.
 	 * 
 	 * @param txHandler
 	 *            Handler that will be executed within the scope of the transaction.
-	 * @param resultHandler
-	 * @return
+	 * @return Observable that will emit the object when the transaction has completed
 	 */
-	<T> Database asyncTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Observable<T> asyncTrx(TrxHandler<T> trxHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
@@ -128,23 +125,22 @@ public interface Database {
 	 *            handler that is invoked within the scope of the no-transaction.
 	 * @return
 	 */
-	<T> Future<T> noTrx(TrxHandler<Future<T>> txHandler);
+	<T> T noTrx(TrxHandler<T> txHandler);
 
 	/**
-	 * Asynchronously execute the txHandler within the scope of a non transaction and invoke the result handler after the transaction code handler finishes.
+	 * Asynchronously execute the txHandler within the scope of a non transaction.
 	 * 
-	 * @param txHandler
-	 * @param resultHandler
+	 * @param trxHandler
 	 * @return
 	 */
-	<T> Database asyncNoTrx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler);
+	<T> Observable<T> asyncNoTrx(TrxHandler<T> trxHandler);
 
 	/**
 	 * Initialize the database and store the settings.
 	 * 
 	 * @param options
 	 * @param vertx
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	void init(GraphStorageOptions options, Vertx vertx) throws Exception;
 

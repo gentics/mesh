@@ -4,8 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -20,18 +21,14 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.error.InvalidPermissionException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
 
@@ -94,46 +91,43 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public void create(InternalActionContext ac, Handler<AsyncResult<TagFamily>> handler) {
+	public Observable<TagFamily> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.noTrx(noTx -> {
+
+		return db.noTrx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 			String name = requestModel.getName();
 			if (StringUtils.isEmpty(name)) {
-				handler.handle(failedFuture(BAD_REQUEST, ac.i18n("tagfamily_name_not_set")));
-			} else {
-
-				// Check whether the name is already in-use.
-				TagFamily conflictingTagFamily = findByName(name);
-				if (conflictingTagFamily != null) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name",
-							name);
-					handler.handle(Future.failedFuture(conflictError));
-					return;
-				}
-				if (requestUser.hasPermission(ac, this, CREATE_PERM)) {
-					db.trx(txCreate -> {
-						requestUser.reload();
-						this.reload();
-						this.setElement(null);
-						TagFamily tagFamily = create(name, requestUser);
-						addTagFamily(tagFamily);
-						requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
-						SearchQueueBatch batch = tagFamily.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-						txCreate.complete(Tuple.tuple(batch, tagFamily));
-					} , (AsyncResult<Tuple<SearchQueueBatch, TagFamily>> txCreated) -> {
-						if (txCreated.failed()) {
-							handler.handle(Future.failedFuture(txCreated.cause()));
-						} else {
-							txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
-						}
-					});
-				} else {
-					handler.handle(Future.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", this.getUuid()))));
-				}
+				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
+
+			// Check whether the name is already in-use.
+			TagFamily conflictingTagFamily = findByName(name).toBlocking().first();
+			if (conflictingTagFamily != null) {
+				throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
+			}
+
+			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+				Tuple<SearchQueueBatch, TagFamily> tuple = db.trx(() -> {
+					requestUser.reload();
+					this.reload();
+					this.setElement(null);
+					TagFamily tagFamily = create(name, requestUser);
+					addTagFamily(tagFamily);
+					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
+					SearchQueueBatch batch = tagFamily.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					return Tuple.tuple(batch, tagFamily);
+				});
+				SearchQueueBatch batch = tuple.v1();
+				TagFamily createdTagFamily = tuple.v2();
+
+				return batch.process().map(done -> createdTagFamily);
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
+			}
+
 		});
 
 	}

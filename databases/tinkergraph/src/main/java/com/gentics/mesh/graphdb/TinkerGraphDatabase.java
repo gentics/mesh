@@ -5,16 +5,13 @@ import java.util.Iterator;
 
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class TinkerGraphDatabase extends AbstractDatabase {
 
@@ -65,7 +62,7 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> T trx(TrxHandler<T> txHandler) {
 		// TODO Auto-generated method stub
 		return null;
 	}

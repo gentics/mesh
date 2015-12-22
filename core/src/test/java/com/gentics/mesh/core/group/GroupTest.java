@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.group;
 
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -9,8 +8,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -107,26 +104,18 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		boot.groupRoot().findByUuid(group().getUuid(), rh -> {
-			assertNotNull(rh.result());
-		});
+		Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().first();
+		assertNotNull(group);
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 
-		CompletableFuture<GroupResponse> cf = new CompletableFuture<>();
-		group().transformToRest(ac, rh -> {
-			cf.complete(rh.result());
-			latch.countDown();
-		});
+		GroupResponse response = group().transformToRest(ac).toBlocking().first();
 
-		failingLatch(latch);
-		GroupResponse response = cf.get();
 		assertNotNull(response);
 		assertEquals(group().getUuid(), response.getUuid());
 		assertEquals(group().getName(), response.getName());
@@ -139,12 +128,8 @@ public class GroupTest extends AbstractBasicObjectTest {
 		assertNotNull(group);
 		String uuid = group.getUuid();
 		group.delete();
-		CountDownLatch latch = new CountDownLatch(1);
-		meshRoot().getGroupRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().first();
+		assertNull(group);
 	}
 
 	@Test
@@ -154,10 +139,10 @@ public class GroupTest extends AbstractBasicObjectTest {
 		User user = user();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		Group group = root.getGroupRoot().create("newGroup", user);
-		assertFalse(user.hasPermission(ac, group, GraphPermission.CREATE_PERM));
+		assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().first());
 		user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
 		ac.data().clear();
-		assertTrue(user.hasPermission(ac, group, GraphPermission.CREATE_PERM));
+		assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().first());
 	}
 
 	@Test

@@ -10,11 +10,9 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
-public class NumberGraphFieldImpl extends AbstractBasicField<NumberField>implements NumberGraphField {
+public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
 
 	public NumberGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
@@ -35,7 +33,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField>impleme
 		if (n == null) {
 			return null;
 		}
-		
+
 		try {
 			return NumberFormat.getInstance().parse(n);
 		} catch (ParseException e) {
@@ -45,9 +43,9 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField>impleme
 	}
 
 	@Override
-	public void transformToRest(ActionContext ac, Handler<AsyncResult<NumberField>> handler) {
+	public Observable<NumberField> transformToRest(ActionContext ac) {
 		NumberField restModel = new NumberFieldImpl();
 		restModel.setNumber(getNumber());
-		handler.handle(Future.succeededFuture(restModel));
+		return Observable.just(restModel);
 	}
 }

@@ -2,8 +2,7 @@ package com.gentics.mesh.core.data.search;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 /**
  * A search queue entry is contains the information that is needed to update the search index for the element that is specified in this entry. In order to
@@ -11,10 +10,10 @@ import io.vertx.core.Handler;
  * 
  * This includes:
  * <ul>
- *   <li>Element UUUID - dd5e85cebb7311e49640316caf57479f</li>
- *   <li>Element Type - node, tag, role</li>
- *   <li>Element Action - delete, update, create</li>
- *   <li>Element Index Type - en, de (some search indices have different types for each document. We use types to separate language variations of nodes)</li>
+ * <li>Element UUUID - dd5e85cebb7311e49640316caf57479f</li>
+ * <li>Element Type - node, tag, role</li>
+ * <li>Element Action - delete, update, create</li>
+ * <li>Element Index Type - en, de (some search indices have different types for each document. We use types to separate language variations of nodes)</li>
  * </ul>
  *
  */
@@ -82,11 +81,10 @@ public interface SearchQueueEntry extends MeshVertex {
 	SearchQueueEntry setElementIndexType(String indexType);
 
 	/**
-	 * Process the entry and invoke the handler once processing failed or completed successfully.
+	 * Process the entry.
 	 * 
-	 * @param handler
 	 * @return
 	 */
-	SearchQueueEntry process(Handler<AsyncResult<Void>> handler);
+	Observable<Void> process();
 
 }

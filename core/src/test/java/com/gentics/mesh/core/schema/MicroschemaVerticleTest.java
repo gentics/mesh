@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
 import org.junit.Test;
@@ -128,7 +126,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertThat(searchProvider).recordedStoreEvents(1);
 		MicroschemaResponse microschemaResponse = future.result();
-		assertThat((Microschema)microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
+		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
 	}
 
 	@Test
@@ -146,7 +144,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		MicroschemaResponse microschemaResponse = future.result();
-		assertThat((Microschema)microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getMicroschema(), "name", "description");
+		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getMicroschema(), "name", "description");
 	}
 
 	@Test
@@ -202,13 +200,8 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(request.getName(), restSchema.getName());
 		vcardContainer.reload();
 		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid(), rh -> {
-			MicroschemaContainer reloaded = rh.result();
-			assertEquals("The name should have been updated", name, reloaded.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().first();
+		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 
@@ -240,13 +233,8 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-		CountDownLatch latch = new CountDownLatch(1);
-		boot.microschemaContainerRoot().findByUuid(microschema.getUuid(), rh -> {
-			MicroschemaContainer reloaded = rh.result();
-			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().first();
+		assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 	}
 
 	@Test
@@ -260,10 +248,8 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("microschema_deleted", future, microschema.getUuid() + "/" + microschema.getName());
 
-		boot.microschemaContainerRoot().findByUuid(microschema.getUuid(), rh -> {
-			MicroschemaContainer reloaded = rh.result();
-			assertNull("The microschema should have been deleted.", reloaded);
-		});
+		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().first();
+		assertNull("The microschema should have been deleted.", reloaded);
 	}
 
 	@Test

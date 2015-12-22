@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,13 +47,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RestModelHelper;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project> implements Project {
@@ -150,37 +146,23 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<ProjectResponse>> handler) {
+	public Observable<ProjectResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(noTrx -> {
-			Set<ObservableFuture<Void>> futures = new HashSet<>();
+		return db.asyncNoTrx(() -> {
+			Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
 			ProjectResponse restProject = new ProjectResponse();
 			restProject.setName(getName());
 			restProject.setRootNodeUuid(getBaseNode().getUuid());
 
 			// Add common fields
-			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
-			futures.add(obsFieldSet);
-			fillCommonRestFields(restProject, ac, rh -> {
-				if (rh.failed()) {
-					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsFieldSet.toHandler().handle(Future.succeededFuture());
-				}
-			});
+			obsParts.add(fillCommonRestFields(restProject, ac));
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restProject);
 
 			// Merge and complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				noTrx.complete(restProject);
-			} , error -> {
-				noTrx.fail(error);
-			});
-		} , (AsyncResult<ProjectResponse> rh) -> {
-			handler.handle(rh);
+			return Observable.merge(obsParts).last().toBlocking().first();
 		});
 	}
 
@@ -189,7 +171,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		Node baseNode = getBaseNode();
 		if (baseNode == null) {
 			baseNode = getGraph().addFramedVertex(NodeImpl.class);
-			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder"));
+			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder").toBlocking().first());
 			baseNode.setCreator(creator);
 			baseNode.setEditor(creator);
 			setBaseNode(baseNode);
@@ -221,36 +203,26 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<? extends Project> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
-		db.trx(txUpdate -> {
+		return db.trx(() -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
-				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName());
+				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().first();
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, projectWithSameName.getUuid(), requestModel.getName(),
+					HttpStatusCodeErrorException conflictError = conflict(projectWithSameName.getUuid(), requestModel.getName(),
 							"project_conflicting_name");
-					txUpdate.fail(conflictError);
-					return;
+					throw conflictError;
 				}
 				setName(requestModel.getName());
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.complete(batch);
-		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
-			if (txUpdated.failed()) {
-				obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
-			} else {
-				txUpdated.result().process(ac, obsFut.toHandler());
-			}
-		});
-		return obsFut;
+			return  addIndexBatch(UPDATE_ACTION);
+		}).process().map(i -> this);
 	}
 
 	@Override

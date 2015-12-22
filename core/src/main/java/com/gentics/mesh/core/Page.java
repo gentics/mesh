@@ -1,22 +1,15 @@
 package com.gentics.mesh.core;
 
-import static com.gentics.mesh.json.JsonUtil.toJson;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Future;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class Page<T extends TransformableElement<? extends RestModel>> implements Iterable<T> {
@@ -72,18 +65,10 @@ public class Page<T extends TransformableElement<? extends RestModel>> implement
 	 * @param ac
 	 */
 	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac) {
-		List<Observable<? extends RestModel>> obs = new ArrayList<>();
 
+		List<Observable<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
-			ObservableFuture<RestModel> obsF = RxHelper.observableFuture();
-			obs.add(obsF);
-			element.transformToRest(ac, rh -> {
-				if (rh.failed()) {
-					obsF.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsF.toHandler().handle(Future.succeededFuture(rh.result()));
-				}
-			});
+			obs.add(element.transformToRest(ac));
 		}
 
 		ListResponse<RestModel> listResponse = new ListResponse<>();
@@ -146,22 +131,5 @@ public class Page<T extends TransformableElement<? extends RestModel>> implement
 		info.setPerPage(getPerPage());
 		info.setTotalCount(getTotalElements());
 	}
-	
-	
-	/**
-	 * Transform the given page to a rest page and send it to the client.
-	 * 
-	 * @param ac
-	 * @param page
-	 * @param listResponse
-	 * @param status
-	 */
-	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void transformAndRespond(
-			InternalActionContext ac, HttpResponseStatus status) {
-		transformToRest(ac).subscribe(list -> {
-			ac.send(toJson(list), status);
-		} , error -> {
-			ac.fail(error);
-		});
-	}
+
 }

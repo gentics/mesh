@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -25,29 +21,11 @@ public class AuthUserTest extends AbstractBasicDBTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 		Language targetNode = english();
-		final CountDownLatch latch = new CountDownLatch(1);
-		requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
-			if (rh.failed()) {
-				rh.cause().printStackTrace();
-				fail(rh.cause().getMessage());
-			}
-			assertTrue(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		assertTrue(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
 
 		role().revokePermissions(targetNode, GraphPermission.READ_PERM);
 		ac.data().clear();
-		final CountDownLatch latch2 = new CountDownLatch(1);
-		requestUser.hasPermission(ac, targetNode, GraphPermission.READ_PERM, rh -> {
-			if (rh.failed()) {
-				rh.cause().printStackTrace();
-				fail(rh.cause().getMessage());
-			}
-			assertFalse(rh.result());
-			latch2.countDown();
-		});
-		failingLatch(latch2);
+		assertFalse(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
 
 	}
 

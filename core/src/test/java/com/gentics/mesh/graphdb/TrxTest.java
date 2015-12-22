@@ -2,7 +2,6 @@ package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -46,10 +45,8 @@ public class TrxTest extends AbstractBasicDBTest {
 	@Test
 	public void testAsyncTestErrorHandling() throws Exception {
 		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
-		db.asyncTrx(trx -> {
-			trx.fail("blub");
-		} , rh -> {
-			fut.complete(rh);
+		db.asyncTrx(() -> {
+			throw new Exception("error");
 		});
 
 		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
@@ -67,16 +64,10 @@ public class TrxTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testAsyncTestSuccessHandling() throws Exception {
-		CompletableFuture<AsyncResult<Object>> fut = new CompletableFuture<>();
-		db.asyncTrx(trx -> {
-			trx.complete("test");
-		} , rh -> {
-			fut.complete(rh);
-		});
-		AsyncResult<Object> result = fut.get(5, TimeUnit.SECONDS);
-		assertTrue(result.succeeded());
-		assertNull(result.cause());
-		assertEquals("test", result.result());
+		String result = db.asyncTrx(() -> {
+			return "test";
+		}).toBlocking().first();
+		assertEquals("test", result);
 	}
 
 	@Test
@@ -97,12 +88,12 @@ public class TrxTest extends AbstractBasicDBTest {
 					if (log.isTraceEnabled()) {
 						log.trace("Thread [" + threadNo + "] Starting");
 					}
-					db.asyncTrx(trx -> {
+					db.asyncTrx(() -> {
 						Tag tag = tagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), user());
 						node.addTag(tag);
-						trx.complete(tag);
-					} , rh -> {
-						assertEquals(TagImpl.class, rh.result().getClass());
+						return tag;
+					}).subscribe(tag -> {
+						assertEquals(TagImpl.class, tag.getClass());
 						latch.countDown();
 					});
 				}
@@ -197,79 +188,55 @@ public class TrxTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testAsyncTrxFailed() throws Throwable {
-		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
-		db.asyncTrx(trx -> {
-			trx.failed();
-		} , rh -> {
-			cf.complete(rh);
-		});
-		assertFalse(cf.get().succeeded());
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void testAsyncTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db.asyncTrx(trx -> {
-			throw new RuntimeException("error");
-		} , rh -> {
-			cf.complete(rh.cause());
+		db.asyncTrx(() -> {
+			throw new Exception("kaputt");
+		}).subscribe(done -> {
+
+		} , error -> {
+			cf.complete(error);
 		});
-		assertEquals("error", cf.get().getMessage());
-		throw cf.get();
+		assertEquals("kaputt", cf.get().getMessage());
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db.asyncNoTrx(noTrx -> {
+		db.asyncNoTrx(() -> {
 			throw new RuntimeException("error");
-		} , rh -> {
-			cf.complete(rh.cause());
-		});
+		}).toBlocking().first();
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
 	}
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
-		db.asyncNoTrx(noTrx -> {
+		String result = db.asyncNoTrx(() -> {
 			TestUtil.run(() -> {
 				TestUtil.sleep(1000);
-				noTrx.complete("OK");
 			});
-		} , rh -> {
-			cf.complete(rh);
-		});
-		assertTrue(cf.get().succeeded());
-		assertEquals("OK", cf.get().result());
+			return "OK";
+		}).toBlocking().last();
+		assertEquals("OK", result);
 	}
 
 	@Test
 	public void testAsyncTrxNestedAsync() throws InterruptedException, ExecutionException {
-		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
-		db.asyncTrx(trx -> {
+		String result = db.asyncTrx(() -> {
 			TestUtil.run(() -> {
 				TestUtil.sleep(1000);
-				trx.complete("OK");
 			});
-		} , rh -> {
-			System.out.println("Completed async trx");
-			cf.complete(rh);
-		});
-		assertTrue(cf.get().succeeded());
-		assertEquals("OK", cf.get().result());
+			return "OK";
+		}).toBlocking().first();
+		assertEquals("OK", result);
 	}
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		CompletableFuture<AsyncResult<Object>> cf = new CompletableFuture<>();
-		db.asyncNoTrx(noTrx -> {
-			noTrx.complete("OK");
-		} , rh -> {
-			cf.complete(rh);
-		});
-		assertEquals("OK", cf.get().result());
+		String result = db.asyncNoTrx(() -> {
+			return "OK";
+		}).toBlocking().first();
+		assertEquals("OK", result);
 	}
 
 	// @Test
@@ -376,7 +343,7 @@ public class TrxTest extends AbstractBasicDBTest {
 								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getImpl().getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getImpl().getId());
 
-								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun,project(), reloadedUser);
+								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
 								reloadedNode.addTag(tag);
 								tx.success();

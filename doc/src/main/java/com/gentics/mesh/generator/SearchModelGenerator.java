@@ -100,8 +100,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
-		nodeIndexHandler.store(node, "node", rh -> {
-		});
+		nodeIndexHandler.store(node, "node").toBlocking().last();
 		writeStoreEvent("node.search");
 
 	}
@@ -111,8 +110,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
 		ProjectIndexHandler projectIndexHandler = ctx.getBean(ProjectIndexHandler.class);
-		projectIndexHandler.store(project, "project", rh -> {
-		});
+		projectIndexHandler.store(project, "project").toBlocking().first();
 		writeStoreEvent("project.search");
 	}
 
@@ -120,8 +118,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
 		GroupIndexHandler groupIndexHandler = ctx.getBean(GroupIndexHandler.class);
-		groupIndexHandler.store(group, "group", rh -> {
-		});
+		groupIndexHandler.store(group, "group").toBlocking().first();
 		writeStoreEvent("group.search");
 	}
 
@@ -129,8 +126,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
 		RoleIndexHandler roleIndexHandler = ctx.getBean(RoleIndexHandler.class);
-		roleIndexHandler.store(role, "role", rh -> {
-		});
+		roleIndexHandler.store(role, "role").toBlocking().first();
 		writeStoreEvent("role.search");
 	}
 
@@ -141,8 +137,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Group groupB = mockGroup("superEditors", user);
 		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = ctx.getBean(UserIndexHandler.class);
-		userIndexHandler.store(user, "user", rh -> {
-		});
+		userIndexHandler.store(user, "user").toBlocking().first();
 		writeStoreEvent("user.search");
 	}
 
@@ -157,8 +152,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = ctx.getBean(TagFamilyIndexHandler.class);
-		tagFamilyIndexHandler.store(tagFamily, "tagFamily", rh -> {
-		});
+		tagFamilyIndexHandler.store(tagFamily, "tagFamily").toBlocking().first();
 		writeStoreEvent("tagFamily.search");
 	}
 
@@ -167,8 +161,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = ctx.getBean(SchemaContainerIndexHandler.class);
-		searchIndexHandler.store(schemaContainer, "schema", rh -> {
-		});
+		searchIndexHandler.store(schemaContainer, "schema").toBlocking().first();
 		writeStoreEvent("schema.search");
 	}
 
@@ -178,8 +171,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = ctx.getBean(TagIndexHandler.class);
-		tagIndexHandler.store(tag, "tag", rh -> {
-		});
+		tagIndexHandler.store(tag, "tag").toBlocking().first();
 		writeStoreEvent("tag.search");
 	}
 
@@ -189,7 +181,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			throw new RuntimeException("Could not find event to handle");
 		}
 		Map<String, Object> outputMap = new TreeMap<>();
-		//System.out.println(new JSONObject(eventMap).toString(4));
+		// System.out.println(new JSONObject(eventMap).toString(4));
 		flatten(eventMap, outputMap, null);
 		JSONObject json = new JSONObject(outputMap);
 		write(json, name);

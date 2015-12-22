@@ -29,8 +29,7 @@ import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.search.index.UserIndexHandler;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry {
 
@@ -132,13 +131,12 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	}
 
 	@Override
-	public SearchQueueEntry process(Handler<AsyncResult<Void>> handler) {
+	public Observable<Void> process() {
 		AbstractIndexHandler<?> indexHandler = getIndexHandler(getElementType());
 		if (indexHandler == null) {
 			throw error(BAD_REQUEST, "No index handler could be found for type {" + getElementType() + "} of element {" + getElementUuid() + "}");
 		}
-		indexHandler.handleAction(getElementUuid(), getElementActionName(), getElementIndexType(), handler);
-		return this;
+		return indexHandler.handleAction(getElementUuid(), getElementActionName(), getElementIndexType());
 	}
 
 	@Override

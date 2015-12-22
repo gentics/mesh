@@ -9,7 +9,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
@@ -18,9 +17,7 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class TitanDBDatabase extends AbstractDatabase {
 
@@ -116,7 +113,7 @@ public class TitanDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> Database trx(TrxHandler<Future<T>> txHandler, Handler<AsyncResult<T>> resultHandler) {
+	public <T> T trx(TrxHandler<T> txHandler) {
 		// TODO Auto-generated method stub
 		return null;
 	}

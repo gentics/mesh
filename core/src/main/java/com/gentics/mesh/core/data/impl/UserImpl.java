@@ -40,7 +40,6 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -62,8 +61,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 import rx.subjects.AsyncSubject;
 
@@ -248,7 +245,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				// }
 				// });
 
-				obs.onNext(new PermResult(perm, hasPermission(ac, node, perm)));
+				obs.onNext(new PermResult(perm, hasPermissionSync(ac, node, perm)));
 				obs.onCompleted();
 
 			}
@@ -282,7 +279,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// return (Set<GraphPermission>) ac.data().computeIfAbsent(mapKey, key -> {
 		Set<GraphPermission> graphPermissions = new HashSet<>();
 		for (GraphPermission perm : GraphPermission.values()) {
-			if (hasPermission(ac, node, perm)) {
+			if (hasPermissionSync(ac, node, perm)) {
 				graphPermissions.add(perm);
 			}
 		}
@@ -319,8 +316,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	@Deprecated
-	public boolean hasPermission(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
+	public boolean hasPermissionSync(InternalActionContext ac, MeshVertex node, GraphPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + node.getUuid() + "}");
 		}
@@ -335,27 +331,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User hasPermission(InternalActionContext ac, MeshVertex vertex, GraphPermission permission, Handler<AsyncResult<Boolean>> handler) {
-
+	public Observable<Boolean> hasPermissionAsync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission) {
 		if (ac.data() != null) {
 			Boolean perm = (Boolean) ac.data().get(getPermissionMapKey(vertex, permission));
 			if (perm != null) {
-				handler.handle(Future.succeededFuture(perm));
-				return this;
+				return Observable.just(perm);
 			}
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(noTrx -> {
-			boolean result = hasPermission(ac, vertex, permission);
-			noTrx.complete(Boolean.valueOf(result));
-		} , (AsyncResult<Boolean> rh) -> {
-			if (rh.failed()) {
-				handler.handle(Future.failedFuture(rh.cause()));
-			} else {
-				handler.handle(Future.succeededFuture(rh.result()));
-			}
-		});
-		return this;
+		return db.asyncNoTrx(() -> hasPermission(vertex, permission));
 	}
 
 	/**
@@ -370,11 +354,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<UserResponse>> handler) {
+	public Observable<UserResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		db.asyncNoTrx(noTrx -> {
-			Set<ObservableFuture<Void>> futures = new HashSet<>();
+		return db.asyncNoTrx(() -> {
+			Set<Observable<UserResponse>> obs = new HashSet<>();
 			UserResponse restUser = new UserResponse();
 
 			restUser.setUsername(getUsername());
@@ -386,17 +370,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			Node node = getReferencedNode();
 			if (node != null) {
 				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
-				ObservableFuture<Void> obsNodeReference = RxHelper.observableFuture();
-				futures.add(obsNodeReference);
 				if (expandReference) {
-					node.transformToRest(ac, rh -> {
-						if (rh.succeeded()) {
-							restUser.setNodeReference(rh.result());
-							obsNodeReference.toHandler().handle(Future.succeededFuture());
-						} else {
-							obsNodeReference.toHandler().handle(Future.failedFuture(rh.cause()));
-						}
-					});
+					obs.add(node.transformToRest(ac).map(transformedNode -> {
+						restUser.setNodeReference(transformedNode);
+						return restUser;
+					}));
 				} else {
 					NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
 					userNodeReference.setUuid(node.getUuid());
@@ -407,7 +385,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						// TODO handle this case
 					}
 					restUser.setNodeReference(userNodeReference);
-					obsNodeReference.toHandler().handle(Future.succeededFuture());
 				}
 
 			}
@@ -420,25 +397,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			RestModelHelper.setRolePermissions(ac, this, restUser);
 
 			// Add common fields
-			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
-			futures.add(obsFieldSet);
-			fillCommonRestFields(restUser, ac, rh -> {
-				if (rh.failed()) {
-					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsFieldSet.toHandler().handle(Future.succeededFuture());
-				}
-			});
+			obs.add(fillCommonRestFields(restUser, ac));
 
 			// Wait for all async processes to complete
-			Observable.merge(futures).subscribe(item -> {
-			} , error -> {
-				noTrx.fail(error);
-			} , () -> {
-				noTrx.complete(restUser);
-			});
-		} , (AsyncResult<UserResponse> rh) -> {
-			handler.handle(rh);
+			return Observable.merge(obs).toBlocking().last();
 		});
 	}
 
@@ -512,19 +474,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<User> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 		try {
 			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
-			db.trx(txUpdate -> {
+			return db.trx(() -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 					User conflictingUser = BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername());
 					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
-						HttpStatusCodeErrorException conflictError = conflict(ac, conflictingUser.getUuid(), requestModel.getUsername(),
-								"user_conflicting_username");
-						obsFut.toHandler().handle(Future.failedFuture(conflictError));
+						throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 					}
 					setUsername(requestModel.getUsername());
 				}
@@ -554,42 +513,26 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 					if (reference instanceof NodeReferenceImpl) {
 						NodeReferenceImpl basicReference = ((NodeReferenceImpl) reference);
 						if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-							txUpdate.fail(error(BAD_REQUEST, "user_incomplete_node_reference"));
-							return;
-						} else {
-							String referencedNodeUuid = basicReference.getUuid();
-							String projectName = basicReference.getProjectName();
-							/* TODO decide whether we need to check perms on the project as well */
-							Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName);
-							if (project == null) {
-								txUpdate.fail(error(BAD_REQUEST, "project_not_found", projectName));
-								return;
-							} else {
-								NodeRoot nodeRoot = project.getNodeRoot();
-								Node node = nodeRoot.loadObjectByUuidBlocking(ac, referencedNodeUuid, READ_PERM);
-								setReferencedNode(node);
-								SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-								txUpdate.complete(batch);
-								// return;
-							}
+							throw error(BAD_REQUEST, "user_incomplete_node_reference");
 						}
+						String referencedNodeUuid = basicReference.getUuid();
+						String projectName = basicReference.getProjectName();
+						/* TODO decide whether we need to check perms on the project as well */
+						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName).toBlocking().first();
+						if (project == null) {
+							throw error(BAD_REQUEST, "project_not_found", projectName);
+						}
+						NodeRoot nodeRoot = project.getNodeRoot();
+						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().first();
+						setReferencedNode(node);
 					}
-				} else {
-					SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-					txUpdate.complete(batch);
 				}
-			} , (AsyncResult<SearchQueueBatch> userUpdated) -> {
-				if (userUpdated.failed()) {
-					obsFut.toHandler().handle(Future.failedFuture(userUpdated.cause()));
-				} else {
-					userUpdated.result().process(ac, obsFut.toHandler());
-				}
-			});
+				return addIndexBatch(UPDATE_ACTION);
+			}).process().map(i -> this);
 
 		} catch (IOException e) {
-			obsFut.toHandler().handle(Future.failedFuture(e));
+			return Observable.error(e);
 		}
-		return obsFut;
 
 	}
 

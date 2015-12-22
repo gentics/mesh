@@ -1,13 +1,11 @@
 package com.gentics.mesh.core.language;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -57,7 +55,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 	@Test
 	public void testFindByLanguageTag() {
 
-		//		for (int e = 0; e < 15; e++) {
+		// for (int e = 0; e < 15; e++) {
 		int nChecks = 50000;
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < nChecks; i++) {
@@ -70,42 +68,34 @@ public class LanguageTest extends AbstractBasicObjectTest {
 		double perCheck = ((double) duration / (double) nChecks);
 		System.out.println("Duration per lookup: " + perCheck);
 		System.out.println("Duration: " + duration);
-		//		}
+		// }
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
 
-		Language language = meshRoot().getLanguageRoot().findByName("German");
+		Language language = meshRoot().getLanguageRoot().findByName("German").toBlocking().first();
 		assertNotNull(language);
 
 		assertEquals("German", language.getName());
 		assertEquals("Deutsch", language.getNativeName());
 		assertEquals("de", language.getLanguageTag());
 
-		language = meshRoot().getLanguageRoot().findByName("bogus");
+		language = meshRoot().getLanguageRoot().findByName("bogus").toBlocking().first();
 		assertNull(language);
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		Language language = meshRoot().getLanguageRoot().findByName("German");
+		Language language = meshRoot().getLanguageRoot().findByName("German").toBlocking().first();
+		Language foundLanguage = meshRoot().getLanguageRoot().findByUuid(language.getUuid()).toBlocking().first();
+		assertNotNull(foundLanguage);
 
-		CountDownLatch latch = new CountDownLatch(2);
-		meshRoot().getLanguageRoot().findByUuid(language.getUuid(), rh -> {
-			Language foundLanguage = rh.result();
-			assertNotNull(foundLanguage);
-			latch.countDown();
-		});
+		foundLanguage = meshRoot().getLanguageRoot().findByUuid("bogus").toBlocking().first();
+		assertNull(foundLanguage);
 
-		meshRoot().getLanguageRoot().findByUuid("bogus", rh -> {
-			Language foundLanguage = rh.result();
-			assertNull(foundLanguage);
-			latch.countDown();
-		});
-		failingLatch(latch);
 	}
 
 	@Test
@@ -146,7 +136,7 @@ public class LanguageTest extends AbstractBasicObjectTest {
 		final String languageName = "klingon";
 		Language lang = languageRoot.create(languageName, languageTag);
 
-		lang = languageRoot.findByName(languageName);
+		lang = languageRoot.findByName(languageName).toBlocking().first();
 		assertNotNull(lang);
 		assertEquals(languageName, lang.getName());
 

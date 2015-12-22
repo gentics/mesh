@@ -18,8 +18,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class LanguageRootImpl extends AbstractRootVertex<Language>implements LanguageRoot {
 
@@ -54,7 +53,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	}
 
 	@Override
-	public void create(InternalActionContext rc, Handler<AsyncResult<Language>> handler) {
+	public Observable<Language> create(InternalActionContext rc) {
 		throw new NotImplementedException("Languages can be created using REST");
 	}
 
@@ -88,7 +87,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	}
 
 	@Override
-	public void resolveToElement(Stack<String> stack, Handler<AsyncResult<? extends MeshVertex>> resultHandler) {
+	public Observable<? extends MeshVertex> resolveToElement(Stack<String> stack) {
 		throw new NotImplementedException();
 	}
 

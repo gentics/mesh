@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+
+import java.io.IOException;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -21,9 +24,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
@@ -65,7 +66,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void create(InternalActionContext ac, Handler<AsyncResult<MicroschemaContainer>> handler) {
+	public Observable<MicroschemaContainer> create(InternalActionContext ac) {
 		MeshAuthUser requestUser = ac.getUser();
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -73,31 +74,21 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 			MicroschemaCreateRequest microschema = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaCreateRequest.class);
 			microschema.validate();
 
-			requestUser.hasPermission(ac, this, GraphPermission.CREATE_PERM, rh -> {
-				if (rh.failed()) {
+			return requestUser.hasPermissionAsync(ac, this, GraphPermission.CREATE_PERM).flatMap(hasPerm -> {
+				Tuple<SearchQueueBatch, MicroschemaContainer> tuple = db.trx(() -> {
+					requestUser.reload();
+					MicroschemaContainer container = create(microschema, requestUser);
+					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
+					SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					return Tuple.tuple(batch, container);
+				});
 
-				} else {
-					db.trx(txCreate -> {
-						try {
-							requestUser.reload();
-							MicroschemaContainer container = create(microschema, requestUser);
-							requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-							SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-							txCreate.complete(Tuple.tuple(batch, container));
-						} catch (Exception e) {
-							txCreate.fail(e);
-						}
-					} , (AsyncResult<Tuple<SearchQueueBatch, MicroschemaContainer>> txCreated) -> {
-						if (txCreated.failed()) {
-							handler.handle(Future.failedFuture(txCreated.cause()));
-						} else {
-							txCreated.result().v1().processOrFail(ac, handler, txCreated.result().v2());
-						}
-					});
-				}
+				SearchQueueBatch batch = tuple.v1();
+				MicroschemaContainer microschemaContainer = tuple.v2();
+				return batch.process().map(done -> microschemaContainer);
 			});
-		} catch (Exception e) {
-			handler.handle(Future.failedFuture(e));
+		} catch (IOException e) {
+			return Observable.error(e);
 		}
 	}
 

@@ -7,11 +7,9 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
-public class DateGraphFieldImpl extends AbstractBasicField<DateField>implements DateGraphField {
+public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements DateGraphField {
 
 	public DateGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {
 		super(fieldKey, parentContainer);
@@ -37,9 +35,9 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField>implements 
 	}
 
 	@Override
-	public void transformToRest(ActionContext ac, Handler<AsyncResult<DateField>> handler) {
+	public Observable<DateField> transformToRest(ActionContext ac) {
 		DateFieldImpl dateField = new DateFieldImpl();
 		dateField.setDate(getDate());
-		handler.handle(Future.succeededFuture(dateField));
+		return Observable.just(dateField);
 	}
 }

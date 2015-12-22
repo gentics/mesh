@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -44,13 +44,8 @@ import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Tag> implements Tag {
@@ -112,11 +107,11 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<TagResponse>> resultHandler) {
+	public Observable<TagResponse> transformToRest(InternalActionContext ac) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
-		db.asyncNoTrx(trx -> {
-			Set<ObservableFuture<Void>> futures = new HashSet<>();
+		return db.asyncNoTrx(() -> {
+			Set<Observable<TagResponse>> obs = new HashSet<>();
 
 			TagResponse restTag = new TagResponse();
 
@@ -130,27 +125,13 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			restTag.getFields().setName(getName());
 
 			// Add common fields
-			ObservableFuture<Void> obsFieldSet = RxHelper.observableFuture();
-			futures.add(obsFieldSet);
-			fillCommonRestFields(restTag, ac, rh -> {
-				if (rh.failed()) {
-					obsFieldSet.toHandler().handle(Future.failedFuture(rh.cause()));
-				} else {
-					obsFieldSet.toHandler().handle(Future.succeededFuture());
-				}
-			});
+			obs.add(fillCommonRestFields(restTag, ac));
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, this, restTag);
 
 			// Merge and complete
-			Observable.merge(futures).last().subscribe(lastItem -> {
-				trx.complete(restTag);
-			} , error -> {
-				trx.fail(error);
-			});
-		} , (AsyncResult<TagResponse> rh) -> {
-			resultHandler.handle(rh);
+			return Observable.merge(obs).toBlocking().last();
 		});
 	}
 
@@ -196,14 +177,13 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<Tag> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		TagFamilyReference reference = requestModel.getTagFamily();
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
-		db.trx(txUpdate -> {
+		return db.trx(() -> {
 			boolean updateTagFamily = false;
 			if (reference != null) {
 				// Check whether a uuid was specified and whether the tag family changed
@@ -216,16 +196,13 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
-				txUpdate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("tag_name_not_set")));
-				return;
+				throw error(BAD_REQUEST, "tag_name_not_set");
 			} else {
 				TagFamily tagFamily = getTagFamily();
 				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-					HttpStatusCodeErrorException conflictError = conflict(ac, foundTagWithSameName.getUuid(), newTagName,
-							"tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());
-					txUpdate.fail(conflictError);
-					return;
+					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
+							tagFamily.getName());
 				}
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
@@ -234,16 +211,8 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 					// TODO update the tagfamily
 				}
 			}
-			SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-			txUpdate.complete(batch);
-		} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
-			if (txUpdated.failed()) {
-				obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
-			} else {
-				txUpdated.result().process(ac, obsFut.toHandler());
-			}
-		});
-		return obsFut;
+			return addIndexBatch(UPDATE_ACTION);
+		}).process().map(i -> this);
 
 	}
 

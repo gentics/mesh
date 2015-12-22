@@ -4,8 +4,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
 import java.util.Set;
@@ -29,13 +31,9 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.error.EntityNotFoundException;
-import com.gentics.mesh.error.InvalidPermissionException;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -45,11 +43,9 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
 public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
@@ -119,14 +115,60 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		getElement().remove();
 	}
 
+	private Observable<Node> createNode(InternalActionContext ac, Observable<SchemaContainer> obsSchemaContainer) {
+
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Project project = ac.getProject();
+		MeshAuthUser requestUser = ac.getUser();
+		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
+
+		return obsSchemaContainer.flatMap(schemaContainer -> {
+
+			try {
+				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
+					Schema schema = schemaContainer.getSchema();
+					String body = ac.getBodyAsString();
+
+					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
+					if (isEmpty(requestModel.getParentNodeUuid())) {
+						throw error(BAD_REQUEST, "node_missing_parentnode_field");
+					}
+					if (isEmpty(requestModel.getLanguage())) {
+						throw error(BAD_REQUEST, "node_no_languagecode_specified");
+					}
+					requestUser.reload();
+					project.reload();
+					// Load the parent node in order to create the node
+					Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).toBlocking().first();
+					Node node = parentNode.create(requestUser, schemaContainer, project);
+					requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+					node.setPublished(requestModel.isPublished());
+					Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+					if (language == null) {
+						throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+					}
+					NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
+					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+					SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					return Tuple.tuple(batch, node);
+				});
+				return tuple.v1().process().map(i -> tuple.v2());
+
+			} catch (Exception e) {
+				return Observable.error(e);
+			}
+		});
+	}
+
 	@Override
-	public void create(InternalActionContext ac, Handler<AsyncResult<Node>> handler) {
+	public Observable<Node> create(InternalActionContext ac) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
-		db.noTrx(noTx -> {
+		return db.noTrx(() -> {
 
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
@@ -134,103 +176,41 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			String body = ac.getBodyAsString();
 
 			// 1. Extract the schema information from the given json
-			SchemaReferenceInfo schemaInfo;
-			try {
-				schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
-			} catch (Exception e) {
-				handler.handle(Future.failedFuture(e));
-				return;
-			}
+			SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 			boolean missingSchemaInfo = schemaInfo.getSchema() == null
 					|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid()) && StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 			if (missingSchemaInfo) {
-				handler.handle(Future.failedFuture(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_schema_parameter_missing"))));
-				return;
+				throw error(BAD_REQUEST, "error_schema_parameter_missing");
 			}
 
-			Handler<AsyncResult<SchemaContainer>> containerFoundHandler = rh -> {
-				SchemaContainer schemaContainer = rh.result();
-				try {
-					db.trx(txCreate -> {
-						Schema schema = schemaContainer.getSchema();
-						NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
-						if (StringUtils.isEmpty(requestModel.getParentNodeUuid())) {
-							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_missing_parentnode_field")));
-							return;
-						}
-						if (StringUtils.isEmpty(requestModel.getLanguage())) {
-							txCreate.fail(new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_no_languagecode_specified")));
-							return;
-						}
-						requestUser.reload();
-						project.reload();
-						// Load the parent node in order to create the node
-						Node parentNode = project.getNodeRoot().loadObjectByUuidBlocking(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
-						Node node = parentNode.create(requestUser, schemaContainer, project);
-						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-						node.setPublished(requestModel.isPublished());
-						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-						if (language == null) {
-							txCreate.fail(error(BAD_REQUEST, "language_not_found", requestModel.getLanguage()));
-							return;
-						}
-						try {
-							NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
-							container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-						} catch (MeshSchemaException e) {
-							txCreate.fail(e);
-							return;
-						}
-						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-						txCreate.complete(Tuple.tuple(batch, node));
-					} , (AsyncResult<Tuple<SearchQueueBatch, Node>> rhb) -> {
-						if (rhb.failed()) {
-							handler.handle(Future.failedFuture(rhb.cause()));
-						} else {
-							rhb.result().v1().processOrFail(ac, handler, rhb.result().v2());
-						}
-					});
-				} catch (Exception e) {
-					handler.handle(Future.failedFuture(e));
-					return;
-				}
-			};
+			if (!isEmpty(schemaInfo.getSchema().getUuid())) {
+				// 2. Use schema reference by uuid first
+				return project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM).flatMap(schemaContainer -> {
+					return createNode(ac, Observable.just(schemaContainer));
+				});
+			}
 
-			// Check whether the user is allowed to view the schema
-			if (!StringUtils.isEmpty(schemaInfo.getSchema().getName())) {
-				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
+			// 3. Or just schema reference by name
+			if (!isEmpty(schemaInfo.getSchema().getName())) {
+				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().first();
 				if (containerByName != null) {
 					String schemaName = containerByName.getName();
 					String schemaUuid = containerByName.getUuid();
-					requestUser.hasPermission(ac, containerByName, GraphPermission.READ_PERM, ph -> {
-						if (ph.succeeded() && ph.result()) {
-							containerFoundHandler.handle(Future.succeededFuture(containerByName));
-							return;
-						} else if (ph.failed()) {
-							log.error("Error while checking permissions", ph.cause());
-							handler.handle(failedFuture(BAD_REQUEST, "error_internal"));
-							return;
+					return requestUser.hasPermissionAsync(ac, containerByName, GraphPermission.READ_PERM).flatMap(hasPerm -> {
+						if (hasPerm) {
+							return createNode(ac, Observable.just(containerByName));
 						} else {
-							handler.handle(Future
-									.failedFuture(new InvalidPermissionException(ac.i18n("error_missing_perm", schemaUuid + "/" + schemaName))));
-							return;
+							throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
 						}
 					});
 
 				} else {
-					handler.handle(Future.failedFuture(new EntityNotFoundException(ac.i18n("schema_not_found", schemaInfo.getSchema().getName()))));
-					return;
+					throw error(NOT_FOUND,"schema_not_found", schemaInfo.getSchema().getName());
 				}
 			} else {
-				project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM, rh -> {
-					if (ac.failOnError(rh)) {
-						// TODO check permissions
-						SchemaContainer schemaContainer = rh.result();
-						containerFoundHandler.handle(Future.succeededFuture(schemaContainer));
-						return;
-					}
-				});
+				throw error(BAD_REQUEST, "error_schema_parameter_missing");
 			}
+
 		});
 	}
 

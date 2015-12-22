@@ -16,7 +16,7 @@ public final class RxUtil {
 	 * @param list
 	 * @return
 	 */
-	public static <T> Observable<T> concatList(List<? extends Observable<T>> list) {
+	public static <T> Observable<T> concatList(List<Observable<T>> list) {
 		Observable<T> merged = Observable.empty();
 		for (Observable<T> element : list) {
 			merged = merged.concatWith(element);

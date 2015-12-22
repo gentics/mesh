@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -26,11 +25,6 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelHelper;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<MicroschemaResponse, MicroschemaContainer> implements MicroschemaContainer {
@@ -78,7 +72,7 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, Handler<AsyncResult<MicroschemaResponse>> handler) {
+	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac) {
 		try {
 			MicroschemaResponse microschema = JsonUtil.readSchema(getJson(), MicroschemaResponse.class);
 			microschema.setUuid(getUuid());
@@ -88,9 +82,9 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 
 			microschema.setPermissions(ac.getUser().getPermissionNames(ac, this));
 
-			handler.handle(Future.succeededFuture(microschema));
+			return Observable.just(microschema);
 		} catch (IOException e) {
-			handler.handle(Future.failedFuture(e));
+			return Observable.error(e);
 		}
 	}
 
@@ -101,39 +95,30 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 	}
 
 	@Override
-	public Observable<Void> update(InternalActionContext ac) {
+	public Observable<? extends MicroschemaContainer> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		MicroschemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getMicroschemaContainerRoot();
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
 
+		MicroschemaUpdateRequest requestModel;
 		try {
-			MicroschemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaUpdateRequest.class);
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaUpdateRequest.class);
 			requestModel.validate();
-
-			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName());
+			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().first();
 			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {
 				return errorObservable(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
 			}
 
-			db.trx(txUpdate -> {
+			return db.trx(() -> {
 				if (!getName().equals(requestModel.getName())) {
 					setName(requestModel.getName());
 				}
 				setMicroschema(requestModel);
-				SearchQueueBatch batch = addIndexBatch(UPDATE_ACTION);
-				txUpdate.complete(batch);
-			} , (AsyncResult<SearchQueueBatch> txUpdated) -> {
-				if (txUpdated.failed()) {
-					obsFut.toHandler().handle(Future.failedFuture(txUpdated.cause()));
-				} else {
-					txUpdated.result().process(ac, obsFut.toHandler());
-					txUpdated.result().process(ac, obsFut.toHandler());
-				}
-			});
-		} catch (Exception e) {
+				return addIndexBatch(UPDATE_ACTION);
+			}).process().map(i -> this);
+		} catch (IOException e) {
 			return Observable.error(e);
 		}
-		return obsFut;
+
 	}
 
 	@Override

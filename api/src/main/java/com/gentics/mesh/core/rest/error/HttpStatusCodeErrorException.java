@@ -46,14 +46,6 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		return new HttpStatusCodeErrorException(status, i18nMessageKey, t);
 	}
 
-	public static <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nMessage, Throwable cause) {
-		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18nMessage, cause));
-	}
-
-	public static <T> AsyncResult<T> failedFuture(HttpResponseStatus status, String i18nKey, String... parameters) {
-		return Future.failedFuture(new HttpStatusCodeErrorException(status, i18nKey, parameters));
-	}
-
 	public static <T> Observable<T> errorObservable(HttpResponseStatus status, String i18nKey, String... parameters) {
 		return Observable.error(new HttpStatusCodeErrorException(status, i18nKey, parameters));
 	}

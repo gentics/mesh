@@ -34,7 +34,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 	}
-	
+
 	@Ignore("Not yet implemented")
 	@Test
 	@Override
@@ -72,7 +72,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		String invalidName = "thereIsNoMicroschemaWithThisName";
 
 		for (String name : microschemaContainers().keySet()) {
-			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name);
+			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().first();
 			assertNotNull("Could not find microschema container for name " + name, container);
 			Microschema microschema = container.getMicroschema();
 			assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
@@ -90,10 +90,10 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		MicroschemaContainerRoot root = boot.microschemaContainerRoot();
 		for (MicroschemaContainer container : microschemaContainers().values()) {
 			String uuid = container.getUuid();
-			assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuidBlocking(uuid));
+			assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().first());
 		}
 
-		assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuidBlocking(invalidUUID));
+		assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().first());
 	}
 
 	@Ignore("Not yet implemented")

@@ -3,32 +3,38 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.json.JsonUtil.toJson;
-import static com.gentics.mesh.util.VerticleHelper.transformAndRespond;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.IndexableElement;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.spi.TrxHandler2;
+import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.util.RxUtil;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import rx.Observable;
 
 /**
  * Abstract class for CRUD REST handlers.
  */
-public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends RestModel, T>> extends AbstractHandler {
+public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> extends AbstractHandler {
 
 	/**
 	 * Return the main root vertex that is used to handle CRUD for the elements that are used in combination with this handler.
@@ -87,125 +93,111 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<? extends Res
 	 * @param ac
 	 * @param handler
 	 */
-	protected void createElement(InternalActionContext ac, TrxHandler2<RootVertex<?>> handler) {
-		db.asyncNoTrx(noTrx -> {
-			RootVertex<?> root;
-			try {
-				root = handler.call();
-				root.create(ac, rh -> {
-					if (ac.failOnError(rh)) {
-						MeshCoreVertex vertex = rh.result();
-						// Transform the vertex using a fresh transaction in order to start with a clean cache
-						db.noTrx(noTx -> {
-							vertex.reload();
-							transformAndRespond(ac, vertex, CREATED);
-						});
-					}
+
+	protected void createElement(InternalActionContext ac, TrxHandler<RootVertex<?>> handler) {
+		db.asyncNoTrx(() -> {
+			RootVertex<?> root = handler.call();
+			return root.create(ac).flatMap(created -> {
+				// Transform the vertex using a fresh transaction in order to start with a clean cache
+				return db.noTrx(() -> {
+					// created.reload();
+					return created.transformToRest(ac);
 				});
-			} catch (Exception e) {
-				ac.fail(e);
-			}
-		} , rh -> {
-			ac.errorHandler().handle(rh);
-		});
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 	}
 
-	protected <E extends MeshCoreVertex<?, E>> void deleteElement(InternalActionContext ac, TrxHandler2<RootVertex<E>> handler,
+	protected <T extends MeshCoreVertex<?, T>> void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler,
 			String uuidParameterName, String responseMessage) {
 
-		db.asyncNoTrx(noTrx -> {
-			RootVertex<?> root = handler.call();
-			root.loadObject(ac, uuidParameterName, DELETE_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					db.trx(txDelete -> {
-						MeshCoreVertex<?, ?> vertex = rh.result();
-						String uuid = vertex.getUuid();
-						if (vertex instanceof IndexableElement) {
-							SearchQueueBatch batch = ((IndexableElement) vertex).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
-							String name = null;
-							if (vertex instanceof NamedElement) {
-								name = ((NamedElement) vertex).getName();
-							}
-							final String objectName = name;
-							String id = objectName != null ? uuid + "/" + objectName : uuid;
-							vertex.delete();
-							txDelete.complete(Tuple.tuple(id, batch));
-						} else {
-							txDelete.fail(error(INTERNAL_SERVER_ERROR, "Could not determine object name"));
-						}
+		db.asyncNoTrx(() -> {
+			RootVertex<T> root = handler.call();
+			Observable<T> obs = root.loadObject(ac, uuidParameterName, DELETE_PERM);
+			return obs.flatMap(element -> {
 
-					} , (AsyncResult<Tuple<String, SearchQueueBatch>> txDeleted) -> {
-						if (txDeleted.failed()) {
-							ac.errorHandler().handle(Future.failedFuture(txDeleted.cause()));
-						} else {
-							txDeleted.result().v2().process(ac, brh -> {
-								ac.sendMessage(OK, responseMessage, txDeleted.result().v1());
-							});
+				Tuple<String, SearchQueueBatch> tuple = db.trx(() -> {
+
+					String uuid = element.getUuid();
+					if (element instanceof IndexableElement) {
+						SearchQueueBatch batch = ((IndexableElement) element).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+						String name = null;
+						if (element instanceof NamedElement) {
+							name = ((NamedElement) element).getName();
 						}
-					});
-				}
-			});
-		} , rh -> {
-			ac.errorHandler().handle(rh);
-		});
+						final String objectName = name;
+						String id = objectName != null ? uuid + "/" + objectName : uuid;
+						element.delete();
+						return Tuple.tuple(id, batch);
+					} else {
+						throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
+					}
+
+				});
+
+				String id = tuple.v1();
+				SearchQueueBatch batch = tuple.v2();
+				return batch.process().map(done -> {
+					return message(ac, responseMessage, id);
+				});
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	protected <T extends MeshCoreVertex<?, T>> void updateElement(InternalActionContext ac, String uuidParameterName,
-			TrxHandler2<RootVertex<T>> handler) {
-		db.asyncNoTrx(noTrx -> {
-			RootVertex<?> root = handler.call();
-			root.loadObject(ac, uuidParameterName, UPDATE_PERM, rh -> {
-				if (ac.failOnError(rh)) {
-					MeshCoreVertex<?, ?> vertex = rh.result();
-					vertex.update(ac).subscribe(done -> {
-						// Transform the vertex using a fresh transaction in order to start with a clean cache
-						db.noTrx(noTx -> {
-							vertex.reload();
-							transformAndRespond(ac, vertex, OK);
-						});
-					} , error -> {
-						ac.fail(error);
-					});
-				}
-			});
-
-		} , rh -> {
-			ac.errorHandler().handle(rh);
-		});
-
-	}
-
-	protected void readElement(InternalActionContext ac, String uuidParameterName, TrxHandler2<RootVertex<?>> handler) {
-		db.asyncNoTrx(noTrx -> {
-			RootVertex<?> root = handler.call();
-			root.loadObject(ac, uuidParameterName, READ_PERM, lh -> {
-				if (ac.failOnError(lh)) {
-					lh.result().transformToRest(ac, th -> {
-						if (ac.failOnError(th)) {
-							ac.respond(th.result(), OK);
-						}
-					});
-				}
-			});
-		} , rh -> {
-			ac.errorHandler().handle(rh);
-		});
-
-	}
-
-	// <E extends MeshCoreVertex<TR, E>, TR extends RestModel>
-	protected void readElementList(InternalActionContext ac, TrxHandler2<RootVertex<T>> handler) {
-		db.asyncNoTrx(noTrx -> {
+			TrxHandler<RootVertex<T>> handler) {
+		db.asyncNoTrx(() -> {
 			RootVertex<T> root = handler.call();
-			root.loadObjects(ac, rh -> {
-				if (ac.failOnError(rh)) {
-					ac.send(toJson(rh.result()), OK);
-				}
+			return root.loadObject(ac, uuidParameterName, UPDATE_PERM).flatMap(element -> {
+				Observable<RestModel> obsTransformed = element.update(ac).flatMap(updatedElement -> {
+					// Transform the vertex using a fresh transaction in order to start with a clean cache
+					return db.noTrx(() -> {
+						updatedElement.reload();
+						return updatedElement.transformToRest(ac);
+					});
+				});
+				return obsTransformed;
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
+	}
+
+	protected void readElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<?>> handler) {
+		db.asyncNoTrx(() -> {
+			RootVertex<?> root = handler.call();
+			return root.loadObject(ac, uuidParameterName, READ_PERM).flatMap(node -> {
+				return node.transformToRest(ac);
+			}).toBlocking().first();
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
+	}
+
+	protected void readElementList(InternalActionContext ac, TrxHandler<RootVertex<T>> handler) {
+		db.asyncNoTrx(() -> {
+			RootVertex<T> root = handler.call();
+
+			PagingParameter pagingInfo = ac.getPagingParameter();
+			MeshAuthUser requestUser = ac.getUser();
+
+			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
+			List<Observable<RM>> transformedElements = new ArrayList<>();
+			for (T node : page) {
+				transformedElements.add(node.transformToRest(ac));
+			}
+			ListResponse<RM> listResponse = new ListResponse<>();
+
+			Observable<ListResponse<RM>> obs = RxUtil.concatList(transformedElements).collect(() -> {
+				return listResponse;
+			} , (list, restElement) -> {
+				list.getData().add(restElement);
+			}).map(l -> {
+				page.setPaging(listResponse);
+				return listResponse;
 			});
-		} , rh -> {
-			ac.errorHandler().handle(rh);
-		});
+			return obs.map(i -> listResponse).toBlocking().last();
+
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
 	}
 
 }

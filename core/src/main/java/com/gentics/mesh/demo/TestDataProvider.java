@@ -46,7 +46,6 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -99,7 +98,7 @@ public class TestDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 
-		Future<Object> setupResult = db.noTrx(noTrx -> {
+		db.noTrx(() -> {
 			bootstrapInitializer.initMandatoryData();
 			schemaContainers.clear();
 			microschemaContainers.clear();
@@ -135,17 +134,16 @@ public class TestDataProvider {
 			log.info("Users:        " + users.size());
 			log.info("Groups:       " + groups.size());
 			log.info("Roles:        " + roles.size());
+			return null;
 		});
-		if (setupResult.failed()) {
-			throw new IOException(setupResult.cause());
-		}
+
 		updatePermissions();
 		long duration = System.currentTimeMillis() - start;
 		log.info("Setup took: {" + duration + "}");
 	}
 
 	private void updatePermissions() {
-		db.noTrx(tc -> {
+		db.noTrx(() -> {
 			Role role = userInfo.getRole();
 			for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
@@ -155,6 +153,7 @@ public class TestDataProvider {
 				}
 				role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
 			}
+			return null;
 		});
 		log.info("Added BasicPermissions to nodes");
 
@@ -337,23 +336,23 @@ public class TestDataProvider {
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
-//		addBlogPostSchema();
+		//		addBlogPostSchema();
 	}
 
 	private void addBootstrapSchemas() {
 
 		// folder
-		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder");
+		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder").toBlocking().first();
 		project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content");
+		SchemaContainer contentSchemaContainer = rootService.schemaContainerRoot().findByName("content").toBlocking().first();
 		project.getSchemaContainerRoot().addSchemaContainer(contentSchemaContainer);
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary-content
-		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content");
+		SchemaContainer binaryContentSchemaContainer = rootService.schemaContainerRoot().findByName("binary-content").toBlocking().first();
 		project.getSchemaContainerRoot().addSchemaContainer(binaryContentSchemaContainer);
 		schemaContainers.put("binary-content", binaryContentSchemaContainer);
 
@@ -361,7 +360,8 @@ public class TestDataProvider {
 
 	/**
 	 * Add microschemas
-	 * @throws MeshJsonException 
+	 * 
+	 * @throws MeshJsonException
 	 */
 	private void addMicroschemaContainers() throws MeshJsonException {
 		addVCardMicroschema();
@@ -370,7 +370,8 @@ public class TestDataProvider {
 
 	/**
 	 * Add microschema "vcard" to db
-	 * @throws MeshJsonException 
+	 * 
+	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
 		Microschema vcardMicroschema = new MicroschemaImpl();
@@ -409,6 +410,7 @@ public class TestDataProvider {
 
 	/**
 	 * Add microschema "captionedImage" to db
+	 * 
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
@@ -433,28 +435,28 @@ public class TestDataProvider {
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 	}
 
-//	private void addBlogPostSchema() throws MeshSchemaException {
-//		Schema schema = new SchemaImpl();
-//		schema.setName("blogpost");
-//		schema.setDisplayField("title");
-//		schema.setMeshVersion(Mesh.getVersion());
-//
-//		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-//		titleFieldSchema.setName("title");
-//		titleFieldSchema.setLabel("Title");
-//		schema.addField(titleFieldSchema);
-//
-//		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-//		titleFieldSchema.setName("content");
-//		titleFieldSchema.setLabel("Content");
-//		schema.addField(contentFieldSchema);
-//
-//		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-//		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
-//		blogPostSchemaContainer.setSchema(schema);
-//
-//		schemaContainers.put("blogpost", blogPostSchemaContainer);
-//	}
+	//	private void addBlogPostSchema() throws MeshSchemaException {
+	//		Schema schema = new SchemaImpl();
+	//		schema.setName("blogpost");
+	//		schema.setDisplayField("title");
+	//		schema.setMeshVersion(Mesh.getVersion());
+	//
+	//		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
+	//		titleFieldSchema.setName("title");
+	//		titleFieldSchema.setLabel("Title");
+	//		schema.addField(titleFieldSchema);
+	//
+	//		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
+	//		titleFieldSchema.setName("content");
+	//		titleFieldSchema.setLabel("Content");
+	//		schema.addField(contentFieldSchema);
+	//
+	//		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
+	//		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
+	//		blogPostSchemaContainer.setSchema(schema);
+	//
+	//		schemaContainers.put("blogpost", blogPostSchemaContainer);
+	//	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);

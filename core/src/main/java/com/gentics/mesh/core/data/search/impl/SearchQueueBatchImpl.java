@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -15,26 +12,24 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueBatch {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
 
+	/**
+	 * Setup vertex types and indices for search queue vertices.
+	 * 
+	 * @param database
+	 */
 	public static void checkIndices(Database database) {
 		database.addVertexType(SearchQueueBatchImpl.class);
 	}
@@ -106,112 +101,80 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void process(Handler<AsyncResult<Void>> handler) {
+	public Observable<SearchQueueBatch> process() {
 
 		if (log.isDebugEnabled()) {
 			log.debug("Processing batch {" + getBatchId() + "}");
 			printDebug();
 		}
-		Set<ObservableFuture<Void>> futures = new HashSet<>();
+		List<Observable<Void>> obs = new ArrayList<>();
 		for (SearchQueueEntry entry : getEntries()) {
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			entry.process(obs.toHandler());
-			futures.add(obs);
+			obs.add(entry.process());
 		}
-		Observable.merge(futures).subscribe(item -> {
+
+		Observable<SearchQueueBatch> mergedObs = Observable.merge(obs).map(done -> this);
+		mergedObs = mergedObs.doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Handled search queue item.");
+				log.debug("Handled all search queue items.");
 			}
-		} , error -> {
-			log.error("Could not process batch {" + getBatchId() + "}.", error);
-			handler.handle(Future.failedFuture(error));
-		} , () -> {
 			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
 			Database db = springConfiguration.database();
 			// We successfully finished this batch. Delete it.
-			db.trx(tcDelete -> {
+			db.trx(() -> {
 				reload();
 				delete();
-				tcDelete.complete();
-			} , rhDelete -> {
-				if (rhDelete.failed()) {
-					handler.handle(Future.failedFuture(rhDelete.cause()));
-				} else {
-					SearchProvider provider = springConfiguration.searchProvider();
-					if (provider != null) {
-						provider.refreshIndex();
-					} else {
-						log.error("Could not refresh index since the elastic search provider has not been initalized");
-					}
-					handler.handle(Future.succeededFuture());
-				}
+				return null;
 			});
-
+			// 4. Refresh index
+			SearchProvider provider = springConfiguration.searchProvider();
+			if (provider != null) {
+				provider.refreshIndex();
+			} else {
+				log.error("Could not refresh index since the elastic search provider has not been initalized");
+			}
 		});
+
+		// mergedObs.doOnError(error -> {
+		// return null;
+		// });
+		return mergedObs.map(i -> this);
+
 	}
 
 	@Override
-	public void process(InternalActionContext ac, Handler<AsyncResult<Void>> handler) {
+	public Observable<SearchQueueBatch> process(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		// 1. Remove the batch from the queue
-		db.trx(tc -> {
+		SearchQueueBatch removedBatch = db.trx(() -> {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			searchQueue.reload();
 			searchQueue.remove(this);
-			tc.complete(searchQueue);
-		} , sqrh -> {
-			if (sqrh.failed()) {
-				handler.handle(Future.failedFuture(sqrh.cause()));
-			} else {
-				// 2. Process the batch
-				db.noTrx(txProcess -> {
-					this.process(rh -> {
-						// 3. Add the batch back to the queue when an error occurs
-						if (rh.failed()) {
-							db.trx(txAddBack -> {
-								SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-								this.reload();
-								log.error("Error while processing batch {" + this.getBatchId() + "}. Adding batch back to queue.", rh.cause());
-								searchQueue.add(this);
-								txAddBack.complete(this);
-							} , txAddedBack -> {
-								if (txAddedBack.failed()) {
-									log.error("Failed to add batch {" + this.getBatchId() + "} back to search queue.", txAddedBack.cause());
-								}
-							});
-							// Inform the caller that processing failed
-							handler.handle(failedFuture(BAD_REQUEST, "search_index_batch_process_failed", rh.cause()));
-						} else {
-							// Inform the caller that processing completed
-							handler.handle(Future.succeededFuture());
-						}
-					});
-				});
-			}
+			return this;
 		});
-	}
 
-	@Override
-	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void processOrFail(InternalActionContext ac,
-			Handler<AsyncResult<T>> handler, T element) {
-
-		if (element == null) {
-			// TODO log
-			// TODO i18n
-			ac.fail(BAD_REQUEST, "element creation failed");
-			return;
-		} else {
-			process(ac, rh -> {
-				if (rh.failed()) {
-					handler.handle(Future.failedFuture(rh.cause()));
-				} else {
-					handler.handle(Future.succeededFuture(element));
-				}
+		// 2. Process the batch
+		return db.noTrx(() -> {
+			return removedBatch.process().doOnError(error -> {
+				// Add the batch back to the queue when an error occurs
+				db.trx(() -> {
+					SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
+					this.reload();
+					log.error("Error while processing batch {" + this.getBatchId() + "}. Adding batch {" + this.getBatchId() + "} back to queue.",
+							error);
+					searchQueue.add(this);
+					return this;
+				});
+				// .doOnError(() -> {
+				// log.error("Failed to add batch {" + this.getBatchId() + "} back to search queue.", txAddedBack.cause());
+				// // Inform the caller that processing failed
+				// throw error(BAD_REQUEST, "search_index_batch_process_failed", error);
+				// });
 			});
 
-		}
+		});
+
 	}
 
 }

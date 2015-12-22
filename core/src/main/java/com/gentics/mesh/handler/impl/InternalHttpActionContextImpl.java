@@ -1,7 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.json.JsonUtil.toJson;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDALL_QUERY_PARAM_KEY;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_PARAM_KEY;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.RESOLVE_LINKS_QUERY_PARAM_KEY;
@@ -20,15 +19,12 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
@@ -58,7 +54,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public Project getProject() {
 		if (project == null) {
 			RoutingContext rc = getRoutingContext();
-			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(getProjectName(rc));
+			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(getProjectName(rc)).toBlocking().first();
 		}
 		return project;
 	}
@@ -171,11 +167,6 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 			error(BAD_REQUEST, "error_invalid_paging_parameters");
 		}
 		return new PagingParameter(pageInt, perPageInt);
-	}
-
-	@Override
-	public void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters) {
-		send(JsonUtil.toJson(new GenericMessageResponse(i18n(i18nMessage, i18nParameters))), status);
 	}
 
 	@Override

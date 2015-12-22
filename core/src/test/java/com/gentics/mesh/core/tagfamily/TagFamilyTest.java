@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.tagfamily;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,12 +11,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -69,7 +66,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
 		assertNotNull(projectTagFamilyRoot);
 
-		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
+		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors").toBlocking().first();
 		assertNotNull(projectTagFamily);
 
 		assertNotNull(projectTagFamilyRoot.create("bogus", user()));
@@ -101,11 +98,8 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily tagFamily = tagFamily("colors");
 
-		CountDownLatch latch = new CountDownLatch(1);
-		root.findByUuid(tagFamily.getUuid(), rh -> {
-			latch.countDown();
-		});
-		failingLatch(latch);
+		TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid()).toBlocking().first();
+		assertNotNull(foundTagFamily);
 	}
 
 	@Test
@@ -123,7 +117,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	public void testCreate() throws IOException {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily family = root.create("test", user());
-		TagFamily family2 = root.findByName(family.getName());
+		TagFamily family2 = root.findByName(family.getName()).toBlocking().first();
 		assertNotNull(family2);
 		assertEquals("test", family2.getName());
 		assertEquals(family.getUuid(), family2.getUuid());
@@ -185,17 +179,9 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() throws Exception {
 		TagFamily tagFamily = tagFamily("colors");
-		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		CompletableFuture<TagFamilyResponse> cf = new CompletableFuture<>();
-		tagFamily.transformToRest(ac, rh -> {
-			cf.complete(rh.result());
-			latch.countDown();
-		});
-
-		failingLatch(latch);
-		TagFamilyResponse response = cf.get(1, TimeUnit.SECONDS);
+		TagFamilyResponse response = tagFamily.transformToRest(ac).toBlocking().first();
 		assertNotNull(response);
 		assertEquals(tagFamily.getName(), response.getName());
 		assertEquals(tagFamily.getUuid(), response.getUuid());
@@ -208,18 +194,13 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = root.create("test123", user());
 		assertNotNull(tagFamily);
 		String uuid = tagFamily.getUuid();
-		CountDownLatch latch = new CountDownLatch(2);
-		root.findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
+		TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().first();
+		assertNotNull(foundTagFamily);
 		tagFamily.delete();
 		// TODO check for attached nodes
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		assertNull(project);
+
 	}
 
 	@Test
@@ -228,10 +209,10 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		TagFamily tagFamily = root.create("test123", user());
-		assertFalse(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().first());
 		user().addCRUDPermissionOnRole(root, GraphPermission.CREATE_PERM, tagFamily);
 		ac.data().clear();
-		assertTrue(user().hasPermission(ac, tagFamily, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermissionAsync(ac, tagFamily, GraphPermission.CREATE_PERM).toBlocking().first());
 	}
 
 }

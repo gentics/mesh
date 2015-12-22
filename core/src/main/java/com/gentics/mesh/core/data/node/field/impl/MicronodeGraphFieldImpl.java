@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -11,9 +11,7 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGraphField {
 
@@ -33,16 +31,13 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<Field>> handler) {
+	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey) {
 		Micronode micronode = getMicronode();
 		if (micronode == null) {
 			// TODO is this correct?
-			handler.handle(failedFuture(BAD_REQUEST, "error_name_must_be_set"));
-		}
-		if (micronode != null) {
-			micronode.transformToRest(ac, rh -> {
-				handler.handle(Future.succeededFuture(rh.result()));
-			});
+			return errorObservable(BAD_REQUEST, "error_name_must_be_set");
+		} else {
+			return micronode.transformToRest(ac);
 		}
 	}
 

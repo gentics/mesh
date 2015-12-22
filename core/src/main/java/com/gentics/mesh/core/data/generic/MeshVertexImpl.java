@@ -24,7 +24,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
-	//public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
+	// public ThreadLocal<Element> threadLocalElement = ThreadLocal.withInitial(() -> ((WrappedVertex) getGraph().getVertex(id)).getBaseElement());
 
 	@Override
 	protected void init() {
@@ -111,22 +111,28 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 	}
 
-//	@Override
-//	public Iterable<Edge> getEdges(MeshVertex target, Direction direction, String... labels) {
-//		Vertex sourceVertex = getElement();
-//		if (sourceVertex instanceof OrientVertex) {
-//			OrientVertex targetVertex = (OrientVertex) target.getElement();
-//			return ((OrientVertex) sourceVertex).getEdges(targetVertex, direction, labels);
-//		} else {
-//			throw new NotImplementedException("Not implemented for current graph database.");
-//		}
-//	}
+	// @Override
+	// public Iterable<Edge> getEdges(MeshVertex target, Direction direction, String... labels) {
+	// Vertex sourceVertex = getElement();
+	// if (sourceVertex instanceof OrientVertex) {
+	// OrientVertex targetVertex = (OrientVertex) target.getElement();
+	// return ((OrientVertex) sourceVertex).getEdges(targetVertex, direction, labels);
+	// } else {
+	// throw new NotImplementedException("Not implemented for current graph database.");
+	// }
+	// }
 
 	@Override
 	public Vertex getElement() {
-		//TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the transaction finishes
-		Element vertex = ((WrappedVertex) Database.getThreadLocalGraph().getVertex(id)).getBaseElement();
-		//Element vertex = threadLocalElement.get();
+		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
+		// transaction finishes
+		FramedGraph fg = Database.getThreadLocalGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		Element vertex = ((WrappedVertex) fg.getVertex(id)).getBaseElement();
+		// Element vertex = threadLocalElement.get();
 
 		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {

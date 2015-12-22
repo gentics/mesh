@@ -2,7 +2,6 @@ package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,8 +11,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -48,7 +45,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	public void testCreate() {
 		ProjectRoot projectRoot = meshRoot().getProjectRoot();
 		Project project = projectRoot.create("test", user());
-		Project project2 = projectRoot.findByName(project.getName());
+		Project project2 = projectRoot.findByName(project.getName()).toBlocking().first();
 		assertNotNull(project2);
 		assertEquals("test", project2.getName());
 		assertEquals(project.getUuid(), project2.getUuid());
@@ -109,33 +106,20 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		CountDownLatch latch = new CountDownLatch(2);
-		meshRoot().getProjectRoot().findByUuid(project().getUuid(), rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
-		meshRoot().getProjectRoot().findByUuid("bogus", rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid()).toBlocking().first();
+		assertNotNull(project);
+		project = meshRoot().getProjectRoot().findByUuid("bogus").toBlocking().first();
+		assertNull(project);
 	}
 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
 		Project project = project();
-		CountDownLatch latch = new CountDownLatch(1);
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		CompletableFuture<ProjectResponse> cf = new CompletableFuture<>();
-		project.transformToRest(ac, rh -> {
-			cf.complete(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
-		assertNotNull(cf.get());
-		ProjectResponse response = cf.get();
+		ProjectResponse response = project.transformToRest(ac).toBlocking().first();
+
 		assertEquals(project.getName(), response.getName());
 		assertEquals(project.getUuid(), response.getUuid());
 	}
@@ -146,18 +130,12 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = meshRoot().getProjectRoot().create("newProject", user());
 		assertNotNull(project);
 		String uuid = project.getUuid();
-		CountDownLatch latch = new CountDownLatch(2);
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			assertNotNull(rh.result());
-			latch.countDown();
-		});
+		Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		assertNotNull(foundProject);
 		project.delete();
 		// TODO check for attached nodes
-		meshRoot().getProjectRoot().findByUuid(uuid, rh -> {
-			assertNull(rh.result());
-			latch.countDown();
-		});
-		failingLatch(latch);
+		foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		assertNull(foundProject);
 	}
 
 	@Test
@@ -166,10 +144,10 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		MeshRoot root = meshRoot();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		Project project = root.getProjectRoot().create("TestProject", user());
-		assertFalse(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
+		assertFalse(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().first());
 		user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
 		ac.data().clear();
-		assertTrue(user().hasPermission(ac, project, GraphPermission.CREATE_PERM));
+		assertTrue(user().hasPermissionAsync(ac, project, GraphPermission.CREATE_PERM).toBlocking().first());
 	}
 
 	@Test

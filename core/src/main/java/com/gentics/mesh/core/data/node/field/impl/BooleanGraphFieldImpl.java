@@ -7,9 +7,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
@@ -36,10 +34,10 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public void transformToRest(ActionContext ac, Handler<AsyncResult<BooleanField>> handler) {
+	public Observable<BooleanField> transformToRest(ActionContext ac) {
 		BooleanFieldImpl restModel = new BooleanFieldImpl();
 		restModel.setValue(getBoolean());
-		handler.handle(Future.succeededFuture(restModel));
+		return Observable.just(restModel);
 	}
 
 }

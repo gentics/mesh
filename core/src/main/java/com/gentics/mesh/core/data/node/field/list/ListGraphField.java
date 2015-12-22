@@ -8,8 +8,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphFie
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import rx.Observable;
 
 public interface ListGraphField<T extends ListableGraphField, RM extends Field> extends MicroschemaListableGraphField, MeshVertex {
 
@@ -60,6 +59,6 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field> 
 	 * @param fieldKey
 	 * @param handler
 	 */
-	void transformToRest(InternalActionContext ac, String fieldKey, Handler<AsyncResult<RM>> handler);
+	Observable<RM> transformToRest(InternalActionContext ac, String fieldKey);
 
 }

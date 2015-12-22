@@ -2,7 +2,6 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
@@ -12,7 +11,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
@@ -191,12 +189,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			tx.success();
 		}
 		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			batch.process(rh -> {
-				latch.countDown();
-
-			});
-			failingLatch(latch);
+			batch.process().toBlocking().last();
 		}
 
 		// Search again and make sure we found our document
@@ -239,11 +232,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertEquals(1, response.getData().size());
 
 		try (Trx tx = db.trx()) {
-			CountDownLatch latch = new CountDownLatch(1);
-			batch.process(rh -> {
-				latch.countDown();
-			});
-			failingLatch(latch);
+			batch.process().toBlocking().last();
 		}
 
 		future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingParameter().setPage(1).setPerPage(2));
