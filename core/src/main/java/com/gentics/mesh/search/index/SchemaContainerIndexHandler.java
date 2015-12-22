@@ -8,7 +8,11 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.schema.Schema;
+
+import rx.Observable;
 
 @Component
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
@@ -24,7 +28,6 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 		return instance;
 	}
 
-	
 	@Override
 	protected String getIndex() {
 		return "schema_container";
@@ -49,4 +52,16 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 		return map;
 	}
 
+	@Override
+	public Observable<Void> store(SchemaContainer object, String type) {
+		return super.store(object, type).flatMap(done -> {
+			Observable<Void> obs = db.noTrx(() -> {
+				// update the mappings
+				Schema schema = object.getSchema();
+				String schemaName = schema.getName();
+				return searchProvider.setMapping(Node.TYPE, schemaName, schema);
+			});
+			return obs;
+		});
+	}
 }

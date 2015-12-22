@@ -11,6 +11,8 @@ import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
@@ -19,11 +21,17 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
 import com.gentics.mesh.cli.MeshNameProvider;
+import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -145,6 +153,55 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 
 		});
+	}
+
+	@Override
+	public Observable<Void> setMapping(String indexName, String type, Schema schema) {
+		PutMappingRequestBuilder mappingRequestBuilder = getSearchClient().admin().indices().preparePutMapping(indexName);
+		mappingRequestBuilder.setType(type);
+
+		try {
+			XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
+					.startObject(type) // type
+					.startObject("properties") // properties
+					.startObject("fields") // fields
+					.startObject("properties"); // properties
+
+			for (FieldSchema field : schema.getFields()) {
+				if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+					if ("micronode".equals(((ListFieldSchema) field).getListType())) {
+						mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+					}
+				}
+			}
+
+			mappingBuilder.endObject() // properties
+					.endObject() // fields
+					.endObject() // properties
+					.endObject() // type
+					.endObject(); // root object
+			if (log.isDebugEnabled()) {
+				log.debug(mappingBuilder.string());
+			}
+			mappingRequestBuilder.setSource(mappingBuilder);
+
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					obs.toHandler().handle(Future.succeededFuture());
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					obs.toHandler().handle(Future.failedFuture(e));
+				}
+			});
+			return obs;
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
 	}
 
 	@Override

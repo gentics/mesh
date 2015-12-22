@@ -7,8 +7,11 @@ import java.util.Map;
 
 import org.elasticsearch.node.Node;
 
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import rx.Observable;
 
 public class DummySearchProvider implements SearchProvider {
@@ -29,8 +32,13 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
+
 	public Observable<Void> updateDocument(String index, String type, String uuid, Map<String, Object> map) {
 		updateEvents.put(index + "-" + type + "-" + uuid, map);
+		return Observable.just(null);
+	}
+
+	public Observable<Void> setMapping(String indexName, String type, Schema schema) {
 		return Observable.just(null);
 	}
 

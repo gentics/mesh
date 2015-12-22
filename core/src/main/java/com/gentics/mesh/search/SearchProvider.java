@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.elasticsearch.node.Node;
 
+import com.gentics.mesh.core.rest.schema.Schema;
+
 import rx.Observable;
 
 /**
@@ -22,6 +24,19 @@ public interface SearchProvider {
 	 * @param indexName
 	 */
 	void createIndex(String indexName);
+
+	/**
+	 * Set the mapping for the given type in the given index for the schema
+	 *
+	 * @param indexName
+	 *            index name
+	 * @param type
+	 *            type name
+	 * @param schema
+	 *            schema
+	 * @return observable
+	 */
+	Observable<Void> setMapping(String indexName, String type, Schema schema);
 
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
 	/**

@@ -38,6 +38,8 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.util.Tuple;
+import com.tinkerpop.gremlin.Tokens.T;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -120,31 +122,38 @@ public class SearchRestHandler {
 				db.noTrx(() -> {
 					rootVertex.reload();
 
-					List<ObservableFuture<T>> obs = new ArrayList<>();
+					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
+
 					for (SearchHit hit : response.getHits()) {
-						String uuid = hit.getId();
-						ObservableFuture<T> obsFut = RxHelper.observableFuture();
-						obs.add(obsFut);
+
+						String id = hit.getId();
+						int pos = id.indexOf("-");
+
+						String language = pos > 0 ? id.substring(pos + 1) : null;
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
+
+						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
+						obs.add(obsResult);
 
 						// Locate the node
 						rootVertex.findByUuid(uuid).subscribe(element -> {
 							if (element == null) {
 								log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.getImpl().getFermaType()
 										+ "}");
-								obsFut.toHandler().handle(Future.succeededFuture());
+								obsResult.toHandler().handle(Future.succeededFuture());
 							} else {
-								obsFut.toHandler().handle(Future.succeededFuture(element));
+								obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
 							}
 						} , error -> {
-							obsFut.toHandler().handle(Future.failedFuture(error));
-
+							obsResult.toHandler().handle(Future.failedFuture(error));
 						});
 					}
+
 					Observable.merge(obs).collect(() -> {
-						return new ArrayList<T>();
+						return new ArrayList<Tuple<T, String>>();
 					} , (x, y) -> {
 						// Check permissions
-						if (y != null && requestUser.hasPermissionSync(ac, y, GraphPermission.READ_PERM)) {
+						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), GraphPermission.READ_PERM)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -156,11 +165,17 @@ public class SearchRestHandler {
 
 						int n = 0;
 						List<Observable<TR>> transformedElements = new ArrayList<>();
-						for (T element : list) {
+						for (Tuple<T, String> element : list) {
+
 							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
-								transformedElements.add(element.transformToRest(ac));
+
+								String language = element.v2();
+								// TODO set the language. We cannot just set it into the ActionContext instance,
+								// because this will be reused for all search result elements (asynchronously)
+								transformedElements.add(element.v1().transformToRest(ac));
 								// Transform node and add it to the list of nodes
+
 							}
 							n++;
 						}

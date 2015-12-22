@@ -12,8 +12,11 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -23,14 +26,15 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
@@ -101,7 +105,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
 
-			addFields(map, container, node.getSchema());
+			addFields(map, container, node.getSchema().getFields());
 			if (log.isTraceEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.trace("Search index json:");
@@ -113,7 +117,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			displayFieldMap.put("key", node.getSchema().getDisplayField());
 			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
 			map.put("displayField", displayFieldMap);
-			obs.add(searchProvider.storeDocument(getIndex(), getType() + "-" + language, node.getUuid(), map));
+			searchProvider.storeDocument(getIndex(), getDocumentType(node, language), getDocumentId(node, language), map);
 		}
 
 		return Observable.merge(obs).doOnCompleted(() -> {
@@ -141,13 +145,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
 
-			addFields(map, container, node.getSchema());
+			addFields(map, container, node.getSchema().getFields());
 			if (log.isDebugEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
 			}
 
-			obs.add(searchProvider.updateDocument(getIndex(), getType() + "-" + language, node.getUuid(), map));
+			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(node, language), getDocumentId(node, language), map));
+
 		}
 
 		return Observable.merge(obs).doOnCompleted(() -> {
@@ -158,9 +163,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-	private void addFields(Map<String, Object> map, NodeGraphFieldContainer container, Schema schema) {
+	private void addFields(Map<String, Object> map, GraphFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
-		for (FieldSchema fieldSchema : schema.getFields()) {
+		for (FieldSchema fieldSchema : fields) {
 			String name = fieldSchema.getName();
 			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 
@@ -251,8 +256,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						}
 						break;
 					case "micronode":
-						// TODO implement microschemas
-						// throw new NotImplementedException();
+						MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
+						if (micronodeGraphFieldList != null) {
+							// add list of micronode objects
+							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
+								Map<String, Object> itemMap = new HashMap<>();
+								Micronode micronode = item.getMicronode();
+								addMicroschema(itemMap, micronode.getMicroschemaContainer());
+								addFields(itemMap, micronode, micronode.getMicroschema().getFields());
+								return itemMap;
+							}).toList().toBlocking().first());
+						}
 						break;
 					case "string":
 						StringGraphFieldList graphStringList = container.getStringList(fieldSchema.getName());
@@ -288,9 +302,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// break;
 				throw new NotImplementedException();
 			case MICRONODE:
-				// TODO implement microschemas
-				// break;
-				// throw new NotImplementedException();
+				MicronodeGraphField micronodeGraphField = container.getMicronode(fieldSchema.getName());
+				if (micronodeGraphField != null) {
+					Micronode micronode = micronodeGraphField.getMicronode();
+					if (micronode != null) {
+						Map<String, Object> micronodeMap = new HashMap<>();
+						addMicroschema(micronodeMap, micronode.getMicroschemaContainer());
+						addFields(micronodeMap, micronode, micronode.getMicroschema().getFields());
+						fieldsMap.put(fieldSchema.getName(), micronodeMap);
+					}
+				}
 				break;
 			default:
 				// TODO error?
@@ -319,6 +340,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		map.put("schema", schemaFields);
 	}
 
+	private void addMicroschema(Map<String, Object> map, MicroschemaContainer microschemaContainer) {
+		Map<String, String> microschemaFields = new HashMap<>();
+		microschemaFields.put("name", microschemaContainer.getName());
+		microschemaFields.put("uuid", microschemaContainer.getUuid());
+		map.put("microschema", microschemaFields);
+	}
+
 	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put("uuid", parentNode.getUuid());
@@ -328,4 +356,31 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		map.put("parentNode", parentNodeInfo);
 	}
 
+	/**
+	 * Compose the document ID for the index document
+	 * 
+	 * @param node
+	 *            node
+	 * @param language
+	 *            language
+	 * @return document ID
+	 */
+	private String getDocumentId(Node node, String language) {
+		StringBuilder id = new StringBuilder(node.getUuid());
+		id.append("-").append(language);
+		return id.toString();
+	}
+
+	/**
+	 * Compose the document type for the index document
+	 * 
+	 * @param node
+	 *            node
+	 * @param language
+	 *            language
+	 * @return
+	 */
+	private String getDocumentType(Node node, String language) {
+		return node.getSchemaContainer().getName();
+	}
 }

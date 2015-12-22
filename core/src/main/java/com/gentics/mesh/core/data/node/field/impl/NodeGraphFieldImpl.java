@@ -43,10 +43,10 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 				Language language = ac.get(NodeImpl.AC_LANGUAGE_KEY);
-				nodeField.setUrl(WebRootLinkReplacer.getInstance()
-						.resolve(node.getUuid(), language, ac.getResolveLinksType()).toBlocking().first());
+				nodeField.setUrl(WebRootLinkReplacer.getInstance().resolve(node.getUuid(), language.getLanguageTag(), ac.getResolveLinksType())
+						.toBlocking().first());
 			}
-			return Observable.just(nodeField);	
+			return Observable.just(nodeField);
 		}
 	}
 

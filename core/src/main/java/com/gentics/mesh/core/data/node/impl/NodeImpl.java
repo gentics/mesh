@@ -606,7 +606,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, String languageTag) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		String indexType = getType() + "-" + languageTag;
+		String indexType = getSchema().getName();
 		batch.addEntry(getUuid(), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
@@ -622,7 +622,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = getType() + "-" + container.getLanguage().getLanguageTag();
+			String indexType = getSchema().getName();
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
 		addRelatedEntries(batch, action);
