@@ -97,4 +97,8 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 		rc.clearUser();
 	}
 
+	@Override
+	public void addCookie(Cookie cookie) {
+		getRoutingContext().addCookie(cookie);
+	}
 }

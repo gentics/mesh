@@ -47,7 +47,7 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 				if (rh.failed()) {
 					ac.fail(UNAUTHORIZED, "auth_login_failed", rh.cause());
 				} else {
-					ac.send(JsonUtil.toJson(new TokenResponse(rh.result())), OK);
+					ac.sendMessage(OK, "ok");
 				}
 			});
 		} catch (Exception e) {
