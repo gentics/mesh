@@ -3,6 +3,9 @@ package com.gentics.mesh.generator;
 import static com.gentics.mesh.util.FieldUtil.createBooleanField;
 import static com.gentics.mesh.util.FieldUtil.createDateField;
 import static com.gentics.mesh.util.FieldUtil.createHtmlField;
+import static com.gentics.mesh.util.FieldUtil.createMicronodeField;
+import static com.gentics.mesh.util.FieldUtil.createMicronodeListField;
+import static com.gentics.mesh.util.FieldUtil.createNewMicronodeField;
 import static com.gentics.mesh.util.FieldUtil.createNodeField;
 import static com.gentics.mesh.util.FieldUtil.createNodeListField;
 import static com.gentics.mesh.util.FieldUtil.createNumberField;
@@ -56,8 +59,10 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
@@ -90,6 +95,8 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Example generator for the RAML Documentation. This generator will use the rest model POJOs and populate them with fake data to generate example json
@@ -362,14 +369,10 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private void microschemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		MicroschemaResponse response = new MicroschemaResponse();
-		response.setUuid(randomUUID());
-		write(response);
-
-		MicroschemaListResponse listResponse = new MicroschemaListResponse();
-		listResponse.getData().add(response);
-		setPaging(listResponse, 1, 1, 25, 1);
-		write(listResponse);
+		write(getMicroschemaResponse());
+		write(getMicroschemaCreateRequest());
+		write(getMicroschemaUpdateRequest());
+		write(getMicroschemaListResponse());
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -384,6 +387,87 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		request.setUsername("admin");
 		request.setPassword("finger");
 		write(request);
+	}
+
+	private MicroschemaResponse getMicroschemaResponse() {
+		MicroschemaResponse microschema = new MicroschemaResponse();
+		microschema.setName("geolocation");
+		microschema.setDescription("Microschema for Geolocations");
+		microschema.setUuid(UUIDUtil.randomUUID());
+
+		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
+		longitudeFieldSchema.setName("longitude");
+		longitudeFieldSchema.setLabel("Longitude");
+		longitudeFieldSchema.setRequired(true);
+		longitudeFieldSchema.setMin(-180);
+		longitudeFieldSchema.setMax(180);
+		microschema.addField(longitudeFieldSchema);
+
+		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
+		latitudeFieldSchema.setName("latitude");
+		latitudeFieldSchema.setLabel("Latitude");
+		latitudeFieldSchema.setRequired(true);
+		latitudeFieldSchema.setMin(-90);
+		latitudeFieldSchema.setMax(90);
+		microschema.addField(latitudeFieldSchema);
+
+		microschema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
+
+		return microschema;
+	}
+
+	private MicroschemaListResponse getMicroschemaListResponse() {
+		MicroschemaListResponse microschemaList = new MicroschemaListResponse();
+		microschemaList.getData().add(getMicroschemaResponse());
+		microschemaList.getData().add(getMicroschemaResponse());
+		setPaging(microschemaList, 1, 10, 2, 20);
+		return microschemaList;
+	}
+
+	private MicroschemaCreateRequest getMicroschemaCreateRequest() {
+		MicroschemaCreateRequest createRequest = new MicroschemaCreateRequest();
+		createRequest.setName("geolocation");
+		createRequest.setDescription("Microschema for Geolocations");
+		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
+		longitudeFieldSchema.setName("longitude");
+		longitudeFieldSchema.setLabel("Longitude");
+		longitudeFieldSchema.setRequired(true);
+		longitudeFieldSchema.setMin(-180);
+		longitudeFieldSchema.setMax(180);
+		createRequest.addField(longitudeFieldSchema);
+
+		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
+		latitudeFieldSchema.setName("latitude");
+		latitudeFieldSchema.setLabel("Latitude");
+		latitudeFieldSchema.setRequired(true);
+		latitudeFieldSchema.setMin(-90);
+		latitudeFieldSchema.setMax(90);
+		createRequest.addField(latitudeFieldSchema);
+
+		return createRequest;
+	}
+
+	private MicroschemaUpdateRequest getMicroschemaUpdateRequest() {
+		MicroschemaUpdateRequest updateRequest = new MicroschemaUpdateRequest();
+		updateRequest.setName("geolocation");
+		updateRequest.setDescription("Microschema for Geolocations");
+		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
+		longitudeFieldSchema.setName("longitude");
+		longitudeFieldSchema.setLabel("Longitude");
+		longitudeFieldSchema.setRequired(true);
+		longitudeFieldSchema.setMin(-180);
+		longitudeFieldSchema.setMax(180);
+		updateRequest.addField(longitudeFieldSchema);
+
+		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
+		latitudeFieldSchema.setName("latitude");
+		latitudeFieldSchema.setLabel("Latitude");
+		latitudeFieldSchema.setRequired(true);
+		latitudeFieldSchema.setMin(-90);
+		latitudeFieldSchema.setMax(90);
+		updateRequest.addField(latitudeFieldSchema);
+
+		return updateRequest;
 	}
 
 	private SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {
@@ -457,9 +541,18 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeFieldSchema.setName("node");
 		schema.addField(nodeFieldSchema);
 
-		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
-		microschemaFieldSchema.setName("microschema");
-		schema.addField(microschemaFieldSchema);
+		MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
+		micronodeFieldSchema.setName("location");
+		micronodeFieldSchema.setLabel("Location");
+		micronodeFieldSchema.setAllowedMicroSchemas(new String[] {"geolocation"});
+		schema.addField(micronodeFieldSchema);
+
+		ListFieldSchemaImpl micronodeListFieldSchema = new ListFieldSchemaImpl();
+		micronodeListFieldSchema.setName("locationlist");
+		micronodeListFieldSchema.setLabel("List of Locations");
+		micronodeListFieldSchema.setListType("micronode");
+		micronodeListFieldSchema.setAllowedSchemas(new String[] {"geolocation"});
+		schema.addField(micronodeListFieldSchema);
 		return schema;
 	}
 
@@ -496,6 +589,15 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 		fields.put("binary-binaryField", createBinaryField());
+		fields.put("location-micronodeField",
+				createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+						Tuple.tuple("longitude", createNumberField(16.373063840833))));
+		fields.put("locations-micronodeListField",
+				createMicronodeListField(
+						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+								Tuple.tuple("longitude", createNumberField(16.373063840833))),
+						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.137222)),
+								Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -560,6 +662,15 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
+		fields.put("location-micronodeField",
+				createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+						Tuple.tuple("longitude", createNumberField(16.373063840833))));
+		fields.put("locations-micronodeListField",
+				createMicronodeListField(
+						createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+								Tuple.tuple("longitude", createNumberField(16.373063840833))),
+						createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.137222)),
+								Tuple.tuple("longitude", createNumberField(11.575556)))));
 
 		return contentCreate;
 	}
@@ -579,6 +690,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
+		fields.put("location-micronodeField",
+				createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+						Tuple.tuple("longitude", createNumberField(16.373063840833))));
+		fields.put("locations-micronodeListField",
+				createMicronodeListField(
+						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+								Tuple.tuple("longitude", createNumberField(16.373063840833))),
+						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.137222)),
+								Tuple.tuple("longitude", createNumberField(11.575556)))));
+
 		return nodeUpdate;
 	}
 

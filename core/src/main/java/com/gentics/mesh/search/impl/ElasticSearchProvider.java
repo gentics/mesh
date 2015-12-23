@@ -63,6 +63,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder();
 		elasticsearchSettings.put("threadpool.index.queue_size", -1);
 		elasticsearchSettings.put("http.enabled", options.isHttpEnabled());
+		elasticsearchSettings.put("http.cors.enabled", "true");
 		elasticsearchSettings.put("path.data", options.getDirectory());
 		elasticsearchSettings.put("node.name", MeshNameProvider.getInstance().getName());
 		NodeBuilder builder = NodeBuilder.nodeBuilder();
