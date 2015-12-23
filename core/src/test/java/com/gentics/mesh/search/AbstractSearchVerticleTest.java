@@ -37,6 +37,8 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	@After
 	public void resetElasticSearch() {
 		searchProvider.reset();
+		SearchHelper helper = new SearchHelper(searchProvider);
+		helper.init();
 	}
 
 	@BeforeClass

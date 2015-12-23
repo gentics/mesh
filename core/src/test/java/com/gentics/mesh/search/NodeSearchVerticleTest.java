@@ -9,24 +9,35 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
+import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
@@ -148,17 +159,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	@Override
 	public void testDocumentCreation() throws Exception {
-		Node node = folder("2015");
-
-		StringGraphFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
-		list.createString("one");
-		list.createString("two");
-		list.createString("three");
-		list.createString("four");
-
-		Schema schema = node.getSchemaContainer().getSchema();
-		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
-		node.getSchemaContainer().setSchema(schema);
+		fullIndex();
 
 		// Invoke a dummy search on an empty index
 		String json = "{";
@@ -179,6 +180,18 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertSuccess(future);
 		NodeListResponse response = future.result();
 		assertEquals(0, response.getData().size());
+
+		Node node = folder("2015");
+
+		StringGraphFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
+		list.createString("one");
+		list.createString("two");
+		list.createString("three");
+		list.createString("four");
+
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
+		node.getSchemaContainer().setSchema(schema);
 
 		// Create the update entry in the search queue
 		SearchQueueBatch batch;
@@ -308,6 +321,56 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertEquals("No node should be found since the range is invalid.", 0, resultCount);
 	}
 
+	@Test
+	public void testSearchMicronode() throws Exception {
+		addMicronodeField();
+		fullIndex();
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"), new PagingParameter().setPage(1).setPerPage(2));
+		latchFor(future);
+		assertSuccess(future);
+
+		NodeListResponse response = future.result();
+		assertEquals("Check returned search results", 1, response.getData().size());
+		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
+		for (NodeResponse nodeResponse : response.getData()) {
+			assertNotNull("Returned node must not be null", nodeResponse);
+			assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
+		}
+	}
+
+	@Test
+	public void testSearchListOfMicronodes() throws Exception {
+		addMicronodeListField();
+		fullIndex();
+
+		for (String firstName : Arrays.asList("Mickey", "Donald")) {
+			for (String lastName : Arrays.asList("Mouse", "Duck")) {
+				// valid names always begin with the same character
+				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
+
+				Future<NodeListResponse> future = getClient().searchNodes(getNestedVCardListSearch(firstName, lastName),
+						new PagingParameter().setPage(1).setPerPage(2));
+				latchFor(future);
+				assertSuccess(future);
+
+				NodeListResponse response = future.result();
+
+				if (expectResult) {
+					assertEquals("Check returned search results", 1, response.getData().size());
+					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
+					for (NodeResponse nodeResponse : response.getData()) {
+						assertNotNull("Returned node must not be null", nodeResponse);
+						assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
+					}
+				} else {
+					assertEquals("Check returned search results", 0, response.getData().size());
+					assertEquals("Check total search results", 0, response.getMetainfo().getTotalCount());
+				}
+			}
+		}
+	}
+
 	private void addNumberSpeedField(int number) {
 		Node node = content("concorde");
 
@@ -316,5 +379,84 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		node.getSchemaContainer().setSchema(schema);
 
 		node.getGraphFieldContainer(english()).createNumber("speed").setNumber(number);
+	}
+
+	/**
+	 * Add a micronode field to the tested content
+	 */
+	private void addMicronodeField() {
+		Node node = content("concorde");
+
+		Schema schema = node.getSchema();
+		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
+		vcardFieldSchema.setName("vcard");
+		vcardFieldSchema.setAllowedMicroSchemas(new String[] {"vcard"});
+		schema.addField(vcardFieldSchema);
+
+		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard",
+				microschemaContainers().get("vcard"));
+		vcardField.getMicronode().createString("firstName").setString("Mickey");
+		vcardField.getMicronode().createString("lastName").setString("Mouse");
+	}
+
+	/**
+	 * Add a micronode list field to the tested content
+	 */
+	private void addMicronodeListField() {
+		Node node = content("concorde");
+
+		Schema schema = node.getSchema();
+		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
+		vcardListFieldSchema.setName("vcardlist");
+		vcardListFieldSchema.setListType("micronode");
+		vcardListFieldSchema.setAllowedSchemas(new String[] {"vcard"});
+		schema.addField(vcardListFieldSchema);
+
+		// set the mapping for the schema
+		searchProvider.setMapping("node", schema.getName(), schema).toBlocking().first();
+
+		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
+		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"),
+				Tuple.tuple("Donald", "Duck"))) {
+			MicronodeField field = new MicronodeResponse();
+			Micronode micronode = vcardListField.createMicronode(field);
+			micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
+			micronode.createString("firstName").setString(testdata.v1());
+			micronode.createString("lastName").setString(testdata.v2());
+		}
+	}
+
+	/**
+	 * Generate the JSON for a searched in the nested field vcardlist
+	 * @param firstName firstname to search for
+	 * @param lastName lastname to search for
+	 * @return search JSON
+	 * @throws IOException
+	 */
+	private String getNestedVCardListSearch(String firstName, String lastName) throws IOException {
+		return XContentFactory.jsonBuilder()
+			.startObject()
+				.startObject("query")
+					.startObject("nested")
+						.field("path", "fields.vcardlist")
+						.startObject("query")
+							.startObject("bool")
+								.startArray("must")
+									.startObject()
+										.startObject("match")
+											.field("fields.vcardlist.fields.firstName", firstName)
+										.endObject()
+									.endObject()
+									.startObject()
+										.startObject("match")
+											.field("fields.vcardlist.fields.lastName", lastName)
+										.endObject()
+									.endObject()
+								.endArray()
+							.endObject()
+						.endObject()
+					.endObject()
+				.endObject()
+			.endObject().string();
 	}
 }
