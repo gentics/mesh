@@ -73,7 +73,6 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.UUIDUtil;
@@ -332,7 +331,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restNode);
+			obs.add(setRolePermissions(ac, restNode));
 
 			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
@@ -389,7 +388,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Add common fields
-			obs.add(fillCommonRestFields(restNode, ac));
+			obs.add(fillCommonRestFields(ac, restNode));
 
 			// Add webroot url
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {

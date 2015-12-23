@@ -5,19 +5,17 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.Trx;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
+import rx.Scheduler;
 
 public abstract class AbstractDatabase implements Database {
 
@@ -69,12 +67,29 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-		ObservableFuture<T> obsFut = RxHelper.observableFuture();
-		vertx.executeBlocking(bh -> {
-			T result = trx(txHandler);
-			bh.complete(result);
-		} , false, obsFut.toHandler());
-		return obsFut;
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Observable<T> obs = Observable.create(sub -> {
+			try {
+				T result = trx(txHandler);
+				sub.onNext(result);
+				sub.onCompleted();
+			} catch (Exception e) {
+				sub.onError(e);
+			}
+
+		});
+
+		return obs.observeOn(scheduler);
+		//		ObservableFuture<T> obsFut = RxHelper.observableFuture();
+		//		vertx.executeBlocking(bh -> {
+		//			try {
+		//				T result = trx(txHandler);
+		//				bh.complete(result);
+		//			} catch (Exception e) {
+		//				bh.fail(e);
+		//			}
+		//		} , false, obsFut.toHandler());
+		//		return obsFut;
 	}
 
 	@Override
@@ -90,12 +105,30 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncNoTrx(TrxHandler<T> txHandler) {
-		ObservableFuture<T> obsFut = RxHelper.observableFuture();
-		vertx.executeBlocking(bh -> {
-			T result = noTrx(txHandler);
-			bh.complete(result);
-		} , false, obsFut.toHandler());
-		return obsFut;
+
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Observable<T> obs = Observable.create(sub -> {
+			try {
+				T result = noTrx(txHandler);
+				sub.onNext(result);
+				sub.onCompleted();
+			} catch (Exception e) {
+				sub.onError(e);
+			}
+
+		});
+		return obs.observeOn(scheduler);
+
+		//		ObservableFuture<T> obsFut = RxHelper.observableFuture();
+		//		vertx.executeBlocking(bh -> {
+		//			try {
+		//				T result = noTrx(txHandler);
+		//				bh.complete(result);
+		//			} catch (Exception e) {
+		//				bh.fail(e);
+		//			}
+		//		} , false, obsFut.toHandler());
+		//		return obsFut;
 	}
 
 }

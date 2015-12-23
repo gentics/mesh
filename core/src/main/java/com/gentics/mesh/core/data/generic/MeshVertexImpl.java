@@ -131,7 +131,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		Element vertex = ((WrappedVertex) fg.getVertex(id)).getBaseElement();
+
+		Vertex vertexForId = fg.getVertex(id);
+		if (vertexForId == null) {
+			throw new RuntimeException("No vertex for Id {" + id + "} could be found within the graph");
+		}
+		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
 		// Element vertex = threadLocalElement.get();
 
 		// Unwrap wrapped vertex

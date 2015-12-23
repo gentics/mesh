@@ -77,7 +77,7 @@ public class MeshAuthProvider implements AuthProvider {
 //					}
 //				});
 			return null;
-		});
+		}).subscribe();
 
 	}
 }

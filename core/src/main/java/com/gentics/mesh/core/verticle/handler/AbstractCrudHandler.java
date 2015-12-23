@@ -115,29 +115,32 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			Observable<T> obs = root.loadObject(ac, uuidParameterName, DELETE_PERM);
 			return obs.flatMap(element -> {
 
-				Tuple<String, SearchQueueBatch> tuple = db.trx(() -> {
+				return db.noTrx(() -> {
 
-					String uuid = element.getUuid();
-					if (element instanceof IndexableElement) {
-						SearchQueueBatch batch = ((IndexableElement) element).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
-						String name = null;
-						if (element instanceof NamedElement) {
-							name = ((NamedElement) element).getName();
+					Tuple<String, SearchQueueBatch> tuple = db.trx(() -> {
+
+						String uuid = element.getUuid();
+						if (element instanceof IndexableElement) {
+							SearchQueueBatch batch = ((IndexableElement) element).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+							String name = null;
+							if (element instanceof NamedElement) {
+								name = ((NamedElement) element).getName();
+							}
+							final String objectName = name;
+							String id = objectName != null ? uuid + "/" + objectName : uuid;
+							element.delete();
+							return Tuple.tuple(id, batch);
+						} else {
+							throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 						}
-						final String objectName = name;
-						String id = objectName != null ? uuid + "/" + objectName : uuid;
-						element.delete();
-						return Tuple.tuple(id, batch);
-					} else {
-						throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
-					}
 
-				});
+					});
 
-				String id = tuple.v1();
-				SearchQueueBatch batch = tuple.v2();
-				return batch.process().map(done -> {
-					return message(ac, responseMessage, id);
+					String id = tuple.v1();
+					SearchQueueBatch batch = tuple.v2();
+					return batch.process().map(done -> {
+						return message(ac, responseMessage, id);
+					});
 				});
 			}).toBlocking().first();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -157,7 +160,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 					});
 				});
 				return obsTransformed;
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
@@ -167,7 +170,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			RootVertex<?> root = handler.call();
 			return root.loadObject(ac, uuidParameterName, READ_PERM).flatMap(node -> {
 				return node.transformToRest(ac);
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}

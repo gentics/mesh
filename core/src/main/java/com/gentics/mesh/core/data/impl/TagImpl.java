@@ -125,10 +125,10 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			restTag.getFields().setName(getName());
 
 			// Add common fields
-			obs.add(fillCommonRestFields(restTag, ac));
+			obs.add(fillCommonRestFields(ac, restTag));
 
 			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restTag);
+			obs.add(setRolePermissions(ac, restTag));
 
 			// Merge and complete
 			return Observable.merge(obs).toBlocking().last();

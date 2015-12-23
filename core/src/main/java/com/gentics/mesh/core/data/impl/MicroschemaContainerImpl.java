@@ -29,6 +29,10 @@ import rx.Observable;
 
 public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<MicroschemaResponse, MicroschemaContainer> implements MicroschemaContainer {
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(MicroschemaContainerImpl.class);
+	}
+
 	@Override
 	public MicroschemaReference createEmptyReferenceModel() {
 		return new MicroschemaReference();
@@ -133,4 +137,5 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 	private void setJson(String json) {
 		setProperty("json", json);
 	}
+
 }

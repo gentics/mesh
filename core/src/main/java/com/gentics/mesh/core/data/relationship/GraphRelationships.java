@@ -40,7 +40,7 @@ public class GraphRelationships {
 		db.addEdgeType(HAS_SCHEMA_ROOT);
 		db.addEdgeType(HAS_SCHEMA_CONTAINER);
 		db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
-		db.addEdgeType(HAS_MICRO_SCHEMA_ROOT);
+		db.addEdgeType(HAS_MICROSCHEMA_ROOT);
 		db.addEdgeType(HAS_PROPERTY_TYPE);
 
 		db.addEdgeType(HAS_NODE_ROOT);
@@ -103,7 +103,6 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
 	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
-	public static final String HAS_MICRO_SCHEMA_ROOT = "HAS_MICRO_SCHEMA_ROOT"; // TODO is this used?
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
 
 	// Roots

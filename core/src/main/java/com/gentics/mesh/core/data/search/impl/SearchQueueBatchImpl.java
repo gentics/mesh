@@ -103,41 +103,45 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	@Override
 	public Observable<SearchQueueBatch> process() {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Processing batch {" + getBatchId() + "}");
-			printDebug();
-		}
-		List<Observable<Void>> obs = new ArrayList<>();
-		for (SearchQueueEntry entry : getEntries()) {
-			obs.add(entry.process());
-		}
+		MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
+		Database db = springConfiguration.database();
 
-		Observable<SearchQueueBatch> mergedObs = Observable.merge(obs).map(done -> this);
-		mergedObs = mergedObs.doOnCompleted(() -> {
+		return db.noTrx(() -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Handled all search queue items.");
+				log.debug("Processing batch {" + getBatchId() + "}");
+				printDebug();
 			}
-			MeshSpringConfiguration springConfiguration = MeshSpringConfiguration.getInstance();
-			Database db = springConfiguration.database();
-			// We successfully finished this batch. Delete it.
-			db.trx(() -> {
-				reload();
-				delete();
-				return null;
-			});
-			// 4. Refresh index
-			SearchProvider provider = springConfiguration.searchProvider();
-			if (provider != null) {
-				provider.refreshIndex();
-			} else {
-				log.error("Could not refresh index since the elastic search provider has not been initalized");
+			List<Observable<Void>> obs = new ArrayList<>();
+			for (SearchQueueEntry entry : getEntries()) {
+				obs.add(entry.process());
 			}
-		});
 
-		// mergedObs.doOnError(error -> {
-		// return null;
-		// });
-		return mergedObs.map(i -> this);
+			Observable<SearchQueueBatch> mergedObs = Observable.merge(obs).map(done -> this);
+			mergedObs = mergedObs.doOnCompleted(() -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Handled all search queue items.");
+				}
+
+				// We successfully finished this batch. Delete it.
+				db.trx(() -> {
+					reload();
+					delete();
+					return null;
+				});
+				// 4. Refresh index
+				SearchProvider provider = springConfiguration.searchProvider();
+				if (provider != null) {
+					provider.refreshIndex();
+				} else {
+					log.error("Could not refresh index since the elastic search provider has not been initalized");
+				}
+			});
+
+			// mergedObs.doOnError(error -> {
+			// return null;
+			// });
+			return mergedObs.map(i -> this);
+		});
 
 	}
 

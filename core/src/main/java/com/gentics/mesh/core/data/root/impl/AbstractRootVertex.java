@@ -133,22 +133,24 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	public Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		reload();
-		return findByUuid(uuid).flatMap(element -> {
+		return findByUuid(uuid).map(element -> {
 			if (element == null) {
 				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 			}
-			Observable<T> obs = db.noTrx(() -> {
+
+			T result = db.noTrx(() -> {
 				MeshAuthUser requestUser = ac.getUser();
 				String elementUuid = element.getUuid();
-				return requestUser.hasPermissionAsync(ac, element, perm).flatMap(hasPerm -> {
+				return requestUser.hasPermissionAsync(ac, element, perm).map(hasPerm -> {
 					if (hasPerm) {
-						return Observable.just(element);
+						return element;
 					} else {
 						throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 					}
 				});
-			});
-			return obs;
+			}).toBlocking().last();
+
+			return result;
 		});
 
 	}
@@ -163,6 +165,5 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			return loadObjectByUuid(ac, uuid, perm);
 		}
 	}
-
 
 }

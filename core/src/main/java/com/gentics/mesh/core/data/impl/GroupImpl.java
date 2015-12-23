@@ -33,7 +33,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -173,10 +172,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			// }
 
 			// Add common fields
-			obs.add(fillCommonRestFields(restGroup, ac));
+			obs.add(fillCommonRestFields(ac, restGroup));
 
 			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restGroup);
+			obs.add(setRolePermissions(ac, restGroup));
 
 			// Merge and complete
 			return Observable.merge(obs).toBlocking().first();

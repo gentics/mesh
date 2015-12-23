@@ -1,12 +1,19 @@
 package com.gentics.mesh.core.data.generic;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -56,13 +63,40 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	/**
+	 * Add role permissions to given rest model object.
+	 * 
+	 * @param ac
+	 * @param sourceElement
+	 * @param restModel
+	 * @return
+	 */
+	protected <R extends AbstractGenericRestResponse> Observable<R> setRolePermissions(InternalActionContext ac, R model) {
+		String rolePermissionParameter = ac.getRolePermissionParameter();
+		if (isEmpty(rolePermissionParameter)) {
+			return Observable.empty();
+		} else
+			return MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).map(role -> {
+				if (role != null) {
+					Set<GraphPermission> permSet = role.getPermissions(this);
+					Set<String> humanNames = new HashSet<>();
+					for (GraphPermission permission : permSet) {
+						humanNames.add(permission.getSimpleName());
+					}
+					String[] names = humanNames.toArray(new String[humanNames.size()]);
+					model.setRolePerms(names);
+				}
+				return model;
+			});
+
+	}
+
+	/**
 	 * Add common fields to the given rest model object. The method will add common files like creator, editor, uuid, permissions, edited, created.
 	 * 
 	 * @param model
 	 * @param ac
 	 */
-	protected <R extends AbstractGenericRestResponse> Observable<R> fillCommonRestFields(R model, InternalActionContext ac) {
-		ObservableFuture<R> obsFut = RxHelper.observableFuture();
+	protected <R extends AbstractGenericRestResponse> Observable<R> fillCommonRestFields(InternalActionContext ac, R model) {
 
 		model.setUuid(getUuid());
 
@@ -83,18 +117,11 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
 
-		ac.getUser().getPermissionNames(ac, this, ph -> {
-			if (ph.failed()) {
-				obsFut.toHandler().handle(Future.failedFuture(ph.cause()));
-			} else {
-				String[] names = ph.result().toArray(new String[ph.result().size()]);
-				model.setPermissions(names);
-				obsFut.toHandler().handle(Future.succeededFuture(model));
-			}
+		return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
+			String[] names = list.toArray(new String[list.size()]);
+			model.setPermissions(names);
+			return model;
 		});
-
-		return obsFut;
-
 	}
 
 	@Override

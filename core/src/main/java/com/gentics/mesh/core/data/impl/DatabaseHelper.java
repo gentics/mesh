@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.root.impl.MicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
@@ -185,6 +187,7 @@ public class DatabaseHelper {
 		LanguageRootImpl.checkIndices(database);
 		ProjectRootImpl.checkIndices(database);
 		SchemaContainerRootImpl.checkIndices(database);
+		MicroschemaContainerRootImpl.checkIndices(database);
 
 		// Nodes
 		SearchQueueImpl.checkIndices(database);
@@ -197,6 +200,7 @@ public class DatabaseHelper {
 		StringGraphFieldListImpl.checkIndices(database);
 		NodeGraphFieldListImpl.checkIndices(database);
 		TagGraphFieldContainerImpl.checkIndices(database);
+		MicronodeGraphFieldListImpl.checkIndices(database);
 
 		LanguageImpl.checkIndices(database);
 		GroupImpl.checkIndices(database);
@@ -206,6 +210,7 @@ public class DatabaseHelper {
 		TagImpl.checkIndices(database);
 		TagFamilyImpl.checkIndices(database);
 		SchemaContainerImpl.checkIndices(database);
+		MicroschemaContainerImpl.checkIndices(database);
 
 	}
 

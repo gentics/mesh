@@ -50,15 +50,11 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.util.RestModelHelper;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -211,7 +207,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User getPermissionNames(InternalActionContext ac, MeshVertex node, Handler<AsyncResult<List<String>>> handler) {
+	public Observable<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node) {
 
 		class PermResult {
 
@@ -226,8 +222,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		String mapKey = "permissions:" + node.getUuid();
 		List<String> permissions = (List<String>) ac.data().get(mapKey);
 		if (permissions != null) {
-			handler.handle(Future.succeededFuture(permissions));
-			return this;
+			return Observable.just(permissions);
 		} else {
 			List<Observable<PermResult>> futures = new ArrayList<>();
 
@@ -250,14 +245,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 			}
 
-			Observable.merge(futures).filter(res -> res.flag).map(res -> res.perm.getSimpleName()).toList().subscribe(list -> {
+			return Observable.merge(futures).filter(res -> res.flag).map(res -> res.perm.getSimpleName()).toList().map(list -> {
 				ac.data().put(mapKey, list);
-				handler.handle(Future.succeededFuture(list));
-			} , error -> {
-				handler.handle(Future.failedFuture(error));
+				return list;
 			});
+
 		}
-		return this;
 	}
 
 	@Override
@@ -367,41 +360,64 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			restUser.setLastname(getLastname());
 			restUser.setEnabled(isEnabled());
 
-			Node node = getReferencedNode();
-			if (node != null) {
-				boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
-				if (expandReference) {
-					obs.add(node.transformToRest(ac).map(transformedNode -> {
-						restUser.setNodeReference(transformedNode);
-						return restUser;
-					}));
-				} else {
-					NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
-					userNodeReference.setUuid(node.getUuid());
-					if (node.getProject() != null) {
-						userNodeReference.setProjectName(node.getProject().getName());
-					} else {
-						log.error("Project of node is null. Can't set project field of user nodeReference.");
-						// TODO handle this case
-					}
-					restUser.setNodeReference(userNodeReference);
-				}
+			// Users's node reference
+			obs.add(setNodeReference(ac, restUser));
 
-			}
-			for (Group group : getGroups()) {
-				GroupReference reference = group.transformToReference(ac);
-				restUser.getGroups().add(reference);
-			}
+			// User's groups
+			obs.add(setGroups(ac, restUser));
 
-			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restUser);
+			// User's role permissions
+			obs.add(setRolePermissions(ac, restUser));
 
-			// Add common fields
-			obs.add(fillCommonRestFields(restUser, ac));
+			// User's common fields 
+			obs.add(fillCommonRestFields(ac, restUser));
 
 			// Wait for all async processes to complete
 			return Observable.merge(obs).toBlocking().last();
 		});
+	}
+
+	private Observable<UserResponse> setGroups(InternalActionContext ac, UserResponse restUser) {
+		for (Group group : getGroups()) {
+			GroupReference reference = group.transformToReference(ac);
+			restUser.getGroups().add(reference);
+		}
+		return Observable.just(restUser);
+	}
+
+	/**
+	 * Add the node reference field to the user response (if required to)
+	 * 
+	 * @param ac
+	 * @param restUser
+	 * @return
+	 */
+	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser) {
+		Node node = getReferencedNode();
+		if (node == null) {
+			return Observable.empty();
+		} else {
+			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
+			if (expandReference) {
+				return node.transformToRest(ac).map(transformedNode -> {
+					restUser.setNodeReference(transformedNode);
+					return restUser;
+				});
+			} else {
+				NodeReferenceImpl userNodeReference = new NodeReferenceImpl();
+				userNodeReference.setUuid(node.getUuid());
+				if (node.getProject() != null) {
+					userNodeReference.setProjectName(node.getProject().getName());
+				} else {
+					log.error("Project of node is null. Can't set project field of user nodeReference.");
+					// TODO handle this case
+				}
+				restUser.setNodeReference(userNodeReference);
+				return Observable.just(restUser);
+			}
+
+		}
+
 	}
 
 	@Override
@@ -523,7 +539,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}
 						NodeRoot nodeRoot = project.getNodeRoot();
-						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().first();
+						Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM).toBlocking().last();
 						setReferencedNode(node);
 					}
 				}

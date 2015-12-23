@@ -156,10 +156,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			restProject.setRootNodeUuid(getBaseNode().getUuid());
 
 			// Add common fields
-			obsParts.add(fillCommonRestFields(restProject, ac));
+			obsParts.add(fillCommonRestFields(ac, restProject));
 
 			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restProject);
+			obsParts.add(setRolePermissions(ac, restProject));
 
 			// Merge and complete
 			return Observable.merge(obsParts).last().toBlocking().first();
@@ -207,7 +207,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
-
 		return db.trx(() -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
@@ -221,7 +220,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			return  addIndexBatch(UPDATE_ACTION);
+			return addIndexBatch(UPDATE_ACTION);
 		}).process().map(i -> this);
 	}
 

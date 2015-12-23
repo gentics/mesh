@@ -162,17 +162,17 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					return Tuple.tuple(batch, user);
 				});
 
+				reload();
 				SearchQueueBatch batch = tuple.v1();
-
+//				User createdUser = tuple.v2();
 				return batch.process().map(done -> {
 					return tuple.v2();
 				}).toBlocking().first();
 
 			});
-			
+
 			return Observable.just(createdUser);
-			
-			
+
 		} catch (IOException e) {
 			return Observable.error(e);
 		}

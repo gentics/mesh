@@ -1,5 +1,8 @@
 package com.gentics.mesh.graphdb.spi;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -36,7 +39,7 @@ public interface Database {
 	public static FramedGraph getThreadLocalGraph() {
 		FramedGraph graph = Database.threadLocalGraph.get();
 		if (graph == null) {
-			throw new NullPointerException("Could not find thread local graph. Maybe you are executing this code outside of a transaction.");
+			throw error(INTERNAL_SERVER_ERROR, "Could not find thread local graph. Maybe you are executing this code outside of a transaction.");
 		}
 		return graph;
 	}
@@ -90,7 +93,7 @@ public interface Database {
 	 * @return Object which was returned by the handler
 	 */
 	<T> T trx(TrxHandler<T> txHandler);
-	
+
 	/**
 	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
 	 * fails.

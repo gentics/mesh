@@ -19,26 +19,11 @@ import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import rx.Observable;
+
 public final class RestModelHelper {
 
 	private RestModelHelper() {
-	}
-
-	public static void setRolePermissions(InternalActionContext ac, MeshVertex sourceElement, AbstractGenericRestResponse restModel) {
-		String rolePermissionParameter = ac.getRolePermissionParameter();
-		if (!isEmpty(rolePermissionParameter)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, rolePermissionParameter, READ_PERM).toBlocking().first();
-			if (role != null) {
-				Set<GraphPermission> permSet = role.getPermissions(sourceElement);
-				Set<String> humanNames = new HashSet<>();
-				for (GraphPermission permission : permSet) {
-					humanNames.add(permission.getSimpleName());
-				}
-				String[] names = humanNames.toArray(new String[humanNames.size()]);
-				restModel.setRolePerms(names);
-			}
-		}
-
 	}
 
 	public static void setRolePermissions(InternalActionContext ac, SchemaContainerImpl sourceElement, SchemaResponse restSchema) {

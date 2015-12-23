@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,8 +12,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -182,11 +183,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			// user.getPermissionNames(ac, node);
 			// latch.countDown();
 			// } else {
-			user.getPermissionNames(ac, node, rh -> {
-				// String[] names = rh.result().toArray(new String[rh.result().size()]);
-				// permissionFuture.complete(names);
-				latch.countDown();
-			});
+			user.getPermissionNamesAsync(ac, node).toBlocking().first();
 			// }
 			// assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 		}
@@ -207,18 +204,18 @@ public class UserTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		long start = System.currentTimeMillis();
 		int nChecks = 10000;
-		CountDownLatch latch = new CountDownLatch(nChecks);
+		List<Observable<Void>> obsList = new ArrayList<>();
 		for (int i = 0; i < nChecks; i++) {
-			user().getPermissionNames(ac, language, rh -> {
-				String[] loadedPerms = rh.result().toArray(new String[rh.result().size()]);
+			obsList.add(user().getPermissionNamesAsync(ac, language).map(list -> {
+				String[] loadedPerms = list.toArray(new String[list.size()]);
 				Arrays.sort(perms);
 				Arrays.sort(loadedPerms);
 				assertArrayEquals("Permissions do not match", perms, loadedPerms);
 				assertNotNull(ac.data().get("permissions:" + language.getUuid()));
-				latch.countDown();
-			});
+				return null;
+			}));
 		}
-		failingLatch(latch);
+		Observable.merge(obsList).toBlocking().last();
 		System.out.println("Duration: " + (System.currentTimeMillis() - start));
 		System.out.println("Duration per Check: " + (System.currentTimeMillis() - start) / (double) nChecks);
 	}

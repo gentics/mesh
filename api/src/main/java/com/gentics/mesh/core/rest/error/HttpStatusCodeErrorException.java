@@ -3,8 +3,6 @@ package com.gentics.mesh.core.rest.error;
 import java.util.Map;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import rx.Observable;
 
 public class HttpStatusCodeErrorException extends RuntimeException {

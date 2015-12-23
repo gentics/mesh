@@ -33,13 +33,15 @@ public abstract class AbstractBasicObjectTest extends AbstractBasicDBTest implem
 		try (Trx tx = db.trx()) {
 			role().revokePermissions(element, perm);
 			rc.data().clear();
+			tx.success();
 		}
 
 		try (Trx tx = db.trx()) {
+			boolean hasPerm = role().hasPermission(perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getSimpleName() + "} permission on node {" + element.getUuid()
-					+ "/" + element.getType() + "} although we revoked it.", role().hasPermission(perm, element));
+					+ "/" + element.getType() + "} although we revoked it.", hasPerm);
 
-			boolean hasPerm = getRequestUser().hasPermissionAsync(ac, element, perm).toBlocking().first();
+			hasPerm = getRequestUser().hasPermissionAsync(ac, element, perm).toBlocking().first();
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getSimpleName() + "} permission on node {"
 					+ element.getUuid() + "/" + element.getType() + "} although we revoked it.", hasPerm);
 		}

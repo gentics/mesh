@@ -294,7 +294,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			try (Trx tx = trx()) {
 				handlerResult = txHandler.call();
 				handlerFinished = true;
-				break;
+				tx.success();
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
@@ -314,13 +314,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
+			if (handlerFinished) {
+				return handlerResult;
+			}
 		}
-		if (handlerFinished == true) {
-			return handlerResult;
-		} else {
-			throw new RuntimeException("Retry limit for trx exceeded");
-		}
-
+		throw new RuntimeException("Retry limit for trx exceeded");
 	}
 
 	@Override

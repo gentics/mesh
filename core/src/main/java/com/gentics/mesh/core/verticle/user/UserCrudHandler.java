@@ -62,14 +62,17 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				Observable<? extends MeshVertex> resolvedElement = MeshRoot.getInstance().resolvePathToElement(pathToElement);
 
 				Observable<UserPermissionResponse> respObs = Observable.zip(obsUser, resolvedElement, (user, targetElement) -> {
-					if (targetElement == null) {
-						throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-					}
-					UserPermissionResponse response = new UserPermissionResponse();
-					for (GraphPermission perm : user.getPermissions(ac, targetElement)) {
-						response.getPermissions().add(perm.getSimpleName());
-					}
-					return response;
+
+					return db.noTrx(() -> {
+						if (targetElement == null) {
+							throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+						}
+						UserPermissionResponse response = new UserPermissionResponse();
+						for (GraphPermission perm : user.getPermissions(ac, targetElement)) {
+							response.getPermissions().add(perm.getSimpleName());
+						}
+						return response;
+					});
 				});
 				return respObs;
 			}).toBlocking().first();

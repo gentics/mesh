@@ -84,8 +84,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	 */
 	@Override
 	@Deprecated
-	public boolean hasPermission(GraphPermission permission, MeshVertex node) {
-		return out(permission.label()).retain(node.getImpl()).hasNext();
+	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
+		return out(permission.label()).retain(vertex.getImpl()).hasNext();
 	}
 
 	@Override
@@ -127,10 +127,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			}
 
 			// Add common fields
-			obs.add(fillCommonRestFields(restRole, ac));
+			obs.add(fillCommonRestFields(ac, restRole));
 
 			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restRole);
+			obs.add(setRolePermissions(ac,  restRole));
 
 			// Merge and complete
 			return Observable.merge(obs).toBlocking().last();

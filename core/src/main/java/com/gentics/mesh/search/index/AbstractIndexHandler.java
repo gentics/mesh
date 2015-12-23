@@ -1,5 +1,8 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +21,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
@@ -76,23 +78,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 */
 	public Observable<Void> store(String uuid, String indexType) {
-		ObservableFuture<Void> obsFut = RxHelper.observableFuture();
-
-		getRootVertex().findByUuid(uuid).subscribe(element -> {
-			if (element == null) {
-				obsFut.toHandler().handle(Future
-						.failedFuture(new Exception("Element {" + uuid + "} for index type {" + indexType + "} could not be found within graph.")));
-			} else {
-				store(element, indexType).subscribe(done -> {
-					obsFut.toHandler().handle(Future.succeededFuture(done));
-				} , error -> {
-					obsFut.toHandler().handle(Future.failedFuture(error));
-				});
-			}
-		} , error -> {
-			obsFut.toHandler().handle(Future.failedFuture(error));
+		return getRootVertex().findByUuid(uuid).flatMap(element -> {
+			return db.noTrx(() -> {
+				if (element == null) {
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_index_type_not_found", uuid, indexType);
+				} else {
+					return store(element, indexType);
+				}
+			});
 		});
-		return obsFut;
 	}
 
 	protected boolean isSearchClientAvailable() {

@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import rx.Observable;
 
@@ -152,10 +151,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param ac
 	 * @param node
-	 * @param handler
-	 * @return Fluent API
 	 */
-	User getPermissionNames(InternalActionContext ac, MeshVertex node, Handler<AsyncResult<List<String>>> handler);
+	Observable<List<String>> getPermissionNamesAsync(InternalActionContext ac, MeshVertex node);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.

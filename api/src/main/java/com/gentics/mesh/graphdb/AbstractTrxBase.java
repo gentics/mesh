@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 
@@ -40,7 +41,7 @@ public class AbstractTrxBase<T extends FramedGraph> {
 		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field.
 		try {
 			setOldGraph(Database.getThreadLocalGraph());
-		} catch (NullPointerException e) {
+		} catch (HttpStatusCodeErrorException e) {
 			setOldGraph(null);
 		}
 		// Overwrite the current active threadlocal graph with the given transactional graph. This way Ferma graph elements will utilize this instance.

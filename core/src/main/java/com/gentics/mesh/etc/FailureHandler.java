@@ -49,6 +49,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
+				if(failure instanceof HttpStatusCodeErrorException) {
+					break;
+				}
 				failure = failure.getCause();
 			}
 

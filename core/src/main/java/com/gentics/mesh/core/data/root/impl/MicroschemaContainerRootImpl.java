@@ -28,6 +28,10 @@ import rx.Observable;
 
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(MicroschemaContainerRootImpl.class);
+	}
+
 	@Override
 	protected Class<? extends MicroschemaContainer> getPersistanceClass() {
 		return MicroschemaContainerImpl.class;

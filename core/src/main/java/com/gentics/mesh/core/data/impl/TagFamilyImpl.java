@@ -40,7 +40,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -158,10 +157,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			restTagFamily.setName(getName());
 
 			// Add common fields
-			obs.add(fillCommonRestFields(restTagFamily, ac));
+			obs.add(fillCommonRestFields(ac, restTagFamily));
 
 			// Role permissions
-			RestModelHelper.setRolePermissions(ac, this, restTagFamily);
+			obs.add(setRolePermissions(ac, restTagFamily));
 
 			// Merge and complete
 			return Observable.merge(obs).toBlocking().first();
