@@ -21,6 +21,7 @@ public class MeshOptions {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String MESH_SESSION_KEY = "mesh.session";
+	public static final String JWT_TOKEN_KEY = "mesh.token";
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 

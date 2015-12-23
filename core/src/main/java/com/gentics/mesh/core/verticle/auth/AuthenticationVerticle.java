@@ -9,11 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.InternalHttpActionContext;
 
 @Component
 @Scope("singleton")
@@ -33,28 +31,16 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		
 		route("/me").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleMe(InternalActionContext.create(rc));
+			restHandler.handleMe(InternalHttpActionContext.create(rc));
 		});
 
 		route("/login").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleLogin(InternalActionContext.create(rc));
+			restHandler.handleLogin(InternalHttpActionContext.create(rc));
 		});
 
 		route("/logout").handler(springConfiguration.authHandler());
 		route("/logout").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleLogout(InternalActionContext.create(rc));
-		});
-		
-		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.JWT) {
-			route("/refresh").handler(springConfiguration.authHandler());
-			route("/refresh").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-				if (restHandler instanceof JWTAuthRestHandler) {
-					JWTAuthRestHandler jwtRestHandler = (JWTAuthRestHandler)restHandler;
-					jwtRestHandler.handleRefresh(InternalActionContext.create(rc));
-				} else {
-					throw new IllegalStateException("RestHandler must be JWTAuthRestHandler. Check your java code!");
-				}
-			});
-		}
+			restHandler.handleLogout(InternalHttpActionContext.create(rc));
+		});		
 	}
 }

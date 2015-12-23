@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.json.JsonObject;
@@ -25,7 +26,7 @@ public class BasicAuthRestHandler extends AbstractHandler implements Authenticat
 	 * @param ac
 	 */
 	@Override
-	public void handleMe(InternalActionContext ac) {
+	public void handleMe(InternalHttpActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			MeshAuthUser requestUser = ac.getUser();
 			transformAndResponde(ac, requestUser, OK);
@@ -38,7 +39,7 @@ public class BasicAuthRestHandler extends AbstractHandler implements Authenticat
 	 * @param ac
 	 */
 	@Override
-	public void handleLogin(InternalActionContext ac) {
+	public void handleLogin(InternalHttpActionContext ac) {
 		try {
 			LoginRequest request = JsonUtil.readValue(ac.getBodyAsString(), LoginRequest.class);
 			// TODO fail on missing field
@@ -64,7 +65,7 @@ public class BasicAuthRestHandler extends AbstractHandler implements Authenticat
 	 * @param ac
 	 */
 	@Override
-	public void handleLogout(InternalActionContext ac) {
+	public void handleLogout(InternalHttpActionContext ac) {
 		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");
 		ac.send(JsonUtil.toJson(message), OK);

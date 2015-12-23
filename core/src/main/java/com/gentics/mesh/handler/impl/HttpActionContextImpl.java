@@ -15,6 +15,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 public class HttpActionContextImpl extends AbstractActionContext implements HttpActionContext {
 
@@ -92,8 +93,12 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 
 	@Override
 	public void logout() {
-		rc.session().destroy();
+		Session session = rc.session();
+		if (session != null) {
+			session.destroy();
+		}
 		rc.addCookie(Cookie.cookie(MeshOptions.MESH_SESSION_KEY, "deleted").setMaxAge(0));
+		rc.addCookie(Cookie.cookie(MeshOptions.JWT_TOKEN_KEY, "deleted").setMaxAge(0));
 		rc.clearUser();
 	}
 

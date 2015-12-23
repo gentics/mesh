@@ -74,7 +74,6 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	
 	/**
 	 * Authenticates the user and returns a JWToken if successful.
-	 * @param authInfo JsonObject that has fields "username" and "password" set.
 	 * @return
 	 */
 	public void generateToken(String username, String password, Handler<AsyncResult<String>> resultHandler) {
@@ -92,7 +91,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	}
 
 	/**
-	 * Generates a new JWToken with the provided uuid
+	 * Generates a new JWToken with the provided user uuid
 	 * @param userUuid
 	 * @return The new token
 	 */

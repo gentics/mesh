@@ -12,8 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
-import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
+import com.gentics.mesh.auth.MeshJWTAuthHandler;
+import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
@@ -40,7 +41,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.handler.impl.SessionHandlerImpl;
@@ -144,7 +144,7 @@ public class MeshSpringConfiguration {
 	public AuthHandler authHandler() {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return JWTAuthHandler.create(authProvider());
+			return MeshJWTAuthHandler.create(authProvider());
 		case BASIC_AUTH:
 		default:
 			return new MeshBasicAuthHandler(authProvider());

@@ -14,14 +14,18 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
+
+import io.vertx.ext.web.Cookie;
 
 @Component
 public class JWTAuthRestHandler extends AbstractHandler implements AuthenticationRestHandler{
 
+	public static final String TOKEN_COOKIE_KEY = "mesh.token";
+	
 	@Override
-	public void handleMe(InternalActionContext ac) {
+	public void handleMe(InternalHttpActionContext ac) {
 		db.asyncNoTrx(tx -> {
 			MeshAuthUser requestUser = ac.getUser();
 			transformAndResponde(ac, requestUser, OK);
@@ -29,7 +33,7 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 	}
 
 	@Override
-	public void handleLogin(InternalActionContext ac) {
+	public void handleLogin(InternalHttpActionContext ac) {
 		MeshJWTAuthProvider provider = getAuthProvider();
 		
 		try {
@@ -47,7 +51,8 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 				if (rh.failed()) {
 					ac.fail(UNAUTHORIZED, "auth_login_failed", rh.cause());
 				} else {
-					ac.sendMessage(OK, "ok");
+					ac.addCookie(Cookie.cookie(TOKEN_COOKIE_KEY, rh.result()).setPath("/"));
+					ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 				}
 			});
 		} catch (Exception e) {
@@ -56,25 +61,10 @@ public class JWTAuthRestHandler extends AbstractHandler implements Authenticatio
 	}
 
 	@Override
-	public void handleLogout(InternalActionContext ac) {
+	public void handleLogout(InternalHttpActionContext ac) {
+		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");
 		ac.send(JsonUtil.toJson(message), OK);
-	}
-	
-	/**
-	 * Refreshes the web token. Requires a valid token and user.
-	 * @param ac
-	 */
-	public void handleRefresh(InternalActionContext ac) {
-		MeshJWTAuthProvider provider = getAuthProvider();
-		
-		MeshAuthUser user = ac.getUser();
-		if (user == null) {
-			ac.fail(UNAUTHORIZED, "auth_login_failed");
-			return;
-		}
-		String token = provider.generateToken(ac.getUser());
-		ac.send(JsonUtil.toJson(new TokenResponse(token)), OK);
 	}
 	
 	/**
