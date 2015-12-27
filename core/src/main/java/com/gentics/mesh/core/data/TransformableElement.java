@@ -19,8 +19,6 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * 
 	 * @param ac
 	 *            Context of the calling action
-	 * @param handler
-	 *            Handler that is invoked when transformation failed or succeeded.
 	 */
 	Observable<T> transformToRest(InternalActionContext ac);
 

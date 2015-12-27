@@ -334,6 +334,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			obs.add(setRolePermissions(ac, restNode));
 
 			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
+
+			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
 
 			// Fields

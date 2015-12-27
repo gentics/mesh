@@ -48,7 +48,7 @@ public final class MeshAssert {
 
 	public static int getTimeout() throws UnknownHostException {
 		int timeout = CI_TIMEOUT_SECONDS;
-		if (TestUtil.isHost("NeXuS") || TestUtil.isHost("satan3.office")) {
+		if (TestUtil.isHost("plexus") || TestUtil.isHost("satan3.office")) {
 			timeout = DEV_TIMEOUT_SECONDS;
 		}
 		if (log.isDebugEnabled()) {

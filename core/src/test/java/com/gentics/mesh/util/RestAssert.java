@@ -127,13 +127,13 @@ public class RestAssert {
 		assertNotNull(node.getCreator());
 	}
 
-	public void assertMeshNode(Node node, NodeResponse readValue) {
-		assertGenericNode(node, readValue);
+	public void assertMeshNode(Node node, NodeResponse restNode) {
+		assertGenericNode(node, restNode);
 		SchemaContainer schema = node.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
-		assertEquals(schema.getName(), readValue.getSchema().getName());
-		assertEquals(schema.getUuid(), readValue.getSchema().getUuid());
-		assertNotNull(readValue.getParentNode().getUuid());
+		assertEquals(schema.getName(), restNode.getSchema().getName());
+		assertEquals(schema.getUuid(), restNode.getSchema().getUuid());
+		assertNotNull(restNode.getParentNode().getUuid());
 		// TODO match fields
 
 	}
