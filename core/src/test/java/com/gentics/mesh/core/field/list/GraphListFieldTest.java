@@ -39,7 +39,7 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		assertEquals(2, list.getList().size());
 		list.createString("3").setString("Some string 3");
 		assertEquals(3, list.getList().size());
-		assertEquals("Some string 3", list.getList().get(0).getString());
+		assertEquals("Some string 3", list.getList().get(2).getString());
 
 		StringGraphFieldList loadedList = container.getStringList("dummyList");
 		assertNotNull(loadedList);

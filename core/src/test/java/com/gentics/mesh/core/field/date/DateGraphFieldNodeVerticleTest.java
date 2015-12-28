@@ -65,7 +65,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() {
+	public void testReadNodeWithExistingField() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 
 		Node node = folder("2015");

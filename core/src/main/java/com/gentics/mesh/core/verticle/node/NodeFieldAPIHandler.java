@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
@@ -35,14 +35,12 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.FileUtils;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.file.FileSystem;
 import rx.Observable;
 
 @Component
@@ -85,7 +83,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	public void handleCreateField(RoutingContext rc) {
 
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			String languageTag = ac.getParameter("languageTag");
 			String fieldName = ac.getParameter("fieldName");
@@ -101,7 +99,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				}
 
 				FieldSchema fieldSchema = node.getSchema().getFieldSchema(fieldName);
-
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "The schema definition for field {" + fieldName + "} could not be found.");
+				}
+				if (!(fieldSchema instanceof BinaryFieldSchema)) {
+					//TODO Add support for other field types
+					throw error(BAD_REQUEST,
+							"The found field schema for field {" + fieldName + "} is not a binary field schema. Other types are not yet supported");
+				}
 				BinaryGraphField field = container.createBinary(fieldName);
 				if (field == null) {
 					// ac.fail(BAD_REQUEST, "Binary field {" + fieldName + "} could not be found.");
@@ -158,7 +163,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					log.error("Could not load schema for node {" + node.getUuid() + "}");
 					throw e;
 				}
-			}).flatMap(x->x).toBlocking().first();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 
 	}
@@ -169,7 +174,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -179,7 +184,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -189,7 +194,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -199,7 +204,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -208,17 +213,17 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node -> {
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().first();
+			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleMoveFieldItem(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -240,100 +245,80 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	/**
+	 * Hash the file upload data and move the temporary uploaded file to its final destination.
 	 * 
 	 * @param ac
 	 * @param fileUpload
+	 *            Upload which will be handled
 	 * @param uuid
 	 * @param segmentedPath
 	 * @return
 	 */
 	private Observable<String> hashAndMoveBinaryFile(ActionContext ac, FileUpload fileUpload, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
+		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
+		FileSystem fileSystem = rxVertx.fileSystem();
 
-		return Observable.create(sub -> {
+		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
+		File targetFile = new File(uploadFolder, uuid + ".bin");
+		String targetPath = targetFile.getAbsolutePath();
 
-			AtomicReference<String> hashSum = new AtomicReference<>();
-			// Handler that is invoked when the fileupload folder was checked and created if missing.
-			Handler<AsyncResult<File>> targetFolderChecked = tfc -> {
-				if (tfc.succeeded()) {
-					File targetFolder = tfc.result();
-					File targetFile = new File(targetFolder, uuid + ".bin");
-					String targetPath = targetFile.getAbsolutePath();
-					if (log.isDebugEnabled()) {
-						log.debug("Moving file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
-					}
-					fileSystem.exists(targetPath, eh -> {
-						if (eh.failed()) {
-							sub.onError(eh.cause());
-						}
-						if (eh.result()) {
-							fileSystem.delete(targetPath, dh -> {
-								if (dh.succeeded()) {
-									fileSystem.move(fileUpload.uploadedFileName(), targetPath, mh -> {
-										if (mh.succeeded()) {
-											sub.onNext(hashSum.get());
-											sub.onCompleted();
-										} else {
-											log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-											sub.onError(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
-										}
-									});
-								} else {
-									sub.onError(eh.cause());
-								}
-							});
-						} else {
-							fileSystem.move(fileUpload.uploadedFileName(), targetPath, mh -> {
-								if (mh.succeeded()) {
-									sub.onNext(hashSum.get());
-									sub.onCompleted();
-								} else {
-									log.error("Failed to move file to {" + targetPath + "}", mh.cause());
-									sub.onError(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", mh.cause()));
-								}
-							});
-						}
+		// Check of target path
+		Observable<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).doOnError(error -> {
+			log.error("Unable to check existence of file at location {" + targetPath + "}");
+		});
 
-					});
+		// Deleting of existing binary file
+		Observable<Void> obsDeleteExisting = fileSystem.deleteObservable(targetPath).doOnError(error -> {
+			log.error("Error while attempting to delete target file {" + targetPath + "}", error);
+		});
+		Observable<Void> obsPotentialUploadDeleted = obsUploadExistsCheck.flatMap(uploadAlreadyExists -> {
+			if (uploadAlreadyExists) {
+				return obsDeleteExisting.map(e -> {
+					return null;
+				});
+			}
+			return Observable.empty();
+		});
 
-				} else {
-					sub.onError(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", tfc.cause()));
-				}
-			};
+		// Moving of upload to final destination
+		Observable<Void> obsMovedUpload = fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).doOnError(error -> {
+			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+		});
 
-			FileUtils.generateSha512Sum(fileUpload.uploadedFileName(), hash -> {
-				if (hash.succeeded()) {
-					hashSum.set(hash.result());
-					File folder = new File(uploadOptions.getDirectory(), segmentedPath);
-					if (log.isDebugEnabled()) {
-						log.debug("Creating folder {" + folder.getAbsolutePath() + "}");
-					}
-					fileSystem.exists(folder.getAbsolutePath(), deh -> {
-						if (deh.succeeded()) {
-							if (!deh.result()) {
-								fileSystem.mkdirs(folder.getAbsolutePath(), mkh -> {
-									if (mkh.succeeded()) {
-										targetFolderChecked.handle(Future.succeededFuture(folder));
-									} else {
-										log.error("Failed to create target folder {" + folder.getAbsolutePath() + "}", mkh.cause());
-										sub.onError(error(BAD_REQUEST, "node_error_upload_failed"));
-									}
-								});
-							} else {
-								targetFolderChecked.handle(Future.succeededFuture(folder));
-							}
-						} else {
-							log.error("Could not check whether target directory {" + folder.getAbsolutePath() + "} exists.", deh.cause());
-							sub.onError(error(BAD_REQUEST, "node_error_upload_failed", deh.cause()));
-						}
-					});
-				} else {
-					sub.onError(error(BAD_REQUEST, "node_error_hashing_failed"));
-				}
+		// Hashing of upload data
+		Observable<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
+			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "} for {" + uuid + "}", error);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+		});
+
+		// Creation of upload directory
+		Observable<Void> obsUploadFolderCreated = fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+			log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
+			throw error(BAD_REQUEST, "node_error_upload_failed", error);
+		});
+
+		// Checking of upload folder, Create the upload folder if needed
+		Observable<Boolean> obsFolderExists = fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+			log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
+			throw error(BAD_REQUEST, "node_error_upload_failed", error);
+		});
+		Observable<Void> obsFolderChecked = obsFolderExists.flatMap(folderExists -> {
+			if (!folderExists) {
+				// Folder does not exists so lets create it
+				return obsUploadFolderCreated;
+			}
+			return Observable.empty();
+		});
+
+		// Combined observable. We need the hash, we need to make sure the upload folder is checked and eventually created and we need to make sure that the potential existing upload file is deleted before we can move the upload in place.
+		return Observable.merge(obsHash, obsFolderChecked, obsPotentialUploadDeleted).flatMap(e -> {
+			return obsMovedUpload.flatMap(done -> {
+				return obsHash;
 			});
 		});
 
-	}
+	};
 
 }

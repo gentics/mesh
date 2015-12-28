@@ -94,7 +94,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() throws IOException {
+	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());

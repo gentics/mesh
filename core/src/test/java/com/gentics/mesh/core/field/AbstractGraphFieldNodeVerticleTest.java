@@ -119,7 +119,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	 * 
 	 * @throws IOException
 	 */
-	abstract public void testReadNodeWithExitingField() throws IOException;
+	abstract public void testReadNodeWithExistingField() throws IOException;
 
 	/**
 	 * Update a node with a currently filled field. Change the field and make sure the changes were applied correctly.

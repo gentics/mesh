@@ -8,8 +8,9 @@ import java.security.MessageDigest;
 
 import com.gentics.mesh.Mesh;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.rx.java.RxHelper;
+import rx.Observable;
+import rx.Scheduler;
 
 public final class FileUtils {
 
@@ -22,10 +23,10 @@ public final class FileUtils {
 	 * Generate a SHA 512 checksum from the given file and asynchronously return the hex encoded hash as a string.
 	 * 
 	 * @param path
-	 * @param hashHandler
 	 */
-	public static void generateSha512Sum(String path, Handler<AsyncResult<String>> hashHandler) {
-		Mesh.vertx().executeBlocking(bc -> {
+	public static Observable<String> generateSha512Sum(String path) {
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Observable<String> obs = Observable.create(sub -> {
 			try {
 				MessageDigest md = MessageDigest.getInstance("SHA-512");
 				try (InputStream is = Files.newInputStream(Paths.get(path))) {
@@ -33,11 +34,14 @@ public final class FileUtils {
 					/* Read stream to EOF as normal... */
 				}
 				byte[] digest = md.digest();
-				bc.complete(bytesToHex(digest));
+				sub.onNext(bytesToHex(digest));
+				sub.onCompleted();
 			} catch (Exception e) {
-				bc.fail(e);
+				sub.onError(e);
 			}
-		} , hashHandler);
+		});
+		obs = obs.observeOn(scheduler);
+		return obs;
 	}
 
 	/**

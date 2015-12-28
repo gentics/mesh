@@ -48,7 +48,7 @@ public class SelectGraphFieldNodeVericleTest extends AbstractGraphFieldNodeVerti
 	@Test
 	@Override
 	@Ignore
-	public void testReadNodeWithExitingField() {
+	public void testReadNodeWithExistingField() {
 		throw new NotImplementedException();
 	}
 

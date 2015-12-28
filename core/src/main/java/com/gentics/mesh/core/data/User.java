@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 
-import io.vertx.core.Handler;
 import rx.Observable;
 
 /**
@@ -126,7 +125,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	boolean hasPermissionSync(InternalActionContext ac, MeshVertex vertex, GraphPermission permission);
 
 	/**
-	 * Check whether the user has the given permission for the given vertex. Invoke the handler with the result.
+	 * Check whether the user has the given permission for the given vertex.
 	 * 
 	 * @param ac
 	 * @param vertex
@@ -140,14 +139,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param ac
 	 * @param vertex
 	 * @return
-	 * @deprecated Use {@link #getPermissionNames(InternalActionContext, MeshVertex, Handler)} instead.
+	 * @deprecated Use {@link #getPermissionNames(InternalActionContext, MeshVertex)} instead.
 	 * 
 	 */
 	@Deprecated
 	String[] getPermissionNames(InternalActionContext ac, MeshVertex vertex);
 
 	/**
-	 * Collect the permissions names for the given vertex and invoke the handler with the result.
+	 * Collect the permissions names for the given vertex.
 	 * 
 	 * @param ac
 	 * @param node

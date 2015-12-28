@@ -272,7 +272,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() {
+	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());

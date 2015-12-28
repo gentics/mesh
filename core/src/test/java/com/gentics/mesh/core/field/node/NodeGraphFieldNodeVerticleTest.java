@@ -131,7 +131,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() throws IOException {
+	public void testReadNodeWithExistingField() throws IOException {
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 

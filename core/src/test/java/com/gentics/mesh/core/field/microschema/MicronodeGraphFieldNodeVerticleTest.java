@@ -118,7 +118,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() throws IOException {
+	public void testReadNodeWithExistingField() throws IOException {
 		MicroschemaContainer microschema = microschemaContainers().get("vcard");
 		Node node = folder("2015");
 

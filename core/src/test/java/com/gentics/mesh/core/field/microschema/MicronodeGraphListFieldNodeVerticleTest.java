@@ -51,7 +51,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() throws IOException {
+	public void testReadNodeWithExistingField() throws IOException {
 		// TODO Auto-generated method stub
 
 	}

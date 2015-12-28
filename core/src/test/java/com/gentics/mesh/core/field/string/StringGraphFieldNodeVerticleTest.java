@@ -63,7 +63,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Test
 	@Override
-	public void testReadNodeWithExitingField() {
+	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		StringGraphField stringField = container.createString("stringField");

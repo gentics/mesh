@@ -45,25 +45,32 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
 	}
 
+	/**
+	 * Prepare the schema of the given node by adding the binary content field to its schema fields. This method will also update the clientside schema storage.
+	 * 
+	 * @param node
+	 * @param mimeTypeWhitelist
+	 * @throws IOException
+	 */
 	protected void prepareSchema(Node node, String mimeTypeWhitelist) throws IOException {
 		// Update the schema and enable binary support for folders
 		Schema schema = node.getSchemaContainer().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName("binary").setLabel("Binary content"));
 		node.getSchemaContainer().setSchema(schema);
-		
+
 		getClient().getClientSchemaStorage().addSchema(schema);
 		// schema.set
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	protected Future<GenericMessageResponse> updateBinaryField(Node node, String languageTag, String fieldKey, int binaryLen, String contentType, String fileName)
-			throws IOException {
+	protected Future<GenericMessageResponse> updateBinaryField(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+			String fileName) throws IOException {
 
 		resetClientSchemaStorage();
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 
-		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag,  fieldKey, buffer, fileName, contentType);
+		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldKey, buffer, fileName, contentType);
 	}
 
 }
