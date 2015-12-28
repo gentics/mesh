@@ -125,14 +125,19 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			T result = db.noTrx(() -> {
 				MeshAuthUser requestUser = ac.getUser();
 				String elementUuid = element.getUuid();
-				return requestUser.hasPermissionAsync(ac, element, perm).map(hasPerm -> {
-					if (hasPerm) {
-						return element;
-					} else {
-						throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-					}
-				});
-			}).toBlocking().last();
+				if (requestUser.hasPermissionSync(ac, element, perm)) {
+					return element;
+				}else {
+					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+				}
+				//				return requestUser.hasPermissionAsync(ac, element, perm).map(hasPerm -> {
+				//					if (hasPerm) {
+				//						return element;
+				//					} else {
+				//						throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+				//					}
+				//				});
+			});
 
 			return result;
 		});

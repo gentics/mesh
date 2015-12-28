@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
 public class NodeGraphFieldNodeTest extends AbstractBasicDBTest {
+	final String NODE_FIELD_NAME = "nodeField";
 
 	@Autowired
 	private ServerSchemaStorage schemaStorage;
@@ -26,25 +27,29 @@ public class NodeGraphFieldNodeTest extends AbstractBasicDBTest {
 	@Test
 	public void testNodeFieldTransformation() throws Exception {
 		Node newsNode = folder("news");
-
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
+
+		// 1. Create the node field schema and add it to the schema of the node
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
-		nodeFieldSchema.setName("nodeField");
+		nodeFieldSchema.setName(NODE_FIELD_NAME);
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
 		node.getSchemaContainer().setSchema(schema);
+		schemaStorage.addSchema(node.getSchema());
 
+		// 2. Add the node reference to the node fields
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		container.createNode("nodeField", newsNode);
+		container.createNode(NODE_FIELD_NAME, newsNode);
 
+		// 3. Transform the node to json and examine the data
 		String json = getJson(node);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
 
-		NodeField deserializedNodeField = response.getField("nodeField", NodeFieldImpl.class);
-		assertNotNull(deserializedNodeField);
+		NodeField deserializedNodeField = response.getField(NODE_FIELD_NAME, NodeFieldImpl.class);
+		assertNotNull("The field {" + NODE_FIELD_NAME + "} should not be null. Json: {" + json  +"}", deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}
 

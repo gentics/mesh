@@ -350,7 +350,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public Observable<UserResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.asyncNoTrx2(() -> {
+		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<UserResponse>> obs = new HashSet<>();
 			UserResponse restUser = new UserResponse();
 

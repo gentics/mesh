@@ -64,7 +64,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -279,7 +278,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<NodeResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
@@ -333,12 +332,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Role permissions
 			obs.add(setRolePermissions(ac, restNode));
 
-			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
-
 			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
 
 			// Fields
+			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
 			if (fieldContainer == null) {
 				List<String> languageTags = ac.getSelectedLanguageTags();
 				String langInfo = getLanguageInfo(languageTags);
@@ -399,7 +397,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Merge and complete
-			return Observable.merge(obs).toBlocking().first();
+			return Observable.merge(obs).last();
 
 		});
 	}
@@ -539,8 +537,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				try {
 					Schema schema = getSchema();
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-				} catch (MeshSchemaException e) {
-					// TODO i18n
+				} catch (HttpStatusCodeErrorException e) {
 					throw error(BAD_REQUEST, "node_update_failed", e);
 				}
 				return addIndexBatch(UPDATE_ACTION);

@@ -125,39 +125,40 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
-			try {
-				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
-					Schema schema = schemaContainer.getSchema();
-					String body = ac.getBodyAsString();
+			Observable<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTrx(() -> {
+				Schema schema = schemaContainer.getSchema();
+				String body = ac.getBodyAsString();
 
-					NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
-					if (isEmpty(requestModel.getParentNodeUuid())) {
-						throw error(BAD_REQUEST, "node_missing_parentnode_field");
-					}
-					if (isEmpty(requestModel.getLanguage())) {
-						throw error(BAD_REQUEST, "node_no_languagecode_specified");
-					}
-					requestUser.reload();
-					project.reload();
-					// Load the parent node in order to create the node
-					Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).toBlocking().first();
-					Node node = parentNode.create(requestUser, schemaContainer, project);
-					requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
-					node.setPublished(requestModel.isPublished());
-					Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
-					if (language == null) {
-						throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
-					}
-					NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
-					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-					SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
-					return Tuple.tuple(batch, node);
+				NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
+				if (isEmpty(requestModel.getParentNodeUuid())) {
+					throw error(BAD_REQUEST, "node_missing_parentnode_field");
+				}
+				if (isEmpty(requestModel.getLanguage())) {
+					throw error(BAD_REQUEST, "node_no_languagecode_specified");
+				}
+				requestUser.reload();
+				project.reload();
+				// Load the parent node in order to create the node
+				return project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).map(parentNode -> {
+					return db.trx(() -> {
+						Node node = parentNode.create(requestUser, schemaContainer, project);
+						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
+						node.setPublished(requestModel.isPublished());
+						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+						if (language == null) {
+							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+						}
+						NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
+						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						return Tuple.tuple(batch, node);
+					});
 				});
+			});
+			return obsTuple.flatMap(tuple -> {
 				return tuple.v1().process().map(i -> tuple.v2());
+			});
 
-			} catch (Exception e) {
-				return Observable.error(e);
-			}
 		});
 	}
 
@@ -165,8 +166,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Observable<Node> create(InternalActionContext ac) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
-		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
 
 		return db.noTrx(() -> {
 
@@ -205,7 +204,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					});
 
 				} else {
-					throw error(NOT_FOUND,"schema_not_found", schemaInfo.getSchema().getName());
+					throw error(NOT_FOUND, "schema_not_found", schemaInfo.getSchema().getName());
 				}
 			} else {
 				throw error(BAD_REQUEST, "error_schema_parameter_missing");

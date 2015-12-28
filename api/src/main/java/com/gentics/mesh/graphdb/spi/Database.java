@@ -139,12 +139,13 @@ public interface Database {
 	<T> Observable<T> asyncNoTrx(TrxHandler<T> trxHandler);
 
 	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
+	 * Asynchronously execute the trxHandler within the scope of a non transaction. Experimental implementation. This version will use RxJava schedulers to
+	 * execute the given observable within the scope of a transaction.
 	 * 
 	 * @param trxHandler
 	 * @return
 	 */
-	<T> Observable<T> asyncNoTrx2(TrxHandler<Observable<T>> trxHandler);
+	<T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler);
 
 	/**
 	 * Initialize the database and store the settings.

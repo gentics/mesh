@@ -5,7 +5,6 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -33,9 +32,8 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 * @param ac
 	 * @param fields
 	 * @param schema
-	 * @throws MeshSchemaException
 	 */
-	void updateFieldsFromRest(ActionContext ac, Map<String, Field> fields, Schema schema) throws MeshSchemaException;
+	void updateFieldsFromRest(ActionContext ac, Map<String, Field> fields, Schema schema);
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists

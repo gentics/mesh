@@ -133,7 +133,7 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public <T> Observable<T> asyncNoTrx2(TrxHandler<Observable<T>> trxHandler) {
+	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		Observable<T> obs = Observable.create(sub -> {
 

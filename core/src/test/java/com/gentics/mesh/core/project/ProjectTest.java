@@ -99,8 +99,8 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNull(meshRoot().getProjectRoot().findByName("bogus"));
-		assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
+		assertNull(meshRoot().getProjectRoot().findByName("bogus").toBlocking().last());
+		assertNotNull(meshRoot().getProjectRoot().findByName("dummy").toBlocking().last());
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -15,6 +16,7 @@ import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -69,9 +71,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		return schemaContainer;
 	}
 
-	private void validate(Schema schema) throws MeshSchemaException {
+	private void validate(Schema schema) throws HttpStatusCodeErrorException {
 		if (StringUtils.isEmpty(schema.getDisplayField())) {
-			throw new MeshSchemaException("The displayField must not be empty");
+			throw error(BAD_REQUEST, "The displayField must not be empty");
 		}
 
 	}
@@ -124,10 +126,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 					SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					return Tuple.tuple(batch, container);
 				});
-				
-				SearchQueueBatch  batch = tuple.v1();
+
+				SearchQueueBatch batch = tuple.v1();
 				SchemaContainer createdContainer = tuple.v2();
-				
+
 				return batch.process().map(done -> createdContainer);
 			}
 		} catch (Exception e1) {

@@ -70,7 +70,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
@@ -90,9 +89,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	private void failOnMissingMandatoryField(ActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key, Schema schema)
-			throws MeshSchemaException {
+			throws HttpStatusCodeErrorException {
 		if (field == null && fieldSchema.isRequired() && restField == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_error_missing_mandatory_field_value", key, schema.getName()));
+			throw error(BAD_REQUEST, "node_error_missing_mandatory_field_value", key, schema.getName());
 		}
 	}
 
@@ -107,7 +106,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void updateFieldsFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) throws MeshSchemaException {
+	public void updateFieldsFromRest(ActionContext ac, Map<String, Field> restFields, Schema schema) {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -376,23 +375,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				// Load microschema by name
 				if (!isEmpty(microschemaName)) {
 					microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().first();
-//					if (microschemaContainer == null) {
-//						//TODO i18n
-//						throw error(BAD_REQUEST, "Could not find microschema for name {" + microschemaName + "}");
-//					}
+					//					if (microschemaContainer == null) {
+					//						//TODO i18n
+					//						throw error(BAD_REQUEST, "Could not find microschema for name {" + microschemaName + "}");
+					//					}
 				}
 
 				if (isEmpty(microschemaUuid)) {
 					microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().first();
-//					if (microschemaContainer == null) {
-//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
-//					}
+					//					if (microschemaContainer == null) {
+					//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
+					//					}
 				}
 
-//				if (microschemaContainer == null) {
-//					//TODO i18n
-//					throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}");
-//				}
+				//				if (microschemaContainer == null) {
+				//					//TODO i18n
+				//					throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}");
+				//				}
 
 				Micronode micronode = null;
 				MicronodeGraphField micronodeGraphField = getMicronode(key);

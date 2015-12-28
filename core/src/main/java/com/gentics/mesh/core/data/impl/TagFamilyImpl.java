@@ -148,7 +148,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public Observable<TagFamilyResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.asyncNoTrx2(() -> {
+		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
 
 			TagFamilyResponse restTagFamily = new TagFamilyResponse();
