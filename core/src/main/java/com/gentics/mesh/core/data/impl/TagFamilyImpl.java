@@ -150,7 +150,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public Observable<TagFamilyResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrx2(() -> {
 			Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
 
 			TagFamilyResponse restTagFamily = new TagFamilyResponse();
@@ -163,7 +163,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			obs.add(setRolePermissions(ac, restTagFamily));
 
 			// Merge and complete
-			return Observable.merge(obs).toBlocking().first();
+			return Observable.merge(obs).last();
 
 		});
 	}

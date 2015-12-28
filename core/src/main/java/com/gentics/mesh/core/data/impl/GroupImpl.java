@@ -144,7 +144,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public Observable<GroupResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrx2(() -> {
 
 			Set<Observable<GroupResponse>> obs = new HashSet<>();
 
@@ -178,7 +178,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			obs.add(setRolePermissions(ac, restGroup));
 
 			// Merge and complete
-			return Observable.merge(obs).toBlocking().first();
+			return Observable.merge(obs).last();
 		});
 	}
 
