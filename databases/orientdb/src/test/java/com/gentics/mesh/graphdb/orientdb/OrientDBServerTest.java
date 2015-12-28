@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
@@ -16,6 +17,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Vertx;
 
+@Ignore
 public class OrientDBServerTest {
 
 	private Database db = new OrientDBDatabase();
