@@ -88,17 +88,17 @@ public interface Database {
 	/**
 	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
 	 * 
-	 * @param txHandler
+	 * @param trxHandler
 	 *            Handler that will be executed within the scope of the transaction.
 	 * @return Object which was returned by the handler
 	 */
-	<T> T trx(TrxHandler<T> txHandler);
+	<T> T trx(TrxHandler<T> trxHandler);
 
 	/**
-	 * Asynchronously execute the txHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
+	 * Asynchronously execute the trxHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
 	 * fails.
 	 * 
-	 * @param txHandler
+	 * @param trxHandler
 	 *            Handler that will be executed within the scope of the transaction.
 	 * @return Observable that will emit the object when the transaction has completed
 	 */
@@ -131,15 +131,21 @@ public interface Database {
 	<T> T noTrx(TrxHandler<T> txHandler);
 
 	/**
-	 * Asynchronously execute the txHandler within the scope of a non transaction.
+	 * Asynchronously execute the trxHandler within the scope of a non transaction.
 	 * 
 	 * @param trxHandler
 	 * @return
 	 */
 	<T> Observable<T> asyncNoTrx(TrxHandler<T> trxHandler);
-	
+
+	/**
+	 * Asynchronously execute the trxHandler within the scope of a non transaction.
+	 * 
+	 * @param trxHandler
+	 * @return
+	 */
 	<T> Observable<T> asyncNoTrx2(TrxHandler<Observable<T>> trxHandler);
-	
+
 	/**
 	 * Initialize the database and store the settings.
 	 * 

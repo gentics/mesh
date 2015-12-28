@@ -32,7 +32,7 @@ public interface ListFieldSchema extends FieldSchema {
 	/**
 	 * Set the maximum of items that the list can hold.
 	 * 
-	 * @param max
+	 * @param max The max item limit
 	 * @return Fluent API
 	 */
 	ListFieldSchema setMax(Integer max);

@@ -49,7 +49,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().first();
 		assertNotNull(schemaContainer);
 		assertEquals("content", schemaContainer.getSchema().getName());
-		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235"));
+		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().last());
 	}
 
 	@Test
