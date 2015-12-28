@@ -567,15 +567,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			parent = parent.getParentNode();
 		}
 
-//		try {
-			if (!targetNode.getSchema().isFolder()) {
-				throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
-			}
-//		} catch (Exception e) {
-//			log.error("Could not load schema for target node during move action", e);
-//			// TODO maybe add better i18n error
-//			throw error(BAD_REQUEST, "error");
-//		}
+		if (!targetNode.getSchema().isFolder()) {
+			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
+		}
 
 		if (getUuid().equals(targetNode.getUuid())) {
 			throw error(BAD_REQUEST, "node_move_error_same_nodes");
