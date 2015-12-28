@@ -35,12 +35,12 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	protected Class<? extends Group> getPersistanceClass() {
+	public Class<? extends Group> getPersistanceClass() {
 		return GroupImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_GROUP;
 	}
 

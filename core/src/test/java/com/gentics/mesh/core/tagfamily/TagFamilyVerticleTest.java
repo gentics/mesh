@@ -105,7 +105,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadMultiple2() {
 		TagFamily tagFamily = tagFamily("colors");
 		String uuid = tagFamily.getUuid();
-		Future<TagListResponse> future = getClient().findTagsForTagFamilies(PROJECT_NAME, uuid);
+		Future<TagListResponse> future = getClient().findTags(PROJECT_NAME, uuid);
 		latchFor(future);
 		assertSuccess(future);
 	}

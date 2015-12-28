@@ -38,12 +38,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	protected Class<? extends SchemaContainer> getPersistanceClass() {
+	public Class<? extends SchemaContainer> getPersistanceClass() {
 		return SchemaContainerImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_SCHEMA_CONTAINER;
 	}
 

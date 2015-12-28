@@ -45,12 +45,12 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	protected Class<? extends User> getPersistanceClass() {
+	public Class<? extends User> getPersistanceClass() {
 		return UserImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_USER;
 	}
 

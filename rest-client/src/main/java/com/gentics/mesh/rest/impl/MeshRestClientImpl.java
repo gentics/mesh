@@ -139,10 +139,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagListResponse> findTagsForTagFamilies(String projectName, String uuid, QueryParameterProvider... parameters) {
+	public Future<TagListResponse> findTags(String projectName, String tagFamilyUuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(uuid, "uuid must not be null");
-		return invokeRequest(GET, "/" + projectName + "/tagFamilies/" + uuid + "/tags" + getQuery(parameters), TagListResponse.class);
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		return invokeRequest(GET, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags" + getQuery(parameters), TagListResponse.class);
 	}
 
 	@Override
@@ -167,31 +167,31 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<TagResponse> createTag(String projectName, TagCreateRequest tagCreateRequest) {
+	public Future<TagResponse> createTag(String projectName, String tagFamilyUuid, TagCreateRequest tagCreateRequest) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagCreateRequest, "tagCreateRequest must not be null");
-		return invokeRequest(POST, "/" + projectName + "/tags", TagResponse.class, tagCreateRequest);
+		return invokeRequest(POST, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags", TagResponse.class, tagCreateRequest);
 	}
 
 	@Override
-	public Future<TagResponse> findTagByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
+	public Future<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return invokeRequest(GET, "/" + projectName + "/tags/" + uuid + getQuery(parameters), TagResponse.class);
+		return invokeRequest(GET, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + getQuery(parameters), TagResponse.class);
 	}
 
 	@Override
-	public Future<TagResponse> updateTag(String projectName, String uuid, TagUpdateRequest tagUpdateRequest) {
+	public Future<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest tagUpdateRequest) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagUpdateRequest, "tagUpdateRequest must not be null");
-		return invokeRequest(PUT, "/" + projectName + "/tags/" + uuid, TagResponse.class, tagUpdateRequest);
+		return invokeRequest(PUT, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid, TagResponse.class, tagUpdateRequest);
 	}
 
 	@Override
-	public Future<GenericMessageResponse> deleteTag(String projectName, String uuid) {
+	public Future<GenericMessageResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return invokeRequest(DELETE, "/" + projectName + "/tags/" + uuid, GenericMessageResponse.class);
+		return invokeRequest(DELETE, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid, GenericMessageResponse.class);
 	}
 
 	@Override
@@ -200,19 +200,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		return invokeRequest(GET, "/" + projectName + "/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class);
 	}
 
-	@Override
-	public Future<TagListResponse> findTags(String projectName, QueryParameterProvider... parameters) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		return invokeRequest(GET, "/" + projectName + "/tags" + getQuery(parameters), TagListResponse.class);
-	}
-
-	// TODO can we actually do this?
-	@Override
-	public Future<TagResponse> findTagByName(String projectName, String name) {
-		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(name, "name must not be null");
-		return invokeRequest(GET, "/" + projectName + "/tags/" + name, TagResponse.class);
-	}
+	//	// TODO can we actually do this?
+	//	@Override
+	//	public Future<TagResponse> findTagByName(String projectName, String name) {
+	//		Objects.requireNonNull(projectName, "projectName must not be null");
+	//		Objects.requireNonNull(name, "name must not be null");
+	//		return invokeRequest(GET, "/" + projectName + "/tags/" + name, TagResponse.class);
+	//	}
 
 	@Override
 	public Future<NodeListResponse> findNodesForTag(String projectName, String tagUuid, QueryParameterProvider... parameters) {

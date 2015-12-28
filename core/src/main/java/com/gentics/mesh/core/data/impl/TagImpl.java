@@ -40,7 +40,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
-import com.gentics.mesh.util.RestModelHelper;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -142,7 +141,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public TagFamily getTagFamily() {
-		return in(HAS_TAG).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
+		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
 	}
 
 	@Override
@@ -181,25 +180,25 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		TagFamilyReference reference = requestModel.getTagFamily();
+		//TagFamilyReference reference = requestModel.getTagFamily();
 
 		return db.trx(() -> {
 			boolean updateTagFamily = false;
-			if (reference != null) {
-				// Check whether a uuid was specified and whether the tag family changed
-				if (!isEmpty(reference.getUuid())) {
-					if (!getTagFamily().getUuid().equals(reference.getUuid())) {
-						updateTagFamily = true;
-					}
-				}
-			}
+//			if (reference != null) {
+//				// Check whether a uuid was specified and whether the tag family changed
+//				if (!isEmpty(reference.getUuid())) {
+//					if (!getTagFamily().getUuid().equals(reference.getUuid())) {
+//						updateTagFamily = true;
+//					}
+//				}
+//			}
 
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
 				throw error(BAD_REQUEST, "tag_name_not_set");
 			} else {
 				TagFamily tagFamily = getTagFamily();
-				Tag foundTagWithSameName = tagFamily.findTagByName(newTagName);
+				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().last();
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
 							tagFamily.getName());

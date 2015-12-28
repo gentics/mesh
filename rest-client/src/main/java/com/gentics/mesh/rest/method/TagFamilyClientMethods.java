@@ -1,7 +1,5 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -11,14 +9,19 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
 
+import io.vertx.core.Future;
+
 public interface TagFamilyClientMethods {
 
 	/**
 	 * Load the tag family using the given UUID.
 	 * 
 	 * @param projectName
+	 *            Project name
 	 * @param uuid
+	 *            Uuid of the tag family
 	 * @param parameters
+	 *            Additional query parameters
 	 * @return
 	 */
 	Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, QueryParameterProvider... parameters);
@@ -27,6 +30,7 @@ public interface TagFamilyClientMethods {
 	 * Load multiple tag families.
 	 * 
 	 * @param projectName
+	 *            Project name
 	 * @param pagingInfo
 	 * @return
 	 */
@@ -36,7 +40,9 @@ public interface TagFamilyClientMethods {
 	 * Create a new tag family.
 	 * 
 	 * @param projectName
+	 *            Project name
 	 * @param request
+	 *            Create Request
 	 * @return
 	 */
 	Future<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest request);
@@ -45,7 +51,9 @@ public interface TagFamilyClientMethods {
 	 * Delete the tag family.
 	 * 
 	 * @param projectName
+	 *            Name of the project
 	 * @param uuid
+	 *            Uuid of the tag family
 	 * @return
 	 */
 	Future<GenericMessageResponse> deleteTagFamily(String projectName, String uuid);
@@ -55,7 +63,9 @@ public interface TagFamilyClientMethods {
 	 * 
 	 * @param projectName
 	 * @param tagFamilyUuid
+	 *            Uuid of the tag family
 	 * @param request
+	 *            Update request
 	 * @return
 	 */
 	Future<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request);
@@ -65,18 +75,10 @@ public interface TagFamilyClientMethods {
 	 * 
 	 * @param projectName
 	 * @param parameters
+	 *            Additional query parameters
 	 * @return
 	 */
 	Future<TagFamilyListResponse> findTagFamilies(String projectName, QueryParameterProvider... parameters);
 
-	/**
-	 * Load multiple tags of a given tag family.
-	 * 
-	 * @param projectName
-	 * @param uuid
-	 * @param parameters
-	 * @return
-	 */
-	Future<TagListResponse> findTagsForTagFamilies(String projectName, String uuid, QueryParameterProvider... parameters);
 
 }

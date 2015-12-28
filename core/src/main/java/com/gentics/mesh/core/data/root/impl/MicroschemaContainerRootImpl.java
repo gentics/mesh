@@ -33,12 +33,12 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	protected Class<? extends MicroschemaContainer> getPersistanceClass() {
+	public Class<? extends MicroschemaContainer> getPersistanceClass() {
 		return MicroschemaContainerImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_SCHEMA_CONTAINER;
 	}
 

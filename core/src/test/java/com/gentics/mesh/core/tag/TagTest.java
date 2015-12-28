@@ -63,9 +63,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNull(tagFamily.getDescription());
 		tagFamily.setDescription("description");
 		assertEquals("description", tagFamily.getDescription());
-		assertEquals(0, tagFamily.getTags().size());
+		assertEquals(0, tagFamily.getTagRoot().findAll().size());
 		assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
-		assertEquals(1, tagFamily.getTags().size());
+		assertEquals(1, tagFamily.getTagRoot().findAll().size());
 	}
 
 	@Test
@@ -112,7 +112,6 @@ public class TagTest extends AbstractBasicObjectTest {
 		node.addTag(tag);
 
 		// 4. Reload the tag and inspect the tagged nodes
-		CountDownLatch latch = new CountDownLatch(1);
 		Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first();
 		assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes().size());
 		Node contentFromTag = reloadedTag.getNodes().iterator().next();
@@ -172,7 +171,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 		TagFamily basicTagFamily = tagFamily("basic");
 		Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
-		project().getTagRoot().addTag(noPermTag);
+		basicTagFamily.getTagRoot().addTag(noPermTag);
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
@@ -187,7 +186,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertPage(globalTagPage, tags().size() + 1);
 	}
 
-	private void assertPage(PageImpl<? extends Tag> page, int totalTags) {
+	private void assertPage(PageImpl<? extends Tag> page, int expectedTagCount) {
 		assertNotNull(page);
 
 		int nTags = 0;
@@ -195,8 +194,8 @@ public class TagTest extends AbstractBasicObjectTest {
 			assertNotNull(tag.getName());
 			nTags++;
 		}
-		assertEquals(totalTags, nTags);
-		assertEquals(totalTags, page.getTotalElements());
+		assertEquals("The page did not contain the correct amount of tags", expectedTagCount, nTags);
+		assertEquals(expectedTagCount, page.getTotalElements());
 		assertEquals(1, page.getNumber());
 		assertEquals(1, page.getTotalPages());
 
@@ -229,7 +228,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(foundTag);
 		assertEquals("Car", foundTag.getName());
 		assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()));
-		assertNull(meshRoot().getTagRoot().findByName("bogus"));
+		assertNull("No tag with the name bogus should be found", meshRoot().getTagRoot().findByName("bogus").toBlocking().last());
 	}
 
 	@Test
@@ -252,9 +251,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull("The folder could not be found.", loadedTag);
 		String name = loadedTag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-		assertEquals(10, tagFamily.getTags().size());
+		assertEquals(10, tagFamily.getTagRoot().findAll().size());
 		latch.countDown();
-		Tag projectTag = project().getTagRoot().findByUuid(uuid).toBlocking().first();
+		Tag projectTag = tagFamily.getTagRoot().findByUuid(uuid).toBlocking().first();
 		assertNotNull("The tag should also be assigned to the project tag root", projectTag);
 
 	}

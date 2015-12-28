@@ -18,11 +18,12 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyCrudHandler;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -41,12 +42,12 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	private static final Logger log = LoggerFactory.getLogger(TagRootImpl.class);
 
 	@Override
-	protected Class<? extends Tag> getPersistanceClass() {
+	public Class<? extends Tag> getPersistanceClass() {
 		return TagImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_TAG;
 	}
 
@@ -79,6 +80,32 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
+	public Tag create(String name, Project project, TagFamily tagFamily, User creator) {
+		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		tag.setName(name);
+		tag.setCreated(creator);
+		tag.setProject(project);
+		addTag(tag);
+
+		// Add to global list of tags
+		TagRoot globalTagRoot = BootstrapInitializer.getBoot().tagRoot();
+		if (this != globalTagRoot) {
+			globalTagRoot.addTag(tag);
+		}
+
+		// Add tag to project list of tags
+		TagRoot projectTagRoot = project.getTagRoot();
+		if (this != projectTagRoot) {
+			projectTagRoot.addTag(tag);
+		}
+
+		// Set the tag family for the tag
+		tag.setTagFamily(tagFamily);
+
+		return tag;
+	}
+
+	@Override
 	public Observable<Tag> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -90,28 +117,30 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 				throw error(BAD_REQUEST, "tag_name_not_set");
 			}
 
-			TagFamilyReference reference = requestModel.getTagFamily();
-			if (reference == null) {
-				throw error(BAD_REQUEST, "tag_tagfamily_reference_not_set");
-			}
-			boolean hasName = !isEmpty(reference.getName());
-			boolean hasUuid = !isEmpty(reference.getUuid());
-			if (!hasUuid && !hasName) {
-				throw error(BAD_REQUEST, "tag_tagfamily_reference_uuid_or_name_missing");
-			}
+//			TagFamilyReference reference = requestModel.getTagFamily();
+//			if (reference == null) {
+//				throw error(BAD_REQUEST, "tag_tagfamily_reference_not_set");
+//			}
+//			boolean hasName = !isEmpty(reference.getName());
+//			boolean hasUuid = !isEmpty(reference.getUuid());
+//			if (!hasUuid && !hasName) {
+//				throw error(BAD_REQUEST, "tag_tagfamily_reference_uuid_or_name_missing");
+//			}
 
 			// First try the tag family reference by uuid if specified
-			TagFamily tagFamily = null;
-			String nameOrUuid = null;
-			if (hasUuid) {
-				nameOrUuid = reference.getUuid();
-				tagFamily = project.getTagFamilyRoot().findByUuid(reference.getUuid()).toBlocking().first();
-			} else if (hasName) {
-				nameOrUuid = reference.getName();
-				tagFamily = project.getTagFamilyRoot().findByName(reference.getName()).toBlocking().first();
-			}
+//			TagFamily tagFamily = null;
+//			String nameOrUuid = null;
+//			if (hasUuid) {
+//				nameOrUuid = reference.getUuid();
+//				tagFamily = project.getTagFamilyRoot().findByUuid(reference.getUuid()).toBlocking().first();
+//			} else if (hasName) {
+//				nameOrUuid = reference.getName();
+//				tagFamily = project.getTagFamilyRoot().findByName(reference.getName()).toBlocking().first();
+//			}
+			
+			TagFamily tagFamily = ac.get(TagFamilyCrudHandler.TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY);
 			if (tagFamily == null) {
-				throw error(NOT_FOUND, "tagfamily_not_found", nameOrUuid);
+				throw error(NOT_FOUND, "tagfamily_not_found");
 			}
 
 			MeshAuthUser requestUser = ac.getUser();
@@ -119,7 +148,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 				throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid());
 			}
 
-			Tag conflictingTag = tagFamily.findTagByName(tagName);
+			Tag conflictingTag = tagFamily.getTagRoot().findByName(tagName).toBlocking().last();
 			if (conflictingTag != null) {
 				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
 			}
@@ -133,7 +162,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 				ac.getUser().addCRUDPermissionOnRole(foundFamily, CREATE_PERM, newTag);
 				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
-				project.getTagRoot().addTag(newTag);
+				foundFamily.getTagRoot().addTag(newTag);
 
 				SearchQueueBatch batch = newTag.addIndexBatch(CREATE_ACTION);
 				return Tuple.tuple(batch, newTag);

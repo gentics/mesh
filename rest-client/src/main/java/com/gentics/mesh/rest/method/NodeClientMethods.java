@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.vertx.core.Future;
@@ -146,5 +147,15 @@ public interface NodeClientMethods {
 	 * @return Future with the breadcrumb response
 	 */
 	Future<NodeBreadcrumbResponse> loadBreadcrumb(String projectName, String nodeUuid, QueryParameterProvider... parameters);
+
+	/**
+	 * Load multiple tags that were assigned to a given node.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param parameters
+	 * @return
+	 */
+	Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
 }

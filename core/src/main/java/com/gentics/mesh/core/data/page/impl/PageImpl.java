@@ -3,16 +3,12 @@ package com.gentics.mesh.core.data.page.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
-import com.gentics.mesh.util.RxUtil;
-
 import rx.Observable;
 
 public class PageImpl<T extends TransformableElement<? extends RestModel>> implements Iterable<T>, Page {

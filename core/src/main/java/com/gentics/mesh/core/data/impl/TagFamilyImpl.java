@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
@@ -12,12 +12,10 @@ import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.erro
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -30,6 +28,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -62,8 +61,17 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
-		TagFamilyRoot root = in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
-		return root;
+		return in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+	}
+
+	@Override
+	public TagRoot getTagRoot() {
+		return out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefaultExplicit(TagRootImpl.class, null);
+	}
+
+	@Override
+	public void setTagRoot(TagRoot tagRoot) {
+		linkOut(tagRoot.getImpl(), HAS_TAG_ROOT);
 	}
 
 	@Override
@@ -100,16 +108,16 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public Project getProject() {
 		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
-
-	@Override
-	public Tag findTagByName(String name) {
-		return out(HAS_TAG).has(TagImpl.class).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().nextOrDefaultExplicit(TagImpl.class, null);
-	}
-
-	@Override
-	public List<? extends Tag> getTags() {
-		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
-	}
+	//
+	//	@Override
+	//	public Tag findTagByName(String name) {
+	//		return out(HAS_TAG).has(TagImpl.class).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().nextOrDefaultExplicit(TagImpl.class, null);
+	//	}
+	//
+	//	@Override
+	//	public List<? extends Tag> getTags() {
+	//		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
+	//	}
 
 	@Override
 	public PageImpl<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException {
@@ -119,30 +127,20 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
 	}
 
-	@Override
-	public void addTag(Tag tag) {
-		setLinkOutTo(tag.getImpl(), HAS_TAG);
-	}
-
-	@Override
-	public void removeTag(Tag tag) {
-		unlinkOut(tag.getImpl(), HAS_TAG);
-		// TODO delete tag node?!
-	}
+	//	@Override
+	//	public void addTag(Tag tag) {
+	//		setLinkOutTo(tag.getImpl(), HAS_TAG);
+	//	}
+	//
+	//	@Override
+	//	public void removeTag(Tag tag) {
+	//		unlinkOut(tag.getImpl(), HAS_TAG);
+	//		// TODO delete tag node?!
+	//	}
 
 	@Override
 	public Tag create(String name, Project project, User creator) {
-		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
-		tag.setName(name);
-		tag.setCreated(creator);
-		tag.setProject(project);
-		addTag(tag);
-		// Add to global list of tags
-		TagRoot tagRoot = BootstrapInitializer.getBoot().tagRoot();
-		tagRoot.addTag(tag);
-
-		// Add tag to project list of tags
-		project.getTagRoot().addTag(tag);
+		Tag tag = getTagRoot().create(name, project, this, creator);
 		return tag;
 	}
 
@@ -174,9 +172,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
-		for (Tag tag : getTags()) {
+		for (Tag tag : getTagRoot().findAll()) {
 			tag.remove();
 		}
+		getTagRoot().delete();
 		getElement().remove();
 
 	}
@@ -221,7 +220,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Tag tag : getTags()) {
+			for (Tag tag : getTagRoot().findAll()) {
 				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -231,14 +230,16 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		if (action == DELETE_ACTION) {
-			for (Tag tag : getTags()) {
+			for (Tag tag : getTagRoot().findAll()) {
 				batch.addEntry(tag, DELETE_ACTION);
 			}
 		} else {
-			for (Tag tag : getTags()) {
+			for (Tag tag : getTagRoot().findAll()) {
 				batch.addEntry(tag, UPDATE_ACTION);
 			}
 		}
 	}
+	
+	
 
 }

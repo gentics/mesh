@@ -37,12 +37,12 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	}
 
 	@Override
-	protected Class<? extends Role> getPersistanceClass() {
+	public Class<? extends Role> getPersistanceClass() {
 		return RoleImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_ROLE;
 	}
 

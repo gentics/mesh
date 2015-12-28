@@ -40,7 +40,6 @@ import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
-import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagFieldContainer;
@@ -264,34 +263,34 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	// Tag
-	protected TagResponse createTag(String projectName, String tagName, String tagFamilyName) {
+	protected TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
-		tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamilyName));
-		Future<TagResponse> future = getClient().createTag(projectName, tagCreateRequest);
+		//tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
+		//tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamilyName));
+		Future<TagResponse> future = getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected TagResponse readTag(String projectName, String uuid) {
-		Future<TagResponse> future = getClient().findTagByUuid(projectName, uuid);
+	protected TagResponse readTag(String projectName, String tagFamilyUuid, String uuid) {
+		Future<TagResponse> future = getClient().findTagByUuid(projectName, tagFamilyUuid, uuid);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected TagResponse updateTag(String projectName, String uuid, String newTagName) {
+	protected TagResponse updateTag(String projectName, String tagFamilyUuid, String uuid, String newTagName) {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setFields(new TagFieldContainer().setName(newTagName));
-		Future<TagResponse> future = getClient().updateTag(projectName, uuid, tagUpdateRequest);
+		Future<TagResponse> future = getClient().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected void deleteTag(String projectName, String uuid) {
-		Future<GenericMessageResponse> future = getClient().deleteTag(projectName, uuid);
+	protected void deleteTag(String projectName, String tagFamilyUuid, String uuid) {
+		Future<GenericMessageResponse> future = getClient().deleteTag(projectName, tagFamilyUuid, uuid);
 		latchFor(future);
 		assertSuccess(future);
 	}

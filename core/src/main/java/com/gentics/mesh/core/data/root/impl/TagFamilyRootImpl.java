@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -40,12 +41,14 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	protected Class<? extends TagFamily> getPersistanceClass() {
+	public
+	
+ Class<? extends TagFamily> getPersistanceClass() {
 		return TagFamilyImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_TAG_FAMILY;
 	}
 
@@ -60,12 +63,21 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);
-		tagFamily.setProject(getProject());
 		tagFamily.setCreated(creator);
+		
+		// Add tag family to project 
+		tagFamily.setProject(getProject());
+		
+		// Add created tag family to tag family root 
 		TagFamilyRoot root = BootstrapInitializer.getBoot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}
+		
+		// Add tag root to created tag family
+		TagRoot tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
+		tagFamily.setTagRoot(tagRoot);
+			
 		return tagFamily;
 	}
 

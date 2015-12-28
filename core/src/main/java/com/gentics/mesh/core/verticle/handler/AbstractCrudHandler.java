@@ -7,10 +7,9 @@ import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.elasticsearch.common.collect.Tuple;
 
@@ -22,19 +21,21 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.util.RxUtil;
 
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
 /**
  * Abstract class for CRUD REST handlers.
  */
 public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> extends AbstractHandler {
+
+	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 
 	/**
 	 * Return the main root vertex that is used to handle CRUD for the elements that are used in combination with this handler.
@@ -185,9 +186,40 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			PageImpl<? extends T> page = root.findAll(requestUser, pagingInfo);
 			return page.transformToRest(ac).toBlocking().last();
 
-
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
+	}
+
+	/**
+	 * Create a route handler which will load the element for the given uuid. The handler will only try to load the root element if a uuid was specified.
+	 * Otherwise {@link RoutingContext#next()} will be invoked directly.
+	 * 
+	 * @param i18nNotFoundMessage
+	 *            I18n error message that will be returned when no element could be found
+	 */
+	public Handler<RoutingContext> getUuidHandler(String i18nNotFoundMessage) {
+		Handler<RoutingContext> handler = rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("param0");
+			// Only try to load the root element when a uuid string was specified
+			if (!isEmpty(uuid)) {
+				boolean result = db.noTrx(() -> {
+					T foundElement = getRootVertex(ac).findByUuid(uuid).toBlocking().first();
+					if (foundElement == null) {
+						ac.fail(NOT_FOUND, i18nNotFoundMessage, uuid);
+						return false;
+					} else {
+						ac.data().put(TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY, foundElement);
+					}
+					return true;
+				});
+				if (!result) {
+					return;
+				}
+			}
+			rc.next();
+		};
+		return handler;
 	}
 
 }

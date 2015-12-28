@@ -1,9 +1,8 @@
 package com.gentics.mesh.core.data;
 
-import java.util.List;
-
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -33,7 +32,8 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	void setDescription(String description);
 
 	/**
-	 * Create a new tag with the given name and creator within this tag family. Note that this method will not check for any tag name collisions.
+	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Internally the connected tag root
+	 * will be used to link the created tag to this tag family.
 	 * 
 	 * @param name
 	 *            Name of the new tag.
@@ -46,27 +46,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	Tag create(String name, Project project, User creator);
 
 	/**
-	 * Remove the given tag from the tagfamily.
-	 * 
-	 * @param tag
-	 */
-	void removeTag(Tag tag);
-
-	/**
-	 * Add the given tag to the tagfamily.
-	 * 
-	 * @param tag
-	 */
-	void addTag(Tag tag);
-
-	/**
-	 * Return a list of all tags that are assigned to the tag family.
-	 * 
-	 * @return
-	 */
-	List<? extends Tag> getTags();
-
-	/**
 	 * Return a page of all tags which are visible to the given user. Use the paging parameters from the action context.
 	 * 
 	 * @param requestUser
@@ -75,14 +54,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @throws InvalidArgumentException
 	 */
 	PageImpl<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
-
-	/**
-	 * Return the tag with the given name that was assigned to the tag family.
-	 * 
-	 * @param name
-	 * @return Found tag or null when no matching tag could be found.
-	 */
-	Tag findTagByName(String name);
 
 	/**
 	 * Return the tag family to which this tag belongs.
@@ -104,4 +75,18 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @param project
 	 */
 	void setProject(Project project);
+
+	/**
+	 * Set the tag root element for the tag family.
+	 * 
+	 * @param tagRoot
+	 */
+	void setTagRoot(TagRoot tagRoot);
+
+	/**
+	 * Return the tag root for the tag family.
+	 * 
+	 * @return
+	 */
+	TagRoot getTagRoot();
 }

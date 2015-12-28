@@ -85,7 +85,6 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertTrue(user().hasPermissionAsync(ac, project, CREATE_PERM).toBlocking().first());
 		assertTrue(user().hasPermissionAsync(ac, project.getBaseNode(), CREATE_PERM).toBlocking().first());
 		assertTrue(user().hasPermissionAsync(ac, project.getTagFamilyRoot(), CREATE_PERM).toBlocking().first());
-		assertTrue(user().hasPermissionAsync(ac, project.getTagRoot(), CREATE_PERM).toBlocking().first());
 		assertTrue(user().hasPermissionAsync(ac, project.getNodeRoot(), CREATE_PERM).toBlocking().first());
 	}
 

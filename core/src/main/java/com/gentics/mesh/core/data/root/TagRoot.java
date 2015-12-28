@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 
 /**
  * Aggregation node for tags.
@@ -24,5 +27,21 @@ public interface TagRoot extends RootVertex<Tag> {
 	 *            Tag to be removed
 	 */
 	void removeTag(Tag tag);
+
+	/**
+	 * Create a new tag with the given parameters and assign it to this tag root. Note that the created tag will also be assigned to the global and project tag
+	 * root vertex.
+	 * 
+	 * @param name
+	 *            Name of the tag
+	 * @param project
+	 *            Project in which the tag was created
+	 * @param tagFamily
+	 *            Tag family to which the tag should be assigned.
+	 * @param creator
+	 *            Creator of the tag
+	 * @return
+	 */
+	Tag create(String name, Project project, TagFamily tagFamily, User creator);
 
 }

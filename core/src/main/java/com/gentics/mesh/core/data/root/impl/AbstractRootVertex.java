@@ -40,35 +40,19 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	private static Logger log = LoggerFactory.getLogger(AbstractRootVertex.class);
 
-	/**
-	 * Return the ferma graph persistance class for the items of the root vertex. (eg. NodeImpl, TagImpl...)
-	 * 
-	 * @return
-	 */
-	abstract protected Class<? extends T> getPersistanceClass();
+	@Override
+	abstract public Class<? extends T> getPersistanceClass();
 
-	/**
-	 * Return the label for the item edges.
-	 * 
-	 * @return
-	 */
-	abstract protected String getRootLabel();
+	@Override
+	abstract public String getRootLabel();
 
-	/**
-	 * Add the given item to the this root vertex.
-	 * 
-	 * @param item
-	 */
-	protected void addItem(T item) {
+	@Override
+	public void addItem(T item) {
 		setLinkOutTo(item.getImpl(), getRootLabel());
 	}
 
-	/**
-	 * Remove the given item from this root vertex.
-	 * 
-	 * @param item
-	 */
-	protected void removeItem(T item) {
+	@Override
+	public void removeItem(T item) {
 		unlinkOut(item.getImpl(), getRootLabel());
 	}
 

@@ -57,12 +57,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	protected Class<? extends Node> getPersistanceClass() {
+	public Class<? extends Node> getPersistanceClass() {
 		return NodeImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_NODE;
 	}
 

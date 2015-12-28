@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class TagUpdateRequest implements RestModel {
 
-	private TagFamilyReference tagFamily;
+	//private TagFamilyReference tagFamily;
 
 	// The field is called fields in order to keep it similar to node fields. Maybe one day the tag fields will contain more than just the name. (eg. i18n names)
 	private TagFieldContainer fields = new TagFieldContainer();
@@ -34,23 +34,23 @@ public class TagUpdateRequest implements RestModel {
 		this.fields = fields;
 	}
 
-	/**
-	 * Return the tag family reference.
-	 * 
-	 * @return Tag family reference
-	 */
-	public TagFamilyReference getTagFamily() {
-		return tagFamily;
-	}
-
-	/**
-	 * Set the tag family reference.
-	 * 
-	 * @param tagFamily
-	 *            Tag family reference
-	 */
-	public void setTagFamily(TagFamilyReference tagFamily) {
-		this.tagFamily = tagFamily;
-	}
+//	/**
+//	 * Return the tag family reference.
+//	 * 
+//	 * @return Tag family reference
+//	 */
+//	public TagFamilyReference getTagFamily() {
+//		return tagFamily;
+//	}
+//
+//	/**
+//	 * Set the tag family reference.
+//	 * 
+//	 * @param tagFamily
+//	 *            Tag family reference
+//	 */
+//	public void setTagFamily(TagFamilyReference tagFamily) {
+//		this.tagFamily = tagFamily;
+//	}
 
 }

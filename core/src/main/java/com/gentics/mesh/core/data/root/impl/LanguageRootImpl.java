@@ -29,12 +29,12 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	}
 
 	@Override
-	protected Class<LanguageImpl> getPersistanceClass() {
+	public Class<LanguageImpl> getPersistanceClass() {
 		return LanguageImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_LANGUAGE;
 	}
 

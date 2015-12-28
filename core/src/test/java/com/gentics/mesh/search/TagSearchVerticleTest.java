@@ -14,8 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.verticle.tag.TagVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.Future;
@@ -23,7 +24,7 @@ import io.vertx.core.Future;
 public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
 	@Autowired
-	private TagVerticle tagVerticle;
+	private TagFamilyVerticle tagFamilyVerticle;
 
 	@Autowired
 	private TagIndexHandler tagIndexHandler;
@@ -32,7 +33,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	public List<AbstractSpringVerticle> getVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
-		list.add(tagVerticle);
+		list.add(tagFamilyVerticle);
 		return list;
 	}
 
@@ -52,14 +53,15 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		Tag tag = tag("red");
+		TagFamily parentTagFamily = tagFamily("colors");
 
 		long start = System.currentTimeMillis();
 		String newName = "redish";
-		updateTag(PROJECT_NAME, tag.getUuid(), newName);
+		updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid(), newName);
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 		start = System.currentTimeMillis();
 
-		updateTag(PROJECT_NAME, tag.getUuid(), newName + "2");
+		updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid(), newName + "2");
 		System.out.println("Took: " + (System.currentTimeMillis() - start));
 
 		assertEquals(newName + "2", tag.getName());
@@ -78,6 +80,8 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Override
 	public void testDocumentDeletion() throws Exception {
 		Tag tag = tag("red");
+		TagFamily parentTagFamily = tagFamily("colors");
+
 		String name = tag.getName();
 		String uuid = tag.getUuid();
 		// Add the tag to the index
@@ -91,7 +95,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		assertEquals(1, searchFuture.result().getData().size());
 
 		// 2. Delete the tag
-		deleteTag(PROJECT_NAME, uuid);
+		deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
 
 		// 3. Search again and verify that the document was removed from the index
 		searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));

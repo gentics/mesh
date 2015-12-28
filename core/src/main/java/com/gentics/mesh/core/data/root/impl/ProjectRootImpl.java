@@ -65,12 +65,12 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	protected Class<? extends Project> getPersistanceClass() {
+	public Class<? extends Project> getPersistanceClass() {
 		return ProjectImpl.class;
 	}
 
 	@Override
-	protected String getRootLabel() {
+	public String getRootLabel() {
 		return HAS_PROJECT;
 	}
 
@@ -94,7 +94,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.createBaseNode(creator);
 
 		project.setCreated(creator);
-		project.getTagRoot();
 		project.getSchemaContainerRoot();
 		project.getTagFamilyRoot();
 
@@ -130,9 +129,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 					case NodeRoot.TYPE:
 						NodeRoot nodeRoot = project.getNodeRoot();
 						return nodeRoot.resolveToElement(stack);
-					case TagRoot.TYPE:
-						TagRoot tagRoot = project.getTagRoot();
-						return tagRoot.resolveToElement(stack);
 					default:
 						return Observable.error(new Exception("Unknown project element {" + nestedRootNode + "}"));
 					}
@@ -180,7 +176,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
 				// TODO add microschema root crud perms
-				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagRoot());
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
 				SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);

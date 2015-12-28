@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.verticle.tag.TagVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
@@ -20,7 +20,7 @@ import io.vertx.core.Future;
 public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
-	private TagVerticle verticle;
+	private TagFamilyVerticle verticle;
 
 	@Override
 	public List<AbstractSpringVerticle> getVertices() {

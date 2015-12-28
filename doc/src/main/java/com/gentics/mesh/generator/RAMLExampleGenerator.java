@@ -305,7 +305,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(tagUpdate);
 
 		TagCreateRequest tagCreate = new TagCreateRequest();
-		tagCreate.setTagFamily(tagFamilyReference);
+		//tagCreate.setTagFamily(tagFamilyReference);
 		write(tagCreate);
 
 		TagResponse tag2 = new TagResponse();

@@ -57,6 +57,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	PageImpl<? extends T> findAll(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
+	
+	
+	
 	/**
 	 * Resolve the given stack to the vertex.
 	 * 
@@ -65,6 +68,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	Observable<? extends MeshVertex> resolveToElement(Stack<String> stack);
 
+	
+	
+	
 	/**
 	 * Create a new object within this aggregation vertex.
 	 * 
@@ -95,5 +101,33 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm);
+
+	/**
+	 * Add the given item to the this root vertex.
+	 * 
+	 * @param item
+	 */
+	void addItem(T item);
+
+	/**
+	 * Remove the given item from this root vertex.
+	 * 
+	 * @param item
+	 */
+	void removeItem(T item);
+
+	/**
+	 * Return the label for the item edges.
+	 * 
+	 * @return
+	 */
+	String getRootLabel();
+
+	/**
+	 * Return the ferma graph persistance class for the items of the root vertex. (eg. NodeImpl, TagImpl...)
+	 * 
+	 * @return
+	 */
+	Class<? extends T> getPersistanceClass();
 
 }
