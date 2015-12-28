@@ -8,11 +8,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -43,7 +43,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			MeshAuthUser requestUser = ac.getUser();
 			Observable<RestModel> obs = obsGroup.flatMap(group -> {
 				try {
-					Page<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+					PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
 					return rolePage.transformToRest(ac);
 				} catch (Exception e) {
 					return Observable.error(e);
@@ -107,7 +107,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM);
 			return obsGroup.flatMap(group -> {
 				try {
-					Page<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+					PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 					return userPage.transformToRest(ac);
 				} catch (Exception e) {
 					return Observable.error(e);

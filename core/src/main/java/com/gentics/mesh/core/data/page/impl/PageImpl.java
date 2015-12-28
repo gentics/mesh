@@ -1,18 +1,21 @@
-package com.gentics.mesh.core;
+package com.gentics.mesh.core.data.page.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
 
-public class Page<T extends TransformableElement<? extends RestModel>> implements Iterable<T> {
+public class PageImpl<T extends TransformableElement<? extends RestModel>> implements Iterable<T>, Page {
 
 	private List<? extends T> wrappedList;
 	private int totalElements;
@@ -21,7 +24,7 @@ public class Page<T extends TransformableElement<? extends RestModel>> implement
 	private int totalPages;
 	private int perPage;
 
-	public Page(List<? extends T> wrappedList, int totalElements, int pageNumber, int totalPages, int numberOfElements, int perPage) {
+	public PageImpl(List<? extends T> wrappedList, int totalElements, int pageNumber, int totalPages, int numberOfElements, int perPage) {
 		this.wrappedList = wrappedList;
 		this.totalElements = totalElements;
 		this.pageNumber = pageNumber;
@@ -35,95 +38,60 @@ public class Page<T extends TransformableElement<? extends RestModel>> implement
 		return (Iterator<T>) wrappedList.iterator();
 	}
 
+	@Override
 	public int getSize() {
 		return wrappedList.size();
 	}
 
+	@Override
 	public int getTotalElements() {
 		return totalElements;
 	}
 
+	@Override
 	public int getNumber() {
 		return pageNumber;
 	}
 
+	@Override
 	public int getTotalPages() {
 		return totalPages;
 	}
 
+	@Override
 	public int getNumberOfElements() {
 		return numberOfElements;
 	}
 
+	@Override
 	public long getPerPage() {
 		return perPage;
 	}
 
-	/**
-	 * Transform the page into a list response.
-	 * 
-	 * @param ac
-	 */
+	@Override
 	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac) {
 
 		List<Observable<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
 			obs.add(element.transformToRest(ac));
 		}
-
 		ListResponse<RestModel> listResponse = new ListResponse<>();
-		// Wait for all async processes to complete
-		return Observable.merge(obs).collect(() -> {
+		if (obs.size() == 0) {
 			setPaging(listResponse);
-			return listResponse.getData();
-		} , (x, y) -> {
-			x.add(y);
-		}).map(item -> {
+			return Observable.just(listResponse);
+		}
+
+		return Observable.merge(obs).concatMap(item -> {
+			listResponse.getData().add(item);
+			return Observable.just(listResponse);
+		}).last().map(item -> {
+			setPaging(listResponse);
 			return listResponse;
 		});
+
 	}
 
-	// /**
-	// * Transform the page into a list response.
-	// *
-	// * @param ac
-	// * @param page
-	// * @param handler
-	// * @param listResponse
-	// */
-	// public <TR extends RestModel, RL extends ListResponse<TR>> void transformToRest(InternalActionContext ac, Handler<AsyncResult<ListResponse<TR>>> handler)
-	// {
-	// List<ObservableFuture<TR>> futures = new ArrayList<>();
-	//
-	// ListResponse<RestModel> listResponse = new ListResponse<>();
-	//
-	// for (T node : wrappedList) {
-	// ObservableFuture<TR> obs = RxHelper.observableFuture();
-	// futures.add(obs);
-	// node.transformToRest(ac, obs.toHandler());
-	// }
-	//
-	// // Wait for all async processes to complete
-	// Observable.merge(futures).collect(() -> {
-	// return listResponse.getData();
-	// } , (x, y) -> {
-	// x.add(y);
-	// }).subscribe(list -> {
-	// setPaging(listResponse);
-	// handler.handle(Future.succeededFuture(listResponse));
-	// } , error -> {
-	// handler.handle(Future.failedFuture(error));
-	// });
-	// }
-
-	/**
-	 * Set the paging parameters into the given list response by examining the given page.
-	 * 
-	 * @param response
-	 *            List response that will be updated
-	 * @param page
-	 *            Page that will be used to extract the paging parameters
-	 */
+	@Override
 	public void setPaging(ListResponse<?> response) {
 		PagingMetaInfo info = response.getMetainfo();
 		info.setCurrentPage(getNumber());

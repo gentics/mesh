@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.api.common.SortOrder;
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -48,7 +48,7 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	private static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+	private static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
 			VertexTraversal<?, ?, ?> countTraversal, String sortBy, SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT)
 					throws InvalidArgumentException {
 
@@ -96,7 +96,7 @@ public final class TraversalHelper {
 		}
 
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new Page<T>(list, count, ++page, totalPages, list.size(), perPage);
+		return new PageImpl<T>(list, count, ++page, totalPages, list.size(), perPage);
 
 	}
 
@@ -110,7 +110,7 @@ public final class TraversalHelper {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+	public static <T extends TransformableElement<? extends RestModel>> PageImpl<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
 			VertexTraversal<?, ?, ?> countTraversal, PagingParameter pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
 		return getPagedResult(traversal, countTraversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);

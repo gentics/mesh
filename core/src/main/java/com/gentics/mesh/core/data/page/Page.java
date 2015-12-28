@@ -1,0 +1,71 @@
+package com.gentics.mesh.core.data.page;
+
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.handler.InternalActionContext;
+
+import rx.Observable;
+
+/**
+ * A page is the result of a query which returns paged data. Each page may contain multiple items. A page can be transformed into a rest response.
+ */
+public interface Page {
+
+	/**
+	 * Return the per page parameter value.
+	 * 
+	 * @return
+	 */
+	long getPerPage();
+
+	/**
+	 * Return the number of element which this page is currently providing.
+	 * 
+	 * @return
+	 */
+	int getNumberOfElements();
+
+	/**
+	 * Return the total amount of pages which the resources that provided this page could return.
+	 * 
+	 * @return
+	 */
+	int getTotalPages();
+
+	/**
+	 * Return the current page number.
+	 * 
+	 * @return
+	 */
+	int getNumber();
+
+	/**
+	 * Return the total item count which the resource that provided this page could return.
+	 * 
+	 * @return
+	 */
+	int getTotalElements();
+
+	/**
+	 * Return the page size.
+	 * 
+	 * @return
+	 */
+	int getSize();
+
+	/**
+	 * Transform the page into a list response.
+	 * 
+	 * @param ac
+	 */
+	Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac);
+
+	/**
+	 * Set the paging parameters into the given list response by examining the given page.
+	 * 
+	 * @param response
+	 *            List response that will be updated
+	 */
+	void setPaging(ListResponse<?> response);
+
+}

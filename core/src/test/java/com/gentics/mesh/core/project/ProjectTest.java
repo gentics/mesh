@@ -14,8 +14,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -84,7 +84,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
+		PageImpl<? extends Project> page = meshRoot().getProjectRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

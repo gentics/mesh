@@ -4,7 +4,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -13,6 +12,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -101,7 +101,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
+	PageImpl<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
 	/***
 	 * Create link between the nodes.
@@ -171,7 +171,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
+	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
 			throws InvalidArgumentException;
 
 	/**

@@ -137,7 +137,9 @@ public interface Database {
 	 * @return
 	 */
 	<T> Observable<T> asyncNoTrx(TrxHandler<T> trxHandler);
-
+	
+	<T> Observable<T> asyncNoTrx2(TrxHandler<Observable<T>> trxHandler);
+	
 	/**
 	 * Initialize the database and store the settings.
 	 * 

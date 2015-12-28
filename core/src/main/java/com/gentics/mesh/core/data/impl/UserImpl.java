@@ -350,7 +350,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public Observable<UserResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrx2(() -> {
 			Set<Observable<UserResponse>> obs = new HashSet<>();
 			UserResponse restUser = new UserResponse();
 
@@ -373,7 +373,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			obs.add(fillCommonRestFields(ac, restUser));
 
 			// Wait for all async processes to complete
-			return Observable.merge(obs).toBlocking().last();
+			return Observable.merge(obs).last();
+			//reduce(restUser, (a, b) -> restUser);
 		});
 	}
 

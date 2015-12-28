@@ -5,11 +5,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
@@ -40,7 +40,7 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily, TagFami
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
 			return project.getTagFamilyRoot().loadObject(ac, "tagFamilyUuid", READ_PERM).flatMap(tagFamily -> {
 				try {
-					Page<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
+					PageImpl<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
 					return tagPage.transformToRest(ac);
 				} catch (Exception e) {
 					return Observable.error(e);

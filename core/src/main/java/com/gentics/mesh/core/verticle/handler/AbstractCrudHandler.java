@@ -14,11 +14,11 @@ import java.util.List;
 
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -182,22 +182,9 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
 
-			Page<? extends T> page = root.findAll(requestUser, pagingInfo);
-			List<Observable<RM>> transformedElements = new ArrayList<>();
-			for (T node : page) {
-				transformedElements.add(node.transformToRest(ac));
-			}
-			ListResponse<RM> listResponse = new ListResponse<>();
+			PageImpl<? extends T> page = root.findAll(requestUser, pagingInfo);
+			return page.transformToRest(ac).toBlocking().last();
 
-			Observable<ListResponse<RM>> obs = RxUtil.concatList(transformedElements).collect(() -> {
-				return listResponse;
-			} , (list, restElement) -> {
-				list.getData().add(restElement);
-			}).map(l -> {
-				page.setPaging(listResponse);
-				return listResponse;
-			});
-			return obs.map(i -> listResponse).toBlocking().last();
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 

@@ -12,9 +12,9 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
@@ -52,7 +52,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		int expectedMicroschemaContainers = microschemaContainers().size();
 
 		for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-			Page<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, i));
+			PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, i));
 
 			assertEquals(microschemaContainers().size(), page.getTotalElements());
 			assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());

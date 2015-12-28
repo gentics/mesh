@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -53,7 +53,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
+	PageImpl<? extends Node> findTaggedNodes(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
 			throws InvalidArgumentException;
 
 	/**

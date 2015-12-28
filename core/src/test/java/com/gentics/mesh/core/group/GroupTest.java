@@ -11,10 +11,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -63,7 +63,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
-		Page<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingParameter(1, 19));
+		PageImpl<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingParameter(1, 19));
 
 		assertEquals(groups().size(), page.getTotalElements());
 		assertEquals(groups().size(), page.getSize());

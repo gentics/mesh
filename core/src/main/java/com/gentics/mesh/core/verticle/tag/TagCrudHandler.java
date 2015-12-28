@@ -5,10 +5,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
@@ -39,7 +39,7 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 			Project project = ac.getProject();
 			return project.getTagRoot().loadObject(ac, "uuid", READ_PERM).flatMap(tag -> {
 				try {
-					Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
+					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
 					return page.transformToRest(ac);
 				} catch (Exception e) {
 					return Observable.error(e);

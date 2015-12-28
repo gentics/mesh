@@ -18,7 +18,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -157,7 +157,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
-		Page<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingParameter(1, 10));
+		PageImpl<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingParameter(1, 10));
 
 		// There are nodes that are only available in english
 		assertEquals(getNodeCount(), page.getTotalElements());
@@ -186,7 +186,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		List<String> languageTags = new ArrayList<>();
 		languageTags.add("de");
 		languageTags.add("en");
-		Page<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameter(1, 25));
+		PageImpl<? extends Node> page = boot.nodeRoot().findAll(getRequestUser(), languageTags, new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

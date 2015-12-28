@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
-import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -82,7 +82,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @throws InvalidArgumentException
 	 *             Request may fail when invalid paging parameters are provided
 	 */
-	Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
+	PageImpl<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Return a page with all users that the given user can see.
@@ -93,6 +93,6 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @throws InvalidArgumentException
 	 *             Request may fail when invalid paging parameters are provided
 	 */
-	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
+	PageImpl<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 }

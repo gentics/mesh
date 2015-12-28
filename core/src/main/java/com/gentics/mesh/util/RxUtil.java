@@ -2,6 +2,9 @@ package com.gentics.mesh.util;
 
 import java.util.List;
 
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.RestModel;
+
 import rx.Observable;
 import rx.functions.Func2;
 
@@ -32,5 +35,6 @@ public final class RxUtil {
 			final Func2<? super T1, ? super T2, Observable<R>> zipFunction) {
 		return Observable.zip(o1, o2, zipFunction).flatMap(x -> x);
 	}
+
 
 }

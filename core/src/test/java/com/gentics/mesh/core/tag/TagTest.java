@@ -14,13 +14,13 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -157,7 +157,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MeshAuthUser requestUser = ac.getUser();
 
-		Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingParameter(1, 10));
+		PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingParameter(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
@@ -176,10 +176,10 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
-		Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
+		PageImpl<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
 		assertPage(projectTagpage, tags().size());
 
-		Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
+		PageImpl<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
 		assertPage(globalTagPage, tags().size());
 
 		role().grantPermissions(noPermTag, READ_PERM);
@@ -187,7 +187,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertPage(globalTagPage, tags().size() + 1);
 	}
 
-	private void assertPage(Page<? extends Tag> page, int totalTags) {
+	private void assertPage(PageImpl<? extends Tag> page, int totalTags) {
 		assertNotNull(page);
 
 		int nTags = 0;

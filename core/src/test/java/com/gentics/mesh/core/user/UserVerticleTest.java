@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -212,11 +213,13 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		invisibleUser.setEmailAddress("should_not_be_listed");
 		invisibleUser.addGroup(group());
 
+		assertEquals("We did not find the expected count of users attached to the user root vertex.", 3 + nUsers + 1, root.findAll().size());
+
 		// Test default paging parameters
 		Future<UserListResponse> future = getClient().findUsers();
 		latchFor(future);
 		assertSuccess(future);
-		UserListResponse restResponse = future.result();
+		ListResponse<UserResponse> restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		// Admin User + Guest User + Dummy User = 3
@@ -232,7 +235,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		restResponse = future.result();
 
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
-		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
 		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
 				totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
@@ -264,10 +267,10 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		assertEquals(0, future.result().getData().size());
-		assertEquals(4242, future.result().getMetainfo().getCurrentPage());
-		assertEquals(1, future.result().getMetainfo().getPageCount());
-		assertEquals(nUsers + 3, future.result().getMetainfo().getTotalCount());
+		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, future.result().getData().size());
+		assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
+		assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
+		assertEquals("We did not find the correct total count value in the response", nUsers + 3, future.result().getMetainfo().getTotalCount());
 		assertEquals(25, future.result().getMetainfo().getPerPage());
 
 	}

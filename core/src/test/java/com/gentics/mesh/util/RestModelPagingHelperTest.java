@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.Page;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 public class RestModelPagingHelperTest {
@@ -15,7 +15,7 @@ public class RestModelPagingHelperTest {
 	@Test
 	public void testPagingOffsetCorrection() {
 		TestListResponse response = new TestListResponse();
-		Page<?> page = mock(Page.class);
+		PageImpl<?> page = mock(PageImpl.class);
 
 		int nPages = 3;
 		int nCurrentPage = 0;

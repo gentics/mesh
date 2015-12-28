@@ -13,11 +13,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.Page;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -87,7 +87,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrx(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
 				try {
-					Page<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
+					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
 					return page.transformToRest(ac);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
@@ -100,7 +100,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrx(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
 				try {
-					Page<? extends Tag> tagPage = node.getTags(ac);
+					PageImpl<? extends Tag> tagPage = node.getTags(ac);
 					return tagPage.transformToRest(ac);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);

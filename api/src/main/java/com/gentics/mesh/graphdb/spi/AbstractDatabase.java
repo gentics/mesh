@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 
@@ -131,4 +132,25 @@ public abstract class AbstractDatabase implements Database {
 		//		return obsFut;
 	}
 
+	@Override
+	public <T> Observable<T> asyncNoTrx2(TrxHandler<Observable<T>> trxHandler) {
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Observable<T> obs = Observable.create(sub -> {
+
+			try (NoTrx noTx = noTrx()) {
+				Observable<T> result = trxHandler.call();
+				Iterator<T> it = result.toBlocking().getIterator();
+				while (it.hasNext()) {
+					sub.onNext(it.next());
+				}
+				sub.onCompleted();
+			} catch (Exception e) {
+				log.error("Error while handling no-transaction.", e);
+				sub.onError(e);
+			}
+
+		});
+		return obs.observeOn(scheduler);
+
+	}
 }
