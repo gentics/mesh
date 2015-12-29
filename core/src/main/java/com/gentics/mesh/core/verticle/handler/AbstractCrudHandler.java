@@ -148,20 +148,18 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 
 	}
 
-	protected <T extends MeshCoreVertex<?, T>> void updateElement(InternalActionContext ac, String uuidParameterName,
-			TrxHandler<RootVertex<T>> handler) {
-		db.asyncNoTrx(() -> {
+	protected void updateElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<T>> handler) {
+		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
 			return root.loadObject(ac, uuidParameterName, UPDATE_PERM).flatMap(element -> {
-				Observable<RestModel> obsTransformed = element.update(ac).flatMap(updatedElement -> {
+				return element.update(ac).flatMap(updatedElement -> {
 					// Transform the vertex using a fresh transaction in order to start with a clean cache
 					return db.noTrx(() -> {
 						updatedElement.reload();
 						return updatedElement.transformToRest(ac);
 					});
 				});
-				return obsTransformed;
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}

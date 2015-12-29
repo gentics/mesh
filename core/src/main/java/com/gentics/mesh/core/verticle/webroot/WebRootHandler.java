@@ -15,15 +15,12 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
-
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -73,14 +70,14 @@ public class WebRootHandler {
 					if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
 						bch.complete(lastSegment);
 					} else {
-						bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
+						bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid()));
 					}
 					// requestUser.isAuthorised(node, READ_PERM, rh -> {
 					// languageTags.add(lastSegment.getLanguageTag());
 					// if (rh.result()) {
 					// bch.complete(node);
 					// } else {
-					// bch.fail(new HttpStatusCodeErrorException(FORBIDDEN, ac.i18n("error_missing_perm", node.getUuid())));
+					// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
 					// }
 					// });
 
@@ -101,7 +98,7 @@ public class WebRootHandler {
 				if (field instanceof StringGraphField) {
 					node.transformToRest(ac).subscribe(model -> {
 						ac.send(JsonUtil.toJson(model), OK);
-					}, error -> {
+					} , error -> {
 						ac.fail(error);
 					});
 				}
@@ -114,6 +111,6 @@ public class WebRootHandler {
 				}
 			}
 		});
-}
+	}
 
 }

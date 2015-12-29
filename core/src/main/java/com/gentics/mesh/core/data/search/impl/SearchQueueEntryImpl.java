@@ -134,8 +134,10 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	public Observable<Void> process() {
 		AbstractIndexHandler<?> indexHandler = getIndexHandler(getElementType());
 		if (indexHandler == null) {
+			//TODO i18n
 			throw error(BAD_REQUEST, "No index handler could be found for type {" + getElementType() + "} of element {" + getElementUuid() + "}");
 		}
+		//TODO it would be possible to avoid loading by uuid for update and create requests. We should not reload the element by uuid.
 		return indexHandler.handleAction(getElementUuid(), getElementActionName(), getElementIndexType());
 	}
 

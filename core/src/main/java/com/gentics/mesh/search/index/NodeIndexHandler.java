@@ -117,7 +117,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			displayFieldMap.put("key", node.getSchema().getDisplayField());
 			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
 			map.put("displayField", displayFieldMap);
-			searchProvider.storeDocument(getIndex(), getDocumentType(node, language), getDocumentId(node, language), map);
+			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), getDocumentId(node, language), map));
 		}
 
 		return Observable.merge(obs).doOnCompleted(() -> {

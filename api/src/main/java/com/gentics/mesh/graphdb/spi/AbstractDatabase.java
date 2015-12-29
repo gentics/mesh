@@ -139,10 +139,11 @@ public abstract class AbstractDatabase implements Database {
 
 			try (NoTrx noTx = noTrx()) {
 				Observable<T> result = trxHandler.call();
-				Iterator<T> it = result.toBlocking().getIterator();
-				while (it.hasNext()) {
-					sub.onNext(it.next());
-				}
+//				Iterator<T> it = result.toBlocking().getIterator();
+				sub.onNext(result.toBlocking().single());
+				//while (it.hasNext()) {
+				//	sub.onNext(it.next());
+				//}
 				sub.onCompleted();
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);

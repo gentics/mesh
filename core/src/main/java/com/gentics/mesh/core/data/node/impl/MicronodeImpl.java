@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -379,7 +378,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 							log.debug("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 						}
 						// TODO we need to fail here - the node could not be found.
-						// throw new HttpStatusCodeErrorException(NOT_FOUND, ac.i18n("The field {, parameters))
+						// throw error(NOT_FOUND, "The field {, parameters)
 					} else {
 						// Check whether the container already contains a node field
 						// TODO check node permissions
@@ -523,7 +522,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	private void failOnMissingMandatoryField(ActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key)
 			throws MeshSchemaException {
 		if (field == null && fieldSchema.isRequired() && restField == null) {
-			throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("node_error_missing_mandatory_field_value", key, getMicroschema().getName()));
+			throw error(BAD_REQUEST, "node_error_missing_mandatory_field_value", key, getMicroschema().getName());
 		}
 	}
 

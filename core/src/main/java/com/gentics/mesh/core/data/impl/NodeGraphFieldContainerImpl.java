@@ -225,7 +225,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 							log.debug("Node field {" + key + "} could not be populated since node {" + nodeField.getUuid() + "} could not be found.");
 						}
 						// TODO we need to fail here - the node could not be found.
-						// throw new HttpStatusCodeErrorException(NOT_FOUND, ac.i18n("The field {, parameters))
+						// throw error(NOT_FOUND, "The field {, parameters)
 					} else {
 						// Check whether the container already contains a node field
 						// TODO check node permissions

@@ -397,7 +397,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Add webroot url
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType()).toBlocking().first());
+				restNode.setUrl(
+						WebRootLinkReplacer.getInstance().resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType()).toBlocking().first());
 			}
 
 			// Merge and complete
@@ -435,7 +436,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// MeshRootImpl.getInstance().getLanguageRoot().reload();
 				// Language lan =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
 				// System.out.println(lan);
-				throw new HttpStatusCodeErrorException(BAD_REQUEST, ac.i18n("error_language_not_found", languageTag));
+				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 			}
 			fieldContainer = getGraphFieldContainer(language);
 			// We found a container for one of the languages
@@ -555,7 +556,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					throw error(BAD_REQUEST, "node_update_failed", e);
 				}
 				return addIndexBatch(UPDATE_ACTION);
-
 			}).process().map(i -> this);
 
 		} catch (IOException e1) {
