@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.0.5-beta-SNAPSHOT</version>
+		<version>1.0.0-beta-rc8</version>
 	</parent>
 
 	<properties>
@@ -20,11 +20,13 @@
 
 	<dependencies>
 		<!-- Internal dependencies -->
+		<!-- 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-git</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		 -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-api</artifactId>
@@ -55,11 +57,6 @@
 			<version>1.2</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
-			<version>4.2.5</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
@@ -84,6 +81,12 @@
 			<scope>compile</scope>
 		</dependency>
 
+		<!-- Default Image Provider -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>${mesh.image.provider}</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -131,11 +134,6 @@
 			<groupId>org.jacpfx.vertx.spring</groupId>
 			<artifactId>vertx-spring-ext</artifactId>
 			<version>2.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-rx-java</artifactId>
-			<version>${vertx.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -297,20 +295,8 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-			</plugin>
-			 -->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-pmd-plugin</artifactId> </plugin> <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
+				</plugin> <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> </plugin> -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -350,8 +336,7 @@
 					<threadCountClasses>1</threadCountClasses>
 					<testFailureIgnore>true</testFailureIgnore>
 					<trimStackTrace>false</trimStackTrace>
-					<!-- // Kill the forked test if it takes more than 3h for execution. 
-						Nope, currently disabled -->
+					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
 					<forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
 					<includes>
@@ -376,21 +361,16 @@
 						</goals>
 					</execution>
 				</executions>
-				<!-- <executions> <execution> <phase>package</phase> <goals> <goal>javadoc</goal> 
-					</goals> </execution> <execution> <id>generate-cypher-images</id> <phase>package</phase> 
-					<goals> <goal>javadoc</goal> </goals> <configuration> <outputDirectory>${project.basedir}/target/apidocs</outputDirectory> 
-					<reportOutputDirectory>${project.basedir}/target/apidocs</reportOutputDirectory> 
-					<useStandardDocletOptions>false</useStandardDocletOptions> <doclet>de.jotschi.javadoc.cypher.CypherDoclet</doclet> 
-					<docletArtifact> <groupId>de.jotschi</groupId> <artifactId>javadoc-cypher-doclet</artifactId> 
-					<version>0.0.1-SNAPSHOT</version> </docletArtifact> </configuration> </execution> 
-					<execution> <id>generate-javadoc-jar</id> <phase>package</phase> <goals> 
-					<goal>jar</goal> </goals> </execution> </executions> -->
+				<!-- <executions> <execution> <phase>package</phase> <goals> <goal>javadoc</goal> </goals> </execution> <execution> <id>generate-cypher-images</id> <phase>package</phase> <goals> 
+					<goal>javadoc</goal> </goals> <configuration> <outputDirectory>${project.basedir}/target/apidocs</outputDirectory> <reportOutputDirectory>${project.basedir}/target/apidocs</reportOutputDirectory> 
+					<useStandardDocletOptions>false</useStandardDocletOptions> <doclet>de.jotschi.javadoc.cypher.CypherDoclet</doclet> <docletArtifact> <groupId>de.jotschi</groupId> <artifactId>javadoc-cypher-doclet</artifactId> 
+					<version>0.0.1-SNAPSHOT</version> </docletArtifact> </configuration> </execution> <execution> <id>generate-javadoc-jar</id> <phase>package</phase> <goals> <goal>jar</goal> </goals> 
+					</execution> </executions> -->
 			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

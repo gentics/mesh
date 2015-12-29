@@ -29,11 +29,14 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -274,5 +277,55 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			assertNotNull(nodeResponse.getUuid());
 		}
 
+	}
+
+	@Test
+	public void testSearchNumberRange() throws Exception {
+		int numberValue = 1200;
+		addNumberSpeedField(numberValue);
+		fullIndex();
+
+		// from 1 to 9
+		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
+		getClient().searchNodes(getRangeQuery("speed", 100, 9000)).setHandler(obs.toHandler());
+		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		assertEquals(1, resultCount);
+	}
+
+	@Test
+	public void testSearchNumberRange2() throws Exception {
+		int numberValue = 1200;
+		addNumberSpeedField(numberValue);
+		fullIndex();
+
+		// from 9 to 1
+		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
+		getClient().searchNodes(getRangeQuery("speed", 900, 1500)).setHandler(obs.toHandler());
+		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		assertEquals("We could expect to find the node with the given seed number field since the value {" + numberValue
+				+ "} is between the search range.", 1, resultCount);
+	}
+
+	@Test
+	public void testSearchNumberRange3() throws Exception {
+		int numberValue = 1200;
+		addNumberSpeedField(numberValue);
+		fullIndex();
+
+		// out of bounds
+		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
+		getClient().searchNodes(getRangeQuery("speed", 1000, 90)).setHandler(obs.toHandler());
+		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		assertEquals("No node should be found since the range is invalid.", 0, resultCount);
+	}
+
+	private void addNumberSpeedField(int number) {
+		Node node = content("concorde");
+
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
+		node.getSchemaContainer().setSchema(schema);
+
+		node.getGraphFieldContainer(english()).createNumber("speed").setNumber(number);
 	}
 }

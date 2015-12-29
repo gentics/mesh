@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -54,7 +55,7 @@ public interface InternalActionContext extends ActionContext {
 	/**
 	 * Return the role parameter value.
 	 * 
-	 * @return
+	 * @return parameter value or null when no parameter was set
 	 */
 	String getRolePermissionParameter();
 
@@ -95,5 +96,19 @@ public interface InternalActionContext extends ActionContext {
 	 * @return
 	 */
 	boolean getExpandAllFlag();
+
+	/**
+	 * Return the <code>resolveLinks</code> query parameter flag value.
+	 * 
+	 * @return
+	 */
+	public boolean getResolveLinksFlag();
+
+	/**
+	 * Return the image request (crop/resize) parameter.
+	 * 
+	 * @return
+	 */
+	public ImageManipulationParameter getImageRequestParameter();
 
 }

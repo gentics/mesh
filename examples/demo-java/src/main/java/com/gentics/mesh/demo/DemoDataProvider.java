@@ -16,6 +16,7 @@ import java.util.Objects;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -284,7 +285,7 @@ public class DemoDataProvider {
 						continue;
 					}
 					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
-						englishContainer.createNumber(fieldName).setNumber(String.valueOf(obj));
+						englishContainer.createNumber(fieldName).setNumber(com.gentics.mesh.util.NumberUtils.createNumber(obj.toString()));
 					} else if (obj instanceof String) {
 						englishContainer.createString(fieldName).setString((String) obj);
 					} else {

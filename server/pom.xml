@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.0.5-beta-SNAPSHOT</version>
+		<version>1.0.0-beta-rc8</version>
 	</parent>
 
 	<properties>
@@ -21,16 +21,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-navigation</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-tagcloud</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

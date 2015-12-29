@@ -8,7 +8,6 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
-
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
@@ -154,9 +153,10 @@ public interface NodeClientMethods {
 	 * 
 	 * @param projectName
 	 * @param nodeUuid
+	 * @param parameters
 	 * @return Future with a download response that contains a reference to the byte buffer with the binary data
 	 */
-	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid);
+	Future<NodeDownloadResponse> downloadBinaryField(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load the breadcrumb for the given node.

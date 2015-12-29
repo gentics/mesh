@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.failedFuture;
 import static com.gentics.mesh.util.VerticleHelper.processOrFail2;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,6 +60,7 @@ import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
@@ -68,6 +71,8 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RestModelHelper;
@@ -117,14 +122,50 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	@Override
 	public String getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
-		String fieldName = getSchema().getSegmentField();
 		if (container != null) {
+			String fieldName = getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
 				return field.getString();
 			}
 		}
 		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+	}
+
+	@Override
+	public String getPathSegment(Language language) {
+		NodeGraphFieldContainer container = getGraphFieldContainer(language);
+		if (container != null) {
+			String fieldName = getSchema().getSegmentField();
+			StringGraphField field = container.getString(fieldName);
+			if (field != null) {
+				return field.getString();
+			}
+		}
+		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+	}
+
+	@Override
+	public String getPath(Language language) {
+		List<String> segments = new ArrayList<>();
+
+		segments.add(getPathSegment(language));
+		Node current = this;
+		while (current != null) {
+			current = current.getParentNode();
+			if (current == null || current.getParentNode() == null) {
+				break;
+			}
+			segments.add(current.getPathSegment(language));
+		}
+
+		Collections.reverse(segments);
+		StringBuilder builder = new StringBuilder();
+		Iterator<String> it = segments.iterator();
+		while (it.hasNext()) {
+			builder.append("/" + it.next());
+		}
+		return builder.toString();
 	}
 
 	@Override
@@ -463,6 +504,15 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
+	public boolean hasBinaryImage() {
+		String contentType = getBinaryContentType();
+		if (contentType == null) {
+			return false;
+		}
+		return contentType.startsWith("image/");
+	}
+
+	@Override
 	public Integer getBinaryImageWidth() {
 		return getProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
 	}
@@ -547,6 +597,12 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 	}
 
 	@Override
+	public File getBinaryFile() {
+		File binaryFile = new File(getFilePath());
+		return binaryFile;
+	}
+
+	@Override
 	public List<String> getAvailableLanguageNames() {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
@@ -598,12 +654,11 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 
 	@Override
 	public String getBinarySegmentedPath() {
-		String uuid = getUuid();
-		String[] parts = uuid.split("(?<=\\G.{4})");
+		String[] parts = getUuid().split("(?<=\\G.{4})");
 		StringBuffer buffer = new StringBuffer();
-		buffer.append('/');
+		buffer.append(File.separator);
 		for (String part : parts) {
-			buffer.append(part + '/');
+			buffer.append(part + File.separator);
 		}
 		return buffer.toString();
 	}
@@ -791,4 +846,51 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		return batch;
 	}
 
+	@Override
+	public PathSegment hasSegment(String segment) {
+		Schema schema = getSchema();
+
+		// Check the binary field name
+		if (schema.isBinary() && segment.equals(getBinaryFileName())) {
+			return new PathSegment(this, true, null);
+		}
+
+		// Check the different language versions
+		String segmentFieldName = schema.getSegmentField();
+		for (GraphFieldContainer container : getGraphFieldContainers()) {
+			StringGraphField field = container.getString(segmentFieldName);
+			if (field == null) {
+				log.error("The node {" + getUuid() + "} did not contain a string field for segment field name {" + segmentFieldName + "}");
+			} else {
+				String fieldValue = field.getString();
+				if (segment.equals(fieldValue)) {
+					return new PathSegment(this, false, container.getLanguage());
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Observable<Path> resolvePath(Path path, Stack<String> pathStack) {
+		if (pathStack.isEmpty()) {
+			return Observable.just(path);
+		}
+		String segment = pathStack.pop();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Resolving for path segment {" + segment + "}");
+		}
+
+		// Check all childnodes
+		for (Node childNode : getChildren()) {
+			PathSegment pathSegment = childNode.hasSegment(segment);
+			if (pathSegment != null) {
+				path.addSegment(pathSegment);
+				return childNode.resolvePath(path, pathStack);
+			}
+		}
+		return errorObservable(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
+
+	}
 }

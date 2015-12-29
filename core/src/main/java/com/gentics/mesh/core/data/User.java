@@ -13,7 +13,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 
 /**
- * The User Domain Model class
+ * The User Domain Model interface.
  */
 public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedVertex, ReferenceableElement<UserReference> {
 
@@ -248,4 +248,5 @@ public interface User extends GenericVertex<UserResponse>, NamedVertex, IndexedV
 
 	boolean hasPermission(MeshVertex node, GraphPermission permission);
 
+	boolean hasAdminRole();
 }

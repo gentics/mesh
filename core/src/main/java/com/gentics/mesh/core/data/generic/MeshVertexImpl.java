@@ -44,8 +44,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	 * @param prefix
 	 * @return
 	 */
-	public Map<String, String> getProperties(String prefix) {
-		Map<String, String> properties = new HashMap<>();
+	public <T> Map<String, T> getProperties(String prefix) {
+		Map<String, T> properties = new HashMap<>();
 
 		for (String key : getPropertyKeys()) {
 			if (key.startsWith(prefix)) {

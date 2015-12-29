@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -32,14 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -415,7 +407,7 @@ public class TestDataProvider {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
-			englishContainer.createString("name").setString(name + " english name");
+			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
 			englishContainer.createString("filename").setString(name + ".en.html");

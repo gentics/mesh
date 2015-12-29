@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.0.5-beta-SNAPSHOT</version>
+	<version>1.0.0-beta-rc8</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -29,13 +29,14 @@
 
 		<surefire.forkcount>4</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
+		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>
 
 	<scm>
 		<connection>scm:git:git@github.com:gentics/mesh.git</connection>
 		<developerConnection>scm:git:git@github.com:gentics/mesh.git</developerConnection>
 		<url>https://github.com/gentics/mesh</url>
-		<tag>mesh-0.1.0-rc6</tag>
+		<tag>mesh-1.0.0-beta-rc8</tag>
 	</scm>
 
 
@@ -88,7 +89,8 @@
 		<module>api</module>
 		<module>rest-client</module>
 		<module>databases</module>
-		<module>git</module>
+		<module>services</module>
+		<!--  <module>git</module> -->
 		<module>core</module>
 		<module>verticles</module>
 		<!-- <module>importers</module> -->

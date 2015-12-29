@@ -236,11 +236,11 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findGroups(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		future = getClient().findGroups(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findGroups(new PagingParameter(4242, 1));
 		latchFor(future);

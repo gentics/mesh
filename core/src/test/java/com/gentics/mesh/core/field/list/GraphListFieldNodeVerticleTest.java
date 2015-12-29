@@ -146,9 +146,9 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testNumberList() throws IOException {
 		setSchema("number");
 		NumberFieldListImpl listField = new NumberFieldListImpl();
-		listField.add("0.1");
-		listField.add("1337");
-		listField.add("42");
+		listField.add(0.1);
+		listField.add(1337);
+		listField.add(42);
 
 		NodeResponse response = createNode("listField", listField);
 		NumberFieldListImpl listFromResponse = response.getField("listField");
@@ -239,16 +239,16 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		setSchema("number");
 
 		NumberFieldListImpl listField = new NumberFieldListImpl();
-		listField.add("1.1");
-		listField.add("1.2");
-		listField.add("1.4");
+		listField.add(1.1);
+		listField.add(1.2);
+		listField.add(1.4);
 
 		NodeResponse response = createNode("listField", listField);
 		NumberFieldListImpl listFromResponse = response.getField("listField");
 		assertEquals(3, listFromResponse.getItems().size());
 
 		// Add another item to the list and update the node
-		listField.add("1.6");
+		listField.add(1.6);
 		response = updateNode("listField", listField);
 		listFromResponse = response.getField("listField");
 		assertEquals(4, listFromResponse.getItems().size());

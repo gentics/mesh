@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.node.field.basic;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 
+/**
+ * A date graph field is a basic node field which can be used to store date values.
+ */
 public interface DateGraphField extends ListableGraphField, BasicGraphField<DateField> {
 
 	/**

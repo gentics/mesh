@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.Page;
-import com.gentics.mesh.core.data.GenericVertex;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -96,6 +95,16 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 		// TODO verify that link relation has been created
 		// TODO render content and resolve links
+	}
+
+	@Test
+	public void testGetPath() {
+		Node newsNode = content("news overview");
+		String path = newsNode.getPath(english());
+		assertEquals("/News/News Overview.en.html", path);
+
+		String pathSegementFieldValue = newsNode.getPathSegment(english());
+		assertEquals("News Overview.en.html", pathSegementFieldValue);
 	}
 
 	@Test

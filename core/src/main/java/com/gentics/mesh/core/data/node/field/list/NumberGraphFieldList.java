@@ -13,7 +13,7 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 	 * @param value
 	 * @return
 	 */
-	NumberGraphField createNumber(String value);
+	NumberGraphField createNumber(Number value);
 
 	/**
 	 * Return the graph number field at the given position.

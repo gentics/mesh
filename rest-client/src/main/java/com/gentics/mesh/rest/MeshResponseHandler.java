@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -15,6 +16,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.Future;
@@ -69,27 +71,47 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 				client.setCookie(response.headers().get("Set-Cookie"));
 			}
 
-			response.bodyHandler(bh -> {
-				String json = bh.toString();
-				if (log.isDebugEnabled()) {
-					log.debug(json);
-				}
-				try {
-					if (isSchemaClass(classOfT)) {
-						T restObj = JsonUtil.readSchema(json, classOfT);
-						future.complete(restObj);
-					} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
-						T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
-						future.complete(restObj);
-					} else {
-						T restObj = JsonUtil.readValue(json, classOfT);
-						future.complete(restObj);
+			String contentType = response.getHeader("Content-Type");
+			//FIXME TODO in theory it would also be possible that a customer uploads JSON into mesh. In those cases we would also need to return it directly (without parsing)
+			if (contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
+				response.bodyHandler(bh -> {
+					String json = bh.toString();
+					if (log.isDebugEnabled()) {
+						log.debug(json);
 					}
-				} catch (Exception e) {
-					log.error("Failed to deserialize json to class {" + classOfT + "}", e);
-					future.fail(e);
-				}
-			});
+					try {
+						// Hack to fallback to node responses when dealing with object classes
+						if (classOfT.equals(Object.class)) {
+							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, client.getClientSchemaStorage());
+							future.complete((T) restObj);
+						}
+						if (isSchemaClass(classOfT)) {
+							T restObj = JsonUtil.readSchema(json, classOfT);
+							future.complete(restObj);
+						} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
+							T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
+							future.complete(restObj);
+						} else {
+							T restObj = JsonUtil.readValue(json, classOfT);
+							future.complete(restObj);
+						}
+					} catch (Exception e) {
+						log.error("Failed to deserialize json to class {" + classOfT + "}", e);
+						future.fail(e);
+					}
+				});
+			} else {
+				NodeDownloadResponse downloadResponse = new NodeDownloadResponse();
+				downloadResponse.setContentType(contentType);
+				String disposition = response.getHeader("content-disposition");
+				String filename = disposition.substring(disposition.indexOf("=") + 1);
+				downloadResponse.setFilename(filename);
+
+				response.bodyHandler(buffer -> {
+					downloadResponse.setBuffer(buffer);
+					future.complete((T) downloadResponse);
+				});
+			}
 		} else {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();

@@ -111,7 +111,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_no_language_found", "BOGUS");
+		expectException(future, BAD_REQUEST, "language_not_found", "BOGUS");
 		assertThat(searchProvider).recordedStoreEvents(0);
 	}
 
@@ -406,7 +406,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 			restResponse = pageFuture.result();
 			allNodes.addAll(restResponse.getData());
 		}
-		assertEquals("Somehow not all users were loaded when loading all pages.", totalNodes, allNodes.size());
+		assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
 
 		// Verify that the no_perm_node is not part of the response
 		List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID))
@@ -415,15 +415,15 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(-1, 25));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
 		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(0, 25));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
 		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, -1));
 		latchFor(pageFuture);
-		expectException(pageFuture, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(4242, 25));
 		latchFor(pageFuture);
@@ -747,6 +747,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 
+		// Create node with nl language
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 		Node parentNode = folder("products");
 		Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
@@ -757,12 +758,14 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		englishContainer.createString("displayName").setString("displayName");
 		englishContainer.createString("filename").setString("filename.nl.html");
 		englishContainer.createHTML("content").setHtml("nl content");
+		role().grantPermissions(node, READ_PERM);
 
+		// Request the node in english en
 		NodeRequestParameter parameters = new NodeRequestParameter();
-		parameters.setLanguages("nl");
+		parameters.setLanguages("en");
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_no_language_found", "nl");
+		expectException(future, NOT_FOUND, "node_no_language_found", "en");
 	}
 
 	@Test

@@ -7,12 +7,15 @@ public class NodeRequestParameter implements QueryParameterProvider {
 	public static final String LANGUAGES_QUERY_PARAM_KEY = "lang";
 
 	public static final String EXPANDFIELDS_QUERY_PARAM_KEY = "expand";
-	
+
 	public static final String EXPANDALL_QUERY_PARAM_KEY = "expandAll";
+
+	public static final String RESOLVE_LINKS_QUERY_PARAM_KEY = "resolveLinks";
 
 	private String[] languages;
 	private String[] expandedFieldNames;
 	private Boolean expandAll;
+	private Boolean resolveLinks;
 
 	/**
 	 * Set the <code>lang</code> request parameter values.
@@ -32,18 +35,28 @@ public class NodeRequestParameter implements QueryParameterProvider {
 	 * @return
 	 */
 	public NodeRequestParameter setExpandedFieldNames(String... fieldNames) {
-		expandedFieldNames = fieldNames;
+		this.expandedFieldNames = fieldNames;
 		return this;
 	}
 
 	/**
-	 * Set the expandAll request parameter flag.
+	 * Set the <code>expandAll</code> request parameter flag.
 	 * 
 	 * @param flag
 	 * @return
 	 */
-	public QueryParameterProvider setExpandAll(boolean flag) {
-		expandAll = flag;
+	public NodeRequestParameter setExpandAll(boolean flag) {
+		this.expandAll = flag;
+		return this;
+	}
+
+	/**
+	 * Set the <code>resolveLinks</code> request parameter flag.
+	 * 
+	 * @param flag
+	 */
+	public NodeRequestParameter setResolveLinks(boolean flag) {
+		this.resolveLinks = flag;
 		return this;
 	}
 
@@ -77,9 +90,21 @@ public class NodeRequestParameter implements QueryParameterProvider {
 			if (query.length() != 0) {
 				query.append("&");
 			}
-			query.append("expandAll=true");
+			query.append(EXPANDALL_QUERY_PARAM_KEY + "=true");
+		}
+
+		if (resolveLinks != null && resolveLinks == true) {
+			if (query.length() != 0) {
+				query.append("&");
+			}
+			query.append(RESOLVE_LINKS_QUERY_PARAM_KEY + "=true");
 		}
 		return query.toString();
+	}
+
+	@Override
+	public String toString() {
+		return getQueryParameters();
 	}
 
 }

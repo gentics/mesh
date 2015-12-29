@@ -30,6 +30,27 @@ traits:
           type: string
           required: false
 
+  - translatable:
+      queryParameters:
+        lang:
+          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
+          example: ?lang=de,en
+
+  - imagehandler:
+      queryParameters:
+        width:
+          description: Set image target width. The height is automatically calculated when the width is omitted.
+        height:
+          description: Set image target height. The width is automatically calculated when the height is omitted.
+        cropx:
+          description: Set image crop area x coordinate.
+        cropy:
+          description: Set image crop area y coordinate.
+        cropw:
+          description: Set image crop area width.
+        croph:
+          description: Set image crop area height.
+
   - sortable:
       queryParameters:
         orderBy:
@@ -422,6 +443,30 @@ traits:
                 example: !include json/GenericMessageResponse.example.json
 
 
+
+#------------------------------------------------------------------------------
+# WebRoot Verticle
+#------------------------------------------------------------------------------
+
+/{projectName}/webroot:
+  is: [ localized ]
+  displayName: WebRoot
+  /{path}:
+    is: [ localized, include_role_perms, imagehandler ]
+    uriParameters:
+      path:
+        description: Path to a node.
+        type: string
+    get:
+      description: Retrieves the node with the given path.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/NodeResponse.example.json
+              
+              
+
 #------------------------------------------------------------------------------
 # Node Verticle
 #------------------------------------------------------------------------------
@@ -454,12 +499,8 @@ traits:
         description: Uuid of a single node.
         type: string
     get:
-      is: [ expandable, include_role_perms ]
+      is: [ expandable, include_role_perms, translatable ]
       description: Retrieves the node with the given uuid.
-      queryParameters:
-        lang:
-          description: Filter the languages in the form of a list containing [IETF language tags](http://en.wikipedia.org/wiki/IETF_language_tag) which are separated by comma.
-          example: /{projectName}/nodes/?lang=de,en
       responses:
         200:
           body:
@@ -486,6 +527,7 @@ traits:
               example: !include json/GenericMessageResponse.example.json
         423:
     /bin:
+      is: [ imagehandler ]
       get:
         description: Load the binary property value.
       put: 

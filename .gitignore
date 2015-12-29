@@ -28,3 +28,4 @@ mesh-graphdb
 /node_modules
 /typings
 
+binaryImageCache

@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasticsearch.common.collect.Tuple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
@@ -37,6 +38,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -52,17 +54,22 @@ import com.gentics.mesh.util.VerticleHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
+import rx.Observable;
 
 @Component
 public class NodeCrudHandler extends AbstractCrudHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
+
+	@Autowired
+	private ImageManipulator imageManipulator;
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
@@ -164,22 +171,14 @@ public class NodeCrudHandler extends AbstractCrudHandler {
 	// TODO abstract rc away
 	public void handleDownload(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
+		NodeBinaryHandler binaryHandler = new NodeBinaryHandler(rc, imageManipulator);
 		db.asyncNoTrx(tc -> {
 			Project project = ac.getProject();
 			loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
 				db.noTrx(noTx -> {
 					if (hasSucceeded(ac, rh)) {
 						Node node = rh.result();
-						String contentLength = String.valueOf(node.getBinaryFileSize());
-						String fileName = node.getBinaryFileName();
-						String contentType = node.getBinaryContentType();
-						node.getBinaryFileBuffer().setHandler(bh -> {
-							rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-							rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
-							// TODO encode filename?
-							rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
-							rc.response().end(bh.result());
-						});
+						binaryHandler.handle(node);
 					}
 				});
 			});

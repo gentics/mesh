@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.search.impl;
 
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Group;
@@ -131,6 +134,9 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	@Override
 	public SearchQueueEntry process(Handler<AsyncResult<Void>> handler) {
 		AbstractIndexHandler<?> indexHandler = getIndexHandler(getElementType());
+		if (indexHandler == null) {
+			throw error(BAD_REQUEST, "No index handler could be found for type {" + getElementType() + "} of element {" + getElementUuid() + "}");
+		}
 		indexHandler.handleAction(getElementUuid(), getElementActionName(), getElementIndexType(), handler);
 		return this;
 	}

@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
+/**
+ * Graph domain model interface for groups.
+ */
 public interface Group extends GenericVertex<GroupResponse>, NamedVertex, IndexedVertex, ReferenceableElement<GroupReference> {
 
 	public static final String TYPE = "group";
@@ -76,7 +79,8 @@ public interface Group extends GenericVertex<GroupResponse>, NamedVertex, Indexe
 	 * @param requestUser
 	 * @param pagingInfo
 	 * @return
-	 * @throws InvalidArgumentException Request may fail when invalid paging parameters are provided
+	 * @throws InvalidArgumentException
+	 *             Request may fail when invalid paging parameters are provided
 	 */
 	Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
@@ -86,7 +90,8 @@ public interface Group extends GenericVertex<GroupResponse>, NamedVertex, Indexe
 	 * @param requestUser
 	 * @param pagingInfo
 	 * @return Page with found users, an empty page is returned when no users could be found
-	 * @throws InvalidArgumentException Request may fail when invalid paging parameters are provided
+	 * @throws InvalidArgumentException
+	 *             Request may fail when invalid paging parameters are provided
 	 */
 	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 

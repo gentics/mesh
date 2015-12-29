@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -95,7 +96,8 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	@Test
-	public void createDeleteNodeField() {
+	@Ignore("Field deletion is currently not implemented.")
+	public void testCreateDeleteNodeField() {
 		final String fieldName = "nodeField";
 
 		NodeResponse response = createNode(fieldName, new NodeFieldImpl().setUuid(folder("news").getUuid()));

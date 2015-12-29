@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.user;
 
-import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class NodeReferenceImpl implements NodeReference {

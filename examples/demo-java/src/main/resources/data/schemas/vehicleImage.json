@@ -3,6 +3,7 @@
   "binary" : true,
   "folder" : false,
   "displayField": "name",
+  "segmentField": "name",
   "fields" : [ {
     "name" : "name",
     "label" : "Name",

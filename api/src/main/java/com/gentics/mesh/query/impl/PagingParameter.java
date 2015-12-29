@@ -139,4 +139,9 @@ public class PagingParameter implements QueryParameterProvider {
 		return PAGE_PARAMETER_KEY + "=" + page + "&" + PER_PAGE_PARAMETER_KEY + "=" + perPage;
 	}
 
+	@Override
+	public String toString() {
+		return getQueryParameters();
+	}
+
 }

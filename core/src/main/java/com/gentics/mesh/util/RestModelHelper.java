@@ -2,6 +2,7 @@ package com.gentics.mesh.util;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.util.VerticleHelper.loadObjectByUuidBlocking;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +25,7 @@ public final class RestModelHelper {
 
 	public static void setRolePermissions(InternalActionContext ac, MeshVertex sourceElement, AbstractGenericRestResponse restModel) {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
-		if (!StringUtils.isEmpty(rolePermissionParameter)) {
+		if (!isEmpty(rolePermissionParameter)) {
 			Role role = loadObjectByUuidBlocking(ac, rolePermissionParameter, READ_PERM, MeshRootImpl.getInstance().getRoleRoot());
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(sourceElement);

@@ -42,7 +42,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createNumberField(String number) {
+	public static Field createNumberField(Number number) {
 		NumberField field = new NumberFieldImpl();
 		field.setNumber(number);
 		return field;
@@ -74,9 +74,9 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createNumberListField(String... numbers) {
+	public static Field createNumberListField(Number... numbers) {
 		NumberFieldListImpl field = new NumberFieldListImpl();
-		for (String number : numbers) {
+		for (Number number : numbers) {
 			field.add(number);
 		}
 		return field;

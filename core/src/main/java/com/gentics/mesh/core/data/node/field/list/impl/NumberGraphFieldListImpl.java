@@ -14,7 +14,7 @@ import io.vertx.core.Handler;
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements NumberGraphFieldList {
 
 	@Override
-	public NumberGraphField createNumber(String number) {
+	public NumberGraphField createNumber(Number number) {
 		NumberGraphField field = createField();
 		field.setNumber(number);
 		return field;

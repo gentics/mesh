@@ -174,7 +174,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("vehicle"));
-		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber("1230"));
+		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber(1230));
 		write(nodeUpdateRequest, "demo.NodeUpdateRequest.json");
 	}
 
@@ -406,6 +406,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		schemaUpdateRequest.setBinary(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
+		schemaUpdateRequest.setSegmentField("name");
 		schemaUpdateRequest.setName("video-schema");
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
@@ -416,6 +417,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private SchemaResponse getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(randomUUID());
+		schema.setSegmentField("name");
+		schema.setDisplayField("name");
 		// schema.setDescription("Description of the schema");
 		// schema.setName("extended-content");
 		schema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -493,12 +496,12 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("teaser-stringField", createStringField("Dummy teaser for de-DE"));
 		fields.put("content-htmlField", createHtmlField("Content for language tag de-DE"));
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
-		fields.put("price-numberField", createNumberField("100.1"));
+		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
-		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
+		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 
 		nodeResponse.setSchema(getSchemaReference("content"));
 		nodeResponse.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -544,12 +547,12 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("title", createStringField("English title"));
 		fields.put("teaser", createStringField("English teaser"));
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
-		fields.put("price-numberField", createNumberField("100.1"));
+		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
-		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
+		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 
 		return contentCreate;
 	}
@@ -563,12 +566,12 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		Map<String, Field> fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
-		fields.put("price-numberField", createNumberField("100.1"));
+		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
 		fields.put("categories-nodeListField", createNodeListField());
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
-		fields.put("categoryIds-numberListField", createNumberListField("1", "42", "133", "7"));
+		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 		return nodeUpdate;
 	}
 

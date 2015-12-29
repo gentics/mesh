@@ -1,11 +1,12 @@
 package com.gentics.mesh.etc;
 
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.core.HttpConstants.APPLICATION_JSON_UTF8;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.MissingResourceException;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InvalidNameException;
@@ -31,6 +32,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.CookieHandler;
+import io.vertx.ext.web.handler.LoggerHandler;
 
 /**
  * Central storage for all vertx web request routers.
@@ -109,6 +111,8 @@ public class RouterStorage {
 		if (rootRouter == null) {
 			rootRouter = Router.router(vertx);
 
+			// Root handlers
+			rootRouter.route().handler(LoggerHandler.create());
 			rootRouter.route().last().handler(rh -> {
 				GenericMessageResponse msg = new GenericMessageResponse();
 				String internalMessage = "The rest endpoint or resource for given path {" + rh.normalisedPath() + "} could not be found.";
@@ -162,7 +166,15 @@ public class RouterStorage {
 					} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
 						HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
 						failureRoutingContext.response().setStatusCode(httpStatusError.getStatus().code());
-						String i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
+
+						String i18nMsg = httpStatusError.getMessage();
+						try {
+							i18nMsg = I18NUtil.get(HttpActionContext.create(failureRoutingContext), httpStatusError.getMessage(),
+									httpStatusError.getI18nParameters());
+						} catch (MissingResourceException e) {
+							log.error("Did not find i18n message for key {" + httpStatusError.getMessage() + "}", e);
+						}
+
 						GenericMessageResponse msg = new GenericMessageResponse(i18nMsg, null, httpStatusError.getProperties());
 						failureRoutingContext.response().end(JsonUtil.toJson(msg));
 					} else if (failure != null) {
@@ -207,6 +219,7 @@ public class RouterStorage {
 		if (Mesh.mesh().getOptions().getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(springConfiguration.corsHandler());
 		}
+		//TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(springConfiguration.bodyHandler());
 		router.route().handler(CookieHandler.create());
 		router.route().handler(springConfiguration.sessionHandler());

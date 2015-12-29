@@ -235,7 +235,7 @@ public final class MockingUtils {
 
 		// Number field
 		NumberGraphField numberField = mock(NumberGraphFieldImpl.class);
-		when(numberField.getNumber()).thenReturn("0.146");
+		when(numberField.getNumber()).thenReturn(0.146f);
 		when(container.getNumber("number")).thenReturn(numberField);
 
 		// Date field

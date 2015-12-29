@@ -299,11 +299,11 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		future = getClient().findRoles(new PagingParameter(-1, perPage));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive" , "-1");
 
 		future = getClient().findRoles(new PagingParameter(1, -1));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_invalid_paging_parameters");
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 		future = getClient().findRoles(new PagingParameter(4242, 25));
 		latchFor(future);

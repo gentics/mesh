@@ -38,7 +38,7 @@ public class NumberGraphFieldNodeTest extends AbstractBasicDBTest {
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		NumberGraphField numberField = container.createNumber("numberField");
-		numberField.setNumber("100.9");
+		numberField.setNumber(100.9f);
 
 		String json = getJson(node);
 		assertTrue("Could not find number within json. Json {" + json + "}", json.indexOf("100.9") > 1);
@@ -46,6 +46,6 @@ public class NumberGraphFieldNodeTest extends AbstractBasicDBTest {
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 		assertNotNull(response);
 		NumberFieldImpl deserializedNumberField = response.getField("numberField");
-		assertEquals("100.9", deserializedNumberField.getNumber());
+		assertEquals(100.9, deserializedNumberField.getNumber());
 	}
 }

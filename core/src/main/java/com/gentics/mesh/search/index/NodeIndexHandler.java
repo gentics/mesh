@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -211,6 +212,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			case NUMBER:
 				NumberGraphField numberField = container.getNumber(name);
 				if (numberField != null) {
+
+					// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
+					// The mesh json parser will not deserialize numbers into BigDecimal at this point. No need to check for big decimal is therefore needed.  
 					fieldsMap.put(name, numberField.getNumber());
 				}
 				break;
@@ -247,8 +251,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					case "number":
 						NumberGraphFieldList graphNumberList = container.getNumberList(fieldSchema.getName());
 						if (graphNumberList != null) {
-							List<String> numberItems = new ArrayList<>();
+							List<Number> numberItems = new ArrayList<>();
 							for (NumberGraphField listItem : graphNumberList.getList()) {
+								//TODO Number can also be a big decimal. We need to convert those special objects into basic numbers or else ES will not be able to store them
 								numberItems.add(listItem.getNumber());
 							}
 							fieldsMap.put(fieldSchema.getName(), numberItems);
