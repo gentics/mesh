@@ -18,43 +18,36 @@ public class BinaryFieldImpl implements BinaryField {
 	private String mimeType;
 	private Integer dpi;
 
-	
 	@Override
 	public Integer getDpi() {
 		return dpi;
 	}
-
 
 	@Override
 	public void setDpi(Integer dpi) {
 		this.dpi = dpi;
 	}
 
-
 	@Override
 	public long getFileSize() {
 		return fileSize;
 	}
-
 
 	@Override
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
 	}
 
-
 	@Override
 	public Integer getHeight() {
 		return height;
 	}
-
 
 	@Override
 	public void setHeight(Integer height) {
 		this.height = height;
 	}
 
-	
 	@Override
 	public Integer getWidth() {
 		return width;
@@ -65,36 +58,30 @@ public class BinaryFieldImpl implements BinaryField {
 		this.width = width;
 	}
 
-	
 	@Override
 	public String getMimeType() {
 		return mimeType;
 	}
-
 
 	@Override
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 	}
 
-
 	@Override
 	public String getSha512sum() {
 		return sha512sum;
 	}
-
 
 	@Override
 	public void setSha512sum(String sha512sum) {
 		this.sha512sum = sha512sum;
 	}
 
-
 	@Override
 	public String getFileName() {
 		return fileName;
 	}
-
 
 	@Override
 	public void setFileName(String fileName) {

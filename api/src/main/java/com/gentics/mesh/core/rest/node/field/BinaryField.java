@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * A binary field is a field which can store binary and image related meta data.
+ */
 public interface BinaryField extends Field {
 
 	/**

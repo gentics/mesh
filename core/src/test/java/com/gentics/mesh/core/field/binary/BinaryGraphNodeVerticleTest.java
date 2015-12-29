@@ -163,7 +163,6 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		NodeResponse response = responseFuture.result();
 
 		BinaryField binaryField = response.getField("binary", BinaryField.class);
-		assertEquals(fileName, binaryField.getFileName());
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());

@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.FileUtils;
 
@@ -137,7 +136,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String contentType = ul.contentType();
 					String fileName = ul.fileName();
 					String fieldUuid = field.getUuid();
-					Observable<String> obsHash = hashAndMoveBinaryFile(ac, ul, fieldUuid, field.getSegmentedPath());
+					Observable<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 					return obsHash.flatMap(sha512sum -> {
 						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
 							field.setFileName(fileName);
@@ -247,78 +246,88 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
 	 * 
-	 * @param ac
 	 * @param fileUpload
 	 *            Upload which will be handled
 	 * @param uuid
 	 * @param segmentedPath
 	 * @return
 	 */
-	private Observable<String> hashAndMoveBinaryFile(ActionContext ac, FileUpload fileUpload, String uuid, String segmentedPath) {
+	protected Observable<String> hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
-		FileSystem fileSystem = rxVertx.fileSystem();
-
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");
 		String targetPath = targetFile.getAbsolutePath();
 
-		// Check of target path
-		Observable<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).doOnError(error -> {
-			log.error("Unable to check existence of file at location {" + targetPath + "}");
+		return hashFileupload(fileUpload).flatMap(sha512sum -> {
+			return checkUploadFolderExists(uploadFolder).flatMap(e -> {
+				return deletePotentialUpload(targetPath).flatMap(e1 -> {
+					return moveUploadIntoPlace(fileUpload, targetPath).map(k -> sha512sum);
+				});
+			});
 		});
+	}
 
+	protected Observable<String> hashFileupload(FileUpload fileUpload) {
+		Observable<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
+			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+		});
+		return obsHash;
+	}
+
+	protected Observable<Void> deletePotentialUpload(String targetPath) {
+		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
+		FileSystem fileSystem = rxVertx.fileSystem();
 		// Deleting of existing binary file
 		Observable<Void> obsDeleteExisting = fileSystem.deleteObservable(targetPath).doOnError(error -> {
 			log.error("Error while attempting to delete target file {" + targetPath + "}", error);
 		});
+
+		Observable<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).doOnError(error -> {
+			log.error("Unable to check existence of file at location {" + targetPath + "}");
+		});
+
 		Observable<Void> obsPotentialUploadDeleted = obsUploadExistsCheck.flatMap(uploadAlreadyExists -> {
 			if (uploadAlreadyExists) {
-				return obsDeleteExisting.map(e -> {
-					return null;
+				return obsDeleteExisting.flatMap(e -> {
+					return Observable.just(null);
 				});
 			}
-			return Observable.empty();
+			return Observable.just(null);
 		});
+		return obsPotentialUploadDeleted;
+	}
 
-		// Moving of upload to final destination
-		Observable<Void> obsMovedUpload = fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).doOnError(error -> {
+	protected Observable<Void> moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
+		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
+		FileSystem fileSystem = rxVertx.fileSystem();
+		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).doOnError(error -> {
 			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+		}).flatMap(e -> {
+			return Observable.just(null);
 		});
+	}
 
-		// Hashing of upload data
-		Observable<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
-			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "} for {" + uuid + "}", error);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-		});
-
-		// Creation of upload directory
-		Observable<Void> obsUploadFolderCreated = fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
-			log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
-			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		});
-
-		// Checking of upload folder, Create the upload folder if needed
-		Observable<Boolean> obsFolderExists = fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+	protected Observable<Void> checkUploadFolderExists(File uploadFolder) {
+		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
+		FileSystem fileSystem = rxVertx.fileSystem();
+		return fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
 			log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
 			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		});
-		Observable<Void> obsFolderChecked = obsFolderExists.flatMap(folderExists -> {
+		}).flatMap(folderExists -> {
 			if (!folderExists) {
-				// Folder does not exists so lets create it
-				return obsUploadFolderCreated;
+				return fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
+					throw error(BAD_REQUEST, "node_error_upload_failed", error);
+				}).flatMap(e -> {
+					return Observable.just(null);
+				});
+			} else {
+				return Observable.just(null);
 			}
-			return Observable.empty();
 		});
 
-		// Combined observable. We need the hash, we need to make sure the upload folder is checked and eventually created and we need to make sure that the potential existing upload file is deleted before we can move the upload in place.
-		return Observable.merge(obsHash, obsFolderChecked, obsPotentialUploadDeleted).flatMap(e -> {
-			return obsMovedUpload.flatMap(done -> {
-				return obsHash;
-			});
-		});
-
-	};
+	}
 
 }

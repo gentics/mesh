@@ -173,7 +173,6 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 				return node.transformToRest(ac);
 			}).toBlocking().last();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
-
 	}
 
 	protected void readElementList(InternalActionContext ac, TrxHandler<RootVertex<T>> handler) {
@@ -187,7 +186,6 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			return page.transformToRest(ac).toBlocking().last();
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
-
 	}
 
 	/**
