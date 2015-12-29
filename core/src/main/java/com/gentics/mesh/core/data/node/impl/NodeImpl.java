@@ -12,6 +12,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
 import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.IOException;
@@ -459,6 +460,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void delete() {
+
+		// Prevent deletion of basenode
+		if (getProject().getBaseNode().getUuid().equals(getUuid())) {
+			throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+		}
+
 		// Delete subfolders
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + getUuid() + "}");
