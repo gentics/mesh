@@ -32,7 +32,7 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 	private MeshUploadOptions uploadOptions;
 	final String data = "bliblablub";
 	final String hash = "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E";
-	final String segmentedPath = "some/path/to/file";
+	String segmentedPath = "some/path/to/file";
 
 	@Before
 	public void setup() {
@@ -60,6 +60,23 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
 		assertTrue("The upload folder should have been created.", uploadFolder.exists());
+	}
+
+	@Test
+	public void testHandlerCase2() throws IOException {
+		segmentedPath = "/cdfb/34f9/598a/4173/bb34/f959/8ae1/7330/";
+		FileUpload fileUpload = mockUpload();
+		File uploadFolder = getUploadFolder();
+		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
+
+		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().last();
+		assertNotNull(hashOutput);
+		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
+		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
+		assertThat(uploadFolder).as("The upload folder should have been created").exists();
+		FileUtils.deleteDirectory(uploadFolder);
+
+		// target/tmp_962b883cf9e24403ab883cf9e2b40364/40eaaea4-e1a5-4cec-bded-5781b1dce398
 	}
 
 	@Test(expected = HttpStatusCodeErrorException.class)
