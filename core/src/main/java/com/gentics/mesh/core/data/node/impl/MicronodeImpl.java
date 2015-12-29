@@ -69,9 +69,6 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -141,8 +138,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema) {
-		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.getRestFieldFromGraph(InternalActionContext, String,
-		// FieldSchema, boolean, Handler<AsyncResult<Field>>))
+		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.getRestFieldFromGraph())
 		// find a better solution for this
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
@@ -522,17 +518,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public void delete() {
 		getElement().remove();
-	}
-
-	private static <T extends Field> Handler<AsyncResult<T>> wrap(Handler<AsyncResult<Field>> handler) {
-		Handler<AsyncResult<T>> returnHandler = ele -> {
-			if (ele.failed()) {
-				handler.handle(Future.failedFuture(ele.cause()));
-			} else {
-				handler.handle(Future.succeededFuture(ele.result()));
-			}
-		};
-		return returnHandler;
 	}
 
 	private void failOnMissingMandatoryField(ActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key)

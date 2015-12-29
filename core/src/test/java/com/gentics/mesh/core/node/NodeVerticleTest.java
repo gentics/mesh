@@ -756,7 +756,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("en");
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_no_language_found", "en");
+		expectException(future, NOT_FOUND, ""
+				+ "", "en");
 	}
 
 	@Test

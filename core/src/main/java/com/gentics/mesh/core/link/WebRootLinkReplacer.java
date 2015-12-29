@@ -109,12 +109,8 @@ public class WebRootLinkReplacer {
 	 * @return observable of the rendered link
 	 */
 	public Observable<String> resolve(String uuid, String languageTag, Type type) {
-		if (languageTag == null) {
-			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
-		}
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		languageTag = languageTag.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().first();
 		// TODO check for null
 		Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);

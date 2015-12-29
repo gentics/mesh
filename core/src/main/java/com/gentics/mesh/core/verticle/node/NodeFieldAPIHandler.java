@@ -226,22 +226,21 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	// TODO abstract rc away
-	public void handleDownload(RoutingContext rc) {
-		InternalActionContext ac = InternalActionContext.create(rc);
-		// NodeBinaryFieldAPIHandler binaryHandler = new NodeBinaryFieldAPIHandler(rc, imageManipulator);
-		// db.asyncNoTrx(tc -> {
-		// Project project = ac.getProject();
-		// loadObject(ac, "uuid", READ_PERM, project.getNodeRoot(), rh -> {
-		// db.noTrx(noTx -> {
-		// if (hasSucceeded(ac, rh)) {
-		// Node node = rh.result();
-		// binaryHandler.handle(node);
-		// }
-		// });
-		// });
-		// } , ac.errorHandler());
-	}
+//	// TODO abstract rc away
+//	public void handleDownload(RoutingContext rc) {
+//		InternalActionContext ac = InternalActionContext.create(rc);
+//		BinaryFieldResponseHandler binaryHandler = new BinaryFieldResponseHandler(rc, imageManipulator);
+//		db.asyncNoTrx(() -> {
+//			Project project = ac.getProject();
+//			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node-> {
+//				db.noTrx(()-> {
+//					Node node = rh.result();
+//					binaryHandler.handle(node);
+//				});
+//			});
+//		}).subscribe(binaryField -> {
+//		}, ac::fail);
+//	}
 
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
@@ -267,6 +266,12 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		});
 	}
 
+	/**
+	 * Hash the given fileupload and return a sha512 checksum.
+	 * 
+	 * @param fileUpload
+	 * @return
+	 */
 	protected Observable<String> hashFileupload(FileUpload fileUpload) {
 		Observable<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
 			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
@@ -275,6 +280,12 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		return obsHash;
 	}
 
+	/**
+	 * Delete potential existing file uploads from the given path.
+	 * 
+	 * @param targetPath
+	 * @return
+	 */
 	protected Observable<Void> deletePotentialUpload(String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
@@ -298,6 +309,13 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		return obsPotentialUploadDeleted;
 	}
 
+	/**
+	 * Move the fileupload from the temporary upload directory to the given target path.
+	 * 
+	 * @param fileUpload
+	 * @param targetPath
+	 * @return
+	 */
 	protected Observable<Void> moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
@@ -309,6 +327,12 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		});
 	}
 
+	/**
+	 * Check the target upload folder and create it if needed.
+	 * 
+	 * @param uploadFolder
+	 * @return
+	 */
 	protected Observable<Void> checkUploadFolderExists(File uploadFolder) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();

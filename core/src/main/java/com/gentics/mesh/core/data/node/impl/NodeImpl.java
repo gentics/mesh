@@ -85,6 +85,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final String PUBLISHED_PROPERTY_KEY = "published";
 
+	public static final String AC_LANGUAGE_KEY = "meshFieldContainerLanguage";
+
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void checkIndices(Database database) {
@@ -349,6 +351,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
+
+				// store the language in the actioncontext
+				ac.put(AC_LANGUAGE_KEY, fieldContainer.getLanguage());
+
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
@@ -392,8 +398,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Add webroot url
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-				// TODO what about the language?
-				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), null, ac.getResolveLinksType()).toBlocking().first());
+				restNode.setUrl(WebRootLinkReplacer.getInstance().resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType()).toBlocking().first());
 			}
 
 			// Merge and complete
