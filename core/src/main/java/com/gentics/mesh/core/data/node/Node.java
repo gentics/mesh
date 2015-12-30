@@ -25,6 +25,14 @@ import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
 
+/**
+ * The Node Domain Model interface.
+ * 
+ * A node is the main building block for project structures. Each project has one base node which is basically a folder. Additional child nodes can be added to
+ * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
+ * vertices which contain the language specific data.
+ * 
+ */
 public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 
 	public static final String TYPE = "node";

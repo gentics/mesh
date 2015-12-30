@@ -18,6 +18,9 @@ import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
 
+/**
+ * @see NumberGraphFieldList
+ */
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList> implements NodeGraphFieldList {
 
 	public static void checkIndices(Database database) {

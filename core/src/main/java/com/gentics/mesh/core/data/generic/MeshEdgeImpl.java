@@ -12,6 +12,9 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
+/**
+ * @see MeshEdge
+ */
 public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	private Object id;

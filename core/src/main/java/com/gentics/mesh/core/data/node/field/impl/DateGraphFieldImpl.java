@@ -9,6 +9,9 @@ import com.syncleus.ferma.AbstractVertexFrame;
 
 import rx.Observable;
 
+/**
+ * @see DateGraphField
+ */
 public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements DateGraphField {
 
 	public DateGraphFieldImpl(String fieldKey, AbstractVertexFrame parentContainer) {

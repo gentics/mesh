@@ -23,6 +23,9 @@ import com.gentics.mesh.util.UUIDUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see SearchQueue
+ */
 public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueImpl.class);
@@ -125,7 +128,7 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 			count++;
 		}
 		MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-		return count;	
+		return count;
 	}
 
 }

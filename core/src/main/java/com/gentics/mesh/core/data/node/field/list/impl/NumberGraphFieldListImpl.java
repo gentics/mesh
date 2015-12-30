@@ -9,6 +9,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
+/**
+ * @see NumberGraphFieldList
+ */
 public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements NumberGraphFieldList {
 
 	@Override

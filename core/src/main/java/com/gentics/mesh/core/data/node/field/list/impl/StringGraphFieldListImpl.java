@@ -10,6 +10,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
+/**
+ * @see StringGraphFieldList
+ */
 public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl> implements StringGraphFieldList {
 
 	public static void checkIndices(Database database) {

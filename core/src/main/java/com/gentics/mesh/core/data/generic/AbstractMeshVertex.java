@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.generic;
 
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 
-public abstract class AbstractMeshVertex<T extends RestModel> extends MeshVertexImpl implements MeshVertex {
+//TODO It should be possible to remove this class
+public abstract class AbstractMeshVertex<T extends RestModel> extends MeshVertexImpl {
 
 }

@@ -5,6 +5,15 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
+/**
+ * A mesh core vertex is an vertex which can be manipulated via CRUD by the user. Thus this interface provides various methods that are needed to interact with
+ * such vertices.
+ * 
+ * @param <T>
+ *            Rest model class of the core vertex
+ * @param <R>
+ *            The core vertex itself
+ */
 public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertex, IndexableElement, TransformableElement<T> {
 
 	/**
@@ -17,7 +26,8 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	/**
 	 * Set the creator of the vertex.
 	 * 
-	 * @param user Creator
+	 * @param user
+	 *            Creator
 	 */
 	void setCreator(User user);
 
@@ -31,7 +41,8 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	/**
 	 * Set the editor of the vertex.
 	 * 
-	 * @param user Editor
+	 * @param user
+	 *            Editor
 	 */
 	void setEditor(User user);
 
@@ -45,7 +56,8 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	/**
 	 * Set the timestamp on which the vertex was last updated.
 	 * 
-	 * @param timestamp Edit timestamp
+	 * @param timestamp
+	 *            Edit timestamp
 	 */
 	void setLastEditedTimestamp(long timestamp);
 
@@ -59,7 +71,8 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	/**
 	 * Set the timestamp on which the vertex was created.
 	 * 
-	 * @param timestamp Creation timestamp
+	 * @param timestamp
+	 *            Creation timestamp
 	 */
 	void setCreationTimestamp(long timestamp);
 
@@ -73,7 +86,8 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	/**
 	 * Set the editor and creator references and update the timestamps for created and edited fields.
 	 * 
-	 * @param user Creator
+	 * @param user
+	 *            Creator
 	 */
 	void setCreated(User user);
 

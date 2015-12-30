@@ -5,6 +5,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * RestModel POJO for list responses.
+ *
+ * @param <T>
+ */
 public class ListResponse<T> implements RestModel {
 
 	private List<T> data = new ArrayList<>();

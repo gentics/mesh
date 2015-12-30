@@ -7,6 +7,10 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 
+/**
+ * Abstract implementation of a basic graph field container. This implementation will store basic graph fields within the properties of of this container
+ * vertex.
+ */
 public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImpl implements BasicFieldContainer {
 
 	public static final String I18N_PREFIX = "i18n-";
@@ -29,11 +33,23 @@ public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImp
 		return getProperties(I18N_PREFIX);
 	}
 
+	/**
+	 * Return the i18n specific property for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public String getI18nProperty(String key) {
 		// TODO typecheck?
 		return super.getProperty(I18N_PREFIX + key);
 	}
 
+	/**
+	 * Set the i18n specific property for the given key.
+	 * 
+	 * @param key
+	 * @param value
+	 */
 	public void setI18nProperty(String key, String value) {
 		super.setProperty(I18N_PREFIX + key, value);
 	}

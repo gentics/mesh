@@ -33,6 +33,9 @@ import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Observable;
 
+/**
+ * @see SchemaContainer
+ */
 public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, SchemaContainer> implements SchemaContainer {
 
 	public static void checkIndices(Database database) {

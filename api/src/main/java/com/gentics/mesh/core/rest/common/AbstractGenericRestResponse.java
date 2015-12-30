@@ -4,7 +4,6 @@ import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * Basic rest model abstract class for most mesh rest POJOs.
- *
  */
 public class AbstractGenericRestResponse extends AbstractResponse {
 

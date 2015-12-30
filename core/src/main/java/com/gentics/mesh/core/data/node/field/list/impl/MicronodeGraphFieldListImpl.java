@@ -26,6 +26,9 @@ import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
 
+/**
+ * @see MicronodeGraphFieldList
+ */
 public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList>
 		implements MicronodeGraphFieldList {
 

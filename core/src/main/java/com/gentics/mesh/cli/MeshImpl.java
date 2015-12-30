@@ -18,6 +18,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
+/**
+ * @see Mesh
+ */
 public class MeshImpl implements Mesh {
 
 	private static final Logger log;

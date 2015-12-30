@@ -38,6 +38,9 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 
 import rx.Observable;
 
+/**
+ * @see Group
+ */
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
 
 	public static final String NAME_KEY = "name";

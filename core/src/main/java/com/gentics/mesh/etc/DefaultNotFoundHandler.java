@@ -10,6 +10,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler which will be invoked when no other route matches. This way this handler will return a informative JSON error (404).
+ */
 public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 
 	public static DefaultNotFoundHandler create() {

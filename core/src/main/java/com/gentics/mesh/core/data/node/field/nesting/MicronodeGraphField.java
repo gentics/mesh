@@ -7,6 +7,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import rx.Observable;
 
 public interface MicronodeGraphField extends ListableReferencingGraphField {
+
 	/**
 	 * Returns the micronode for this field.
 	 * 

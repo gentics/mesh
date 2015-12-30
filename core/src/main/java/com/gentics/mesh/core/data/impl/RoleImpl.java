@@ -35,6 +35,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * @see Role
+ */
 public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleImpl.class);
@@ -129,7 +132,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			obs.add(fillCommonRestFields(ac, restRole));
 
 			// Role permissions
-			obs.add(setRolePermissions(ac,  restRole));
+			obs.add(setRolePermissions(ac, restRole));
 
 			// Merge and complete
 			return Observable.merge(obs).toBlocking().last();

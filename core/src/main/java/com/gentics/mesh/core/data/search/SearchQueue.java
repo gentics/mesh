@@ -5,7 +5,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 /**
  * A search queue is a queue which holds search queue batches. Each batch is used to update the search index documents. Once a batch has been processed it
  * should be removed from the search queue.
- *
  */
 public interface SearchQueue extends MeshVertex {
 

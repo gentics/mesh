@@ -4,7 +4,20 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 
 /**
- * Aggregation node for projects.
+ * Project Root Node domain model interface.
+ * 
+ * <pre>
+* {@code
+* 	(pr:ProjectRootImpl)-[r1:HAS_PROJECT]->(p1:ProjectImpl)
+* 	(pr-[r2:HAS_PROJECT]->(p2:ProjectImpl)
+ 	(pr)-[r3:HAS_PROJECT]->(p3:ProjectImpl)
+ * 	(mr:MeshRootImpl)-[r:HAS_PROJECT_ROOT]->(pr)
+* }
+ * </pre>
+ *
+ * <p>
+ * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.root.impl.ProjectRootImpl.jpg" alt="">
+ * </p>
  */
 public interface ProjectRoot extends RootVertex<Project> {
 

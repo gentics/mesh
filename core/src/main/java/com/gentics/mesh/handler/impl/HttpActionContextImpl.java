@@ -16,6 +16,9 @@ import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * @see HttpActionContext
+ */
 public class HttpActionContextImpl extends AbstractActionContext implements HttpActionContext {
 
 	public static final String LOCALE_MAP_DATA_KEY = "locale";

@@ -47,6 +47,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * @see Tag
+ */
 public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Tag> implements Tag {
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);

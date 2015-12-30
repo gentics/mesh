@@ -24,68 +24,267 @@ import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
  */
 public interface GraphFieldContainer extends BasicFieldContainer {
 
+	/**
+	 * 
+	 * Return the string graph field for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	StringGraphField getString(String key);
 
+	/**
+	 * Create a new string graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	StringGraphField createString(String key);
 
+	/**
+	 * Return the binary graph field for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	BinaryGraphField getBinary(String key);
 
+	/**
+	 * Create the binary graph field with the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	BinaryGraphField createBinary(String key);
 
+	/**
+	 * Return the node graph field for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	NodeGraphField getNode(String key);
 
+	/**
+	 * Create a new node graph field.
+	 * 
+	 * @param key
+	 *            Key of the field
+	 * @param node
+	 *            Node to be referenced.
+	 * @return
+	 */
 	NodeGraphField createNode(String key, Node node);
 
+	/**
+	 * Return the date graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	DateGraphField getDate(String key);
 
+	/**
+	 * Create a new date graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	DateGraphField createDate(String key);
 
-	NumberGraphField createNumber(String key);
-
+	/**
+	 * Return the number graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	NumberGraphField getNumber(String key);
 
-	HtmlGraphField createHTML(String key);
+	/**
+	 * Create the number graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	NumberGraphField createNumber(String key);
 
+	/**
+	 * Return the html graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	HtmlGraphField getHtml(String key);
 
+	/**
+	 * Create a new html graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	HtmlGraphField createHTML(String key);
+
+	/**
+	 * Return the boolean graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	BooleanGraphField getBoolean(String key);
 
+	/**
+	 * Create a new boolean graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	BooleanGraphField createBoolean(String key);
 
+	/**
+	 * Return the micronode graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	MicronodeGraphField getMicronode(String key);
 
+	/**
+	 * Create a new micronode graph field.
+	 * 
+	 * @param key
+	 * @param microschema
+	 * @return
+	 */
 	MicronodeGraphField createMicronode(String key, MicroschemaContainer microschema);
 
-	DateGraphFieldList createDateList(String fieldKey);
+	// Lists
 
+	/**
+	 * Return the graph date list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	DateGraphFieldList getDateList(String fieldKey);
 
-	HtmlGraphFieldList createHTMLList(String fieldKey);
+	/**
+	 * Create a new graph date list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	DateGraphFieldList createDateList(String fieldKey);
 
+	/**
+	 * Return graph html list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	HtmlGraphFieldList getHTMLList(String fieldKey);
 
-	NumberGraphFieldList createNumberList(String fieldKey);
+	/**
+	 * Create a new graph html list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	HtmlGraphFieldList createHTMLList(String fieldKey);
 
+	/**
+	 * Return graph number list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	NumberGraphFieldList getNumberList(String fieldKey);
 
-	NodeGraphFieldList createNodeList(String fieldKey);
+	/**
+	 * Create a new graph number list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NumberGraphFieldList createNumberList(String fieldKey);
 
+	/**
+	 * Return graph node list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	NodeGraphFieldList getNodeList(String fieldKey);
 
-	StringGraphFieldList createStringList(String fieldKey);
+	/**
+	 * Create a new graph node list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	NodeGraphFieldList createNodeList(String fieldKey);
 
+	/**
+	 * Return graph string list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	StringGraphFieldList getStringList(String fieldKey);
 
-	BooleanGraphFieldList createBooleanList(String fieldKey);
+	/**
+	 * Create a new graph string list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	StringGraphFieldList createStringList(String fieldKey);
 
+	/**
+	 * Return graph boolean list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	BooleanGraphFieldList getBooleanList(String fieldKey);
 
-	MicronodeGraphFieldList createMicronodeFieldList(String fieldKey);
+	/**
+	 * Create a new graph boolean list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	BooleanGraphFieldList createBooleanList(String fieldKey);
 
+	/**
+	 * Return graph node list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
 	MicronodeGraphFieldList getMicronodeList(String fieldKey);
 
+	/**
+	 * Create a new graph micronode list.
+	 * 
+	 * @param fieldKey
+	 * @return
+	 */
+	MicronodeGraphFieldList createMicronodeFieldList(String fieldKey);
+
+	/**
+	 * Create select graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	<T extends ListableGraphField> SelectGraphField<T> createSelect(String key);
 
+	/**
+	 * Return select graph field.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	<T extends ListableGraphField> SelectGraphField<T> getSelect(String key);
 
 }

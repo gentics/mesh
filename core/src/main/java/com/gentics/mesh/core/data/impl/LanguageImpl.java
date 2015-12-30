@@ -12,6 +12,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
+/**
+ * @see Language
+ */
 public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Language> implements Language {
 
 	public static final String LANGUAGE_TAG_PROPERTY_KEY = "languageTag";

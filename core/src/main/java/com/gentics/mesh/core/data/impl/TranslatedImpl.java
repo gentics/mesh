@@ -5,6 +5,9 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
 import com.syncleus.ferma.AbstractEdgeFrame;
 
+/**
+ * @see Translated
+ */
 public class TranslatedImpl extends AbstractEdgeFrame implements Translated {
 
 	public static final String LANGUAGE_TAG_KEY = "languageTag";

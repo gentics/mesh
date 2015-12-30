@@ -7,6 +7,10 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * A mesh vertex is a mesh element that exposes various graph OGM specific methods. We use the interface abstraction in order to hide certain ferma methods
+ * which would otherwise clutter the API.
+ */
 public interface MeshVertex extends MeshElement {
 
 	/**
@@ -32,7 +36,7 @@ public interface MeshVertex extends MeshElement {
 	void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
 
 	/**
-	 * Return the implementation for this element.
+	 * Return the implementation for this element which exposes various ferma methods.
 	 * 
 	 * @return
 	 */

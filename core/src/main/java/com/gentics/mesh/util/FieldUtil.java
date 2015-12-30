@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.
- *
  */
 public final class FieldUtil {
 

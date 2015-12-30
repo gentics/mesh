@@ -17,6 +17,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Central failure handler for REST API routes.
+ */
 public class FailureHandler implements Handler<RoutingContext> {
 
 	private static final Logger log = LoggerFactory.getLogger(FailureHandler.class);
@@ -49,7 +52,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
-				if(failure instanceof HttpStatusCodeErrorException) {
+				if (failure instanceof HttpStatusCodeErrorException) {
 					break;
 				}
 				failure = failure.getCause();

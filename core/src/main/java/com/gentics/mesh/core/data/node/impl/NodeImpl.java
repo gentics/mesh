@@ -82,6 +82,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * @see Node
+ */
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
 	private static final String PUBLISHED_PROPERTY_KEY = "published";

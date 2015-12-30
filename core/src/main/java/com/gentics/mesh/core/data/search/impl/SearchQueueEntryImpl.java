@@ -31,6 +31,9 @@ import com.gentics.mesh.search.index.UserIndexHandler;
 
 import rx.Observable;
 
+/**
+ * @see SearchQueueEntry
+ */
 public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueEntry {
 
 	private static final String ACTION_KEY = "element_action";

@@ -21,6 +21,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * @see SearchQueueBatch
+ */
 public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueBatch {
 
 	private static final Logger log = LoggerFactory.getLogger(SearchQueueBatchImpl.class);
@@ -128,15 +131,16 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 					delete();
 					return null;
 				});
-				// 4. Refresh index
+				// Refresh index
 				SearchProvider provider = springConfiguration.searchProvider();
 				if (provider != null) {
 					provider.refreshIndex();
 				} else {
-					log.error("Could not refresh index since the elastic search provider has not been initalized");
+					log.error("Could not refresh index since the elasticsearch provider has not been initalized");
 				}
 			});
 
+			//TODO define what to do when an error during processing occurs. Should we fail somehow? Should we mark the failed batch? Retry the processing?
 			// mergedObs.doOnError(error -> {
 			// return null;
 			// });

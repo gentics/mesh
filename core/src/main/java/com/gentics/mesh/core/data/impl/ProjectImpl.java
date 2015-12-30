@@ -49,6 +49,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * @see Project
+ */
 public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project> implements Project {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);

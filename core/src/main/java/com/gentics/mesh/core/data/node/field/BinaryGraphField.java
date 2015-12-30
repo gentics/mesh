@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * The BinaryField Domain Model interface.
+ */
 public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 
 	/**

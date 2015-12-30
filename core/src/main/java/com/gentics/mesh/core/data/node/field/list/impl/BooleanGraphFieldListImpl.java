@@ -9,6 +9,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
+/**
+ * @see BooleanGraphFieldList
+ */
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl> implements BooleanGraphFieldList {
 
 	@Override

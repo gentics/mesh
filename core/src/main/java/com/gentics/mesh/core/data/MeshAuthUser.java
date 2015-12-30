@@ -1,10 +1,14 @@
 package com.gentics.mesh.core.data;
 
-import io.vertx.ext.auth.User;
-
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 
-public interface MeshAuthUser extends User, com.gentics.mesh.core.data.User {
+import io.vertx.core.shareddata.impl.ClusterSerializable;
+import io.vertx.ext.auth.User;
+
+/**
+ * Mesh graph user which additionally implements the vertex {@link User} interface.
+ */
+public interface MeshAuthUser extends User, com.gentics.mesh.core.data.User, ClusterSerializable {
 
 	MeshAuthUserImpl getImpl();
 

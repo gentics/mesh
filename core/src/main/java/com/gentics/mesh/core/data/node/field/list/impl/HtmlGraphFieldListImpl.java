@@ -9,6 +9,9 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
+/**
+ * @see HtmlGraphFieldList
+ */
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl> implements HtmlGraphFieldList {
 
 	@Override

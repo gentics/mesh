@@ -20,11 +20,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.impl.ClusterSerializable;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 
-public class MeshAuthUserImpl extends UserImpl implements ClusterSerializable, User, MeshAuthUser {
+/**
+ * @see MeshAuthUser
+ */
+public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 
 	@Override
 	public JsonObject principal() {

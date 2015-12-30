@@ -61,17 +61,7 @@ import rx.Observable;
 import rx.subjects.AsyncSubject;
 
 /**
- * <pre>
-* {@code
-* 	(u:UserImpl)-[r1:HAS_USER]->(ur:UserRootImpl)
-* 	(u)-[r2:HAS_USER]->(g:GroupImpl)
- 	(g)<-[r3:HAS_ROLE]-(r:RoleImpl)
-* }
- * </pre>
- *
- * <p>
- * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
- * </p>
+ * @see User
  */
 public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> implements User {
 
