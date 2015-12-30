@@ -459,7 +459,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			boolean expandField) {
 
-		Database db = MeshSpringConfiguration.getInstance().database();
 		// db.asyncNoTrx(noTrx -> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
@@ -478,7 +477,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					return stringField;
 				});
 			}
-
 		case BINARY:
 			BinaryGraphField graphBinaryField = getBinary(fieldKey);
 			if (graphBinaryField == null) {
@@ -493,7 +491,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			} else {
 				return graphNumberField.transformToRest(ac);
 			}
-
 		case DATE:
 			DateGraphField graphDateField = getDate(fieldKey);
 			if (graphDateField == null) {

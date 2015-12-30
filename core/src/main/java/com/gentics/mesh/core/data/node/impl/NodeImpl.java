@@ -352,7 +352,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-				// store the language in the actioncontext
+				// Store the language in the actioncontext
 				ac.put(AC_LANGUAGE_KEY, fieldContainer.getLanguage());
 
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();
@@ -361,8 +361,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					Observable<NodeResponse> obsFields = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField)
 							.map(restField -> {
 						if (fieldEntry.isRequired() && restField == null) {
-							/* TODO i18n */
-							// TODO no trx fail. Instead let obsRestField fail
+							// TODO i18n
 							throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
 									+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
 						}
@@ -404,7 +403,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Merge and complete
 			return Observable.merge(obs).last();
-
 		});
 	}
 
@@ -436,7 +434,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (language == null) {
 				// MeshRootImpl.getInstance().getLanguageRoot().reload();
 				// Language lan =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
-				// System.out.println(lan);
 				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 			}
 			fieldContainer = getGraphFieldContainer(language);

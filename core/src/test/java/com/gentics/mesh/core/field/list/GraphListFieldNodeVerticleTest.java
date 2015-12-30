@@ -41,6 +41,7 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		listFieldSchema.setName("listField");
 		listFieldSchema.setLabel("Some label");
 		listFieldSchema.setListType(listType);
+		schema.removeField("listField");
 		schema.addField(listFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 	}
