@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -121,6 +122,12 @@ public class SchemaImpl implements RestModel, Schema {
 	@Override
 	public FieldSchema getFieldSchema(String fieldName) {
 		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
+	}
+
+	@Override
+	public String toString() {
+		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
+		return getName() + " fields: {" + fields + "}";
 	}
 
 }

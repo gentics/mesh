@@ -48,13 +48,23 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		return Observable.error(new HttpStatusCodeErrorException(status, i18nKey, parameters));
 	}
 
+	/**
+	 * Create a new http status exception.
+	 * 
+	 * @param status
+	 *            Status Code
+	 * @param message
+	 *            Message
+	 * @param e
+	 *            Underlying exception
+	 */
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String message, Throwable e) {
 		super(message, e);
 		this.status = status;
 	}
 
 	/**
-	 * Create a new http status exception
+	 * Create a new http status exception.
 	 * 
 	 * @param status
 	 *            Status code
@@ -80,7 +90,7 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	}
 
 	/**
-	 * Create a new http status exception
+	 * Create a new http status exception.
 	 * 
 	 * @param message
 	 *            Message
@@ -89,16 +99,26 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 		super(message);
 	}
 
+	/**
+	 * Return the http status code.
+	 * 
+	 * @return
+	 */
 	public HttpResponseStatus getStatus() {
 		return status;
 	}
 
+	/**
+	 * Return the i18n parameters for the error message.
+	 * 
+	 * @return
+	 */
 	public String[] getI18nParameters() {
 		return i18nParameters;
 	}
 
 	/**
-	 * Return additional properties
+	 * Return additional properties.
 	 * 
 	 * @return Properties
 	 */
@@ -107,13 +127,18 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	}
 
 	/**
-	 * Set additional properties which will be attached to the exception
+	 * Set additional properties which will be attached to the exception.
 	 * 
 	 * @param properties
 	 *            Properties
 	 */
 	public void setProperties(Map<String, String> properties) {
 		this.properties = properties;
+	}
+
+	@Override
+	public String toString() {
+		return getStatus() + " " + getMessage() + " params {" + String.join(",", getI18nParameters()) + "}";
 	}
 
 }

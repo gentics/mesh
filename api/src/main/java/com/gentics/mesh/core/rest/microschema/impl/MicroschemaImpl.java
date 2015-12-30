@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -74,5 +75,11 @@ public class MicroschemaImpl implements Microschema, RestModel {
 		if (!fields.stream().map(field -> field.getLabel()).allMatch(new HashSet<>()::add)) {
 			throw new MeshJsonException("The microschema contains duplicate labels. The label for a schema field must be unique.");
 		}
+	}
+
+	@Override
+	public String toString() {
+		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
+		return getName() + " fields: {" + fields + "}";
 	}
 }

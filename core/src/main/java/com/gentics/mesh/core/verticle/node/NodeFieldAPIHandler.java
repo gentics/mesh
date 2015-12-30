@@ -28,7 +28,6 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -114,7 +113,6 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 				try {
-					Schema schema = node.getSchema();
 					Set<FileUpload> fileUploads = rc.fileUploads();
 					if (fileUploads.isEmpty()) {
 						throw error(BAD_REQUEST, "node_error_no_binarydata_found");

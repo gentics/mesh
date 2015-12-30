@@ -79,6 +79,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		microschema.setName("vcard");
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode(FIELDNAME, field);
 
 		MicronodeResponse createdField = response.getField(FIELDNAME);

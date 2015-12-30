@@ -23,4 +23,9 @@ public class NumberFieldImpl implements NumberField {
 		return FieldTypes.NUMBER.toString();
 	}
 
+	@Override
+	public String toString() {
+		return String.valueOf(getNumber());
+	}
+
 }

@@ -66,4 +66,5 @@ public interface Microschema {
 	 * @throws MeshJsonException
 	 */
 	void validate() throws MeshJsonException;
+
 }

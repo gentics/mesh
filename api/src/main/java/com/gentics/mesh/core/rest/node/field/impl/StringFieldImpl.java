@@ -23,4 +23,9 @@ public class StringFieldImpl implements StringField {
 		return FieldTypes.STRING.toString();
 	}
 
+	@Override
+	public String toString() {
+		return getString();
+	}
+
 }

@@ -22,4 +22,9 @@ public class DateFieldImpl implements DateField {
 	public String getType() {
 		return FieldTypes.DATE.toString();
 	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(getDate());
+	}
 }

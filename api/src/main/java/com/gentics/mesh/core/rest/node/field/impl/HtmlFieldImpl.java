@@ -25,4 +25,9 @@ public class HtmlFieldImpl implements HtmlField {
 		return FieldTypes.HTML.toString();
 	}
 
+	@Override
+	public String toString() {
+		return getHTML();
+	}
+
 }

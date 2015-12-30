@@ -372,8 +372,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					//TODO i18n
 					throw error(BAD_REQUEST, "No valid microschema reference could be found for field {" + key + "}");
 				}
-				// Load microschema by name
-				if (!isEmpty(microschemaName)) {
+				// 1. Load microschema by uuid
+				if (isEmpty(microschemaUuid)) {
+					microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
+					//					if (microschemaContainer == null) {
+					//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
+					//					}
+				}
+				// 2. Load microschema by name
+				if (microschemaContainer==null && !isEmpty(microschemaName)) {
 					microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().single();
 					//					if (microschemaContainer == null) {
 					//						//TODO i18n
@@ -381,17 +388,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					//					}
 				}
 
-				if (isEmpty(microschemaUuid)) {
-					microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
-					//					if (microschemaContainer == null) {
-					//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
-					//					}
+				if (microschemaContainer == null) {
+					//TODO i18n
+					throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}. Could not find microschema by either name or uuid.");
 				}
-
-				//				if (microschemaContainer == null) {
-				//					//TODO i18n
-				//					throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}");
-				//				}
 
 				Micronode micronode = null;
 				MicronodeGraphField micronodeGraphField = getMicronode(key);

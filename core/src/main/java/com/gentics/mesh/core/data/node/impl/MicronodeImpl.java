@@ -75,11 +75,15 @@ import rx.Observable;
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
+	public static void checkIndices(Database database) {
+		database.addVertexType(MicronodeImpl.class);
+	}
+
 	@Override
 	public Observable<MicronodeResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrxExperimental(() -> {
 			List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 			MicronodeResponse restMicronode = new MicronodeResponse();
 			MicroschemaContainer microschemaContainer = getMicroschemaContainer();
@@ -91,12 +95,14 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			if (microschema == null) {
 				throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
 			}
+
 			// Microschema Reference
 			restMicronode.setMicroschema(microschemaContainer.transformToReference(ac));
 
-			// set uuid
+			// Uuid
 			restMicronode.setUuid(getUuid());
 
+			// Fields
 			for (FieldSchema fieldEntry : microschema.getFields()) {
 				Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry).map(restField -> {
 					if (fieldEntry.isRequired() && restField == null) {
@@ -115,7 +121,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				obs.add(obsRestField);
 			}
 
-			return Observable.merge(obs).toBlocking().last();
+			return Observable.merge(obs).last();
 
 		});
 	}

@@ -75,8 +75,6 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
 		assertThat(uploadFolder).as("The upload folder should have been created").exists();
 		FileUtils.deleteDirectory(uploadFolder);
-
-		// target/tmp_962b883cf9e24403ab883cf9e2b40364/40eaaea4-e1a5-4cec-bded-5781b1dce398
 	}
 
 	@Test(expected = HttpStatusCodeErrorException.class)

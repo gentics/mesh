@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
@@ -207,6 +208,7 @@ public class DatabaseHelper {
 		RoleImpl.checkIndices(database);
 		UserImpl.checkIndices(database);
 		NodeImpl.checkIndices(database);
+		MicronodeImpl.checkIndices(database);
 		TagImpl.checkIndices(database);
 		TagFamilyImpl.checkIndices(database);
 		SchemaContainerImpl.checkIndices(database);

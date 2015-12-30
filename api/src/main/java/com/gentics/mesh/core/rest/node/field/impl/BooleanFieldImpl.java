@@ -22,4 +22,9 @@ public class BooleanFieldImpl implements BooleanField {
 	public String getType() {
 		return FieldTypes.BOOLEAN.toString();
 	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(getValue());
+	}
 }
