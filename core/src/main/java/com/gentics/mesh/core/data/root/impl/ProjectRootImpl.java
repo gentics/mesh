@@ -40,20 +40,7 @@ import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 /**
- * Project Root Node domain model implementation.
- * 
- * <pre>
-* {@code
-* 	(pr:ProjectRootImpl)-[r1:HAS_PROJECT]->(p1:ProjectImpl)
-* 	(pr-[r2:HAS_PROJECT]->(p2:ProjectImpl)
- 	(pr)-[r3:HAS_PROJECT]->(p3:ProjectImpl)
- * 	(mr:MeshRootImpl)-[r:HAS_PROJECT_ROOT]->(pr)
-* }
- * </pre>
- *
- * <p>
- * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.root.impl.ProjectRootImpl.jpg" alt="">
- * </p>
+ * @see ProjectRoot
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 

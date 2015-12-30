@@ -11,6 +11,10 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
 import rx.Observable;
 
+/**
+ * @see Page
+ * @param <T>
+ */
 public class PageImpl<T extends TransformableElement<? extends RestModel>> implements Iterable<T>, Page {
 
 	private List<? extends T> wrappedList;
