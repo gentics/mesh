@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -34,8 +36,8 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 			return ((TagFamily) obj).getTagRoot();
 		} else {
 			log.error("Could not locate root vertex while handling request.", ac.query());
+			throw error(INTERNAL_SERVER_ERROR, "The tag family of the tag could not be located");
 		}
-		return null;
 	}
 
 	@Override
