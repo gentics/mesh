@@ -459,13 +459,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void delete() {
-
-		// Prevent deletion of basenode
-		if (getProject().getBaseNode().getUuid().equals(getUuid())) {
-			throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+	public void delete(boolean ignoreChecks) {
+		if (!ignoreChecks) {
+			// Prevent deletion of basenode
+			if (getProject().getBaseNode().getUuid().equals(getUuid())) {
+				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
+			}
 		}
-
 		// Delete subfolders
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node {" + getUuid() + "}");
@@ -477,6 +477,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			container.delete();
 		}
 		getElement().remove();
+
+	}
+
+	@Override
+	public void delete() {
+		delete(false);
 	}
 
 	@Override

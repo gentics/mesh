@@ -72,14 +72,14 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		String invalidName = "thereIsNoMicroschemaWithThisName";
 
 		for (String name : microschemaContainers().keySet()) {
-			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().first();
+			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().single();
 			assertNotNull("Could not find microschema container for name " + name, container);
 			Microschema microschema = container.getMicroschema();
 			assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
 			assertEquals("Check microschema name", name, microschema.getName());
 		}
 
-		assertNull("Must not find microschema with name " + invalidName, boot.microschemaContainerRoot().findByName(invalidName));
+		assertNull("Must not find microschema with name " + invalidName, boot.microschemaContainerRoot().findByName(invalidName).toBlocking().single());
 	}
 
 	@Test
@@ -90,10 +90,10 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		MicroschemaContainerRoot root = boot.microschemaContainerRoot();
 		for (MicroschemaContainer container : microschemaContainers().values()) {
 			String uuid = container.getUuid();
-			assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().first());
+			assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid).toBlocking().single());
 		}
 
-		assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().first());
+		assertNull("Must not find microschema with uuid " + invalidUUID, root.findByUuid(invalidUUID).toBlocking().single());
 	}
 
 	@Ignore("Not yet implemented")

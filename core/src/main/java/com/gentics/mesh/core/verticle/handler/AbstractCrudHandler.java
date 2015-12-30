@@ -108,7 +108,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 	}
 
-	protected <T extends MeshCoreVertex<?, T>> void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler,
+	protected void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler,
 			String uuidParameterName, String responseMessage) {
 
 		db.asyncNoTrx(() -> {

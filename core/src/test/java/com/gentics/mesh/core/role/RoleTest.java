@@ -253,8 +253,8 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNotNull(boot.roleRoot().findByName(role().getName()));
-		assertNull(boot.roleRoot().findByName("bogus"));
+		assertNotNull(boot.roleRoot().findByName(role().getName()).toBlocking().single());
+		assertNull(boot.roleRoot().findByName("bogus").toBlocking().single());
 	}
 
 	@Test
