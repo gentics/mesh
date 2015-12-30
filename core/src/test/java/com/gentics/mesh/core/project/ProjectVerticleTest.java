@@ -76,7 +76,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		ProjectResponse restProject = future.result();
 
 		test.assertProject(request, restProject);
-		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
+		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
 
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
@@ -109,7 +109,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(4, restProject.getPermissions().length);
 
 		meshRoot().getProjectRoot().reload();
-		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
+		assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name).toBlocking().single());
 
 		// Read the project
 		Future<ProjectResponse> readFuture = getClient().findProjectByUuid(restProject.getUuid());
@@ -281,7 +281,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertProject(request, restProject);
 		assertTrue(searchProvider.getStoreEvents().size() != 0);
 
-		Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		reloadedProject.reload();
 		assertEquals("New Name", reloadedProject.getName());
 	}
@@ -349,7 +349,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-		project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull("The project should not have been deleted", project);
 	}
 

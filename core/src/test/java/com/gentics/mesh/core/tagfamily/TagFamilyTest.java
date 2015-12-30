@@ -66,7 +66,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
 		assertNotNull(projectTagFamilyRoot);
 
-		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors").toBlocking().first();
+		TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors").toBlocking().single();
 		assertNotNull(projectTagFamily);
 
 		assertNotNull(projectTagFamilyRoot.create("bogus", user()));
@@ -89,7 +89,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	public void testFindByName() {
 		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 		assertNotNull(root);
-		assertNotNull(root.findByName("colors"));
+		assertNotNull(root.findByName("colors").toBlocking().single());
 	}
 
 	@Test
@@ -98,7 +98,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily tagFamily = tagFamily("colors");
 
-		TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid()).toBlocking().first();
+		TagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid()).toBlocking().single();
 		assertNotNull(foundTagFamily);
 	}
 
@@ -117,7 +117,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	public void testCreate() throws IOException {
 		TagFamilyRoot root = project().getTagFamilyRoot();
 		TagFamily family = root.create("test", user());
-		TagFamily family2 = root.findByName(family.getName()).toBlocking().first();
+		TagFamily family2 = root.findByName(family.getName()).toBlocking().single();
 		assertNotNull(family2);
 		assertEquals("test", family2.getName());
 		assertEquals(family.getUuid(), family2.getUuid());
@@ -181,7 +181,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = tagFamily("colors");
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		TagFamilyResponse response = tagFamily.transformToRest(ac).toBlocking().first();
+		TagFamilyResponse response = tagFamily.transformToRest(ac).toBlocking().single();
 		assertNotNull(response);
 		assertEquals(tagFamily.getName(), response.getName());
 		assertEquals(tagFamily.getUuid(), response.getUuid());
@@ -194,11 +194,11 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = root.create("test123", user());
 		assertNotNull(tagFamily);
 		String uuid = tagFamily.getUuid();
-		TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().first();
+		TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().single();
 		assertNotNull(foundTagFamily);
 		tagFamily.delete();
 		// TODO check for attached nodes
-		Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().first();
+		Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(project);
 
 	}

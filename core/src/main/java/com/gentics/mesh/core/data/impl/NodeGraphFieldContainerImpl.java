@@ -374,7 +374,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 				// Load microschema by name
 				if (!isEmpty(microschemaName)) {
-					microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().first();
+					microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().single();
 					//					if (microschemaContainer == null) {
 					//						//TODO i18n
 					//						throw error(BAD_REQUEST, "Could not find microschema for name {" + microschemaName + "}");
@@ -382,7 +382,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 
 				if (isEmpty(microschemaUuid)) {
-					microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().first();
+					microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
 					//					if (microschemaContainer == null) {
 					//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
 					//					}

@@ -764,7 +764,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		UserResponse restUser = future.result();
 		test.assertUser(request, restUser);
 
-		User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().first();
+		User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().single();
 		test.assertUser(user, restUser);
 	}
 

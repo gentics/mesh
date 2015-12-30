@@ -42,7 +42,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 			} else {
 				return "OK";
 			}
-		}).toBlocking().first();
+		}).toBlocking().single();
 
 		assertEquals(2, e.get());
 		assertEquals("OK", result);

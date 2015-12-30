@@ -446,8 +446,8 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		if (future.cause() instanceof MeshRestClientHttpException) {
 			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
-			assertEquals(status.code(), exception.getStatusCode());
-			assertEquals(status.reasonPhrase(), exception.getMessage());
+			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
+			assertEquals("The status message did not match the expected message", status.reasonPhrase(), exception.getMessage());
 			assertNotNull(exception.getResponseMessage());
 			assertEquals(message, exception.getResponseMessage().getMessage());
 		} else {

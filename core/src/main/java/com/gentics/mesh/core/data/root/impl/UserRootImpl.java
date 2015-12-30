@@ -148,7 +148,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 						}
 
 						// TODO decide whether we need to check perms on the project as well
-						Project project = boot.projectRoot().findByName(projectName).toBlocking().first();
+						Project project = boot.projectRoot().findByName(projectName).toBlocking().single();
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}

@@ -367,7 +367,7 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject schemaJson = dataArray.getJsonObject(i);
 			String schemaName = schemaJson.getString("name");
-			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName).toBlocking().first();
+			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName).toBlocking().single();
 			if (container == null) {
 				StringWriter writer = new StringWriter();
 				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");

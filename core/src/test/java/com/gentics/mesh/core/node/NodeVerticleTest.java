@@ -229,7 +229,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
-		Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid()).toBlocking().first();
+		Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid()).toBlocking().single();
 		assertNotNull(node);
 		test.assertMeshNode(request, node);
 
@@ -246,7 +246,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
 
 		meshRoot().getNodeRoot().reload();
-		Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().first();
+		Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().single();
 		assertNull("The node should have been deleted.", deletedNode);
 	}
 
@@ -1008,7 +1008,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-		Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().first();
+		Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull("The node should still exist.", foundNode);
 	}
 

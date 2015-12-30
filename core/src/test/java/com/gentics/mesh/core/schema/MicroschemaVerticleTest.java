@@ -200,7 +200,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(request.getName(), restSchema.getName());
 		vcardContainer.reload();
 		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
-		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().first();
+		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
 		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
@@ -248,7 +248,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("microschema_deleted", future, microschema.getUuid() + "/" + microschema.getName());
 
-		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().first();
+		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().single();
 		assertNull("The microschema should have been deleted.", reloaded);
 	}
 

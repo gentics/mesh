@@ -138,7 +138,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Node node = folder("news");
 		node.addTag(tag);
 
-		Node reloadedNode = boot.nodeRoot().findByUuid(node.getUuid()).toBlocking().first();
+		Node reloadedNode = boot.nodeRoot().findByUuid(node.getUuid()).toBlocking().single();
 		boolean found = false;
 		for (Tag currentTag : reloadedNode.getTags()) {
 			if (currentTag.getUuid().equals(tag.getUuid())) {
@@ -224,19 +224,19 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByName() {
 		Tag tag = tag("car");
-		Tag foundTag = meshRoot().getTagRoot().findByName("Car").toBlocking().first();
+		Tag foundTag = meshRoot().getTagRoot().findByName("Car").toBlocking().single();
 		assertNotNull(foundTag);
 		assertEquals("Car", foundTag.getName());
-		assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()));
-		assertNull("No tag with the name bogus should be found", meshRoot().getTagRoot().findByName("bogus").toBlocking().last());
+		assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()).toBlocking().single());
+		assertNull("No tag with the name bogus should be found", meshRoot().getTagRoot().findByName("bogus").toBlocking().single());
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
 		Tag tag = tag("car");
-		assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().first());
-		assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus").toBlocking().first());
+		assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()).toBlocking().single());
+		assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus").toBlocking().single());
 	}
 
 	@Test
@@ -247,13 +247,13 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(tag);
 		String uuid = tag.getUuid();
 		CountDownLatch latch = new CountDownLatch(1);
-		Tag loadedTag = meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first();
+		Tag loadedTag = meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull("The folder could not be found.", loadedTag);
 		String name = loadedTag.getName();
 		assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
 		assertEquals(10, tagFamily.getTagRoot().findAll().size());
 		latch.countDown();
-		Tag projectTag = tagFamily.getTagRoot().findByUuid(uuid).toBlocking().first();
+		Tag projectTag = tagFamily.getTagRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull("The tag should also be assigned to the project tag root", projectTag);
 
 	}
@@ -291,9 +291,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = tagFamily("basic");
 		Tag tag = tagFamily.create("someTag", project(), user());
 		String uuid = tag.getUuid();
-		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
 		tag.delete();
-		assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().first());
+		assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
 	}
 
 	@Test

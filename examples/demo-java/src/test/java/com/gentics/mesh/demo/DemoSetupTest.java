@@ -58,7 +58,7 @@ public class DemoSetupTest {
 
 	@Test
 	public void testSetup() throws Exception {
-		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().first().getNodeRoot().findAll().size() > 0);
+		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().single().getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 		assertNotNull(user);
 		Group group = user.getGroups().get(0);

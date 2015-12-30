@@ -201,7 +201,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 			}
 
 			if (!getName().equals(requestModel.getName())) {
-				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().first();
+				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}

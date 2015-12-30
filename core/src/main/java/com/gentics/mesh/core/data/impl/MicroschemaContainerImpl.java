@@ -107,7 +107,7 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 		try {
 			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaUpdateRequest.class);
 			requestModel.validate();
-			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().first();
+			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().single();
 			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {
 				return errorObservable(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
 			}

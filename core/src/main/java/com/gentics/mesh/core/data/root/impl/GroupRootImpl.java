@@ -84,7 +84,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		return db.noTrx(() -> {
 			MeshRoot root = boot.meshRoot();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
-				Group groupWithSameName = findByName(requestModel.getName()).toBlocking().first();
+				Group groupWithSameName = findByName(requestModel.getName()).toBlocking().single();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 				}

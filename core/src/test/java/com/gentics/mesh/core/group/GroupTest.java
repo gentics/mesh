@@ -98,13 +98,13 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		assertNotNull(boot.groupRoot().findByName("guests"));
+		assertNotNull(boot.groupRoot().findByName("guests").toBlocking().single());
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().first();
+		Group group = boot.groupRoot().findByUuid(group().getUuid()).toBlocking().single();
 		assertNotNull(group);
 	}
 
@@ -128,7 +128,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 		assertNotNull(group);
 		String uuid = group.getUuid();
 		group.delete();
-		group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().first();
+		group = meshRoot().getGroupRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(group);
 	}
 
@@ -139,10 +139,10 @@ public class GroupTest extends AbstractBasicObjectTest {
 		User user = user();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		Group group = root.getGroupRoot().create("newGroup", user);
-		assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().first());
+		assertFalse(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
 		user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
 		ac.data().clear();
-		assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().first());
+		assertTrue(user.hasPermissionAsync(ac, group, GraphPermission.CREATE_PERM).toBlocking().single());
 	}
 
 	@Test

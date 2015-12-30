@@ -191,7 +191,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 			// 3. Or just schema reference by name
 			if (!isEmpty(schemaInfo.getSchema().getName())) {
-				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().first();
+				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().single();
 				if (containerByName != null) {
 					String schemaName = containerByName.getName();
 					String schemaUuid = containerByName.getUuid();

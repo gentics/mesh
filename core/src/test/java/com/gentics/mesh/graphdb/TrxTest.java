@@ -204,7 +204,7 @@ public class TrxTest extends AbstractBasicDBTest {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
 		db.asyncNoTrx(() -> {
 			throw new RuntimeException("error");
-		}).toBlocking().first();
+		}).toBlocking().single();
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
 	}

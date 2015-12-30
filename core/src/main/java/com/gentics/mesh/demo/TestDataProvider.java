@@ -342,7 +342,7 @@ public class TestDataProvider {
 	private void addBootstrapSchemas() {
 
 		// folder
-		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder").toBlocking().first();
+		SchemaContainer folderSchemaContainer = rootService.schemaContainerRoot().findByName("folder").toBlocking().single();
 		project.getSchemaContainerRoot().addSchemaContainer(folderSchemaContainer);
 		schemaContainers.put("folder", folderSchemaContainer);
 

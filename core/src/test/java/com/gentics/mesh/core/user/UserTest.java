@@ -83,7 +83,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			long start = System.currentTimeMillis();
 			int nChecks = 50000;
 			for (int i = 0; i < nChecks; i++) {
-				assertTrue(user.hasPermissionAsync(ac, language, READ_PERM).toBlocking().first());
+				assertTrue(user.hasPermissionAsync(ac, language, READ_PERM).toBlocking().single());
 			}
 			long duration = System.currentTimeMillis() - start;
 			System.out.println("Duration: " + duration);
@@ -183,7 +183,7 @@ public class UserTest extends AbstractBasicObjectTest {
 			// user.getPermissionNames(ac, node);
 			// latch.countDown();
 			// } else {
-			user.getPermissionNamesAsync(ac, node).toBlocking().first();
+			user.getPermissionNamesAsync(ac, node).toBlocking().single();
 			// }
 			// assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 		}
@@ -264,7 +264,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		String uuid = user().getUuid();
-		User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().first();
+		User foundUser = boot.userRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull(foundUser);
 		assertEquals(uuid, foundUser.getUuid());
 	}
@@ -275,7 +275,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 
-		UserResponse restUser = user().transformToRest(ac).toBlocking().first();
+		UserResponse restUser = user().transformToRest(ac).toBlocking().single();
 
 		assertNotNull(restUser);
 		assertEquals(user().getUsername(), restUser.getUsername());
@@ -295,7 +295,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertNotNull(user);
 		String uuid = user.getUuid();
 		user.delete();
-		User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().first();
+		User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundUser);
 	}
 
@@ -306,10 +306,10 @@ public class UserTest extends AbstractBasicObjectTest {
 		User user = user();
 		InternalActionContext ac = getMockedInternalActionContext("");
 		User newUser = root.getUserRoot().create("Anton", user());
-		assertFalse(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().first());
+		assertFalse(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().single());
 		user.addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, newUser);
 		ac.data().clear();
-		assertTrue(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().first());
+		assertTrue(user.hasPermissionAsync(ac, newUser, GraphPermission.CREATE_PERM).toBlocking().single());
 	}
 
 	@Test
@@ -464,7 +464,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		user.setPasswordHash(PASSWDHASH);
 		assertTrue(user.isEnabled());
 
-		User reloadedUser = userRoot.findByUuid(user.getUuid()).toBlocking().first();
+		User reloadedUser = userRoot.findByUuid(user.getUuid()).toBlocking().single();
 		assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 		assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 		assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -480,7 +480,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertEquals(1, user.getGroups().size());
 		assertTrue(user.isEnabled());
 		user.delete();
-		User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().first();
+		User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundUser);
 	}
 

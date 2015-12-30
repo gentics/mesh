@@ -49,7 +49,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Observable.error(e);
 				}
 			});
-			return obs.toBlocking().first();
+			return obs.toBlocking().single();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -130,7 +130,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				// BUG Add SQB processing
 				return tuple.v2().transformToRest(ac);
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x).toBlocking().single();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

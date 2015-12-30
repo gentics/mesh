@@ -107,7 +107,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		SchemaResponse restSchema = future.result();
 		test.assertSchema(schema, restSchema);
 		extraProject.getSchemaContainerRoot().reload();
-		assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first());
+		assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().single());
 	}
 
 	@Test
@@ -123,7 +123,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", extraProject.getUuid());
 		// Reload the schema and check for expected changes
-		assertFalse("The schema should not have been added to the extra project", extraProject.getSchemaContainerRoot().contains(schema));
+		assertFalse("The schema should not have been added to the extra project but it was", extraProject.getSchemaContainerRoot().contains(schema));
 
 	}
 

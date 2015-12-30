@@ -81,7 +81,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 
-		Role conflictingRole = findByName(roleName).toBlocking().first();
+		Role conflictingRole = findByName(roleName).toBlocking().single();
 		if (conflictingRole != null) {
 			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
 		}

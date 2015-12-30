@@ -153,7 +153,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				return errorObservable(BAD_REQUEST, "error_name_must_be_set");
 			}
 
-			SchemaContainer foundSchema = root.findByName(requestModel.getName()).toBlocking().first();
+			SchemaContainer foundSchema = root.findByName(requestModel.getName()).toBlocking().single();
 			if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
 				return errorObservable(BAD_REQUEST, "schema_conflicting_name", requestModel.getName());
 			}

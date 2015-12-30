@@ -54,7 +54,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public Project getProject() {
 		if (project == null) {
 			RoutingContext rc = getRoutingContext();
-			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(getProjectName(rc)).toBlocking().first();
+			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(getProjectName(rc)).toBlocking().single();
 		}
 		return project;
 	}

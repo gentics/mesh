@@ -160,7 +160,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			obsParts.add(setRolePermissions(ac, restProject));
 
 			// Merge and complete
-			return Observable.merge(obsParts).last().toBlocking().first();
+			return Observable.merge(obsParts).last().toBlocking().single();
 		});
 	}
 
@@ -169,7 +169,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		Node baseNode = getBaseNode();
 		if (baseNode == null) {
 			baseNode = getGraph().addFramedVertex(NodeImpl.class);
-			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder").toBlocking().first());
+			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder").toBlocking().single());
 			baseNode.setCreator(creator);
 			baseNode.setEditor(creator);
 			baseNode.setProject(this);
@@ -209,7 +209,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		return db.trx(() -> {
 			// Check for conflicting project name
 			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
-				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().first();
+				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 					HttpStatusCodeErrorException conflictError = conflict(projectWithSameName.getUuid(), requestModel.getName(),
 							"project_conflicting_name");

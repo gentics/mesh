@@ -535,7 +535,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						String referencedNodeUuid = basicReference.getUuid();
 						String projectName = basicReference.getProjectName();
 						/* TODO decide whether we need to check perms on the project as well */
-						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName).toBlocking().first();
+						Project project = BootstrapInitializer.getBoot().projectRoot().findByName(projectName).toBlocking().single();
 						if (project == null) {
 							throw error(BAD_REQUEST, "project_not_found", projectName);
 						}

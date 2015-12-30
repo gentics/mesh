@@ -74,7 +74,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		Role createdRole = meshRoot().getRoleRoot().findByUuid(future.result().getUuid()).toBlocking().first();
+		Role createdRole = meshRoot().getRoleRoot().findByUuid(future.result().getUuid()).toBlocking().single();
 		assertTrue(user().hasPermission(createdRole, UPDATE_PERM));
 		assertTrue(user().hasPermission(createdRole, READ_PERM));
 		assertTrue(user().hasPermission(createdRole, DELETE_PERM));
@@ -344,7 +344,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(roleUuid, restRole.getUuid());
 
 		// Check that the extra role was updated as expected
-		Role reloadedRole = roleRoot.findByUuid(roleUuid).toBlocking().first();
+		Role reloadedRole = roleRoot.findByUuid(roleUuid).toBlocking().single();
 		reloadedRole.reload();
 		assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 	}

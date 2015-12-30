@@ -198,7 +198,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				throw error(BAD_REQUEST, "tag_name_not_set");
 			} else {
 				TagFamily tagFamily = getTagFamily();
-				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().last();
+				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().single();
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
 							tagFamily.getName());

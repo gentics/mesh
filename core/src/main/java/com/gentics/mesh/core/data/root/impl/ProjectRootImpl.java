@@ -162,7 +162,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid());
 			}
 			// TODO instead of this check, a constraint in the db should be added
-			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName()).toBlocking().first();
+			Project conflictingProject = boot.projectRoot().findByName(requestModel.getName()).toBlocking().single();
 			if (conflictingProject != null) {
 				throw conflict(conflictingProject.getUuid(), projectName, "project_conflicting_name");
 			}

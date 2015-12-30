@@ -148,7 +148,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 				throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid());
 			}
 
-			Tag conflictingTag = tagFamily.getTagRoot().findByName(tagName).toBlocking().last();
+			Tag conflictingTag = tagFamily.getTagRoot().findByName(tagName).toBlocking().single();
 			if (conflictingTag != null) {
 				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
 			}

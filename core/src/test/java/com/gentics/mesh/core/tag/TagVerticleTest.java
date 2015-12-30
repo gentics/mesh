@@ -291,10 +291,10 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
 
-		tag = boot.tagRoot().findByUuid(uuid).toBlocking().first();
+		tag = boot.tagRoot().findByUuid(uuid).toBlocking().single();
 		assertNull("The tag should have been deleted", tag);
 
-		Project project = boot.projectRoot().findByName(PROJECT_NAME).toBlocking().first();
+		Project project = boot.projectRoot().findByName(PROJECT_NAME).toBlocking().single();
 		assertNotNull(project);
 	}
 

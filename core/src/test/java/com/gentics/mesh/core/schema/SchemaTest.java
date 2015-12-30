@@ -46,10 +46,10 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByName() throws IOException {
-		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().first();
+		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
 		assertNotNull(schemaContainer);
 		assertEquals("content", schemaContainer.getSchema().getName());
-		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().last());
+		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().single());
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindByUUID() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
-		assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().first());
+		assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
 	}
 
 	@Test
@@ -107,7 +107,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	public void testDelete() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
 		getSchemaContainer().delete();
-		assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().first());
+		assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
 	}
 
 	@Test
@@ -131,7 +131,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
 		newContainer.delete();
-		assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().first());
+		assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
 	}
 
 	@Test
@@ -162,7 +162,7 @@ public class SchemaTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws IOException {
-		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().first();
+		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
 		Schema schema = schemaContainer.getSchema();
 		schema.setName("changed");
 		schemaContainer.setSchema(schema);

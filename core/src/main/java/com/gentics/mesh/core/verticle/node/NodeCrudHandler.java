@@ -105,7 +105,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x).toBlocking().single();
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

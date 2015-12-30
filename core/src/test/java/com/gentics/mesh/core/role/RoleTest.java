@@ -59,7 +59,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role createdRole = root.create(roleName, user());
 		assertNotNull(createdRole);
 		String uuid = createdRole.getUuid();
-		Role role = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		Role role = boot.roleRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull(role);
 		assertEquals(roleName, role.getName());
 	}
@@ -260,9 +260,9 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().first();
+		Role role = boot.roleRoot().findByUuid(role().getUuid()).toBlocking().single();
 		assertNotNull(role);
-		role = boot.roleRoot().findByUuid("bogus").toBlocking().first();
+		role = boot.roleRoot().findByUuid("bogus").toBlocking().single();
 		assertNull(role);
 	}
 
@@ -272,7 +272,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = role();
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		RoleResponse restModel = role.transformToRest(ac).toBlocking().first();
+		RoleResponse restModel = role.transformToRest(ac).toBlocking().single();
 
 		assertNotNull(restModel);
 		assertEquals(role.getName(), restModel.getName());
@@ -288,10 +288,10 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		Role role = root.create(roleName, user());
 		String uuid = role.getUuid();
-		role = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		role = boot.roleRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull(role);
 		role.delete();
-		Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().first();
+		Role foundRole = boot.roleRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundRole);
 
 	}
