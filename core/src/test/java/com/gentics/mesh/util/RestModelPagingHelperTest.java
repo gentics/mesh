@@ -6,16 +6,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
+
 public class RestModelPagingHelperTest {
 
 	@Test
 	public void testPagingOffsetCorrection() {
-		TestListResponse response = new TestListResponse();
-		PageImpl<?> page = mock(PageImpl.class);
+		ListResponse response = new ListResponse();
+		Page page = mock(PageImpl.class);
 
 		int nPages = 3;
 		int nCurrentPage = 0;
@@ -30,7 +33,7 @@ public class RestModelPagingHelperTest {
 		when(page.getNumberOfElements()).thenReturn(nElements);
 		when(page.getTotalElements()).thenReturn(nTotalElements);
 		when(page.getPerPage()).thenReturn(nPageSize);
-
+		Mockito.doCallRealMethod().when(page).setPaging(response);
 		page.setPaging(response);
 
 		assertNotNull(response.getMetainfo());
@@ -39,10 +42,5 @@ public class RestModelPagingHelperTest {
 		assertEquals(nTotalElements, response.getMetainfo().getTotalCount());
 		assertEquals(info.getPerPage(), response.getMetainfo().getPerPage());
 	}
-
-}
-
-@SuppressWarnings("rawtypes")
-class TestListResponse extends ListResponse {
 
 }
