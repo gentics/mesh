@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tagfamily;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -83,7 +84,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response did not contain the expected role permission field value", future.result().getRolePerms());
-		assertEquals("The response did not contain the expected amount of role permissions.",4, future.result().getRolePerms().length);
+		assertEquals("The response did not contain the expected amount of role permissions.", 4, future.result().getRolePerms().length);
 
 	}
 
@@ -328,7 +329,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagFamilyResponse tagFamily2 = updatedTagFut.result();
-		test.assertTagFamily(tagFamily("basic"), tagFamily2);
+		assertThat(tagFamily2).matches(tagFamily("basic"));
 
 		// 4. read the tag again and verify that it was changed
 		Future<TagFamilyResponse> reloadedTagFut = getClient().findTagFamilyByUuid(PROJECT_NAME, uuid);
@@ -336,7 +337,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(reloadedTagFut);
 		TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
 		assertEquals(request.getName(), reloadedTagFamily.getName());
-		test.assertTagFamily(tagFamily("basic"), reloadedTagFamily);
+		assertThat(reloadedTagFamily).matches(tagFamily("basic"));
 
 	}
 

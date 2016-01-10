@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -155,7 +156,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<TagResponse> future = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		test.assertTag(tag, future.result());
+		assertThat(future.result()).matches(tag);
 	}
 
 	@Test
@@ -217,7 +218,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(updatedTagFut);
 		assertSuccess(updatedTagFut);
 		TagResponse tag2 = updatedTagFut.result();
-		test.assertTag(tag, tag2);
+		assertThat(tag2).matches(tag);
 
 		// 4. read the tag again and verify that it was changed
 		Future<TagResponse> reloadedTagFut = getClient().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid);
@@ -226,7 +227,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		TagResponse reloadedTag = reloadedTagFut.result();
 		assertEquals(request.getFields().getName(), reloadedTag.getFields().getName());
 
-		test.assertTag(tag, reloadedTag);
+		assertThat(reloadedTag).matches(tag);
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.group;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -155,7 +156,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
-		test.assertGroup(group(), restGroup);
+		assertThat(restGroup).matches(group());
 
 		assertTrue("Role should be assigned to group.", group().hasRole(extraRole));
 	}
@@ -202,7 +203,7 @@ public class GroupRolesVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		GroupResponse restGroup = future.result();
-		test.assertGroup(group(), restGroup);
+		assertThat(restGroup).matches(group());
 		assertFalse("Role should now no longer be assigned to group.", group().hasRole(extraRole));
 	}
 

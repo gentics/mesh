@@ -738,6 +738,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 
+		//TODO determine how we should deal with this case and update the test/implementation.
+		
 		// Create node with nl language
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 		Node parentNode = folder("products");
@@ -756,8 +758,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("en");
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
 		latchFor(future);
-		expectException(future, NOT_FOUND, ""
-				+ "", "en");
+		expectException(future, NOT_FOUND, "" + "", "en");
 	}
 
 	@Test

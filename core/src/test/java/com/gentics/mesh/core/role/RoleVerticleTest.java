@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.role;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -166,7 +167,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		RoleResponse restRole = future.result();
-		test.assertRole(role(), restRole);
+		assertThat(restRole).matches(role());
 	}
 
 	@Test
@@ -182,7 +183,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		RoleResponse restRole = future.result();
-		test.assertRole(extraRole, restRole);
+		assertThat(restRole).matches(extraRole);
 
 	}
 

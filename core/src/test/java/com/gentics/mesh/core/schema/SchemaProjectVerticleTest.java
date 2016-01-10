@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
@@ -105,7 +106,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
-		test.assertSchema(schema, restSchema);
+		assertThat(restSchema).matches(schema);
 		extraProject.getSchemaContainerRoot().reload();
 		assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().single());
 	}
@@ -139,7 +140,7 @@ public class SchemaProjectVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		SchemaResponse restSchema = future.result();
-		test.assertSchema(schema, restSchema);
+		assertThat(restSchema).matches(schema);
 
 		Future<SchemaListResponse> listFuture = getClient().findSchemas(PROJECT_NAME);
 		latchFor(listFuture);

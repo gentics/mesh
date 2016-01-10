@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.group;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -270,7 +271,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GroupResponse> future = getClient().findGroupByUuid(group.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		test.assertGroup(group, future.result());
+		assertThat(future.result()).matches(group());
 	}
 
 	@Test

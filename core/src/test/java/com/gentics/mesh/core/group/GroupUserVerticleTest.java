@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.group;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -38,7 +40,7 @@ import io.vertx.core.Future;
 
 public class GroupUserVerticleTest
 
-extends AbstractRestVerticleTest {
+		extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle verticle;
@@ -64,7 +66,7 @@ extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		UserListResponse userList = future.result();
+		ListResponse<UserResponse> userList = future.result();
 		assertEquals(2, userList.getMetainfo().getTotalCount());
 		assertEquals(2, userList.getData().size());
 		Iterator<UserResponse> userIt = userList.getData().iterator();
@@ -105,7 +107,8 @@ extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		GroupResponse restGroup = future.result();
-		test.assertGroup(group(), restGroup);
+		assertThat(restGroup).matches(group());
+
 		assertTrue("User should be member of the group.", group().hasUser(extraUser));
 	}
 
@@ -164,7 +167,7 @@ extends AbstractRestVerticleTest {
 		assertSuccess(future);
 
 		GroupResponse restGroup = future.result();
-		test.assertGroup(group(), restGroup);
+		assertThat(restGroup).matches(group());
 		assertFalse("User should not be member of the group.", group().hasUser(user()));
 	}
 

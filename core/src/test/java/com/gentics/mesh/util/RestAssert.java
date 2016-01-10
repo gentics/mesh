@@ -1,20 +1,14 @@
 package com.gentics.mesh.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -29,10 +23,6 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
-import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -44,44 +34,12 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 @Deprecated
 public class RestAssert {
 
-	public void assertGroup(Group group, GroupResponse restGroup) {
-		assertEquals(group.getUuid(), restGroup.getUuid());
-		assertEquals(group.getName(), restGroup.getName());
-		// for (User user : group.getUsers()) {
-		// assertTrue(restGroup.getUsers().contains(user.getUsername()));
-		// }
-		// TODO roles
-		// group.getRoles()
-		// TODO perms
-	}
-
 	public void assertGroup(GroupCreateRequest request, GroupResponse restGroup) {
 		assertNotNull(request);
 		assertNotNull(restGroup);
 		assertEquals(request.getName(), restGroup.getName());
 		// assertNotNull(restGroup.getUsers());
 		assertNotNull(restGroup.getUuid());
-	}
-
-	public void assertUser(User user, UserResponse restUser) {
-		assertNotNull("The user must not be null.", user);
-		assertNotNull("The restuser must not be null", restUser);
-		// user = neo4jTemplate.fetch(user);
-		assertEquals(user.getUsername(), restUser.getUsername());
-		assertEquals(user.getEmailAddress(), restUser.getEmailAddress());
-		assertEquals(user.getFirstname(), restUser.getFirstname());
-		assertEquals(user.getLastname(), restUser.getLastname());
-		assertEquals(user.getUuid(), restUser.getUuid());
-		assertEquals(user.getGroups().size(), restUser.getGroups().size());
-		// TODO groups
-	}
-
-	public void assertTag(Tag tag, TagResponse restTag) {
-		assertGenericNode(tag, restTag);
-		// tag.setSchema(neo4jTemplate.fetch(tag.getSchema()));
-		assertEquals(tag.getUuid(), restTag.getUuid());
-		// assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
-		// assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
 	}
 
 	/**
@@ -153,12 +111,6 @@ public class RestAssert {
 		assertEquals(node.getCreator().getUuid(), model.getCreator().getUuid());
 	}
 
-	public void assertRole(Role role, RoleResponse restRole) {
-		assertGenericNode(role, restRole);
-		assertEquals(role.getName(), restRole.getName());
-		assertNotNull(restRole.getGroups());
-	}
-
 	public void assertRole(RoleCreateRequest request, RoleResponse restRole) {
 		assertNotNull(request);
 		assertNotNull(restRole);
@@ -175,28 +127,11 @@ public class RestAssert {
 		assertNotNull(restProject.getPermissions());
 	}
 
-	public void assertProject(Project project, ProjectResponse restProject) {
-		assertGenericNode(project, restProject);
-		assertNotNull(restProject.getRootNodeUuid());
-		assertEquals(project.getName(), restProject.getName());
-	}
-
 	public void assertProject(ProjectUpdateRequest request, ProjectResponse restProject) {
 		assertNotNull(request);
 		assertNotNull(restProject);
 		assertNotNull(restProject.getUuid());
 		assertEquals(request.getName(), restProject.getName());
-	}
-
-	public void assertSchema(SchemaContainer schema, SchemaResponse restSchema) {
-		// TODO make schemas extends generic nodes?
-		// assertGenericNode(schema, restSchema);
-		assertNotNull(schema);
-		assertNotNull(restSchema);
-		// assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
-		// assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
-		// assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
-		// TODO verify other fields
 	}
 
 	public void assertSchema(SchemaCreateRequest request, SchemaResponse restSchema) {
@@ -252,35 +187,4 @@ public class RestAssert {
 
 	}
 
-	/**
-	 * Checks whether the given tag is listed within the node rest response.
-	 * 
-	 * @param restNode
-	 * @param tag
-	 * @return
-	 */
-	public boolean containsTag(NodeResponse restNode, Tag tag) {
-		assertNotNull(tag);
-		assertNotNull(tag.getUuid());
-		assertNotNull(restNode);
-		assertNotEquals("There were not tags listed in the restNode.", 0, restNode.getTags().size());
-		if (restNode.getTags() == null) {
-			return false;
-		}
-
-		for (TagFamilyTagGroup group : restNode.getTags().values()) {
-			for (TagReference restTag : group.getItems()) {
-				if (tag.getUuid().equals(restTag.getUuid())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	public void assertTagFamily(TagFamily tagFamily, TagFamilyResponse restTagFamily) {
-		assertGenericNode(tagFamily, restTagFamily);
-		assertNotNull("Name field was not set in the rest response.", restTagFamily.getName());
-
-	}
 }

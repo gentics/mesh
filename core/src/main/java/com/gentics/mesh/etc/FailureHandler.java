@@ -4,6 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 
 import java.util.MissingResourceException;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -50,9 +51,11 @@ public class FailureHandler implements Handler<RoutingContext> {
 			if (failure != null) {
 				log.error("Error:", failure);
 			}
+			
+			//TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
-				if (failure instanceof HttpStatusCodeErrorException) {
+				if (failure instanceof HttpStatusCodeErrorException || failure instanceof JsonMappingException) {
 					break;
 				}
 				failure = failure.getCause();

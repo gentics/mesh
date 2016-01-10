@@ -1,4 +1,4 @@
-package com.gentics.mesh.assertj;
+package com.gentics.mesh.assertj.impl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 
 public class SearchQueueAssert extends AbstractAssert<SearchQueueAssert, SearchQueue> {
 
-	protected SearchQueueAssert(SearchQueue actual) {
+	public SearchQueueAssert(SearchQueue actual) {
 		super(actual, SearchQueueAssert.class);
 	}
 

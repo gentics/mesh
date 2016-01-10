@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -84,7 +85,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 
-		test.assertUser(user, restUser);
+		assertThat(restUser).matches(user);
 		// TODO assert groups
 		// TODO assert perms
 	}
@@ -765,7 +766,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertUser(request, restUser);
 
 		User user = boot.userRoot().findByUuid(restUser.getUuid()).toBlocking().single();
-		test.assertUser(user, restUser);
+		assertThat(restUser).matches(user);
 	}
 
 	@Test

@@ -214,7 +214,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		SchemaResponse restSchema = future.result();
-		test.assertSchema(schemaContainer, restSchema);
+		assertThat(restSchema).matches(schemaContainer);
 	}
 
 	@Test
