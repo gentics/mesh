@@ -116,7 +116,7 @@ public interface InternalActionContext extends ActionContext {
 	/**
 	 * Transform the rest model to JSON and send the JSON as a respond with the given status code.
 	 * 
-	 * @param restModel
+	 * @param result
 	 * @param status
 	 */
 	void respond(RestModel result, HttpResponseStatus status);

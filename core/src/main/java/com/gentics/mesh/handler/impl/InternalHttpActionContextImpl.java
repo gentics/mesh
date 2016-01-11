@@ -186,7 +186,6 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	/**
 	 * Check the result object and fail early when the result failed as well.
 	 * 
-	 * @param ac
 	 * @param result
 	 *            Result that will be checked
 	 * @return false when the result failed, otherwise true
