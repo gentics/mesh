@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.field.microschema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -195,7 +197,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
-
+		assertThat(field.getItems()).hasSize(2);
 		NodeResponse response = createNode(FIELDNAME, field);
 
 		FieldList<MicronodeField> responseField = response.getField(FIELDNAME);

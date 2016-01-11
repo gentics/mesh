@@ -335,7 +335,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						micronodeGraphFieldList = createMicronodeFieldList(key);
 					}
 
-					micronodeGraphFieldList.update(ac, micronodeList);
+					//TODO instead this method should also return an observable 
+					micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
 
 				} else {
 					if (restField == null) {

@@ -68,11 +68,12 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, "image/.*", "binary");
+		String whitelistRegex = "image/.*";
+		prepareSchema(node, whitelistRegex, "binary");
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+		expectException(future, BAD_REQUEST, "node_error_invalid_mimetype", contentType, whitelistRegex);
 	}
 
 	@Test
