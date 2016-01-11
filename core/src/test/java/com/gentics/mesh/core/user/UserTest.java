@@ -172,7 +172,6 @@ public class UserTest extends AbstractBasicObjectTest {
 		Node node = content();
 
 		int max = 20000;
-		CountDownLatch latch = new CountDownLatch(max);
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < max; i++) {
 
@@ -188,7 +187,6 @@ public class UserTest extends AbstractBasicObjectTest {
 			// assertNotNull(permissionFuture.get(5, TimeUnit.SECONDS));
 		}
 
-		latch.await();
 		long dur = System.currentTimeMillis() - now;
 		System.out.println("Duration:" + dur);
 		// for (String name : permissionFuture.get()) {

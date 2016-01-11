@@ -259,11 +259,11 @@ public class DemoDataProvider {
 					throw new NullPointerException("Could not find binary file within path {" + path + "}");
 				}
 
-				BinaryGraphField binaryField = englishContainer.createBinary("binary");
+				BinaryGraphField binaryField = englishContainer.createBinary("image");
 
 				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), binaryField.getSegmentedPath());
 				folder.mkdirs();
-				File outputFile = new File(folder, node.getUuid() + ".bin");
+				File outputFile = new File(folder, binaryField.getUuid() + ".bin");
 				if (!outputFile.exists()) {
 					IOUtils.copy(ins, new FileOutputStream(outputFile));
 				}

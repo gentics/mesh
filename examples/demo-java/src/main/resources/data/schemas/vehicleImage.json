@@ -1,9 +1,8 @@
 {
   "name" : "vehicleImage",
-  "binary" : true,
   "folder" : false,
   "displayField": "name",
-  "segmentField": "name",
+  "segmentField": "image",
   "fields" : [ {
     "name" : "name",
     "label" : "Name",
@@ -14,5 +13,10 @@
     "label" : "Alternative Text",
     "required" : false,
     "type" : "string"
+  }, {
+    "name" : "image",
+    "label" : "Image",
+    "required" : true,
+    "type" : "binary"
   } ]
 }

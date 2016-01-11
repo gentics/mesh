@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
@@ -16,6 +17,7 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
+@Ignore("Just used for manual testing")
 public class RxTest {
 
 	private Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
@@ -36,18 +38,16 @@ public class RxTest {
 		waitFor.subscribe();
 		long duration = System.currentTimeMillis() - start;
 		System.out.println("Execution took: " + duration);
-		System.in.read();
 	}
 
 	@Test
 	public void testRXFs() {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		fileSystem.existsObservable("/tmp")
-		.doOnError(error -> {
+		fileSystem.existsObservable("/tmp").doOnError(error -> {
 			System.out.println("errör");
 			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		}).flatMap(e ->  {
+		}).flatMap(e -> {
 			System.out.println("blar");
 			return Observable.empty();
 		}).subscribe();
