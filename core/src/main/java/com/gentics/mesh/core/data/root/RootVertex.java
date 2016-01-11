@@ -81,8 +81,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Uuid of the object that should be loaded
 	 * @param perm
 	 *            Permission that must be granted in order to load the object
-	 * @param root
-	 *            Aggregation root vertex that should be used to find the element
 	 */
 	Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 

@@ -63,8 +63,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * Add role permissions to given rest model object.
 	 * 
 	 * @param ac
-	 * @param sourceElement
-	 * @param restModel
+	 * @param model
 	 * @return
 	 */
 	protected <R extends AbstractGenericRestResponse> Observable<R> setRolePermissions(InternalActionContext ac, R model) {

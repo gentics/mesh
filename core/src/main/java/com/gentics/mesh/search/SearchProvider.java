@@ -108,7 +108,7 @@ public interface SearchProvider {
 	/**
 	 * Return the elastic search node.
 	 * 
-	 * @return
+	 * @return Elasticsearch node
 	 */
 	// TODO get rid of the elastic search dependency within the interface
 	Node getNode();

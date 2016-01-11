@@ -134,7 +134,7 @@ public class WebRootLinkReplacer {
 	/**
 	 * Resolve the link to the given node
 	 * @param node target node
-	 * @param languageTag optional language
+	 * @param language target language
 	 * @param type link type
 	 * @return observable of the rendered link
 	 */
