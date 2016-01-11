@@ -8,11 +8,14 @@ import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.erro
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
+import java.util.Stack;
+
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -42,8 +45,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public
-	
- Class<? extends TagFamily> getPersistanceClass() {
+
+	Class<? extends TagFamily> getPersistanceClass() {
 		return TagFamilyImpl.class;
 	}
 
@@ -64,20 +67,20 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);
 		tagFamily.setCreated(creator);
-		
+
 		// Add tag family to project 
 		tagFamily.setProject(getProject());
-		
+
 		// Add created tag family to tag family root 
 		TagFamilyRoot root = BootstrapInitializer.getBoot().tagFamilyRoot();
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}
-		
+
 		// Add tag root to created tag family
 		TagRoot tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
 		tagFamily.setTagRoot(tagRoot);
-			
+
 		return tagFamily;
 	}
 
@@ -142,6 +145,27 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 		});
 
+	}
+
+	@Override
+	public Observable<? extends MeshVertex> resolveToElement(Stack<String> stack) {
+		if (stack.isEmpty()) {
+			return Observable.just(this);
+		} else {
+			String uuidSegment = stack.pop();
+			return findByUuid(uuidSegment).flatMap(tagFamily -> {
+				if (stack.isEmpty()) {
+					return Observable.just(tagFamily);
+				} else {
+					String nestedRootNode = stack.pop();
+					if ("tags".contentEquals(nestedRootNode)) {
+						return tagFamily.getTagRoot().resolveToElement(stack);
+					} else {
+						return Observable.error(new Exception("Unknown tagFamily element {" + nestedRootNode + "}"));
+					}
+				}
+			});
+		}
 	}
 
 }

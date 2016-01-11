@@ -23,8 +23,10 @@ public class MeshRootTest extends AbstractBasicDBTest {
 		expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), tagFamily("colors"));
 		expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodeRoot());
 		expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
-		expectSuccess("projects/" + project().getUuid() + "/tags", project().getTagRoot());
-		expectSuccess("projects/" + project().getUuid() + "/tags/" + tag("red").getUuid(), tag("red"));
+		expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags",
+				tagFamily("colors").getTagRoot());
+		expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid(),
+				tag("red"));
 
 		expectSuccess("users", meshRoot().getUserRoot());
 		expectSuccess("users/" + user().getUuid(), user());
@@ -91,11 +93,12 @@ public class MeshRootTest extends AbstractBasicDBTest {
 	}
 
 	private void expectFailure(String path) throws InterruptedException {
+		
 		assertNull("We expected that the path {" + path + "} can't be resolved successfully but it was.", resolve(path));
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {
-		return MeshRoot.getInstance().resolvePathToElement(pathToElement).toBlocking().first();
+		return MeshRoot.getInstance().resolvePathToElement(pathToElement).toBlocking().single();
 	}
 
 }

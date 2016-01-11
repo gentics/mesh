@@ -55,7 +55,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		// 1. Transform the node into a binary content
 		node.setSchemaContainer(schemaContainer("binary-content"));
-		prepareSchema(node, "image/*");
+		prepareSchema(node, "image/*", "binary");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";

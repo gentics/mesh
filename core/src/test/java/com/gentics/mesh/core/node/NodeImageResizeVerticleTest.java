@@ -58,14 +58,16 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 
 		// 1. Upload image
-		uploadImage(node, "en", "binary");
+		uploadImage(node, "en", "image");
 
 		// 2. Resize image
 		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100).setHeight(102);
-		Future<NodeDownloadResponse> download = resizeImage(node, params);
+		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+		latchFor(downloadFuture);
+		assertSuccess(downloadFuture);
 
 		// 3. Validate resize
-		validateResizeImage(download.result(), node.getGraphFieldContainer(english()).getBinary("binary"), params, 100, 102);
+		validateResizeImage(downloadFuture.result(), node.getGraphFieldContainer(english()).getBinary("image"), params, 100, 102);
 	}
 
 	@Test
@@ -73,11 +75,12 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 		ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 		// 1. Upload image
-		uploadImage(node, "en", "binary");
+		uploadImage(node, "en", "image");
 
 		// 2. Resize image
 		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(options.getMaxWidth() + 1).setHeight(102);
 		Future<NodeDownloadResponse> download = resizeImage(node, params);
+		latchFor(download);
 		expectException(download, BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()),
 				String.valueOf(options.getMaxWidth() + 1));
 
@@ -88,12 +91,14 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 		ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 		// 1. Upload image
-		uploadImage(node, "en", "binary");
+		uploadImage(node, "en", "image");
 
 		// 2. Resize image
 		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(options.getMaxWidth()).setHeight(102);
-		Future<NodeDownloadResponse> download = resizeImage(node, params);
-		validateResizeImage(download.result(), node.getGraphFieldContainer(english()).getBinary("binary"), params, 2048, 102);
+		Future<NodeDownloadResponse> downloadFuture = resizeImage(node, params);
+		latchFor(downloadFuture);
+		assertSuccess(downloadFuture);
+		validateResizeImage(downloadFuture.result(), node.getGraphFieldContainer(english()).getBinary("image"), params, 2048, 102);
 
 	}
 
@@ -124,7 +129,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 	private void uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
-		prepareSchema(node, "image/.*");
+		prepareSchema(node, "image/.*", fieldName);
 		resetClientSchemaStorage();
 
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");

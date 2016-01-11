@@ -53,7 +53,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, "");
+		prepareSchema(node, "", "binary");
 		role().revokePermissions(node, UPDATE_PERM);
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
@@ -68,7 +68,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, "image/.*");
+		prepareSchema(node, "image/.*", "binary");
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
@@ -82,7 +82,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node = folder("news");
-		prepareSchema(node, "");
+		prepareSchema(node, "", "binary");
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
@@ -144,7 +144,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		String fileName = "somefile.dat";
 
 		Node node = folder("news");
-		prepareSchema(node, "");
+		prepareSchema(node, "", "binary");
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
@@ -157,7 +157,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		node.setUuid(UUIDUtil.randomUUID());
 
 		// Add some test data
-		prepareSchema(node, "");
+		prepareSchema(node, "", "binary");
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 		int binaryLen = 10000;
@@ -180,7 +180,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = folder("news");
-		prepareSchema(node, "");
+		prepareSchema(node, "", "binary");
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);

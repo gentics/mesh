@@ -57,9 +57,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	PageImpl<? extends T> findAll(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
 
-	
-	
-	
 	/**
 	 * Resolve the given stack to the vertex.
 	 * 
@@ -68,9 +65,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	Observable<? extends MeshVertex> resolveToElement(Stack<String> stack);
 
-	
-	
-	
 	/**
 	 * Create a new object within this aggregation vertex.
 	 * 

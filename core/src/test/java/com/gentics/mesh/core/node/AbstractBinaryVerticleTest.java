@@ -50,12 +50,13 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 	 * 
 	 * @param node
 	 * @param mimeTypeWhitelist
+	 * @param binaryFieldName
 	 * @throws IOException
 	 */
-	protected void prepareSchema(Node node, String mimeTypeWhitelist) throws IOException {
+	protected void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
 		Schema schema = node.getSchemaContainer().getSchema();
-		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName("binary").setLabel("Binary content"));
+		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().setSchema(schema);
 		getClient().getClientSchemaStorage().addSchema(schema);
 		// node.getSchemaContainer().setSchema(schema);
