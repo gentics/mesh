@@ -133,7 +133,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			obs.add(setRolePermissions(ac, restTag));
 
 			// Merge and complete
-			return Observable.merge(obs);
+			return Observable.merge(obs).last();
 		});
 	}
 
