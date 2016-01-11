@@ -25,8 +25,6 @@ public abstract class AbstractWebVerticle extends AbstractSpringVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractWebVerticle.class);
 
-
-
 	protected Router localRouter = null;
 	protected String basePath;
 	protected HttpServer server;

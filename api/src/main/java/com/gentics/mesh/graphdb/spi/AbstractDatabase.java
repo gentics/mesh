@@ -68,7 +68,7 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-		Scheduler scheduler = RxHelper.scheduler(Vertx.vertx());
+		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
 		Observable<T> obs = Observable.create(sub -> {
 			try {
 				T result = trx(txHandler);
@@ -98,7 +98,7 @@ public abstract class AbstractDatabase implements Database {
 	@Override
 	public <T> Observable<T> asyncNoTrx(TrxHandler<T> txHandler) {
 
-		Scheduler scheduler = RxHelper.scheduler(Vertx.vertx());
+		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
 		Observable<T> obs = Observable.create(sub -> {
 			try {
 				T result = noTrx(txHandler);
