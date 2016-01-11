@@ -21,11 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -92,17 +95,34 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	@Test
-	public void testUploadToNoBinaryNode() throws IOException {
+	public void testUploadToNonBinaryField() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
 		Node node = folder("news");
-		prepareSchema(node, "");
 
-		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+		// Add a schema called nonBinary
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
+		node.getSchemaContainer().setSchema(schema);
+		getClient().getClientSchemaStorage().addSchema(schema);
+
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_error_no_binary_node");
+		expectException(future, BAD_REQUEST, "error_found_field_is_not_binary", "nonBinary");
+	}
+
+	@Test
+	public void testUploadToNodeWithoutBinaryField() throws IOException {
+		String contentType = "application/octet-stream";
+		int binaryLen = 10000;
+		String fileName = "somefile.dat";
+		Node node = folder("news");
+
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_schema_definition_not_found", "nonBinary");
 	}
 
 	/**
@@ -132,12 +152,24 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	@Test
-	public void testPathSegmentation() {
+	public void testPathSegmentation() throws IOException {
 		Node node = folder("news");
 		node.setUuid(UUIDUtil.randomUUID());
+
+		// Add some test data
+		prepareSchema(node, "");
+		String contentType = "application/octet-stream";
+		String fileName = "somefile.dat";
+		int binaryLen = 10000;
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+		latchFor(future);
+		assertSuccess(future);
+
+		// Load the uploaded binary field and return the segment path to the field
+		BinaryGraphField binaryField = node.getGraphFieldContainer(english()).getBinary("binary");
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
-		node.setUuid(uuid);
-		String path = node.getGraphFieldContainer(english()).getBinary("binary").getSegmentedPath();
+		binaryField.setUuid(uuid);
+		String path = binaryField.getSegmentedPath();
 		assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 	}
 

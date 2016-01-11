@@ -96,7 +96,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 
 	protected void createElement(InternalActionContext ac, TrxHandler<RootVertex<?>> handler) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
 			return root.create(ac).flatMap(created -> {
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
@@ -104,14 +104,13 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 					// created.reload();
 					return created.transformToRest(ac);
 				});
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 	}
 
-	protected void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler,
-			String uuidParameterName, String responseMessage) {
+	protected void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler, String uuidParameterName, String responseMessage) {
 
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
 			Observable<T> obs = root.loadObject(ac, uuidParameterName, DELETE_PERM);
 			return obs.flatMap(element -> {
@@ -143,7 +142,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 						return message(ac, responseMessage, id);
 					});
 				});
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
@@ -165,23 +164,23 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	}
 
 	protected void readElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<?>> handler) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
 			return root.loadObject(ac, uuidParameterName, READ_PERM).flatMap(node -> {
 				return node.transformToRest(ac);
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	protected void readElementList(InternalActionContext ac, TrxHandler<RootVertex<T>> handler) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
 
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
 
 			PageImpl<? extends T> page = root.findAll(requestUser, pagingInfo);
-			return page.transformToRest(ac).toBlocking().last();
+			return page.transformToRest(ac);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

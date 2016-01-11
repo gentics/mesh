@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -120,8 +121,8 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
-	public FieldSchema getFieldSchema(String fieldName) {
-		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
+	public Optional<FieldSchema> getFieldSchema(String fieldName) {
+		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst();
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -118,6 +119,6 @@ public interface Schema {
 	 * @param fieldName
 	 * @return
 	 */
-	FieldSchema getFieldSchema(String fieldName);
+	Optional<FieldSchema> getFieldSchema(String fieldName);
 
 }

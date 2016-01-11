@@ -52,7 +52,7 @@ public class MeshImpl implements Mesh {
 	public Vertx getVertx() {
 		if (vertx == null) {
 			VertxOptions options = new VertxOptions();
-			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
+			//options.setBlockedThreadCheckInterval(1000 * 60 * 60);
 			// TODO configure worker pool size
 			options.setWorkerPoolSize(12);
 			vertx = Vertx.vertx(options);

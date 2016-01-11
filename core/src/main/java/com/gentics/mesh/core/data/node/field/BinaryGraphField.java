@@ -152,4 +152,11 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 	 * @return
 	 */
 	String getUuid();
+
+	/**
+	 * Set the uuid of the binary field.
+	 * 
+	 * @param uuid
+	 */
+	void setUuid(String uuid);
 }

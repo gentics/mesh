@@ -2,7 +2,6 @@ package com.gentics.mesh.graphdb.spi;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 
@@ -14,6 +13,7 @@ import com.gentics.mesh.graphdb.Trx;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 import rx.Scheduler;
@@ -68,7 +68,7 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Scheduler scheduler = RxHelper.scheduler(Vertx.vertx());
 		Observable<T> obs = Observable.create(sub -> {
 			try {
 				T result = trx(txHandler);
@@ -107,7 +107,7 @@ public abstract class AbstractDatabase implements Database {
 	@Override
 	public <T> Observable<T> asyncNoTrx(TrxHandler<T> txHandler) {
 
-		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Scheduler scheduler = RxHelper.scheduler(Vertx.vertx());
 		Observable<T> obs = Observable.create(sub -> {
 			try {
 				T result = noTrx(txHandler);
@@ -134,24 +134,19 @@ public abstract class AbstractDatabase implements Database {
 
 	@Override
 	public <T> Observable<T> asyncNoTrxExperimental(TrxHandler<Observable<T>> trxHandler) {
-		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
-		Observable<T> obs = Observable.create(sub -> {
+		ObservableFuture<T> obsFut = RxHelper.observableFuture();
+		Mesh.vertx().executeBlocking(bc -> {
 
 			try (NoTrx noTx = noTrx()) {
 				Observable<T> result = trxHandler.call();
-//				Iterator<T> it = result.toBlocking().getIterator();
-				sub.onNext(result.toBlocking().single());
-				//while (it.hasNext()) {
-				//	sub.onNext(it.next());
-				//}
-				sub.onCompleted();
+				T ele = result.toBlocking().single();
+				bc.complete(ele);
 			} catch (Exception e) {
 				log.error("Error while handling no-transaction.", e);
-				sub.onError(e);
+				bc.fail(e);
 			}
 
-		});
-		return obs.observeOn(scheduler);
-
+		} , false, obsFut.toHandler());
+		return obsFut;
 	}
 }

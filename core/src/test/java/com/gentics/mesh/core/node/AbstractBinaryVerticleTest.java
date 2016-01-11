@@ -57,9 +57,7 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 		Schema schema = node.getSchemaContainer().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName("binary").setLabel("Binary content"));
 		node.getSchemaContainer().setSchema(schema);
-
 		getClient().getClientSchemaStorage().addSchema(schema);
-		// schema.set
 		// node.getSchemaContainer().setSchema(schema);
 	}
 

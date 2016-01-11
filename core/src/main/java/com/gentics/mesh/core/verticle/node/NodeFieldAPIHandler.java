@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.Set;
 
 import org.elasticsearch.common.collect.Tuple;
@@ -51,7 +52,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	public void handleReadField(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			String languageTag = ac.getParameter("languageTag");
 			String fieldName = ac.getParameter("fieldName");
@@ -68,13 +69,16 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				BinaryGraphField binaryField = container.getBinary(fieldName);
 				if (binaryField == null) {
-					throw error(NOT_FOUND, "Binary field for fieldname {" + fieldName + "} could not be found.");
+					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
 				return binaryField;
-			}).toBlocking().first();
+			});
 		}).subscribe(binaryField -> {
-			BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-			handler.handle(binaryField);
+			db.noTrx(() -> {
+				BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+				handler.handle(binaryField);
+				return null;
+			});
 		} , ac::fail);
 	}
 
@@ -96,14 +100,13 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				FieldSchema fieldSchema = node.getSchema().getFieldSchema(fieldName);
-				if (fieldSchema == null) {
-					throw error(BAD_REQUEST, "The schema definition for field {" + fieldName + "} could not be found.");
+				Optional<FieldSchema> fieldSchema = node.getSchema().getFieldSchema(fieldName);
+				if (!fieldSchema.isPresent()) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
-				if (!(fieldSchema instanceof BinaryFieldSchema)) {
+				if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
 					//TODO Add support for other field types
-					throw error(BAD_REQUEST,
-							"The found field schema for field {" + fieldName + "} is not a binary field schema. Other types are not yet supported");
+					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
 				BinaryGraphField field = container.createBinary(fieldName);
 				if (field == null) {
@@ -224,21 +227,21 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-//	// TODO abstract rc away
-//	public void handleDownload(RoutingContext rc) {
-//		InternalActionContext ac = InternalActionContext.create(rc);
-//		BinaryFieldResponseHandler binaryHandler = new BinaryFieldResponseHandler(rc, imageManipulator);
-//		db.asyncNoTrx(() -> {
-//			Project project = ac.getProject();
-//			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node-> {
-//				db.noTrx(()-> {
-//					Node node = rh.result();
-//					binaryHandler.handle(node);
-//				});
-//			});
-//		}).subscribe(binaryField -> {
-//		}, ac::fail);
-//	}
+	//	// TODO abstract rc away
+	//	public void handleDownload(RoutingContext rc) {
+	//		InternalActionContext ac = InternalActionContext.create(rc);
+	//		BinaryFieldResponseHandler binaryHandler = new BinaryFieldResponseHandler(rc, imageManipulator);
+	//		db.asyncNoTrx(() -> {
+	//			Project project = ac.getProject();
+	//			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node-> {
+	//				db.noTrx(()-> {
+	//					Node node = rh.result();
+	//					binaryHandler.handle(node);
+	//				});
+	//			});
+	//		}).subscribe(binaryField -> {
+	//		}, ac::fail);
+	//	}
 
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
