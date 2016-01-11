@@ -81,16 +81,7 @@ public abstract class AbstractDatabase implements Database {
 		});
 
 		return obs.observeOn(scheduler);
-		//		ObservableFuture<T> obsFut = RxHelper.observableFuture();
-		//		vertx.executeBlocking(bh -> {
-		//			try {
-		//				T result = trx(txHandler);
-		//				bh.complete(result);
-		//			} catch (Exception e) {
-		//				bh.fail(e);
-		//			}
-		//		} , false, obsFut.toHandler());
-		//		return obsFut;
+
 	}
 
 	@Override
@@ -119,17 +110,6 @@ public abstract class AbstractDatabase implements Database {
 
 		});
 		return obs.observeOn(scheduler);
-
-		//		ObservableFuture<T> obsFut = RxHelper.observableFuture();
-		//		vertx.executeBlocking(bh -> {
-		//			try {
-		//				T result = noTrx(txHandler);
-		//				bh.complete(result);
-		//			} catch (Exception e) {
-		//				bh.fail(e);
-		//			}
-		//		} , false, obsFut.toHandler());
-		//		return obsFut;
 	}
 
 	@Override

@@ -183,10 +183,10 @@ public class BootstrapInitializer {
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
 		}
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			initProjects();
 			return null;
-		}).toBlocking().first();
+		}).toBlocking().single();
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 

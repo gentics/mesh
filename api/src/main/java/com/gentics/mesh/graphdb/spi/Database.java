@@ -135,6 +135,7 @@ public interface Database {
 	 * 
 	 * @param trxHandler
 	 * @return
+	 * @deprecated Use {@link #asyncNoTrxExperimental(TrxHandler)} instead
 	 */
 	@Deprecated
 	<T> Observable<T> asyncNoTrx(TrxHandler<T> trxHandler);

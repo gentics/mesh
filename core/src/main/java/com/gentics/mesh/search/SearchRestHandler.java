@@ -229,11 +229,11 @@ public class SearchRestHandler {
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				boot.meshRoot().getSearchQueue().addFullIndex();
 				boot.meshRoot().getSearchQueue().processAll();
-				return message(ac, "search_admin_reindex_invoked");
+				return Observable.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

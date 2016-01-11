@@ -33,7 +33,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	public void handleAddProjectToSchema(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 
 			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "schemaUuid", READ_PERM);
 			Observable<Project> obsProject = boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM);
@@ -45,14 +45,14 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					return schema;
 				});
 				return addedSchema.transformToRest(ac);
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handleRemoveProjectFromSchema(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Observable<Project> obsProject = boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM);
 			// TODO check whether schema is assigned to project
 			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObject(ac, "schemaUuid", READ_PERM);
@@ -63,7 +63,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					return schema;
 				});
 				return removedSchema.transformToRest(ac);
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

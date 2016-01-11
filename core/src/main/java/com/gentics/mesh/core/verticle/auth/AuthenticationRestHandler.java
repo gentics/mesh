@@ -24,9 +24,9 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			MeshAuthUser requestUser = ac.getUser();
-			return requestUser.transformToRest(ac).toBlocking().first();
+			return requestUser.transformToRest(ac);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

@@ -43,7 +43,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	public void handleDeleteLanguage(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM).flatMap(node -> {
 				//TODO Don't we need a trx here?!
 				String languageTag = ac.getParameter("languageTag");
@@ -56,13 +56,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					return message(ac, "node_deleted_language", updatedNode.getUuid(), languageTag);
 				});
 
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handleMove(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
 			String uuid = ac.getParameter("uuid");
@@ -78,13 +78,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					return message(ac, "node_moved_to", uuid, toUuid);
 				});
 				return obs2;
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handleReadChildren(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
@@ -92,12 +92,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
 				}
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void readTags(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Tag> tagPage = node.getTags(ac);
@@ -105,12 +105,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
-			}).flatMap(x -> x).toBlocking().single();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleAddTag(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
 			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
@@ -128,14 +128,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return batch.process().flatMap(i -> updatedNode.transformToRest(ac));
 
 			});
-			return obs.flatMap(x -> x).toBlocking().first();
+			return obs.flatMap(x -> x);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handleRemoveTag(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 
 			Project project = ac.getProject();
 			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
@@ -154,18 +154,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return batch.process(ac).flatMap(i -> updatedNode.transformToRest(ac));
 
 			});
-			return obs.flatMap(x -> x).toBlocking().first();
+			return obs.flatMap(x -> x);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handelReadBreadcrumb(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).flatMap(node -> {
 				return node.transformToBreadcrumb(ac);
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

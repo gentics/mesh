@@ -51,7 +51,7 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 	 * @param ac
 	 */
 	public void handleTaggedNodesList(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).flatMap(tag -> {
 				try {
 					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
@@ -59,12 +59,12 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 				} catch (Exception e) {
 					return Observable.error(e);
 				}
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleReadTagList(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
@@ -77,7 +77,7 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 				} catch (Exception e) {
 					return Observable.error(e);
 				}
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

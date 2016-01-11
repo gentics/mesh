@@ -37,6 +37,7 @@ import com.gentics.mesh.test.TestUtil;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.Observable;
 
 public class TrxTest extends AbstractBasicDBTest {
 
@@ -202,7 +203,7 @@ public class TrxTest extends AbstractBasicDBTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().single();
 		assertEquals("error", cf.get().getMessage());
@@ -211,11 +212,11 @@ public class TrxTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = db.asyncNoTrx(() -> {
+		String result = db.asyncNoTrxExperimental(() -> {
 			TestUtil.run(() -> {
 				TestUtil.sleep(1000);
 			});
-			return "OK";
+			return Observable.just("OK");
 		}).toBlocking().last();
 		assertEquals("OK", result);
 	}
@@ -233,8 +234,8 @@ public class TrxTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db.asyncNoTrx(() -> {
-			return "OK";
+		String result = db.asyncNoTrxExperimental(() -> {
+			return Observable.just("OK");
 		}).toBlocking().first();
 		assertEquals("OK", result);
 	}

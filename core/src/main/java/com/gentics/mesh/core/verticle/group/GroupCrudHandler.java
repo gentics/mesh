@@ -37,7 +37,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Observable<Group> obsGroup = getRootVertex(ac).loadObject(ac, "groupUuid", READ_PERM);
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
@@ -49,12 +49,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Observable.error(e);
 				}
 			});
-			return obs.toBlocking().single();
+			return obs;
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleAddRoleToGroup(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
 			Observable<Role> obsRole = boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM);
 
@@ -71,13 +71,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 			});
 
-			return obs.flatMap(x -> x).toBlocking().first();
+			return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			// TODO check whether the role is actually part of the group
 			Observable<Group> obsGroup = getRootVertex(ac).loadObject(ac, "groupUuid", UPDATE_PERM);
 			Observable<Role> obsRole = boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM);
@@ -96,12 +96,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				return batch.process().map(done -> {
 					return updatedGroup.transformToRest(ac);
 				}).flatMap(x -> x).toBlocking().first();
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleGroupUserList(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM);
@@ -112,12 +112,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				} catch (Exception e) {
 					return Observable.error(e);
 				}
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleAddUserToGroup(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 
 			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
 			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
@@ -130,12 +130,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				// BUG Add SQB processing
 				return tuple.v2().transformToRest(ac);
-			}).flatMap(x -> x).toBlocking().single();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRemoveUserFromGroup(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
 			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
 			return Observable.zip(obsUser, obsGroup, (user, group) -> {
@@ -147,7 +147,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				// BUG Add SQB processing
 				return tuple.v2().transformToRest(ac);
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

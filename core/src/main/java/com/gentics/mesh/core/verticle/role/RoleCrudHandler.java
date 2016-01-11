@@ -49,7 +49,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			if (StringUtils.isEmpty(roleUuid)) {
@@ -78,13 +78,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 					});
 				});
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
 	public void handlePermissionUpdate(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			if (log.isDebugEnabled()) {
@@ -148,7 +148,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					return Observable.just(message(ac, "role_updated_permission", updatedRole.getName()));
 
 				});
-			}).flatMap(x -> x).toBlocking().first();
+			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 }

@@ -112,7 +112,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	public Observable<TagResponse> transformToRest(InternalActionContext ac) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<TagResponse>> obs = new HashSet<>();
 
 			TagResponse restTag = new TagResponse();
@@ -133,7 +133,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			obs.add(setRolePermissions(ac, restTag));
 
 			// Merge and complete
-			return Observable.merge(obs).toBlocking().last();
+			return Observable.merge(obs);
 		});
 	}
 

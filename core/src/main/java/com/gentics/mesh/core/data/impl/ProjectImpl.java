@@ -149,7 +149,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public Observable<ProjectResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrx(() -> {
+		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
 			ProjectResponse restProject = new ProjectResponse();
@@ -163,7 +163,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			obsParts.add(setRolePermissions(ac, restProject));
 
 			// Merge and complete
-			return Observable.merge(obsParts).last().toBlocking().single();
+			return Observable.merge(obsParts).last();
 		});
 	}
 

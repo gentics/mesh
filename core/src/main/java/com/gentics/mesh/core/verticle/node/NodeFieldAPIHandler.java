@@ -169,51 +169,51 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateField(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRemoveField(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRemoveFieldItem(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleUpdateFieldItem(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleReadFieldItem(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node -> {
 				return new GenericMessageResponse("Not yet implemented");
-			}).toBlocking().last();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

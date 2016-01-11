@@ -39,7 +39,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {
-		db.asyncNoTrx(() -> {
+		db.asyncNoTrxExperimental(() -> {
 			String userUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			if (StringUtils.isEmpty(userUuid)) {
@@ -75,7 +75,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 					});
 				});
 				return respObs;
-			}).toBlocking().first();
+			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
