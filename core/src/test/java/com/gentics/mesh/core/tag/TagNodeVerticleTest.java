@@ -3,6 +3,7 @@ package com.gentics.mesh.core.tag;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +32,9 @@ public class TagNodeVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		Future<NodeListResponse> future = getClient().findNodesForTag(PROJECT_NAME, tag("red").getUuid());
+		Future<NodeListResponse> future = getClient().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid());
 		latchFor(future);
 		assertSuccess(future);
+		assertEquals(1, future.result().getData().size());
 	}
 }

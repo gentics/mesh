@@ -93,11 +93,12 @@ public interface NodeClientMethods {
 	 * 
 	 * @param projectName
 	 *            Name of the project which contains the nodes
+	 * @param tagFamilyUuid
 	 * @param tagUuid
 	 * @param parameters
 	 * @return
 	 */
-	Future<NodeListResponse> findNodesForTag(String projectName, String tagUuid, QueryParameterProvider... parameters);
+	Future<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Add with the given tagUuid to the node with the given nodeUuid. The query parameters can be used to set language settings.

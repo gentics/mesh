@@ -209,10 +209,11 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	//	}
 
 	@Override
-	public Future<NodeListResponse> findNodesForTag(String projectName, String tagUuid, QueryParameterProvider... parameters) {
+	public Future<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
-		return invokeRequest(GET, "/" + projectName + "/tags/" + tagUuid + "/nodes" + getQuery(parameters), NodeListResponse.class);
+		return invokeRequest(GET, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(parameters), NodeListResponse.class);
 	}
 
 	@Override
