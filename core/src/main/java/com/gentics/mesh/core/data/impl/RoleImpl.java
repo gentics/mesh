@@ -135,7 +135,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 			obs.add(setRolePermissions(ac, restRole));
 
 			// Merge and complete
-			return Observable.merge(obs);
+			return Observable.merge(obs).last();
 		});
 	}
 

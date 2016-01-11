@@ -38,9 +38,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
 
-public class GroupUserVerticleTest
-
-		extends AbstractRestVerticleTest {
+public class GroupUserVerticleTest extends AbstractRestVerticleTest {
 
 	@Autowired
 	private GroupVerticle verticle;
