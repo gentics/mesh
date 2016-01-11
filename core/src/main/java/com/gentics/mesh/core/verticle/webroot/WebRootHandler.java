@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -85,7 +86,7 @@ public class WebRootHandler {
 					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}
 			}
-		} , arh -> {
+		} , false, arh -> {
 			if (arh.failed()) {
 				ac.fail(arh.cause());
 			}
@@ -95,19 +96,19 @@ public class WebRootHandler {
 				Node node = lastSegment.getNode();
 				ac.put(NodeImpl.AC_LANGUAGE_KEY, lastSegment.getLanguage());
 				GraphField field = lastSegment.getPathField();
-				if (field instanceof StringGraphField) {
-					node.transformToRest(ac).subscribe(model -> {
-						ac.send(JsonUtil.toJson(model), OK);
-					} , error -> {
-						ac.fail(error);
-					});
-				}
 				if (field instanceof BinaryGraphField) {
 					BinaryGraphField binaryField = (BinaryGraphField) field;
 					try (NoTrx tx = db.noTrx()) {
 						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
 						handler.handle(binaryField);
 					}
+				} else {
+
+					node.transformToRest(ac).subscribe(model -> {
+						ac.send(JsonUtil.toJson(model), OK);
+					} , error -> {
+						ac.fail(error);
+					});
 				}
 			}
 		});

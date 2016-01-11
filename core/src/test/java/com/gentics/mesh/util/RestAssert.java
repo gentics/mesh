@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;

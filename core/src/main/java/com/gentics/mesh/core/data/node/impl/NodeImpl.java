@@ -143,14 +143,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		Collections.reverse(segments);
-		return RxUtil.concatList(segments).reduce((a, b) -> {
-			try {
-				String aEnc = URLEncoder.encode(a, "UTF-8");
-				String bEnc = URLEncoder.encode(b, "UTF-8");
-				return "/" + aEnc + "/" + bEnc;
-			} catch (Exception e) {
-				throw new RuntimeException(e);
+		return RxUtil.concatList(segments).toList().map(list -> {
+			StringBuilder builder = new StringBuilder();
+			Iterator<String> it = list.iterator();
+			while (it.hasNext()) {
+				try {
+					builder.append("/").append(URLEncoder.encode(it.next(), "UTF-8"));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
+			return builder.toString();
 		});
 	}
 

@@ -36,7 +36,7 @@ public class WebRootService {
 		nodePath.setTargetPath(path);
 
 		// Handle path to project root (baseNode) 
-		if ("/".equals(path)) {
+		if ("/".equals(path) || path.isEmpty()) {
 			nodePath.addSegment(new PathSegment(baseNode, null, null));
 			return Observable.just(nodePath);
 		}

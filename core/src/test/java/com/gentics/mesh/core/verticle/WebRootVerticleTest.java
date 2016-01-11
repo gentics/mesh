@@ -139,7 +139,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String path = "/blub";
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
+		expectException(future, NOT_FOUND, "node_not_found_for_path", "blub");
 	}
 
 	@Test
@@ -164,7 +164,9 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	public void testReadWithEmptyPath() {
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "");
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", "");
+		assertSuccess(future);
+		WebRootResponse response = future.result();
+		assertEquals(project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 	}
 
 	@Test
