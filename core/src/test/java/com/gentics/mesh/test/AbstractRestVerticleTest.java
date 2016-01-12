@@ -265,8 +265,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	// Tag
 	protected TagResponse createTag(String projectName, String tagFamilyUuid, String tagName) {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
-		//tagCreateRequest.setFields(new TagFieldContainer().setName(tagName));
-		//tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamilyName));
+		tagCreateRequest.getFields().setName(tagName);
 		Future<TagResponse> future = getClient().createTag(projectName, tagFamilyUuid, tagCreateRequest);
 		latchFor(future);
 		assertSuccess(future);

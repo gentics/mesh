@@ -41,7 +41,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
-		createTag(PROJECT_NAME, tagName, "colors");
+		createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", tagName));
 		latchFor(searchFuture);
