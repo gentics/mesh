@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;

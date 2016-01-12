@@ -18,7 +18,7 @@ public class SchemaImpl implements RestModel, Schema {
 	private String description;
 	private String displayField;
 	private String segmentField;
-	private boolean folder = false;
+	private boolean container = false;
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
@@ -62,13 +62,13 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
-	public boolean isFolder() {
-		return folder;
+	public boolean isContainer() {
+		return container;
 	}
 
 	@Override
-	public void setFolder(boolean flag) {
-		this.folder = flag;
+	public void setContainer(boolean flag) {
+		this.container = flag;
 	}
 
 	@Override

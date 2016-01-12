@@ -285,7 +285,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid() + "/" + schemaContainer("content").getName());
+		expectException(future, FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid());
 	}
 
 	@Test

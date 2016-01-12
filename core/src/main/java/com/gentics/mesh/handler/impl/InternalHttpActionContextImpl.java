@@ -1,6 +1,6 @@
 package com.gentics.mesh.handler.impl;
 
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDALL_QUERY_PARAM_KEY;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_PARAM_KEY;
 import static com.gentics.mesh.query.impl.NodeRequestParameter.RESOLVE_LINKS_QUERY_PARAM_KEY;

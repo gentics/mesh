@@ -1,6 +1,6 @@
 {
   "name" : "vehicleImage",
-  "folder" : false,
+  "container" : false,
   "displayField": "name",
   "segmentField": "image",
   "fields" : [ {

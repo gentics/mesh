@@ -9,8 +9,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -303,7 +303,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			restNode.setPublished(isPublished());
 
 			// Load the children information
-			if (schema.isFolder()) {
+			if (schema.isContainer()) {
 				for (Node child : getChildren()) {
 					if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
 						String schemaName = child.getSchemaContainer().getName();
@@ -594,7 +594,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			parent = parent.getParentNode();
 		}
 
-		if (!targetNode.getSchema().isFolder()) {
+		if (!targetNode.getSchema().isContainer()) {
 			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 		}
 

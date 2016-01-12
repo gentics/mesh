@@ -9,6 +9,8 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.RxUtil;
+
 import rx.Observable;
 
 /**
@@ -81,7 +83,12 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 			return Observable.just(listResponse);
 		}
 
-		return Observable.merge(obs).concatMap(item -> {
+		Observable<RestModel> merged = Observable.empty();
+		for (Observable<? extends RestModel> element : obs) {
+			merged = merged.concatWith(element);
+		}
+
+		return merged.concatMap(item -> {
 			listResponse.getData().add(item);
 			return Observable.just(listResponse);
 		}).last().map(item -> {

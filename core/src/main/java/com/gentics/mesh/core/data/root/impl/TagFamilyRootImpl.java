@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
-import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 

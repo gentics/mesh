@@ -66,23 +66,23 @@ public abstract class AbstractDatabase implements Database {
 		start();
 	}
 
-	@Override
-	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
-		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
-		Observable<T> obs = Observable.create(sub -> {
-			try {
-				T result = trx(txHandler);
-				sub.onNext(result);
-				sub.onCompleted();
-			} catch (Exception e) {
-				sub.onError(e);
-			}
-
-		});
-
-		return obs.observeOn(scheduler);
-
-	}
+//	@Override
+//	public <T> Observable<T> asyncTrx(TrxHandler<T> txHandler) {
+//		Scheduler scheduler = RxHelper.scheduler(Mesh.vertx());
+//		Observable<T> obs = Observable.create(sub -> {
+//			try {
+//				T result = trx(txHandler);
+//				sub.onNext(result);
+//				sub.onCompleted();
+//			} catch (Exception e) {
+//				sub.onError(e);
+//			}
+//
+//		});
+//
+//		return obs.observeOn(scheduler);
+//
+//	}
 
 	@Override
 	public <T> T noTrx(TrxHandler<T> txHandler) {

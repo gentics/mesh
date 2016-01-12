@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -172,6 +172,12 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
+	/**
+	 * Read a list of elements of the given root vertex and respond with a list response.
+	 * 
+	 * @param ac
+	 * @param handler
+	 */
 	protected void readElementList(InternalActionContext ac, TrxHandler<RootVertex<T>> handler) {
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();

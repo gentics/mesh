@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.spi;
 
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -94,15 +94,15 @@ public interface Database {
 	 */
 	<T> T trx(TrxHandler<T> trxHandler);
 
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
-	 * fails.
-	 * 
-	 * @param trxHandler
-	 *            Handler that will be executed within the scope of the transaction.
-	 * @return Observable that will emit the object when the transaction has completed
-	 */
-	<T> Observable<T> asyncTrx(TrxHandler<T> trxHandler);
+//	/**
+//	 * Asynchronously execute the trxHandler within the scope of a transaction and invoke the result handler after the transaction code handler finishes or
+//	 * fails.
+//	 * 
+//	 * @param trxHandler
+//	 *            Handler that will be executed within the scope of the transaction.
+//	 * @return Observable that will emit the object when the transaction has completed
+//	 */
+//	<T> Observable<T> asyncTrx(TrxHandler<T> trxHandler);
 
 	/**
 	 * Return a autoclosable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic

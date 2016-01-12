@@ -1,6 +1,6 @@
 package com.gentics.mesh.query.impl;
 
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 

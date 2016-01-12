@@ -1,7 +1,6 @@
 {
   "name" : "vehicle",
-  "binary" : false,
-  "folder" : false,
+  "container" : false,
   "displayField": "name",
   "segmentField": "name",
   "fields" : [ {

@@ -42,19 +42,19 @@ public interface Schema {
 	void setDisplayField(String displayField);
 
 	/**
-	 * Return the binary folder flag.
+	 * Return the container flag. When enabled nodes of this schema can contain other nodes. (parent/child relationship)
 	 * 
-	 * @return Folder flag value
+	 * @return Container flag value
 	 */
-	boolean isFolder();
+	boolean isContainer();
 
 	/**
-	 * Set the folder flag for this schema. Nodes that are created using a schema which has an enabled folder flag can be used as a parent for new nodes.
+	 * Set the container flag for this schema. Nodes that are created using a schema which has an enabled container flag can be used as a parent for new nodes.
 	 * 
 	 * @param flag
-	 *            Folder flag value
+	 *            Container flag value
 	 */
-	void setFolder(boolean flag);
+	void setContainer(boolean flag);
 
 	/**
 	 * Return the list of field schemas.

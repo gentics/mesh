@@ -159,7 +159,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		Route route = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
-			// TODO move if back into verticle
+			// TODO move if clause back into verticle
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {

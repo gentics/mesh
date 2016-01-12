@@ -74,7 +74,7 @@ public class RestModelTest extends AbstractDBTest {
 		nameFieldSchema.setLabel("Name");
 		schema.addField(nameFieldSchema);
 
-		schema.setFolder(false);
+		schema.setContainer(false);
 		return schema;
 	}
 

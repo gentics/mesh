@@ -1,7 +1,6 @@
 {
   "name" : "category",
-  "binary" : false,
-  "folder" : true,
+  "container" : true,
   "displayField": "name",
   "segmentField": "name",
   "fields" : [ {

@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.rest.error;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import rx.Observable;
 
 public class HttpStatusCodeErrorException extends RuntimeException {
 
@@ -13,40 +13,6 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	protected String[] i18nParameters;
 
 	protected Map<String, String> properties;
-
-	/**
-	 * Create a i18n translated error exception.
-	 * 
-	 * @param status
-	 *            Http status
-	 * @param i18nMessageKey
-	 *            i18n key
-	 * @param parameters
-	 *            i18n parameters
-	 * @return
-	 */
-	public static HttpStatusCodeErrorException error(HttpResponseStatus status, String i18nMessageKey, String... parameters) {
-		return new HttpStatusCodeErrorException(status, i18nMessageKey, parameters);
-	}
-
-	/**
-	 * Create a i18n translated error exception.
-	 * 
-	 * @param status
-	 *            Http status
-	 * @param i18nMessageKey
-	 *            i18n key
-	 * @param t
-	 *            Nested exception
-	 * @return
-	 */
-	public static HttpStatusCodeErrorException error(HttpResponseStatus status, String i18nMessageKey, Throwable t) {
-		return new HttpStatusCodeErrorException(status, i18nMessageKey, t);
-	}
-
-	public static <T> Observable<T> errorObservable(HttpResponseStatus status, String i18nKey, String... parameters) {
-		return Observable.error(new HttpStatusCodeErrorException(status, i18nKey, parameters));
-	}
 
 	/**
 	 * Create a new http status exception.
@@ -124,6 +90,19 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 */
 	public Map<String, String> getProperties() {
 		return properties;
+	}
+
+	/**
+	 * Set the given property to the error.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void setProperty(String key, String value) {
+		if (properties == null) {
+			properties = new HashMap<>();
+		}
+		properties.put(key, value);
 	}
 
 	/**

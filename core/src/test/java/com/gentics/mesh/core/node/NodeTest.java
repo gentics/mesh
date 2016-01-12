@@ -255,7 +255,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testRead() throws IOException {
 		Node node = folder("2015");
 		assertEquals("folder", node.getSchema().getName());
-		assertTrue(node.getSchema().isFolder());
+		assertTrue(node.getSchema().isContainer());
 	}
 
 	@Test

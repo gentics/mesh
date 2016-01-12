@@ -5,9 +5,9 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.core.rest.error.HttpConflictErrorException.conflict;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.error;
-import static com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException.errorObservable;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 

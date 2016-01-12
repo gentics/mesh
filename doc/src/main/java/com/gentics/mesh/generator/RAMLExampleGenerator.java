@@ -488,7 +488,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	private SchemaCreateRequest getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
-		schemaUpdateRequest.setFolder(true);
+		schemaUpdateRequest.setContainer(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
 		schemaUpdateRequest.setSegmentField("name");
