@@ -55,13 +55,18 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	@Override
 	public Observable<Void> store(SchemaContainer object, String type) {
 		return super.store(object, type).flatMap(done -> {
-			Observable<Void> obs = db.noTrx(() -> {
-				// update the mappings
-				Schema schema = object.getSchema();
-				String schemaName = schema.getName();
-				return searchProvider.setMapping(Node.TYPE, schemaName, schema);
-			});
-			return obs;
+			if (db != null) {
+				Observable<Void> obs = db.noTrx(() -> {
+					// update the mappings
+					Schema schema = object.getSchema();
+					String schemaName = schema.getName();
+					return searchProvider.setMapping(Node.TYPE, schemaName, schema);
+				});
+				return obs;
+			} else {
+				return Observable.just(done);
+			}
+
 		});
 	}
 }

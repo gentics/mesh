@@ -53,6 +53,8 @@ import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -146,6 +148,8 @@ public final class MockingUtils {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
 		when(tagFamily.getProject()).thenReturn(project);
+		TagRoot tagRoot = mock(TagRootImpl.class);
+		when(tagFamily.getTagRoot()).thenReturn(tagRoot);
 		return tagFamily;
 	}
 
