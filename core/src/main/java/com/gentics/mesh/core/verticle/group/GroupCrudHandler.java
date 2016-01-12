@@ -121,16 +121,17 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
 			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
-			return Observable.zip(obsGroup, obsUser, (group, user) -> {
+			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsUser, (group, user) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
-					batch.addEntry(user, UPDATE_ACTION);
 					group.addUser(user);
+					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
 					return Tuple.tuple(batch, group);
 				});
-				// BUG Add SQB processing
-				return tuple.v2().transformToRest(ac);
-			}).flatMap(x -> x);
+				SearchQueueBatch batch = tuple.v1();
+				Group updatedGroup = tuple.v2();
+				return batch.process().flatMap(i -> updatedGroup.transformToRest(ac));
+			});
+			return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

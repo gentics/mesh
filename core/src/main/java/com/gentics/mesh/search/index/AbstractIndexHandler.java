@@ -41,14 +41,36 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 	@Autowired
 	protected Database db;
 
+	/**
+	 * Return the index type.
+	 * 
+	 * @return
+	 */
 	abstract protected String getType();
 
+	/**
+	 * Return the index name.
+	 * 
+	 * @return
+	 */
 	abstract protected String getIndex();
 
 	abstract protected RootVertex<T> getRootVertex();
 
+	/**
+	 * Transform the given object into a source map which can be used to store the document in the search provider specific format.
+	 * 
+	 * @param object
+	 * @return
+	 */
 	abstract protected Map<String, Object> transformToDocumentMap(T object);
 
+	/**
+	 * Update the search index document which is represented by the given object.
+	 * 
+	 * @param object
+	 * @return
+	 */
 	public Observable<Void> update(T object) {
 		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
 	}
@@ -65,10 +87,24 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		return fut;
 	}
 
+	/**
+	 * Store the given object within the search index.
+	 * 
+	 * @param object
+	 * @param type
+	 * @return
+	 */
 	public Observable<Void> store(T object, String type) {
 		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object));
 	}
 
+	/**
+	 * Delete the document with the given uuid and type from the search index.
+	 * 
+	 * @param uuid
+	 * @param type
+	 * @return
+	 */
 	public Observable<Void> delete(String uuid, String type) {
 		// We don't need to resolve the uuid and load the graph object in this case.
 		return searchProvider.deleteDocument(getIndex(), type, uuid);
@@ -89,6 +125,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		});
 	}
 
+	/**
+	 * Check whether the search provider is available. Some tests are not starting an search provider and thus we must be able to determine whether we can use
+	 * the search provider.
+	 * 
+	 * @return
+	 */
 	protected boolean isSearchClientAvailable() {
 		return searchProvider != null;
 	}
@@ -131,6 +173,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		}
 	}
 
+	/**
+	 * Add the tags field to the source map using the given list of tags.
+	 * 
+	 * @param map
+	 * @param tags
+	 */
 	protected void addTags(Map<String, Object> map, List<? extends Tag> tags) {
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
@@ -144,6 +192,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		map.put("tags", tagFields);
 	}
 
+	/**
+	 * Add the project field to the source map.
+	 * 
+	 * @param map
+	 * @param project
+	 */
 	protected void addProject(Map<String, Object> map, Project project) {
 		if (project != null) {
 			Map<String, String> projectFields = new HashMap<>();

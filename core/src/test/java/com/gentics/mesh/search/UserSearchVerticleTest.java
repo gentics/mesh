@@ -66,7 +66,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertSuccess(future);
 		UserListResponse response = future.result();
 		assertNotNull(response);
-		assertFalse(response.getData().isEmpty());
+		assertFalse("The user with the name {" + impossibleName + "} could not be found using a simple term query.", response.getData().isEmpty());
 		assertEquals(1, response.getData().size());
 		assertEquals(impossibleName, response.getData().get(0).getLastname());
 	}
@@ -159,26 +159,31 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchForLaterAddedUser() throws InterruptedException, JSONException {
-		GroupResponse group = createGroup("apa-otsAdmin");
+		// 1. Create a group
+		GroupResponse group = createGroup("apaotsadmin");
 		String groupName = group.getName();
 		String username = "extrauser42a";
 
+		// 2. Create a new user
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
-
 		Future<UserResponse> future = getClient().createUser(request);
 		latchFor(future);
 		assertSuccess(future);
 
+		// 3. Assign the previously created user to the group 
 		Future<GroupResponse> futureAdd = getClient().addUserToGroup(group.getUuid(), future.result().getUuid());
 		latchFor(futureAdd);
 		assertSuccess(futureAdd);
 
+		// Check whether the user index was updated
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals(
+				"We assigned the user to the group and thus the index should have been update but we were unable to find the user with the specified group.",
+				1, searchFuture.result().getData().size());
 
 	}
 

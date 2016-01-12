@@ -76,7 +76,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		}
 		searchProvider.deleteDocument("node", "node-en", uuid).toBlocking().first();
 		processor.process();
-		assertNotNull(searchProvider.getDocument("node", "node-en", uuid).toBlocking().first());
+		assertNotNull("The document with uuid {" + uuid + "} still be found within the search index.",searchProvider.getDocument("node", "node-en", uuid).toBlocking().first());
 	}
 
 }

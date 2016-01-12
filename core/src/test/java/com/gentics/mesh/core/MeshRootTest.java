@@ -3,6 +3,7 @@ package com.gentics.mesh.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -93,8 +94,17 @@ public class MeshRootTest extends AbstractBasicDBTest {
 	}
 
 	private void expectFailure(String path) throws InterruptedException {
-		
-		assertNull("We expected that the path {" + path + "} can't be resolved successfully but it was.", resolve(path));
+		boolean error = false;
+		try {
+			MeshVertex vertex = resolve(path);
+			assertNull("We expected that the path {" + path + "} can't be resolved successfully but it was.", vertex);
+			error = true;
+		} catch (Exception e) {
+			error = true;
+		}
+		if (!error) {
+			fail("No exception occured but we expected an error while resolving path {" + path + "}");
+		}
 	}
 
 	private MeshVertex resolve(String pathToElement) throws InterruptedException {

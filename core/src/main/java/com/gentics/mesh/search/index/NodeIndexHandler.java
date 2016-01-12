@@ -44,8 +44,7 @@ import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 /**
- * 
- * TODO make it possible to use custom ES index configuration: http://stackoverflow.com/questions/6275727/define-custom-elasticsearch-analyzer-using-java-api
+ * Handler for the node specific search index.
  */
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
@@ -129,6 +128,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
+	@Override
 	public Observable<Void> update(Node node) {
 
 		Map<String, Object> map = new HashMap<>();
@@ -163,6 +163,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
+	/**
+	 * Add node fields to the given source map.
+	 * 
+	 * @param map
+	 *            Search index document source map
+	 * @param container
+	 *            Node field container
+	 * @param fields
+	 *            List of schema fields that should be handled
+	 */
 	private void addFields(Map<String, Object> map, GraphFieldContainer container, List<? extends FieldSchema> fields) {
 		Map<String, Object> fieldsMap = new HashMap<>();
 		for (FieldSchema fieldSchema : fields) {
@@ -331,6 +341,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
+	/**
+	 * Transform the given schema and add it to the source map.
+	 * 
+	 * @param map
+	 * @param schemaContainer
+	 */
 	private void addSchema(Map<String, Object> map, SchemaContainer schemaContainer) {
 		String name = schemaContainer.getName();
 		String uuid = schemaContainer.getUuid();
@@ -340,6 +356,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		map.put("schema", schemaFields);
 	}
 
+	/**
+	 * Transform the given microschema container and add it to the source map.
+	 * 
+	 * @param map
+	 * @param microschemaContainer
+	 */
 	private void addMicroschema(Map<String, Object> map, MicroschemaContainer microschemaContainer) {
 		Map<String, String> microschemaFields = new HashMap<>();
 		microschemaFields.put("name", microschemaContainer.getName());
@@ -347,6 +369,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		map.put("microschema", microschemaFields);
 	}
 
+	/**
+	 * Use the given node to populate the parent node fields within the source map.
+	 * 
+	 * @param map
+	 * @param parentNode
+	 */
 	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put("uuid", parentNode.getUuid());
