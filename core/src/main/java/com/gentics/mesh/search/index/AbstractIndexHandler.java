@@ -1,6 +1,10 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
@@ -8,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +28,8 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
@@ -55,6 +64,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 	 */
 	abstract protected String getIndex();
 
+	/**
+	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
+	 * 
+	 * @return
+	 */
 	abstract protected RootVertex<T> getRootVertex();
 
 	/**
@@ -75,6 +89,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
 	}
 
+	/**
+	 * Update the search index document by loading the graph element for the given uuid and type and transforming it to a source map which will be used to
+	 * update the matching search index document.
+	 * 
+	 * @param uuid
+	 * @param type
+	 * @return
+	 */
 	public Observable<Void> update(String uuid, String type) {
 		ObservableFuture<Void> fut = RxHelper.observableFuture();
 		getRootVertex().findByUuid(uuid).map(element -> {
@@ -241,4 +263,67 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		}
 	}
 
+	/**
+	 * Return the index specific the mapping as JSON.
+	 * 
+	 * @return
+	 */
+	protected abstract JsonObject getMapping();
+
+	/**
+	 * Update the index specific mapping.
+	 * 
+	 * @return
+	 */
+	public Observable<Void> updateMapping() {
+		try {
+			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(getIndex());
+			mappingRequestBuilder.setType(getType());
+
+			JsonObject mappingProperties = getMapping();
+			// Enhance mappings with generic/common field types
+			mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+			JsonObject root = new JsonObject();
+			root.put("properties", mappingProperties);
+			JsonObject mapping = new JsonObject();
+			mapping.put(getType(), root);
+
+			mappingRequestBuilder.setSource(mapping.toString());
+
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					obs.toHandler().handle(Future.succeededFuture());
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					obs.toHandler().handle(Future.failedFuture(e));
+				}
+			});
+			return obs;
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
+	}
+
+	/**
+	 * Create the search index.
+	 * 
+	 * @return
+	 */
+	public Observable<Void> createIndex() {
+		return searchProvider.createIndex(getIndex());
+	}
+
+	/**
+	 * Initialize the search index by creating it first and setting the mapping afterwards.
+	 * 
+	 * @return
+	 */
+	public Observable<Void> init() {
+		return createIndex().flatMap(i -> updateMapping());
+	}
 }

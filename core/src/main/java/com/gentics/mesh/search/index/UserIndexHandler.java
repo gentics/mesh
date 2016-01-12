@@ -1,5 +1,11 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +13,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
@@ -14,8 +21,15 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
 
+import io.vertx.core.json.JsonObject;
+
 @Component
 public class UserIndexHandler extends AbstractIndexHandler<User> {
+
+	public static final String EMAIL_KEY = "emailadress";
+	public static final String USERNAME_KEY = "username";
+	public static final String FIRSTNAME_KEY = "firstname";
+	public static final String LASTNAME_KEY = "lastname";
 
 	private static UserIndexHandler instance;
 
@@ -47,16 +61,15 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	protected Map<String, Object> transformToDocumentMap(User user) {
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, user);
-		map.put("username", user.getUsername());
-		map.put("emailadress", user.getEmailAddress());
-		map.put("firstname", user.getFirstname());
-		map.put("lastname", user.getLastname());
+		map.put(USERNAME_KEY, user.getUsername());
+		map.put(EMAIL_KEY, user.getEmailAddress());
+		map.put(FIRSTNAME_KEY, user.getFirstname());
+		map.put(LASTNAME_KEY, user.getLastname());
 		addGroups(map, user.getGroups());
 		Node referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			map.put("nodeReference", referencedNode.getUuid());
 		}
-		//TODO add node reference?
 		//TODO add disabled / enabled flag
 		return map;
 	}
@@ -75,9 +88,18 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 			groupNames.add(group.getName());
 		}
 		Map<String, List<String>> groupFields = new HashMap<>();
-		groupFields.put("uuid", groupUuids);
-		groupFields.put("name", groupNames);
+		groupFields.put(UUID_KEY, groupUuids);
+		groupFields.put(NAME_KEY, groupNames);
 		map.put("groups", groupFields);
+	}
+
+	@Override
+	protected JsonObject getMapping() {
+		JsonObject props = new JsonObject();
+		props.put(LASTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
+		props.put(FIRSTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
+		props.put(EMAIL_KEY, fieldType(STRING, NOT_ANALYZED));
+		return props;
 	}
 
 }

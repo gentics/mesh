@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -13,6 +14,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,11 +36,18 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	@Autowired
 	protected SearchProvider searchProvider;
 
+	@Autowired
+	private SearchHelper searchHelper;
+
+	@Before
+	public void initElasticSearch() {
+		searchHelper.init();
+	}
+
 	@After
 	public void resetElasticSearch() {
 		searchProvider.reset();
-		SearchHelper helper = new SearchHelper(searchProvider);
-		helper.init();
+		searchHelper.init();
 	}
 
 	@BeforeClass
@@ -85,12 +94,12 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 		}
 		return query;
 	}
-	
+
 	protected String getRangeQuery(String fieldName, double from, double to) throws JSONException {
 		RangeFilterBuilder range = FilterBuilders.rangeFilter(fieldName).gte(from).lte(to);
 		return filterWrapper(range);
 	}
-	
+
 	private String filterWrapper(BaseFilterBuilder filter) throws JSONException {
 		JSONObject request = new JSONObject();
 		request.put("filter", new JSONObject(filter.toString()));

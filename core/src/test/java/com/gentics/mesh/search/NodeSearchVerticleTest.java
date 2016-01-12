@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 
 import io.vertx.core.Future;
 import io.vertx.rx.java.ObservableFuture;
@@ -51,6 +52,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Autowired
 	private NodeVerticle nodeVerticle;
+
+	@Autowired
+	private NodeIndexHandler nodeIndexHandler;
 
 	@Override
 	public List<AbstractSpringVerticle> getVertices() {
@@ -390,11 +394,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Schema schema = node.getSchema();
 		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
 		vcardFieldSchema.setName("vcard");
-		vcardFieldSchema.setAllowedMicroSchemas(new String[] {"vcard"});
+		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard",
-				microschemaContainers().get("vcard"));
+		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard", microschemaContainers().get("vcard"));
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
 	}
@@ -409,15 +412,14 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
 		vcardListFieldSchema.setName("vcardlist");
 		vcardListFieldSchema.setListType("micronode");
-		vcardListFieldSchema.setAllowedSchemas(new String[] {"vcard"});
+		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
 		// set the mapping for the schema
-		searchProvider.setMapping("node", schema.getName(), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping("node", schema.getName(), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
-		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"),
-				Tuple.tuple("Donald", "Duck"))) {
+		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			MicronodeField field = new MicronodeResponse();
 			Micronode micronode = vcardListField.createMicronode(field);
 			micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
@@ -428,35 +430,19 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	/**
 	 * Generate the JSON for a searched in the nested field vcardlist
-	 * @param firstName firstname to search for
-	 * @param lastName lastname to search for
+	 * 
+	 * @param firstName
+	 *            firstname to search for
+	 * @param lastName
+	 *            lastname to search for
 	 * @return search JSON
 	 * @throws IOException
 	 */
 	private String getNestedVCardListSearch(String firstName, String lastName) throws IOException {
-		return XContentFactory.jsonBuilder()
-			.startObject()
-				.startObject("query")
-					.startObject("nested")
-						.field("path", "fields.vcardlist")
-						.startObject("query")
-							.startObject("bool")
-								.startArray("must")
-									.startObject()
-										.startObject("match")
-											.field("fields.vcardlist.fields.firstName", firstName)
-										.endObject()
-									.endObject()
-									.startObject()
-										.startObject("match")
-											.field("fields.vcardlist.fields.lastName", lastName)
-										.endObject()
-									.endObject()
-								.endArray()
-							.endObject()
-						.endObject()
-					.endObject()
-				.endObject()
-			.endObject().string();
+		return XContentFactory.jsonBuilder().startObject().startObject("query").startObject("nested").field("path", "fields.vcardlist")
+				.startObject("query").startObject("bool").startArray("must").startObject().startObject("match")
+				.field("fields.vcardlist.fields.firstName", firstName).endObject().endObject().startObject().startObject("match")
+				.field("fields.vcardlist.fields.lastName", lastName).endObject().endObject().endArray().endObject().endObject().endObject()
+				.endObject().endObject().string();
 	}
 }

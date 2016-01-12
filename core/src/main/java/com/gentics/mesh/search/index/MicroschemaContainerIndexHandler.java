@@ -1,5 +1,13 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.DESCRIPTION_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +17,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.root.RootVertex;
+
+import io.vertx.core.json.JsonObject;
 
 @Component
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
@@ -24,7 +34,6 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 		return instance;
 	}
 
-	
 	@Override
 	protected String getIndex() {
 		return "microschema";
@@ -44,8 +53,17 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	protected Map<String, Object> transformToDocumentMap(MicroschemaContainer microschema) {
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, microschema);
-		map.put("name", microschema.getName());
+		map.put(NAME_KEY, microschema.getName());
+		map.put(DESCRIPTION_KEY, microschema.getMicroschema().getDescription());
 		return map;
+	}
+
+	@Override
+	protected JsonObject getMapping() {
+		JsonObject props = new JsonObject();
+		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
+		props.put(DESCRIPTION_KEY, fieldType(STRING, ANALYZED));
+		return props;
 	}
 
 }

@@ -29,6 +29,9 @@ import rx.Observable;
 
 public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<MicroschemaResponse, MicroschemaContainer> implements MicroschemaContainer {
 
+	private static final String NAME_PROPERTY_KEY = "name";
+	private static final String DESCRIPTION_PROPERTY_KEY = "description";
+
 	public static void checkIndices(Database database) {
 		database.addVertexType(MicroschemaContainerImpl.class);
 	}
@@ -45,13 +48,23 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 
 	@Override
 	public String getName() {
-		return getProperty("name");
+		return getProperty(NAME_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty("name", name);
+		setProperty(NAME_PROPERTY_KEY, name);
 	}
+
+//	@Override
+//	public String getDescription() {
+//		return getProperty(DESCRIPTION_PROPERTY_KEY);
+//	}
+//
+//	@Override
+//	public void setDescription(String text) {
+//		setProperty(DESCRIPTION_PROPERTY_KEY, text);
+//	}
 
 	@Override
 	public Microschema getMicroschema() {
@@ -78,6 +91,7 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 	@Override
 	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac) {
 		try {
+			// Load the microschema and add/overwrite some properties 
 			MicroschemaResponse microschema = JsonUtil.readSchema(getJson(), MicroschemaResponse.class);
 			microschema.setUuid(getUuid());
 

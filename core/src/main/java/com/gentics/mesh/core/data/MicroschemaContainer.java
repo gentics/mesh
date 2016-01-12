@@ -21,7 +21,22 @@ public interface MicroschemaContainer extends MeshCoreVertex<MicroschemaResponse
 	/**
 	 * Set the microschema for this container
 	 * 
-	 * @param microschema microschema instance
+	 * @param microschema
+	 *            microschema instance
 	 */
 	void setMicroschema(Microschema microschema);
+
+//	/**
+//	 * Return the microschema description text.
+//	 * 
+//	 * @return
+//	 */
+//	String getDescription();
+//
+//	/**
+//	 * Set the microschema description.
+//	 * 
+//	 * @param text
+//	 */
+//	void setDescription(String text);
 }

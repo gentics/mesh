@@ -65,17 +65,16 @@ public class MeshSpringConfiguration {
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
-
 	@Bean
 	public ImageManipulatorService imageProviderService() {
 		return ImageManipulatorService.getInstance();
 	}
-	
+
 	@Bean
 	public ImageManipulator imageProvider() {
-//		ImageManipulator provider = imageProviderService().getImageProvider();
+		//		ImageManipulator provider = imageProviderService().getImageProvider();
 		//TODO assert provider
-//		return provider;
+		//		return provider;
 		return new ImgscalrImageManipulator();
 	}
 
@@ -95,6 +94,7 @@ public class MeshSpringConfiguration {
 		try {
 			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
 			database.init(options, Mesh.vertx());
+			// TODO should we perhaps check the db also within the bootstrap initalizer?
 			DatabaseHelper helper = new DatabaseHelper(database);
 			helper.init();
 			helper.migrate();
@@ -118,8 +118,6 @@ public class MeshSpringConfiguration {
 		} else {
 			searchProvider = new ElasticSearchProvider().init(Mesh.mesh().getOptions().getSearchOptions());
 		}
-		SearchHelper helper = new SearchHelper(searchProvider);
-		helper.init();
 		return searchProvider;
 	}
 

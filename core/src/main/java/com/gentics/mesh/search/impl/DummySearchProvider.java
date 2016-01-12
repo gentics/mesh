@@ -25,8 +25,8 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public void createIndex(String indexName) {
-		// TODO Auto-generated method stub
+	public Observable<Void> createIndex(String indexName) {
+		return Observable.just(null);
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class DummySearchProvider implements SearchProvider {
 		return Observable.just(null);
 	}
 
-	public Observable<Void> setMapping(String indexName, String type, Schema schema) {
+	public Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
 		return Observable.just(null);
 	}
 

@@ -1,5 +1,8 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +13,11 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -35,12 +43,18 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 /**
@@ -333,6 +347,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
+	/**
+	 * Utility method that can be used to remove the <code>field.</code> field from the source map. This is useful when you want to just update the field values
+	 * (eg. reuse the old sourcemap for a new sourcemap of a different language (same node)).
+	 * 
+	 * @param map
+	 */
 	private void removeFieldEntries(Map<String, Object> map) {
 		for (String key : map.keySet()) {
 			if (key.startsWith("field.")) {
@@ -351,8 +371,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String name = schemaContainer.getName();
 		String uuid = schemaContainer.getUuid();
 		Map<String, String> schemaFields = new HashMap<>();
-		schemaFields.put("name", name);
-		schemaFields.put("uuid", uuid);
+		schemaFields.put(NAME_KEY, name);
+		schemaFields.put(UUID_KEY, uuid);
 		map.put("schema", schemaFields);
 	}
 
@@ -364,8 +384,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void addMicroschema(Map<String, Object> map, MicroschemaContainer microschemaContainer) {
 		Map<String, String> microschemaFields = new HashMap<>();
-		microschemaFields.put("name", microschemaContainer.getName());
-		microschemaFields.put("uuid", microschemaContainer.getUuid());
+		microschemaFields.put(NAME_KEY, microschemaContainer.getName());
+		microschemaFields.put(UUID_KEY, microschemaContainer.getUuid());
 		map.put("microschema", microschemaFields);
 	}
 
@@ -377,7 +397,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void addParentNodeInfo(Map<String, Object> map, Node parentNode) {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
-		parentNodeInfo.put("uuid", parentNode.getUuid());
+		parentNodeInfo.put(UUID_KEY, parentNode.getUuid());
 		// TODO check whether nesting of nested elements would also work
 		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
 		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
@@ -411,4 +431,78 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private String getDocumentType(Node node, String language) {
 		return node.getSchemaContainer().getName();
 	}
+
+	/**
+	 * Set the mapping for the given type in the given index for the schema
+	 *
+	 * @param indexName
+	 *            index name
+	 * @param type
+	 *            type name
+	 * @param schema
+	 *            schema
+	 * @return observable
+	 */
+	public Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
+		PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
+		mappingRequestBuilder.setType(type);
+
+		try {
+			XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
+					.startObject(type) // type
+					.startObject("properties") // properties
+					.startObject("fields") // fields
+					.startObject("properties"); // properties
+
+			for (FieldSchema field : schema.getFields()) {
+				if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+					if ("micronode".equals(((ListFieldSchema) field).getListType())) {
+						mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+					}
+				}
+			}
+
+			mappingBuilder.endObject() // properties
+					.endObject() // fields
+					.endObject() // properties
+					.endObject() // type
+					.endObject(); // root object
+			if (log.isDebugEnabled()) {
+				log.debug(mappingBuilder.string());
+			}
+			mappingRequestBuilder.setSource(mappingBuilder);
+
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					obs.toHandler().handle(Future.succeededFuture());
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					obs.toHandler().handle(Future.failedFuture(e));
+				}
+			});
+			return obs;
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
+	}
+
+	@Override
+	protected JsonObject getMapping() {
+		JsonObject props = new JsonObject();
+
+		return props;
+	}
+
+	//TODO Combine updateMapping with setNodeIndexMapping
+	@Override
+	public Observable<Void> init() {
+		// Omit regular mapping creation for now.
+		return createIndex();
+	}
+
 }

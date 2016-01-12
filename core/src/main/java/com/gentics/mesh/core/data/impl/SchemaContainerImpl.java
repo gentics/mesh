@@ -55,6 +55,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	@Override
 	public Observable<SchemaResponse> transformToRest(InternalActionContext ac) {
 		try {
+			// Load the schema and add/overwrite some properties 
 			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);
 			restSchema.setUuid(getUuid());
 

@@ -1,5 +1,10 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.RootVertex;
+
+import io.vertx.core.json.JsonObject;
 
 @Component
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
@@ -42,11 +49,18 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Override
 	protected Map<String, Object> transformToDocumentMap(TagFamily tagFamily) {
 		Map<String, Object> map = new HashMap<>();
-		map.put("name", tagFamily.getName());
+		map.put(NAME_KEY, tagFamily.getName());
 		addBasicReferences(map, tagFamily);
 		addTags(map, tagFamily.getTagRoot().findAll());
 		addProject(map, tagFamily.getProject());
 		return map;
+	}
+
+	@Override
+	protected JsonObject getMapping() {
+		JsonObject props = new JsonObject();
+		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
+		return props;
 	}
 
 }

@@ -1,5 +1,11 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
+import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
+
+import io.vertx.core.json.JsonObject;
 
 @Component
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
@@ -42,8 +50,16 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	@Override
 	protected Map<String, Object> transformToDocumentMap(Group group) {
 		Map<String, Object> map = new HashMap<>();
-		map.put("name", group.getName());
+		map.put(NAME_KEY, group.getName());
 		addBasicReferences(map, group);
 		return map;
 	}
+
+	@Override
+	protected JsonObject getMapping() {
+		JsonObject props = new JsonObject();
+		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
+		return props;
+	}
+
 }

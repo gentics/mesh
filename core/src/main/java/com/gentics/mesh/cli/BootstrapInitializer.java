@@ -72,6 +72,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.SearchHelper;
 import com.gentics.mesh.search.SearchVerticle;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -99,6 +100,9 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private Database db;
+	
+	@Autowired
+	private SearchHelper searchHelper;
 
 	private static BootstrapInitializer instance;
 
@@ -177,6 +181,7 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
+		initSearchIndex();
 		initMandatoryData();
 		initPermissions();
 		loadConfiguredVerticles();
@@ -190,6 +195,10 @@ public class BootstrapInitializer {
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
 
+	}
+
+	private void initSearchIndex() {
+		searchHelper.init();
 	}
 
 	/**
