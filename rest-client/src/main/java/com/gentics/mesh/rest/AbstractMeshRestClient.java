@@ -83,6 +83,10 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, this, method, uri);
 
 		HttpClientRequest request = client.request(method, uri, handler);
+		// Let the response handler fail when an error ocures
+		request.exceptionHandler(e -> {
+			handler.getFuture().fail(e);
+		});
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + uri + "}");
 		}
