@@ -1,0 +1,953 @@
+= Gentics Mesh Documentation
+
+:es-json: ../elasticsearch-examples
+:raml-json: ../raml/json
+:mesh-json: ../mesh-json
+
+== Gentics Mesh Documentation
+
+This documentation provides information on the structure and functionality of the Mesh server and its API endpoints.
+
+== REST API
+
+The link:/docs/beta/raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element. 
+There are many things you can do with the REST API. For example:
+
+* You can create new users.
+* You can create nodes and tag them with tags.
+* Binary data can be added to nodes.
+* You can find nodes which match your search parameters.
+
+All REST API responses are only available in JSON.
+
+The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Mesh.
+
+=== Authentication
+
+* Basic Authentication
+
+By default basic authentication is required to authenticate the user when using the REST API.
+
+* JSON Login
+
+The ```/api/v1/auth/login``` endpoint can be used to login Mesh by posting JSON which includes the username and password.
+
+=== Encoding
+
+Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding format will result in encoding issues.
+
+=== Headers
+
+It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Mesh that your client is accepting JSON. 
+
+
+[source,bash]
+----
+Content-Type: application/json
+Accept: application/json
+----
+
+A request which is not well formatted may fail. Mesh will do its best to identify the issue and return a meaningful error response in those cases.
+
+=== Paging
+
+The paging query parameters are ```perPage``` and ```page```. It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
+
+=== File Upload
+
+Binary data can be attached to nodes which have been created using a schema that allows binary storage. The ```/api/v1/nodes/:uuid/bin``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data```.
+
+
+=== Examples
+
+*Node Creation*
+
+It is mandatory to specify the ```parentNodeUuid```, ```language```  and ```schema``` field when creating a node. It is possible specify the schema uuid instead of the name. At least one property within the ```schema``` object must be set.
+
+[source,json]
+----
+POST /api/v1/demo/nodes/2f2de9297c8143e8ade9297c8193e8fc HTTP/1.1
+Host: localhost:8080
+Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
+Content-Type: application/json
+Accept: application/json
+
+include::{raml-json}/demo.NodeCreateRequest.json[]
+----
+
+*Node Updating*
+
+The created node can be updated via a ```PUT``` request. You may only include those field which should be updated.
+
+[source,json]
+----
+PUT /api/v1/demo/nodes/5af8d0e077e34361b8d0e077e353619e HTTP/1.1
+Host: localhost:8080
+Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
+Content-Type: application/json
+Accept: application/json
+
+include::{raml-json}/demo.NodeUpdateRequest.json[]
+----
+
+*Node Tagging*
+
+Tagging nodes requires just a simple ```PUT``` request.
+
+[source,json]
+----
+PUT /api/v1/demo/nodes/5af8d0e077e34361b8d0e077e353619e/tags/ba2edcdb1234489daedcdb1234289d38 HTTP/1.1
+Host: localhost:8080
+Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
+Accept: application/json
+----
+
+== Building blocks
+
+Mesh provides a various building blocks which can be used in order to setup your content structure. Below are elements which can be used to create your project datastructure.
+
+image:overview.png[]
+
+=== Users
+
+Users can log into Mesh in order to interact with other elements.
+
+Endpoint: ```/api/v1/users```
+
+
+[options="header"]
+|======
+| Property      | Description
+| uuid          | Uuid of the user
+| lastname      | Lastname of the user
+| firstname     | Firstname of the user
+| username      | Username of the user (mandatory)
+| emailAddress  | Email Address of the user
+| nodeReference | Node reference which can be used to store additional user data. It is also possible to expand this field using the ```expand``` query parameter.
+| enabled       | Enabled flag. Disabled users can no longer log into mash. A deleted user will not be completely removed. Instead the user will just be disabled.
+| groups        | List of group references of the user
+| creator       | User reference of the creator
+| created       | Epoch creation date 
+| editor        | User reference of the last editor
+| edited        | Epoch last edited date 
+| rolePerms     | Role permissions on the element
+| permissions   | User permissions on the element
+|======
+
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/UserResponse.example.json[]
+----
+
+=== Groups
+
+Groups are used to organize users. Roles can be assigned to groups. A user in a group with roles inherits those roles and the permissions that are bound to those roles.
+Groups can't be nested.
+
+Endpoint: ```/api/v1/groups```
+
+[options="header"]
+|======
+| Property    | Description
+| uuid        | Uuid of the group
+| name        | Name of the group
+| roles       | List of role references (name/uuid)
+| creator     | User reference of the creator
+| created     | Epoch creation date 
+| editor      | User reference of the last editor
+| edited      | Epoch last edited date 
+| rolePerms   | Role permissions on the element
+| permissions | User permissions on the element
+|======
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/GroupResponse.example.json[]
+----
+
+=== Roles
+
+Roles are used to assign permissions to objects. A role can be assigned to multiple groups. 
+Users can only assign permissions to roles to which they have access.
+Roles can't be nested.
+
+Endpoint: ```/api/v1/roles```
+
+[options="header"]
+|======
+| Property      | Description
+| uuid          | Uuid of the role
+| name          | Name of the role
+| groups        | List of group references of the role
+| creator       | User reference of the creator
+| created       | Epoch creation date 
+| editor        | User reference of the last editor
+| edited        | Epoch last edited date 
+| rolePerms     | Role permissions on the element
+| permissions   | User permissions on the element
+|======
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/RoleResponse.example.json[]
+----
+
+=== Projects
+
+A project is the base element your content structure which includes tagfamilies and your node tree.
+Schemas can be assigned to projects in order to allow creation of nodes which use one of the assigned schemas.
+
+Endpoint: ```/api/v1/projects```
+
+[options="header"]
+|======
+| Property      | Description
+| uuid          | Uuid of the project
+| name          | Name of the project
+| rootNodeUuid  | Uuid of the project root node
+| creator       | User reference of the creator
+| created       | Epoch creation date 
+| editor        | User reference of the last editor
+| edited        | Epoch last edited date 
+| rolePerms     | Role permissions on the element
+| permissions   | User permissions on the element
+|======
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/ProjectResponse.example.json[]
+----
+
+=== Tag Families
+
+Tag families are base elements for tags which are bound to single project.
+Tag families can't be nested.
+
+Endpoint: ```/api/v1/:YOURPROJECT/tagfamilies```
+
+[options="header"]
+|======
+| Property      | Description
+| uuid          | Uuid of the tag family
+| name          | Name of the tag family
+| creator       | User reference of the creator
+| created       | Epoch creation date 
+| editor        | User reference of the last editor
+| edited        | Epoch last edited date 
+| rolePerms     | Role permissions on the element
+| permissions   | User permissions on the element
+|======
+
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/TagFamilyResponse.example.json[]
+----
+
+=== Tags
+
+Tags can be used to add nodes. Tags can not be hierarchically structured. 
+Tags can be manipulated using the ```/tags``` endpoint.
+
+Endpoint: ```/api/v1/:YOURPROJECT/tags```
+
+
+[options="header"]
+|======
+| Property      | Description
+| uuid          | Uuid of the tag
+| fields        | Tag fields which provide the tag name
+| tagFamily     | Tag family reference of the tag
+| creator       | User reference of the creator
+| created       | Epoch creation date 
+| editor        | User reference of the last editor
+| edited        | Epoch last edited date 
+| rolePerms     | Role permissions on the element
+| permissions   | User permissions on the element
+|======
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/TagResponse.example.json[]
+----
+
+=== Nodes
+
+Nodes are the main structural building blocks for your content. You may create different schemas to create multiple types of nodes. 
+Nodes can be hierarchically structured if the schema is allowing this. The type of a node is always defined by the assigned schema. Nodes can be tagged by any number of tags.
+
+Endpoint: ```/api/v1/:YOURPROJECT/nodes```
+
+
+[options="header"]
+|======
+| Property                       | Description
+| uuid                           | Uuid of the node
+| fields                         | Node fields of the current language
+| parentNode                     | Node reference to the parent node. The project basenode has no parent node.
+| language                       | Language tag of the current language
+| availableLanguages             | List of available languages 
+| tags                           | List of tags that were used to tag the node
+| project                        | Project reference
+| schema                         | Schema reference of the node
+| isContainer                    | Flag that indicates that the node is a container and may contain children
+| childrenInfo                   | JSON structure which contains information on the amount and type of child elements
+| published                      | Published flag
+| displayField                   | Key of the field that will be used to retrieve the display name value. (eg. "title" for blogpost nodes and "filename" for binary nodes)
+| segmentField                   | Key of the field that will be used to build a path segment of this node.
+| binaryProperties.width         | Image width  property for a node with an image binary upload
+| binaryProperties.height        | Image height property for a node with an image binary upload
+| binaryProperties.dpi           | Image dpi    property for a node with an image binary upload
+| binaryProperties.sha512sum     | SHA512 Checksum for the binary attribute
+| binaryProperties.fileSize      | Binary filesize
+| binaryProperties.mimeType      | Binary mimeType
+| fileName                       | Binary filename
+| creator                        | User reference of the creator
+| created                        | Epoch creation date 
+| editor                         | User reference of the last editor
+| edited                         | Epoch last edited date 
+| rolePerms                      | Role permissions on the element
+| permissions                    | User permissions on the element
+|======
+
+
+*Response Sample*
+
+[source,json]
+----
+include::{raml-json}/NodeResponse.example.json[]
+----
+
+==== Query Parameters
+
+[options="header",cols="2*"]
+|======
+
+| Name
+| Description
+
+| lang
+| The lang query parameter can be used to retrieve a node in a particular language.
+
+| role
+| The role query parameter may be used in order to add permission information related to the specified role to the response. 
+This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role.
+Endpoint: ```/api/v1/:YOURPROJECT/nodes?role=:ROLE_UUID```
+
+| expand
+| A comma separated list of fields to expand on the node. When not set various fields may only contain element references.
+It is possible to expand node fields.
+
+| expandAll
+| The ```expandAll``` query parameter is a boolean flag which can be used to expand all expandable fields. 
+
+|======
+
+==== Creation
+
+It is mandatory to set the ```language``` and ```parentNodeUuid``` parameter within the JSON request when sending a create request via POST to the nodes endpoint.
+
+Depending on the used schema it may also be mandatory to add fields to the request which are flagged as mandatory.
+
+[source,json]
+----
+include::{raml-json}/NodeCreateRequest.example.json[]
+----
+
+=== Schemas
+
+A schema defines the type and name of each field for a node. You can think of a schema as a blueprint for new nodes.
+
+Endpoint: ```/api/v1/schemas```
+
+[source,json]
+----
+include::{raml-json}/SchemaResponse.example.json[]
+----
+
+==== Configuration properties
+
+The following configuration properties may be specified:
+
+* **`binary`** Set to `true` to mark the schema as a binary schema. This will cause a file upload input to appear 
+when creating/editing a node using this schema, and also add additional binary-specific properties to the response object
+of such nodes.
+* **`container`** Set to `true` to indicate that this schema can contain child nodes. This will cause the response 
+object for such nodes to have a `childrenInfo` property.
+* **`displayField`** Used to specify which field (as defined in the "fields" list) should be considered the title for
+the purpose of displaying a list of nodes. The value must be a string which corresponds to the name of one of the
+schema's fields, and additionally that field must not be of type "list", "node".
+
+==== Schema Field 
+
+A field is defined by an object which must have the following properties:
+
+* **`name`** A unique name to identify the field
+* **`type`** The type of data to be stored in this field.
+
+The following optional properties may be applied to any type of field:
+
+* **`required`** If `true`, this field may not be left empty.
+* **`label`** A human-readable label for the field to be used as a form label in the admin UI. If not defined, the "name" field would be used.
+
+In addition to the above, certain types expose additional properties with which to configure the field. Such additional
+properties are defined in the [Types](#types) section.
+
+==== Schema Field Types
+
+
+[options="header",cols="3*"]
+|======
+| Name 
+| Type Key
+| Description
+
+| String
+| ```string```
+| A string type does not have any special configuration settings.
+
+| HTML
+| ```html```
+| A html type does not have any special configuration settings at this point of time.
+
+| Number
+| ```number```
+| A number field has three optional config properties: "min" is the lowest permitted value, "max" is the greatest permitted
+value, and "step" is the size of the permitted increment in value. For example:
+
+| Date
+| ```date```
+| The date type stores a date in a epoch date format.
+
+| Boolean
+| ```boolean```
+| A boolean type does not have any special config settings.
+
+| Node
+| ```node```
+| A node type must have an ```allow``` property which acts as a white list for schemas which may be used. If ```allow``` is an
+empty array, any type of node may be used.
+
+| List
+| ```list```
+| A list **must** be typed via the ```listType``` property. Possible listTypes are ```node``` ```boolean``` ```string``` ```number``` ```date```
+|======
+
+==== Media type whitelist for binary schemas
+
+Binary schemas should be able to specify which media types (aka MIME type or Content-type) they may contain. This would be done by means of a whitelist which is an array of multiple regular expressions.
+
+Since the JSON standard does not have a special regex type, it would need to be specified as a string, but would actually be converted to and interpreted as a regex by Mesh.
+
+== Software Stack
+
+[options="header"]
+|======
+| Component                                                    | Type                | Version
+| http://orientdb.com/[OrientDB]                               | Graph Database      | 2.1.x 
+| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                 | 2.2.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine       | 1.7.x
+| http://vertx.io/[Vert.x]                                     | Core Framework      | 3.1.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid | 3.5.x
+|======
+
+== Installation
+
+=== System Configuration
+
+The max open file limit on linux has to be raised on most linux systems since the embedded graph database and elasticsearch server often exceed the amount of concurrent open files.
+
+Edit _/etc/security/limits.conf_ and add these two lines:
+
+[source,bash]
+----
+Mesh   soft    nofile  60000
+Mesh   hard    nofile  60000
+----
+
+Edit _/etc/pam.d/su_ and uncomment or add the following line:
+
+[source,bash]
+----
+session    required   pam_limits.so
+----
+
+Please note that this change may require a logout and login after it is being applied.
+
+== Settings
+
+The main ```mesh.json``` configuration file contains various settings to configure the graph database and various file system paths.
+
+[source,json]
+----
+include::{mesh-json}/mesh-config.json[]
+----
+
+[options="header"]
+|======
+| Configuration            | Type   | Description
+| ```clusterMode```        | Flag   | The internal hazelcast in-memory data grid will be enabled when this flag is set to true.
+| ```defaultPageSize```    | Number | Default page size
+| ```defaultLanguage```    | String | Default language which is used as a fallback when no language was specified.
+| ```verticles```          | List   | List of vert.x java verticle classes which will be loaded during startup.
+| ```tempDirectory```      | Path   | Path to the main temporary filesystem directory.
+|======
+
+=== HTTPS/SSL
+
+To enable https you have to specify the server key and the server certificate within the Mesh configuration.
+
+You can create a snakeoil certificate for testing purposes this way:
+
+[source,bash]
+----
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
+----
+
+=== Server Options
+
+[options="header"]
+|======
+| Configuration                                     | Type      | Description
+| ```httpServerOptions.port```                      | Number    | Http Port number
+| ```httpServerOptions.ssl```                       | Boolean   | Enable or disable SSL support
+| ```httpServerOptions.corsAllowedOriginPattern```  | RegEx     | Regex which will validate the origin CORS header
+| ```httpServerOptions.enableCors```                | Boolean   | Enable CORS support
+| ```httpServerOptions.certPath```                  | Path      | SSL certificate path
+| ```httpServerOptions.keyPath```                   | Path      | SSL key path
+|======
+
+=== Storage Options
+
+By default all specified directories are relative to the current working directory.
+
+[options="header"]
+|======
+| Configuration                        | Type      | Description
+| ```storageOptions.directory```       | Path      | Path to the graph database storage location.
+| ```storageOptions.backupDirectory``` | Path      | Backup directory
+| ```storageOptions.exportDirectory``` | Path      | Export directory
+| ```storageOptions.startServer```     | Boolean   | Flag that indicated whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
+| ```storageOptions.parameters```      | JSON      | Additional JSON parameters that will be passed on to the used graph database implementation.
+|======
+
+=== Upload Options
+
+[options="header"]
+|======
+| Configuration                      | Type   | Description
+| ```uploadOptions.byteLimit```      | Number | Upload limit in bytes
+| ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data
+| ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory. 
+|======
+
+=== Cache Options
+
+Mesh does not manage any cache structure but it is possible to tweak the underlying graph database cache settings.
+
+== Permissions
+
+Permissions exist between roles and other elements (including other roles). Most responses within Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way. 
+
+The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role. This endpoint can also be used to apply recursive permissions.
+It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups). 
+
+
+For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
+
+Example:
+
+* User John is assigned to Role A. Role A grants him to create a new child Node in a parent Node.
+* User Mary is assigned to Role B. Role B grants her to also create a new child Node in the same parent Node.
+* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
+
+=== Users
+ 
+Recursive permission changes on ```/users``` will also affect all listed users.
+
+[options="header"]
+|======
+| Element             | Permission  | Description
+| ```/api/v1/users``` | Create      | New users can be created.
+| ```/api/v1/users``` | Read        |  _Not used_
+| ```/api/v1/users``` | Update      |  _Not used_
+| ```/api/v1/users``` | Delete      |  _Not used_
+|======
+
+Recursive permission changes on ```/users/:uuid``` have no effect on referenced elements.
+
+[options="header"]
+|======
+| Element                   | Permission  | Description
+| ```/api/v1/users/:uuid``` | Create      | _Not used_
+| ```/api/v1/users/:uuid``` | Read        | User can be read.
+| ```/api/v1/users/:uuid``` | Update      | User can be updated.
+| ```/api/v1/users/:uuid``` | Delete      | User can be deleted.
+|======
+
+==== Groups
+ 
+Recursive permission changes on ```/groups``` will affect all groups.
+
+[options="header"]
+|======
+| Element              | Permission  | Description
+| ```/api/v1/groups``` | Create      | New roles can be created.
+| ```/api/v1/groups``` | Read        |  _Not used_
+| ```/api/v1/groups``` | Update      |  _Not used_
+| ```/api/v1/groups``` | Delete      |  _Not used_
+|======
+
+Recursive permission changes on ```/groups/:uuid``` will also affect users of the group but not roles that are linked to the group.
+
+[options="header"]
+|======
+| Element                    | Permission  | Description
+| ```/api/v1/groups/:uuid``` | Create      | _Not used_
+| ```/api/v1/groups/:uuid``` | Read        | Group can be read.
+| ```/api/v1/groups/:uuid``` | Update      | Group can be updated.
+| ```/api/v1/groups/:uuid``` | Delete      | Group can be deleted.
+|======
+
+=== Roles
+
+[options="header"]
+|======
+| Element             | Permission  | Description
+| ```/api/v1/roles``` | Create      | New roles can be created.
+| ```/api/v1/roles``` | Read        |  _Not used_
+| ```/api/v1/roles``` | Update      |  _Not used_
+| ```/api/v1/roles``` | Delete      |  _Not used_
+|======
+
+Recursive permission changes on ```/roles/:uuid``` have no effect.
+
+[options="header"]
+|======
+| Element            | Permission  | Description
+| ```/api/v1/roles/:uuid``` | Create      | _Not used_
+| ```/api/v1/roles/:uuid``` | Read        | Role can be read.
+| ```/api/v1/roles/:uuid``` | Update      | Role can be updated.
+| ```/api/v1/roles/:uuid``` | Delete      | Role can be deleted.
+|======
+
+=== Schemas
+
+Recursive permission changes on ```/schemas``` will also affect schemas.
+
+[options="header"]
+|======
+| Element               | Permission  | Description
+| ```/api/v1/schemas``` | Create      | New schemas can be created.
+| ```/api/v1/schemas``` | Read        | _Not used_
+| ```/api/v1/schemas``` | Update      | _Not used_
+| ```/api/v1/schemas``` | Delete      | _Not used_
+|======
+
+Recursive permission changes on ```/schemas/:uuid``` have no effect on referenced elements.
+
+[options="header"]
+|======
+| Element                     | Permission  | Description
+| ```/api/v1/schemas/:uuid``` | Create      | _Not used_
+| ```/api/v1/schemas/:uuid``` | Read        | The schema can be read. Read permission on the schema is also needed to be able to create new nodes that are based upon the schema.
+| ```/api/v1/schemas/:uuid``` | Update      | The schema can be updated.
+| ```/api/v1/schemas/:uuid``` | Delete      | The schema can be deleted.
+|======
+
+=== Projects
+
+Recursive permission changes on ```/projects``` will also affect all projects and those elements.
+
+[options="header"]
+|======
+| Element                | Permission  | Description
+| ```/api/v1/projects``` | Create      | Create new projects.
+| ```/api/v1/projects``` | Read        | _Not used_
+| ```/api/v1/projects``` | Update      | _Not used_
+| ```/api/v1/projects``` | Delete      | _Not used_
+|======
+
+Recursive permission changes on ```/projects/:uuid``` will also affect schemas, tagfamilies (and tags), nodes and subnodes.
+
+[options="header"]
+|======
+| Element                      | Permission  | Description
+| ```/api/v1/projects/:uuid``` | Create      | _Not used_
+| ```/api/v1/projects/:uuid``` | Read        | Project can be read.
+| ```/api/v1/projects/:uuid``` | Update      | Project can be updated.
+| ```/api/v1/projects/:uuid``` | Delete      | Project can be deleted.
+|======
+
+=== Tag Families
+
+Recursive permission changes on ```/project/:uuid/tagFamilies``` will also all tagfamiles and those tags.
+
+[options="header"]
+|======
+| Element                                 | Permission  | Description
+| ```/api/v1/project/:uuid/tagFamilies``` | Create      | Create new tag families.
+| ```/api/v1/project/:uuid/tagFamilies``` | Read        |  _Not used_
+| ```/api/v1/project/:uuid/tagFamilies``` | Update      |  _Not used_
+| ```/api/v1/project/:uuid/tagFamilies``` | Delete      |  _Not used_
+|======
+
+Recursive permission changes on ```/project/:uuid/tagFamilies/:uuid``` will also affect tags.
+
+[options="header"]
+|======
+| Element                                       | Permission  | Description
+| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Create      | Tags can be created within the tag family.
+| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Read        | Tag family can be read.
+| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Update      | Tag family can be updated.
+| ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Delete      | Tag family can be deleted.
+|======
+
+=== Tags
+
+Recursive permission on ```/api/v1/projects/:uuid/tagFamilies/:uuid/tags``` changes have no effect.
+
+[options="header"]
+|======
+| Element                          | Permission  | Description
+| ```/api/v1/:YOUR_PROJECT/tags``` | Create      | Create new tags.
+| ```/api/v1/:YOUR_PROJECT/tags``` | Read        | _Not used_
+| ```/api/v1/:YOUR_PROJECT/tags``` | Update      | _Not used_
+| ```/api/v1/:YOUR_PROJECT/tags``` | Delete      | _Not used_
+|======
+
+Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid/tags/:uuid``` have no effect.
+
+[options="header"]
+|======
+| Element                                | Permission  | Description
+| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Create      | _Not used_
+| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Read        | Tag can be read.
+| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Update      | Tag can be updated.
+| ```/api/v1/:YOUR_PROJECT/tags/:uuid``` | Delete      | Tag can be deleted.
+|======
+
+Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affect children of the node.
+
+[options="header"]
+|======
+| Element                           | Permission  | Description
+| ```/api/v1/:YOUR_PROJECT/nodes``` | Create      |  _Not used_
+| ```/api/v1/:YOUR_PROJECT/nodes``` | Read        |  _Not used_
+| ```/api/v1/:YOUR_PROJECT/nodes``` | Update      |  _Not used_
+| ```/api/v1/:YOUR_PROJECT/nodes``` | Delete      |  _Not used_
+|======
+
+Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affect children of the node.
+
+|======
+| Element                                 | Permission  | Description
+| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Create      | Create new nodes within the node
+| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Read        | Node can be read.
+| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Update      | Node can be updated.
+| ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Delete      | Node can be deleted.
+|======
+
+
+== Image Manipulation
+
+Images can be resized by appeding the image manipulation query parameters on the binary node endpoint:
+
+```/api/v1/:YOUR_PROJECT/nodes/:uuid/bin?width=220``` 
+
+It is also possible to use the image manipulation in combination with the webroot endpoint:
+
+```/api/v1/:YOUR_PROJECT/webroot/:path?width=220``` 
+
+It is mandatory to specify all four crop parameters when cropping an image.
+
+|=====
+| Parameter    | Description
+|=====
+| ```width```  | Target image width.
+| ```height``` | Target image height.
+| ```cropx```  | Crop area start x coordinate.
+| ```cropy```  | Crop area start y coordinate.
+| ```cropw```  | Crop area width.
+| ```croph```  | Crop area height.
+|=====
+
+== Webroot
+
+The webroot endpoint can be used to retrieve a node using a path instead of uuids. 
+
+```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg?width=1000``` 
+
+This makes it possible to integrate mesh with many known routing frameworks.
+
+|=====
+| Framework                           | Language
+|=====
+| http://silex.sensiolabs.org/[Silex] | PHP
+| http://expressjs.com/[ExpressJS]    | JS
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon
+| http://lotusrb.org/[Lotus]          | Ruby
+|=====
+
+A webroot path consists of multiple path segments and must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
+
+The `Ford GT Image` node for example provides the path segment `Ford GT Image` and `ford-gt.jpg`.
+
+* `Ford GT Image` 
+
+The english variant of the node contains a name string field which is referenced by the `pathSegment` schema property. This way the english node provides the path segment `Ford GT Image`.
+
+```/api/v1/demo/webroot/Vehicle%20Images%2FFord%20GT%20Image``` 
+
+
+* `ford-gt.jpg`
+
+Since the node is also a binary node it will also provide a path segment using the filename of the stored binary file.
+
+```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg``` 
+
+The binary value will be returned when the path targets a node in which the binary `fileName` provides the segment. The router implementation should parse the response header's Content-Type field in order to decide whether to handle the JSON data or whether the binary data should just be passed through the requestor.
+
+== Search
+
+Search requests are handled by the _/search endpoints_.
+
+Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
+
+The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
+
+=== Users
+
+Endpoint: ```/api/v1/search/users```
+
+[source,json]
+----
+include::{es-json}/user.search.json[]
+----
+
+=== Groups
+
+Endpoint: ```/api/v1/search/groups```
+
+[source,json]
+----
+include::{es-json}/group.search.json[]
+----
+
+=== Roles
+
+Endpoint: ```/api/v1/search/roles```
+
+[source,json]
+----
+include::{es-json}/role.search.json[]
+----
+
+=== Nodes
+
+Endpoint: ```/api/v1/search/nodes```
+
+[source,json]
+----
+include::{es-json}/node.search.json[]
+----
+
+Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
+The found nodes will be sorted ascending by creator.
+
+*Example Query*
+
+[source,json]
+----
+{
+  "sort" : {
+     "created" : { "order" : "asc" }
+  },
+  "query":{
+    "bool" : {
+      "must" : {
+        "term" : { "schema.name" : "content" }
+       }
+    }
+  }
+}
+----
+
+=== Projects
+
+* ```/api/v1/search/projects```
+
+[source,json]
+----
+include::{es-json}/project.search.json[]
+----
+
+=== Tags
+
+Endpoint: ```/api/v1/search/tags```
+
+[source,json]
+----
+include::{es-json}/tag.search.json[]
+----
+
+=== Tag Families
+
+Endpoint: ```/api/v1/search/tagFamilies```
+
+[source,json]
+----
+include::{es-json}/tagFamily.search.json[]
+----
+
+=== Schemas
+
+Endpoint: ```/api/v1/search/schemas```
+
+[source,json]
+----
+include::{es-json}/schema.search.json[]
+----
+
+== Mesh Administration UI
+
+The Mesh Administration UI is an AngularJS single page application which uses the REST API to interface with Mesh. By default it can be reached via ```http://localhost:8080/mesh-ui/```.
+
+[source,json]
+----
+(function(window, document) {
+
+    /**
+     * Settings which can be configured per app instance, without requiring the app be re-built from
+     * source.
+     *
+     * @name meshConfig
+     */
+    var meshConfig = {
+        // The URL to the Mesh API
+        apiUrl: '/api/v1/'
+    };
+
+
+    window.meshConfig = meshConfig;
+
+})(window, document);
+----
+
+== License
+
+Gentics Mesh is published under a commercial license. This license can be obtained from sales@gentics.com.
+
