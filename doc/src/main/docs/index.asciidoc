@@ -802,24 +802,18 @@ This makes it possible to integrate mesh with many known routing frameworks.
 | http://lotusrb.org/[Lotus]          | Ruby
 |=====
 
-A webroot path consists of multiple path segments and must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
+A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
 
-The `Ford GT Image` node for example provides the path segment `Ford GT Image` and `ford-gt.jpg`.
+The `Ford GT Image` node for example provides the path segment `ford-gt.jpg` since the used schema `vehicleImage` points to the binary field `image`. The binary field contains the filename `ford-gt.jpg`.
 
-* `Ford GT Image` 
+The `segmentField` parameter within the schema is therefore used to map in between fields and the path segment.
 
-The english variant of the node contains a name string field which is referenced by the `pathSegment` schema property. This way the english node provides the path segment `Ford GT Image`.
+* `ford-gt.jpg` -> ```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg``` 
 
-```/api/v1/demo/webroot/Vehicle%20Images%2FFord%20GT%20Image``` 
+The binary data will be returned if the path targets a node in which the binary `fileName` property provides the segment.
+It is possible to differentiate between a mesh binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
 
-
-* `ford-gt.jpg`
-
-Since the node is also a binary node it will also provide a path segment using the filename of the stored binary file.
-
-```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg``` 
-
-The binary value will be returned when the path targets a node in which the binary `fileName` provides the segment. The router implementation should parse the response header's Content-Type field in order to decide whether to handle the JSON data or whether the binary data should just be passed through the requestor.
+The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requestor.
 
 == Search
 

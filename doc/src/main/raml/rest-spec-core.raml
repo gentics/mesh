@@ -513,7 +513,7 @@ traits:
 #------------------------------------------------------------------------------
 
 /{projectName}/webroot:
-  is: [ localized ]
+  is: [ localized, linkresolver ]
   displayName: WebRoot
   /{path}:
     is: [ localized, include_role_perms, imagehandler ]
@@ -522,14 +522,14 @@ traits:
         description: Path to a node.
         type: string
     get:
-      description: Retrieves the node with the given path.
+      description: Retrieves the node with the given path. Please note that it is also possible to query binary data instead of the node JSON metadata. Binary data will be returned if the targeted node provides a path segment using a binary field.
       responses:
         200:
           body:
             application/json:
               example: !include json/NodeResponse.example.json
-              
-              
+
+
 
 #------------------------------------------------------------------------------
 # Node Verticle
@@ -861,6 +861,16 @@ traits:
                 body:
                     application/json:
                         example: !include json/SchemaListResponse.example.json
+  /microschemas:
+    is: [ localized ]
+    displayName: Microschema Search
+    post:
+        description: Query for microschemas. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/MicroschemaListResponse.example.json
   /status:
    displayName: Search Status
    get:

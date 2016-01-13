@@ -88,7 +88,7 @@ public class WebRootHandler {
 			if (arh.failed()) {
 				ac.fail(arh.cause());
 			}
-			/* TODO copy this to all other handlers. We need to catch async errors as well elsewhere */
+			// TODO copy this to all other handlers. We need to catch async errors as well elsewhere 
 			if (arh.succeeded()) {
 				PathSegment lastSegment = arh.result();
 				Node node = lastSegment.getNode();
@@ -97,6 +97,7 @@ public class WebRootHandler {
 				if (field instanceof BinaryGraphField) {
 					BinaryGraphField binaryField = (BinaryGraphField) field;
 					try (NoTrx tx = db.noTrx()) {
+						// TODO move binary handler outside of event loop scope to avoid bogus object creation
 						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
 						handler.handle(binaryField);
 					}
