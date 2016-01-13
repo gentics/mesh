@@ -5,7 +5,6 @@ import static com.gentics.mesh.search.index.MappingHelper.DESCRIPTION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
 import java.util.HashMap;
