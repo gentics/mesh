@@ -10,11 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jettison.json.JSONException;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,8 +24,6 @@ import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Future;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 
 public class UserSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 

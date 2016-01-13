@@ -9,8 +9,6 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
-import com.gentics.mesh.util.RxUtil;
-
 import rx.Observable;
 
 /**

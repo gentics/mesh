@@ -25,6 +25,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private List<String> availableLanguages;
 
+	private Map<String, String> languagePaths;
+
 	private NodeReferenceImpl parentNode;
 
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
@@ -253,6 +255,24 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	public void setAvailableLanguages(List<String> availableLanguages) {
 		this.availableLanguages = availableLanguages;
+	}
+
+	/**
+	 * Return the language webroot paths for the node. The map key is the language tag and the value is the resolved webroot link.
+	 * 
+	 * @return
+	 */
+	public Map<String, String> getLanguagePaths() {
+		return languagePaths;
+	}
+
+	/**
+	 * Set the language webroot paths.
+	 * 
+	 * @param languagePaths
+	 */
+	public void setLanguagePaths(Map<String, String> languagePaths) {
+		this.languagePaths = languagePaths;
 	}
 
 	@Override

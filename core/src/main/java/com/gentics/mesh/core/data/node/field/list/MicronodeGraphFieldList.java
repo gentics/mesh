@@ -12,7 +12,20 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 
 	public static final String TYPE = "micronode";
 
+	/**
+	 * Create a new micronode using the rest model as a source.
+	 * 
+	 * @param field
+	 * @return
+	 */
 	Micronode createMicronode(MicronodeField field);
 
+	/**
+	 * Update the micronode list using the rest model list as a source.
+	 * 
+	 * @param ac
+	 * @param list
+	 * @return
+	 */
 	Observable<Boolean> update(ActionContext ac, MicronodeFieldList list);
 }

@@ -17,7 +17,9 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -572,7 +574,12 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
 		nodeResponse.setPublished(true);
-
+		nodeResponse.setUrl("/api/v1/yourProject/webroot/Images");
+		nodeResponse.setAvailableLanguages(Arrays.asList("en","de"));
+		HashMap<String, String> languagePaths = new HashMap<>();
+		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");
+		languagePaths.put("de", "/api/v1/yourProject/webroot/Bilder");
+		nodeResponse.setLanguagePaths(languagePaths);
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(randomUUID()));
 		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(randomUUID()));
 

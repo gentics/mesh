@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
@@ -98,6 +100,10 @@ public class GraphListFieldNodeTest extends AbstractBasicDBTest {
 		htmlList.createHTML("some<b>html</b>");
 		htmlList.createHTML("some<b>more html</b>");
 
+		MicronodeGraphFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
+		micronodeList.addItem(null);
+		micronodeList.addItem(null);
+
 		String json = getJson(node);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
@@ -109,7 +115,8 @@ public class GraphListFieldNodeTest extends AbstractBasicDBTest {
 		assertList(2, "numberList", NumberFieldListImpl.class, response);
 		assertList(2, "nodeList", NodeFieldListImpl.class, response);
 		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
-		// assertList(0, "microschemaList", MicroschemaFieldListImpl.class, response);
+		//TODO Add micronode assertion
+		//assertList(2, "micronodeList", MicronodeFieldListImpl.class, response);
 
 	}
 

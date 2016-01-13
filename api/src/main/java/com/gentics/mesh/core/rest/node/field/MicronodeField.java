@@ -15,7 +15,7 @@ public interface MicronodeField extends ListableField {
 	String getUuid();
 
 	/**
-	 * Get the fields of the micronode
+	 * Get the fields of the micronode.
 	 * 
 	 * @return field of the micronode
 	 */
@@ -44,7 +44,7 @@ public interface MicronodeField extends ListableField {
 	<T extends Field> T getField(String key);
 
 	/**
-	 * Get the microschema reference used for the micronode
+	 * Get the microschema reference used for the micronode.
 	 * 
 	 * @return microschema reference
 	 */

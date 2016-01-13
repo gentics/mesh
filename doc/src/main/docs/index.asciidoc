@@ -55,8 +55,7 @@ The paging query parameters are ```perPage``` and ```page```. It is important to
 
 === File Upload
 
-Binary data can be attached to nodes which have been created using a schema that allows binary storage. The ```/api/v1/nodes/:uuid/bin``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data```.
-
+Binary data can be attached to node binary fields which have been created using a schema that lists one or more binary fields. The ```/api/v1/nodes/:uuid/languages/:languageTag/fields/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data```.
 
 === Examples
 
@@ -299,7 +298,8 @@ Endpoint: ```/api/v1/:YOURPROJECT/nodes```
 | fields                         | Node fields of the current language
 | parentNode                     | Node reference to the parent node. The project basenode has no parent node.
 | language                       | Language tag of the current language
-| availableLanguages             | List of available languages 
+| availableLanguages             | List of available languages
+| languagePaths                  | Map with languages and the corresponding webroot path. Note that the field will only be added when a `resolveLinks` parameter has been specified. 
 | tags                           | List of tags that were used to tag the node
 | project                        | Project reference
 | schema                         | Schema reference of the node
@@ -307,14 +307,7 @@ Endpoint: ```/api/v1/:YOURPROJECT/nodes```
 | childrenInfo                   | JSON structure which contains information on the amount and type of child elements
 | published                      | Published flag
 | displayField                   | Key of the field that will be used to retrieve the display name value. (eg. "title" for blogpost nodes and "filename" for binary nodes)
-| segmentField                   | Key of the field that will be used to build a path segment of this node.
-| binaryProperties.width         | Image width  property for a node with an image binary upload
-| binaryProperties.height        | Image height property for a node with an image binary upload
-| binaryProperties.dpi           | Image dpi    property for a node with an image binary upload
-| binaryProperties.sha512sum     | SHA512 Checksum for the binary attribute
-| binaryProperties.fileSize      | Binary filesize
-| binaryProperties.mimeType      | Binary mimeType
-| fileName                       | Binary filename
+| segmentField                   | Key of the field that will be used to build a path segment of this node. The path segments create the webroot path to the element.
 | creator                        | User reference of the creator
 | created                        | Epoch creation date 
 | editor                         | User reference of the last editor
@@ -417,33 +410,41 @@ properties are defined in the [Types](#types) section.
 
 | String
 | ```string```
-| A string type does not have any special configuration settings.
+| A string field type does not have any special configuration settings.
 
 | HTML
 | ```html```
-| A html type does not have any special configuration settings at this point of time.
+| A html field type does not have any special configuration settings at this point of time.
 
 | Number
 | ```number```
-| A number field has three optional config properties: "min" is the lowest permitted value, "max" is the greatest permitted
+| A number field type has three optional config properties: "min" is the lowest permitted value, "max" is the greatest permitted
 value, and "step" is the size of the permitted increment in value. For example:
 
 | Date
 | ```date```
-| The date type stores a date in a epoch date format.
+| The date field type stores a date in a epoch date format.
 
 | Boolean
 | ```boolean```
-| A boolean type does not have any special config settings.
+| A boolean field type does not have any special config settings.
+
+| Binary
+| ```binary```
+| The binary field type stores binary and binary related meta data (e.g: filename, sha512sum, image width and height, mimetype..). Binary fields within nodes can be updated using the fields API.
 
 | Node
 | ```node```
-| A node type must have an ```allow``` property which acts as a white list for schemas which may be used. If ```allow``` is an
+| A node field type must have an ```allow``` property which acts as a white list for schemas which may be used. If ```allow``` is an
 empty array, any type of node may be used.
+
+| Micronode
+| ```micronode```
+| A micronode field type stores a single micronode. A micronode is similar to a node but it is directly bound to the node and thus is not accessible within the project node tree structure. Typical usecases for micronodes are galleries, location boxes, vcards.
 
 | List
 | ```list```
-| A list **must** be typed via the ```listType``` property. Possible listTypes are ```node``` ```boolean``` ```string``` ```number``` ```date```
+| A list field **must** be typed via the ```listType``` property. Possible listTypes are ```node``` ```boolean``` ```string``` ```number``` ```date``` ```micronode```
 |======
 
 ==== Media type whitelist for binary schemas
@@ -764,9 +765,9 @@ Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affec
 
 == Image Manipulation
 
-Images can be resized by appeding the image manipulation query parameters on the binary node endpoint:
+Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
 
-```/api/v1/:YOUR_PROJECT/nodes/:uuid/bin?width=220``` 
+```/api/v1/:YOUR_PROJECT/nodes/:uuid/languages/:languageTag/fields/:fieldname?width=220``` 
 
 It is also possible to use the image manipulation in combination with the webroot endpoint:
 

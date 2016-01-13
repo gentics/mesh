@@ -20,9 +20,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -410,10 +412,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Add common fields
 			obs.add(fillCommonRestFields(ac, restNode));
 
-			// Add webroot url
+			// Add webroot url & lanuagePaths
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-				restNode.setUrl(
-						WebRootLinkReplacer.getInstance().resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType()).toBlocking().first());
+
+				// Url
+				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
+				String url = linkReplacer.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType()).toBlocking().single();
+				restNode.setUrl(url);
+
+				// languagePaths
+				Map<String, String> languagePaths = new HashMap<>();
+				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers()) {
+					Language language = currentFieldContainer.getLanguage();
+					languagePaths.put(language.getLanguageTag(),
+							linkReplacer.resolve(this, language, ac.getResolveLinksType()).toBlocking().single());
+				}
+				restNode.setLanguagePaths(languagePaths);
 			}
 
 			// Merge and complete

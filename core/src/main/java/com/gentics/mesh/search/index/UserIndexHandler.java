@@ -13,7 +13,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.codehaus.jettison.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Group;

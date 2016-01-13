@@ -51,6 +51,7 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -716,6 +717,43 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadByUUIDWithLinkPaths() {
+		Node node = folder("news");
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse response = future.result();
+		assertThat(response.getAvailableLanguages()).containsExactly("de", "en");
+		assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/News");
+		assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/Neuigkeiten");
+	}
+
+	@Test
+	public void testReadNodeByUUIDLanguageFallback() {
+
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		Node node = folder("products");
+		node.getGraphFieldContainer(english()).delete();
+		String uuid = node.getUuid();
+
+		// Request the node with various language parameter values. Fallback to "de"
+		NodeRequestParameter parameters = new NodeRequestParameter();
+		parameters.setLanguages("dv,nl,de,en");
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse restNode = future.result();
+		test.assertMeshNode(folder("products"), restNode);
+
+		// Ensure "de" version was returned
+		StringField field = restNode.getField("name");
+		String nameText = field.getString();
+		assertEquals("Produkte", nameText);
+
+	}
+
+	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
 
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
@@ -739,7 +777,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 
 		//TODO determine how we should deal with this case and update the test/implementation.
-		
+
 		// Create node with nl language
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
 		Node parentNode = folder("products");

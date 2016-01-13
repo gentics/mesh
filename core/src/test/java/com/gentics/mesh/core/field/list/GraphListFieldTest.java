@@ -127,7 +127,7 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 	}
 
 	@Test
-	public void testMicroschemaList() {
+	public void testMicronodeList() {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		MicronodeGraphFieldList list = container.createMicronodeFieldList("dummyList");
 		assertNotNull(list);

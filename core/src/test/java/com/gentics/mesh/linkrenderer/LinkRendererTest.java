@@ -1,8 +1,5 @@
 package com.gentics.mesh.linkrenderer;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -19,12 +16,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacer.Type;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.util.UUIDUtil;
-
-import io.vertx.core.Future;
 
 public class LinkRendererTest extends AbstractBasicDBTest {
 
