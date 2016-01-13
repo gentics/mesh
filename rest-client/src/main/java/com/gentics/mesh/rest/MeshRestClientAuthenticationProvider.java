@@ -6,7 +6,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import rx.Observable;
 
-public interface MeshRestClientAuthentication {
+public interface MeshRestClientAuthenticationProvider {
 	
 	/**
 	 * Sets the credentials used to authenticate the user

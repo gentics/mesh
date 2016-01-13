@@ -17,7 +17,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
-public class BasicAuthentication extends AbstractAuthentication {
+public class BasicAuthentication extends AbstractAuthenticationProvider {
 
 	private String authHeader;
 	private String cookies;

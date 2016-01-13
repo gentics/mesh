@@ -23,17 +23,17 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 	protected ClientSchemaStorage clientSchemaStorage = new ClientSchemaStorage();
 
 	protected HttpClient client;
-	
-	protected MeshRestClientAuthentication authentication;
-	
+
+	protected MeshRestClientAuthenticationProvider authentication;
+
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
 		authentication.setLogin(username, password);
 		return this;
 	}
-	
+
 	@Override
-	public MeshRestClient setLogin(RoutingContext context) {		
+	public MeshRestClient initializeAuthenticationProvider(RoutingContext context) {
 		String authHeader = context.request().getHeader("Authentication");
 		if (authHeader == null || authHeader.startsWith("Basic")) {
 			authentication = new BasicAuthentication(context);
@@ -70,7 +70,7 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 	public Observable<GenericMessageResponse> logout() {
 		return authentication.logout(getClient());
 	}
-	
+
 	@Override
 	public ClientSchemaStorage getClientSchemaStorage() {
 		return clientSchemaStorage;
@@ -81,11 +81,11 @@ public abstract class AbstractMeshRestClient implements MeshRestClient {
 		return this;
 	}
 
-	public MeshRestClientAuthentication getAuthentication() {
+	public MeshRestClientAuthenticationProvider getAuthentication() {
 		return authentication;
 	}
 
-	public void setAuthentication(MeshRestClientAuthentication authentication) {
+	public void setAuthentication(MeshRestClientAuthenticationProvider authentication) {
 		this.authentication = authentication;
 	}
 

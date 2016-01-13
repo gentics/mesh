@@ -147,7 +147,7 @@ public class MeshSpringConfiguration {
 			return MeshJWTAuthHandler.create(authProvider());
 		case BASIC_AUTH:
 		default:
-			return new MeshBasicAuthHandler(authProvider());
+			return MeshBasicAuthHandler.create(authProvider());
 		}
 	}
 
@@ -155,10 +155,10 @@ public class MeshSpringConfiguration {
 	public AuthenticationRestHandler authRestHandler() {
 		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
 		case JWT:
-			return new JWTAuthRestHandler();
+			return JWTAuthRestHandler.create();
 		case BASIC_AUTH:
 		default:
-			return new BasicAuthRestHandler();
+			return BasicAuthRestHandler.create();
 		}
 	}
 

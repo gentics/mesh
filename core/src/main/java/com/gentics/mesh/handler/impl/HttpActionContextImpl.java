@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.HttpActionContext;
@@ -97,8 +98,14 @@ public class HttpActionContextImpl extends AbstractActionContext implements Http
 		if (session != null) {
 			session.destroy();
 		}
-		rc.addCookie(Cookie.cookie(MeshOptions.MESH_SESSION_KEY, "deleted").setMaxAge(0));
-		rc.addCookie(Cookie.cookie(MeshOptions.JWT_TOKEN_KEY, "deleted").setMaxAge(0));
+		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
+		case JWT:
+			rc.addCookie(Cookie.cookie(MeshOptions.JWT_TOKEN_KEY, "deleted").setMaxAge(0));
+		case BASIC_AUTH:
+		default:
+			rc.addCookie(Cookie.cookie(MeshOptions.MESH_SESSION_KEY, "deleted").setMaxAge(0));
+			break;
+		}
 		rc.clearUser();
 	}
 

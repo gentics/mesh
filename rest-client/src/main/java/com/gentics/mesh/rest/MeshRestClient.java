@@ -49,10 +49,12 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * Set the login information according to the request headers of the
 	 * provided context
 	 * 
+	 * Also initializes the correct authentication provider dependent on the request headers.
+	 * 
 	 * @param context
 	 * @return Fluent API
 	 */
-	MeshRestClient setLogin(RoutingContext context);
+	MeshRestClient initializeAuthenticationProvider(RoutingContext context);
 
 	/**
 	 * Return the client schema storage that is used to deserialize those

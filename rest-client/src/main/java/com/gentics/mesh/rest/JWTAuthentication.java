@@ -10,7 +10,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
-public class JWTAuthentication extends AbstractAuthentication{
+public class JWTAuthentication extends AbstractAuthenticationProvider{
 
 	private String token;
 	private String authHeader;

@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest;
 
-public abstract class AbstractAuthentication implements MeshRestClientAuthentication {
+public abstract class AbstractAuthenticationProvider implements MeshRestClientAuthenticationProvider {
 
 	private String username;
 	private String password;
