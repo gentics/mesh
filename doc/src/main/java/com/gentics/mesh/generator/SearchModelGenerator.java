@@ -1,8 +1,8 @@
 package com.gentics.mesh.generator;
 
 import static com.gentics.mesh.mock.MockingUtils.mockGroup;
-
 import static com.gentics.mesh.mock.MockingUtils.mockLanguage;
+import static com.gentics.mesh.mock.MockingUtils.mockMicroschemaContainer;
 import static com.gentics.mesh.mock.MockingUtils.mockNode;
 import static com.gentics.mesh.mock.MockingUtils.mockNodeBasic;
 import static com.gentics.mesh.mock.MockingUtils.mockProject;
@@ -29,6 +29,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.SchemaContainer;
@@ -38,6 +39,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.GroupIndexHandler;
+import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.search.index.ProjectIndexHandler;
 import com.gentics.mesh.search.index.RoleIndexHandler;
@@ -85,6 +87,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			writeProjectDocumentExample();
 			writeTagFamilyDocumentExample();
 			writeSchemaDocumentExample();
+			writeMicroschemaDocumentExample();
 			System.exit(0);
 		}
 
@@ -99,6 +102,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Tag tagB = mockTag("red", user, tagFamily, project);
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
+
 		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
 		nodeIndexHandler.store(node, "node").toBlocking().last();
 		writeStoreEvent("node.search");
@@ -166,6 +170,15 @@ public class SearchModelGenerator extends AbstractGenerator {
 		writeStoreEvent("schema.search");
 	}
 
+	private void writeMicroschemaDocumentExample() throws Exception {
+		User user = mockUser("joe1", "Joe", "Doe");
+		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
+
+		MicroschemaContainerIndexHandler searchIndexHandler = ctx.getBean(MicroschemaContainerIndexHandler.class);
+		searchIndexHandler.store(microschemaContainer, "schema").toBlocking().first();
+		writeStoreEvent("microschema.search");
+	}
+
 	private void writeTagDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Project project = mockProject(user);
@@ -212,5 +225,4 @@ public class SearchModelGenerator extends AbstractGenerator {
 			}
 		}
 	}
-
 }
