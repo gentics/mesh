@@ -105,6 +105,11 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 						future.fail(e);
 					}
 				});
+			} else if (classOfT.equals(String.class)) {
+				// if client requested a String, we just return the buffer as string
+				response.bodyHandler(buffer -> {
+					future.complete((T) buffer.toString());
+				});
 			} else {
 				NodeDownloadResponse downloadResponse = new NodeDownloadResponse();
 				downloadResponse.setContentType(contentType);

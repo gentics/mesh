@@ -70,6 +70,14 @@ traits:
           description: The page size. A page size of 25 will be used when this parameter is omitted.
           type: number
 
+  - linkresolver:
+      queryParameters:
+        resolveLinks:
+          description: Set whether links shall be resolved. "off" means no link resolving. "full" will contain the webroot prefix and project name, "medium" will contain the project name and "short" neither webroot prefix nor project name.
+          type: string
+          enum: ["off", "short", "medium", "full"]
+          default: off
+
 #------------------------------------------------------------------------------
 # User Verticle
 #------------------------------------------------------------------------------
@@ -493,7 +501,7 @@ traits:
             application/json:
               example: !include json/NodeResponse.example.json
   /{uuid}:
-    is: [ localized ]
+    is: [ localized, linkresolver ]
     uriParameters:
       uuid:
         description: Uuid of a single node.
@@ -836,4 +844,20 @@ traits:
             application/json:
               example: !include json/GenericMessageResponse.example.json
 
-
+#------------------------------------------------------------------------------
+# Utility Verticle
+#------------------------------------------------------------------------------
+/utilities:
+  displayName: Utilities
+  /linkResolver:
+    is: [ linkresolver ]
+    post:
+      description: Resolve links in posted content. The content may be plain text, but also JSON.
+      body:
+        text/plain:
+          example: Go to <a href="{{mesh.link('70bb205d44064671bb205d4406f671b3')}}">News</a>
+      responses:
+        200:
+          body:
+            text/plain:
+              example: Go to <a href="/myproject/news/2016/news.html">News</a>

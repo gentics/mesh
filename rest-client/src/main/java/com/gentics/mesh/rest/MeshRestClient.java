@@ -15,13 +15,16 @@ import com.gentics.mesh.rest.method.SearchClientMethods;
 import com.gentics.mesh.rest.method.TagClientMethods;
 import com.gentics.mesh.rest.method.TagFamilyClientMethods;
 import com.gentics.mesh.rest.method.UserClientMethods;
+import com.gentics.mesh.rest.method.UtilityClientMethods;
 import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 
-public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
-		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods, MicroschemaClientMethods, NodeFieldAPIClientMethods {
+public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods,
+		TagFamilyClientMethods, WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods,
+		RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods, MicroschemaClientMethods,
+		NodeFieldAPIClientMethods, UtilityClientMethods {
 
 	static MeshRestClient create(String host, int port, Vertx vertx) {
 		return new MeshRestClientImpl(host, port, vertx);

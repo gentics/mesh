@@ -16,6 +16,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.etc.RouterStorage;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 /**
@@ -28,6 +30,8 @@ public class WebRootLinkReplacer {
 	private static final String END_TAG = ")}}";
 
 	private static WebRootLinkReplacer instance;
+
+	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacer.class);
 
 	@PostConstruct
 	public void setup() {
@@ -82,6 +86,8 @@ public class WebRootLinkReplacer {
 			// 2. Parse the link and invoke resolving
 			String link = content.substring(pos + START_TAG.length(), endPos);
 			// Strip away the quotes. We only care about the argument values
+			// double quotes may be escaped
+			link = link.replaceAll("\\\\\"", "");
 			link = link.replaceAll("'", "");
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
@@ -112,7 +118,14 @@ public class WebRootLinkReplacer {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().single();
-		// TODO check for null
+
+		// check for null
+		if (node == null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Could not resolve link to '" + uuid + "', target node could not be found");
+			}
+			return Observable.just("#");
+		}
 		return resolve(node, languageTag, type);
 	}
 
@@ -126,6 +139,9 @@ public class WebRootLinkReplacer {
 	public Observable<String> resolve(Node node, String languageTag, Type type) {
 		if (languageTag == null) {
 			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
+			if (log.isDebugEnabled()) {
+				log.debug("Fallback to default language " + languageTag);
+			}
 		}
 		languageTag = languageTag.trim();
 		return resolve(node, MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag), type);
@@ -140,9 +156,19 @@ public class WebRootLinkReplacer {
 	 */
 	public Observable<String> resolve(Node node, Language language, Type type) {
 		if (language == null) {
-			MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(Mesh.mesh().getOptions().getDefaultLanguage());
+			String defaultLanguageTag = Mesh.mesh().getOptions().getDefaultLanguage();
+			language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(defaultLanguageTag);
+			if (language == null) {
+				return Observable.error(new Exception("Could not find default language " + defaultLanguageTag));
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Fallback to default language " + defaultLanguageTag);
+			}
 		}
 		try {
+			if (log.isDebugEnabled()) {
+				log.debug("Resolving link to " + node.getUuid() + " in language " + language.getLanguageTag() + " with type " + type);
+			}
 			switch (type) {
 			case SHORT:
 				return node.getPath(language);

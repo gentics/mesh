@@ -61,6 +61,7 @@ import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
+import com.gentics.mesh.core.verticle.utility.UtilityVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
@@ -127,6 +128,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(SearchVerticle.class);
 		addMandatoryVerticle(AuthenticationVerticle.class);
 		addMandatoryVerticle(AdminVerticle.class);
+		addMandatoryVerticle(UtilityVerticle.class);
 	}
 
 	/**
