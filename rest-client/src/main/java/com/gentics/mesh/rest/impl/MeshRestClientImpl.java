@@ -833,4 +833,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return invokeRequest(DELETE, "/microschemas/" + uuid, GenericMessageResponse.class);
 	}
+
+	@Override
+	public Future<String> resolveLinks(String body, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(body, "body must not be null");
+		return invokeRequest(POST, "/utilities/linkResolver" + getQuery(parameters), String.class, body);
+	}
 }
