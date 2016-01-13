@@ -111,7 +111,7 @@ public class WebRootLinkReplacer {
 	public Observable<String> resolve(String uuid, String languageTag, Type type) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().first();
+		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().single();
 		// TODO check for null
 		return resolve(node, languageTag, type);
 	}

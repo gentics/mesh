@@ -120,9 +120,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeGraphFieldContainer container = getGraphFieldContainer(language);
 		if (container != null) {
 			String fieldName = getSchema().getSegmentField();
-			StringGraphField field = container.getString(fieldName);
-			if (field != null) {
-				return Observable.just(field.getString());
+			// 1. Try to load the path segment using the string field
+			StringGraphField stringField = container.getString(fieldName);
+			if (stringField != null) {
+				return Observable.just(stringField.getString());
+			}
+
+			// 2. Try to load the path segment using the binary field since the string field could not be found
+			if (stringField == null) {
+				BinaryGraphField binaryField = container.getBinary(fieldName);
+				if (binaryField != null) {
+					return Observable.just(binaryField.getFileName());
+				}
 			}
 		}
 		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());

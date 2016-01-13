@@ -413,7 +413,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            language
 	 * @return document ID
 	 */
-	private String getDocumentId(Node node, String language) {
+	public String getDocumentId(Node node, String language) {
 		StringBuilder id = new StringBuilder(node.getUuid());
 		id.append("-").append(language);
 		return id.toString();
@@ -444,50 +444,55 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return observable
 	 */
 	public Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
-		PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
-		mappingRequestBuilder.setType(type);
+		// Check whether the search provider is a dummy provider or not
+		if (searchProvider.getNode() != null) {
+			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);
+			mappingRequestBuilder.setType(type);
 
-		try {
-			XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
-					.startObject(type) // type
-					.startObject("properties") // properties
-					.startObject("fields") // fields
-					.startObject("properties"); // properties
+			try {
+				XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject() // root object
+						.startObject(type) // type
+						.startObject("properties") // properties
+						.startObject("fields") // fields
+						.startObject("properties"); // properties
 
-			for (FieldSchema field : schema.getFields()) {
-				if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
-					if ("micronode".equals(((ListFieldSchema) field).getListType())) {
-						mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+				for (FieldSchema field : schema.getFields()) {
+					if (FieldTypes.valueByName(field.getType()) == FieldTypes.LIST) {
+						if ("micronode".equals(((ListFieldSchema) field).getListType())) {
+							mappingBuilder.startObject(field.getName()).field("type", "nested").endObject();
+						}
 					}
 				}
-			}
 
-			mappingBuilder.endObject() // properties
-					.endObject() // fields
-					.endObject() // properties
-					.endObject() // type
-					.endObject(); // root object
-			if (log.isDebugEnabled()) {
-				log.debug(mappingBuilder.string());
-			}
-			mappingRequestBuilder.setSource(mappingBuilder);
-
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-				@Override
-				public void onResponse(PutMappingResponse response) {
-					obs.toHandler().handle(Future.succeededFuture());
+				mappingBuilder.endObject() // properties
+						.endObject() // fields
+						.endObject() // properties
+						.endObject() // type
+						.endObject(); // root object
+				if (log.isDebugEnabled()) {
+					log.debug(mappingBuilder.string());
 				}
+				mappingRequestBuilder.setSource(mappingBuilder);
 
-				@Override
-				public void onFailure(Throwable e) {
-					obs.toHandler().handle(Future.failedFuture(e));
-				}
-			});
-			return obs;
-		} catch (Exception e) {
-			return Observable.error(e);
+				ObservableFuture<Void> obs = RxHelper.observableFuture();
+				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+					@Override
+					public void onResponse(PutMappingResponse response) {
+						obs.toHandler().handle(Future.succeededFuture());
+					}
+
+					@Override
+					public void onFailure(Throwable e) {
+						obs.toHandler().handle(Future.failedFuture(e));
+					}
+				});
+				return obs;
+			} catch (Exception e) {
+				return Observable.error(e);
+			}
+		} else {
+			return Observable.just(null);
 		}
 	}
 

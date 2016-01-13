@@ -1,5 +1,8 @@
 package com.gentics.mesh.linkrenderer;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -16,7 +19,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacer.Type;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.util.UUIDUtil;
+
+import io.vertx.core.Future;
 
 public class LinkRendererTest extends AbstractBasicDBTest {
 
@@ -100,8 +108,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
 		String replacedContent = replacer.replace(content, Type.FULL);
 
-		assertEquals("Check rendered content",
-				"/api/v1/dummy/webroot/News/News+Overview.en.html/api/v1/dummy/webroot/News/News+Overview.en.html",
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News+Overview.en.html/api/v1/dummy/webroot/News/News+Overview.en.html",
 				replacedContent);
 	}
 
@@ -113,8 +120,7 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		String replacedContent = replacer.replace(content, Type.FULL);
 
 		assertEquals("Check rendered content",
-				"/api/v1/dummy/webroot/News/News+Overview.en.html in between /api/v1/dummy/webroot/News/News+Overview.en.html",
-				replacedContent);
+				"/api/v1/dummy/webroot/News/News+Overview.en.html in between /api/v1/dummy/webroot/News/News+Overview.en.html", replacedContent);
 	}
 
 	@Test
@@ -189,9 +195,23 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 
 	@Test
 	public void testBinaryFieldLinkResolving() {
-		
+		Node node = content("news overview");
+		String uuid = node.getUuid();
+
+		// Transform the node into a node with a binary field.
+		String fileName = "somefile.dat";
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
+		schema.setSegmentField("binary");
+		node.getSchemaContainer().setSchema(schema);
+		node.getGraphFieldContainer(english()).createBinary("binary").setFileName(fileName);
+
+		// Render the link
+		final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
+		String replacedContent = replacer.replace(meshLink, Type.FULL);
+		assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/somefile.dat", replacedContent);
 	}
-	
+
 	@Test
 	public void testResolving() throws InterruptedException, ExecutionException {
 		Node newsNode = content("news overview");

@@ -48,7 +48,6 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testUploadWithNoPerm() throws IOException {
-
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";

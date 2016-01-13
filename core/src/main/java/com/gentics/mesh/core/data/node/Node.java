@@ -297,7 +297,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	Observable<String> getPathSegment(Language language);
 
 	/**
-	 * Delete the node and ignore any checks
+	 * Delete the node and ignore any checks.
 	 * 
 	 * @param ignoreChecks
 	 */
