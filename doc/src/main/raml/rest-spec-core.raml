@@ -450,6 +450,62 @@ traits:
               application/json:
                 example: !include json/GenericMessageResponse.example.json
 
+#------------------------------------------------------------------------------
+# Microschema Verticle
+#------------------------------------------------------------------------------
+/microschemas:
+  is: [ localized ]
+  displayName: Microschemas
+  get:
+    is: [ paged, include_role_perms ]
+    description: Retrieves a list of microschemas.
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/MicroschemaListResponse.example.json
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error
+  post:
+    description: Create the microschema.
+    body:
+      application/json:
+        example: !include json/MicroschemaCreateRequest.example.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include json/MicroschemaResponse.example.json
+
+  /{uuid}:
+    is: [ localized ]
+    get:
+      description: Retrieves the microschema with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/MicroschemaResponse.example.json
+    put:
+      description: Updates the microschema with the given uuid.
+      body:
+        application/json:
+          example: !include json/MicroschemaUpdateRequest.example.json
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/MicroschemaResponse.example.json
+    delete:
+      description: Deletes the microschema with the given uuid.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
 
 
 #------------------------------------------------------------------------------

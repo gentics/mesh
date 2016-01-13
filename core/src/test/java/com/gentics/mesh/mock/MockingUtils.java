@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -36,6 +39,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
@@ -51,15 +55,20 @@ import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
@@ -95,6 +104,27 @@ public final class MockingUtils {
 		SchemaContainer schemaContainer = mockSchemaContainer(schemaType, user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		return node;
+	}
+
+	public static Micronode mockMicronode(String microschemaName, User user) {
+		Micronode micronode = mock(MicronodeImpl.class);
+		when(micronode.getUuid()).thenReturn(randomUUID());
+		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
+		when(micronode.getMicroschemaContainer()).thenReturn(microschemaContainer);
+		Microschema microschema = microschemaContainer.getMicroschema();
+		when(micronode.getMicroschema()).thenReturn(microschema);
+
+		// longitude field
+		NumberGraphField longitudeField = mock(NumberGraphFieldImpl.class);
+		when(longitudeField.getNumber()).thenReturn(16.373063840833);
+		when(micronode.getNumber("longitude")).thenReturn(longitudeField);
+
+		// latitude field
+		NumberGraphField latitudeField = mock(NumberGraphFieldImpl.class);
+		when(latitudeField.getNumber()).thenReturn(16.373063840833);
+		when(micronode.getNumber("latitude")).thenReturn(latitudeField);
+
+		return micronode;
 	}
 
 	public static Role mockRole(String roleName, User creator) {
@@ -178,6 +208,18 @@ public final class MockingUtils {
 		return container;
 	}
 
+	public static MicroschemaContainer mockMicroschemaContainer(String name, User user) {
+		MicroschemaContainer container = mock(MicroschemaContainerImpl.class);
+		when(container.getName()).thenReturn(name);
+		when(container.getUuid()).thenReturn(randomUUID());
+		when(container.getMicroschema()).thenReturn(mockGeolocationMicroschema());
+		when(container.getCreator()).thenReturn(user);
+		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getEditor()).thenReturn(user);
+		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		return container;
+	}
+
 	public static Schema mockContentSchema() {
 		Schema schema = new SchemaImpl();
 		schema.setName("content");
@@ -190,6 +232,7 @@ public final class MockingUtils {
 		schema.addField(new DateFieldSchemaImpl().setName("date").setRequired(true));
 		schema.addField(new HtmlFieldSchemaImpl().setName("html").setRequired(true));
 		schema.addField(new NodeFieldSchemaImpl().setName("node").setRequired(true));
+		schema.addField(new MicronodeFieldSchemaImpl().setName("micronode").setRequired(true));
 
 		// lists types
 		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList").setRequired(true));
@@ -198,8 +241,20 @@ public final class MockingUtils {
 		schema.addField(new ListFieldSchemaImpl().setListType("date").setName("dateList").setRequired(true));
 		schema.addField(new ListFieldSchemaImpl().setListType("html").setName("htmlList").setRequired(true));
 		schema.addField(new ListFieldSchemaImpl().setListType("node").setName("nodeList").setRequired(true));
+		schema.addField(new ListFieldSchemaImpl().setListType("micronode").setName("micronodeList").setRequired(true));
 
 		return schema;
+	}
+
+	public static Microschema mockGeolocationMicroschema() {
+		Microschema microschema = new MicroschemaImpl();
+		microschema.setName("geolocation");
+		microschema.setDescription("Microschema for Geolocations");
+
+		microschema.addField(new NumberFieldSchemaImpl().setName("longitude").setLabel("Longitude").setRequired(true));
+		microschema.addField(new NumberFieldSchemaImpl().setName("latitude").setLabel("Latitude").setRequired(true));
+
+		return microschema;
 	}
 
 	public static Node mockNode(Node parentNode, Project project, User user, Language language, Tag tagA, Tag tagB) {
@@ -262,6 +317,12 @@ public final class MockingUtils {
 		when(htmlField.getHTML()).thenReturn("some<b>html");
 		when(container.getHtml("html")).thenReturn(htmlField);
 
+		// micronode field
+		MicronodeGraphField micronodeField = mock(MicronodeGraphFieldImpl.class);
+		Micronode micronode = mockMicronode("geolocation", user);
+		when(micronodeField.getMicronode()).thenReturn(micronode);
+		when(container.getMicronode("micronode")).thenReturn(micronodeField);
+
 		//Node List Field
 		NodeGraphFieldList nodeListField = mock(NodeGraphFieldListImpl.class);
 		Mockito.<List<? extends NodeGraphField>> when(nodeListField.getList()).thenReturn(Arrays.asList(nodeField, nodeField, nodeField));
@@ -293,7 +354,15 @@ public final class MockingUtils {
 		Mockito.<List<? extends HtmlGraphField>> when(htmlListField.getList()).thenReturn(Arrays.asList(htmlField, htmlField, htmlField));
 		when(container.getHTMLList("htmlList")).thenReturn(htmlListField);
 
-		//TODO add microschema and select fields
+		// TODO currently, this mock is only used for the search document example, where we want to omit
+		// fields of type "list of micronodes". We should better add an argument to the method to specify,
+		// which types of fields should be added
+//		// Micronode List Field
+//		MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
+//		Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField, micronodeField));
+//		when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
+
+		//TODO add select fields
 
 		return container;
 	}
