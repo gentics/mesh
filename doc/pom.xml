@@ -60,7 +60,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath />
+								<classpath/>
 								<argument>com.gentics.mesh.generator.RAMLExampleGenerator</argument>
 							</arguments>
 						</configuration>
@@ -75,7 +75,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath />
+								<classpath/>
 								<argument>com.gentics.mesh.generator.SearchModelGenerator</argument>
 							</arguments>
 						</configuration>
@@ -90,7 +90,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath />
+								<classpath/>
 								<argument>com.gentics.mesh.generator.MeshJsonGenerator</argument>
 							</arguments>
 						</configuration>
@@ -112,6 +112,20 @@
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/main/assembly/raml.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>dist-docs-package</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/docs.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>
@@ -173,7 +187,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -192,7 +206,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -205,7 +219,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

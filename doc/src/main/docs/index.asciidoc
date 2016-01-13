@@ -256,10 +256,9 @@ include::{raml-json}/TagFamilyResponse.example.json[]
 
 === Tags
 
-Tags can be used to add nodes. Tags can not be hierarchically structured. 
-Tags can be manipulated using the ```/tags``` endpoint.
+Tags can be added to nodes. Tags can not be hierarchically structured. 
 
-Endpoint: ```/api/v1/:YOURPROJECT/tags```
+Endpoint: ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags```
 
 
 [options="header"]
@@ -559,7 +558,9 @@ By default all specified directories are relative to the current working directo
 
 Mesh does not manage any cache structure but it is possible to tweak the underlying graph database cache settings.
 
-== Permissions
+== Concepts
+
+=== Permissions
 
 Permissions exist between roles and other elements (including other roles). Most responses within Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way. 
 
@@ -575,7 +576,7 @@ Example:
 * User Mary is assigned to Role B. Role B grants her to also create a new child Node in the same parent Node.
 * When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
 
-=== Users
+==== Users
  
 Recursive permission changes on ```/users``` will also affect all listed users.
 
@@ -623,7 +624,7 @@ Recursive permission changes on ```/groups/:uuid``` will also affect users of th
 | ```/api/v1/groups/:uuid``` | Delete      | Group can be deleted.
 |======
 
-=== Roles
+==== Roles
 
 [options="header"]
 |======
@@ -645,7 +646,7 @@ Recursive permission changes on ```/roles/:uuid``` have no effect.
 | ```/api/v1/roles/:uuid``` | Delete      | Role can be deleted.
 |======
 
-=== Schemas
+==== Schemas
 
 Recursive permission changes on ```/schemas``` will also affect schemas.
 
@@ -669,7 +670,7 @@ Recursive permission changes on ```/schemas/:uuid``` have no effect on reference
 | ```/api/v1/schemas/:uuid``` | Delete      | The schema can be deleted.
 |======
 
-=== Projects
+==== Projects
 
 Recursive permission changes on ```/projects``` will also affect all projects and those elements.
 
@@ -693,7 +694,7 @@ Recursive permission changes on ```/projects/:uuid``` will also affect schemas, 
 | ```/api/v1/projects/:uuid``` | Delete      | Project can be deleted.
 |======
 
-=== Tag Families
+==== Tag Families
 
 Recursive permission changes on ```/project/:uuid/tagFamilies``` will also all tagfamiles and those tags.
 
@@ -717,17 +718,17 @@ Recursive permission changes on ```/project/:uuid/tagFamilies/:uuid``` will also
 | ```/api/v1/project/:uuid/tagFamilies/:uuid``` | Delete      | Tag family can be deleted.
 |======
 
-=== Tags
+==== Tags
 
 Recursive permission on ```/api/v1/projects/:uuid/tagFamilies/:uuid/tags``` changes have no effect.
 
 [options="header"]
 |======
-| Element                          | Permission  | Description
-| ```/api/v1/:YOUR_PROJECT/tags``` | Create      | Create new tags.
-| ```/api/v1/:YOUR_PROJECT/tags``` | Read        | _Not used_
-| ```/api/v1/:YOUR_PROJECT/tags``` | Update      | _Not used_
-| ```/api/v1/:YOUR_PROJECT/tags``` | Delete      | _Not used_
+| Element                                            | Permission  | Description
+| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Create      | Create new tags.
+| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Read        | _Not used_
+| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Update      | _Not used_
+| ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags``` | Delete      | _Not used_
 |======
 
 Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid/tags/:uuid``` have no effect.
@@ -754,6 +755,7 @@ Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affec
 
 Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affect children of the node.
 
+[options="header"]
 |======
 | Element                                 | Permission  | Description
 | ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Create      | Create new nodes within the node
@@ -762,22 +764,74 @@ Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affec
 | ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Delete      | Node can be deleted.
 |======
 
+=== Webroot
 
-== Image Manipulation
+
+The ```/api/v1/:YOUR_PROJECT/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
+
+Example: ```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg?width=1000``` 
+
+This makes it possible to integrate mesh with many known routing frameworks.
+
+[options="header"]
+|======
+| Framework                           | Language
+| http://silex.sensiolabs.org/[Silex] | PHP
+| http://expressjs.com/[ExpressJS]    | JS
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon
+| http://lotusrb.org/[Lotus]          | Ruby
+|======
+
+A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
+
+The `Ford GT Image` node for example provides the path segment `ford-gt.jpg` since the used schema `vehicleImage` points to the binary field `image`. The binary field contains the filename `ford-gt.jpg`.
+
+The `segmentField` parameter within the schema is therefore used to map in between fields and the path segment.
+
+* `ford-gt.jpg` -> ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg```
+
+The binary data will be returned if the path targets a node in which the binary `fileName` property provides the segment.
+It is possible to differentiate between a mesh binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
+
+The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requestor.
+
+
+=== Link Handling
+
+Mesh will try to resolve any found mesh link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`. 
+
+Example: ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`
+
+Valid Links:
+
+* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}```
+* ```{{mesh.link('2f2de9297c8143e8ade9297c8193e8fc', 'en')}}```
+* ```{{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}```
+* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}}``` (Link to default language)
+
+==== Resolver
+
+The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh links within the posted text data. This is useful when resolving links for a preview page. 
+
+
+
+=== Image Manipulation
 
 Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
 
-```/api/v1/:YOUR_PROJECT/nodes/:uuid/languages/:languageTag/fields/:fieldname?width=220``` 
+
+Endpoint: ```/api/v1/:YOUR_PROJECT/nodes/:uuid/languages/:languageTag/fields/:fieldname?width=220```
 
 It is also possible to use the image manipulation in combination with the webroot endpoint:
 
-```/api/v1/:YOUR_PROJECT/webroot/:path?width=220``` 
+Endpoint: ```/api/v1/:YOUR_PROJECT/webroot/:path?width=220```
+
 
 It is mandatory to specify all four crop parameters when cropping an image.
 
+[options="header"]
 |=====
 | Parameter    | Description
-|=====
 | ```width```  | Target image width.
 | ```height``` | Target image height.
 | ```cropx```  | Crop area start x coordinate.
@@ -786,37 +840,8 @@ It is mandatory to specify all four crop parameters when cropping an image.
 | ```croph```  | Crop area height.
 |=====
 
-== Webroot
 
-The webroot endpoint can be used to retrieve a node using a path instead of uuids. 
-
-```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg?width=1000``` 
-
-This makes it possible to integrate mesh with many known routing frameworks.
-
-|=====
-| Framework                           | Language
-|=====
-| http://silex.sensiolabs.org/[Silex] | PHP
-| http://expressjs.com/[ExpressJS]    | JS
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon
-| http://lotusrb.org/[Lotus]          | Ruby
-|=====
-
-A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
-
-The `Ford GT Image` node for example provides the path segment `ford-gt.jpg` since the used schema `vehicleImage` points to the binary field `image`. The binary field contains the filename `ford-gt.jpg`.
-
-The `segmentField` parameter within the schema is therefore used to map in between fields and the path segment.
-
-* `ford-gt.jpg` -> ```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg``` 
-
-The binary data will be returned if the path targets a node in which the binary `fileName` property provides the segment.
-It is possible to differentiate between a mesh binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
-
-The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requestor.
-
-== Search
+=== Search
 
 Search requests are handled by the _/search endpoints_.
 
@@ -824,7 +849,7 @@ Elasticsearch is used in order to provide the search functionality. This way ela
 
 The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
 
-=== Users
+==== Users
 
 Endpoint: ```/api/v1/search/users```
 
@@ -833,7 +858,7 @@ Endpoint: ```/api/v1/search/users```
 include::{es-json}/user.search.json[]
 ----
 
-=== Groups
+==== Groups
 
 Endpoint: ```/api/v1/search/groups```
 
@@ -842,7 +867,7 @@ Endpoint: ```/api/v1/search/groups```
 include::{es-json}/group.search.json[]
 ----
 
-=== Roles
+==== Roles
 
 Endpoint: ```/api/v1/search/roles```
 
@@ -851,7 +876,7 @@ Endpoint: ```/api/v1/search/roles```
 include::{es-json}/role.search.json[]
 ----
 
-=== Nodes
+==== Nodes
 
 Endpoint: ```/api/v1/search/nodes```
 
@@ -881,7 +906,7 @@ The found nodes will be sorted ascending by creator.
 }
 ----
 
-=== Projects
+==== Projects
 
 * ```/api/v1/search/projects```
 
@@ -890,7 +915,7 @@ The found nodes will be sorted ascending by creator.
 include::{es-json}/project.search.json[]
 ----
 
-=== Tags
+==== Tags
 
 Endpoint: ```/api/v1/search/tags```
 
@@ -899,7 +924,7 @@ Endpoint: ```/api/v1/search/tags```
 include::{es-json}/tag.search.json[]
 ----
 
-=== Tag Families
+==== Tag Families
 
 Endpoint: ```/api/v1/search/tagFamilies```
 
@@ -908,7 +933,7 @@ Endpoint: ```/api/v1/search/tagFamilies```
 include::{es-json}/tagFamily.search.json[]
 ----
 
-=== Schemas
+==== Schemas
 
 Endpoint: ```/api/v1/search/schemas```
 
@@ -916,6 +941,10 @@ Endpoint: ```/api/v1/search/schemas```
 ----
 include::{es-json}/schema.search.json[]
 ----
+
+==== Microschemas
+
+
 
 == Mesh Administration UI
 
