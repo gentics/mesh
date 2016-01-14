@@ -43,6 +43,31 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testSimpleQuerySearch() {
+
+		String username = "testuser42a";
+		createUser(username);
+
+		String json ="{\n" + 
+				"  \"query\": {\n" + 
+				"      \"simple_query_string\" : {\n" + 
+				"          \"query\": \"testuser*\",\n" + 
+				"          \"analyzer\": \"snowball\",\n" + 
+				"          \"fields\": [\"name^5\",\"_all\"],\n" + 
+				"          \"default_operator\": \"and\"\n" + 
+				"      }\n" + 
+				"  }\n" + 
+				"}";
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(json);
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals("The found element is not the user we were looking for", username, searchFuture.result().getData().get(0).getUsername());
+
+	}
+
+	@Test
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 
