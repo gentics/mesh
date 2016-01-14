@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
@@ -123,7 +123,7 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 			requestModel.validate();
 			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().single();
 			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {
-				return errorObservable(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
+				throw error(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
 			}
 
 			return db.trx(() -> {

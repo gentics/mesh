@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -127,7 +126,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				String elementUuid = element.getUuid();
 				if (requestUser.hasPermissionSync(ac, element, perm)) {
 					return element;
-				}else {
+				} else {
 					throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 				}
 				//				return requestUser.hasPermissionAsync(ac, element, perm).map(hasPerm -> {
@@ -146,10 +145,9 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm) {
-
 		String uuid = ac.getParameter(uuidParameterName);
 		if (StringUtils.isEmpty(uuid)) {
-			return errorObservable(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName);
+			throw error(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName);
 		} else {
 			return loadObjectByUuid(ac, uuid, perm);
 		}
