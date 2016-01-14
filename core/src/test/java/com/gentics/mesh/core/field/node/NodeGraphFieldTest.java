@@ -30,6 +30,7 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testNodeFieldTransformation() throws Exception {
+		setupData();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 		Schema schema = node.getSchema();

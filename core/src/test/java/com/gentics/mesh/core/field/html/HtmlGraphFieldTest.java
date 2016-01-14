@@ -57,6 +57,7 @@ public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testHtmlFieldTransformation() throws Exception {
+		setupData();
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
 		HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
