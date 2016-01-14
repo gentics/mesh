@@ -3,16 +3,55 @@ package com.gentics.mesh.core.field.date;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.json.JsonUtil;
 
 public class DateGraphFieldTest extends AbstractBasicDBTest {
+
+	@Autowired
+	private ServerSchemaStorage schemaStorage;
+
+	@Test
+	public void testDateFieldTransformation() throws Exception {
+		Node node = folder("2015");
+		Schema schema = node.getSchema();
+		DateFieldSchemaImpl dateFieldSchema = new DateFieldSchemaImpl();
+		dateFieldSchema.setName("dateField");
+		dateFieldSchema.setLabel("Some date field");
+		dateFieldSchema.setRequired(true);
+		schema.addField(dateFieldSchema);
+		node.getSchemaContainer().setSchema(schema);
+
+		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+		DateGraphField field = container.createDate("dateField");
+		field.setDate(1337L);
+
+		String json = getJson(node);
+		assertTrue("The json should contain the date but it did not.{" + json + "}", json.indexOf("1337") > 1);
+		assertNotNull(json);
+		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		assertNotNull(response);
+
+		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getField("dateField", DateFieldImpl.class);
+		assertNotNull(deserializedNodeField);
+		assertEquals(1337L, deserializedNodeField.getDate().longValue());
+	}
 
 	@Test
 	public void testSimpleDate() {

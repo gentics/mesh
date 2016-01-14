@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.elasticsearch.index.analysis.FieldNameAnalyzer;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,10 +90,10 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
+		future = updateBinaryField(node, "en", "binary", binaryLen, contentType, "updated.dat");
 		latchFor(future);
 		assertSuccess(future);
-
+		assertEquals("The binary filename was not updated.", "updated.dat", node.getGraphFieldContainer(english()).getBinary("binary").getFileName());
 	}
 
 	@Test
@@ -205,6 +206,48 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertNull("The data did not contain image information.", binaryField.getHeight());
 
 		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary");
+		latchFor(downloadFuture);
+		assertSuccess(downloadFuture);
+		NodeDownloadResponse downloadResponse = downloadFuture.result();
+		assertNotNull(downloadResponse);
+		assertNotNull(downloadResponse.getBuffer().getByte(1));
+		assertNotNull(downloadResponse.getBuffer().getByte(binaryLen));
+		assertEquals(binaryLen, downloadResponse.getBuffer().length());
+		assertEquals(contentType, downloadResponse.getContentType());
+		assertEquals(fileName, downloadResponse.getFilename());
+	}
+
+	@Test
+	public void testUploadImage() throws IOException {
+		String contentType = "image/png";
+		String fieldName = "image";
+		int binaryLen = 8000;
+		String fileName = "somefile.png";
+		Node node = folder("news");
+		prepareSchema(node, "", fieldName);
+
+		Future<GenericMessageResponse> future = updateBinaryField(node, "en", fieldName, binaryLen, contentType, fileName);
+		latchFor(future);
+		assertSuccess(future);
+		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+
+		node.reload();
+
+		Future<NodeResponse> responseFuture = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
+		latchFor(responseFuture);
+		assertSuccess(responseFuture);
+		NodeResponse response = responseFuture.result();
+
+		BinaryField binaryField = response.getField(fieldName, BinaryField.class);
+		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
+		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
+		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
+		assertNotNull("The hashsum was not found in the response.", binaryField.getSha512sum());
+		assertNotNull("The data did not contain image information.", binaryField.getDpi());
+		assertNotNull("The data did not contain image information.", binaryField.getWidth());
+		assertNotNull("The data did not contain image information.", binaryField.getHeight());
+
+		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName);
 		latchFor(downloadFuture);
 		assertSuccess(downloadFuture);
 		NodeDownloadResponse downloadResponse = downloadFuture.result();

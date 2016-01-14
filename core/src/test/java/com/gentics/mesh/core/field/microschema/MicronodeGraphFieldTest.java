@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
@@ -39,8 +41,18 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		dummyMicroschema = createDummyMicroschema();
 	}
 
+	//	@Autowired
+	//	private ServerSchemaStorage schemaStorage;
+
+	@Test
+	@Ignore("Not yet implemented")
+	public void testMicroschemaFieldTransformation() {
+
+	}
+
 	/**
 	 * Test creation of field
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -71,6 +83,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 
 	/**
 	 * Test updating the field
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -100,7 +113,8 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 
 	/**
 	 * Create a dummy microschema
-	 * @return 
+	 * 
+	 * @return
 	 * @throws MeshJsonException
 	 */
 	protected MicroschemaContainer createDummyMicroschema() throws MeshJsonException {

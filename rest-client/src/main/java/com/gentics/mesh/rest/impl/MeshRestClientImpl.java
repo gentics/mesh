@@ -214,7 +214,8 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
-		return invokeRequest(GET, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(parameters), NodeListResponse.class);
+		return invokeRequest(GET, "/" + projectName + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(parameters),
+				NodeListResponse.class);
 	}
 
 	@Override
@@ -715,13 +716,14 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 		// TODO handle escaping of filename
 		String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
-		Buffer multiPartFormData = Buffer.buffer();
-		String header = "--" + boundary + "\r\n" + "Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n"
-				+ "Content-Type: " + contentType + "\r\n" + "Content-Transfer-Encoding: binary\r\n" + "\r\n";
-		multiPartFormData.appendString(header);
+		Buffer multiPartFormData = Buffer.buffer(fileData.length());
+		multiPartFormData.appendString("--" + boundary + "\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n");
+		multiPartFormData.appendString("Content-Type: " + contentType + "\r\n");
+		multiPartFormData.appendString("Content-Transfer-Encoding: binary\r\n" + "\r\n");
 		multiPartFormData.appendBuffer(fileData);
-		String footer = "\r\n--" + boundary + "--\r\n";
-		multiPartFormData.appendString(footer);
+		multiPartFormData.appendString("\r\n--" + boundary + "--\r\n");
+
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 		return invokeRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey,
 				GenericMessageResponse.class, multiPartFormData, bodyContentType);

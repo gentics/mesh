@@ -101,6 +101,7 @@ public class SchemaImpl implements RestModel, Schema {
 		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
 		// displayNames
 
+		//TODO make sure that segment fields are set to mandatory.
 		Set<String> fieldNames = new HashSet<>();
 		Set<String> fieldLabels = new HashSet<>();
 		for (FieldSchema fieldSchema : fields) {

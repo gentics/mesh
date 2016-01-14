@@ -108,7 +108,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					//TODO Add support for other field types
 					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
-				BinaryGraphField field = container.createBinary(fieldName);
+
+				BinaryGraphField field =  container.getBinary(fieldName);
+				if (field == null) {
+					field = container.createBinary(fieldName);
+				}
 				if (field == null) {
 					// ac.fail(BAD_REQUEST, "Binary field {" + fieldName + "} could not be found.");
 					// return;
@@ -137,13 +141,15 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String contentType = ul.contentType();
 					String fileName = ul.fileName();
 					String fieldUuid = field.getUuid();
+
+					final BinaryGraphField binaryField = field;
 					Observable<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
 					return obsHash.flatMap(sha512sum -> {
 						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
-							field.setFileName(fileName);
-							field.setFileSize(ul.size());
-							field.setMimeType(contentType);
-							field.setSHA512Sum(sha512sum);
+							binaryField.setFileName(fileName);
+							binaryField.setFileSize(ul.size());
+							binaryField.setMimeType(contentType);
+							binaryField.setSHA512Sum(sha512sum);
 							//TODO handle image properties as well
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
