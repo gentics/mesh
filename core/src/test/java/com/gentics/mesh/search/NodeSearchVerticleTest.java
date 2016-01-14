@@ -286,6 +286,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testSearchMultipleLanguages() {
+		//TODO search for string which can be found in two language variants of a single node. We would expect two nodes in the result which have different language properties. 
+		fail("not yet implemented");
+	}
+
+	@Test
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
 		addNumberSpeedField(numberValue);
