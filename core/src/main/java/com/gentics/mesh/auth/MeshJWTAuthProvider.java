@@ -46,7 +46,7 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 			} else {
 				getUserByJWT(rh.result()).subscribe(user -> {
 					resultHandler.handle(Future.succeededFuture(user));
-				}, error -> {
+				} , error -> {
 					resultHandler.handle(Future.failedFuture(error));
 				});
 			}
@@ -80,7 +80,9 @@ public class MeshJWTAuthProvider extends MeshAuthProvider implements AuthProvide
 	/**
 	 * Authenticates the user and returns a JWToken if successful.
 	 * 
-	 * @return
+	 * @param username
+	 * @param password
+	 * @param resultHandler
 	 */
 	public void generateToken(String username, String password, Handler<AsyncResult<String>> resultHandler) {
 		JsonObject authInfo = new JsonObject().put("username", username).put("password", password);
