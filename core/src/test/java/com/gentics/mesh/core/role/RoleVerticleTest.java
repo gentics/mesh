@@ -58,7 +58,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	private AuthenticationVerticle authVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(authVerticle);
 		list.add(roleVerticle);

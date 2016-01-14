@@ -56,7 +56,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	private ProjectVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;

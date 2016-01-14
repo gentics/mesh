@@ -30,7 +30,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	private UtilityVerticle utilityVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		return Arrays.asList(utilityVerticle);
 	}
 

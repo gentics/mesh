@@ -44,7 +44,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(nodeVerticle);
 		list.add(schemaVerticle);

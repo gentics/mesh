@@ -42,7 +42,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(webrootVerticle);
 		list.add(nodeVerticle);

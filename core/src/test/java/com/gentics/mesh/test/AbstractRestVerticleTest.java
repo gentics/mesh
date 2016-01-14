@@ -48,6 +48,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTrx;
@@ -77,6 +78,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	@Autowired
 	protected DummySearchProvider searchProvider;
+
+	@Autowired
+	protected AuthenticationVerticle authenticationVerticle;
 
 	protected NoTrx trx;
 
@@ -144,7 +148,13 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 	}
 
-	public abstract List<AbstractSpringVerticle> getVertices();
+	public abstract List<AbstractSpringVerticle> getAdditionalVertices();
+
+	private List<AbstractSpringVerticle> getVertices() {
+		List<AbstractSpringVerticle> list = getAdditionalVertices();
+		list.add(authenticationVerticle);
+		return list;
+	}
 
 	@After
 	public void tearDown() throws Exception {

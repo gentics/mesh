@@ -25,7 +25,7 @@ public class TagFamilySearchVerticleTest extends AbstractSearchVerticleTest impl
 	private TagFamilyVerticle tagFamilyVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(tagFamilyVerticle);

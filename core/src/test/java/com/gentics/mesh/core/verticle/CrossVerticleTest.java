@@ -33,7 +33,7 @@ public class CrossVerticleTest extends AbstractRestVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(projectVerticle);
 		list.add(tagFamilyVerticle);

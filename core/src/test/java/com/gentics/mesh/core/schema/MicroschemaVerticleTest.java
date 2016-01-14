@@ -47,7 +47,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	private MicroschemaVerticle microschemaVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(microschemaVerticle);
 		return list;

@@ -36,7 +36,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private GroupVerticle groupVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(userVerticle);

@@ -47,7 +47,7 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(nodeVerticle);
 		return list;

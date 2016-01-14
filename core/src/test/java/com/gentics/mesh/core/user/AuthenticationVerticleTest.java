@@ -30,7 +30,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 	private AuthenticationVerticle authenticationVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(authenticationVerticle);
 		return list;
@@ -44,10 +44,11 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		String username = user.getUsername();
 		String uuid = user.getUuid();
 
-		MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx(), Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
+		MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx(),
+				Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
 		client.setLogin(username, password());
 		Observable<GenericMessageResponse> future = client.login();
-		
+
 		GenericMessageResponse loginResponse = future.toBlocking().single();
 		assertNotNull(loginResponse);
 		assertEquals("OK", loginResponse.getMessage());
@@ -63,7 +64,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		Observable<GenericMessageResponse> logoutFuture = client.logout();
 		logoutFuture.toBlocking().single();
 
-//		assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
+		//		assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
 		meResponse = client.me();
 		latchFor(meResponse);
 		expectMessage(meResponse, HttpResponseStatus.UNAUTHORIZED, "Unauthorized");
