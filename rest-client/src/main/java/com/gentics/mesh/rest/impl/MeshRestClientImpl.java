@@ -482,7 +482,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
-		String requestUri = BASEURI + "/" + projectName + "/webroot/" + path + getQuery(parameters);
+		if (!path.startsWith("/")) {
+			throw new RuntimeException("The path {" + path + "} must start with a slash");
+		}
+		String requestUri = BASEURI + "/" + projectName + "/webroot" + path + getQuery(parameters);
 		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, HttpMethod.GET, requestUri, getClientSchemaStorage());
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		if (log.isDebugEnabled()) {
@@ -510,6 +513,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	@Override
 	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments, QueryParameterProvider... parameters) {
 		StringBuilder path = new StringBuilder();
+		path.append("/");
 		for (String segment : pathSegments) {
 			if (path.length() > 0) {
 				path.append("/");

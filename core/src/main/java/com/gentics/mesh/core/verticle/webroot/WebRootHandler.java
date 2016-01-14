@@ -53,7 +53,7 @@ public class WebRootHandler {
 			ac.fail(e);
 			return;
 		}
-		final String decodedPath = path;
+		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
 		Mesh.vertx().executeBlocking((Future<PathSegment> bch) -> {
@@ -102,7 +102,6 @@ public class WebRootHandler {
 						handler.handle(binaryField);
 					}
 				} else {
-
 					node.transformToRest(ac).subscribe(model -> {
 						ac.send(JsonUtil.toJson(model), OK);
 					} , error -> {
