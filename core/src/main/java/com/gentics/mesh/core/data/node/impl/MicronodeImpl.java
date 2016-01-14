@@ -399,7 +399,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 						}
 					}
 					return null;
-				});
+				}).toBlocking().single();
 				break;
 			case LIST:
 
