@@ -107,7 +107,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 		failingLatch(latch);
 
-		client = MeshRestClient.create("localhost", getPort(), vertx);
+		client = MeshRestClient.create("localhost", getPort(), vertx, Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod());
 		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		resetClientSchemaStorage();

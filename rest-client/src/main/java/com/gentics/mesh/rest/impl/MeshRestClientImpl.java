@@ -11,7 +11,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -57,6 +56,7 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -80,15 +80,15 @@ import rx.Observable;
 public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 	public MeshRestClientImpl(String host, Vertx vertx) {
-		this(host, DEFAULT_PORT, vertx);
+		this(host, DEFAULT_PORT, vertx, AuthenticationMethod.BASIC_AUTH);
 	}
 
-	public MeshRestClientImpl(String host, int port, Vertx vertx) {
+	public MeshRestClientImpl(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
-		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
+		switch (authenticationMethod) {
 		case JWT:
 			setAuthentication(new JWTAuthentication());
 			break;
