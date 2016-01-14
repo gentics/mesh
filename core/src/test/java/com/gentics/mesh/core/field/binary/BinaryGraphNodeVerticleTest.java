@@ -216,6 +216,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertEquals(fileName, downloadResponse.getFilename());
 	}
 
+	@Ignore("Image properties are not yet parsed")
 	@Test
 	public void testUploadImage() throws IOException {
 		String contentType = "image/png";
