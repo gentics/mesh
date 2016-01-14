@@ -46,8 +46,11 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 	 * Create a a new i18n exception.
 	 * 
 	 * @param status
+	 *            Http status
 	 * @param i18nMessageKey
+	 *            I18n message key
 	 * @param i18nParameters
+	 *            I18n parameters for the i18n message
 	 */
 	public HttpStatusCodeErrorException(HttpResponseStatus status, String i18nMessageKey, String... i18nParameters) {
 		super(i18nMessageKey);

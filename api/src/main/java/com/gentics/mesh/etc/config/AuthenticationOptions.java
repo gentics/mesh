@@ -2,22 +2,23 @@ package com.gentics.mesh.etc.config;
 
 /**
  * Authentication options POJO
+ * 
  * @author philippguertler
  */
 public class AuthenticationOptions {
 	public static enum AuthenticationMethod {
-		BASIC_AUTH,
-		JWT
+		BASIC_AUTH, JWT
 	}
-	
+
 	public static final AuthenticationMethod DEFAULT_AUTHENTICATION_METHOD = AuthenticationMethod.BASIC_AUTH;
-	
+
 	private AuthenticationMethod authenticationMethod = DEFAULT_AUTHENTICATION_METHOD;
-	
+
 	private JWTAuthenticationOptions jwtAuthenticationOptions = new JWTAuthenticationOptions();
 
 	/**
 	 * Gets the authentication method
+	 * 
 	 * @return
 	 */
 	public AuthenticationMethod getAuthenticationMethod() {
@@ -26,7 +27,8 @@ public class AuthenticationOptions {
 
 	/**
 	 * Sets the authentication method
-	 * @return
+	 * 
+	 * @param authenticationMethod
 	 */
 	public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
 		this.authenticationMethod = authenticationMethod;
@@ -34,6 +36,7 @@ public class AuthenticationOptions {
 
 	/**
 	 * Gets the JWT authentication options
+	 * 
 	 * @return
 	 */
 	public JWTAuthenticationOptions getJwtAuthenticationOptions() {
@@ -42,11 +45,11 @@ public class AuthenticationOptions {
 
 	/**
 	 * Sets the JWT authentication options
-	 * @return
+	 * 
+	 * @param jwtAuthenticationOptions
 	 */
 	public void setJwtAuthenticationOptions(JWTAuthenticationOptions jwtAuthenticationOptions) {
 		this.jwtAuthenticationOptions = jwtAuthenticationOptions;
 	}
-	
-	
+
 }
