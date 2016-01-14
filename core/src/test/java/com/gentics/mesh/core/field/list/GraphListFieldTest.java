@@ -42,6 +42,7 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testNodeListTransformation() throws Exception {
+		setupData();
 		Node node = folder("2015");
 		Node newsNode = folder("news");
 
