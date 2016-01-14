@@ -11,15 +11,21 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 
 /**
- * This class is a modification of Vertx' {@link io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl}
- * The only difference is that if the user is not authenticated (401), no response header is set.
- * This prevents the ugly popup in browsers asking for credentials.
+ * This class is a modification of Vertx'
+ * {@link io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl} The only
+ * difference is that if the user is not authenticated (401), no response header
+ * is set. This prevents the ugly popup in browsers asking for credentials.
+ * 
  * @author philippguertler
  */
-public class MeshBasicAuthHandler extends AuthHandlerImpl{
+public class MeshBasicAuthHandler extends AuthHandlerImpl {
 
 	public MeshBasicAuthHandler(AuthProvider authProvider) {
-	    super(authProvider);
+		super(authProvider);
+	}
+
+	public static MeshBasicAuthHandler create(AuthProvider authProvider) {
+		return new MeshBasicAuthHandler(authProvider);
 	}
 
 	@Override

@@ -26,7 +26,6 @@ public class AuthUserTest extends AbstractBasicDBTest {
 		role().revokePermissions(targetNode, GraphPermission.READ_PERM);
 		ac.data().clear();
 		assertFalse(requestUser.hasPermissionAsync(ac, targetNode, GraphPermission.READ_PERM).toBlocking().first());
-
 	}
 
 }

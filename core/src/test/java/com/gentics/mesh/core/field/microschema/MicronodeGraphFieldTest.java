@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 

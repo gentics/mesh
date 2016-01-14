@@ -5,6 +5,7 @@ import java.util.Set;
 import com.gentics.mesh.handler.impl.HttpActionContextImpl;
 
 import io.vertx.core.MultiMap;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
@@ -33,4 +34,9 @@ public interface HttpActionContext extends ActionContext {
 	 */
 	MultiMap requestHeaders();
 
+	/**
+	 * Adds a cookie to the response.
+	 * @param cookie
+	 */
+	void addCookie(Cookie cookie);
 }

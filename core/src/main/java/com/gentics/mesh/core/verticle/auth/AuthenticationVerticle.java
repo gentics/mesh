@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.handler.InternalHttpActionContext;
 
 @Component
 @Scope("singleton")
@@ -18,7 +19,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Autowired
-	private AuthenticationRestHandler restHandler;
+	private MeshSpringConfiguration springConfig;
 
 	public AuthenticationVerticle() {
 		super("auth");
@@ -26,18 +27,20 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 
 	@Override
 	public void registerEndPoints() throws Exception {
+		AuthenticationRestHandler restHandler = springConfig.authRestHandler();
+		
 		route("/me").handler(springConfiguration.authHandler());
 		route("/me").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleMe(InternalActionContext.create(rc));
+			restHandler.handleMe(InternalHttpActionContext.create(rc));
 		});
 
 		route("/login").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleLogin(InternalActionContext.create(rc));
+			restHandler.handleLogin(InternalHttpActionContext.create(rc));
 		});
 
 		route("/logout").handler(springConfiguration.authHandler());
 		route("/logout").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			restHandler.handleLogout(InternalActionContext.create(rc));
-		});
+			restHandler.handleLogout(InternalHttpActionContext.create(rc));
+		});		
 	}
 }

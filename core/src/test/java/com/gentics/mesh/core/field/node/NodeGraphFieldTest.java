@@ -3,8 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Locale;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

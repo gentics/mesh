@@ -10,8 +10,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
@@ -34,6 +34,9 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Vertex;
 
 import rx.Observable;
 
@@ -88,6 +91,31 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return out(HAS_USER).has(UserImpl.class).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
+	}
+	
+	@Override
+	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] {userUuid});
+		if (!it.hasNext()) {
+			return null;
+		}
+		FramedGraph graph = Database.getThreadLocalGraph();
+		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
+		if (it.hasNext()) {
+			throw new RuntimeException("Found multiple nodes with the same UUID");
+		}
+		Iterator<Vertex> roots = user.getElement().getVertices(Direction.IN, HAS_USER).iterator();
+		Vertex root = roots.next();
+		if (roots.hasNext()) {
+			throw new RuntimeException("Found multiple nodes with the same UUID");
+		}
+		
+		if(root.getId().equals(getId())) {
+			return user;
+		} else {
+			throw new RuntimeException("User does not belong to the UserRoot");
+		}
 	}
 
 	@Override

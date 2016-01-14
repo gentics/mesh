@@ -64,7 +64,8 @@ public final class MeshAssert {
 		});
 		try {
 			assertTrue("The timeout of the latch was reached.", latch.await(getTimeout(), TimeUnit.SECONDS));
-		} catch (UnknownHostException | InterruptedException e) {
+		}
+		catch (UnknownHostException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
