@@ -30,6 +30,7 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
+	 * TODO: This should return an observable
 	 * 
 	 * @param ac
 	 * @param fields

@@ -28,6 +28,7 @@ import com.gentics.mesh.json.MeshJsonException;
 
 /**
  * Test cases for fields of type "micronode"
+ * TODO: add tests for all types of fields that can be put into a micronode
  */
 public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 	/**
