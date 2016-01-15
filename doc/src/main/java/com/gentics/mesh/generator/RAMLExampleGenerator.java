@@ -592,7 +592,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
-		fields.put("categories-nodeListField", createNodeListField());
+		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 		fields.put("binary-binaryField", createBinaryField());
@@ -666,7 +666,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
-		fields.put("categories-nodeListField", createNodeListField());
+		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 		fields.put("location-micronodeField",
@@ -694,7 +694,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("price-numberField", createNumberField(100.1));
 		fields.put("enabled-booleanField", createBooleanField(true));
 		fields.put("release-dateField", createDateField(System.currentTimeMillis() / 1000));
-		fields.put("categories-nodeListField", createNodeListField());
+		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 		fields.put("location-micronodeField",

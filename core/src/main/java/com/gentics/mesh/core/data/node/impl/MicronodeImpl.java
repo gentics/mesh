@@ -157,7 +157,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			} else {
 				return graphStringField.transformToRest(ac).map(stringField -> {
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType()));
+						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
+								ac.getResolveLinksType(), ac.getProject().getName()));
 					}
 					return stringField;
 				});
@@ -199,7 +200,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				return graphHtmlField.transformToRest(ac).map(field -> {
 					// If needed resolve links within the html
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-						field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(), ac.getResolveLinksType()));
+						field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(),
+								ac.getResolveLinksType(), ac.getProject().getName()));
 					}
 					return field;
 				});

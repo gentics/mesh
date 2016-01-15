@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -114,12 +115,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return Observable.just(field.getString());
 			}
 		}
-		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid()));
 	}
 
 	@Override
-	public Observable<String> getPathSegment(Language language) {
-		NodeGraphFieldContainer container = getGraphFieldContainer(language);
+	public Observable<String> getPathSegment(String...languageTag) {
+		NodeGraphFieldContainer container = null;
+		for (String tag : languageTag) {
+			if ((container = getGraphFieldContainer(tag)) != null) {
+				break;
+			}
+		}
 		if (container != null) {
 			String fieldName = getSchema().getSegmentField();
 			// 1. Try to load the path segment using the string field
@@ -136,21 +142,35 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 			}
 		}
-		throw error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid());
+		return Observable.error(error(BAD_REQUEST, "node_error_could_not_find_path_segment", getUuid()));
 	}
 
 	@Override
-	public Observable<String> getPath(Language language) throws UnsupportedEncodingException {
+	public Observable<String> getPath(String...languageTag) throws UnsupportedEncodingException {
 		List<Observable<String>> segments = new ArrayList<>();
 
-		segments.add(getPathSegment(language));
+		segments.add(getPathSegment(languageTag));
 		Node current = this;
+
+		// for the path segments of the container, we add all (additional)
+		// project languages to the list of languages for the fallback
+		List<String> langList = new ArrayList<>();
+		langList.addAll(Arrays.asList(languageTag));
+		for (Language l : getProject().getLanguages()) {
+			String tag = l.getLanguageTag();
+			if (!langList.contains(tag)) {
+				langList.add(tag);
+			}
+		}
+		String[] projectLanguages = langList.toArray(new String[langList.size()]);
+
 		while (current != null) {
 			current = current.getParentNode();
 			if (current == null || current.getParentNode() == null) {
 				break;
 			}
-			segments.add(current.getPathSegment(language));
+			// for the path segments of the container, we allow ANY language (of the project)
+			segments.add(current.getPathSegment(projectLanguages));
 		}
 
 		Collections.reverse(segments);
@@ -200,6 +220,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeGraphFieldContainer getGraphFieldContainer(Language language) {
 		return getGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
+	}
+
+	@Override
+	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag) {
+		return getGraphFieldContainer(languageTag, NodeGraphFieldContainerImpl.class);
 	}
 
 	public NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language) {
@@ -417,7 +442,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType()).toBlocking().single();
+				String url = linkReplacer
+						.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType(), getProject().getName())
+						.toBlocking().single();
 				restNode.setUrl(url);
 
 				// languagePaths
@@ -425,7 +452,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers()) {
 					Language language = currentFieldContainer.getLanguage();
 					languagePaths.put(language.getLanguageTag(),
-							linkReplacer.resolve(this, language, ac.getResolveLinksType()).toBlocking().single());
+							linkReplacer.resolve(this, ac.getResolveLinksType(), language.getLanguageTag()).toBlocking().single());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}

@@ -11,7 +11,6 @@ import javax.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.etc.RouterStorage;
@@ -46,10 +45,10 @@ public class WebRootLinkReplacer {
 	 * Replace the links in the content.
 	 * @param content content containing links to replace
 	 * @param type replacing type
-	 * 
+	 * @param projectName project name (used for 404 links)
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String content, Type type) {
+	public String replace(String content, Type type, String projectName) {
 		if (isEmpty(content) || type == Type.OFF || type == null) {
 			return content;
 		}
@@ -92,9 +91,9 @@ public class WebRootLinkReplacer {
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
-				segments.add(resolve(linkArguments[0], linkArguments[1], type));
+				segments.add(resolve(linkArguments[0], linkArguments[1].trim(), type, projectName));
 			} else {
-				segments.add(resolve(linkArguments[0], null, type));
+				segments.add(resolve(linkArguments[0], null, type, projectName));
 			}
 
 			lastPos = endPos + END_TAG.length();
@@ -112,9 +111,10 @@ public class WebRootLinkReplacer {
 	 * @param uuid target uuid
 	 * @param languageTag optional language
 	 * @param type link type
+	 * @param projectName project name (which is used for 404 links)
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String uuid, String languageTag, Type type) {
+	public Observable<String> resolve(String uuid, String languageTag, Type type, String projectName) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().single();
@@ -124,58 +124,54 @@ public class WebRootLinkReplacer {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not resolve link to '" + uuid + "', target node could not be found");
 			}
-			return Observable.just("#");
+			switch (type) {
+			case SHORT:
+				return Observable.just("/error/404");
+			case MEDIUM:
+				return Observable.just("/" + projectName + "/error/404");
+			case FULL:
+				return Observable
+						.just(RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + projectName + "/webroot/error/404");
+			default:
+				return Observable.error(new Exception("Cannot render link with type " + type));
+			}
 		}
-		return resolve(node, languageTag, type);
+		if (languageTag == null) {
+			return resolve(node, type);
+		} else {
+			return resolve(node, type, languageTag);
+		}
 	}
 
 	/**
 	 * Resolve the link to the given node
 	 * @param node target node
-	 * @param languageTag optional language
 	 * @param type link type
+	 * @param languageTag target language
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(Node node, String languageTag, Type type) {
-		if (languageTag == null) {
-			languageTag = Mesh.mesh().getOptions().getDefaultLanguage();
+	public Observable<String> resolve(Node node, Type type, String...languageTag) {
+		if (languageTag == null || languageTag.length == 0) {
+			languageTag = new String[] { Mesh.mesh().getOptions().getDefaultLanguage() };
+
 			if (log.isDebugEnabled()) {
 				log.debug("Fallback to default language " + languageTag);
 			}
 		}
-		languageTag = languageTag.trim();
-		return resolve(node, MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag), type);
-	}
-
-	/**
-	 * Resolve the link to the given node
-	 * @param node target node
-	 * @param language target language
-	 * @param type link type
-	 * @return observable of the rendered link
-	 */
-	public Observable<String> resolve(Node node, Language language, Type type) {
-		if (language == null) {
-			String defaultLanguageTag = Mesh.mesh().getOptions().getDefaultLanguage();
-			language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(defaultLanguageTag);
-			if (language == null) {
-				return Observable.error(new Exception("Could not find default language " + defaultLanguageTag));
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Fallback to default language " + defaultLanguageTag);
-			}
-		}
 		try {
 			if (log.isDebugEnabled()) {
-				log.debug("Resolving link to " + node.getUuid() + " in language " + language.getLanguageTag() + " with type " + type);
+				log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
 			}
 			switch (type) {
 			case SHORT:
-				return node.getPath(language);
+				return node.getPath(languageTag).onErrorReturn(e -> "/error/404");
 			case MEDIUM:
-				return node.getPath(language).map(path -> "/" + node.getProject().getName() + path);
+				return node.getPath(languageTag).onErrorReturn(e -> "/error/404")
+						.map(path -> "/" + node.getProject().getName() + path);
 			case FULL:
-				return node.getPath(language).map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
+				return node.getPath(languageTag).onErrorReturn(e -> "/error/404")
+						.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName()
+								+ "/webroot" + path);
 			default:
 				return Observable.error(new Exception("Cannot render link with type " + type));
 			}

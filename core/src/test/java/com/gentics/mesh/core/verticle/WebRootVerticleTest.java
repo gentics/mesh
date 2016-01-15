@@ -23,13 +23,17 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.webroot.WebRootVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
@@ -220,4 +224,46 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
 
+	@Test
+	public void testRead404Page() {
+		String notFoundPath = "error/404";
+
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, notFoundPath);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "node_not_found_for_path", notFoundPath);
+	}
+
+	/**
+	 * Test reading the "not found" path /error/404, when this resolves to an existing node.
+	 * We expect the node to be returned, but the status code still to be 404
+	 */
+	@Test
+	public void testRead404Node() {
+		String notFoundPath = "error/404";
+
+		NodeCreateRequest createErrorFolder = new NodeCreateRequest();
+		createErrorFolder.setSchema(new SchemaReference().setName("folder"));
+		createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
+		createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
+		createErrorFolder.setLanguage("en");
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, createErrorFolder);
+		latchFor(future);
+		assertSuccess(future);
+		String errorNodeUuid = future.result().getUuid();
+
+		NodeCreateRequest create404Node = new NodeCreateRequest();
+		create404Node.setSchema(new SchemaReference().setName("content"));
+		create404Node.setParentNodeUuid(errorNodeUuid);
+		create404Node.getFields().put("filename", FieldUtil.createStringField("404"));
+		create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
+		create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
+		create404Node.setLanguage("en");
+		future = getClient().createNode(PROJECT_NAME, create404Node);
+		latchFor(future);
+		assertSuccess(future);
+
+		Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath);
+		latchFor(webrootFuture);
+		expectMessage(webrootFuture, NOT_FOUND, null);
+	}
 }

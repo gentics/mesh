@@ -42,8 +42,12 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 			InternalActionContext ac = InternalActionContext.create(rc);
 
 			db.asyncNoTrxExperimental(() -> {
-				return Observable.just(
-						WebRootLinkReplacer.getInstance().replace(ac.getBodyAsString(), ac.getResolveLinksType()));
+				String projectName = ac.getParameter("project");
+				if (projectName == null) {
+					projectName = "project";
+				}
+				return Observable.just(WebRootLinkReplacer.getInstance().replace(ac.getBodyAsString(),
+						ac.getResolveLinksType(), projectName));
 			}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body));
 		});
 	}

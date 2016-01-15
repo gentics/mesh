@@ -91,13 +91,13 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testGetPath() throws Exception {
 		Node newsNode = content("news overview");
 		CountDownLatch latch = new CountDownLatch(2);
-		Observable<String> path = newsNode.getPath(english());
+		Observable<String> path = newsNode.getPath(english().getLanguageTag());
 		path.subscribe(s -> {
 			assertEquals("/News/News+Overview.en.html", s);
 			latch.countDown();
 		});
 
-		Observable<String> pathSegementFieldValue = newsNode.getPathSegment(english());
+		Observable<String> pathSegementFieldValue = newsNode.getPathSegment(english().getLanguageTag());
 		pathSegementFieldValue.subscribe(s -> {
 			assertEquals("News Overview.en.html", s);
 			latch.countDown();

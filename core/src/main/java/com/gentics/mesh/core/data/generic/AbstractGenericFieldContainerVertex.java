@@ -12,8 +12,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>>
 		extends AbstractMeshCoreVertex<T, R> {
 
-	protected <T extends BasicFieldContainer> T getGraphFieldContainer(Language language, Class<T> classOfT) {
-		T container = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag()).inV().nextOrDefault(classOfT, null);
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Class<U> classOfU) {
+		return getGraphFieldContainer(language.getLanguageTag(), classOfU);
+	}
+
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, Class<U> classOfU) {
+		U container = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, languageTag).inV().nextOrDefault(classOfU, null);
 		return container;
 	}
 
@@ -23,16 +27,16 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 * @param language
 	 * @return i18n properties vertex entity
 	 */
-	protected <T extends BasicFieldContainer> T getOrCreateGraphFieldContainer(Language language, Class<T> classOfT) {
+	protected <U extends BasicFieldContainer> U getOrCreateGraphFieldContainer(Language language, Class<U> classOfU) {
 
-		T container = null;
+		U container = null;
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag());
 		if (edgeTraversal.hasNext()) {
-			container = edgeTraversal.next().inV().has(classOfT).nextOrDefault(classOfT, null);
+			container = edgeTraversal.next().inV().has(classOfU).nextOrDefault(classOfU, null);
 		}
 
 		if (container == null) {
-			container = getGraph().addFramedVertex(classOfT);
+			container = getGraph().addFramedVertex(classOfU);
 			container.setLanguage(language);
 			Translated edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), TranslatedImpl.class);
 			edge.setLanguageTag(language.getLanguageTag());
