@@ -177,7 +177,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	@Test
 	public void testReadFolderWithLanguageFallbackInPath() {
 		// Test requesting a path that contains of mixed language segments: e.g: /Fahrzeuge/Cars/auto.html
-		String name = "/New_in_March_2014";
+		String name = "New_in_March_2014";
 		for (String path1 : Arrays.asList("News", "Neuigkeiten")) {
 			for (String path2 : Arrays.asList("2014")) {
 				for (String path3 : Arrays.asList("March", "März")) {
@@ -226,7 +226,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testRead404Page() {
-		String notFoundPath = "error/404";
+		String notFoundPath = "/error/404";
 
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, notFoundPath);
 		latchFor(future);
@@ -239,7 +239,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	 */
 	@Test
 	public void testRead404Node() {
-		String notFoundPath = "error/404";
+		String notFoundPath = "/error/404";
 
 		NodeCreateRequest createErrorFolder = new NodeCreateRequest();
 		createErrorFolder.setSchema(new SchemaReference().setName("folder"));
