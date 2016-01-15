@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
@@ -103,7 +105,8 @@ public class WebRootHandler {
 					}
 				} else {
 					node.transformToRest(ac).subscribe(model -> {
-						ac.send(JsonUtil.toJson(model), OK);
+						ac.send(JsonUtil.toJson(model), HttpResponseStatus.valueOf(
+								NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 					} , error -> {
 						ac.fail(error);
 					});

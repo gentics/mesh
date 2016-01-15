@@ -9,4 +9,11 @@ public interface NodeFieldListItem {
 	 */
 	String getUuid();
 
+	/**
+	 * Get the webroot URL to the node
+	 * 
+	 * @return webroot URL
+	 */
+	String getUrl();
+
 }

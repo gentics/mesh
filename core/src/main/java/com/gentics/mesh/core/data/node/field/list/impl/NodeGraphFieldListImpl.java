@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
@@ -63,9 +64,19 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
+			List<String> languageTags = ac.getSelectedLanguageTags();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				// Create the rest field and populate the fields
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
+
+				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+					listItem.setUrl(
+							WebRootLinkReplacer.getInstance()
+									.resolve(item.getNode(), ac.getResolveLinksType(),
+											languageTags.toArray(new String[languageTags.size()]))
+									.toBlocking().first());
+				}
+
 				restModel.add(listItem);
 			}
 			return Observable.just(restModel);

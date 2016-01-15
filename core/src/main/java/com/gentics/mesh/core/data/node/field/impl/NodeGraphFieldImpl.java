@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import com.gentics.mesh.core.data.Language;
+import java.util.List;
+
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -42,8 +43,10 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			Node node = getNode();
 			nodeField.setUuid(node.getUuid());
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-				Language language = ac.get(NodeImpl.AC_LANGUAGE_KEY);
-				nodeField.setUrl(WebRootLinkReplacer.getInstance().resolve(node, language, ac.getResolveLinksType()).toBlocking().first());
+				List<String> languageTags = ac.getSelectedLanguageTags();
+				nodeField.setUrl(WebRootLinkReplacer.getInstance()
+						.resolve(node, ac.getResolveLinksType(), languageTags.toArray(new String[languageTags.size()]))
+						.toBlocking().first());
 			}
 			return Observable.just(nodeField);
 		}

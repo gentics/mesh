@@ -88,6 +88,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	NodeGraphFieldContainer getGraphFieldContainer(Language language);
 
 	/**
+	 * Return the field container for the given language.
+	 * 
+	 * @param languageTag
+	 * @return
+	 */
+	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
+
+	/**
 	 * Return the field container for the given language. Create the container when non was found.
 	 * 
 	 * @param language
@@ -280,21 +288,22 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	PathSegment getSegment(String segment);
 
 	/**
-	 * Return the webroot path to the node in the given language.
+	 * Return the webroot path to the node in the given language. If more than one language is given,
+	 * the path will lead to the first available language of the node
 	 * 
-	 * @param language
+	 * @param languageTag
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	Observable<String> getPath(Language language) throws UnsupportedEncodingException;
+	Observable<String> getPath(String...languageTag) throws UnsupportedEncodingException;
 
 	/**
 	 * Return the path segment value of this node in the given language.
-	 * 
+	 *
 	 * @param language
 	 * @return
 	 */
-	Observable<String> getPathSegment(Language language);
+	Observable<String> getPathSegment(String...languageTag);
 
 	/**
 	 * Delete the node and ignore any checks.

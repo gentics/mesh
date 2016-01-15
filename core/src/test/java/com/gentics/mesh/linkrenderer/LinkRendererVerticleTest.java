@@ -100,7 +100,7 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testInvalidLink() {
-		testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "#");
+		testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "/api/v1/project/webroot/error/404");
 	}
 
 	/**

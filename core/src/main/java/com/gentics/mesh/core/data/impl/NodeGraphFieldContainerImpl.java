@@ -471,7 +471,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			} else {
 				return graphStringField.transformToRest(ac).map(stringField -> {
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType()));
+						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
+								ac.getResolveLinksType(), ac.getProject().getName()));
 					}
 					return stringField;
 				});
@@ -519,7 +520,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				return graphHtmlField.transformToRest(ac).map(model -> {
 					// If needed resolve links within the html
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(), ac.getResolveLinksType()));
+						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(),
+								ac.getResolveLinksType(), ac.getProject().getName()));
 					}
 					return model;
 				});

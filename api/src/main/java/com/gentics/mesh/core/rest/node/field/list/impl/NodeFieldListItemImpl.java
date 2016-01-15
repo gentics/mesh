@@ -6,6 +6,8 @@ public class NodeFieldListItemImpl implements NodeFieldListItem {
 
 	private String uuid;
 
+	private String url;
+
 	public NodeFieldListItemImpl() {
 	}
 
@@ -29,4 +31,19 @@ public class NodeFieldListItemImpl implements NodeFieldListItem {
 		return this;
 	}
 
+	@Override
+	public String getUrl() {
+		return url;
+	}
+
+	/**
+	 * Set the webroot URL
+	 * 
+	 * @param url webroot URL
+	 * @return this instance
+	 */
+	public NodeFieldListItemImpl setUrl(String url) {
+		this.url = url;
+		return this;
+	}
 }

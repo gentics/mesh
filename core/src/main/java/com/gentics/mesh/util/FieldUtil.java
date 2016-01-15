@@ -14,6 +14,9 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -22,6 +25,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.sun.jna.platform.win32.OaIdl.DATE;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.
@@ -69,11 +73,27 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createNodeListField() {
+	public static Field createNodeListField(String...uuids) {
 		NodeFieldListImpl field = new NodeFieldListImpl();
-		field.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
-		field.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
-		field.add(new NodeFieldListItemImpl(UUIDUtil.randomUUID()));
+		for (String uuid : uuids) {
+			field.add(new NodeFieldListItemImpl(uuid));
+		}
+		return field;
+	}
+
+	public static Field createBooleanListField(Boolean...values) {
+		BooleanFieldListImpl field = new BooleanFieldListImpl();
+		for (Boolean value : values) {
+			field.add(value);
+		}
+		return field;
+	}
+
+	public static Field createDateListField(Long...values) {
+		DateFieldListImpl field = new DateFieldListImpl();
+		for (Long value : values) {
+			field.add(value);
+		}
 		return field;
 	}
 
@@ -81,6 +101,14 @@ public final class FieldUtil {
 		NumberFieldListImpl field = new NumberFieldListImpl();
 		for (Number number : numbers) {
 			field.add(number);
+		}
+		return field;
+	}
+
+	public static Field createHtmlListField(String...values) {
+		HtmlFieldListImpl field = new HtmlFieldListImpl();
+		for (String value : values) {
+			field.add(value);
 		}
 		return field;
 	}

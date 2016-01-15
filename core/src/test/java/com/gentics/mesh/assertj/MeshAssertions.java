@@ -3,6 +3,9 @@ package com.gentics.mesh.assertj;
 import org.assertj.core.api.Assertions;
 
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
+import com.gentics.mesh.assertj.impl.JsonArrayAssert;
+import com.gentics.mesh.assertj.impl.JsonObjectAssert;
+import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
@@ -13,6 +16,7 @@ import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -21,6 +25,9 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.search.impl.DummySearchProvider;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class MeshAssertions extends Assertions {
 
@@ -64,4 +71,15 @@ public class MeshAssertions extends Assertions {
 		return new SchemaResponseAssert(actual);
 	}
 
+	public static JsonArrayAssert assertThat(JsonArray actual) {
+		return new JsonArrayAssert(actual);
+	}
+
+	public static JsonObjectAssert assertThat(JsonObject actual) {
+		return new JsonObjectAssert(actual);
+	}
+
+	public static MicronodeResponseAssert assertThat(MicronodeResponse actual) {
+		return new MicronodeResponseAssert(actual);
+	}
 }

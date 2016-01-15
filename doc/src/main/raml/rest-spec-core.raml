@@ -918,6 +918,11 @@ traits:
   /linkResolver:
     is: [ linkresolver ]
     post:
+      queryParameters:
+        project:
+          description: Project for which the link resolving is done. This is important for invalid links.
+          type: string
+          default: project
       description: Resolve links in posted content. The content may be plain text, but also JSON.
       body:
         text/plain:
