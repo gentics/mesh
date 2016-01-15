@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.0.3-dev-SNAPSHOT</version>
+	<version>1.1.0-beta-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
