@@ -23,7 +23,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	}
 
 	public JsonObjectAssert matches(Object expected) {
-		assertNotNull(descriptionText() + " cannot be matched without specifying key first");
+		assertNotNull(descriptionText() + " cannot be matched without specifying key first", key);
 		assertNotNull(descriptionText() + " JsonObject must not be null", actual);
 		assertEquals(descriptionText() + " key " + key, expected, actual.getValue(key));
 		return this;
