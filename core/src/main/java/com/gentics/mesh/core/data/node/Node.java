@@ -289,7 +289,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given,
-	 * the path will lead to the first available language of the node
+	 * the path will lead to the first available language of the node.
 	 * 
 	 * @param languageTag
 	 * @return
@@ -298,9 +298,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	Observable<String> getPath(String...languageTag) throws UnsupportedEncodingException;
 
 	/**
-	 * Return the path segment value of this node in the given language.
+	 * Return the path segment value of this node in the given language. If more than one language is given,
+	 * the path will lead to the first available language of the node.
 	 *
-	 * @param language
+	 * @param languageTag
 	 * @return
 	 */
 	Observable<String> getPathSegment(String...languageTag);
