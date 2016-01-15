@@ -17,7 +17,7 @@ public class MicroschemaSearchVerticleTest extends AbstractSearchVerticleTest im
 	private MicroschemaVerticle microschemaVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(microschemaVerticle);

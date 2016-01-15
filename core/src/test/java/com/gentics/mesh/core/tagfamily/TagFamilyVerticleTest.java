@@ -52,7 +52,7 @@ public class TagFamilyVerticleTest extends AbstractBasicCrudVerticleTest {
 	private TagFamilyVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;

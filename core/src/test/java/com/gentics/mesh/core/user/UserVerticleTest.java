@@ -66,7 +66,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	private UserVerticle userVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(userVerticle);
 		return list;

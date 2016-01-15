@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -119,9 +120,12 @@ public class RouterStorage {
 		}
 		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(springConfiguration.bodyHandler());
+		
 		router.route().handler(CookieHandler.create());
-		router.route().handler(springConfiguration.sessionHandler());
-		router.route().handler(springConfiguration.userSessionHandler());
+		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
+			router.route().handler(springConfiguration.sessionHandler());
+			router.route().handler(springConfiguration.userSessionHandler());
+		}
 	}
 
 	/**

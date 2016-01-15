@@ -21,6 +21,7 @@ public class MeshOptions {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String MESH_SESSION_KEY = "mesh.session";
+	public static final String JWT_TOKEN_KEY = "mesh.token";
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
@@ -39,6 +40,8 @@ public class MeshOptions {
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
+	
+	private AuthenticationOptions authenticationOptions = new AuthenticationOptions();
 
 	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
 
@@ -161,6 +164,23 @@ public class MeshOptions {
 	 */
 	public void setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
+	}
+
+	/**
+	 * Return the authentication options
+	 * 
+	 * @return Authentication options
+	 */
+	public AuthenticationOptions getAuthenticationOptions() {
+		return authenticationOptions;
+	}
+
+	/**
+	 * Set the authentication options
+	 * @param authenticationOptions Authentication options
+	 */
+	public void setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
+		this.authenticationOptions = authenticationOptions;
 	}
 
 	/**

@@ -28,10 +28,10 @@ public class MeshAuthProvider implements AuthProvider {
 	private static final Logger log = LoggerFactory.getLogger(MeshAuthProvider.class);
 
 	@Autowired
-	private BootstrapInitializer boot;
+	protected BootstrapInitializer boot;
 
 	@Autowired
-	private Database db;
+	protected Database db;
 
 	@Autowired
 	private MeshSpringConfiguration springConfiguration;

@@ -30,7 +30,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	private TagIndexHandler tagIndexHandler;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(tagFamilyVerticle);

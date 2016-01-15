@@ -37,6 +37,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -199,4 +200,8 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		return true;
 	}
 
+	@Override
+	public void addCookie(Cookie cookie) {
+		getRoutingContext().addCookie(cookie);
+	}
 }

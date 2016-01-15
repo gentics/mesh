@@ -57,7 +57,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private NodeIndexHandler nodeIndexHandler;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(nodeVerticle);
@@ -283,6 +283,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 			assertNotNull(nodeResponse.getUuid());
 		}
 
+	}
+
+	@Test
+	public void testSearchMultipleLanguages() {
+		//TODO search for string which can be found in two language variants of a single node. We would expect two nodes in the result which have different language properties. 
+		fail("not yet implemented");
 	}
 
 	@Test

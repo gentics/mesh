@@ -32,7 +32,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	private NodeIndexHandler nodeIndexHandler;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		return list;

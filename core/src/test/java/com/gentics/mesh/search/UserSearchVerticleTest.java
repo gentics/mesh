@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -34,12 +36,30 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private GroupVerticle groupVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(userVerticle);
 		list.add(groupVerticle);
 		return list;
+	}
+
+	@Test
+	public void testSimpleQuerySearch() {
+
+		String username = "testuser42a";
+		createUser(username);
+
+		String json = "{\n" + "  \"query\": {\n" + "      \"simple_query_string\" : {\n" + "          \"query\": \"testuser*\",\n"
+				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
+				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
+
+		Future<UserListResponse> searchFuture = getClient().searchUsers(json);
+		latchFor(searchFuture);
+		assertSuccess(searchFuture);
+		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals("The found element is not the user we were looking for", username, searchFuture.result().getData().get(0).getUsername());
+
 	}
 
 	@Test
@@ -80,7 +100,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName + "*"));
 		latchFor(future);
 		assertSuccess(future);
-		UserListResponse response = future.result();
+		ListResponse<UserResponse> response = future.result();
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 		assertEquals(1, response.getData().size());
@@ -95,11 +115,11 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Future<UserListResponse> future = getClient().searchUsers(getSimpleWildCardQuery("lastname", "*" + impossibleName.toLowerCase() + "*"));
 		latchFor(future);
 		assertSuccess(future);
-		UserListResponse response = future.result();
+		ListResponse<UserResponse> response = future.result();
 		assertNotNull(response);
-		assertFalse(response.getData().isEmpty());
-		assertEquals(1, response.getData().size());
-		assertEquals(impossibleName, response.getData().get(0).getLastname());
+		assertTrue(
+				"No user should be found since the lastname field is not tokenized anymore thus it is not possible to search with a lowercased term.",
+				response.getData().isEmpty());
 	}
 
 	@Test
@@ -116,7 +136,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("email", "*"));
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("emailadress", "*"));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());

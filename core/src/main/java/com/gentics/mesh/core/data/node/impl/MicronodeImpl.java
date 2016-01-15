@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.node.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
@@ -278,7 +277,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			break;
 		}
 
-		return errorObservable(BAD_REQUEST, "type unknown");
+		throw error(BAD_REQUEST, "type unknown");
 
 	}
 

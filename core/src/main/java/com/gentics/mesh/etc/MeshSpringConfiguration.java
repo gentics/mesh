@@ -13,9 +13,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthProvider;
 import com.gentics.mesh.auth.MeshBasicAuthHandler;
+import com.gentics.mesh.auth.MeshJWTAuthHandler;
+import com.gentics.mesh.auth.MeshJWTAuthProvider;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
+import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
+import com.gentics.mesh.core.verticle.auth.BasicAuthRestHandler;
+import com.gentics.mesh.core.verticle.auth.JWTAuthRestHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -29,7 +34,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.web.RoutingContext;
@@ -135,7 +139,24 @@ public class MeshSpringConfiguration {
 	 */
 	@Bean
 	public AuthHandler authHandler() {
-		return new MeshBasicAuthHandler(authProvider());
+		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
+		case JWT:
+			return MeshJWTAuthHandler.create(authProvider());
+		case BASIC_AUTH:
+		default:
+			return MeshBasicAuthHandler.create(authProvider());
+		}
+	}
+
+	@Bean
+	public AuthenticationRestHandler authRestHandler() {
+		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
+		case JWT:
+			return JWTAuthRestHandler.create();
+		case BASIC_AUTH:
+		default:
+			return BasicAuthRestHandler.create();
+		}
 	}
 
 	/**
@@ -154,8 +175,14 @@ public class MeshSpringConfiguration {
 	 * @return
 	 */
 	@Bean
-	public AuthProvider authProvider() {
-		return new MeshAuthProvider();
+	public MeshAuthProvider authProvider() {
+		switch (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod()) {
+		case JWT:
+			return new MeshJWTAuthProvider();
+		case BASIC_AUTH:
+		default:
+			return new MeshAuthProvider();
+		}
 	}
 
 	/**

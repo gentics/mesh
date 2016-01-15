@@ -30,6 +30,7 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testNumberFieldTransformation() throws Exception {
+		setupData();
 		Node node = folder("2015");
 		Schema schema = node.getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();

@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest;
 
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.rest.impl.MeshRestClientImpl;
 import com.gentics.mesh.rest.method.AdminClientMethods;
 import com.gentics.mesh.rest.method.AuthClientMethods;
@@ -20,16 +20,38 @@ import com.gentics.mesh.rest.method.WebRootClientMethods;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.ext.web.RoutingContext;
 
-public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods,
-		TagFamilyClientMethods, WebRootClientMethods, SchemaClientMethods, GroupClientMethods, UserClientMethods,
-		RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods, MicroschemaClientMethods,
-		NodeFieldAPIClientMethods, UtilityClientMethods {
+public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
+		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
+		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods {
 
-	static MeshRestClient create(String host, int port, Vertx vertx) {
-		return new MeshRestClientImpl(host, port, vertx);
+	/**
+	 * Create a new mesh rest client.
+	 * 
+	 * @param host
+	 *            Server host
+	 * @param port
+	 *            Server port
+	 * @param vertx
+	 *            Vertx instance to be used in combination with the vertx http client
+	 * @param authenticationMethod
+	 *            Authentication method to be used
+	 * @return
+	 */
+	static MeshRestClient create(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
+		return new MeshRestClientImpl(host, port, vertx, authenticationMethod);
 	}
 
+	/**
+	 * Create a new mesh rest client.
+	 * 
+	 * @param host
+	 *            Server host
+	 * @param vertx
+	 *            Vertx instance to be used in combination with the vertx http client
+	 * @return
+	 */
 	static MeshRestClient create(String host, Vertx vertx) {
 		return new MeshRestClientImpl(host, vertx);
 	}
@@ -42,31 +64,6 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	HttpClient getClient();
 
 	/**
-	 * Return the cookie that is currently used when invoking http requests.
-	 * 
-	 * @return
-	 */
-	String getCookie();
-
-	/**
-	 * Set the cookie that should be used when invoking requests.
-	 * 
-	 * @param cookie
-	 * @return
-	 */
-	MeshRestClient setCookie(String cookie);
-
-	/**
-	 * Set the session id. Internally the session cookie will be set using the given id.
-	 * 
-	 * @param id
-	 * @return
-	 */
-	default MeshRestClient setSessionId(String id) {
-		return setCookie(MeshOptions.MESH_SESSION_KEY + "=" + id);
-	}
-
-	/**
 	 * Set the login that is used to authenticate the requests.
 	 * 
 	 * @param username
@@ -74,6 +71,16 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return Fluent API
 	 */
 	MeshRestClient setLogin(String username, String password);
+
+	/**
+	 * Set the login information according to the request headers of the provided context
+	 * 
+	 * Also initializes the correct authentication provider dependent on the request headers.
+	 * 
+	 * @param context
+	 * @return Fluent API
+	 */
+	MeshRestClient initializeAuthenticationProvider(RoutingContext context);
 
 	/**
 	 * Return the client schema storage that is used to deserialize those responses that use a schema.
@@ -94,6 +101,5 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * Close the client.
 	 */
 	void close();
-
 
 }

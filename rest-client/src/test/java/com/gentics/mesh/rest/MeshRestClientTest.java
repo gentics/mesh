@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 
 import io.vertx.core.Vertx;
@@ -12,13 +13,13 @@ public class MeshRestClientTest {
 
 	@Test
 	public void testRestClient() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx(), AuthenticationMethod.BASIC_AUTH);
 		client.close();
 	}
 
 	@Test
 	public void testParameterHandling() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx(), AuthenticationMethod.BASIC_AUTH);
 		NodeRequestParameter parameters1 = new NodeRequestParameter();
 		parameters1.setLanguages("en");
 

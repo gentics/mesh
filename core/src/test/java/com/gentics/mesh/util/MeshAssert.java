@@ -23,7 +23,7 @@ public final class MeshAssert {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshAssert.class);
 
-	private static final Integer CI_TIMEOUT_SECONDS = 10;
+	private static final Integer CI_TIMEOUT_SECONDS = 30;
 
 	private static final Integer DEV_TIMEOUT_SECONDS = 10000;
 
@@ -64,7 +64,8 @@ public final class MeshAssert {
 		});
 		try {
 			assertTrue("The timeout of the latch was reached.", latch.await(getTimeout(), TimeUnit.SECONDS));
-		} catch (UnknownHostException | InterruptedException e) {
+		}
+		catch (UnknownHostException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

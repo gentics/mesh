@@ -77,7 +77,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
-			fieldAPIHandler.handleUpdateField(InternalActionContext.create(rc));
+			fieldAPIHandler.handleUpdateField(rc);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
@@ -85,7 +85,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		});
 
 		// List methods
-
 		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			fieldAPIHandler.handleRemoveFieldItem(InternalActionContext.create(rc));
 		});

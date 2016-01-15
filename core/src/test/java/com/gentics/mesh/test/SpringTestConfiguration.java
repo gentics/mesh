@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
@@ -55,6 +56,9 @@ public class SpringTestConfiguration {
 		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
+		options.getAuthenticationOptions().setAuthenticationMethod(AuthenticationMethod.JWT);
+		options.getAuthenticationOptions().getJwtAuthenticationOptions().setSignatureSecret("secret");
+		options.getAuthenticationOptions().getJwtAuthenticationOptions().setKeystorePath("keystore.jceks");
 		Mesh.mesh(options);
 	}
 

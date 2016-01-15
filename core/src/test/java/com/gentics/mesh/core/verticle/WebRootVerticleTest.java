@@ -46,7 +46,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	private NodeVerticle nodeVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(webrootVerticle);
 		list.add(nodeVerticle);
@@ -143,28 +143,10 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		String path = "/blub";
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path);
 		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", "blub");
+		expectException(future, NOT_FOUND, "node_not_found_for_path", "/blub");
 	}
 
-	@Test
-	public void testReadProjectBaseNode() {
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "/");
-		latchFor(future);
-		assertSuccess(future);
-		WebRootResponse response = future.result();
-		assertFalse(response.isBinary());
-
-		assertEquals(project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
-	}
-
-	@Test
-	public void testReadDoubleSlashes() {
-		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "//");
-		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", "//");
-	}
-
-	@Test
+	@Test(expected = RuntimeException.class)
 	public void testReadWithEmptyPath() {
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "");
 		latchFor(future);
@@ -174,9 +156,28 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	@Test
+	public void testReadProjectBaseNode() {
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "/");
+		latchFor(future);
+		assertSuccess(future);
+		WebRootResponse response = future.result();
+		assertFalse(response.isBinary());
+		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
+	}
+
+	@Test
+	public void testReadDoubleSlashes() {
+		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, "//");
+		latchFor(future);
+		WebRootResponse response = future.result();
+		assertFalse(response.isBinary());
+		assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
+	}
+
+	@Test
 	public void testReadFolderWithLanguageFallbackInPath() {
 		// Test requesting a path that contains of mixed language segments: e.g: /Fahrzeuge/Cars/auto.html
-		String name = "New_in_March_2014";
+		String name = "/New_in_March_2014";
 		for (String path1 : Arrays.asList("News", "Neuigkeiten")) {
 			for (String path2 : Arrays.asList("2014")) {
 				for (String path3 : Arrays.asList("March", "März")) {
@@ -196,7 +197,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadFolderByPathWithoutPerm() throws Exception {
-		String englishPath = "News/2015";
+		String englishPath = "/News/2015";
 		Node newsFolder;
 		newsFolder = folder("2015");
 		role().revokePermissions(newsFolder, READ_PERM);
@@ -208,7 +209,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadContentByInvalidPath() throws Exception {
-		String invalidPath = "News/2015/no-valid-content.html";
+		String invalidPath = "/News/2015/no-valid-content.html";
 
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath);
 		latchFor(future);
@@ -217,8 +218,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
-		String invalidPath = "News/no-valid-folder/no-valid-content.html";
-
+		String invalidPath = "/News/no-valid-folder/no-valid-content.html";
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, invalidPath);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);

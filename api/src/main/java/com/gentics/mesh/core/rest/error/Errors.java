@@ -60,16 +60,4 @@ public final class Errors {
 		return new HttpStatusCodeErrorException(status, i18nMessageKey, t);
 	}
 
-	/**
-	 * 
-	 * @param status
-	 * @param i18nKey
-	 * @param parameters
-	 * @return
-	 * @deprecated throw error directly
-	 */
-	@Deprecated
-	public static <T> Observable<T> errorObservable(HttpResponseStatus status, String i18nKey, String... parameters) {
-		return Observable.error(new HttpStatusCodeErrorException(status, i18nKey, parameters));
-	}
 }

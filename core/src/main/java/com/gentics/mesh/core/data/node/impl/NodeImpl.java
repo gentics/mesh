@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -602,7 +601,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		try {
 			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
-				return errorObservable(BAD_REQUEST, "error_language_not_set");
+				throw error(BAD_REQUEST, "error_language_not_set");
 			}
 			return db.trx(() -> {
 				Language language = BootstrapInitializer.getBoot().languageRoot().findByLanguageTag(requestModel.getLanguage());
@@ -696,6 +695,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		//TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
 			String indexType = getSchema().getName();
 			batch.addEntry(getUuid(), getType(), action, indexType);
@@ -754,7 +754,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return childNode.resolvePath(path, pathStack);
 			}
 		}
-		return errorObservable(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
+		throw error(NOT_FOUND, "node_not_found_for_path", path.getTargetPath());
 
 	}
 }

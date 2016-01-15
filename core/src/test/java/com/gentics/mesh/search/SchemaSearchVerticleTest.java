@@ -26,7 +26,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	private SchemaVerticle schemaVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(schemaVerticle);

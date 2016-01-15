@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
@@ -142,7 +141,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		MeshAuthUser requestUser = ac.getUser();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
-			return errorObservable(BAD_REQUEST, "project_missing_name");
+			throw error(BAD_REQUEST, "project_missing_name");
 		}
 		return db.noTrx(() -> {
 			if (!requestUser.hasPermissionSync(ac, boot.projectRoot(), CREATE_PERM)) {

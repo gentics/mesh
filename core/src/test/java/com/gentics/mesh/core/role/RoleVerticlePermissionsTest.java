@@ -30,7 +30,7 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 	private RoleVerticle verticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(verticle);
 		return list;

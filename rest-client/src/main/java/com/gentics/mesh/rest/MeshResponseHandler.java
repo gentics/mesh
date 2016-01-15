@@ -2,8 +2,6 @@ package com.gentics.mesh.rest;
 
 import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -17,6 +15,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -44,9 +43,10 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private Future<T> future;
 	private Class<T> classOfT;
 	private Handler<HttpClientResponse> handler;
-	private AbstractMeshRestClient client;
 	private HttpMethod method;
+	private SchemaStorage schemaStorage;
 	private String uri;
+
 
 	/**
 	 * Create a new response handler.
@@ -59,23 +59,21 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 *            Method that was used for the request
 	 * @param uri
 	 *            Uri that was queried
+	 * @param schemaStorage
+	 * 			  A filled schema storage
 	 */
-	public MeshResponseHandler(Class<T> classOfT, AbstractMeshRestClient client, HttpMethod method, String uri) {
+	public MeshResponseHandler(Class<T> classOfT, HttpMethod method, String uri, SchemaStorage schemaStorage) {
 		this.classOfT = classOfT;
-		this.client = client;
 		this.future = Future.future();
 		this.method = method;
 		this.uri = uri;
+		this.schemaStorage = schemaStorage;
 	}
 
 	@Override
 	public void handle(HttpClientResponse response) {
 		int code = response.statusCode();
 		if (code >= 200 && code < 300) {
-
-			if (!StringUtils.isEmpty(response.headers().get("Set-Cookie"))) {
-				client.setCookie(response.headers().get("Set-Cookie"));
-			}
 
 			String contentType = response.getHeader("Content-Type");
 			//FIXME TODO in theory it would also be possible that a customer uploads JSON into mesh. In those cases we would also need to return it directly (without parsing)
@@ -88,13 +86,13 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					try {
 						// Hack to fallback to node responses when dealing with object classes
 						if (classOfT.equals(Object.class)) {
-							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, client.getClientSchemaStorage());
+							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
 							future.complete((T) restObj);
 						} else if (isSchemaClass(classOfT)) {
 							T restObj = JsonUtil.readSchema(json, classOfT);
 							future.complete(restObj);
 						} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
-							T restObj = JsonUtil.readNode(json, classOfT, client.getClientSchemaStorage());
+							T restObj = JsonUtil.readNode(json, classOfT, schemaStorage);
 							future.complete(restObj);
 						} else {
 							T restObj = JsonUtil.readValue(json, classOfT);

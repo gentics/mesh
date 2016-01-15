@@ -30,6 +30,14 @@ public interface UserRoot extends RootVertex<User> {
 	MeshAuthUser findMeshAuthUserByUsername(String username);
 
 	/**
+	 * Find the mesh auth user with the given UUID.
+	 * 
+	 * @param userUuid
+	 * @return
+	 */
+	MeshAuthUser findMeshAuthUserByUuid(String userUuid);
+
+	/**
 	 * Find the user with the given username.
 	 * 
 	 * @param username
@@ -50,5 +58,6 @@ public interface UserRoot extends RootVertex<User> {
 	 * @param user
 	 */
 	void removeUser(User user);
+
 
 }

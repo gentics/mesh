@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -35,7 +35,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		Micronode micronode = getMicronode();
 		if (micronode == null) {
 			// TODO is this correct?
-			return errorObservable(BAD_REQUEST, "error_name_must_be_set");
+			throw error(BAD_REQUEST, "error_name_must_be_set");
 		} else {
 			return micronode.transformToRest(ac);
 		}

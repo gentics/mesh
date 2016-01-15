@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import org.apache.commons.lang3.StringUtils;
@@ -107,13 +106,13 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		try {
 			schema = JsonUtil.readSchema(ac.getBodyAsString(), SchemaCreateRequest.class);
 			if (StringUtils.isEmpty(schema.getName())) {
-				return errorObservable(BAD_REQUEST, "schema_missing_name");
+				throw error(BAD_REQUEST, "schema_missing_name");
 			}
 			if (StringUtils.isEmpty(schema.getSegmentField())) {
-				return errorObservable(BAD_REQUEST, "schema_missing_segmentfield");
+				throw error(BAD_REQUEST, "schema_missing_segmentfield");
 			}
 			if (StringUtils.isEmpty(schema.getDisplayField())) {
-				return errorObservable(BAD_REQUEST, "schema_missing_displayfield");
+				throw error(BAD_REQUEST, "schema_missing_displayfield");
 			}
 			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields
 

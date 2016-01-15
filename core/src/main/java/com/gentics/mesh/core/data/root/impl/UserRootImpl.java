@@ -7,11 +7,11 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.error.Errors.errorObservable;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
@@ -34,6 +34,9 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Vertex;
 
 import rx.Observable;
 
@@ -91,6 +94,31 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
+	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] { userUuid });
+		if (!it.hasNext()) {
+			return null;
+		}
+		FramedGraph graph = Database.getThreadLocalGraph();
+		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
+		if (it.hasNext()) {
+			throw new RuntimeException("Found multiple nodes with the same UUID");
+		}
+		Iterator<Vertex> roots = user.getElement().getVertices(Direction.IN, HAS_USER).iterator();
+		Vertex root = roots.next();
+		if (roots.hasNext()) {
+			throw new RuntimeException("Found multiple nodes with the same UUID");
+		}
+
+		if (root.getId().equals(getId())) {
+			return user;
+		} else {
+			throw new RuntimeException("User does not belong to the UserRoot");
+		}
+	}
+
+	@Override
 	public void delete() {
 		throw new NotImplementedException("The user root should never be deleted");
 	}
@@ -103,13 +131,13 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		try {
 			UserCreateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getSchemaStorage());
 			if (requestModel == null) {
-				return errorObservable(BAD_REQUEST, "error_parse_request_json_error");
+				throw error(BAD_REQUEST, "error_parse_request_json_error");
 			}
 			if (isEmpty(requestModel.getPassword())) {
-				return errorObservable(BAD_REQUEST, "user_missing_password");
+				throw error(BAD_REQUEST, "user_missing_password");
 			}
 			if (isEmpty(requestModel.getUsername())) {
-				return errorObservable(BAD_REQUEST, "user_missing_username");
+				throw error(BAD_REQUEST, "user_missing_username");
 			}
 			String groupUuid = requestModel.getGroupUuid();
 			User createdUser = db.noTrx(() -> {
@@ -164,7 +192,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 				reload();
 				SearchQueueBatch batch = tuple.v1();
-//				User createdUser = tuple.v2();
+				//				User createdUser = tuple.v2();
 				return batch.process().map(done -> {
 					return tuple.v2();
 				}).toBlocking().first();

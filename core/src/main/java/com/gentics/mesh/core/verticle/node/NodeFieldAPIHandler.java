@@ -174,14 +174,15 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	}
 
-	public void handleUpdateField(InternalActionContext ac) {
-		db.asyncNoTrxExperimental(() -> {
-			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
-				// TODO Update SQB
-				return new GenericMessageResponse("Not yet implemented");
-			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	public void handleUpdateField(RoutingContext rc) {
+		handleCreateField(rc);
+//		db.asyncNoTrxExperimental(() -> {
+//			Project project = ac.getProject();
+//			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+//				// TODO Update SQB
+//				return new GenericMessageResponse("Not yet implemented");
+//			});
+//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRemoveField(InternalActionContext ac) {

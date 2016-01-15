@@ -4,6 +4,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,8 +31,10 @@ public class LinkRendererVerticleTest extends AbstractRestVerticleTest {
 	private UtilityVerticle utilityVerticle;
 
 	@Override
-	public List<AbstractSpringVerticle> getVertices() {
-		return Arrays.asList(utilityVerticle);
+	public List<AbstractSpringVerticle> getAdditionalVertices() {
+		List<AbstractSpringVerticle> list = new ArrayList<>();
+		list.add(utilityVerticle);
+		return list;
 	}
 
 	/**
