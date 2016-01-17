@@ -35,7 +35,6 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -558,11 +557,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schema;
 	}
 
-	private NodeBreadcrumbResponse getNodeBreadcrumbResponse() throws JsonGenerationException, JsonMappingException, IOException {
-		NodeBreadcrumbResponse response = new NodeBreadcrumbResponse();
-		return response;
-	}
-
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(randomUUID());
@@ -730,7 +724,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getNodeCreateRequest());
 		write(getNodeListResponse());
 		write(getNodeUpdateRequest());
-		write(getNodeBreadcrumbResponse());
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {

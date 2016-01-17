@@ -730,6 +730,18 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testReadByUUIDBreadcrumb() {
+		Node node = content("news_2014");
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse response = future.result();
+		assertThat(response.getBreadcrumb()).containsEntry(folder("news").getUuid(), "News");
+		assertThat(response.getBreadcrumb()).containsEntry(folder("2014").getUuid(), "2014");
+	}
+
+	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
 
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
@@ -776,7 +788,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 
-		//TODO determine how we should deal with this case and update the test/implementation.
+		// TODO determine how we should deal with this case and update the test/implementation.
 
 		// Create node with nl language
 		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());

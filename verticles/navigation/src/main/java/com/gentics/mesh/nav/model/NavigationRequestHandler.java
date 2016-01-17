@@ -1,8 +1,5 @@
 package com.gentics.mesh.nav.model;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
 
 import java.util.concurrent.ForkJoinPool;
 
@@ -14,8 +11,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.error.NodeNotFoundException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 @Component
 @Scope("singleton")

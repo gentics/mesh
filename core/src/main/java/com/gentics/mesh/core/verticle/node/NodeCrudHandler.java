@@ -160,13 +160,4 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handelReadBreadcrumb(InternalActionContext ac) {
-		db.asyncNoTrxExperimental(() -> {
-			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).flatMap(node -> {
-				return node.transformToBreadcrumb(ac);
-			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
-	}
-
 }

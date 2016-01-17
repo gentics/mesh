@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	private FieldMap fields = new FieldMapImpl();
 
 	private String url;
+
+	private Map<String, String> breadcrumb = new LinkedHashMap<>();
 
 	public NodeResponse() {
 	}
@@ -288,6 +291,25 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	/**
+	 * Return the breadcrumb of the node. The key contains the uuid of the breadcrumb segment. The value maps to the segment name. The breadcrumb will only
+	 * contain parent elements of the node for this response.
+	 * 
+	 * @return
+	 */
+	public Map<String, String> getBreadcrumb() {
+		return breadcrumb;
+	}
+
+	/**
+	 * Set the breadcrumb for the node.
+	 * 
+	 * @param breadcrumb
+	 */
+	public void setBreadcrumb(Map<String, String> breadcrumb) {
+		this.breadcrumb = breadcrumb;
 	}
 
 	@JsonIgnore

@@ -1,7 +1,6 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -136,18 +135,6 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid);
-
-	/**
-	 * Load the breadcrumb for the given node.
-	 * 
-	 * @param projectName
-	 *            Name of the project which contains the node
-	 * @param nodeUuid
-	 *            Uuid of the node
-	 * @param parameters
-	 * @return Future with the breadcrumb response
-	 */
-	Future<NodeBreadcrumbResponse> loadBreadcrumb(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple tags that were assigned to a given node.

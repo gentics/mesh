@@ -57,14 +57,6 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(node.getUuid(), reference.getUuid());
 	}
 
-	@Test
-	public void testTransformToBreadcrumb() throws Exception {
-		Node node = content();
-		InternalActionContext ac = getMockedInternalActionContext("");
-		assertNotNull(node.transformToBreadcrumb(ac).toBlocking().first());
-		//TODO add more asserts
-	}
-
 	/**
 	 * Test linking two contents
 	 */

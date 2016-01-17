@@ -58,7 +58,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -118,7 +117,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPathSegment(String...languageTag) {
+	public Observable<String> getPathSegment(String... languageTag) {
 		NodeGraphFieldContainer container = null;
 		for (String tag : languageTag) {
 			if ((container = getGraphFieldContainer(tag)) != null) {
@@ -145,7 +144,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPath(String...languageTag) throws UnsupportedEncodingException {
+	public Observable<String> getPath(String... languageTag) throws UnsupportedEncodingException {
 		List<Observable<String>> segments = new ArrayList<>();
 
 		segments.add(getPathSegment(languageTag));
@@ -314,11 +313,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeBreadcrumbResponse> transformToBreadcrumb(InternalActionContext ac) {
-		return Observable.just(new NodeBreadcrumbResponse());
-	}
-
-	@Override
 	public Observable<NodeResponse> transformToRest(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
@@ -436,14 +430,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Add common fields
 			obs.add(fillCommonRestFields(ac, restNode));
 
+			// breadcrumb
+			obs.add(setBreadcrumbToRest(ac, restNode));
+
 			// Add webroot url & lanuagePaths
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer
-						.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType(), getProject().getName())
-						.toBlocking().single();
+				String url = linkReplacer.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType(), getProject().getName()).toBlocking()
+						.single();
 				restNode.setUrl(url);
 
 				// languagePaths
@@ -459,6 +455,30 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Merge and complete
 			return Observable.merge(obs).last();
 		});
+	}
+
+	@Override
+	public Observable<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
+		Node current = this.getParentNode();
+		// The project basenode has no breadcrumb
+		if (current == null) {
+			return Observable.just(restNode);
+		}
+
+		Map<String, String> breadcrumb = new HashMap<>();
+		while (current != null) {
+			System.out.println(current.getUuid());
+
+			// Don't add the base node to the breadcrumb
+			// TODO should we add the basenode to the breadcrumb?
+			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
+				break;
+			}
+			breadcrumb.put(current.getUuid(), current.getPathSegment(ac).toBlocking().single());
+			current = current.getParentNode();
+		}
+		restNode.setBreadcrumb(breadcrumb);
+		return Observable.just(restNode);
 	}
 
 	@Override
@@ -695,7 +715,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		//TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
+		// TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
 			String indexType = getSchema().getName();
 			batch.addEntry(getUuid(), getType(), action, indexType);

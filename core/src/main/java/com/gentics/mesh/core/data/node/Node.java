@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.rest.node.NodeBreadcrumbResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -239,14 +238,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	Observable<NodeReferenceImpl> transformToReference(InternalActionContext ac);
 
 	/**
-	 * Transform information from the node into a breadcrumb rest model.
-	 * 
-	 * @param ac
-	 * @return
-	 */
-	Observable<NodeBreadcrumbResponse> transformToBreadcrumb(InternalActionContext ac);
-
-	/**
 	 * Delete the language container for the given language.
 	 * 
 	 * @param ac
@@ -288,23 +279,23 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	PathSegment getSegment(String segment);
 
 	/**
-	 * Return the webroot path to the node in the given language. If more than one language is given,
-	 * the path will lead to the first available language of the node.
+	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
+	 * node.
 	 * 
 	 * @param languageTag
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	Observable<String> getPath(String...languageTag) throws UnsupportedEncodingException;
+	Observable<String> getPath(String... languageTag) throws UnsupportedEncodingException;
 
 	/**
-	 * Return the path segment value of this node in the given language. If more than one language is given,
-	 * the path will lead to the first available language of the node.
+	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
+	 * of the node.
 	 *
 	 * @param languageTag
 	 * @return
 	 */
-	Observable<String> getPathSegment(String...languageTag);
+	Observable<String> getPathSegment(String... languageTag);
 
 	/**
 	 * Delete the node and ignore any checks.
@@ -312,5 +303,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @param ignoreChecks
 	 */
 	void delete(boolean ignoreChecks);
+
+	/**
+	 * Set the breadcrumb information to the given rest node.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 * @return
+	 */
+	Observable<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
 
 }

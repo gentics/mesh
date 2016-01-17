@@ -49,7 +49,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addMoveHandler();
 		addFieldHandlers();
 
-		addBreadcrumbHandler();
 		addLanguageHandlers();
 
 	}
@@ -59,12 +58,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			crudHandler.handleDeleteLanguage(InternalActionContext.create(rc));
 		});
 
-	}
-
-	private void addBreadcrumbHandler() {
-		route("/:uuid/breadcrumb").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handelReadBreadcrumb(InternalActionContext.create(rc));
-		});
 	}
 
 	private void addFieldHandlers() {
