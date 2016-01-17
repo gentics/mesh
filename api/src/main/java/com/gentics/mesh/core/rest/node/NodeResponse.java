@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +48,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private String url;
 
-	private Map<String, String> breadcrumb = new LinkedHashMap<>();
+	private List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
 
 	public NodeResponse() {
 	}
@@ -299,7 +299,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Map<String, String> getBreadcrumb() {
+	public List<NodeReferenceImpl> getBreadcrumb() {
 		return breadcrumb;
 	}
 
@@ -308,7 +308,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @param breadcrumb
 	 */
-	public void setBreadcrumb(Map<String, String> breadcrumb) {
+	public void setBreadcrumb(List<NodeReferenceImpl> breadcrumb) {
 		this.breadcrumb = breadcrumb;
 	}
 

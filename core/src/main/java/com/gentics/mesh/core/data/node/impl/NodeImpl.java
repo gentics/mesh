@@ -465,7 +465,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return Observable.just(restNode);
 		}
 
-		Map<String, String> breadcrumb = new HashMap<>();
+		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
 		while (current != null) {
 			System.out.println(current.getUuid());
 
@@ -474,7 +474,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
 				break;
 			}
-			breadcrumb.put(current.getUuid(), current.getPathSegment(ac).toBlocking().single());
+			NodeReferenceImpl reference = new NodeReferenceImpl();
+			reference.setUuid(current.getUuid());
+			reference.setDisplayName(current.getDisplayName(ac));
+			breadcrumb.add(reference);
 			current = current.getParentNode();
 		}
 		restNode.setBreadcrumb(breadcrumb);

@@ -737,8 +737,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		NodeResponse response = future.result();
-		assertThat(response.getBreadcrumb()).containsEntry(folder("news").getUuid(), "News");
-		assertThat(response.getBreadcrumb()).containsEntry(folder("2014").getUuid(), "2014");
+		assertTrue(response.getBreadcrumb().get(0).getUuid().equals(folder("2014").getUuid()));
+		assertTrue(response.getBreadcrumb().get(0).getDisplayName().equals("2014"));
+		assertTrue(response.getBreadcrumb().get(1).getUuid().equals(folder("news").getUuid()));
+		assertTrue(response.getBreadcrumb().get(1).getDisplayName().equals("News"));
+		assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
 	}
 
 	@Test
