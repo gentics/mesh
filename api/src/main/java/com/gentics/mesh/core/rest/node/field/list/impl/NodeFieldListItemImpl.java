@@ -32,7 +32,7 @@ public class NodeFieldListItemImpl implements NodeFieldListItem {
 	}
 
 	@Override
-	public String getUrl() {
+	public String getPath() {
 		return url;
 	}
 

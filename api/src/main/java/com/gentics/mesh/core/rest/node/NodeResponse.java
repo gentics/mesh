@@ -49,7 +49,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private FieldMap fields = new FieldMapImpl();
 
-	private String url;
+	private String path;
 
 	private List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
 
@@ -282,18 +282,18 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	@Override
-	public String getUrl() {
-		return url;
+	public String getPath() {
+		return path;
 	}
 
 	/**
-	 * Set the webroot URL
+	 * Set the webroot path
 	 * 
-	 * @param url
-	 *            webroot URL
+	 * @param path
+	 *            webroot path
 	 */
-	public void setUrl(String url) {
-		this.url = url;
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	/**

@@ -118,12 +118,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 */
 	PageImpl<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
 
-	/***
-	 * Create link between the nodes.
-	 * 
-	 * @param node
-	 */
-	void createLink(Node node);
+//	/***
+//	 * Create link between the nodes.
+//	 * 
+//	 * @param node
+//	 */
+//	void createLink(Node node);
 
 	/**
 	 * Return a list of language names.

@@ -14,6 +14,6 @@ public interface NodeFieldListItem {
 	 * 
 	 * @return webroot URL
 	 */
-	String getUrl();
+	String getPath();
 
 }

@@ -2,8 +2,6 @@ package com.gentics.mesh.etc.config;
 
 /**
  * Authentication options POJO
- * 
- * @author philippguertler
  */
 public class AuthenticationOptions {
 	public static enum AuthenticationMethod {

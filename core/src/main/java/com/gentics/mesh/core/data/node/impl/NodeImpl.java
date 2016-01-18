@@ -239,12 +239,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		unlinkOut(tag.getImpl(), HAS_TAG);
 	}
 
-	@Override
-	public void createLink(Node to) {
-		// TODO maybe extract information about link start and end to speedup rendering of page with links
-		// Linked link = new Linked(this, page);
-		// this.links.add(link);
-	}
+//	@Override
+//	public void createLink(Node to) {
+//		// TODO maybe extract information about link start and end to speedup rendering of page with links
+//		// Linked link = new Linked(this, page);
+//		// this.links.add(link);
+//	}
 
 	@Override
 	public void setSchemaContainer(SchemaContainer schema) {
@@ -440,7 +440,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
 				String url = linkReplacer.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType(), getProject().getName()).toBlocking()
 						.single();
-				restNode.setUrl(url);
+				restNode.setPath(url);
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
@@ -467,8 +467,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
 		while (current != null) {
-			System.out.println(current.getUuid());
-
 			// Don't add the base node to the breadcrumb
 			// TODO should we add the basenode to the breadcrumb?
 			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {

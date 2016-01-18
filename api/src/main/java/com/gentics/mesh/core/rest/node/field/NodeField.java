@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * A node field is a field which contains a node reference to other nodes.
+ */
 public interface NodeField extends ListableField, MicroschemaListableField {
 
 	/**
@@ -14,5 +17,5 @@ public interface NodeField extends ListableField, MicroschemaListableField {
 	 * 
 	 * @return webroot URL
 	 */
-	String getUrl();
+	String getPath();
 }

@@ -568,7 +568,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
 		nodeResponse.setPublished(true);
-		nodeResponse.setUrl("/api/v1/yourProject/webroot/Images");
+		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en","de"));
 		HashMap<String, String> languagePaths = new HashMap<>();
 		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");

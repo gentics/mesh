@@ -7,7 +7,8 @@ public class NodeReferenceImpl implements NodeReference {
 	private String projectName;
 	private String uuid;
 	private String displayName;
-	private SchemaReference schema;;
+	private String path;
+	private SchemaReference schema;
 
 	@Override
 	public String getUuid() {
@@ -22,6 +23,14 @@ public class NodeReferenceImpl implements NodeReference {
 	 */
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	/**

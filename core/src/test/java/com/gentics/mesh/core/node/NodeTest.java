@@ -57,27 +57,27 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(node.getUuid(), reference.getUuid());
 	}
 
-	/**
-	 * Test linking two contents
-	 */
-	@Test
-	public void testPageLinks() {
-		Node folder = folder("2015");
-		Node node = folder.create(user(), getSchemaContainer(), project());
-		Node node2 = folder.create(user(), getSchemaContainer(), project());
-
-		NodeGraphFieldContainer englishContainer = node2.getOrCreateGraphFieldContainer(english());
-		englishContainer.createString("content").setString("english content");
-		englishContainer.createString("name").setString("english.html");
-
-		NodeGraphFieldContainer englishContainer2 = node.getOrCreateGraphFieldContainer(german());
-		englishContainer2.createString("content").setString("english2 content");
-		englishContainer2.createString("name").setString("english2.html");
-		node.createLink(node2);
-
-		// TODO verify that link relation has been created
-		// TODO render content and resolve links
-	}
+//	/**
+//	 * Test linking two contents
+//	 */
+//	@Test
+//	public void testPageLinks() {
+//		Node folder = folder("2015");
+//		Node node = folder.create(user(), getSchemaContainer(), project());
+//		Node node2 = folder.create(user(), getSchemaContainer(), project());
+//
+//		NodeGraphFieldContainer englishContainer = node2.getOrCreateGraphFieldContainer(english());
+//		englishContainer.createString("content").setString("english content");
+//		englishContainer.createString("name").setString("english.html");
+//
+//		NodeGraphFieldContainer englishContainer2 = node.getOrCreateGraphFieldContainer(german());
+//		englishContainer2.createString("content").setString("english2 content");
+//		englishContainer2.createString("name").setString("english2.html");
+//		node.createLink(node2);
+//
+//		// TODO verify that link relation has been created
+//		// TODO render content and resolve links
+//	}
 
 	@Test
 	public void testGetPath() throws Exception {

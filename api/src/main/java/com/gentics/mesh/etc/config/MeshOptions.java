@@ -40,7 +40,7 @@ public class MeshOptions {
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
-	
+
 	private AuthenticationOptions authenticationOptions = new AuthenticationOptions();
 
 	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
@@ -177,7 +177,9 @@ public class MeshOptions {
 
 	/**
 	 * Set the authentication options
-	 * @param authenticationOptions Authentication options
+	 * 
+	 * @param authenticationOptions
+	 *            Authentication options
 	 */
 	public void setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		this.authenticationOptions = authenticationOptions;

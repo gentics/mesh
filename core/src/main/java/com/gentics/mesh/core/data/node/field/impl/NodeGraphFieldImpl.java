@@ -44,7 +44,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 				List<String> languageTags = ac.getSelectedLanguageTags();
-				nodeField.setUrl(WebRootLinkReplacer.getInstance()
+				nodeField.setPath(WebRootLinkReplacer.getInstance()
 						.resolve(node, ac.getResolveLinksType(), languageTags.toArray(new String[languageTags.size()]))
 						.toBlocking().first());
 			}

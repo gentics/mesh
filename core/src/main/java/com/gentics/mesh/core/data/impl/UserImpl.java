@@ -273,7 +273,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public boolean hasAdminRole() {
 		for (Role role : getRolesViaShortcut()) {
-			System.out.println(role.getName());
 			if ("admin".equals(role.getName())) {
 				return true;
 			}

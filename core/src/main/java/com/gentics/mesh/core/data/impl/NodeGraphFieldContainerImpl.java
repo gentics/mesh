@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -471,8 +472,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			} else {
 				return graphStringField.transformToRest(ac).map(stringField -> {
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						Project project = ac.getProject();
+						//TODO fix NPE
 						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
-								ac.getResolveLinksType(), ac.getProject().getName()));
+								ac.getResolveLinksType(), project.getName()));
 					}
 					return stringField;
 				});

@@ -58,6 +58,7 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 					// TODO encode filename?
+					// TODO images and pdf files should be shown in inline format 
 					rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
 					rc.response().end(buffer);
 				});

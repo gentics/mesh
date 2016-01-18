@@ -8,7 +8,7 @@ public class NodeFieldImpl implements NodeField {
 
 	private String uuid;
 
-	private String url;
+	private String path;
 
 	@Override
 	public String getUuid() {
@@ -21,18 +21,18 @@ public class NodeFieldImpl implements NodeField {
 	}
 
 	@Override
-	public String getUrl() {
-		return url;
+	public String getPath() {
+		return path;
 	}
 
 	/**
-	 * Set the webroot URL
+	 * Set the webroot path
 	 * 
-	 * @param url webroot URL
+	 * @param path webroot path
 	 * @return this instance
 	 */
-	public NodeField setUrl(String url) {
-		this.url = url;
+	public NodeField setPath(String path) {
+		this.path = path;
 		return this;
 	}
 
