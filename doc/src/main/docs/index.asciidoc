@@ -8,9 +8,23 @@
 
 This documentation provides information on the structure and functionality of the Mesh server and its API endpoints.
 
+== TL;DR 
+
+Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST. 
+Mesh will also provide you a lot of powerful tools build around and for those documents.
+
+ * Document level permission system
+ * Search API
+ * Webroot API for easy integration with modern routing frameworks
+ * Image Manipulation API
+ * Tagging system
+ * Schema system for documents
+ * Clustering (in development)
+ * Versioning of your documents (in development)
+
 == REST API
 
-The link:/docs/beta/raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element. 
+The link:raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element. 
 There are many things you can do with the REST API. For example:
 
 * You can create new users.
@@ -466,6 +480,17 @@ Since the JSON standard does not have a special regex type, it would need to be 
 
 == Installation
 
+There is no dedicated installation procedure for mesh. You just download the ```mesh-beta.jar``` file using your beta invite code and start it using java.
+
+[source,bash]
+----
+java -jar mesh-beta.jar
+----
+
+=== System Requirements
+
+ * Oracle JRE Java 8u60+
+
 === System Configuration
 
 The max open file limit on linux has to be raised on most linux systems since the embedded graph database and elasticsearch server often exceed the amount of concurrent open files.
@@ -769,7 +794,7 @@ Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affec
 
 The ```/api/v1/:YOUR_PROJECT/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
 
-Example: ```/api/v1/demo/webroot/Vehicle%20Images%2Fford-gt.jpg?width=1000``` 
+Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000``` 
 
 This makes it possible to integrate mesh with many known routing frameworks.
 
@@ -944,11 +969,20 @@ include::{es-json}/schema.search.json[]
 
 ==== Microschemas
 
+Endpoint: ```/api/v1/search/microschemas```
 
+[source,json]
+----
+include::{es-json}/microschema.search.json[]
+----
 
 == Mesh Administration UI
 
 The Mesh Administration UI is an AngularJS single page application which uses the REST API to interface with Mesh. By default it can be reached via ```http://localhost:8080/mesh-ui/```.
+
+=== Configuration
+
+The mesh ui can be configured using the meshConfig.json file.
 
 [source,json]
 ----
@@ -970,6 +1004,11 @@ The Mesh Administration UI is an AngularJS single page application which uses th
 
 })(window, document);
 ----
+
+=== Preview handling
+
+The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered. 
+The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
 
 == License
 
