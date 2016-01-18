@@ -34,6 +34,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private ProjectResponse project;
 
+	/**
+	 * Key: Schema name, Value: Node information
+	 */
 	private Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 
 	private SchemaReference schema;

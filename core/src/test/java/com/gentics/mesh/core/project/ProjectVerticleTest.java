@@ -404,7 +404,6 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nJobs = 100;
 		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
 
-		// CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<Future<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();

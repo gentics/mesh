@@ -53,8 +53,6 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * 
 	 * @param classOfT
 	 *            Expected response POJO class
-	 * @param client
-	 *            Client that was used to invoke the request
 	 * @param method
 	 *            Method that was used for the request
 	 * @param uri
