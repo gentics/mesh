@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -36,6 +37,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -473,7 +475,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				return graphStringField.transformToRest(ac).map(stringField -> {
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
 						Project project = ac.getProject();
-						//TODO fix NPE
+						if (project == null) {
+							project = getParentNode().getProject();
+						}
 						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
 								ac.getResolveLinksType(), project.getName()));
 					}
@@ -523,8 +527,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				return graphHtmlField.transformToRest(ac).map(model -> {
 					// If needed resolve links within the html
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						Project project = ac.getProject();
+						if (project == null) {
+							project = getParentNode().getProject();
+						}
 						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(),
-								ac.getResolveLinksType(), ac.getProject().getName()));
+								ac.getResolveLinksType(), project.getName()));
 					}
 					return model;
 				});
@@ -614,4 +622,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		getElement().remove();
 	}
 
+	/**
+	 * Get the parent node
+	 * @return parent node
+	 */
+	public Node getParentNode() {
+		Node parentNode = in(HAS_FIELD_CONTAINER).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+		if (parentNode == null) {
+			throw error(BAD_REQUEST, "error_field_container_without_node");
+		}
+		return parentNode;
+	}
 }

@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -15,8 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -156,8 +160,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			} else {
 				return graphStringField.transformToRest(ac).map(stringField -> {
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						Project project = ac.getProject();
+						if (project == null) {
+							project = getParentNode().getProject();
+						}
 						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
-								ac.getResolveLinksType(), ac.getProject().getName()));
+								ac.getResolveLinksType(), project.getName()));
 					}
 					return stringField;
 				});
@@ -199,8 +207,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				return graphHtmlField.transformToRest(ac).map(field -> {
 					// If needed resolve links within the html
 					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
+						Project project = ac.getProject();
+						if (project == null) {
+							project = getParentNode().getProject();
+						}
 						field.setHTML(WebRootLinkReplacer.getInstance().replace(field.getHTML(),
-								ac.getResolveLinksType(), ac.getProject().getName()));
+								ac.getResolveLinksType(), project.getName()));
 					}
 					return field;
 				});
@@ -537,6 +549,28 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
 			traversal.next().remove();
+		}
+	}
+
+	/**
+	 * Get the parent node
+	 * @return parent node
+	 */
+	private Node getParentNode() {
+		// first try to get the container in case for normal fields
+		NodeGraphFieldContainerImpl container = in(HAS_FIELD).has(NodeGraphFieldContainerImpl.class)
+				.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+
+		if (container == null) {
+			// the micronode may be part of a list field
+			container = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class)
+					.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		}
+
+		if (container == null) {
+			throw error(BAD_REQUEST, "error_field_container_without_node");
+		} else {
+			return container.getParentNode();
 		}
 	}
 }

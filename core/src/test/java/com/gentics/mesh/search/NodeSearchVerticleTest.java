@@ -41,6 +41,8 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.graphdb.Trx;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 
@@ -286,6 +288,25 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testSearchContentResolveLinks() throws InterruptedException, JSONException {
+		fullIndex();
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"),
+				new PagingParameter().setPage(1).setPerPage(2),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertEquals(1, response.getData().size());
+		assertEquals(1, response.getMetainfo().getTotalCount());
+		for (NodeResponse nodeResponse : response.getData()) {
+			assertNotNull(nodeResponse);
+			assertNotNull(nodeResponse.getUuid());
+		}
+
+	}
+
+	@Test
 	public void testSearchMultipleLanguages() {
 		//TODO search for string which can be found in two language variants of a single node. We would expect two nodes in the result which have different language properties. 
 		fail("not yet implemented");
@@ -350,6 +371,26 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testSearchMicronodeResolveLinks() throws Exception {
+		addMicronodeField();
+		fullIndex();
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"),
+				new PagingParameter().setPage(1).setPerPage(2),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
+		latchFor(future);
+		assertSuccess(future);
+
+		NodeListResponse response = future.result();
+		assertEquals("Check returned search results", 1, response.getData().size());
+		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
+		for (NodeResponse nodeResponse : response.getData()) {
+			assertNotNull("Returned node must not be null", nodeResponse);
+			assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
+		}
+	}
+
+	@Test
 	public void testSearchListOfMicronodes() throws Exception {
 		addMicronodeListField();
 		fullIndex();
@@ -361,6 +402,38 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 				Future<NodeListResponse> future = getClient().searchNodes(getNestedVCardListSearch(firstName, lastName),
 						new PagingParameter().setPage(1).setPerPage(2));
+				latchFor(future);
+				assertSuccess(future);
+
+				NodeListResponse response = future.result();
+
+				if (expectResult) {
+					assertEquals("Check returned search results", 1, response.getData().size());
+					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
+					for (NodeResponse nodeResponse : response.getData()) {
+						assertNotNull("Returned node must not be null", nodeResponse);
+						assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
+					}
+				} else {
+					assertEquals("Check returned search results", 0, response.getData().size());
+					assertEquals("Check total search results", 0, response.getMetainfo().getTotalCount());
+				}
+			}
+		}
+	}
+
+	@Test
+	public void testSearchListOfMicronodesResolveLinks() throws Exception {
+		addMicronodeListField();
+		fullIndex();
+
+		for (String firstName : Arrays.asList("Mickey", "Donald")) {
+			for (String lastName : Arrays.asList("Mouse", "Duck")) {
+				// valid names always begin with the same character
+				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
+
+				Future<NodeListResponse> future = getClient().searchNodes(getNestedVCardListSearch(firstName, lastName),
+						new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().setResolveLinks(LinkType.FULL));
 				latchFor(future);
 				assertSuccess(future);
 
