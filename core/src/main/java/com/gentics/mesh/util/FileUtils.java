@@ -14,7 +14,7 @@ import rx.Scheduler;
 
 public final class FileUtils {
 
-	protected static final char[] hexArray = "0123456789ABCDEF".toCharArray();
+	protected static final char[] hexArray = "0123456789abcdef".toCharArray();
 
 	private FileUtils() {
 	}
@@ -29,9 +29,11 @@ public final class FileUtils {
 		Observable<String> obs = Observable.create(sub -> {
 			try {
 				MessageDigest md = MessageDigest.getInstance("SHA-512");
-				try (InputStream is = Files.newInputStream(Paths.get(path))) {
-					new DigestInputStream(is, md);
-					/* Read stream to EOF as normal... */
+				try (InputStream is = Files.newInputStream(Paths.get(path));
+						DigestInputStream mis = new DigestInputStream(is, md)) {
+					byte[] buffer = new byte[4096];
+					while (mis.read(buffer) >= 0) {
+					}
 				}
 				byte[] digest = md.digest();
 				sub.onNext(bytesToHex(digest));

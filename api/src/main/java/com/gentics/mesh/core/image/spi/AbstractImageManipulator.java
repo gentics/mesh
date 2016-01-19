@@ -5,7 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -38,10 +38,9 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		} catch(Exception e) {
 			return Observable.error(e);
 		}
-		try {
-			InputStream ins = new FileInputStream(binaryFile);
+		try (InputStream ins = new FileInputStream(binaryFile)) {
 			return handleResize(ins, sha512sum, parameters);
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			log.error("Can't handle image. File can't be opened. {" + binaryFile.getAbsolutePath() + "}", e);
 			return Observable.error(error(BAD_REQUEST, "image_error_reading_failed", e));
 		}

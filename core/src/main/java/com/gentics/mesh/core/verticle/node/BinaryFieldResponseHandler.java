@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import java.io.File;
 
@@ -39,13 +40,20 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 			String contentLength = String.valueOf(binaryField.getFileSize());
 			String fileName = binaryField.getFileName();
 			String contentType = binaryField.getMimeType();
-			// Resize the image if needed
-			if (binaryField.hasImage() && ac.getImageRequestParameter().isSet()) {
+			String sha512sum = binaryField.getSHA512Sum();
+
+			String requestETag = rc.request().getHeader(HttpHeaders.IF_NONE_MATCH);
+			if (requestETag != null && requestETag.equals(sha512sum)) {
+				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
+			} else if (binaryField.hasImage() && ac.getImageRequestParameter().isSet()) {
+				// Resize the image if needed
 				Observable<io.vertx.rxjava.core.buffer.Buffer> buffer = imageManipulator.handleResize(binaryField.getFile(),
 						binaryField.getSHA512Sum(), ac.getImageRequestParameter());
 				buffer.subscribe(imageBuffer -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(imageBuffer.length()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
+					rc.response().putHeader(HttpHeaders.ETAG, sha512sum);
+					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 					// TODO encode filename?
 					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
 					rc.response().end((Buffer) imageBuffer.getDelegate());
@@ -57,6 +65,8 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 					Buffer buffer = bh.result();
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
+					rc.response().putHeader(HttpHeaders.ETAG, sha512sum);
+					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 					// TODO encode filename?
 					// TODO images and pdf files should be shown in inline format 
 					rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
