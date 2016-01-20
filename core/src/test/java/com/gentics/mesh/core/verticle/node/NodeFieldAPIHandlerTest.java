@@ -31,7 +31,7 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 
 	private MeshUploadOptions uploadOptions;
 	final String data = "bliblablub";
-	final String hash = "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E";
+	final String hash = "406d7d8188bb4556f7616628d1a5cd281ef6686034ddb3855b0ebb6affe6675e8ba9cde8f60f183341a0105223533e1ca09570e5d024cc8173d0b5087dfab4b5";
 	String segmentedPath = "some/path/to/file";
 
 	@Before
