@@ -4,6 +4,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -469,6 +470,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected void expectException(Future<?> future, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
+		assertNotEquals("Translation for key " + bodyMessageI18nKey + " not found", message, bodyMessageI18nKey);
 		expectMessage(future, status, message);
 	}
 

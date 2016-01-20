@@ -1,5 +1,6 @@
 package com.gentics.mesh.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,6 +10,7 @@ import java.security.MessageDigest;
 import com.gentics.mesh.Mesh;
 
 import io.vertx.rx.java.RxHelper;
+import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Observable;
 import rx.Scheduler;
 
@@ -33,6 +35,33 @@ public final class FileUtils {
 						DigestInputStream mis = new DigestInputStream(is, md)) {
 					byte[] buffer = new byte[4096];
 					while (mis.read(buffer) >= 0) {
+					}
+				}
+				byte[] digest = md.digest();
+				sub.onNext(bytesToHex(digest));
+				sub.onCompleted();
+			} catch (Exception e) {
+				sub.onError(e);
+			}
+		});
+		obs = obs.observeOn(scheduler);
+		return obs;
+	}
+
+	/**
+	 * Generate a SHA 512 checksum from the data in the given buffer and asynchronously return the hex encoded hash as a string.
+	 * @param buffer
+	 * @return Observable emitting the SHA 512 checksum
+	 */
+	public static Observable<String> generateSha512Sum(Buffer buffer) {
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		Observable<String> obs = Observable.create(sub -> {
+			try {
+				MessageDigest md = MessageDigest.getInstance("SHA-512");
+				try (InputStream is = new ByteArrayInputStream(((io.vertx.core.buffer.Buffer)buffer.getDelegate()).getBytes());
+						DigestInputStream mis = new DigestInputStream(is, md)) {
+					byte[] b = new byte[4096];
+					while (mis.read(b) >= 0) {
 					}
 				}
 				byte[] digest = md.digest();

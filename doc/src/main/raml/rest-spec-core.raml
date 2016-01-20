@@ -590,14 +590,6 @@ traits:
             application/json:
               example: !include json/GenericMessageResponse.example.json
         423:
-    /bin:
-      is: [ imagehandler ]
-      get:
-        description: Load the binary property value.
-      put: 
-        description: Update the binary property value.
-      post: 
-        description: Upload the binary property value.
     /tags:
       is: [ sortable, paged ]
       get:
@@ -620,6 +612,25 @@ traits:
             body:
               application/json:
                 example: !include json/GenericMessageResponse.example.json 
+      /fields/{fieldname}:
+        get:
+          is: [ imagehandler ]
+          description: Load the binary property value.
+        put:
+          description: Update the binary property value.
+        post:
+          description: Upload the binary property value.
+        /transform:
+          post:
+            description: Transform the binary property value (for binary fields)
+            body:
+              application/json:
+                example: !include json/BinaryFieldTransformRequest.example.json
+            responses:
+              200:
+                body:
+                  application/json:
+                    example: !include json/GenericMessageResponse.example.json
     /children:
       get:
         is: [ localized, sortable, paged, expandable ]

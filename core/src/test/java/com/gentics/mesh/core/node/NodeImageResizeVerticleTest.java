@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -102,6 +103,90 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 
 	}
 
+	@Test
+	public void testTransformImage() throws Exception {
+		Node node = folder("news");
+		// 1. Upload image
+		uploadImage(node, "en", "image");
+
+		// 2. Transform the image
+		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100);
+		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
+				node.getUuid(), "en", "image", params);
+		latchFor(transformFuture);
+		assertSuccess(transformFuture);
+
+		// 3. Download the image
+		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image");
+		latchFor(downloadFuture);
+		assertSuccess(downloadFuture);
+
+		// 4. Validate the resized image
+		validateResizeImage(downloadFuture.result(), null, params, 100, 118);
+	}
+
+	@Test
+	public void testTransformImageNoParameters() throws Exception {
+		Node node = folder("news");
+		// 1. Upload image
+		uploadImage(node, "en", "image");
+
+		// 2. Transform the image
+		ImageManipulationParameter params = new ImageManipulationParameter();
+		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
+				node.getUuid(), "en", "image", params);
+		latchFor(transformFuture);
+		expectException(transformFuture, BAD_REQUEST, "error_no_image_transformation", "image");
+	}
+
+	@Test
+	public void testTransformNonBinary() throws Exception {
+		Node node = folder("news");
+
+		// try to transform the "name"
+		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100);
+		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
+				node.getUuid(), "en", "name", params);
+		latchFor(transformFuture);
+		expectException(transformFuture, BAD_REQUEST, "error_found_field_is_not_binary", "name");
+	}
+
+	@Test
+	public void testTransformNonImage() throws Exception {
+		Node node = folder("news");
+
+		prepareSchema(node, "*/*", "image");
+		resetClientSchemaStorage();
+
+		// upload non-image data
+		Future<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en",
+				"image", Buffer.buffer("I am not an image"), "test.txt", "text/plain");
+		latchFor(uploadFuture);
+		assertSuccess(uploadFuture);
+
+		// Transform
+		ImageManipulationParameter params = new ImageManipulationParameter().setWidth(100);
+		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
+				node.getUuid(), "en", "image", params);
+		latchFor(transformFuture);
+		expectException(transformFuture, BAD_REQUEST, "error_transformation_non_image", "image");
+	}
+
+	@Test
+	public void testTransformEmptyField() throws Exception {
+		Node node = folder("news");
+
+		prepareSchema(node, "image/.*", "image");
+		resetClientSchemaStorage();
+
+		// 2. Transform the image
+		ImageManipulationParameter params = new ImageManipulationParameter();
+		Future<GenericMessageResponse> transformFuture = getClient().transformNodeBinaryField(PROJECT_NAME,
+				node.getUuid(), "en", "image", params);
+		latchFor(transformFuture);
+		expectException(transformFuture, NOT_FOUND, "error_binaryfield_not_found_with_name", "image");
+	}
+
 	private Future<NodeDownloadResponse> resizeImage(Node node, ImageManipulationParameter params) {
 		Future<NodeDownloadResponse> downloadFuture = getClient().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params);
 		latchFor(downloadFuture);
@@ -122,8 +207,10 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		assertEquals(expectedWidth, img.getWidth());
 		assertEquals(expectedHeight, img.getHeight());
 
-		File cacheFile = springConfig.imageProvider().getCacheFile(binaryField.getSHA512Sum(), params);
-		assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.getAbsolutePath() + "}", cacheFile.exists());
+		if (binaryField != null) {
+			File cacheFile = springConfig.imageProvider().getCacheFile(binaryField.getSHA512Sum(), params);
+			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.getAbsolutePath() + "}", cacheFile.exists());
+		}
 	}
 
 	private void uploadImage(Node node, String languageTag, String fieldName) throws IOException {

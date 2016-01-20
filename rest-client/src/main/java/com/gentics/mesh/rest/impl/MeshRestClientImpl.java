@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -58,6 +59,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.rest.AbstractMeshRestClient;
 import com.gentics.mesh.rest.BasicAuthentication;
@@ -777,6 +779,26 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 			request.end();
 		});
 		return future;
+	}
+
+	@Override
+	public Future<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid,
+			String languageTag, String fieldKey, ImageManipulationParameter imageManipulationParameter) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(languageTag, "language must not be null");
+		Objects.requireNonNull(fieldKey, "field key must not be null");
+
+		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest()
+				.setWidth(imageManipulationParameter.getWidth())
+				.setHeight(imageManipulationParameter.getHeight())
+				.setCropx(imageManipulationParameter.getStartx())
+				.setCropy(imageManipulationParameter.getStarty())
+				.setCroph(imageManipulationParameter.getCroph())
+				.setCropw(imageManipulationParameter.getCropw());
+
+		return handleRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey + "/transform",
+				GenericMessageResponse.class, transformRequest);
 	}
 
 	@Override
