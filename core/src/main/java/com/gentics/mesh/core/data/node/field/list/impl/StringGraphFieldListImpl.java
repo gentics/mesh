@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -47,7 +49,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	}
 
 	@Override
-	public Observable<StringFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<StringFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 		StringFieldListImpl restModel = new StringFieldListImpl();
 		for (StringGraphField item : getList()) {
 			restModel.add(item.getString());

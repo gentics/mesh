@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -25,8 +26,9 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 * @param ac
 	 * @param fieldKey
 	 * @param fieldSchema
+	 * @param languageTags language tags
 	 */
-	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.

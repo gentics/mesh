@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.nesting;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -20,7 +22,8 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	 * 
 	 * @param ac
 	 * @param fieldKey
+	 * @param languageTags list of language tags
 	 */
-	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey);
+	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags);
 
 }

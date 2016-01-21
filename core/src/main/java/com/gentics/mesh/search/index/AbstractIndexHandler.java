@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -117,7 +118,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * @return
 	 */
 	public Observable<Void> store(T object, String type) {
-		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object));
+		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Stored object in index.");
+			}
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+		});
 	}
 
 	/**

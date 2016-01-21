@@ -866,6 +866,20 @@ It is mandatory to specify all four crop parameters when cropping an image.
 |=====
 
 
+=== Language Fallback
+
+Nodes are translated into different languages. Requests for nodes should contain the requested languages (as comma separated list) as query parameter:
+
+Endpoint: ```/api/v1/:YOUR_PROJECT/nodes/:uuid?lang=en,de```
+
+If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
+Otherwise, the node will still be returned, but without fields.
+
+==== Referenced nodes
+
+If requested nodes contain fields of type `node` or `list of nodes`, and the fields are expanded, the expanded versions of the referenced nodes will be in the
+same language as the node (if possible), otherwise the normal language fallback is done.
+
 === Search
 
 Search requests are handled by the _/search endpoints_.

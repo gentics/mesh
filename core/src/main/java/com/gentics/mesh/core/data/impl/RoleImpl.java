@@ -116,7 +116,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<RoleResponse> transformToRest(InternalActionContext ac) {
+	public Observable<RoleResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<RoleResponse>> obs = new HashSet<>();

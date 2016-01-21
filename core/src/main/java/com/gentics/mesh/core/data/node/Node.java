@@ -202,10 +202,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * Find a node field container that matches the nearest possible value for the ?lang= request parameter. When a user requests a node using ?lang=de,en and
 	 * there is no de version the en version will be selected and returned.
 	 * 
-	 * @param ac
+	 * @param languageTags
 	 * @return Next matching field container or null when no language matched
 	 */
-	NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac);
+	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags);
 
 	/**
 	 * Set the published flag.

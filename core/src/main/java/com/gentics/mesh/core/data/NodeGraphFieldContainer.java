@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -23,8 +24,9 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 * @param fieldKey
 	 * @param fieldSchema
 	 * @param expandField
+	 * @param languageTags list of language tags
 	 */
-	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, boolean expandField, List<String> languageTags);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.

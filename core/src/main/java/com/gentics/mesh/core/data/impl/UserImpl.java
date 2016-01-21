@@ -336,7 +336,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<UserResponse> transformToRest(InternalActionContext ac) {
+	public Observable<UserResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.asyncNoTrxExperimental(() -> {

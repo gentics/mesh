@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
@@ -94,7 +93,6 @@ public class WebRootHandler {
 			if (arh.succeeded()) {
 				PathSegment lastSegment = arh.result();
 				Node node = lastSegment.getNode();
-				ac.put(NodeImpl.AC_LANGUAGE_KEY, lastSegment.getLanguage());
 				GraphField field = lastSegment.getPathField();
 				if (field instanceof BinaryGraphField) {
 					BinaryGraphField binaryField = (BinaryGraphField) field;
@@ -104,7 +102,7 @@ public class WebRootHandler {
 						handler.handle(binaryField);
 					}
 				} else {
-					node.transformToRest(ac).subscribe(model -> {
+					node.transformToRest(ac, lastSegment.getLanguageTag()).subscribe(model -> {
 						ac.send(JsonUtil.toJson(model), HttpResponseStatus.valueOf(
 								NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 					} , error -> {

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -42,7 +44,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public Observable<DateFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<DateFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 		DateFieldListImpl restModel = new DateFieldListImpl();
 		for (DateGraphField item : getList()) {
 			restModel.add(item.getDate());

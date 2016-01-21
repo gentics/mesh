@@ -42,7 +42,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
