@@ -27,11 +27,15 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.util.FileUtils;
 
 import io.vertx.core.logging.Logger;
@@ -39,6 +43,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.rxjava.core.Vertx;
+import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.file.FileSystem;
 import rx.Observable;
 
@@ -234,6 +239,100 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
+	/**
+	 * Handle image transformation
+	 * @param rc routing context
+	 */
+	public void handleTransformImage(RoutingContext rc) {
+		InternalActionContext ac = InternalActionContext.create(rc);
+		db.asyncNoTrxExperimental(() -> {
+			Project project = ac.getProject();
+			String languageTag = ac.getParameter("languageTag");
+			String fieldName = ac.getParameter("fieldName");
+			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+				// TODO Update SQB
+				Language language = boot.languageRoot().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
+				NodeGraphFieldContainer container = node.getGraphFieldContainer(language);
+				if (container == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
+
+				Optional<FieldSchema> fieldSchema = node.getSchema().getFieldSchema(fieldName);
+				if (!fieldSchema.isPresent()) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+				}
+				if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+				}
+
+				BinaryGraphField field =  container.getBinary(fieldName);
+				if (field == null) {
+					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+				}
+
+				if (!field.hasImage()) {
+					throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
+				}
+
+				try {
+					BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+					ImageManipulationParameter imageManipulationParameter = new ImageManipulationParameter()
+							.setWidth(transformation.getWidth())
+							.setHeight(transformation.getHeight())
+							.setStartx(transformation.getCropx())
+							.setStarty(transformation.getCropy())
+							.setCropw(transformation.getCropw())
+							.setCroph(transformation.getCroph());
+					if (!imageManipulationParameter.isSet()) {
+						throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
+					}
+					String fieldUuid = field.getUuid();
+					String fieldSegmentedPath = field.getSegmentedPath();
+
+					Observable<Tuple<String, Integer>> obsHashAndSize = imageManipulator
+							.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter)
+							.flatMap(buffer -> {
+						return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
+							return Tuple.tuple(hash, buffer.length());
+						});
+					});
+
+					return obsHashAndSize.flatMap(hashAndSize -> {
+						Tuple<SearchQueueBatch, String> tuple = db.trx(() -> {
+							field.setSHA512Sum(hashAndSize.v1());
+							field.setFileSize(hashAndSize.v2());
+							// resized images will always be jpeg
+							field.setMimeType("image/jpeg");
+
+							// TODO should we rename the image, if the extension is wrong?
+
+							//TODO handle image properties as well
+							// node.setBinaryImageDPI(dpi);
+							// node.setBinaryImageHeight(heigth);
+							// node.setBinaryImageWidth(width);
+							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							return Tuple.tuple(batch, node.getUuid());
+						});
+
+						SearchQueueBatch batch = tuple.v1();
+						String updatedNodeUuid = tuple.v2();
+						return batch.process().map(done -> {
+							return message(ac, "node_binary_field_updated", updatedNodeUuid);
+						});
+					});
+				} catch (HttpStatusCodeErrorException e) {
+					throw e;
+				} catch (Exception e) {
+					log.error("Error while transforming image", e);
+					throw error(INTERNAL_SERVER_ERROR, "error_internal");
+				}
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
 	//	// TODO abstract rc away
 	//	public void handleDownload(RoutingContext rc) {
 	//		InternalActionContext ac = InternalActionContext.create(rc);
@@ -275,6 +374,30 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	}
 
 	/**
+	 * Hash the data from the buffer and store it to its final destination.
+	 * 
+	 * @param buffer
+	 *            buffer which will be handled
+	 * @param uuid uuid of the binary field
+	 * @param segmentedPath path to store the binary data
+	 * @return observable emitting the sha512 checksum
+	 */
+	protected Observable<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
+		File targetFile = new File(uploadFolder, uuid + ".bin");
+		String targetPath = targetFile.getAbsolutePath();
+
+		return hashBuffer(buffer).flatMap(sha512sum -> {
+			return checkUploadFolderExists(uploadFolder).flatMap(e -> {
+				return deletePotentialUpload(targetPath).flatMap(e1 -> {
+					return storeBuffer(buffer, targetPath).map(k -> sha512sum);
+				});
+			});
+		});
+	}
+
+	/**
 	 * Hash the given fileupload and return a sha512 checksum.
 	 * 
 	 * @param fileUpload
@@ -283,6 +406,20 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	protected Observable<String> hashFileupload(FileUpload fileUpload) {
 		Observable<String> obsHash = FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
 			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+		});
+		return obsHash;
+	}
+
+	/**
+	 * Hash the given buffer and return a sha512 checksum.
+	 * 
+	 * @param buffer buffer
+	 * @return observable emitting the sha512 checksum
+	 */
+	protected Observable<String> hashBuffer(Buffer buffer) {
+		Observable<String> obsHash = FileUtils.generateSha512Sum(buffer).doOnError(error -> {
+			log.error("Error while hashing data", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
 		return obsHash;
@@ -332,6 +469,21 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		}).flatMap(e -> {
 			return Observable.just(null);
+		});
+	}
+
+	/**
+	 * Store the data in the buffer into the given place
+	 * @param buffer buffer
+	 * @param targetPath target path
+	 * @return empty observable
+	 */
+	protected Observable<Void> storeBuffer(Buffer buffer, String targetPath) {
+		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
+		FileSystem fileSystem = rxVertx.fileSystem();
+		return fileSystem.writeFileObservable(targetPath, buffer).doOnError(error -> {
+			log.error("Failed to save file to {" + targetPath + "}", error);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
 	}
 

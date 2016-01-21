@@ -77,6 +77,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			fieldAPIHandler.handleRemoveField(InternalActionContext.create(rc));
 		});
 
+		// Image Transformation
+		route("/:uuid/languages/:languageTag/fields/:fieldName/transform").method(POST).produces(APPLICATION_JSON).handler(rc -> {
+			fieldAPIHandler.handleTransformImage(rc);
+		});
+
 		// List methods
 		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
 			fieldAPIHandler.handleRemoveFieldItem(InternalActionContext.create(rc));

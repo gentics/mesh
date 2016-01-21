@@ -41,6 +41,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -167,6 +168,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		genericResponseJson();
 		loginRequest();
+
+		transformRequest();
 
 		demoExamples();
 	}
@@ -717,6 +720,21 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		schemaReference.setName(name);
 		schemaReference.setUuid(randomUUID());
 		return schemaReference;
+	}
+
+	private BinaryFieldTransformRequest getBinaryFieldTransformRequest() {
+		BinaryFieldTransformRequest request = new BinaryFieldTransformRequest();
+		request.setHeight(200);
+		request.setWidth(100);
+		request.setCropx(50);
+		request.setCropy(20);
+		request.setCropw(170);
+		request.setCroph(150);
+		return request;
+	}
+
+	private void transformRequest() throws JsonGenerationException, JsonMappingException, IOException {
+		write(getBinaryFieldTransformRequest());
 	}
 
 	private void nodeJson() throws JsonGenerationException, JsonMappingException, IOException {
