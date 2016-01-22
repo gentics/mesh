@@ -459,7 +459,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			boolean expandField) {
+			boolean expandField, List<String> languageTags) {
 
 		// db.asyncNoTrx(noTrx -> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -517,7 +517,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			if (graphNodeField == null) {
 				return Observable.just(new NodeFieldImpl());
 			} else {
-				return graphNodeField.transformToRest(ac, fieldKey);
+				return graphNodeField.transformToRest(ac, fieldKey, languageTags);
 			}
 		case HTML:
 			HtmlGraphField graphHtmlField = getHtml(fieldKey);
@@ -546,49 +546,49 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				if (nodeFieldList == null) {
 					return Observable.just(new NodeFieldListImpl());
 				} else {
-					return nodeFieldList.transformToRest(ac, fieldKey);
+					return nodeFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case NumberGraphFieldList.TYPE:
 				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
 					return Observable.just(new NumberFieldListImpl());
 				} else {
-					return numberFieldList.transformToRest(ac, fieldKey);
+					return numberFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case BooleanGraphFieldList.TYPE:
 				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
 				if (booleanFieldList == null) {
 					return Observable.just(new BooleanFieldListImpl());
 				} else {
-					return booleanFieldList.transformToRest(ac, fieldKey);
+					return booleanFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case HtmlGraphFieldList.TYPE:
 				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
 					return Observable.just(new HtmlFieldListImpl());
 				} else {
-					return htmlFieldList.transformToRest(ac, fieldKey);
+					return htmlFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case MicronodeGraphFieldList.TYPE:
 				MicronodeGraphFieldList graphMicroschemaField = getMicronodeList(fieldKey);
 				if (graphMicroschemaField == null) {
 					return Observable.just(new MicronodeFieldListImpl());
 				} else {
-					return graphMicroschemaField.transformToRest(ac, fieldKey);
+					return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags);
 				}
 			case StringGraphFieldList.TYPE:
 				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
 					return Observable.just(new StringFieldListImpl());
 				} else {
-					return stringFieldList.transformToRest(ac, fieldKey);
+					return stringFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case DateGraphFieldList.TYPE:
 				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
 					return Observable.just(new DateFieldListImpl());
 				} else {
-					return dateFieldList.transformToRest(ac, fieldKey);
+					return dateFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			}
 			// String listType = listFielSchema.getListType();
@@ -608,7 +608,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			if (micronodeGraphField == null) {
 				return Observable.just(new NullMicronodeResponse());
 			} else {
-				return micronodeGraphField.transformToRest(ac, fieldKey);
+				return micronodeGraphField.transformToRest(ac, fieldKey, languageTags);
 			}
 		}
 

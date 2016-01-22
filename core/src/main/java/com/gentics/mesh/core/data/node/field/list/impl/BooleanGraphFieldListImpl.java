@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -42,7 +44,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	}
 
 	@Override
-	public Observable<BooleanFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<BooleanFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 		BooleanFieldListImpl restModel = new BooleanFieldListImpl();
 		for (BooleanGraphField item : getList()) {
 			restModel.add(item.getBoolean());

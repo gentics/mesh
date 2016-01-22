@@ -113,8 +113,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		microschema.setName("notexisting");
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-		// TODO assert translated error message
-		createNodeFailure(FIELDNAME, field, BAD_REQUEST, "Could not parse request JSON.");
+		createNodeFailure(FIELDNAME, field, BAD_REQUEST, "error_parse_request_json_error");
 	}
 
 	@Test
@@ -124,8 +123,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		microschema.setName("captionedImage");
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-		// TODO assert translated error message
-		createNodeFailure(FIELDNAME, field, BAD_REQUEST, "Could not parse request JSON.");
+		createNodeFailure(FIELDNAME, field, BAD_REQUEST, "error_parse_request_json_error");
 	}
 
 	@Test

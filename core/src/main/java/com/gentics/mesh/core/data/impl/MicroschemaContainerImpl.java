@@ -89,7 +89,7 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 	}
 
 	@Override
-	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac) {
+	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
 			MicroschemaResponse microschema = JsonUtil.readSchema(getJson(), MicroschemaResponse.class);

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -42,7 +44,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 	}
 
 	@Override
-	public Observable<NumberFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<NumberFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 		NumberFieldListImpl restModel = new NumberFieldListImpl();
 		for (NumberGraphField item : getList()) {
 			restModel.add(item.getNumber());

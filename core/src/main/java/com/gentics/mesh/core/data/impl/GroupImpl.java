@@ -145,7 +145,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRest(InternalActionContext ac) {
+	public Observable<GroupResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
 

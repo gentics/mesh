@@ -57,7 +57,8 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field> 
 	 * 
 	 * @param ac
 	 * @param fieldKey
+	 * @param languageTags list of language tags
 	 */
-	Observable<RM> transformToRest(InternalActionContext ac, String fieldKey);
+	Observable<RM> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags);
 
 }

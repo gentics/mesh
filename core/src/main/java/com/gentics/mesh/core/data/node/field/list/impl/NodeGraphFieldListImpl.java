@@ -42,16 +42,18 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
+		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
+
 		if (expandField) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 
 			List<Observable<NodeResponse>> futures = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				futures.add(item.getNode().transformToRest(ac));
+				futures.add(item.getNode().transformToRest(ac, lTagsArray));
 			}
 
 			return RxUtil.concatList(futures).collect(() -> {
@@ -64,17 +66,13 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
-			List<String> languageTags = ac.getSelectedLanguageTags();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				// Create the rest field and populate the fields
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 
 				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-					listItem.setUrl(
-							WebRootLinkReplacer.getInstance()
-									.resolve(item.getNode(), ac.getResolveLinksType(),
-											languageTags.toArray(new String[languageTags.size()]))
-									.toBlocking().first());
+					listItem.setUrl(WebRootLinkReplacer.getInstance()
+							.resolve(item.getNode(), ac.getResolveLinksType(), lTagsArray).toBlocking().first());
 				}
 
 				restModel.add(listItem);

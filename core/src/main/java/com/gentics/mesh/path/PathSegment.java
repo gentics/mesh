@@ -13,7 +13,7 @@ public class PathSegment {
 	private Node node;
 	private GraphField pathField;
 
-	private Language language;
+	private String languageTag;
 
 	/**
 	 * Create a new path segment.
@@ -22,13 +22,13 @@ public class PathSegment {
 	 *            Node that provides this segment
 	 * @param pathField
 	 *            Graph field which is the source of the segment
-	 * @param language
+	 * @param languageTag
 	 *            Language of the segment field
 	 */
-	public PathSegment(Node node, GraphField pathField, Language language) {
+	public PathSegment(Node node, GraphField pathField, String languageTag) {
 		this.node = node;
 		this.pathField = pathField;
-		this.language = language;
+		this.languageTag = languageTag;
 	}
 
 	/**
@@ -50,12 +50,12 @@ public class PathSegment {
 	}
 
 	/**
-	 * Return the language of the node which provides this segment.
+	 * Return the language tag of the node which provides this segment.
 	 * 
 	 * @return
 	 */
-	public Language getLanguage() {
-		return language;
+	public String getLanguageTag() {
+		return languageTag;
 	}
 
 }
