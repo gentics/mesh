@@ -3,6 +3,7 @@ package com.gentics.mesh.rest;
 import java.util.Arrays;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -47,7 +48,6 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private SchemaStorage schemaStorage;
 	private String uri;
 
-
 	/**
 	 * Create a new response handler.
 	 * 
@@ -58,7 +58,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @param uri
 	 *            Uri that was queried
 	 * @param schemaStorage
-	 * 			  A filled schema storage
+	 *            A filled schema storage
 	 */
 	public MeshResponseHandler(Class<T> classOfT, HttpMethod method, String uri, SchemaStorage schemaStorage) {
 		this.classOfT = classOfT;
@@ -194,9 +194,8 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 */
 	private boolean isSchemaClass(Class<?> clazz) {
 		return Arrays
-				.asList(SchemaResponse.class, SchemaCreateRequest.class, SchemaUpdateRequest.class,
-						SchemaListResponse.class, MicroschemaResponse.class, MicroschemaCreateRequest.class,
-						MicroschemaUpdateRequest.class, MicroschemaListResponse.class)
+				.asList(SchemaResponse.class, SchemaCreateRequest.class, SchemaUpdateRequest.class, SchemaListResponse.class,
+						MicroschemaResponse.class, MicroschemaCreateRequest.class, MicroschemaUpdateRequest.class, MicroschemaListResponse.class)
 				.stream().anyMatch(c -> clazz.isAssignableFrom(c));
 	}
 
@@ -208,7 +207,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 */
 	private boolean isNodeClass(Class<?> clazz) {
 		if (clazz.isAssignableFrom(NodeUpdateRequest.class) || clazz.isAssignableFrom(NodeResponse.class)
-				|| clazz.isAssignableFrom(NodeCreateRequest.class)) {
+				|| clazz.isAssignableFrom(NodeCreateRequest.class) || clazz.isAssignableFrom(NavigationResponse.class)) {
 			return true;
 		}
 		return false;

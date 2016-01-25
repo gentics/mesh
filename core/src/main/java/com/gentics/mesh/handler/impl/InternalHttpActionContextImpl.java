@@ -28,6 +28,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.query.impl.NavigationRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 
@@ -154,23 +155,14 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 
 	@Override
 	public PagingParameter getPagingParameter() {
-		String page = getParameter(PagingParameter.PAGE_PARAMETER_KEY);
-		String perPage = getParameter(PagingParameter.PER_PAGE_PARAMETER_KEY);
-		int pageInt = 1;
-		int perPageInt = MeshOptions.DEFAULT_PAGE_SIZE;
-		if (page != null) {
-			pageInt = NumberUtils.toInt(page, 1);
-		}
-		if (perPage != null) {
-			perPageInt = NumberUtils.toInt(perPage, MeshOptions.DEFAULT_PAGE_SIZE);
-		}
-		if (pageInt < 1) {
-			error(BAD_REQUEST, "error_invalid_paging_parameters");
-		}
-		if (perPageInt < 0) {
-			error(BAD_REQUEST, "error_invalid_paging_parameters");
-		}
-		return new PagingParameter(pageInt, perPageInt);
+		//TODO return immutable object
+		return PagingParameter.fromQuery(query());
+	}
+
+	@Override
+	public NavigationRequestParameter getNavigationRequestParameter() {
+		//TODO return immutable object
+		return NavigationRequestParameter.fromQuery(query());
 	}
 
 	@Override

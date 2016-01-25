@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -170,6 +171,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(parentNodeUuid, "parentNodeUuid must not be null");
 		return handleRequest(GET, "/" + projectName + "/nodes/" + parentNodeUuid + "/children" + getQuery(parameters), NodeListResponse.class);
+	}
+
+	@Override
+	public Future<NavigationResponse> loadNavigation(String projectName, String uuid, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return handleRequest(GET, "/" + projectName + "/nodes/" + uuid + "/navigation" + getQuery(parameters), NavigationResponse.class);
 	}
 
 	@Override
@@ -506,6 +514,8 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 	@Override
 	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
 		StringBuilder path = new StringBuilder();
 		path.append("/");
 		for (String segment : pathSegments) {
@@ -519,6 +529,17 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 			}
 		}
 		return webroot(projectName, path.toString(), parameters);
+	}
+
+	@Override
+	public Future<NavigationResponse> navroot(String projectName, String path, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(path, "path must not be null");
+		if (!path.startsWith("/")) {
+			throw new RuntimeException("The path {" + path + "} must start with a slash");
+		}
+		String requestUri = "/" + projectName + "/navroot" + path + getQuery(parameters);
+		return handleRequest(GET, requestUri, NavigationResponse.class);
 	}
 
 	@Override

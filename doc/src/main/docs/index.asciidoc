@@ -789,8 +789,7 @@ Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affec
 | ```/api/v1/:YOUR_PROJECT/nodes/:uuid``` | Delete      | Node can be deleted.
 |======
 
-=== Webroot
-
+=== WebRoot
 
 The ```/api/v1/:YOUR_PROJECT/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
 
@@ -820,6 +819,11 @@ It is possible to differentiate between a mesh binary response and a normal JSON
 
 The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requestor.
 
+=== Navigations
+
+There are two ways of generating a nested navigation response within mesh. You can either use ```/api/v1/:YOUR_PROJECT/nodes/:uuid/navigation``` or ```/api/v1/:YOUR_PROJECT/navroot/:path``` endpoints.
+
+Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth. By default a ```maxDepth``` value is of `10` is used.
 
 === Link Handling
 

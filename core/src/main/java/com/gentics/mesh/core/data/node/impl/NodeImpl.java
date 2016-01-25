@@ -58,6 +58,8 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.navigation.NavigationElement;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -238,13 +240,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public void removeTag(Tag tag) {
 		unlinkOut(tag.getImpl(), HAS_TAG);
 	}
-
-//	@Override
-//	public void createLink(Node to) {
-//		// TODO maybe extract information about link start and end to speedup rendering of page with links
-//		// Linked link = new Linked(this, page);
-//		// this.links.add(link);
-//	}
 
 	@Override
 	public void setSchemaContainer(SchemaContainer schema) {
@@ -480,6 +475,69 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		restNode.setBreadcrumb(breadcrumb);
 		return Observable.just(restNode);
+	}
+
+	@Override
+	public Observable<NavigationResponse> transformToNavigation(InternalActionContext ac) {
+		if (Integer.valueOf(ac.getNavigationRequestParameter().getMaxDepth()) < 0) {
+			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
+		}
+		Database db = MeshSpringConfiguration.getInstance().database();
+		return db.asyncNoTrxExperimental(() -> {
+			if (!getSchema().isContainer()) {
+				throw error(BAD_REQUEST, "navigation_error_no_container");
+			}
+			NavigationResponse response = new NavigationResponse();
+			return buildNavigationResponse(ac, this, ac.getNavigationRequestParameter().getMaxDepth(), 0, response, response.getRoot());
+		});
+	}
+
+	/**
+	 * Recursively build the navigation response.
+	 * 
+	 * @param ac
+	 *            Action context
+	 * @param node
+	 *            Node to handle
+	 * @param maxDepth
+	 *            Maximum depth for the navigation
+	 * @param level
+	 *            Current level of the navigation
+	 * @param navigation
+	 *            Current navigation response
+	 * @param currentElement
+	 *            Current navigation element for the given level
+	 * @return
+	 */
+	private Observable<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
+			NavigationResponse navigation, NavigationElement currentElement) {
+		List<? extends Node> nodes = node.getChildren();
+
+		// Set current element data
+		currentElement.setUuid(node.getUuid());
+		currentElement.setNode(node.transformToRest(ac).toBlocking().single());
+
+		// Abort recursion when we reach the max level or when no more children can be found.
+		if (level == maxDepth || nodes.isEmpty()) {
+			return Observable.just(navigation);
+		}
+
+		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
+
+		// Add children
+		for (Node child : node.getChildren()) {
+			if (child.getSchema().isContainer()) {
+				NavigationElement childElement = new NavigationElement();
+				// We found at least one child so lets create the array
+				if (currentElement.getChildren() == null) {
+					currentElement.setChildren(new ArrayList<>());
+				}
+				currentElement.getChildren().add(childElement);
+				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement));
+			}
+		}
+		obsResponses.add(Observable.just(navigation));
+		return Observable.merge(obsResponses).last();
 	}
 
 	@Override

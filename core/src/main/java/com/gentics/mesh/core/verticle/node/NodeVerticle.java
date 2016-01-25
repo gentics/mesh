@@ -44,13 +44,20 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		// sub handlers
 		addChildrenHandler();
 		addTagsHandler();
 		addMoveHandler();
 		addFieldHandlers();
-
 		addLanguageHandlers();
+		addNavigationHandlers();
 
+	}
+
+	private void addNavigationHandlers() {
+		route("/:uuid/navigation").method(GET).produces(APPLICATION_JSON)
+				.handler(rc -> crudHandler.handleNavigation(InternalActionContext.create(rc)));
 	}
 
 	private void addLanguageHandlers() {
@@ -108,45 +115,34 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private void addMoveHandler() {
 		Route route = route("/:uuid/moveTo/:toUuid").method(PUT).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			crudHandler.handleMove(InternalActionContext.create(rc));
-		});
+		route.handler(rc -> crudHandler.handleMove(InternalActionContext.create(rc)));
 
 	}
 
 	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
-			crudHandler.handleReadChildren(InternalActionContext.create(rc));
-		});
+		getRoute.handler(rc -> crudHandler.handleReadChildren(InternalActionContext.create(rc)));
 	}
 
 	// TODO filtering, sorting
 	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
-			crudHandler.readTags(InternalActionContext.create(rc));
-		});
+		getRoute.handler(rc -> crudHandler.readTags(InternalActionContext.create(rc)));
 
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(PUT).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> {
-			crudHandler.handleAddTag(InternalActionContext.create(rc));
-		});
+		postRoute.handler(rc -> crudHandler.handleAddTag(InternalActionContext.create(rc)));
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
-			crudHandler.handleRemoveTag(InternalActionContext.create(rc));
-		});
+		deleteRoute.handler(rc -> crudHandler.handleRemoveTag(InternalActionContext.create(rc)));
+
 	}
 
 	// TODO handle schema by name / by uuid - move that code in a separate
 	// handler
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			crudHandler.handleCreate(InternalActionContext.create(rc));
-		});
+		route.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc)));
 	}
 
 	// TODO filter by project name
@@ -165,18 +161,14 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		});
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
-		readAllRoute.handler(rc -> {
-			crudHandler.handleReadList(InternalActionContext.create(rc));
-		});
+		readAllRoute.handler(rc -> crudHandler.handleReadList(InternalActionContext.create(rc)));
 
 	}
 
 	// TODO filter project name
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
-		});
+		route.handler(rc -> crudHandler.handleDelete(InternalActionContext.create(rc)));
 	}
 
 	// TODO filter by project name
@@ -187,8 +179,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// within the schema.
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
-		});
+		route.handler(rc -> crudHandler.handleUpdate(InternalActionContext.create(rc)));
 	}
 }
