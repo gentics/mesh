@@ -183,6 +183,4 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("root was null", response.getRoot());
 	}
 
-
-
 }

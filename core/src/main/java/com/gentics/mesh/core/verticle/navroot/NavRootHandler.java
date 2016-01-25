@@ -65,15 +65,6 @@ public class NavRootHandler {
 					} else {
 						bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid()));
 					}
-					// requestUser.isAuthorised(node, READ_PERM, rh -> {
-					// languageTags.add(lastSegment.getLanguageTag());
-					// if (rh.result()) {
-					// bch.complete(node);
-					// } else {
-					// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
-					// }
-					// });
-
 				} else {
 					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}

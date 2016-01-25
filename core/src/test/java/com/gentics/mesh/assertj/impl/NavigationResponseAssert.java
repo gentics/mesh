@@ -16,7 +16,7 @@ public class NavigationResponseAssert extends AbstractAssert<NavigationResponseA
 	}
 
 	/**
-	 * Traverse the navigation tree and determine the maxium depth.
+	 * Traverse the navigation tree and determine the maximum depth.
 	 * 
 	 * @param element
 	 * @param depth
@@ -35,6 +35,13 @@ public class NavigationResponseAssert extends AbstractAssert<NavigationResponseA
 		return max;
 	}
 
+	/**
+	 * Internal validation method that can be called recursively.
+	 * 
+	 * @param element
+	 * @param level
+	 * @return
+	 */
 	private int validateNavigation(NavigationElement element, int level) {
 		assertNotNull("Level: " + level + " The given root element must not be null", element);
 		assertNotNull("Level: " + level + " The node field within one of the navigation elements was null.", element.getNode());
@@ -53,11 +60,23 @@ public class NavigationResponseAssert extends AbstractAssert<NavigationResponseA
 		return elements;
 	}
 
+	/**
+	 * Assert that the navigation does not exceed the given depth in any of the navigation tree branches.
+	 * 
+	 * @param depth
+	 * @return
+	 */
 	public NavigationResponseAssert hasDepth(int depth) {
 		assertEquals("The depth of the navigation response did not match the expected depth.", depth, maxDepth(actual.getRoot(), 0));
 		return this;
 	}
 
+	/**
+	 * Validate the navigation response and assert that only the given amount of elements are referenced within the nav structure.
+	 * 
+	 * @param nElements
+	 * @return
+	 */
 	public NavigationResponseAssert isValid(int nElements) {
 		assertEquals("Did not find the expected amount of elements.", nElements, validateNavigation(actual.getRoot(), 0));
 		return this;

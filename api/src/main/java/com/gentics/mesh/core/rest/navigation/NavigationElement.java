@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.navigation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -56,10 +55,20 @@ public class NavigationElement {
 		this.children = children;
 	}
 
+	/**
+	 * Return the node response object for this navigation element.
+	 * 
+	 * @return
+	 */
 	public NodeResponse getNode() {
 		return node;
 	}
 
+	/**
+	 * Set the node response object for this navigation element.
+	 * 
+	 * @param node
+	 */
 	public void setNode(NodeResponse node) {
 		this.node = node;
 	}

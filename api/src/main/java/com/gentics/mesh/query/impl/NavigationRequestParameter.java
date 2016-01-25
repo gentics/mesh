@@ -45,6 +45,12 @@ public class NavigationRequestParameter implements QueryParameterProvider {
 		return query.toString();
 	}
 
+	/**
+	 * Transform the query string into a {@link NavigationRequestParameter} object.
+	 * 
+	 * @param query
+	 * @return
+	 */
 	public static NavigationRequestParameter fromQuery(String query) {
 		Map<String, String> queryParameters = HttpQueryUtils.splitQuery(query);
 		NavigationRequestParameter parameter = new NavigationRequestParameter();

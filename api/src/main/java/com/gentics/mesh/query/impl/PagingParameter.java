@@ -152,6 +152,11 @@ public class PagingParameter implements QueryParameterProvider {
 		return getQueryParameters();
 	}
 
+	/**
+	 * Transform the query string into a {@link PagingParameter} object.
+	 * @param query
+	 * @return
+	 */
 	public static PagingParameter fromQuery(String query) {
 		Map<String, String> queryParameters = HttpQueryUtils.splitQuery(query);
 		String page = queryParameters.get(PAGE_PARAMETER_KEY);
