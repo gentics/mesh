@@ -512,17 +512,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private Observable<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 			NavigationResponse navigation, NavigationElement currentElement) {
 		List<? extends Node> nodes = node.getChildren();
+		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		// Set current element data
 		currentElement.setUuid(node.getUuid());
-		currentElement.setNode(node.transformToRest(ac).toBlocking().single());
+
+		obsResponses.add(node.transformToRest(ac).map(response -> {
+			currentElement.setNode(response);
+			return navigation;
+		}));
 
 		// Abort recursion when we reach the max level or when no more children can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
-			return Observable.just(navigation);
+			return Observable.merge(obsResponses).last();
 		}
-
-		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		// Add children
 		for (Node child : node.getChildren()) {
