@@ -887,7 +887,7 @@ The router implementation can use this in order to be able to to decide whether 
 
 There are two ways of generating a nested navigation response within mesh. You can either use ```/api/v1/:YOUR_PROJECT/nodes/:uuid/navigation``` or ```/api/v1/:YOUR_PROJECT/navroot/:path``` endpoints.
 
-Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth. By default a ```maxDepth``` value is of `10` is used.
+Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth (default: 10).
 
 === Link Handling
 

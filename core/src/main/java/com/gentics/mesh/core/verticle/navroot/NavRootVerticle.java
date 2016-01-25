@@ -26,7 +26,6 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
-		addErrorHandlers();
 		addPathHandler();
 	}
 
@@ -36,12 +35,5 @@ public class NavRootVerticle extends AbstractProjectRestVerticle {
 
 	private void addPathHandler() {
 		pathRoute().method(GET).handler(rc -> handler.handleGetPath(rc));
-	}
-
-	private void addErrorHandlers() {
-		route("/error/404").handler(rc -> {
-			rc.data().put("statuscode", "404");
-			rc.next();
-		});
 	}
 }

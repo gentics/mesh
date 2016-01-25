@@ -487,7 +487,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<NavigationResponse> transformToNavigation(InternalActionContext ac) {
-		if (Integer.valueOf(ac.getNavigationRequestParameter().getMaxDepth()) < 0) {
+		if (ac.getNavigationRequestParameter().getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -506,11 +506,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param ac
 	 *            Action context
 	 * @param node
-	 *            Node to handle
+	 *            Current node that should be handled in combination with the given navigation element
 	 * @param maxDepth
 	 *            Maximum depth for the navigation
 	 * @param level
-	 *            Current level of the navigation
+	 *            Zero based level of the current navigation element 
 	 * @param navigation
 	 *            Current navigation response
 	 * @param currentElement
@@ -522,10 +522,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<? extends Node> nodes = node.getChildren();
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
-		// Set current element data
-		currentElement.setUuid(node.getUuid());
 
 		obsResponses.add(node.transformToRest(ac).map(response -> {
+			// Set current element data
+			currentElement.setUuid(response.getUuid());
 			currentElement.setNode(response);
 			return navigation;
 		}));
@@ -536,7 +536,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Add children
-		for (Node child : node.getChildren()) {
+		for (Node child : nodes) {
 			if (child.getSchema().isContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array
@@ -547,7 +547,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement));
 			}
 		}
-		obsResponses.add(Observable.just(navigation));
 		return Observable.merge(obsResponses).last();
 	}
 

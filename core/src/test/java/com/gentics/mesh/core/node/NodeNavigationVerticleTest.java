@@ -55,7 +55,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		NavigationResponse response = future.result();
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
 		assertThat(response).hasDepth(0).isValid(1);
-		assertNull("There should be no child elements for the root element", response.getRoot().getChildren());
 	}
 
 	/**
@@ -75,7 +74,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		NavigationResponse response = future.result();
 		assertEquals("The root uuid did not match the expected one.", uuid, response.getRoot().getUuid());
-		assertNull("There should be no child elements for the root element", response.getRoot().getChildren());
 		assertThat(response).hasDepth(0).isValid(1);
 	}
 
@@ -177,9 +175,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		NavigationResponse response = future.result();
-		//		assertNotNull("nodes field was null", response.getNodes());
 		assertEquals(uuid, response.getRoot().getUuid());
-		//		assertEquals(uuid, response.getNodes().get(uuid).getUuid());
 		assertNotNull("root was null", response.getRoot());
 	}
 

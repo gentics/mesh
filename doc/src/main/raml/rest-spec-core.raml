@@ -14,6 +14,13 @@ securitySchemes:
       type: Basic Authentication
 
 traits:
+  - recursively:
+      queryParameters:
+        maxDepth:
+          description: Maximum depth for the navigation tree structure.
+          default: 10
+          type: number
+
   - localized:
       headers:
         Accept-Language:
@@ -533,10 +540,9 @@ traits:
 #------------------------------------------------------------------------------
 
 /{projectName}/navroot:
-  is: [ localized, linkresolver ]
   displayName: NavRoot
   /{path}:
-    is: [ localized, include_role_perms ]
+    is: [ localized, include_role_perms, recursively, linkresolver ]
     uriParameters:
       path:
         description: Path to the navigation root node.
@@ -654,14 +660,10 @@ traits:
         is: [ localized, sortable, paged, expandable ]
         description: Load child nodes for the given node.
     /navigation:
-      is: [ localized ]
+      is: [ localized, recursively ]
       displayName: Navigation
       get:
         description: Return a nested navigation tree structure for the given node.
-        queryParameters:
-          maxDepth:
-            description: Maximum depth for the navigation tree structure.
-            type: string
         responses:
             200:
                 body:
