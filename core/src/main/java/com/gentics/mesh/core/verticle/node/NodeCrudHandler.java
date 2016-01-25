@@ -83,6 +83,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
+	public void handleNavigation(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+				return node.transformToNavigation(ac);
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
 	public void handleReadChildren(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {

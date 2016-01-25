@@ -337,7 +337,7 @@
 					<testFailureIgnore>true</testFailureIgnore>
 					<trimStackTrace>false</trimStackTrace>
 					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
-					<forkedProcessTimeoutInSeconds>0</forkedProcessTimeoutInSeconds>
+					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
 					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
 					<includes>
 						<include>**/*Test.java</include>

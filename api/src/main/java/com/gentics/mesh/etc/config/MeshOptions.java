@@ -22,10 +22,13 @@ public class MeshOptions {
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final String MESH_SESSION_KEY = "mesh.session";
 	public static final String JWT_TOKEN_KEY = "mesh.token";
+	public static final int DEFAULT_MAX_DEPTH = 10;
 
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	private int defaultPageSize = DEFAULT_PAGE_SIZE;
+
+	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
@@ -80,6 +83,24 @@ public class MeshOptions {
 	 */
 	public String getDefaultLanguage() {
 		return defaultLanguage;
+	}
+
+	/**
+	 * Return the default max depth for navigations.
+	 * 
+	 * @return
+	 */
+	public int getDefaultMaxDepth() {
+		return defaultMaxDepth;
+	}
+
+	/**
+	 * Set the default max depth for navigations.
+	 * 
+	 * @param defaultMaxDepth
+	 */
+	public void setDefaultMaxDepth(int defaultMaxDepth) {
+		this.defaultMaxDepth = defaultMaxDepth;
 	}
 
 	/**

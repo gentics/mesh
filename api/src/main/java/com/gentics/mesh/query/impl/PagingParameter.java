@@ -1,7 +1,15 @@
 package com.gentics.mesh.query.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.util.Map;
+
 import com.gentics.mesh.api.common.SortOrder;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.query.QueryParameterProvider;
+import com.gentics.mesh.util.HttpQueryUtils;
+import com.gentics.mesh.util.NumberUtils;
 
 /**
  * A {@link PagingParameter} can be used to add additional paging parameters to the rest requests.
@@ -142,6 +150,32 @@ public class PagingParameter implements QueryParameterProvider {
 	@Override
 	public String toString() {
 		return getQueryParameters();
+	}
+
+	/**
+	 * Transform the query string into a {@link PagingParameter} object.
+	 * @param query
+	 * @return
+	 */
+	public static PagingParameter fromQuery(String query) {
+		Map<String, String> queryParameters = HttpQueryUtils.splitQuery(query);
+		String page = queryParameters.get(PAGE_PARAMETER_KEY);
+		String perPage = queryParameters.get(PER_PAGE_PARAMETER_KEY);
+		int pageInt = 1;
+		int perPageInt = MeshOptions.DEFAULT_PAGE_SIZE;
+		if (page != null) {
+			pageInt = NumberUtils.toInt(page, 1);
+		}
+		if (perPage != null) {
+			perPageInt = NumberUtils.toInt(perPage, MeshOptions.DEFAULT_PAGE_SIZE);
+		}
+		if (pageInt < 1) {
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
+		}
+		if (perPageInt < 0) {
+			error(BAD_REQUEST, "error_invalid_paging_parameters");
+		}
+		return new PagingParameter(pageInt, perPageInt);
 	}
 
 }

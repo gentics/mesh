@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -117,13 +118,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @throws InvalidArgumentException
 	 */
 	PageImpl<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
-
-//	/***
-//	 * Create link between the nodes.
-//	 * 
-//	 * @param node
-//	 */
-//	void createLink(Node node);
 
 	/**
 	 * Return a list of language names.
@@ -236,6 +230,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @param ac
 	 */
 	Observable<NodeReferenceImpl> transformToReference(InternalActionContext ac);
+
+	/**
+	 * Transform the node into a navigation response rest model.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	Observable<NavigationResponse> transformToNavigation(InternalActionContext ac);
 
 	/**
 	 * Delete the language container for the given language.

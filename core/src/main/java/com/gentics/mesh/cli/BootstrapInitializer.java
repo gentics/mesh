@@ -54,6 +54,7 @@ import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
+import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
@@ -101,7 +102,7 @@ public class BootstrapInitializer {
 
 	@Autowired
 	private Database db;
-	
+
 	@Autowired
 	private SearchHelper searchHelper;
 
@@ -121,7 +122,9 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(TagFamilyVerticle.class);
 		addMandatoryVerticle(ProjectSchemaVerticle.class);
 
+		// Global verticles
 		addMandatoryVerticle(WebRootVerticle.class);
+		addMandatoryVerticle(NavRootVerticle.class);
 		addMandatoryVerticle(ProjectVerticle.class);
 		addMandatoryVerticle(SchemaVerticle.class);
 		addMandatoryVerticle(MicroschemaVerticle.class);

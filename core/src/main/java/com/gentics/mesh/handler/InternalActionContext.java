@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
+import com.gentics.mesh.query.impl.NavigationRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -76,15 +77,6 @@ public interface InternalActionContext extends ActionContext {
 	 */
 	<T> Handler<AsyncResult<T>> errorHandler();
 
-//	/**
-//	 * Send a generic message response with the given message.
-//	 * 
-//	 * @param status
-//	 * @param i18nMessage
-//	 * @param i18nParameters
-//	 */
-//	void sendMessage(HttpResponseStatus status, String i18nMessage, String... i18nParameters);
-
 	/**
 	 * Return the currently used database.
 	 * 
@@ -107,11 +99,18 @@ public interface InternalActionContext extends ActionContext {
 	WebRootLinkReplacer.Type getResolveLinksType();
 
 	/**
-	 * Return the image request (crop/resize) parameter.
+	 * Return the image request (crop/resize) parameters.
 	 * 
 	 * @return
 	 */
 	ImageManipulationParameter getImageRequestParameter();
+
+	/**
+	 * Return the navigation specific request parameters.
+	 * 
+	 * @return
+	 */
+	NavigationRequestParameter getNavigationRequestParameter();
 
 	/**
 	 * Transform the rest model to JSON and send the JSON as a respond with the given status code.

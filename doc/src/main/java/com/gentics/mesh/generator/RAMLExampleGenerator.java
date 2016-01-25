@@ -35,6 +35,8 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.navigation.NavigationElement;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -548,16 +550,42 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
 		micronodeFieldSchema.setName("location");
 		micronodeFieldSchema.setLabel("Location");
-		micronodeFieldSchema.setAllowedMicroSchemas(new String[] {"geolocation"});
+		micronodeFieldSchema.setAllowedMicroSchemas(new String[] { "geolocation" });
 		schema.addField(micronodeFieldSchema);
 
 		ListFieldSchemaImpl micronodeListFieldSchema = new ListFieldSchemaImpl();
 		micronodeListFieldSchema.setName("locationlist");
 		micronodeListFieldSchema.setLabel("List of Locations");
 		micronodeListFieldSchema.setListType("micronode");
-		micronodeListFieldSchema.setAllowedSchemas(new String[] {"geolocation"});
+		micronodeListFieldSchema.setAllowedSchemas(new String[] { "geolocation" });
 		schema.addField(micronodeListFieldSchema);
 		return schema;
+	}
+
+	private NavigationResponse getNavigationResponse() throws JsonGenerationException, JsonMappingException, IOException {
+		NavigationResponse response = new NavigationResponse();
+
+		NavigationElement root = new NavigationElement();
+		String rootUuid = randomUUID();
+
+		// Level 0
+		NodeResponse rootElement = getNodeResponse1();
+		rootElement.setUuid(rootUuid);
+		root.setUuid(rootUuid);
+		root.setNode(rootElement);
+		root.setChildren(new ArrayList<>());
+
+		// Level 1
+		NavigationElement navElement = new NavigationElement();
+		String navElementUuid = randomUUID();
+		NodeResponse navElementNode = getNodeResponse1();
+		navElementNode.setUuid(navElementUuid);
+		navElement.setUuid(navElementUuid);
+		navElement.setNode(navElementNode);
+		root.getChildren().add(navElement);
+
+		response.setRoot(root);
+		return response;
 	}
 
 	private NodeResponse getNodeResponse1() throws JsonGenerationException, JsonMappingException, IOException {
@@ -572,7 +600,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setCreator(getUserReference());
 		nodeResponse.setPublished(true);
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
-		nodeResponse.setAvailableLanguages(Arrays.asList("en","de"));
+		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
 		HashMap<String, String> languagePaths = new HashMap<>();
 		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");
 		languagePaths.put("de", "/api/v1/yourProject/webroot/Bilder");
@@ -593,9 +621,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
 		fields.put("binary-binaryField", createBinaryField());
-		fields.put("location-micronodeField",
-				createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-						Tuple.tuple("longitude", createNumberField(16.373063840833))));
+		fields.put("location-micronodeField", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+				Tuple.tuple("longitude", createNumberField(16.373063840833))));
 		fields.put("locations-micronodeListField",
 				createMicronodeListField(
 						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
@@ -666,9 +693,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
-		fields.put("location-micronodeField",
-				createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-						Tuple.tuple("longitude", createNumberField(16.373063840833))));
+		fields.put("location-micronodeField", createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+				Tuple.tuple("longitude", createNumberField(16.373063840833))));
 		fields.put("locations-micronodeListField",
 				createMicronodeListField(
 						createNewMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
@@ -694,9 +720,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		fields.put("categories-nodeListField", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names-stringListField", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds-numberListField", createNumberListField(1, 42, 133, 7));
-		fields.put("location-micronodeField",
-				createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
-						Tuple.tuple("longitude", createNumberField(16.373063840833))));
+		fields.put("location-micronodeField", createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
+				Tuple.tuple("longitude", createNumberField(16.373063840833))));
 		fields.put("locations-micronodeListField",
 				createMicronodeListField(
 						createMicronodeField("geolocation", Tuple.tuple("latitude", createNumberField(48.208330230278)),
@@ -742,6 +767,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getNodeCreateRequest());
 		write(getNodeListResponse());
 		write(getNodeUpdateRequest());
+		write(getNavigationResponse());
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
