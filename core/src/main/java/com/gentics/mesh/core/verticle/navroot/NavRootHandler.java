@@ -86,7 +86,6 @@ public class NavRootHandler {
 			if (arh.succeeded()) {
 				PathSegment lastSegment = arh.result();
 				Node node = lastSegment.getNode();
-				ac.put(NodeImpl.AC_LANGUAGE_KEY, lastSegment.getLanguage());
 				node.transformToNavigation(ac).subscribe(model -> {
 					ac.send(JsonUtil.toJson(model),
 							HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
