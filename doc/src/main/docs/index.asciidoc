@@ -38,13 +38,63 @@ The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncd
 
 === Authentication
 
-* Basic Authentication
+==== Overview
+Mesh currently supports 2 ways of authentication: Basic auth and Json Web Token (JWT) Auth. A user can be authenticated by setting the Authentication HTTP header in a request.
+Edit the mesh configuration file (`mesh.json`) to set your prefered authentication method. Here is an example:
 
-By default basic authentication is required to authenticate the user when using the REST API.
+    "authenticationOptions" : {
+      "authenticationMethod": "JWT",
+      "jwtAuthenticationOptions" : {
+        "tokenExpirationTime" : 3600,
+        "signatureSecret" : "secret",
+        "keystorePath": "keystore.jceks"
+      }
+    }
 
-* JSON Login
+`authenticationOptions.authenticationMethod` can be set to either `"Basic"` or `"JWT"`.
 
-The ```/api/v1/auth/login``` endpoint can be used to login Mesh by posting JSON which includes the username and password.
+==== Basic Auth
+To use basic auth, set the `authenticationOptions.authenticationMethod` to `"Basic"`.
+
+When using basic auth, set the http://tools.ietf.org/html/rfc1945#section-11.1[authorization header according to RFC 1945] to authorize a user. This will also create a session for this user and set a session id cookie.
+For following requests, you can choose to either send the authorization header again or send the cookie back. Both ways will work to authorize the user.
+
+For performance reasons, we recommend using the cookie whenever possible.
+
+To destroy the session and the cookie you can call GET on the `/api/v1/auth/logout` endpoint.
+
+==== Json Web Token (JWT)
+===== Preparations
+To use basic auth, set the `authenticationOptions.authenticationMethod` to `"JWT"`. You also have to set the keystore secret and the path to the keystore file. See above for an example.
+
+Before using JWT you have to create a keystore which holds the secret to generate the signature for the token.
+Currently only the HS256 algorithm is supported. You can use the java `keytool` to create a new keystore.
+Here is an example on how to create a keystore:
+
+    keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
+
+After creating the keystore, set the file path of the keystore and the password to access the keystore in the `mesh.json` configuration file.
+
+===== Usage
+====== Login
+To retrieve a token, call POST on the `/api/v1/auth/login` endpoint with a json object containing these fields:
+
+* `username` The username of the user
+* `password` The password of the user
+
+If the authentication was successful, the server will respond with a json object containing a single field:
+
+* `token` The token to be sent on every subsequent request.
+
+====== Setting the header
+To authenticate the user for other requests, set `Authorization` header to `"Bearer <Token>"`, where `<Token>` is the token you received from the login.
+
+====== Refreshing the token
+The token only lasts a certain amount of time (which can be configured in the `mesh.json` file), so it might be necessary to refresh the token. You can call GET on the `/api/v1/auth/refresh` endpoint with your still valid token to receive a new token which has a refreshed expire time.
+
+====== Token via cookie
+When calling the login endpoint via JWT, the server also sets a cookie containing the token. Sending the cookie back can be used instead of the HTTP header to authenticate a user. This is useful for embedding binary image nodes directly in HTML.
+
 
 === Encoding
 
