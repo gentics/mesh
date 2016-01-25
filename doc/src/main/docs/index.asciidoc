@@ -988,10 +988,10 @@ Endpoint: ```/api/v1/search/nodes```
 include::{es-json}/node.search.json[]
 ----
 
+*Search nodes by schema name*
+
 Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
 The found nodes will be sorted ascending by creator.
-
-*Example Query*
 
 [source,json]
 ----
@@ -1004,6 +1004,37 @@ The found nodes will be sorted ascending by creator.
       "must" : {
         "term" : { "schema.name" : "content" }
        }
+    }
+  }
+}
+----
+
+*Search nodes by micronode field values*
+
+Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"): 
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "fields.vcardlist",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "fields.vcardlist.fields.firstName": "Joe"
+              }
+            },
+            {
+              "match": {
+                "fields.vcardlist.fields.lastName": "Doe"
+              }
+            }
+          ]
+        }
+      }
     }
   }
 }
