@@ -7,12 +7,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.common.collect.Tuple;
@@ -111,7 +114,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
-		assertEquals(2, response.getData().size());
+		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, content("concorde").getUuid());
 
 		future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingParameter().setPage(1).setPerPage(2));
@@ -306,10 +309,74 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	}
 
+	/**
+	 * Search in only english language versions of nodes
+	 *
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
 	@Test
-	public void testSearchMultipleLanguages() {
-		//TODO search for string which can be found in two language variants of a single node. We would expect two nodes in the result which have different language properties. 
-		fail("not yet implemented");
+	public void testSearchEnglish() throws InterruptedException, JSONException {
+		searchWithLanguages("en");
+	}
+
+	/**
+	 * Searhc in only german language versions of nodes
+	 *
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
+	@Test
+	public void testSearchGerman() throws InterruptedException, JSONException {
+		searchWithLanguages("de");
+	}
+
+	/**
+	 * Search for string which can be found in two language variants of a single
+	 * node. We would expect two nodes in the result which have different
+	 * language properties.
+	 *
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
+	@Test
+	public void testSearchMultipleLanguages() throws InterruptedException, JSONException {
+		searchWithLanguages("de", "en");
+	}
+
+	/**
+	 * Do the search with the given set of expected languages and assert correctness of the result
+	 *
+	 * @param expectedLanguages
+	 * @throws InterruptedException
+	 * @throws JSONException
+	 */
+	protected void searchWithLanguages(String...expectedLanguages) throws InterruptedException, JSONException {
+		fullIndex();
+
+		Node node = content("concorde");
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("concorde"),
+				new PagingParameter().setPage(1).setPerPage(100), new NodeRequestParameter().setLanguages(expectedLanguages));
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
+		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
+
+		Set<String> foundLanguages = new HashSet<>();
+		for (NodeResponse nodeResponse : response.getData()) {
+			assertEquals("Check uuid of found node", node.getUuid(), nodeResponse.getUuid());
+			foundLanguages.add(nodeResponse.getLanguage());
+		}
+
+		Set<String> notFound = new HashSet<>(Arrays.asList(expectedLanguages));
+		notFound.removeAll(foundLanguages);
+		assertTrue("Did not find nodes in expected languages: " + notFound, notFound.isEmpty());
+
+		Set<String> unexpected = new HashSet<>(foundLanguages);
+		unexpected.removeAll(Arrays.asList(expectedLanguages));
+		assertTrue("Found nodes in unexpected languages: " + unexpected, unexpected.isEmpty());
 	}
 
 	@Test

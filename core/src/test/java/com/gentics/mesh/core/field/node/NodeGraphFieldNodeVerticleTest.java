@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
@@ -211,4 +214,56 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		assertNotNull(expandedField.getCreator());
 	}
 
+	@Test
+	public void testReadExpandedNodeWithLanguageFallback() {
+		Node folder = folder("2015");
+
+		// add a node in german and english
+		NodeCreateRequest createGermanNode = new NodeCreateRequest();
+		createGermanNode.setSchema(new SchemaReference().setName("folder"));
+		createGermanNode.setParentNodeUuid(folder.getUuid());
+		createGermanNode.setLanguage("de");
+		createGermanNode.getFields().put("name", FieldUtil.createStringField("German Target"));
+
+		Future<NodeResponse> createGermanFuture = getClient().createNode(PROJECT_NAME, createGermanNode);
+		latchFor(createGermanFuture);
+		assertSuccess(createGermanFuture);
+		NodeResponse germanTarget = createGermanFuture.result();
+
+		NodeUpdateRequest createEnglishNode = new NodeUpdateRequest();
+		createEnglishNode.setSchema(new SchemaReference().setName("folder"));
+		createEnglishNode.setLanguage("en");
+		createEnglishNode.getFields().put("name", FieldUtil.createStringField("English Target"));
+
+		Future<NodeResponse> updateEnglishNode = getClient().updateNode(PROJECT_NAME, germanTarget.getUuid(), createEnglishNode);
+		latchFor(updateEnglishNode);
+		assertSuccess(updateEnglishNode);
+
+		// add a node in german (referencing the target node)
+		NodeCreateRequest createSourceNode = new NodeCreateRequest();
+		createSourceNode.setSchema(new SchemaReference().setName("folder"));
+		createSourceNode.setParentNodeUuid(folder.getUuid());
+		createSourceNode.setLanguage("de");
+		createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));
+		createSourceNode.getFields().put(NODE_FIELD_NAME, FieldUtil.createNodeField(germanTarget.getUuid()));
+
+		Future<NodeResponse> createSourceFuture = getClient().createNode(PROJECT_NAME, createSourceNode);
+		latchFor(createSourceFuture);
+		assertSuccess(createSourceFuture);
+		NodeResponse source = createSourceFuture.result();
+
+		// read source node with expanded field
+		for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" },
+				new String[] { "en", "de" })) {
+			Future<NodeResponse> resultFuture = getClient().findNodeByUuid(PROJECT_NAME, source.getUuid(),
+					new NodeRequestParameter().setLanguages(requestedLangs).setExpandAll(true));
+			latchFor(resultFuture);
+			assertSuccess(resultFuture);
+			NodeResponse response = resultFuture.result();
+			assertEquals("Check node language", "de", response.getLanguage());
+			NodeResponse nodeField = response.getField(NODE_FIELD_NAME, NodeResponse.class);
+			assertNotNull("Field must be present", nodeField);
+			assertEquals("Check target node language", "de", nodeField.getLanguage());
+		}
+	}
 }

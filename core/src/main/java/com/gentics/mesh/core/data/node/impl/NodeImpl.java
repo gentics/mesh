@@ -51,7 +51,6 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -94,8 +93,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
-	public static final String AC_LANGUAGE_KEY = "meshFieldContainerLanguage";
-
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeImpl.class);
 	}
@@ -107,7 +104,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<String> getPathSegment(InternalActionContext ac) {
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
 		if (container != null) {
 			String fieldName = getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
@@ -308,7 +305,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRest(InternalActionContext ac) {
+	public Observable<NodeResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.asyncNoTrxExperimental(() -> {
@@ -369,27 +366,38 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
 
 			// Fields
-			NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(ac);
+			NodeGraphFieldContainer fieldContainer = null;
+			List<String> requestedLanguageTags = null;
+			if (languageTags != null && languageTags.length > 0) {
+				requestedLanguageTags = Arrays.asList(languageTags);
+			} else {
+				requestedLanguageTags = ac.getSelectedLanguageTags();
+			}
+			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags);
 			if (fieldContainer == null) {
-				List<String> languageTags = ac.getSelectedLanguageTags();
-				String langInfo = getLanguageInfo(languageTags);
+				String langInfo = getLanguageInfo(requestedLanguageTags);
 				if (log.isDebugEnabled()) {
 					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 							+ langInfo + "}. Fields will be empty.");
 				}
+
 				// TODO The base node has no fields. We need to take care of that edgecase first
 				// noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
 				// return;
 			} else {
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-				// Store the language in the actioncontext
-				ac.put(AC_LANGUAGE_KEY, fieldContainer.getLanguage());
 
 				List<String> fieldsToExpand = ac.getExpandedFieldnames();
+
+				// modify the language fallback list by moving the container's language to the front
+				List<String> containerLanguageTags = new ArrayList<>(requestedLanguageTags);
+				containerLanguageTags.remove(restNode.getLanguage());
+				containerLanguageTags.add(0, restNode.getLanguage());
+
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
-					Observable<NodeResponse> obsFields = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, expandField)
-							.map(restField -> {
+					Observable<NodeResponse> obsFields = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(),
+							fieldEntry, expandField, containerLanguageTags).map(restField -> {
 						if (fieldEntry.isRequired() && restField == null) {
 							// TODO i18n
 							throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
@@ -440,9 +448,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
 				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers()) {
-					Language language = currentFieldContainer.getLanguage();
-					languagePaths.put(language.getLanguageTag(),
-							linkReplacer.resolve(this, ac.getResolveLinksType(), language.getLanguageTag()).toBlocking().single());
+					Language currLanguage = currentFieldContainer.getLanguage();
+					languagePaths.put(currLanguage.getLanguageTag(),
+							linkReplacer.resolve(this, ac.getResolveLinksType(), currLanguage.getLanguageTag()).toBlocking().single());
 				}
 				restNode.setLanguagePaths(languagePaths);
 			}
@@ -553,27 +561,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac) {
+	public NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags) {
 		NodeGraphFieldContainer fieldContainer = null;
 
-		// first try the language stored in the actioncontext
-		Language requestedLanguage = ac.get(AC_LANGUAGE_KEY);
-		if (requestedLanguage != null) {
-			fieldContainer = getGraphFieldContainer(requestedLanguage);
-			if (fieldContainer != null) {
-				return fieldContainer;
-			}
-		}
-
-		List<String> languageTags = ac.getSelectedLanguageTags();
 		for (String languageTag : languageTags) {
-			Language language = MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
-			if (language == null) {
-				// MeshRootImpl.getInstance().getLanguageRoot().reload();
-				// Language lan =MeshRootImpl.getInstance().getLanguageRoot().findByLanguageTag("en");
-				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
-			}
-			fieldContainer = getGraphFieldContainer(language);
+			fieldContainer = getGraphFieldContainer(languageTag);
 			// We found a container for one of the languages
 			if (fieldContainer != null) {
 				break;
@@ -651,19 +643,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public String getDisplayName(InternalActionContext ac) {
 		String displayFieldName = null;
 		try {
-			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac);
+			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
 				}
+				return null;
 			} else {
 				// Determine the display field name and load the string value from that field.
 				return container.getDisplayFieldValue(getSchema());
 			}
 		} catch (Exception e) {
 			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
+			throw e;
 		}
-		return null;
 	}
 
 	@Override
@@ -798,7 +791,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
-					return new PathSegment(this, field, container.getLanguage());
+					return new PathSegment(this, field, container.getLanguage().getLanguageTag());
 				}
 			}
 
@@ -810,7 +803,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
-					return new PathSegment(this, binaryField, container.getLanguage());
+					return new PathSegment(this, binaryField, container.getLanguage().getLanguageTag());
 				}
 			}
 		}

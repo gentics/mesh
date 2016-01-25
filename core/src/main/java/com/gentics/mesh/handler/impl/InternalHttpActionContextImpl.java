@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,12 +19,14 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -31,6 +34,7 @@ import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.NavigationRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -50,6 +54,8 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	private Project project;
 
 	private MeshAuthUser user;
+
+	private List<String> languageTags;
 
 	public InternalHttpActionContextImpl(RoutingContext rc) {
 		super(rc);
@@ -90,16 +96,33 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 
 	@Override
 	public List<String> getSelectedLanguageTags() {
-		List<String> languageTags = new ArrayList<>();
-		Map<String, String> queryPairs = splitQuery();
-		if (queryPairs == null) {
-			return new ArrayList<>();
+		if (languageTags == null) {
+			languageTags = new ArrayList<>();
+			Map<String, String> queryPairs = splitQuery();
+			if (queryPairs == null) {
+				return new ArrayList<>();
+			}
+			String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
+			if (value != null) {
+				languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
+			}
+			if (languageTags.isEmpty()) {
+				languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
+			}
+
+			// check whether given language tags exist
+			Database db = MeshSpringConfiguration.getInstance().database();
+			try (NoTrx noTrx = db.noTrx()) {
+				for (String languageTag : languageTags) {
+					Iterator<Vertex> it = db.getVertices(LanguageImpl.class,
+							new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY }, new Object[] { languageTag });
+					if (!it.hasNext()) {
+						throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+					}
+				}
+			}
 		}
-		String value = queryPairs.get(LANGUAGES_QUERY_PARAM_KEY);
-		if (value != null) {
-			languageTags = new ArrayList<>(Arrays.asList(value.split(",")));
-		}
-		languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
+
 		return languageTags;
 	}
 

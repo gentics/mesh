@@ -123,6 +123,7 @@ public class SearchRestHandler {
 					rootVertex.reload();
 
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
+					List<String> requestedLanguageTags = ac.getSelectedLanguageTags();
 
 					for (SearchHit hit : response.getHits()) {
 
@@ -152,8 +153,9 @@ public class SearchRestHandler {
 					Observable.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					} , (x, y) -> {
-						// Check permissions
-						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), GraphPermission.READ_PERM)) {
+						// Check permissions and language
+						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), GraphPermission.READ_PERM)
+								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -165,17 +167,12 @@ public class SearchRestHandler {
 
 						int n = 0;
 						List<Observable<TR>> transformedElements = new ArrayList<>();
-						for (Tuple<T, String> element : list) {
+						for (Tuple<T, String> objectAndLanguageTag : list) {
 
 							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
-
-								String language = element.v2();
-								// TODO set the language. We cannot just set it into the ActionContext instance,
-								// because this will be reused for all search result elements (asynchronously)
-								transformedElements.add(element.v1().transformToRest(ac));
 								// Transform node and add it to the list of nodes
-
+								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, objectAndLanguageTag.v2()));
 							}
 							n++;
 						}

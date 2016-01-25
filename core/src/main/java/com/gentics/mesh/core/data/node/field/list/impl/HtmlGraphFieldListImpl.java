@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
@@ -42,7 +44,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public Observable<HtmlFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey) {
+	public Observable<HtmlFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
 		HtmlFieldListImpl restModel = new HtmlFieldListImpl();
 		for (HtmlGraphField item : getList()) {
 			restModel.add(item.getHTML());

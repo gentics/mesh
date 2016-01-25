@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,7 +84,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Observable<MicronodeResponse> transformToRest(InternalActionContext ac) {
+	public Observable<MicronodeResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		return db.asyncNoTrxExperimental(() -> {
@@ -105,9 +106,16 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			// Uuid
 			restMicronode.setUuid(getUuid());
 
+			List<String> requestedLanguageTags = new ArrayList<>();
+			if (languageTags.length == 0) {
+				requestedLanguageTags.addAll(ac.getSelectedLanguageTags());
+			} else {
+				requestedLanguageTags.addAll(Arrays.asList(languageTags));
+			}
+
 			// Fields
 			for (FieldSchema fieldEntry : microschema.getFields()) {
-				Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry).map(restField -> {
+				Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags).map(restField -> {
 					if (fieldEntry.isRequired() && restField == null) {
 						/* TODO i18n */
 						// TODO no trx fail. Instead let obsRestField fail
@@ -145,7 +153,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema) {
+	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey,
+			FieldSchema fieldSchema, List<String> languageTags) {
 		// TODO this is duplicated code (from com.gentics.mesh.core.data.impl.NodeGraphFieldContainerImpl.getRestFieldFromGraph())
 		// find a better solution for this
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -197,7 +206,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			if (graphNodeField == null) {
 				return Observable.just(new NodeFieldImpl());
 			} else {
-				return graphNodeField.transformToRest(ac, fieldKey);
+				return graphNodeField.transformToRest(ac, fieldKey, languageTags);
 			}
 		case HTML:
 			HtmlGraphField graphHtmlField = getHtml(fieldKey);
@@ -226,14 +235,14 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				if (nodeFieldList == null) {
 					return Observable.just(new NodeFieldListImpl());
 				} else {
-					return nodeFieldList.transformToRest(ac, fieldKey);
+					return nodeFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case NumberGraphFieldList.TYPE:
 				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
 					return Observable.just(new NumberFieldListImpl());
 				} else {
-					return numberFieldList.transformToRest(ac, fieldKey);
+					return numberFieldList.transformToRest(ac, fieldKey, languageTags);
 
 				}
 			case BooleanGraphFieldList.TYPE:
@@ -242,35 +251,35 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 					return Observable.just(new BooleanFieldListImpl());
 
 				} else {
-					return booleanFieldList.transformToRest(ac, fieldKey);
+					return booleanFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case HtmlGraphFieldList.TYPE:
 				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
 					return Observable.just(new HtmlFieldListImpl());
 				} else {
-					return htmlFieldList.transformToRest(ac, fieldKey);
+					return htmlFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case MicronodeGraphFieldList.TYPE:
 				MicronodeGraphFieldList graphMicroschemaField = getMicronodeList(fieldKey);
 				if (graphMicroschemaField == null) {
 					return Observable.just(new MicronodeFieldListImpl());
 				} else {
-					return graphMicroschemaField.transformToRest(ac, fieldKey);
+					return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags);
 				}
 			case StringGraphFieldList.TYPE:
 				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
 					return Observable.just(new StringFieldListImpl());
 				} else {
-					return stringFieldList.transformToRest(ac, fieldKey);
+					return stringFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			case DateGraphFieldList.TYPE:
 				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
 					return Observable.just(new DateFieldListImpl());
 				} else {
-					return dateFieldList.transformToRest(ac, fieldKey);
+					return dateFieldList.transformToRest(ac, fieldKey, languageTags);
 				}
 			}
 			break;

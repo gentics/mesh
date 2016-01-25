@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.nesting;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -20,6 +22,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 	 * 
 	 * @param ac
 	 * @param fieldKey
+	 * @param languageTags language tags
 	 */
-	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey);
+	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags);
 }

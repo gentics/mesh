@@ -147,7 +147,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRest(InternalActionContext ac) {
+	public Observable<ProjectResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
 			Set<Observable<ProjectResponse>> obsParts = new HashSet<>();

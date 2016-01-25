@@ -109,7 +109,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<TagResponse> transformToRest(InternalActionContext ac) {
+	public Observable<TagResponse> transformToRest(InternalActionContext ac, String...languageTags) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {

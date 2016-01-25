@@ -19,7 +19,9 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * 
 	 * @param ac
 	 *            Context of the calling action
+	 * @param languageTags
+	 *            optional list of language tags to be used for language fallback
 	 */
-	Observable<T> transformToRest(InternalActionContext ac);
+	Observable<T> transformToRest(InternalActionContext ac, String... languageTags);
 
 }
