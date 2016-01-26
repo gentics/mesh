@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
@@ -275,6 +277,20 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateWithConflictingName() {
+		String name = "folder";
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setSegmentField("name");
+		request.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
+		request.setDisplayField("name");
+		request.setName(name);
+
+		Future<SchemaResponse> future = getClient().createSchema(request);
+		latchFor(future);
+		expectException(future, CONFLICT, "schema_conflicting_name", name);
+	}
+
+	@Test
 	public void testUpdateWithConflictingName() {
 		String name = "folder";
 		String originalSchemaName = "content";
@@ -284,7 +300,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "schema_conflicting_name", name);
+		expectException(future, CONFLICT, "schema_conflicting_name", name);
 		schema.reload();
 		assertEquals("The name of the schema was updated", originalSchemaName, schema.getName());
 

@@ -4,8 +4,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.remove;
 
 import java.io.IOException;
 import java.util.List;
@@ -157,9 +159,10 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				throw error(BAD_REQUEST, "error_name_must_be_set");
 			}
 
-			SchemaContainer foundSchema = root.findByName(requestModel.getName()).toBlocking().single();
+			String schemaName = requestModel.getName();
+			SchemaContainer foundSchema = root.findByName(schemaName).toBlocking().single();
 			if (foundSchema != null && !foundSchema.getUuid().equals(getUuid())) {
-				throw error(BAD_REQUEST, "schema_conflicting_name", requestModel.getName());
+				throw conflict(foundSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
 			}
 
 			return db.trx(() -> {
