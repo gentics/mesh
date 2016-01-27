@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -102,16 +103,16 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ObservableFuture<SchemaContainer> obsFut = RxHelper.observableFuture();
 
-		SchemaCreateRequest schema;
+		SchemaCreateRequest requestModel;
 		try {
-			schema = JsonUtil.readSchema(ac.getBodyAsString(), SchemaCreateRequest.class);
-			if (StringUtils.isEmpty(schema.getName())) {
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaCreateRequest.class);
+			if (StringUtils.isEmpty(requestModel.getName())) {
 				throw error(BAD_REQUEST, "schema_missing_name");
 			}
-			if (StringUtils.isEmpty(schema.getSegmentField())) {
+			if (StringUtils.isEmpty(requestModel.getSegmentField())) {
 				throw error(BAD_REQUEST, "schema_missing_segmentfield");
 			}
-			if (StringUtils.isEmpty(schema.getDisplayField())) {
+			if (StringUtils.isEmpty(requestModel.getDisplayField())) {
 				throw error(BAD_REQUEST, "schema_missing_displayfield");
 			}
 			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields
@@ -119,8 +120,15 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
 				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {
+
+					String schemaName = requestModel.getName();
+					SchemaContainer conflictingSchema = findByName(schemaName).toBlocking().last();
+					if (conflictingSchema != null) {
+						throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
+					}
+
 					requestUser.reload();
-					SchemaContainer container = create(schema, requestUser);
+					SchemaContainer container = create(requestModel, requestUser);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 					SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					return Tuple.tuple(batch, container);
