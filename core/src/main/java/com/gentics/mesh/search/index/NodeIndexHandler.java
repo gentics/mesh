@@ -130,7 +130,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			displayFieldMap.put("key", node.getSchema().getDisplayField());
 			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
 			map.put("displayField", displayFieldMap);
-			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), getDocumentId(node, language), map));
+			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 		}
 
 		return Observable.merge(obs).doOnCompleted(() -> {
@@ -165,7 +165,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.debug(json);
 			}
 
-			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(node, language), getDocumentId(node, language), map));
+			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 
 		}
 
@@ -413,7 +413,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            language
 	 * @return document ID
 	 */
-	public String getDocumentId(Node node, String language) {
+	public String composeDocumentId(Node node, String language) {
 		StringBuilder id = new StringBuilder(node.getUuid());
 		id.append("-").append(language);
 		return id.toString();

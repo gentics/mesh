@@ -21,7 +21,6 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public void refreshIndex() {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -60,13 +59,11 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public void start() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -78,7 +75,6 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public Node getNode() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -92,6 +88,16 @@ public class DummySearchProvider implements SearchProvider {
 
 	public Map<String, Map<String, Object>> getUpdateEvents() {
 		return updateEvents;
+	}
+
+	@Override
+	public Observable<Void> clearIndex(String indexName) {
+		return Observable.just(null);
+	}
+
+	@Override
+	public Observable<Void> deleteIndex(String indexName) {
+		return Observable.just(null);
 	}
 
 }

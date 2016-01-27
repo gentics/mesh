@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.Future;
@@ -38,7 +41,7 @@ import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
 @Component
-public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
+public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
@@ -50,6 +53,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 
 	@Autowired
 	protected Database db;
+
+	@Autowired
+	private IndexHandlerRegistry registry;
+
+	@PostConstruct
+	public void register() {
+		registry.registerHandler(this);
+	}
 
 	/**
 	 * Return the index type.
@@ -90,14 +101,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
 	}
 
-	/**
-	 * Update the search index document by loading the graph element for the given uuid and type and transforming it to a source map which will be used to
-	 * update the matching search index document.
-	 * 
-	 * @param uuid
-	 * @param type
-	 * @return
-	 */
+	@Override
 	public Observable<Void> update(String uuid, String type) {
 		ObservableFuture<Void> fut = RxHelper.observableFuture();
 		getRootVertex().findByUuid(uuid).map(element -> {
@@ -126,21 +130,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		});
 	}
 
-	/**
-	 * Delete the document with the given uuid and type from the search index.
-	 * 
-	 * @param uuid
-	 * @param type
-	 * @return
-	 */
+	@Override
 	public Observable<Void> delete(String uuid, String type) {
 		// We don't need to resolve the uuid and load the graph object in this case.
 		return searchProvider.deleteDocument(getIndex(), type, uuid);
 	}
 
-	/**
-	 * Load the given element and invoke store(T element) to store it in the index.
-	 */
+	@Override
 	public Observable<Void> store(String uuid, String indexType) {
 		return getRootVertex().findByUuid(uuid).flatMap(element -> {
 			return db.noTrx(() -> {
@@ -235,16 +231,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		}
 	}
 
-	/**
-	 * Handle a search index action. A action will modify the search index (delete, update, create)
-	 * 
-	 * @param uuid
-	 *            Uuid of the document that should be handled
-	 * @param actionName
-	 *            Type of the action (delete, update, create)
-	 * @param indexType
-	 *            Type of the index
-	 */
+	@Override
 	public Observable<Void> handleAction(String uuid, String actionName, String indexType) {
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
@@ -276,11 +263,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 	 */
 	protected abstract JsonObject getMapping();
 
-	/**
-	 * Update the index specific mapping.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Observable<Void> updateMapping() {
 		try {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(getIndex());
@@ -315,21 +298,18 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> {
 		}
 	}
 
-	/**
-	 * Create the search index.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Observable<Void> createIndex() {
 		return searchProvider.createIndex(getIndex());
 	}
 
-	/**
-	 * Initialize the search index by creating it first and setting the mapping afterwards.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Observable<Void> init() {
 		return createIndex().flatMap(i -> updateMapping());
+	}
+
+	@Override
+	public Observable<Void> clearIndex() {
+		return searchProvider.clearIndex(getIndex());
 	}
 }
