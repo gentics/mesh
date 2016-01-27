@@ -40,6 +40,26 @@ public class NavRootVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	/**
+	 * Test reading a navigation concurrently.
+	 */
+	@Test
+	public void testReadMultithreaded() {
+		int nJobs = 200;
+		String path = "/";
+
+		List<Future<NavigationResponse>> futures = new ArrayList<>();
+		for (int i = 0; i < nJobs; i++) {
+			futures.add(getClient().navroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de")));
+		}
+
+		for (Future<NavigationResponse> fut : futures) {
+			latchFor(fut);
+			assertSuccess(fut);
+			assertThat(fut.result()).isValid(7).hasDepth(3);
+		}
+	}
+
+	/**
 	 * Test reading a navigation using a valid path.
 	 */
 	@Test

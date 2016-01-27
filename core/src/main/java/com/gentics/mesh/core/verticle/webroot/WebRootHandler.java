@@ -57,60 +57,53 @@ public class WebRootHandler {
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
-		Mesh.vertx().executeBlocking((Future<PathSegment> bch) -> {
-			try (NoTrx tx = db.noTrx()) {
-				Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
-				PathSegment lastSegment = nodePath.toBlocking().last().getLast();
+		db.asyncNoTrxExperimental(() -> {
 
-				if (lastSegment != null) {
-					Node node = lastSegment.getNode();
-					if (node == null) {
-						throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
-					}
-					if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
-						bch.complete(lastSegment);
-					} else {
-						bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid()));
-					}
-					// requestUser.isAuthorised(node, READ_PERM, rh -> {
-					// languageTags.add(lastSegment.getLanguageTag());
-					// if (rh.result()) {
-					// bch.complete(node);
-					// } else {
-					// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
-					// }
-					// });
+			Observable<Path> nodePath = webrootService.findByProjectPath(ac, decodedPath);
+			PathSegment lastSegment = nodePath.toBlocking().last().getLast();
 
-				} else {
+			if (lastSegment != null) {
+				Node node = lastSegment.getNode();
+				if (node == null) {
 					throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 				}
-			}
-		} , false, arh -> {
-			if (arh.failed()) {
-				ac.fail(arh.cause());
-			}
-			// TODO copy this to all other handlers. We need to catch async errors as well elsewhere 
-			if (arh.succeeded()) {
-				PathSegment lastSegment = arh.result();
-				Node node = lastSegment.getNode();
-				GraphField field = lastSegment.getPathField();
-				if (field instanceof BinaryGraphField) {
-					BinaryGraphField binaryField = (BinaryGraphField) field;
-					try (NoTrx tx = db.noTrx()) {
-						// TODO move binary handler outside of event loop scope to avoid bogus object creation
-						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-						handler.handle(binaryField);
+				if (requestUser.hasPermissionSync(ac, node, READ_PERM)) {
+					GraphField field = lastSegment.getPathField();
+					if (field instanceof BinaryGraphField) {
+						BinaryGraphField binaryField = (BinaryGraphField) field;
+						try (NoTrx tx = db.noTrx()) {
+							// TODO move binary handler outside of event loop scope to avoid bogus object creation
+							BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+							handler.handle(binaryField);
+							return null;
+						}
+					} else {
+						return node.transformToRest(ac, lastSegment.getLanguageTag());
 					}
+
 				} else {
-					node.transformToRest(ac, lastSegment.getLanguageTag()).subscribe(model -> {
-						ac.send(JsonUtil.toJson(model), HttpResponseStatus.valueOf(
-								NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
-					} , error -> {
-						ac.fail(error);
-					});
+					throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
 				}
+				// requestUser.isAuthorised(node, READ_PERM, rh -> {
+				// languageTags.add(lastSegment.getLanguageTag());
+				// if (rh.result()) {
+				// bch.complete(node);
+				// } else {
+				// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
+				// }
+				// });
+
+			} else {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
-		});
+
+		}).subscribe(model -> {
+			if (model != null) {
+				ac.send(JsonUtil.toJson(model),
+						HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
+			}
+		} , ac::fail);
+
 	}
 
 }
