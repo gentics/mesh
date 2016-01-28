@@ -779,7 +779,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, Schema schema) {
-
+		//TODO: This should return an observable
 		// Initially all fields are not yet handled
 		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
 		unhandledFieldKeys.addAll(restFields.keySet());
@@ -790,7 +790,6 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			Field restField = restFields.get(key);
 			unhandledFieldKeys.remove(key);
 			updateField(ac, key, restField, entry, schema);
-
 		}
 
 		// Some fields were specified within the JSON but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user
@@ -799,14 +798,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		for (String key : unhandledFieldKeys) {
 			extraFields += "[" + key + "]";
 		}
-		if (!StringUtils.isEmpty(extraFields))
 
-		{
+		if (!StringUtils.isEmpty(extraFields)) {
 			throw error(BAD_REQUEST, "node_unhandled_fields", schema.getName(), extraFields);
 		}
 
 	}
 
+	/**
+	 * Delete the field with the given key from the container.
+	 * 
+	 * @param key
+	 */
 	private void deleteField(String key) {
 		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
@@ -830,8 +833,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @param schema
 	 * @throws HttpStatusCodeErrorException
 	 */
-	private void failOnMissingMandatoryField(InternalActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key, Schema schema)
-			throws HttpStatusCodeErrorException {
+	private void failOnMissingMandatoryField(InternalActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key,
+			Schema schema) throws HttpStatusCodeErrorException {
 		if (field == null && fieldSchema.isRequired() && restField == null) {
 			throw error(BAD_REQUEST, "node_error_missing_mandatory_field_value", key, schema.getName());
 		}
