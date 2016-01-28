@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +132,22 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	@Test
+	public void testReadMultithreaded() {
+		int nJobs = 200;
+		String path = "/News/2015/News_2015.en.html";
+
+		List<Future<WebRootResponse>> futures = new ArrayList<>();
+		for (int i = 0; i < nJobs; i++) {
+			futures.add(getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de")));
+		}
+
+		for (Future<WebRootResponse> fut : futures) {
+			latchFor(fut);
+			assertSuccess(fut);
+		}
+	}
+
+	@Test
 	public void testPathWithSpaces() throws Exception {
 		String[] path = new String[] { "News", "2015", "Special News_2014.en.html" };
 		Future<WebRootResponse> future = getClient().webroot(PROJECT_NAME, path, new NodeRequestParameter().setLanguages("en", "de"));
@@ -234,8 +251,8 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	/**
-	 * Test reading the "not found" path /error/404, when this resolves to an existing node.
-	 * We expect the node to be returned, but the status code still to be 404
+	 * Test reading the "not found" path /error/404, when this resolves to an existing node. We expect the node to be returned, but the status code still to be
+	 * 404
 	 */
 	@Test
 	public void testRead404Node() {

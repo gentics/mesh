@@ -23,7 +23,6 @@ public interface SearchProvider {
 	 */
 	Observable<Void> createIndex(String indexName);
 
-
 	// TODO add a good response instead of void. We need this in oder to handle correct logging?
 	/**
 	 * Update the document and invoke the handler when the document has been updated or an error occurred.
@@ -98,5 +97,20 @@ public interface SearchProvider {
 	 */
 	// TODO get rid of the elastic search dependency within the interface
 	Node getNode();
+
+	/**
+	 * Clear the given index.
+	 * 
+	 * @param indexName
+	 */
+	Observable<Void> clearIndex(String indexName);
+
+	/**
+	 * Delete the given index.
+	 * 
+	 * @param indexName
+	 * @return
+	 */
+	Observable<Void> deleteIndex(String indexName);
 
 }
