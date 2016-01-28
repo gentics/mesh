@@ -395,9 +395,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				containerLanguageTags.add(0, restNode.getLanguage());
 
 				for (FieldSchema fieldEntry : schema.getFields()) {
-					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
+//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 					Observable<NodeResponse> obsFields = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(),
-							fieldEntry, expandField, containerLanguageTags).map(restField -> {
+							fieldEntry, containerLanguageTags).map(restField -> {
 						if (fieldEntry.isRequired() && restField == null) {
 							// TODO i18n
 							throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()

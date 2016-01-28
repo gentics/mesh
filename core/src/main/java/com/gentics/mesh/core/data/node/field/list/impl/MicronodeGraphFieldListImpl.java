@@ -67,7 +67,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Observable<Boolean> update(ActionContext ac, MicronodeFieldList list) {
+	public Observable<Boolean> update(InternalActionContext ac, MicronodeFieldList list) {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		Map<String, Micronode> existing = getList().stream().collect(Collectors.toMap(field -> {
@@ -104,7 +104,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					}
 				}
 				try {
-					micronode.updateFieldsFromRest(ac, node.getFields());
+					micronode.updateFieldsFromRest(ac, node.getFields(), null);
 				} catch (Exception e) {
 					throw new Error(e);
 				}
