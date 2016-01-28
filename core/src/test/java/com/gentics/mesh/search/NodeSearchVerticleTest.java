@@ -291,11 +291,27 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testSearchContentResolveLinksAndLangFallback() throws InterruptedException, JSONException {
+		fullIndex();
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("de", "en"));
+		latchFor(future);
+		assertSuccess(future);
+		NodeListResponse response = future.result();
+		assertEquals(1, response.getData().size());
+		assertEquals(1, response.getMetainfo().getTotalCount());
+		for (NodeResponse nodeResponse : response.getData()) {
+			assertNotNull(nodeResponse);
+			assertNotNull(nodeResponse.getUuid());
+		}
+	}
+
+	@Test
 	public void testSearchContentResolveLinks() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"),
-				new PagingParameter().setPage(1).setPerPage(2),
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
 				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
 		latchFor(future);
 		assertSuccess(future);
@@ -332,9 +348,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	/**
-	 * Search for string which can be found in two language variants of a single
-	 * node. We would expect two nodes in the result which have different
-	 * language properties.
+	 * Search for string which can be found in two language variants of a single node. We would expect two nodes in the result which have different language
+	 * properties.
 	 *
 	 * @throws InterruptedException
 	 * @throws JSONException
@@ -351,13 +366,13 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	 * @throws InterruptedException
 	 * @throws JSONException
 	 */
-	protected void searchWithLanguages(String...expectedLanguages) throws InterruptedException, JSONException {
+	protected void searchWithLanguages(String... expectedLanguages) throws InterruptedException, JSONException {
 		fullIndex();
 
 		Node node = content("concorde");
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("concorde"),
-				new PagingParameter().setPage(1).setPerPage(100), new NodeRequestParameter().setLanguages(expectedLanguages));
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("concorde"), new PagingParameter().setPage(1).setPerPage(100),
+				new NodeRequestParameter().setLanguages(expectedLanguages));
 		latchFor(future);
 		assertSuccess(future);
 		NodeListResponse response = future.result();
@@ -442,8 +457,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		addMicronodeField();
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"),
-				new PagingParameter().setPage(1).setPerPage(2),
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"), new PagingParameter().setPage(1).setPerPage(2),
 				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
 		latchFor(future);
 		assertSuccess(future);
