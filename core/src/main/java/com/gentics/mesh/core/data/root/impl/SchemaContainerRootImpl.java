@@ -12,7 +12,7 @@ import org.elasticsearch.common.collect.Tuple;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;

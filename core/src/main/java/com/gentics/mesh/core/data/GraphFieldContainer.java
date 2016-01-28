@@ -17,15 +17,11 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
@@ -300,6 +296,6 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param restFields
 	 * @param schema
 	 */
-	void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, Schema schema);
+	void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema);
 
 }

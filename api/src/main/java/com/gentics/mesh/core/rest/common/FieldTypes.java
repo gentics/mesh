@@ -10,7 +10,6 @@ import com.gentics.mesh.core.rest.node.field.ListField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -19,7 +18,6 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.ListFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -30,7 +28,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -40,22 +37,21 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
  * This enum stores all needed references to interfaces and implementations for the various field types. Each field has a fieldschema, fieldschema impl, rest
- * pojo model interface, rest pojo model implementation.
+ * POJO model interface, rest POJO model implementation.
  */
 public enum FieldTypes {
 	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringField.class, StringFieldImpl.class), HTML(HtmlFieldSchema.class,
 			HtmlFieldSchemaImpl.class, HtmlField.class, HtmlFieldImpl.class), NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class,
 					NumberField.class, NumberFieldImpl.class), DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class,
 							DateFieldImpl.class), BOOLEAN(BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanField.class,
-									BooleanFieldImpl.class), SELECT(SelectFieldSchema.class, SelectFieldSchemaImpl.class, SelectField.class,
-											SelectFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class, NodeField.class,
-													NodeFieldImpl.class), LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListField.class,
-															ListFieldImpl.class), BINARY(BinaryFieldSchema.class, BinaryFieldSchemaImpl.class, BinaryField.class, BinaryFieldImpl.class), MICRONODE(MicronodeFieldSchema.class,
+									BooleanFieldImpl.class), NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class, NodeField.class,
+											NodeFieldImpl.class), LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListField.class,
+													ListFieldImpl.class), BINARY(BinaryFieldSchema.class, BinaryFieldSchemaImpl.class,
+															BinaryField.class, BinaryFieldImpl.class), MICRONODE(MicronodeFieldSchema.class,
 																	MicronodeFieldSchemaImpl.class, MicronodeField.class, MicronodeResponse.class);
 
 	private Class<? extends FieldSchema> schemaInterfaceClazz;

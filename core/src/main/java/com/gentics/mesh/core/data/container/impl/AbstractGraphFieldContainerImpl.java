@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.impl;
+package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
@@ -85,10 +85,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
@@ -466,7 +466,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	}
 
-	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, Schema schema) {
+	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
@@ -765,19 +765,14 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				}
 			}
 
-			try {
-				micronode.updateFieldsFromRest(ac, micronodeField.getFields(), schema);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			micronode.updateFieldsFromRest(ac, micronodeField.getFields(), micronode.getMicroschema());
 
 			break;
 		}
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, Schema schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema) {
 		//TODO: This should return an observable
 		// Initially all fields are not yet handled
 		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
@@ -833,7 +828,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @throws HttpStatusCodeErrorException
 	 */
 	private void failOnMissingMandatoryField(InternalActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key,
-			Schema schema) throws HttpStatusCodeErrorException {
+			FieldSchemaContainer schema) throws HttpStatusCodeErrorException {
 		if (field == null && fieldSchema.isRequired() && restField == null) {
 			throw error(BAD_REQUEST, "node_error_missing_mandatory_field_value", key, schema.getName());
 		}

@@ -4,7 +4,7 @@ import rx.Observable;
 
 /**
  * Index handlers are used to interact with the search provider index on a type specific level. Each domain model in mesh which is searchable needs to implement
- * a index handler in order to interact with search index specific documents in the index (CRUD on search index documents).
+ * an index handler in order to interact with search index specific documents in the index (CRUD on search index documents).
  */
 public interface IndexHandler {
 
@@ -37,7 +37,7 @@ public interface IndexHandler {
 	Observable<Void> updateMapping();
 
 	/**
-	 * Handle a search index action. A action will modify the search index (delete, update, create)
+	 * Handle a search index action. An action will modify the search index (delete, update, create)
 	 * 
 	 * @param uuid
 	 *            Uuid of the document that should be handled
