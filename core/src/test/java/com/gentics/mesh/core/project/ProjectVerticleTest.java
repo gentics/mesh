@@ -372,7 +372,6 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
-
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		String uuid = project().getUuid();
@@ -399,6 +398,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled since test is unstable - CL-246")
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;

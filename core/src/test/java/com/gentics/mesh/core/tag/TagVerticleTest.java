@@ -428,6 +428,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled since test is unstable - CL-246")
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 200;

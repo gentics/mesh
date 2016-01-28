@@ -463,6 +463,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
 
 		int nJobs = 200;
