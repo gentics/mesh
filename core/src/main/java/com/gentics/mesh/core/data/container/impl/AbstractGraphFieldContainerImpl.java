@@ -96,6 +96,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
+/**
+ * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
+ */
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractGraphFieldContainerImpl.class);
@@ -106,10 +109,6 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @return
 	 */
 	abstract protected Node getParentNode();
-
-	public List<String> getFieldnames() {
-		return null;
-	}
 
 	@Override
 	public StringGraphField createString(String key) {
@@ -311,6 +310,15 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
 	}
 
+	/**
+	 * Create new list of the given type.
+	 * 
+	 * @param classOfT
+	 *            Implementation/Type of list
+	 * @param fieldKey
+	 *            Field key for the list
+	 * @return
+	 */
 	private <T extends ListGraphField<?, ?>> T createList(Class<T> classOfT, String fieldKey) {
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
@@ -466,6 +474,19 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	}
 
+	/**
+	 * Update or create the field using the given restField. The {@link FieldSchema} is used to determine the type of the field.
+	 * 
+	 * @param ac
+	 *            Context of the request
+	 * @param key
+	 *            Key of the field
+	 * @param restField
+	 *            Rest model with data to be stored
+	 * @param fieldSchema
+	 *            Field schema of the field
+	 * @param schema
+	 */
 	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
