@@ -36,10 +36,10 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
-import com.tinkerpop.gremlin.Tokens.T;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -64,6 +64,9 @@ public class SearchRestHandler {
 
 	@Autowired
 	private Database db;
+
+	@Autowired
+	private IndexHandlerRegistry registry;
 
 	/**
 	 * Handle a search request.
@@ -228,6 +231,9 @@ public class SearchRestHandler {
 	public void handleReindex(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			if (ac.getUser().hasAdminRole()) {
+				for (IndexHandler handler : registry.getHandlers()) {
+					handler.clearIndex().toBlocking().single();
+				}
 				boot.meshRoot().getSearchQueue().addFullIndex();
 				boot.meshRoot().getSearchQueue().processAll();
 				return Observable.just(message(ac, "search_admin_reindex_invoked"));

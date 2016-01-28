@@ -74,8 +74,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.SearchHelper;
+import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchVerticle;
+import com.gentics.mesh.search.index.IndexHandler;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -104,7 +105,7 @@ public class BootstrapInitializer {
 	private Database db;
 
 	@Autowired
-	private SearchHelper searchHelper;
+	private IndexHandlerRegistry searchHandlerRegistry;
 
 	private static BootstrapInitializer instance;
 
@@ -203,7 +204,9 @@ public class BootstrapInitializer {
 	}
 
 	private void initSearchIndex() {
-		searchHelper.init();
+		for (IndexHandler handler : searchHandlerRegistry.getHandlers()) {
+			handler.init().toBlocking().single();
+		}
 	}
 
 	/**

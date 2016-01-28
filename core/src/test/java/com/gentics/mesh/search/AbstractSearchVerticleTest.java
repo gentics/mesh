@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.gentics.mesh.search.index.IndexHandler;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.SpringElasticSearchTestConfiguration;
 
@@ -37,17 +38,21 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	protected SearchProvider searchProvider;
 
 	@Autowired
-	private SearchHelper searchHelper;
+	private IndexHandlerRegistry registry;
 
 	@Before
 	public void initElasticSearch() {
-		searchHelper.init();
+		for (IndexHandler handler : registry.getHandlers()) {
+			handler.init().toBlocking().single();
+		}
 	}
 
 	@After
 	public void resetElasticSearch() {
 		searchProvider.reset();
-		searchHelper.init();
+		for (IndexHandler handler : registry.getHandlers()) {
+			handler.init().toBlocking().single();
+		}
 	}
 
 	@BeforeClass

@@ -11,7 +11,9 @@ import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
@@ -19,6 +21,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -257,5 +260,51 @@ public class ElasticSearchProvider implements SearchProvider {
 		});
 		return fut;
 
+	}
+
+	@Override
+	public Observable<Void> deleteIndex(String indexName) {
+		long start = System.currentTimeMillis();
+		ObservableFuture<Void> fut = RxHelper.observableFuture();
+		getSearchClient().admin().indices().prepareDelete(indexName).execute(new ActionListener<DeleteIndexResponse>() {
+
+			public void onResponse(DeleteIndexResponse response) {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+				}
+				fut.toHandler().handle(Future.succeededFuture());
+			};
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+				fut.toHandler().handle(Future.failedFuture(e));
+			}
+		});
+		return fut;
+	}
+
+	@Override
+	public Observable<Void> clearIndex(String indexName) {
+		long start = System.currentTimeMillis();
+		ObservableFuture<Void> fut = RxHelper.observableFuture();
+		getSearchClient().prepareDeleteByQuery(indexName).setQuery(QueryBuilders.matchAllQuery()).execute()
+				.addListener(new ActionListener<DeleteByQueryResponse>() {
+					public void onResponse(DeleteByQueryResponse response) {
+
+						if (log.isDebugEnabled()) {
+							log.debug("Deleted index {" + indexName + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+						}
+						fut.toHandler().handle(Future.succeededFuture());
+					};
+
+					@Override
+					public void onFailure(Throwable e) {
+						log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+						fut.toHandler().handle(Future.failedFuture(e));
+					}
+				});
+
+		return fut;
 	}
 }
