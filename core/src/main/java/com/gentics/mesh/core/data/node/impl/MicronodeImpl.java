@@ -142,12 +142,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		switch (type) {
 		case BINARY:
 		case MICRONODE:
-			throw error(BAD_REQUEST, "micronodes don't support fields of type {" + type + "}");
+			throw error(BAD_REQUEST, "error_unsupported_fieldtype", type.name());
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			switch (listFieldSchema.getListType()) {
 			case MicronodeGraphFieldList.TYPE:
-				throw error(BAD_REQUEST, "micronodes don't support micronode lists");
+				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
 				return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags);
 			}
@@ -159,16 +159,18 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
+
+		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case BINARY:
 		case MICRONODE:
-			throw error(BAD_REQUEST, "micronodes don't support fields of type {" + type + "}");
+			throw error(BAD_REQUEST, "error_unsupported_fieldtype", type.name());
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			switch (listFieldSchema.getListType()) {
 			case MicronodeGraphFieldList.TYPE:
-				throw error(BAD_REQUEST, "micronodes don't support micronode lists");
+				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
 				super.updateField(ac, key, restField, fieldSchema, schema);
 			}

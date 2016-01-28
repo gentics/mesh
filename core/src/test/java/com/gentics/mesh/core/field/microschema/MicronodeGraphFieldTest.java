@@ -6,6 +6,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -38,13 +42,13 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Test cases for fields of type "micronode"
- * TODO: add tests for all types of fields that can be put into a micronode
+ * Test cases for fields of type "micronode" TODO: add tests for all types of fields that can be put into a micronode
  */
 public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 	/**
@@ -69,11 +73,11 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		Microschema fullMicroschema = new MicroschemaImpl();
 		fullMicroschema.setName("full");
 
-//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
+		//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
 		fullMicroschema.addField(new BooleanFieldSchemaImpl().setName("booleanfield").setLabel("Boolean Field"));
 		fullMicroschema.addField(new DateFieldSchemaImpl().setName("datefield").setLabel("Date Field"));
 		fullMicroschema.addField(new HtmlFieldSchemaImpl().setName("htmlfield").setLabel("HTML Field"));
-//		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
+		//		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("boolean").setName("listfield-boolean").setLabel("Boolean List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("date").setName("listfield-date").setLabel("Date List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("html").setName("listfield-html").setLabel("Html List Field"));
@@ -95,7 +99,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer);
 		Micronode micronode = micronodeField.getMicronode();
 		assertNotNull("Micronode must not be null", micronode);
-//		micronode.createBinary("binaryfield");
+		//		micronode.createBinary("binaryfield");
 		micronode.createBoolean("booleanfield").setBoolean(true);
 		micronode.createDate("datefield").setDate(date);
 		micronode.createHTML("htmlfield").setHtml("<b>HTML</b> value");
@@ -129,7 +133,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 
 		micronode.createNode("nodefield", newOverview);
 		micronode.createNumber("numberfield").setNumber(4711);
-//		micronode.createSelect("selectfield");
+		//		micronode.createSelect("selectfield");
 		micronode.createString("stringfield").setString("String Value");
 
 		JsonObject jsonObject = new JsonObject(getJson(node));
@@ -186,6 +190,23 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		assertNotNull(reloadedMicronodeStringField);
 
 		assertEquals(micronodeStringField.getString(), reloadedMicronodeStringField.getString());
+	}
+
+	@Test
+	public void testMicronodeUpdateFromRest() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+
+		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema);
+		Micronode micronode = field.getMicronode();
+
+		InternalActionContext ac = getMockedInternalActionContext("");
+
+		Map<String, Field> restFields = new HashMap<>();
+		restFields.put("stringfield", new StringFieldImpl().setString("test"));
+		field.getMicronode().updateFieldsFromRest(ac, restFields, micronode.getMicroschema());
+
+		assertNotNull("The field should have been created.", field.getMicronode().getString("stringfield"));
+		assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
 	}
 
 	/**

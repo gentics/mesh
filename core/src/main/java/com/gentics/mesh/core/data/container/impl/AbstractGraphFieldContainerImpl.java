@@ -497,9 +497,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			// Create new graph field if no existing one could be found
 			if (graphStringField == null) {
 				graphStringField = createString(key);
-			} else {
-				graphStringField.setString(stringField.getString());
 			}
+			graphStringField.setString(stringField.getString());
 
 			break;
 		case BINARY:
