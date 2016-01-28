@@ -104,7 +104,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					}
 				}
 				try {
-					micronode.updateFieldsFromRest(ac, node.getFields(), null);
+					micronode.updateFieldsFromRest(ac, node.getFields(), micronode.getMicroschema());
 				} catch (Exception e) {
 					throw new Error(e);
 				}
