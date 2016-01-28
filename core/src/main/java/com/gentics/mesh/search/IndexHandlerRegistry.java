@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import com.gentics.mesh.search.index.IndexHandler;
 @Component
 public class IndexHandlerRegistry {
 
-	private Map<String, IndexHandler> handlers = new HashMap<>();
+	private Map<String, IndexHandler> handlers = Collections.synchronizedMap(new HashMap<>());
 
 	/**
 	 * Register the given handler.

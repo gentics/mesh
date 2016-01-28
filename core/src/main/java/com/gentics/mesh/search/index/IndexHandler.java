@@ -59,6 +59,10 @@ public interface IndexHandler {
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
+	 * 
+	 * @param uuid
+	 * @param indexType
+	 * @return
 	 */
 	Observable<Void> store(String uuid, String indexType);
 
