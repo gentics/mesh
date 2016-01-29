@@ -7,8 +7,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -65,6 +65,16 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				return removedSchema.transformToRest(ac);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	public void handleGetSchemaChanges(InternalActionContext ac) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void handleExecuteSchemaChanges(InternalActionContext ac) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

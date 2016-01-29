@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshSchemaException;
 

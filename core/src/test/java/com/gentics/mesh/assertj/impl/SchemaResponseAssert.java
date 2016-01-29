@@ -3,7 +3,7 @@ package com.gentics.mesh.assertj.impl;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 
 public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAssert, SchemaResponse> {

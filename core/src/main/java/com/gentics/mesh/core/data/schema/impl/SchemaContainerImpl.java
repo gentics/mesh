@@ -1,13 +1,14 @@
-package com.gentics.mesh.core.data.impl;
+package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGESET;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.remove;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,11 +16,12 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.SchemaChangeset;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -40,6 +42,8 @@ import rx.Observable;
  */
 public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, SchemaContainer> implements SchemaContainer {
 
+	private static final String VERSION_PROPERTY_KEY = "version";
+
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
 	}
@@ -55,7 +59,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	}
 
 	@Override
-	public Observable<SchemaResponse> transformToRest(InternalActionContext ac, String...languageTags) {
+	public Observable<SchemaResponse> transformToRest(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
 			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);
@@ -149,6 +153,16 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	}
 
 	@Override
+	public String getVersion() {
+		return getProperty(VERSION_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setVersion(String version) {
+		setProperty(VERSION_PROPERTY_KEY, version);
+	}
+
+	@Override
 	public Observable<? extends SchemaContainer> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
@@ -187,6 +201,26 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				batch.addEntry(node, UPDATE_ACTION);
 			}
 		}
+	}
+
+	@Override
+	public SchemaContainer getNextVersion() {
+		return in(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+	}
+
+	@Override
+	public SchemaContainer getPreviousVersion() {
+		return out(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+	}
+
+	@Override
+	public SchemaChangeset getChangesetForNextVersion() {
+		return out(HAS_CHANGESET).has(SchemaChangesetImpl.class).nextOrDefaultExplicit(SchemaChangesetImpl.class, null);
+	}
+
+	@Override
+	public SchemaChangeset getChangesetForPreviousVersion() {
+		return in(HAS_CHANGESET).has(SchemaChangesetImpl.class).nextOrDefaultExplicit(SchemaChangesetImpl.class, null);
 	}
 
 }

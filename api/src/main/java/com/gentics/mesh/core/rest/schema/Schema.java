@@ -121,4 +121,18 @@ public interface Schema {
 	 */
 	Optional<FieldSchema> getFieldSchema(String fieldName);
 
+	/**
+	 * Return the schema version.
+	 * 
+	 * @return
+	 */
+	String getVersion();
+
+	/**
+	 * Set the schema version.
+	 * 
+	 * @param version
+	 */
+	void setVersion(String version);
+
 }

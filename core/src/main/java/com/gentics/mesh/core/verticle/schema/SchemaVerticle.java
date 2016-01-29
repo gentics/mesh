@@ -41,6 +41,20 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addChangesHandler();
+	}
+
+	private void addChangesHandler() {
+		Route getRoute = route("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+		});
+
+		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
+		executeRoute.handler(rc -> {
+			crudHandler.handleExecuteSchemaChanges(InternalActionContext.create(rc));
+		});
 	}
 
 	private void addSchemaProjectHandlers() {
