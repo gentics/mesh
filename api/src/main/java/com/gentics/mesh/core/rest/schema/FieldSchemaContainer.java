@@ -4,22 +4,22 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A field schema container is a container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
+ * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
  */
 public interface FieldSchemaContainer {
 
 	/**
-	 * Return the name of the microschema.
+	 * Return the name of the container.
 	 * 
-	 * @return Name of the microschema
+	 * @return Name of the container
 	 */
 	String getName();
 
 	/**
-	 * Set the microschema name.
+	 * Set the container name.
 	 * 
 	 * @param name
-	 *            Name of the microschema
+	 *            Name of the container
 	 */
 	void setName(String name);
 

@@ -134,6 +134,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		}
 	}
 
+	@Override
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			java.util.List<String> languageTags) {
 
