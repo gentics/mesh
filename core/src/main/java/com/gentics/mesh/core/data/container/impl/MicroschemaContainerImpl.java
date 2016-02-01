@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.impl;
+package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
@@ -56,16 +56,6 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 		setProperty(NAME_PROPERTY_KEY, name);
 	}
 
-//	@Override
-//	public String getDescription() {
-//		return getProperty(DESCRIPTION_PROPERTY_KEY);
-//	}
-//
-//	@Override
-//	public void setDescription(String text) {
-//		setProperty(DESCRIPTION_PROPERTY_KEY, text);
-//	}
-
 	@Override
 	public Microschema getMicroschema() {
 		Microschema microschema = getSchemaStorage().getMicroschema(getName());
@@ -89,7 +79,7 @@ public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<Microschema
 	}
 
 	@Override
-	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac, String...languageTags) {
+	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
 			MicroschemaResponse microschema = JsonUtil.readSchema(getJson(), MicroschemaResponse.class);

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import com.gentics.mesh.core.data.Translated;
+import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
 import com.syncleus.ferma.AbstractEdgeFrame;

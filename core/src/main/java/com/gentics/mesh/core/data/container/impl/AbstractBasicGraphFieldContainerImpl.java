@@ -1,10 +1,11 @@
-package com.gentics.mesh.core.data.impl;
+package com.gentics.mesh.core.data.container.impl;
 
 import java.util.Map;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 
 /**

@@ -47,6 +47,11 @@ public class MicroschemaImpl implements Microschema, RestModel {
 	}
 
 	@Override
+	public Optional<FieldSchema> getFieldSchema(String fieldName) {
+		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst();
+	}
+
+	@Override
 	public void addField(FieldSchema fieldSchema) {
 		this.fields.add(fieldSchema);
 	}

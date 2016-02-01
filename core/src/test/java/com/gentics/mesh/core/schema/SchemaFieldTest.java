@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -14,14 +12,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SelectFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SelectFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
@@ -47,15 +43,6 @@ public class SchemaFieldTest extends AbstractBasicDBTest {
 		schema.addField(new NumberFieldSchemaImpl().setLabel("label_3").setName("name_3").setRequired(true));
 		schema.addField(new DateFieldSchemaImpl().setLabel("label_4").setName("name_4").setRequired(true));
 		schema.addField(new BooleanFieldSchemaImpl().setLabel("label_5").setName("name_5").setRequired(true));
-
-		SelectFieldSchema selectFieldSchema = new SelectFieldSchemaImpl();
-		selectFieldSchema.setLabel("label_6").setName("name_6").setRequired(true);
-		List<String> options = new ArrayList<>();
-		options.add("option_1");
-		options.add("option_2");
-		options.add("option_3");
-		selectFieldSchema.setSelections(options);
-		schema.addField(selectFieldSchema);
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setLabel("label_7").setName("name_7").setRequired(true);

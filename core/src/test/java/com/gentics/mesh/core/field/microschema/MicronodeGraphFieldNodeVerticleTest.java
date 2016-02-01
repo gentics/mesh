@@ -66,6 +66,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("vcard"));
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 		NodeResponse response = updateNode(FIELDNAME, field);
 
 		MicronodeResponse fieldResponse = response.getField(FIELDNAME);
@@ -171,13 +172,9 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("html").setName("listfield-html").setLabel("Html List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("node").setName("listfield-node").setLabel("Node List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("number").setName("listfield-number").setLabel("Number List Field"));
-		// TODO implement SelectField
-//		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("select").setName("listfield-select").setLabel("Select List Field"));
 		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("string").setName("listfield-string").setLabel("String List Field"));
 		fullMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield").setLabel("Node Field"));
 		fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
-		// TODO implement SelectField
-//		fullMicroschema.addField(new SelectFieldSchemaImpl().setName("selectfield").setLabel("Select Field"));
 		fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 		microschemaContainers().put("full", boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser()));
 		resetClientSchemaStorage();

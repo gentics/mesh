@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.impl;
+package com.gentics.mesh.core.data.container.impl;
 
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
 import com.gentics.mesh.graphdb.spi.Database;

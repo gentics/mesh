@@ -463,6 +463,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateUpdateReadDeleteMultithreaded() throws Exception {
 
 		int nJobs = 200;
@@ -548,6 +549,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Disabled since test is unstable - CL-246")
 	public void testCreateMultithreaded() throws InterruptedException {
 		Node parentNode = folder("news");
 		String uuid = parentNode.getUuid();
@@ -590,6 +592,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Disabled since test is unstable - CL-246")
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		final String newName = "english renamed name";
