@@ -45,7 +45,7 @@ public class SchemaChangeModelImpl implements RestModel {
 	/**
 	 * Set the operation for this change.
 	 * 
-	 * @param action
+	 * @param operation
 	 */
 	public void setOperation(String operation) {
 		this.operation = operation;
