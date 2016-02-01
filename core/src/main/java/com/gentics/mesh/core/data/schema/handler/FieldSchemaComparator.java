@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
 
 /**
  * The field schema comparator can be used to compare two field schemas with each other.
@@ -20,7 +20,7 @@ public class FieldSchemaComparator {
 	 * @param fieldSchemaB
 	 * @return
 	 */
-	public Optional<SchemaChange> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
+	public Optional<SchemaChangeModelImpl> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
 		return Optional.empty();
 	}
 }

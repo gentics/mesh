@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaChangeAction;
-import com.gentics.mesh.core.data.schema.impl.SchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.ChangeOperation;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -32,16 +32,19 @@ public class SchemaComparator {
 	@Autowired
 	private FieldSchemaComparator fieldComparator;
 
-	public List<SchemaChange> diff(Schema schemaA, Schema schemaB) {
+	public List<SchemaChangeModelImpl> diff(Schema schemaA, Schema schemaB) {
 		Objects.requireNonNull(schemaA, "The schema must not be null");
 		Objects.requireNonNull(schemaB, "The schema must not be null");
 
-		List<SchemaChange> changes = new ArrayList<>();
+		List<SchemaChangeModelImpl> changes = new ArrayList<>();
 		// segmentField
+		compareAndAdd(changes, schemaA.getSegmentField(), schemaB.getSegmentField());
 
 		// displayField
+		compareAndAdd(changes, schemaA.getDisplayField(), schemaB.getDisplayField());
 
 		// container flag
+		compareAndAdd(changes, schemaA.isContainer(), schemaB.isContainer());
 
 		// Diff the fields
 		Map<String, FieldSchema> schemaAFields = transformFieldsToMap(schemaA);
@@ -54,6 +57,7 @@ public class SchemaComparator {
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInA.getName() + " was removed.");
 				}
+				changes.add(new SchemaChangeModelImpl().setOperation(ChangeOperation.REMOVE));
 			}
 		}
 
@@ -65,11 +69,10 @@ public class SchemaComparator {
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInB.getName() + " was added.");
 				}
-				// TODO impl 
-				//changes.add(new SchemaChangeImpl().setAction(SchemaChangeAction.ADD));
+				changes.add(new SchemaChangeModelImpl().setOperation(ChangeOperation.ADD));
 			} else {
 				// Field was not added or removed. It exists in both schemas. Lets see whether it changed
-				Optional<SchemaChange> change = fieldComparator.compare(fieldInA, fieldInB);
+				Optional<SchemaChangeModelImpl> change = fieldComparator.compare(fieldInA, fieldInB);
 				// Change detected so lets add it to the list of changes
 				if (change.isPresent()) {
 					if (log.isDebugEnabled()) {
@@ -86,6 +89,49 @@ public class SchemaComparator {
 		}
 
 		return changes;
+	}
+
+	/**
+	 * Compare the given objects and add a schema change entry to the given list of changes.
+	 * 
+	 * @param changes
+	 * @param objectA
+	 * @param objectB
+	 */
+	private void compareAndAdd(List<SchemaChangeModelImpl> changes, Object objectA, Object objectB) {
+		switch (compare(objectA, objectB)) {
+
+		case ADDED:
+			changes.add(new SchemaChangeModelImpl().setOperation(ChangeOperation.ADD));
+			break;
+		case REMOVED:
+			changes.add(new SchemaChangeModelImpl().setOperation(ChangeOperation.REMOVE));
+			break;
+		case CHANGED:
+			changes.add(new SchemaChangeModelImpl().setOperation(ChangeOperation.UPDATE));
+		}
+
+	}
+
+	/**
+	 * Compare two strings and return a difference indicator.
+	 * 
+	 * @param a
+	 * @param b
+	 * @return Difference between both strings
+	 */
+	private Difference compare(Object a, Object b) {
+		if (a == null && b == null) {
+			return Difference.SAME;
+		} else if (a == null && b != null) {
+			return Difference.ADDED;
+		} else if (b == null && a != null) {
+			return Difference.REMOVED;
+		} else if (a.equals(b)) {
+			return Difference.SAME;
+		} else {
+			return Difference.CHANGED;
+		}
 	}
 
 	/**

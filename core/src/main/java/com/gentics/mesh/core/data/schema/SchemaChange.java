@@ -3,24 +3,30 @@ package com.gentics.mesh.core.data.schema;
 import com.gentics.mesh.core.data.MeshVertex;
 
 /**
- * A schema change represents a single manipulation of a schema. Multiple {@link SchemaChange} objects are bundled together and form a {@link SchemaChangeset}.
+ * A schema change represents a single manipulation of a schema.
+ * 
+ * <pre>
+ * {@code
+ *  (s:Schema)-[:HAS_CHANGE]->(c1:SchemaChange)-[:HAS_CHANGE]->(c2:SchemaChange)-(s2:Schema)
+ * }
+ * </pre>
  */
 public interface SchemaChange extends MeshVertex {
 
 	/**
-	 * Return the changeset to which this change belongs.
-	 * 
-	 * @return
-	 */
-	SchemaChangeset getChangeset();
-
-	/**
-	 * Set the schema change action.
+	 * Set the schema change operation.
 	 * 
 	 * @param action
 	 * @return Fluent
 	 */
-	SchemaChange setAction(SchemaChangeAction action);
+	SchemaChange setOperation(SchemaChangeOperation action);
+
+	/**
+	 * Return the schema change operation.
+	 * 
+	 * @return
+	 */
+	SchemaChangeOperation getOperation();
 
 	/**
 	 * Set the field key for this change.
@@ -29,5 +35,33 @@ public interface SchemaChange extends MeshVertex {
 	 * @return
 	 */
 	SchemaChange setFieldKey(String fieldKey);
+
+	/**
+	 * Return the next schema change.
+	 * 
+	 * @return
+	 */
+	SchemaChange getNextChange();
+
+	/**
+	 * Return the previous schema change.
+	 * 
+	 * @return
+	 */
+	SchemaChange getPreviousChange();
+
+	/**
+	 * Return the schema container to which the schema change belongs.
+	 * 
+	 * @return
+	 */
+	SchemaContainer getOldSchemaContainer();
+
+	/**
+	 * Return the schema container that was build using this schema change.
+	 * 
+	 * @return
+	 */
+	SchemaContainer getNewSchemaContainer();
 
 }

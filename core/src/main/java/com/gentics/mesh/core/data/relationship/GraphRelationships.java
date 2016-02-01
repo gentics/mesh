@@ -123,7 +123,6 @@ public class GraphRelationships {
 
 	// Versioning
 	public static final String HAS_VERSION = "HAS_VERSION";
-	public static final String HAS_CHANGESET = "HAS_CHANGESET";
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 
 }

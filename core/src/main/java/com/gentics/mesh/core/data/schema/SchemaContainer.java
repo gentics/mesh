@@ -59,6 +59,14 @@ public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaCo
 	SchemaContainer getNextVersion();
 
 	/**
+	 * Set the next version of the schema container.
+	 * 
+	 * @param container
+	 * @return Fluent API
+	 */
+	SchemaContainer setNextVersion(SchemaContainer container);
+
+	/**
 	 * Return the previous version of this schema.
 	 * 
 	 * @return
@@ -66,17 +74,41 @@ public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaCo
 	SchemaContainer getPreviousVersion();
 
 	/**
-	 * Return the changeset for the previous version. Normally the previous changeset is used to build the current version of the schema.
+	 * Set the previous version of the container.
 	 * 
-	 * @return
+	 * @param container
+	 * @return Fluent API
 	 */
-	SchemaChangeset getChangesetForPreviousVersion();
+	SchemaContainer setPreviousVersion(SchemaContainer container);
 
 	/**
-	 * Return the changeset for the next version.
+	 * Return the change for the previous version of the schema. Normally the previous change was used to build the schema.
 	 * 
 	 * @return
 	 */
-	SchemaChangeset getChangesetForNextVersion();
+	SchemaChange getPreviousChange();
+
+	/**
+	 * Return the change for the next version.
+	 * 
+	 * @return Can be null if no further changes exist
+	 */
+	SchemaChange getNextChange();
+
+	/**
+	 * Set the next change for the schema. The next change is the first change in the chain of changes that lead to the new schema version.
+	 * 
+	 * @param change
+	 * @return
+	 */
+	SchemaContainer setNextChange(SchemaChange change);
+
+	/**
+	 * Set the previous change for the schema. The previous change is the last change in the chain of changes that was used to create the schema container.
+	 * 
+	 * @param change
+	 * @return
+	 */
+	SchemaContainer setPreviousChange(SchemaChange change);
 
 }

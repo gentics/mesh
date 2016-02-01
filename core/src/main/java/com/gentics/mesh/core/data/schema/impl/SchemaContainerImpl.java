@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGESET;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.SchemaChangeset;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -209,18 +209,42 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	}
 
 	@Override
+	public SchemaContainer setNextVersion(SchemaContainer container) {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
 	public SchemaContainer getPreviousVersion() {
 		return out(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
-	public SchemaChangeset getChangesetForNextVersion() {
-		return out(HAS_CHANGESET).has(SchemaChangesetImpl.class).nextOrDefaultExplicit(SchemaChangesetImpl.class, null);
+	public SchemaContainer setPreviousVersion(SchemaContainer container) {
+		// TODO Auto-generated method stub
+		return this;
 	}
 
 	@Override
-	public SchemaChangeset getChangesetForPreviousVersion() {
-		return in(HAS_CHANGESET).has(SchemaChangesetImpl.class).nextOrDefaultExplicit(SchemaChangesetImpl.class, null);
+	public SchemaChange getNextChange() {
+		return out(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+	}
+
+	@Override
+	public SchemaContainer setNextChange(SchemaChange change) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SchemaChange getPreviousChange() {
+		return in(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+	}
+
+	@Override
+	public SchemaContainer setPreviousChange(SchemaChange change) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -10,6 +10,11 @@ public class SchemaChangesetReport {
 
 	private List<SchemaChangeReport> reports = new ArrayList<>();
 
+	/**
+	 * Return a list of stored reports.
+	 * 
+	 * @return
+	 */
 	public List<SchemaChangeReport> getReports() {
 		return reports;
 	}

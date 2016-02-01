@@ -31,8 +31,16 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
  */
 public final class FieldUtil {
 
-	public static StringFieldSchema createStringFieldSchema(String defaultString) {
+	/**
+	 * Create a new string field schema.
+	 * 
+	 * @param name
+	 *            Name of the field schema
+	 * @return
+	 */
+	public static StringFieldSchema createStringFieldSchema(String name) {
 		StringFieldSchema fieldSchema = new StringFieldSchemaImpl();
+		fieldSchema.setName(name);
 		return fieldSchema;
 	}
 
@@ -72,7 +80,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createNodeListField(String...uuids) {
+	public static Field createNodeListField(String... uuids) {
 		NodeFieldListImpl field = new NodeFieldListImpl();
 		for (String uuid : uuids) {
 			field.add(new NodeFieldListItemImpl(uuid));
@@ -80,7 +88,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createBooleanListField(Boolean...values) {
+	public static Field createBooleanListField(Boolean... values) {
 		BooleanFieldListImpl field = new BooleanFieldListImpl();
 		for (Boolean value : values) {
 			field.add(value);
@@ -88,7 +96,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createDateListField(Long...values) {
+	public static Field createDateListField(Long... values) {
 		DateFieldListImpl field = new DateFieldListImpl();
 		for (Long value : values) {
 			field.add(value);
@@ -104,7 +112,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createHtmlListField(String...values) {
+	public static Field createHtmlListField(String... values) {
 		HtmlFieldListImpl field = new HtmlFieldListImpl();
 		for (String value : values) {
 			field.add(value);
@@ -121,7 +129,7 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeField createNewMicronodeField(String microschema, Tuple<String, Field>...fields) {
+	public static MicronodeField createNewMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = new MicronodeResponse();
 		MicroschemaReference microschemaReference = new MicroschemaReference();
 		microschemaReference.setName(microschema);
@@ -136,14 +144,14 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>...fields) {
-		MicronodeResponse field = (MicronodeResponse)createNewMicronodeField(microschema, fields);
+	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>... fields) {
+		MicronodeResponse field = (MicronodeResponse) createNewMicronodeField(microschema, fields);
 		field.setUuid(UUIDUtil.randomUUID());
 
 		return field;
 	}
 
-	public static Field createMicronodeListField(MicronodeField...micronodes) {
+	public static Field createMicronodeListField(MicronodeField... micronodes) {
 		MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 		for (MicronodeField micronode : micronodes) {
 			field.add(micronode);

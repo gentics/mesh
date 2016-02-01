@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.schema;
 
-public enum SchemaChangeAction {
+public enum SchemaChangeOperation {
 
 	RENAME, ADD, REMOVE, CHANGETYPE
 
