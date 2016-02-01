@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
@@ -27,5 +27,5 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 	 * @param list
 	 * @return
 	 */
-	Observable<Boolean> update(ActionContext ac, MicronodeFieldList list);
+	Observable<Boolean> update(InternalActionContext ac, MicronodeFieldList list);
 }

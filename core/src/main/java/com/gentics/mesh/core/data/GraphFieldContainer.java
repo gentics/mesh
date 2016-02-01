@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
+import java.util.Map;
+
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -14,10 +17,14 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.node.field.nesting.SelectGraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.handler.InternalActionContext;
+
+import rx.Observable;
 
 /**
  * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
@@ -272,19 +279,23 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	MicronodeGraphFieldList createMicronodeFieldList(String fieldKey);
 
 	/**
-	 * Create select graph field.
+	 * Locate the field with the given fieldkey in this container and return the rest model for this field.
 	 * 
-	 * @param key
-	 * @return
+	 * @param ac
+	 * @param fieldKey
+	 * @param fieldSchema
+	 * @param languageTags
+	 *            language tags
 	 */
-	<T extends ListableGraphField> SelectGraphField<T> createSelect(String key);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags);
 
 	/**
-	 * Return select graph field.
+	 * Use the given map of rest fields and the schema information to set the data from the map to this container. 
 	 * 
-	 * @param key
-	 * @return
+	 * @param ac
+	 * @param restFields
+	 * @param schema
 	 */
-	<T extends ListableGraphField> SelectGraphField<T> getSelect(String key);
+	void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema);
 
 }

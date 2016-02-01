@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -33,7 +32,6 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.SelectFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
@@ -203,11 +201,6 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 						"The field value for {" + fieldKey + "} is not a number value. The value was {" + jsonNode.asText() + "}");
 			}
 			map.put(fieldKey, dateField);
-			break;
-		case SELECT:
-			SelectField selectField = new SelectFieldImpl();
-			map.put(fieldKey, selectField);
-			// TODO impl
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {

@@ -321,10 +321,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// ListField listField = container.getN(name);
 				// fieldsMap.put(name, htmlField.getHTML());
 				break;
-			case SELECT:
-				// TODO implement lists
-				// break;
-				throw new NotImplementedException();
 			case MICRONODE:
 				MicronodeGraphField micronodeGraphField = container.getMicronode(fieldSchema.getName());
 				if (micronodeGraphField != null) {

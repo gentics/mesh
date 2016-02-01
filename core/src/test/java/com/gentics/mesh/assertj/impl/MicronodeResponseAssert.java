@@ -13,7 +13,6 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.SelectField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
@@ -60,9 +59,6 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 				assertThat(expected.getField(key, NumberField.class)).isNotNull();
 				assertThat(actual.getField(key, NumberField.class).getNumber()).as("Field " + key)
 						.isEqualTo(expected.getField(key, NumberField.class).getNumber());
-			}
-			if (field instanceof SelectField) {
-				// TODO implement assertions
 			}
 			if (field instanceof StringField) {
 				assertThat(expected.getField(key, StringField.class)).isNotNull();

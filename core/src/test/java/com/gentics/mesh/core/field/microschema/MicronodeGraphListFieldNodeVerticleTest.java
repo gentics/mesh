@@ -44,10 +44,10 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		listFieldSchema.setName(FIELDNAME);
 		listFieldSchema.setLabel("Some label");
 		listFieldSchema.setListType("micronode");
-		listFieldSchema.setAllowedSchemas(new String[] {"vcard"});
+		listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(listFieldSchema);
 		schemaContainer("folder").setSchema(schema);
-		
+
 	}
 
 	@Test
@@ -99,8 +99,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		Collections.sort(reorderedField.getItems(), new Comparator<MicronodeField>() {
 			@Override
 			public int compare(MicronodeField o1, MicronodeField o2) {
-				return o1.getField("firstName", StringField.class).getString()
-						.compareTo(o2.getField("firstName", StringField.class).getString());
+				return o1.getField("firstName", StringField.class).getString().compareTo(o2.getField("firstName", StringField.class).getString());
 			}
 		});
 
@@ -179,8 +178,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		Collections.sort(changedField.getItems(), new Comparator<MicronodeField>() {
 			@Override
 			public int compare(MicronodeField o1, MicronodeField o2) {
-				return o1.getField("firstName", StringField.class).getString()
-						.compareTo(o2.getField("firstName", StringField.class).getString());
+				return o1.getField("firstName", StringField.class).getString().compareTo(o2.getField("firstName", StringField.class).getString());
 			}
 		});
 
@@ -218,8 +216,10 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 	/**
 	 * Create an item for the MicronodeFieldList
 	 * 
-	 * @param firstName first name
-	 * @param lastName last name
+	 * @param firstName
+	 *            first name
+	 * @param lastName
+	 *            last name
 	 * @return item
 	 */
 	protected MicronodeResponse createItem(String firstName, String lastName) {
@@ -232,8 +232,11 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 
 	/**
 	 * Assert that the given fields contain the same micronodes (in the same order)
-	 * @param expected expected field
-	 * @param field field to check
+	 * 
+	 * @param expected
+	 *            expected field
+	 * @param field
+	 *            field to check
 	 */
 	protected void assertFieldEquals(FieldList<MicronodeField> expected, FieldList<MicronodeField> field) {
 		assertEquals("Check # of micronode items", expected.getItems().size(), field.getItems().size());
@@ -241,20 +244,21 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 			MicronodeField expectedMicronode = expected.getItems().get(i);
 			MicronodeField micronode = field.getItems().get(i);
 			for (String fieldName : Arrays.asList("firstName", "lastName")) {
-				assertEquals("Check " + fieldName + " of item # " + (i + 1),
-						expectedMicronode.getField(fieldName, StringField.class).getString(),
+				assertEquals("Check " + fieldName + " of item # " + (i + 1), expectedMicronode.getField(fieldName, StringField.class).getString(),
 						micronode.getField(fieldName, StringField.class).getString());
 			}
 
 			if (!StringUtils.isEmpty(expectedMicronode.getUuid())) {
-				assertEquals("Check uuid of item + " + (i+1), expectedMicronode.getUuid(), micronode.getUuid());
+				assertEquals("Check uuid of item + " + (i + 1), expectedMicronode.getUuid(), micronode.getUuid());
 			}
 		}
 	}
 
 	/**
 	 * Assert that exactly the micronode instances in the given field exist in the graph db
-	 * @param field field
+	 * 
+	 * @param field
+	 *            field
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
 		Set<String> existingMicronodeUuids = db.noTrx().getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
