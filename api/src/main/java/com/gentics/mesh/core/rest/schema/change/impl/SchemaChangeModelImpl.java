@@ -9,9 +9,9 @@ public class SchemaChangeModelImpl implements RestModel {
 
 	private String uuid;
 
-	private ChangeOperation operation;
+	private SchemaChangeOperation operation;
 
-	private Map<String, String> properties = new HashMap<>();
+	private Map<String, Object> properties = new HashMap<>();
 
 	/**
 	 * Return the uuid of the change.
@@ -36,7 +36,7 @@ public class SchemaChangeModelImpl implements RestModel {
 	 * 
 	 * @return
 	 */
-	public ChangeOperation getOperation() {
+	public SchemaChangeOperation getOperation() {
 		return operation;
 	}
 
@@ -45,7 +45,7 @@ public class SchemaChangeModelImpl implements RestModel {
 	 * 
 	 * @param operation
 	 */
-	public SchemaChangeModelImpl setOperation(ChangeOperation operation) {
+	public SchemaChangeModelImpl setOperation(SchemaChangeOperation operation) {
 		this.operation = operation;
 		return this;
 	}
@@ -55,7 +55,7 @@ public class SchemaChangeModelImpl implements RestModel {
 	 * 
 	 * @return
 	 */
-	public Map<String, String> getProperties() {
+	public Map<String, Object> getProperties() {
 		return properties;
 	}
 

@@ -13,7 +13,7 @@ public class SchemaResponse extends SchemaImpl implements RestResponse {
 	private String[] permissions = {};
 
 	private String[] rolePerms;
-	
+
 	//TODO maybe add creator and editor in here as well?
 
 	public SchemaResponse() {

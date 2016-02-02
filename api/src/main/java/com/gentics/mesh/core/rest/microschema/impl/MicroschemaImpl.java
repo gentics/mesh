@@ -10,26 +10,16 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.impl.AbstractFieldSchemaContainer;
 import com.gentics.mesh.json.MeshJsonException;
 
 /**
  * Implementation of Microschema
  */
-public class MicroschemaImpl implements Microschema, RestModel {
+public class MicroschemaImpl extends AbstractFieldSchemaContainer implements Microschema, RestModel {
 
-	private String name;
 	private String description;
 	private List<FieldSchema> fields = new ArrayList<>();
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	@Override
 	public String getDescription() {
@@ -39,29 +29,6 @@ public class MicroschemaImpl implements Microschema, RestModel {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	@Override
-	public List<? extends FieldSchema> getFields() {
-		return fields;
-	}
-
-	@Override
-	public Optional<FieldSchema> getFieldSchema(String fieldName) {
-		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst();
-	}
-
-	@Override
-	public void addField(FieldSchema fieldSchema) {
-		this.fields.add(fieldSchema);
-	}
-
-	@Override
-	public void removeField(String name) {
-		if (name == null) {
-			return;
-		}
-		fields.removeIf(field -> name.equals(field.getName()));
 	}
 
 	@Override

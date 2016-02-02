@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaChangeOperation;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
@@ -17,8 +17,6 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
 
 	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
-
-	private static String FIELD_KEY_PROPERTY_KEY = "fieldKey";
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(AbstractSchemaChange.class);
@@ -47,20 +45,14 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 	}
 
 	@Override
-	public SchemaChange setOperation(SchemaChangeOperation action) {
-		setProperty(OPERATION_NAME_PROPERTY_KEY, action.name());
+	public SchemaChange setOperation(SchemaChangeOperation operation) {
+		setProperty(OPERATION_NAME_PROPERTY_KEY, operation.name());
 		return this;
 	}
 
 	@Override
 	public SchemaChangeOperation getOperation() {
 		return getProperty(OPERATION_NAME_PROPERTY_KEY);
-	}
-
-	@Override
-	public SchemaChange setFieldKey(String fieldKey) {
-		setProperty(FIELD_KEY_PROPERTY_KEY, fieldKey);
-		return this;
 	}
 
 	@Override

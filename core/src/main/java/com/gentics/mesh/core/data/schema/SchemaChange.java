@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * A schema change represents a single manipulation of a schema.
@@ -27,14 +29,6 @@ public interface SchemaChange extends MeshVertex {
 	 * @return
 	 */
 	SchemaChangeOperation getOperation();
-
-	/**
-	 * Set the field key for this change.
-	 * 
-	 * @param fieldKey
-	 * @return
-	 */
-	SchemaChange setFieldKey(String fieldKey);
 
 	/**
 	 * Return the next schema change.
@@ -106,8 +100,18 @@ public interface SchemaChange extends MeshVertex {
 	/**
 	 * Set a custom migration script. If this is set to null, the automatically created migration script will be used instead
 	 *
-	 * @param migrationScript migration script
+	 * @param migrationScript
+	 *            migration script
 	 * @return fluent API
 	 */
 	SchemaChange setMigrationScript(String migrationScript);
+
+	/**
+	 * Apply the current change on the schema.
+	 * 
+	 * @param schema
+	 *            Schema to be modified
+	 * @return Modified schema
+	 */
+	Schema apply(Schema schema);
 }

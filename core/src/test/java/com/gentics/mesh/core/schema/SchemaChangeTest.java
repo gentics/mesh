@@ -8,12 +8,11 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaChangeOperation;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.impl.AbstractSchemaChange;
-import com.gentics.mesh.core.data.schema.impl.RemoveFieldChange;
+import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class SchemaChangeTest extends AbstractBasicDBTest {
@@ -25,7 +24,7 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainer containerC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
-		SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChange.class);
+		SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		assertNull("The previous change should be null since we did not link it to any schema container.", containerA.getPreviousChange());
 		assertNull("The next change should be null since we did not link it to any schema container.", containerA.getNextChange());
 
@@ -51,7 +50,7 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaChange oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChange.class);
+			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			change.setOperation(SchemaChangeOperation.UPDATEFIELD);
 			if (oldChange == null) {
 				oldChange = change;

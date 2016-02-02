@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
@@ -61,6 +65,12 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	@Override
 	public String getType() {
 		return FieldTypes.LIST.toString();
+	}
+
+	@Override
+	public Optional<SchemaChangeModelImpl> compareTo(FieldSchema fieldSchema) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

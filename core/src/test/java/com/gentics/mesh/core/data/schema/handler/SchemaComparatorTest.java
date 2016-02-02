@@ -3,13 +3,14 @@ package com.gentics.mesh.core.data.schema.handler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.change.impl.ChangeOperation;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
@@ -34,7 +35,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		Schema schemaB = new SchemaImpl();
 		schemaB.setSegmentField("someSegement");
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
-		assertEquals(ChangeOperation.ADD, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -43,7 +44,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		Schema schemaB = new SchemaImpl();
 		schemaA.setSegmentField("someSegement");
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
-		assertEquals(ChangeOperation.REMOVE, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -63,7 +64,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		schemaA.setSegmentField("test123");
 		schemaB.setSegmentField("someSegement");
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
-		assertEquals(ChangeOperation.UPDATE, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -72,7 +73,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		Schema schemaB = new SchemaImpl();
 		schemaB.setDisplayField("someField");
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
-		assertEquals(ChangeOperation.ADD, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -81,7 +82,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		Schema schemaB = new SchemaImpl();
 		schemaA.setDisplayField("someField");
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
-		assertEquals(ChangeOperation.REMOVE, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -91,7 +92,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		schemaA.setDisplayField("someField");
 		schemaB.setDisplayField("someField2");
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
-		assertEquals(ChangeOperation.UPDATE, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.UPDATESCHEMA, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -138,7 +139,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		schemaB.addField(FieldUtil.createStringFieldSchema("test"));
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertEquals(ChangeOperation.ADD, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.ADDFIELD, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -148,7 +149,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		schemaA.addField(FieldUtil.createStringFieldSchema("test"));
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertEquals(ChangeOperation.REMOVE, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.REMOVEFIELD, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -160,7 +161,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		schemaB.addField(FieldUtil.createStringFieldSchema("test2"));
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertEquals(ChangeOperation.REMOVE, changes.get(0).getOperation());
+		assertEquals(SchemaChangeOperation.REMOVEFIELD, changes.get(0).getOperation());
 	}
 
 	@Test
@@ -171,6 +172,18 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 		schemaB.addField(FieldUtil.createStringFieldSchema("test"));
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testBinaryFieldPropertiesUpdated() {
+		Schema schemaA = new SchemaImpl();
+		Schema schemaB = new SchemaImpl();
+		schemaA.addField(FieldUtil.createBinaryFieldSchema("test").setAllowedMimeTypes("bla"));
+		schemaB.addField(FieldUtil.createBinaryFieldSchema("test").setAllowedMimeTypes("blue"));
+		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isNotEmpty();
+		String[] list = (String[]) changes.get(0).getProperties().get("allowedMimeTypes");
+		assertEquals("blue", list[0]);
 	}
 
 }

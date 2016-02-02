@@ -22,8 +22,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
@@ -156,6 +158,12 @@ public final class FieldUtil {
 		for (MicronodeField micronode : micronodes) {
 			field.add(micronode);
 		}
+		return field;
+	}
+
+	public static BinaryFieldSchema createBinaryFieldSchema(String name) {
+		BinaryFieldSchema field = new BinaryFieldSchemaImpl();
+		field.setName(name);
 		return field;
 	}
 }

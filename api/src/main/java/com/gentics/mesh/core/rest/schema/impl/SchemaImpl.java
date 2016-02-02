@@ -1,36 +1,20 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.MeshJsonException;
 
-public class SchemaImpl implements RestModel, Schema {
+public class SchemaImpl extends AbstractFieldSchemaContainer implements RestModel, Schema {
 
-	private String name;
 	private int version;
 	private String description;
 	private String displayField;
 	private String segmentField;
 	private boolean container = false;
-	private List<FieldSchema> fields = new ArrayList<>();
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	@Override
 	public int getVersion() {
@@ -83,31 +67,6 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
-	public List<FieldSchema> getFields() {
-		return fields;
-	}
-
-	@Override
-	public void removeField(String name) {
-		int elementToBeRemoved = -1;
-		for (int i = 0; i < fields.size(); i++) {
-			FieldSchema schema = fields.get(i);
-			if (schema.getName().equals(name)) {
-				elementToBeRemoved = i;
-				break;
-			}
-		}
-		if (elementToBeRemoved != -1) {
-			fields.remove(elementToBeRemoved);
-		}
-	}
-
-	@Override
-	public void addField(FieldSchema fieldSchema) {
-		this.fields.add(fieldSchema);
-	}
-
-	@Override
 	public void validate() throws MeshJsonException {
 		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
 		// displayNames
@@ -115,7 +74,7 @@ public class SchemaImpl implements RestModel, Schema {
 		//TODO make sure that segment fields are set to mandatory.
 		Set<String> fieldNames = new HashSet<>();
 		Set<String> fieldLabels = new HashSet<>();
-		for (FieldSchema fieldSchema : fields) {
+		for (FieldSchema fieldSchema : getFields()) {
 			String name = fieldSchema.getName();
 			String label = fieldSchema.getLabel();
 			if (fieldNames.contains(name)) {
@@ -130,17 +89,6 @@ public class SchemaImpl implements RestModel, Schema {
 			}
 		}
 
-	}
-
-	@Override
-	public Optional<FieldSchema> getFieldSchema(String fieldName) {
-		return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst();
-	}
-
-	@Override
-	public String toString() {
-		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
-		return getName() + " fields: {" + fields + "}";
 	}
 
 }

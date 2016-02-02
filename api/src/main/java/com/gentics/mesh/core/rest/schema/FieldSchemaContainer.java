@@ -28,8 +28,18 @@ public interface FieldSchemaContainer {
 	 * 
 	 * @param fieldName
 	 * @return
+	 * @deprecated
 	 */
 	Optional<FieldSchema> getFieldSchema(String fieldName);
+
+	/**
+	 * Return the field schema with the given name.
+	 * 
+	 * @param fieldName
+	 * @param classOfT
+	 * @return
+	 */
+	<T> T getField(String fieldName, Class<T> classOfT);
 
 	/**
 	 * Removes the field with the given name.
