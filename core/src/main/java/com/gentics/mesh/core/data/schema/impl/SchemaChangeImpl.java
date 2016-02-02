@@ -16,6 +16,8 @@ public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
 
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
 
+	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
+
 	private static String FIELD_KEY_PROPERTY_KEY = "fieldKey";
 
 	public static void checkIndices(Database database) {
@@ -83,4 +85,14 @@ public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
 		return this;
 	}
 
+	@Override
+	public String getMigrationScript() {
+		return getProperty(MIGRATION_SCRIPT_PROPERTY_KEY, String.class);
+	}
+
+	@Override
+	public SchemaChange setMigrationScript(String migrationScript) {
+		setProperty(MIGRATION_SCRIPT_PROPERTY_KEY, migrationScript);
+		return this;
+	}
 }

@@ -96,4 +96,18 @@ public interface SchemaChange extends MeshVertex {
 	 */
 	SchemaChange setToSchemaContainer(SchemaContainer container);
 
+	/**
+	 * Get the migration script for the change. May either be a custom script or an automatically created
+	 * 
+	 * @return migration script
+	 */
+	String getMigrationScript();
+
+	/**
+	 * Set a custom migration script. If this is set to null, the automatically created migration script will be used instead
+	 *
+	 * @param migrationScript migration script
+	 * @return fluent API
+	 */
+	SchemaChange setMigrationScript(String migrationScript);
 }
