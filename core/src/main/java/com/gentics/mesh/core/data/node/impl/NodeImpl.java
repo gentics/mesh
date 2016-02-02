@@ -756,7 +756,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		String indexType = NodeIndexHandler.getDocumentType(getSchema());
-		batch.addEntry(getUuid(), getType(), action, indexType);
+		batch.addEntry(NodeIndexHandler.composeDocumentId(this, languageTag), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
 	}
