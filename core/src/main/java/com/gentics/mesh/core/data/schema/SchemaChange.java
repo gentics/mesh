@@ -67,26 +67,26 @@ public interface SchemaChange extends MeshVertex {
 	SchemaChange setPreviousChange(SchemaChange change);
 
 	/**
-	 * Return the in-bound connected schema container.
+	 * Return the <b>in-bound</b> connected schema container.
 	 * 
 	 * @return
 	 */
-	SchemaContainer getFromSchemaContainer();
+	SchemaContainer getPreviousSchemaContainer();
 
 	/**
-	 * Set the in-bound connection from the schema change to the container.
+	 * Set the <b>in-bound</b> connection from the schema change to the container.
 	 * 
 	 * @param container
 	 * @return Fluent API
 	 */
-	SchemaChange setFromSchemaContainer(SchemaContainer container);
+	SchemaChange setPreviousSchemaContainer(SchemaContainer container);
 
 	/**
 	 * Return the out-bound connected schema container.
 	 * 
 	 * @return
 	 */
-	SchemaContainer getToSchemaContainer();
+	SchemaContainer getNextSchemaContainer();
 
 	/**
 	 * Set the out-bound connected schema container.
@@ -94,7 +94,7 @@ public interface SchemaChange extends MeshVertex {
 	 * @param container
 	 * @return
 	 */
-	SchemaChange setToSchemaContainer(SchemaContainer container);
+	SchemaChange setNextSchemaContainer(SchemaContainer container);
 
 	/**
 	 * Get the migration script for the change. May either be a custom script or an automatically created

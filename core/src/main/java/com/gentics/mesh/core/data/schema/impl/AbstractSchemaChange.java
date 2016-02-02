@@ -12,7 +12,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * @see SchemaChange
  */
-//TODO rename to abstract class
 public abstract class AbstractSchemaChange extends MeshVertexImpl implements SchemaChange {
 
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
@@ -27,7 +26,7 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 
 	@Override
 	public SchemaChange getNextChange() {
-		return out(HAS_CHANGE).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
+		return (SchemaChange) out(HAS_CHANGE).nextOrDefault(null);
 	}
 
 	@Override
@@ -38,7 +37,7 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 
 	@Override
 	public SchemaChange getPreviousChange() {
-		return in(HAS_CHANGE).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
+		return (SchemaChange) in(HAS_CHANGE).nextOrDefault(null);
 	}
 
 	@Override
@@ -65,23 +64,23 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 	}
 
 	@Override
-	public SchemaContainer getFromSchemaContainer() {
+	public SchemaContainer getPreviousSchemaContainer() {
 		return in(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
-	public SchemaChange setFromSchemaContainer(SchemaContainer container) {
+	public SchemaChange setPreviousSchemaContainer(SchemaContainer container) {
 		setSingleLinkInTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public SchemaContainer getToSchemaContainer() {
+	public SchemaContainer getNextSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
-	public SchemaChange setToSchemaContainer(SchemaContainer container) {
+	public SchemaChange setNextSchemaContainer(SchemaContainer container) {
 		setSingleLinkOutTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
 	}

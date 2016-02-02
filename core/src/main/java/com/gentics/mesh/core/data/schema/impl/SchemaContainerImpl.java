@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
@@ -196,10 +195,10 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 			String previousDocumentType = null;
 
 			// TODO uncomment this code (in replacement for the following lines), as soon as getting previous schema containers is implemented
-//			SchemaContainer previousSchemaContainer = getPreviousVersion();
-//			if (previousSchemaContainer != null) {
-//				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
-//			}
+			//			SchemaContainer previousSchemaContainer = getPreviousVersion();
+			//			if (previousSchemaContainer != null) {
+			//				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
+			//			}
 			int previousVersion = getVersion() - 1;
 			if (previousVersion > 0) {
 				previousDocumentType = getName() + "-" + previousVersion;
@@ -211,8 +210,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				if (previousDocumentType != null) {
 					List<String> languageNames = node.getAvailableLanguageNames();
 					for (String languageTag : languageNames) {
-						batch.addEntry(NodeIndexHandler.composeDocumentId(node, languageTag), node.getType(),
-								DELETE_ACTION, previousDocumentType);
+						batch.addEntry(NodeIndexHandler.composeDocumentId(node, languageTag), node.getType(), DELETE_ACTION, previousDocumentType);
 					}
 				}
 			}
@@ -243,7 +241,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public SchemaChange getNextChange() {
-		return out(HAS_SCHEMA_CONTAINER).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
+		return (SchemaChange) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
@@ -254,7 +252,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public SchemaChange getPreviousChange() {
-		return in(HAS_SCHEMA_CONTAINER).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
+		return (SchemaChange) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
