@@ -195,7 +195,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 		} else {
 			String previousDocumentType = null;
 
-			// TODO uncomment this code (in repacement for the following lines), as soon as getting previous schema containers is implemented
+			// TODO uncomment this code (in replacement for the following lines), as soon as getting previous schema containers is implemented
 //			SchemaContainer previousSchemaContainer = getPreviousVersion();
 //			if (previousSchemaContainer != null) {
 //				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
@@ -221,46 +221,46 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public SchemaContainer getNextVersion() {
-		return in(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		return out(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
 	public SchemaContainer setNextVersion(SchemaContainer container) {
-		// TODO Auto-generated method stub
+		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
 		return this;
 	}
 
 	@Override
 	public SchemaContainer getPreviousVersion() {
-		return out(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		return in(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
 	public SchemaContainer setPreviousVersion(SchemaContainer container) {
-		// TODO Auto-generated method stub
+		setSingleLinkInTo(container.getImpl(), HAS_VERSION);
 		return this;
 	}
 
 	@Override
 	public SchemaChange getNextChange() {
-		return out(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
 	}
 
 	@Override
 	public SchemaContainer setNextChange(SchemaChange change) {
-		// TODO Auto-generated method stub
-		return null;
+		setSingleLinkOutTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
+		return this;
 	}
 
 	@Override
 	public SchemaChange getPreviousChange() {
-		return in(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return in(HAS_SCHEMA_CONTAINER).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
 	}
 
 	@Override
 	public SchemaContainer setPreviousChange(SchemaChange change) {
-		// TODO Auto-generated method stub
-		return null;
+		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
+		return this;
 	}
 
 }

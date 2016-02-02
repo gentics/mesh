@@ -140,7 +140,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public void setTagFamily(TagFamily tagFamily) {
-		setLinkOutTo(tagFamily.getImpl(), HAS_TAGFAMILY_ROOT);
+		setUniqueLinkOutTo(tagFamily.getImpl(), HAS_TAGFAMILY_ROOT);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public void setProject(Project project) {
-		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override

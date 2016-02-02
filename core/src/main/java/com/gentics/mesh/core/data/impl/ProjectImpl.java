@@ -78,7 +78,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void addLanguage(Language language) {
-		setLinkOutTo(language.getImpl(), HAS_LANGUAGE);
+		setUniqueLinkOutTo(language.getImpl(), HAS_LANGUAGE);
 	}
 
 	@Override

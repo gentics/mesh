@@ -231,7 +231,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void addTag(Tag tag) {
-		setLinkOutTo(tag.getImpl(), HAS_TAG);
+		setUniqueLinkOutTo(tag.getImpl(), HAS_TAG);
 	}
 
 	@Override

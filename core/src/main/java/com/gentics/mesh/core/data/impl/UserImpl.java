@@ -110,16 +110,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		return BooleanUtils.toBoolean(getProperty(ENABLED_FLAG_PROPERTY_KEY).toString());
 	}
 
-	// @Override
-	// public List<? extends GenericVertexImpl> getEditedElements() {
-	// return in(HAS_EDITOR).toList(GenericVertexImpl.class);
-	// }
-	//
-	// @Override
-	// public List<? extends GenericVertexImpl> getCreatedElements() {
-	// return in(HAS_CREATOR).toList(GenericVertexImpl.class);
-	// }
-
 	@Override
 	public String getFirstname() {
 		return getProperty(FIRSTNAME_PROPERTY_KEY);
@@ -193,7 +183,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void setReferencedNode(Node node) {
-		setLinkOutTo(node.getImpl(), HAS_NODE_REFERENCE);
+		setUniqueLinkOutTo(node.getImpl(), HAS_NODE_REFERENCE);
 	}
 
 	@Override

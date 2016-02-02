@@ -113,7 +113,7 @@ public class DatabaseHelper {
 			// Add shortcut edges from role to users of this group
 			for (User user : meshRoot.getUserRoot().findAll()) {
 				for (Role role : user.getRoles()) {
-					user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+					user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
 				}
 			}
 			tx.success();

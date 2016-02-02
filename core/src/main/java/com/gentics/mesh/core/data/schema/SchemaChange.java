@@ -44,6 +44,14 @@ public interface SchemaChange extends MeshVertex {
 	SchemaChange getNextChange();
 
 	/**
+	 * Set the next change.
+	 * 
+	 * @param change
+	 * @return
+	 */
+	SchemaChange setNextChange(SchemaChange change);
+
+	/**
 	 * Return the previous schema change.
 	 * 
 	 * @return
@@ -51,17 +59,41 @@ public interface SchemaChange extends MeshVertex {
 	SchemaChange getPreviousChange();
 
 	/**
-	 * Return the schema container to which the schema change belongs.
+	 * Set the previous change.
 	 * 
+	 * @param change
 	 * @return
 	 */
-	SchemaContainer getOldSchemaContainer();
+	SchemaChange setPreviousChange(SchemaChange change);
 
 	/**
-	 * Return the schema container that was build using this schema change.
+	 * Return the in-bound connected schema container.
 	 * 
 	 * @return
 	 */
-	SchemaContainer getNewSchemaContainer();
+	SchemaContainer getFromSchemaContainer();
+
+	/**
+	 * Set the in-bound connection from the schema change to the container.
+	 * 
+	 * @param container
+	 * @return Fluent API
+	 */
+	SchemaChange setFromSchemaContainer(SchemaContainer container);
+
+	/**
+	 * Return the out-bound connected schema container.
+	 * 
+	 * @return
+	 */
+	SchemaContainer getToSchemaContainer();
+
+	/**
+	 * Set the out-bound connected schema container.
+	 * 
+	 * @param container
+	 * @return
+	 */
+	SchemaChange setToSchemaContainer(SchemaContainer container);
 
 }

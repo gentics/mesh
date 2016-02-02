@@ -38,10 +38,10 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void addEntry(String uuid, String type, SearchQueueEntryAction action, String indexType) {
+	public void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType) {
 		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);
 		entry.setElementUuid(uuid);
-		entry.setElementType(type);
+		entry.setElementType(elementType);
 		entry.setElementAction(action.getName());
 		entry.setElementIndexType(indexType);
 		addEntry(entry);
@@ -49,7 +49,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 
 	@Override
 	public void addEntry(SearchQueueEntry batch) {
-		setLinkOutTo(batch.getImpl(), HAS_ITEM);
+		setUniqueLinkOutTo(batch.getImpl(), HAS_ITEM);
 	}
 
 	@Override

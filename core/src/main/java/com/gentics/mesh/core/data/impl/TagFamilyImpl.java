@@ -104,7 +104,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void setProject(Project project) {
-		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override

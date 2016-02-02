@@ -71,11 +71,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addUser(User user) {
-		setLinkInTo(user.getImpl(), HAS_USER);
+		setUniqueLinkInTo(user.getImpl(), HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles()) {
-			user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
 		}
 	}
 
@@ -93,11 +93,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addRole(Role role) {
-		setLinkInTo(role.getImpl(), HAS_ROLE);
+		setUniqueLinkInTo(role.getImpl(), HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (User user : getUsers()) {
-			user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
 		}
 
 	}

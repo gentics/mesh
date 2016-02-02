@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -23,12 +24,24 @@ public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
 
 	@Override
 	public SchemaChange getNextChange() {
-		return in(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return out(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+	}
+
+	@Override
+	public SchemaChange setNextChange(SchemaChange change) {
+		setUniqueLinkOutTo(change.getImpl(), HAS_CHANGE);
+		return this;
 	}
 
 	@Override
 	public SchemaChange getPreviousChange() {
-		return out(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return in(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+	}
+
+	@Override
+	public SchemaChange setPreviousChange(SchemaChange change) {
+		setUniqueLinkInTo(change.getImpl(), HAS_CHANGE);
+		return this;
 	}
 
 	@Override
@@ -49,15 +62,25 @@ public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
 	}
 
 	@Override
-	public SchemaContainer getNewSchemaContainer() {
-		// TODO Traverse all changes until you find the new schema container
-		return null;
+	public SchemaContainer getFromSchemaContainer() {
+		return in(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
-	public SchemaContainer getOldSchemaContainer() {
-		// TODO Traverse all changes until you find the old schema container
-		return null;
+	public SchemaChange setFromSchemaContainer(SchemaContainer container) {
+		setSingleLinkInTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
+		return this;
+	}
+
+	@Override
+	public SchemaContainer getToSchemaContainer() {
+		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+	}
+
+	@Override
+	public SchemaChange setToSchemaContainer(SchemaContainer container) {
+		setSingleLinkOutTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
+		return this;
 	}
 
 }

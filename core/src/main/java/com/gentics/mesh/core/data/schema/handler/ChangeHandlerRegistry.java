@@ -20,7 +20,7 @@ public class ChangeHandlerRegistry {
 	 * Register the handler using the operation.
 	 * 
 	 * @param operation
-	 * @param abstractChangeHandler
+	 * @param changeHandler
 	 */
 	public void register(String operation, ChangeHandler changeHandler) {
 		handlers.put(operation, changeHandler);
