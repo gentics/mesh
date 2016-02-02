@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.schema;
 
+/**
+ * Name of schema update operations which can be handled.
+ */
 public enum SchemaChangeOperation {
 
-	RENAME, ADD, REMOVE, CHANGETYPE
+	ADDFIELD, REMOVEFIELD, UPDATEFIELD, UPDATESCHEMA
 
 }

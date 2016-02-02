@@ -10,7 +10,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaChangeOperation;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.impl.SchemaChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.AbstractSchemaChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -24,7 +24,7 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainer containerC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
-		SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(SchemaChangeImpl.class);
+		SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(AbstractSchemaChange.class);
 		assertNull("The previous change should be null since we did not link it to any schema container.", containerA.getPreviousChange());
 		assertNull("The next change should be null since we did not link it to any schema container.", containerA.getNextChange());
 
@@ -50,8 +50,8 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaChange oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(SchemaChangeImpl.class);
-			change.setOperation(SchemaChangeOperation.CHANGETYPE);
+			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(AbstractSchemaChange.class);
+			change.setOperation(SchemaChangeOperation.UPDATEFIELD);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getFromSchemaContainer());

@@ -243,7 +243,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public SchemaChange getNextChange() {
-		return out(HAS_SCHEMA_CONTAINER).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return out(HAS_SCHEMA_CONTAINER).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
 	}
 
 	@Override
@@ -254,7 +254,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public SchemaChange getPreviousChange() {
-		return in(HAS_SCHEMA_CONTAINER).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return in(HAS_SCHEMA_CONTAINER).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
 	}
 
 	@Override

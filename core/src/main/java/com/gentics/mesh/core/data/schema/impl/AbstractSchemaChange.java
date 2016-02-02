@@ -12,7 +12,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * @see SchemaChange
  */
-public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
+//TODO rename to abstract class
+public abstract class AbstractSchemaChange extends MeshVertexImpl implements SchemaChange {
 
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
 
@@ -21,12 +22,12 @@ public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
 	private static String FIELD_KEY_PROPERTY_KEY = "fieldKey";
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(SchemaChangeImpl.class);
+		database.addVertexType(AbstractSchemaChange.class);
 	}
 
 	@Override
 	public SchemaChange getNextChange() {
-		return out(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return out(HAS_CHANGE).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
 	}
 
 	@Override
@@ -37,7 +38,7 @@ public class SchemaChangeImpl extends MeshVertexImpl implements SchemaChange {
 
 	@Override
 	public SchemaChange getPreviousChange() {
-		return in(HAS_CHANGE).has(SchemaChangeImpl.class).nextOrDefaultExplicit(SchemaChangeImpl.class, null);
+		return in(HAS_CHANGE).has(AbstractSchemaChange.class).nextOrDefaultExplicit(AbstractSchemaChange.class, null);
 	}
 
 	@Override
