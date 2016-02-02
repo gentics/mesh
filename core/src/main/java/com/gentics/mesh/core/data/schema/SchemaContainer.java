@@ -42,14 +42,7 @@ public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaCo
 	 * 
 	 * @return
 	 */
-	String getVersion();
-
-	/**
-	 * Set the schema version.
-	 * 
-	 * @param version
-	 */
-	void setVersion(String version);
+	int getVersion();
 
 	/**
 	 * Return the next version of this schema.

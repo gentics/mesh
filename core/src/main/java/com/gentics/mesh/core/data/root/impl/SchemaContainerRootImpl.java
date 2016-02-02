@@ -67,6 +67,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		schemaContainer.setName(schema.getName());
 		addSchemaContainer(schemaContainer);
 		schemaContainer.setCreated(creator);
+		// set the initial version
+		schema.setVersion(1);
 
 		return schemaContainer;
 	}

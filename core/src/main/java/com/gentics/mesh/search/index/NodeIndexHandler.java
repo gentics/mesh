@@ -76,6 +76,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return instance;
 	}
 
+	/**
+	 * Get the document type for documents stored for the given schema
+	 * @param schema schema
+	 * @return document type
+	 */
+	public static String getDocumentType(Schema schema) {
+		return new StringBuilder(schema.getName()).append("-").append(schema.getVersion()).toString();
+	}
+
 	@Override
 	protected String getIndex() {
 		return Node.TYPE;
@@ -409,7 +418,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            language
 	 * @return document ID
 	 */
-	public String composeDocumentId(Node node, String language) {
+	public static String composeDocumentId(Node node, String language) {
 		StringBuilder id = new StringBuilder(node.getUuid());
 		id.append("-").append(language);
 		return id.toString();
@@ -425,7 +434,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	private String getDocumentType(Node node, String language) {
-		return node.getSchemaContainer().getName();
+		return getDocumentType(node.getSchemaContainer().getSchema());
 	}
 
 	/**

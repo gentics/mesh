@@ -15,7 +15,7 @@ import com.gentics.mesh.json.MeshJsonException;
 public class SchemaImpl implements RestModel, Schema {
 
 	private String name;
-	private String version;
+	private int version;
 	private String description;
 	private String displayField;
 	private String segmentField;
@@ -33,12 +33,12 @@ public class SchemaImpl implements RestModel, Schema {
 	}
 
 	@Override
-	public String getVersion() {
+	public int getVersion() {
 		return version;
 	}
 
 	@Override
-	public void setVersion(String version) {
+	public void setVersion(int version) {
 		this.version = version;
 	}
 

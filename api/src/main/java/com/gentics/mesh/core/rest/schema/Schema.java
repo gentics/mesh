@@ -79,13 +79,13 @@ public interface Schema extends FieldSchemaContainer {
 	 * 
 	 * @return
 	 */
-	String getVersion();
+	int getVersion();
 
 	/**
 	 * Set the schema version.
 	 * 
 	 * @param version
 	 */
-	void setVersion(String version);
+	void setVersion(int version);
 
 }

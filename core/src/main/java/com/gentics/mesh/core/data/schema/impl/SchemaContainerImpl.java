@@ -33,6 +33,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Observable;
@@ -41,8 +42,6 @@ import rx.Observable;
  * @see SchemaContainer
  */
 public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, SchemaContainer> implements SchemaContainer {
-
-	private static final String VERSION_PROPERTY_KEY = "version";
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
@@ -153,13 +152,8 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	}
 
 	@Override
-	public String getVersion() {
-		return getProperty(VERSION_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setVersion(String version) {
-		setProperty(VERSION_PROPERTY_KEY, version);
+	public int getVersion() {
+		return getSchema().getVersion();
 	}
 
 	@Override
@@ -183,6 +177,8 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				if (!getName().equals(requestModel.getName())) {
 					setName(requestModel.getName());
 				}
+				// increase the version
+				requestModel.setVersion(getVersion() + 1);
 				setSchema(requestModel);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
@@ -197,8 +193,28 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 		if (action == DELETE_ACTION) {
 			// TODO Delete handling is not yet supported for schemas
 		} else {
+			String previousDocumentType = null;
+
+			// TODO uncomment this code (in repacement for the following lines), as soon as getting previous schema containers is implemented
+//			SchemaContainer previousSchemaContainer = getPreviousVersion();
+//			if (previousSchemaContainer != null) {
+//				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
+//			}
+			int previousVersion = getVersion() - 1;
+			if (previousVersion > 0) {
+				previousDocumentType = getName() + "-" + previousVersion;
+			}
+
 			for (Node node : getNodes()) {
 				batch.addEntry(node, UPDATE_ACTION);
+
+				if (previousDocumentType != null) {
+					List<String> languageNames = node.getAvailableLanguageNames();
+					for (String languageTag : languageNames) {
+						batch.addEntry(NodeIndexHandler.composeDocumentId(node, languageTag), node.getType(),
+								DELETE_ACTION, previousDocumentType);
+					}
+				}
 			}
 		}
 	}

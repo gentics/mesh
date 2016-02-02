@@ -74,6 +74,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
@@ -754,7 +755,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, String languageTag) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		String indexType = getSchema().getName();
+		String indexType = NodeIndexHandler.getDocumentType(getSchema());
 		batch.addEntry(getUuid(), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
@@ -771,7 +772,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		// TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = getSchema().getName();
+			String indexType = NodeIndexHandler.getDocumentType(getSchema());
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
 		addRelatedEntries(batch, action);
