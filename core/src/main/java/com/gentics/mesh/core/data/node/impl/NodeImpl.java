@@ -51,6 +51,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -153,7 +154,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// project languages to the list of languages for the fallback
 		List<String> langList = new ArrayList<>();
 		langList.addAll(Arrays.asList(languageTag));
-		for (Language l : getProject().getLanguages()) {
+		// TODO maybe we only want to get the project languags?
+		for (Language l : MeshRoot.getInstance().getLanguageRoot().findAll()) {
 			String tag = l.getLanguageTag();
 			if (!langList.contains(tag)) {
 				langList.add(tag);
