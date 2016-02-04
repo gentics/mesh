@@ -487,7 +487,7 @@ properties are defined in the [Types](#types) section.
 
 | String
 | ```string```
-| A string field type does not have any special configuration settings.
+| A string field type may have an ```allow``` property which acts as a white list for allowed field values
 
 | HTML
 | ```html```

@@ -690,12 +690,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
-				try {
-					Schema schema = getSchema();
-					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-				} catch (HttpStatusCodeErrorException e) {
-					throw error(BAD_REQUEST, "node_update_failed", e);
-				}
+				Schema schema = getSchema();
+				container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
 
