@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
@@ -14,7 +15,7 @@ import rx.Observable;
 /**
  * @see BooleanGraphFieldList
  */
-public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl> implements BooleanGraphFieldList {
+public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean> implements BooleanGraphFieldList {
 
 	@Override
 	public BooleanGraphField getBoolean(int index) {
@@ -40,7 +41,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
+		getElement().remove();
 	}
 
 	@Override
@@ -52,4 +53,8 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 		return Observable.just(restModel);
 	}
 
+	@Override
+	public List<Boolean> getValues() {
+		return getList().stream().map(BooleanGraphField::getBoolean).collect(Collectors.toList());
+	}
 }

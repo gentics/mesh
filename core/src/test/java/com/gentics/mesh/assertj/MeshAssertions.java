@@ -7,15 +7,19 @@ import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
+import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaAssert;
+import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.SchemaResponseAssert;
 import com.gentics.mesh.assertj.impl.SearchQueueAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -93,5 +97,13 @@ public class MeshAssertions extends Assertions {
 
 	public static NavigationResponseAssert assertThat(NavigationResponse actual) {
 		return new NavigationResponseAssert(actual);
+	}
+
+	public static NodeAssert assertThat(Node actual) {
+		return new NodeAssert(actual);
+	}
+
+	public static SchemaContainerAssert assertThat(SchemaContainer actual) {
+		return new SchemaContainerAssert(actual);
 	}
 }

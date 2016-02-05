@@ -42,6 +42,8 @@ import rx.Observable;
  */
 public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, SchemaContainer> implements SchemaContainer {
 
+	private static final String VERSION_PROPERTY_KEY = "version";
+
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
 	}
@@ -119,7 +121,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public Schema getSchema() {
-		Schema schema = getSchemaStorage().getSchema(getName());
+		Schema schema = getSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
 			try {
 				schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
@@ -134,10 +136,11 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public void setSchema(Schema schema) {
-		getSchemaStorage().removeSchema(schema.getName());
+		getSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
 		getSchemaStorage().addSchema(schema);
 		String json = JsonUtil.toJson(schema);
 		setJson(json);
+		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
 	}
 
 	@Override
@@ -152,7 +155,7 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 
 	@Override
 	public int getVersion() {
-		return getSchema().getVersion();
+		return getProperty(VERSION_PROPERTY_KEY);
 	}
 
 	@Override

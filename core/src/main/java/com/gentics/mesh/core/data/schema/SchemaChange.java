@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.util.Tuple;
 
 /**
  * A schema change represents a single manipulation of a schema.
@@ -94,8 +98,22 @@ public interface SchemaChange extends MeshVertex {
 	 * Get the migration script for the change. May either be a custom script or an automatically created
 	 * 
 	 * @return migration script
+	 * @throws IOException
 	 */
-	String getMigrationScript();
+	String getMigrationScript() throws IOException;
+
+	/**
+	 * Get the migration script context
+	 * @return context
+	 */
+	List<Tuple<String, Object>> getMigrationScriptContext();
+
+	/**
+	 * Get the automatic migration script (may be null)
+	 * @return automatic migration script
+	 * @throws IOException
+	 */
+	String getAutoMigrationScript() throws IOException;
 
 	/**
 	 * Set a custom migration script. If this is set to null, the automatically created migration script will be used instead
@@ -104,7 +122,7 @@ public interface SchemaChange extends MeshVertex {
 	 *            migration script
 	 * @return fluent API
 	 */
-	SchemaChange setMigrationScript(String migrationScript);
+	SchemaChange setCustomMigrationScript(String migrationScript);
 
 	/**
 	 * Apply the current change on the schema.
@@ -114,4 +132,5 @@ public interface SchemaChange extends MeshVertex {
 	 * @return Modified schema
 	 */
 	Schema apply(Schema schema);
+
 }

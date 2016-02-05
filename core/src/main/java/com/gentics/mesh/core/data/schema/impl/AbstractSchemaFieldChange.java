@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.gentics.mesh.core.data.schema.SchemaFieldChange;
+import com.gentics.mesh.util.Tuple;
 
 /**
  * @see SchemaFieldChange
@@ -19,4 +23,8 @@ public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange imp
 		setProperty(FIELDNAME_KEY, name);
 	}
 
+	@Override
+	public List<Tuple<String, Object>> getMigrationScriptContext() {
+		return Arrays.asList(Tuple.tuple("fieldname", getFieldName()));
+	}
 }

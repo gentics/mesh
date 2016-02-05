@@ -8,7 +8,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
-public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphField, MicronodeFieldList> {
+public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphField, MicronodeFieldList, Micronode> {
 
 	public static final String TYPE = "micronode";
 

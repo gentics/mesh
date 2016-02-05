@@ -32,7 +32,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 
 	@Override
 	public void setFieldKey(String key) {
-		setFieldProperty("field", "true");
+		setFieldProperty("field", key);
 	}
 
 	/**

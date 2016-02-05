@@ -1,7 +1,10 @@
 package com.gentics.mesh.rest;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Map.Entry;
 
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -9,23 +12,37 @@ import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
 public class ClientSchemaStorage implements SchemaStorage {
 
-	private Map<String, Schema> schemaMap = new HashMap<>();
+	private Map<String, Map<Integer, Schema>> schemaMap = new HashMap<>();
 
 	private Map<String, Microschema> microschemaMap = new HashMap<>();
 
 	@Override
 	public void addSchema(Schema schema) {
-		schemaMap.put(schema.getName(), schema);
+		schemaMap.computeIfAbsent(schema.getName(), k -> new HashMap<>()).put(schema.getVersion(), schema);
 	}
 
 	@Override
 	public Schema getSchema(String name) {
-		return schemaMap.get(name);
+		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet()
+				.stream().max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
+	}
+
+	@Override
+	public Schema getSchema(String name, int version) {
+		return schemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
 	}
 
 	@Override
 	public void removeSchema(String name) {
 		schemaMap.remove(name);
+	}
+
+	@Override
+	public void removeSchema(String name, int version) {
+		if (schemaMap.containsKey(name)) {
+			schemaMap.get(name).remove(version);
+		}
 	}
 
 	@Override

@@ -23,9 +23,23 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
+import com.gentics.mesh.core.rest.schema.DateFieldSchema;
+import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
@@ -164,6 +178,49 @@ public final class FieldUtil {
 	public static BinaryFieldSchema createBinaryFieldSchema(String name) {
 		BinaryFieldSchema field = new BinaryFieldSchemaImpl();
 		field.setName(name);
+		return field;
+	}
+
+	public static BooleanFieldSchema createBooleanFieldSchema(String name) {
+		BooleanFieldSchema field = new BooleanFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static DateFieldSchema createDateFieldSchema(String name) {
+		DateFieldSchema field = new DateFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static HtmlFieldSchema createHtmlFieldSchema(String name) {
+		HtmlFieldSchema field = new HtmlFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static MicronodeFieldSchema createMicronodeFieldSchema(String name) {
+		MicronodeFieldSchema field = new MicronodeFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static NodeFieldSchema createNodeFieldSchema(String name) {
+		NodeFieldSchema field = new NodeFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static NumberFieldSchema createNumberFieldSchema(String name) {
+		NumberFieldSchema field = new NumberFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static ListFieldSchema createListFieldSchema(String name, String listType) {
+		ListFieldSchema field = new ListFieldSchemaImpl();
+		field.setName(name);
+		field.setListType(listType);
 		return field;
 	}
 }

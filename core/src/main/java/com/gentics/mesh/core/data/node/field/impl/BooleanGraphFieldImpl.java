@@ -40,4 +40,9 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 		return Observable.just(restModel);
 	}
 
+	@Override
+	public void removeField() {
+		setFieldProperty("boolean", null);
+		setFieldKey(null);
+	}
 }

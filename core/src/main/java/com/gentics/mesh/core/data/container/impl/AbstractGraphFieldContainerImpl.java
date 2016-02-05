@@ -829,6 +829,74 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	}
 
+	@Override
+	public List<GraphField> getFields(FieldSchemaContainer schema) {
+		List<GraphField> fields = new ArrayList<>();
+		for (FieldSchema fieldSchema : schema.getFields()) {
+			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+			GraphField field = null;
+			switch (type) {
+			case BINARY:
+				field = getBinary(fieldSchema.getName());
+				break;
+			case BOOLEAN:
+				field = getBoolean(fieldSchema.getName());
+				break;
+			case DATE:
+				field = getDate(fieldSchema.getName());
+				break;
+			case HTML:
+				field = getHtml(fieldSchema.getName());
+				break;
+			case LIST:
+				ListFieldSchema listFieldSchema = (ListFieldSchema)fieldSchema;
+				switch (listFieldSchema.getListType()) {
+				case "boolean":
+					field = getBooleanList(fieldSchema.getName());
+					break;
+				case "date":
+					field = getDateList(fieldSchema.getName());
+					break;
+				case "html":
+					field = getHTMLList(fieldSchema.getName());
+					break;
+				case "micronode":
+					field = getMicronodeList(fieldSchema.getName());
+					break;
+				case "node":
+					field = getNodeList(fieldSchema.getName());
+					break;
+				case "number":
+					field = getNumberList(fieldSchema.getName());
+					break;
+				case "string":
+					field = getStringList(fieldSchema.getName());
+					break;
+				}
+				break;
+			case MICRONODE:
+				field = getMicronode(fieldSchema.getName());
+				break;
+			case NODE:
+				field = getNode(fieldSchema.getName());
+				break;
+			case NUMBER:
+				field = getNumber(fieldSchema.getName());
+				break;
+			case STRING:
+				field = getString(fieldSchema.getName());
+				break;
+			default:
+				break;
+			}
+
+			if (field != null) {
+				fields.add(field);
+			}
+		}
+		return fields;
+	}
+
 	/**
 	 * Delete the field with the given key from the container.
 	 * 

@@ -1,0 +1,1 @@
+delete node.fields[fieldname];

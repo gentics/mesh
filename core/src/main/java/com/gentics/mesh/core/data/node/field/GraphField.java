@@ -17,4 +17,9 @@ public interface GraphField {
 	 * @return
 	 */
 	String getFieldKey();
+
+	/**
+	 * Remove this field from its container
+	 */
+	void removeField();
 }

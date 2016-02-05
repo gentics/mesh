@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -38,7 +40,10 @@ public class ServerSchemaStorage implements SchemaStorage {
 	@Autowired
 	private BootstrapInitializer boot;
 
-	private Map<String, Schema> schemas = new HashMap<>();
+	/**
+	 * Map holding the schemas per name and version
+	 */
+	private Map<String, Map<Integer, Schema>> schemas = new HashMap<>();
 
 	private Map<String, Microschema> microschemas = new HashMap<>();
 
@@ -46,7 +51,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 		//Iterate over all schemas and load them into the storage
 		for (SchemaContainer container : boot.schemaContainerRoot().findAll()) {
 			Schema restSchema = container.getSchema();
-			schemas.put(restSchema.getName(), restSchema);
+			schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(),
+					restSchema);
 		}
 
 		// load all microschemas and add to storage
@@ -66,7 +72,27 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Schema getSchema(String name) {
-		return schemas.get(name);
+		Map<Integer, Schema> schemaMap = schemas.get(name);
+		if (schemaMap == null) {
+			return null;
+		}
+		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.entrySet().stream()
+				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		if (maxVersion.isPresent()) {
+			return maxVersion.get().getValue();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public Schema getSchema(String name, int version) {
+		Map<Integer, Schema> schemaMap = schemas.get(name);
+		if (schemaMap == null) {
+			return null;
+		} else {
+			return schemaMap.get(version);
+		}
 	}
 
 	@Override
@@ -75,12 +101,21 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
+	public void removeSchema(String name, int version) {
+		Map<Integer, Schema> schemaMap = schemas.get(name);
+		if (schemaMap != null) {
+			schemaMap.remove(version);
+		}
+	}
+
+	@Override
 	public void addSchema(Schema schema) {
-		if (schemas.containsKey(schema.getName())) {
-			log.error("Schema " + schema.getName() + " is already stored.");
+		Map<Integer, Schema> schemaMap = schemas.computeIfAbsent(schema.getName(), k -> new HashMap<>());
+		if (schemaMap.containsKey(schema.getVersion())) {
+			log.error("Schema " + schema.getName() + ", version " + schema.getVersion() + " is already stored.");
 			return;
 		} else {
-			schemas.put(schema.getName(), schema);
+			schemaMap.put(schema.getVersion(), schema);
 		}
 	}
 

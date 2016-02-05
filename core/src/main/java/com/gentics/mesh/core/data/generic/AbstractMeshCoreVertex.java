@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -113,11 +114,16 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
 
-		return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
-			String[] names = list.toArray(new String[list.size()]);
-			model.setPermissions(names);
-			return model;
-		});
+		if (ac instanceof NodeMigrationActionContextImpl) {
+			// when this is a node migration, do not set user permissions
+			return Observable.just(model);
+		} else {
+			return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
+				String[] names = list.toArray(new String[list.size()]);
+				model.setPermissions(names);
+				return model;
+			});
+		}
 	}
 
 	@Override

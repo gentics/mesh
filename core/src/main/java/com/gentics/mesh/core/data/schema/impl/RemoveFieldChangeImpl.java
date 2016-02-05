@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import java.io.IOException;
+
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
@@ -15,5 +17,10 @@ public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	public Schema apply(Schema schema) {
 		schema.removeField(getFieldName());
 		return schema;
+	}
+
+	@Override
+	public String getAutoMigrationScript() throws IOException {
+		return loadAutoMigrationScript("fieldremove.js");
 	}
 }

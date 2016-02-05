@@ -33,4 +33,9 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		return Observable.just(stringField);
 	}
 
+	@Override
+	public void removeField() {
+		setFieldProperty("string", null);
+		setFieldKey(null);
+	}
 }

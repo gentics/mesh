@@ -51,4 +51,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 	}
 
+	@Override
+	public void removeField() {
+		remove();
+	}
 }

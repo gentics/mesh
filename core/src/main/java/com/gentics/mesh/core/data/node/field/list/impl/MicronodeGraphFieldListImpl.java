@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RxUtil;
 
@@ -29,7 +28,7 @@ import rx.Observable;
 /**
  * @see MicronodeGraphFieldList
  */
-public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList>
+public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<MicronodeGraphField, MicronodeFieldList, Micronode>
 		implements MicronodeGraphFieldList {
 
 	public static void checkIndices(Database database) {
@@ -126,4 +125,14 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		});
 	}
 
+	@Override
+	public void delete() {
+		getList().stream().map(MicronodeGraphField::getMicronode).forEach(Micronode::delete);
+		getElement().remove();
+	}
+
+	@Override
+	public List<Micronode> getValues() {
+		return getList().stream().map(MicronodeGraphField::getMicronode).collect(Collectors.toList());
+	}
 }

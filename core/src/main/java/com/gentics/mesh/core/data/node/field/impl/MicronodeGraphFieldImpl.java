@@ -47,4 +47,12 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 	}
 
+	@Override
+	public void removeField() {
+		Micronode micronode = getMicronode();
+		remove();
+		if (micronode != null) {
+			micronode.delete();
+		}
+	}
 }
