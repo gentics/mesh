@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
+
 import java.util.Arrays;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
@@ -54,10 +57,12 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 				return Optional.of(change);
 			}
 		} else {
-			//TODO type change 
+			return createTypeChange(fieldSchema);
 		}
 
 		return Optional.empty();
 	}
+
+
 
 }

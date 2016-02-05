@@ -52,7 +52,7 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 				return Optional.of(change);
 			}
 		} else {
-			//Error?
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}

@@ -8,17 +8,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest<StringFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public StringFieldSchema createField(String fieldName) {
 		return FieldUtil.createStringFieldSchema(fieldName);
 	}
 
@@ -27,8 +26,8 @@ public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest {
 	public void testSameField() {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
-		schemaA.addField(FieldUtil.createStringFieldSchema("test"));
-		schemaB.addField(FieldUtil.createStringFieldSchema("test"));
+		schemaA.addField(createField("test"));
+		schemaB.addField(createField("test"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
 	}
@@ -38,9 +37,9 @@ public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest {
 	public void testUpdateField() {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
-		StringFieldSchema fieldA = FieldUtil.createStringFieldSchema("test");
+		StringFieldSchema fieldA = createField("test");
 		schemaA.addField(fieldA);
-		StringFieldSchema fieldB = FieldUtil.createStringFieldSchema("test");
+		StringFieldSchema fieldB = createField("test");
 		schemaB.addField(fieldB);
 
 		// required flag:

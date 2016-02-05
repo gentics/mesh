@@ -51,7 +51,7 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 				return Optional.of(change);
 			}
 		} else {
-
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}

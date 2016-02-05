@@ -5,6 +5,6 @@ package com.gentics.mesh.core.rest.schema.change.impl;
  */
 public enum SchemaChangeOperation {
 
-	ADDFIELD, REMOVEFIELD, UPDATEFIELD, UPDATESCHEMA
+	ADDFIELD, REMOVEFIELD, CHANGEFIELDTYPE, UPDATEFIELD, UPDATESCHEMA
 
 }

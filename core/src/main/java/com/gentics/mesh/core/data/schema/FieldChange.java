@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.schema;
 
 /**
- * Change entry which contains information on how to update a field (eg. change type, settings)
+ * Change entry which contains information on how to handle a field (eg. change type, settings)
  */
-public interface UpdateFieldChange extends SchemaFieldChange {
+public interface FieldChange extends SchemaFieldChange {
 
 	/**
 	 * Set a field specific property.

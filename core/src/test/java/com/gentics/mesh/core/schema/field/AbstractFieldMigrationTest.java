@@ -15,10 +15,10 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.data.schema.FieldChange;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -147,7 +147,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		containerB.setSchema(schemaB);
 
 		// link the schemas with the change in between
-		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		FieldChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
 		change.setFieldProperty("type", newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {

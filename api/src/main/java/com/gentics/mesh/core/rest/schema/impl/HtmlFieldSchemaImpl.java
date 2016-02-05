@@ -25,6 +25,8 @@ public class HtmlFieldSchemaImpl extends AbstractFieldSchema implements HtmlFiel
 			if (compareRequiredField(change, htmlFieldSchema, false)) {
 				return Optional.of(change);
 			}
+		} else {
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}

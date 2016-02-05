@@ -8,17 +8,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorNodeTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorNodeTest extends AbstractSchemaComparatorTest<NodeFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public NodeFieldSchema createField(String fieldName) {
 		return FieldUtil.createNodeFieldSchema(fieldName);
 	}
 
@@ -28,13 +27,13 @@ public class SchemaComparatorNodeTest extends AbstractSchemaComparatorTest {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 
-		NodeFieldSchema fieldA = FieldUtil.createNodeFieldSchema("test");
+		NodeFieldSchema fieldA = createField("test");
 		fieldA.setRequired(true);
 		fieldA.setAllowedSchemas("one", "two");
 		fieldA.setLabel("label1");
 		schemaA.addField(fieldA);
 
-		NodeFieldSchema fieldB = FieldUtil.createNodeFieldSchema("test");
+		NodeFieldSchema fieldB = createField("test");
 		fieldB.setRequired(true);
 		fieldB.setAllowedSchemas("one", "two");
 		fieldB.setLabel("label2");
@@ -50,13 +49,13 @@ public class SchemaComparatorNodeTest extends AbstractSchemaComparatorTest {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 
-		NodeFieldSchema fieldA = FieldUtil.createNodeFieldSchema("test");
+		NodeFieldSchema fieldA = createField("test");
 		fieldA.setRequired(true);
 		fieldA.setAllowedSchemas("one", "two");
 		fieldA.setLabel("label1");
 		schemaA.addField(fieldA);
 
-		NodeFieldSchema fieldB = FieldUtil.createNodeFieldSchema("test");
+		NodeFieldSchema fieldB = createField("test");
 		fieldB.setRequired(true);
 		fieldB.setLabel("label1");
 		schemaB.addField(fieldB);

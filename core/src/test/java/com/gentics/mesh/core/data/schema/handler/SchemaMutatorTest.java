@@ -12,11 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.data.schema.FieldChange;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -88,7 +88,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		schema.addField(field);
 
 		// 2. Create schema field update change
-		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		FieldChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName("test");
 		change.setFieldProperty("allowedMimeTypes", "newTypes");
 

@@ -27,7 +27,7 @@ public class DateFieldSchemaImpl extends AbstractFieldSchema implements DateFiel
 			}
 
 		} else {
-			//TODO impl
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}

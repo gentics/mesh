@@ -23,6 +23,8 @@ public class BooleanFieldSchemaImpl extends AbstractFieldSchema implements Boole
 			if (compareRequiredField(change, fieldSchema, false)) {
 				return Optional.of(change);
 			}
+		} else {
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}

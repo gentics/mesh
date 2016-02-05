@@ -8,17 +8,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest<NumberFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public NumberFieldSchema createField(String fieldName) {
 		return FieldUtil.createNumberFieldSchema(fieldName);
 	}
 
@@ -27,7 +26,7 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest {
 	public void testSameField() {
 
 		Schema schemaA = new SchemaImpl();
-		NumberFieldSchema fieldA = FieldUtil.createNumberFieldSchema("test");
+		NumberFieldSchema fieldA = createField("test");
 		fieldA.setLabel("label1");
 		fieldA.setMin(1);
 		fieldA.setMax(2);
@@ -36,7 +35,7 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest {
 		schemaA.addField(fieldA);
 
 		Schema schemaB = new SchemaImpl();
-		NumberFieldSchema fieldB = FieldUtil.createNumberFieldSchema("test");
+		NumberFieldSchema fieldB = createField("test");
 		fieldB.setMin(1);
 		fieldB.setMax(2);
 		fieldB.setRequired(true);
@@ -53,7 +52,7 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest {
 	public void testUpdateField() {
 
 		Schema schemaA = new SchemaImpl();
-		NumberFieldSchema fieldA = FieldUtil.createNumberFieldSchema("test");
+		NumberFieldSchema fieldA = createField("test");
 		fieldA.setLabel("label1");
 		fieldA.setMin(1);
 		fieldA.setMax(2);
@@ -62,7 +61,7 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest {
 		schemaA.addField(fieldA);
 
 		Schema schemaB = new SchemaImpl();
-		NumberFieldSchema fieldB = FieldUtil.createNumberFieldSchema("test");
+		NumberFieldSchema fieldB = createField("test");
 		fieldB.setMin(1);
 		fieldB.setMax(2);
 		fieldB.setRequired(true);

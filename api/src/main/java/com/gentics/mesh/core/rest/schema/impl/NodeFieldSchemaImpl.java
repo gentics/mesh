@@ -52,7 +52,7 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 			}
 
 		} else {
-			//TODO impl
+			return createTypeChange(fieldSchema);
 		}
 
 		return Optional.empty();

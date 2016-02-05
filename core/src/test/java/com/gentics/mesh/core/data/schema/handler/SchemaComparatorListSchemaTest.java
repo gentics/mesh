@@ -8,17 +8,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorListSchemaTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorListSchemaTest extends AbstractSchemaComparatorTest<ListFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public ListFieldSchema createField(String fieldName) {
 		return FieldUtil.createListFieldSchema("test");
 	}
 

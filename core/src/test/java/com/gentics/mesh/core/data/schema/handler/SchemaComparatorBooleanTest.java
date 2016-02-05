@@ -9,17 +9,15 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorBooleanTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorBooleanTest extends AbstractSchemaComparatorTest<BooleanFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public BooleanFieldSchema createField(String fieldName) {
 		return FieldUtil.createBooleanFieldSchema(fieldName);
 	}
 
@@ -29,12 +27,12 @@ public class SchemaComparatorBooleanTest extends AbstractSchemaComparatorTest {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 
-		BooleanFieldSchema fieldA = FieldUtil.createBooleanFieldSchema("Test");
+		BooleanFieldSchema fieldA = createField("test");
 		fieldA.setRequired(true);
 		fieldA.setLabel("label1");
 		schemaA.addField(fieldA);
 
-		BooleanFieldSchema fieldB = FieldUtil.createBooleanFieldSchema("Test");
+		BooleanFieldSchema fieldB = createField("test");
 		fieldB.setRequired(true);
 		fieldB.setLabel("label2");
 		schemaB.addField(fieldB);
@@ -49,9 +47,9 @@ public class SchemaComparatorBooleanTest extends AbstractSchemaComparatorTest {
 	public void testUpdateField() {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
-		BooleanFieldSchema fieldA = FieldUtil.createBooleanFieldSchema("test");
+		BooleanFieldSchema fieldA = createField("test");
 		schemaA.addField(fieldA);
-		BooleanFieldSchema fieldB = FieldUtil.createBooleanFieldSchema("test");
+		BooleanFieldSchema fieldB = createField("test");
 		schemaB.addField(fieldB);
 
 		// required flag:

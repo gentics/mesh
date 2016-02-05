@@ -9,16 +9,15 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorBinaryTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorBinaryTest extends AbstractSchemaComparatorTest<BinaryFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public BinaryFieldSchema createField(String fieldName) {
 		return FieldUtil.createBinaryFieldSchema(fieldName);
 	}
 

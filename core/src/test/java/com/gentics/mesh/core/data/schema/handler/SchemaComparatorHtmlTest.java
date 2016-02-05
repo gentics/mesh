@@ -2,24 +2,22 @@ package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorHtmlTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorHtmlTest extends AbstractSchemaComparatorTest<HtmlFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public HtmlFieldSchema createField(String fieldName) {
 		return FieldUtil.createHtmlFieldSchema(fieldName);
 	}
 

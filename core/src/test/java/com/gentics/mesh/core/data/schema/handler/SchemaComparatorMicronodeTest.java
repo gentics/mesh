@@ -8,17 +8,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorMicronodeTest extends AbstractSchemaComparatorTest {
+public class SchemaComparatorMicronodeTest extends AbstractSchemaComparatorTest<MicronodeFieldSchema> {
 
 	@Override
-	public FieldSchema createField(String fieldName) {
+	public MicronodeFieldSchema createField(String fieldName) {
 		return FieldUtil.createMicronodeFieldSchema(fieldName);
 	}
 

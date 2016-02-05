@@ -71,7 +71,7 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 				return Optional.of(change);
 			}
 		} else {
-			//TODO impl
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}

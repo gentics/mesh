@@ -102,7 +102,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 				return Optional.of(change);
 			}
 		} else {
-			//TODO impl
+			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
 	}
