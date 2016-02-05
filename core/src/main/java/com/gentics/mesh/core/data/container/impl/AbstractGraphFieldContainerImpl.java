@@ -307,7 +307,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		return getList(DateGraphFieldListImpl.class, fieldKey);
 	}
 
-	private <T extends ListGraphField<?, ?>> T getList(Class<T> classOfT, String fieldKey) {
+	private <T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey) {
 		return out(HAS_LIST).has(classOfT).has(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey).nextOrDefaultExplicit(classOfT, null);
 	}
 
@@ -320,7 +320,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 *            Field key for the list
 	 * @return
 	 */
-	private <T extends ListGraphField<?, ?>> T createList(Class<T> classOfT, String fieldKey) {
+	private <T extends ListGraphField<?, ?, ?>> T createList(Class<T> classOfT, String fieldKey) {
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
 		linkOut(list.getImpl(), HAS_LIST);

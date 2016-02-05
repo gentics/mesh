@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
@@ -22,13 +22,13 @@ public class FieldSchemaComparator {
 	 * @param fieldSchemaB
 	 * @return
 	 */
-	public Optional<SchemaChangeModelImpl> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
+	public Optional<SchemaChangeModel> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
 			return fieldSchemaA.compareTo(fieldSchemaB);
 		} else if (fieldSchemaA != null && fieldSchemaB == null) {
-			return Optional.of(new SchemaChangeModelImpl().setOperation(SchemaChangeOperation.REMOVEFIELD));
+			return Optional.of(new SchemaChangeModel(SchemaChangeOperation.REMOVEFIELD));
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
-			return Optional.of(new SchemaChangeModelImpl().setOperation(SchemaChangeOperation.ADDFIELD));
+			return Optional.of(new SchemaChangeModel(SchemaChangeOperation.ADDFIELD));
 		}
 
 		return Optional.empty();

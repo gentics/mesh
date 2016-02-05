@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 public class NumberFieldSchemaImpl extends AbstractFieldSchema implements NumberFieldSchema {
 
@@ -54,8 +56,23 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 	}
 
 	@Override
-	public Optional<SchemaChangeModelImpl> compareTo(FieldSchema fieldSchema) {
-		// TODO Auto-generated method stub
-		return null;
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+
+		if (fieldSchema instanceof NumberFieldSchema) {
+			NumberFieldSchema numberFieldSchema = (NumberFieldSchema) fieldSchema;
+
+			SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldSchema.getName());
+			boolean modified = false;
+
+			// required flag:
+			modified = compareRequiredField(change, numberFieldSchema, modified);
+
+			if (modified) {
+				return Optional.of(change);
+			}
+		} else {
+			//TODO impl
+		}
+		return Optional.empty();
 	}
 }

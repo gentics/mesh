@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -95,7 +96,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		Schema updatedSchema = mutator.apply(schema, change);
 		BinaryFieldSchema updatedField = updatedSchema.getField("test", BinaryFieldSchemaImpl.class);
 		assertNotNull(updatedField);
-		assertEquals("newTypes", updatedField.getAllowedMimeTypes());
+		assertArrayEquals(new String[] { "newTypes" }, updatedField.getAllowedMimeTypes());
 
 	}
 

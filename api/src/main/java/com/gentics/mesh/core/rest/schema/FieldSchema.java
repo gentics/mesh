@@ -2,7 +2,7 @@ package com.gentics.mesh.core.rest.schema;
 
 import java.util.Optional;
 
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
  * A field schema is a field within a schema. In contradiction to node fields a field schema is the blueprint of a field and will not store any data. Instead it
@@ -70,5 +70,5 @@ public interface FieldSchema {
 	 * @param fieldSchema
 	 * @return
 	 */
-	Optional<SchemaChangeModelImpl> compareTo(FieldSchema fieldSchema);
+	Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema);
 }

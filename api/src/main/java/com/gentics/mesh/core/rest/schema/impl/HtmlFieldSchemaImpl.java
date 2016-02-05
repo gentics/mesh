@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 public class HtmlFieldSchemaImpl extends AbstractFieldSchema implements HtmlFieldSchema {
 
@@ -15,8 +17,15 @@ public class HtmlFieldSchemaImpl extends AbstractFieldSchema implements HtmlFiel
 	}
 
 	@Override
-	public Optional<SchemaChangeModelImpl> compareTo(FieldSchema fieldSchema) {
-		// TODO Auto-generated method stub
-		return null;
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+		if (fieldSchema instanceof HtmlFieldSchema) {
+			SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, getName());
+			HtmlFieldSchema htmlFieldSchema = (HtmlFieldSchema) fieldSchema;
+
+			if (compareRequiredField(change, htmlFieldSchema, false)) {
+				return Optional.of(change);
+			}
+		}
+		return Optional.empty();
 	}
 }

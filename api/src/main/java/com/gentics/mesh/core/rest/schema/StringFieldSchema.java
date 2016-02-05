@@ -15,5 +15,5 @@ public interface StringFieldSchema extends FieldSchema {
 	 * @param allowedValues
 	 *            Allowed values or null
 	 */
-	void setAllowedValues(String[] allowedValues);
+	void setAllowedValues(String... allowedValues);
 }

@@ -223,4 +223,10 @@ public final class FieldUtil {
 		field.setListType(listType);
 		return field;
 	}
+	
+	public static ListFieldSchema createListFieldSchema(String name) {
+		ListFieldSchema field = new ListFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
 }

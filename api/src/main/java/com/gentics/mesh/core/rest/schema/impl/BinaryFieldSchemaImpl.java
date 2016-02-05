@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements BinaryFieldSchema {
@@ -32,15 +32,25 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	}
 
 	@Override
-	public Optional<SchemaChangeModelImpl> compareTo(FieldSchema fieldSchema) {
-		if (fieldSchema instanceof BinaryFieldSchemaImpl) {
-			BinaryFieldSchemaImpl binaryField = (BinaryFieldSchemaImpl) fieldSchema;
-			if (!Arrays.asList(getAllowedMimeTypes()).containsAll(Arrays.asList(binaryField.getAllowedMimeTypes()))) {
-				SchemaChangeModelImpl change = new SchemaChangeModelImpl().setOperation(SchemaChangeOperation.UPDATEFIELD);
-				change.getProperties().put("allowedMimeTypes", binaryField.getAllowedMimeTypes());
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+		if (fieldSchema instanceof BinaryFieldSchema) {
+			BinaryFieldSchema binaryFieldSchema = (BinaryFieldSchema) fieldSchema;
+
+			boolean modified = false;
+			SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldSchema.getName());
+
+			// required
+			modified = compareRequiredField(change, binaryFieldSchema, modified);
+
+			// allow
+			if (!Arrays.equals(getAllowedMimeTypes(), binaryFieldSchema.getAllowedMimeTypes())) {
+				change.getProperties().put("allow", binaryFieldSchema.getAllowedMimeTypes());
+				modified = true;
+			}
+
+			if (modified) {
 				return Optional.of(change);
 			}
-			System.out.println("sdegasdgas");
 		} else {
 			//Error?
 		}
