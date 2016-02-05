@@ -20,15 +20,27 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
 	@Before
 	public void updateSchema() throws IOException {
 		Schema schema = schemaContainer("folder").getSchema();
+
+		// add non restricted string field
 		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
 		stringFieldSchema.setName("stringField");
 		stringFieldSchema.setLabel("Some label");
 		schema.addField(stringFieldSchema);
+
+		// add restricted string field
+		StringFieldSchema restrictedStringFieldSchema = new StringFieldSchemaImpl();
+		restrictedStringFieldSchema.setName("restrictedstringField");
+		restrictedStringFieldSchema.setLabel("Some label");
+		restrictedStringFieldSchema.setAllowedValues(new String[] {"one", "two", "three"});
+		schema.addField(restrictedStringFieldSchema);
+
 		schemaContainer("folder").setSchema(schema);
 	}
 
@@ -72,5 +84,18 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		StringFieldImpl deserializedStringField = response.getField("stringField", StringFieldImpl.class);
 		assertNotNull(deserializedStringField);
 		assertEquals("someString", deserializedStringField.getString());
+	}
+
+	@Test
+	public void testValueRestrictionValidValue() {
+		NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("two"));
+		StringFieldImpl field = response.getField("restrictedstringField");
+		assertEquals("two", field.getString());
+	}
+
+	@Test
+	public void testValueRestrictionInvalidValue() {
+		updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"),
+				HttpResponseStatus.BAD_REQUEST, "node_error_invalid_string_field_value", "restrictedstringField", "invalid");
 	}
 }

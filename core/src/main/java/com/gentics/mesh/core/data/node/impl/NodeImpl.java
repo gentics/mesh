@@ -49,6 +49,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -56,7 +57,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -154,7 +154,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// project languages to the list of languages for the fallback
 		List<String> langList = new ArrayList<>();
 		langList.addAll(Arrays.asList(languageTag));
-		for (Language l : getProject().getLanguages()) {
+		// TODO maybe we only want to get the project languags?
+		for (Language l : MeshRoot.getInstance().getLanguageRoot().findAll()) {
 			String tag = l.getLanguageTag();
 			if (!langList.contains(tag)) {
 				langList.add(tag);
@@ -689,12 +690,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
-				try {
-					Schema schema = getSchema();
-					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-				} catch (HttpStatusCodeErrorException e) {
-					throw error(BAD_REQUEST, "node_update_failed", e);
-				}
+				Schema schema = getSchema();
+				container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
 

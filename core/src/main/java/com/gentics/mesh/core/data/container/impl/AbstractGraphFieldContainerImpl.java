@@ -89,6 +89,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
@@ -515,6 +516,15 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			if (restField == null) {
 				return;
 			}
+
+			// check value restrictions
+			StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
+			if (stringFieldSchema.getAllowedValues() != null) {
+				if (stringField.getString() != null && !Arrays.asList(stringFieldSchema.getAllowedValues()).contains(stringField.getString())) {
+					throw error(BAD_REQUEST, "node_error_invalid_string_field_value", key, stringField.getString());
+				}
+			}
+
 			// Create new graph field if no existing one could be found
 			if (graphStringField == null) {
 				graphStringField = createString(key);
