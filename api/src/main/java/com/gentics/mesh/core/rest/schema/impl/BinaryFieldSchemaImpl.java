@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.json.JsonUtil;
 
 public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements BinaryFieldSchema {
 

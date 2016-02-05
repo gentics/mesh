@@ -3,15 +3,14 @@ package com.gentics.mesh.core.data.schema.handler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -156,7 +155,7 @@ public class SchemaComparatorTest extends AbstractEmptyDBTest {
 	public void testStringFieldRemoved2() {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
-		schemaA.addField(FieldUtil.createStringFieldSchema("test"));
+		schemaA.addField(FieldUtil.createStringFieldSchema("fieldToBeRemoved"));
 		schemaA.addField(FieldUtil.createStringFieldSchema("test2"));
 		schemaB.addField(FieldUtil.createStringFieldSchema("test2"));
 		List<SchemaChangeModelImpl> changes = comparator.diff(schemaA, schemaB);

@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModelImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 public class StringFieldSchemaImpl extends AbstractFieldSchema implements StringFieldSchema {
 
@@ -16,7 +17,15 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 
 	@Override
 	public Optional<SchemaChangeModelImpl> compareTo(FieldSchema fieldSchema) {
-		// TODO Auto-generated method stub
-		return null;
+		if (fieldSchema instanceof StringFieldSchema) {
+			StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
+			if (isRequired() != stringFieldSchema.isRequired()) {
+				return Optional.of(new SchemaChangeModelImpl().setOperation(SchemaChangeOperation.UPDATEFIELD));
+			}
+		} else {
+			//TODO type change 
+		}
+
+		return Optional.empty();
 	}
 }
