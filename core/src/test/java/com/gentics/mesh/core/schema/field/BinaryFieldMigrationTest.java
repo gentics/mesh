@@ -19,19 +19,10 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	private static FieldFetcher FETCH = (container, name) -> container.getBinary(name);
 
-	private static DataAsserter ASSERT = (container, name) -> {
-		assertThat(container.getBoolean(name)).as("New field").isNull();
-		assertThat(container.getBinary(name)).as("Old field").isNull();
-	};
-
 	@Override
 	@Test
 	public void testRemove() throws IOException {
 		removeField(CREATEBINARY, FILL, FETCH);
-	}
-
-	@Override
-	public void testRemoveList() throws IOException {
 	}
 
 	@Override
@@ -41,85 +32,112 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testChangeToBoolean() throws IOException {
-		changeType(CREATEBINARY, FILL, CREATEBOOLEAN, ASSERT);
+		changeType(CREATEBINARY, FILL, FETCH, CREATEBOOLEAN, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToBooleanList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToDate() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEDATE, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToDateList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEDATELIST, (container, name) -> {
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToHtml() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEHTML, (container, name) -> {
+			assertThat(container.getHtml(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToHtmlList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEHTMLLIST, (container, name) -> {
+			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToMicronode() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
+			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToMicronodeList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
+			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToNode() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATENODE, (container, name) -> {
+			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToNodeList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATENODELIST, (container, name) -> {
+			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToNumber() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATENUMBER, (container, name) -> {
+			assertThat(container.getNumber(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToNumberList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATENUMBERLIST, (container, name) -> {
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToString() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATESTRING, (container, name) -> {
+			assertThat(container.getString(name)).as(NEWFIELD).isNull();
+		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToStringList() throws IOException {
-		// TODO Auto-generated method stub
-
+		changeType(CREATEBINARY, FILL, FETCH, CREATESTRINGLIST, (container, name) -> {
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNull();
+		});
 	}
-
 }

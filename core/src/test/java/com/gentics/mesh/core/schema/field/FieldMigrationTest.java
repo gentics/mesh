@@ -13,12 +13,6 @@ public interface FieldMigrationTest {
 	void testRemove() throws IOException;
 
 	/**
-	 * Test removing a list field
-	 * @throws IOException
-	 */
-	void testRemoveList() throws IOException;
-
-	/**
 	 * Test changing the field to a binary field
 	 * @throws IOException
 	 */

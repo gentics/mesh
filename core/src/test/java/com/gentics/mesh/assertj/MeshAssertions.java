@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
+import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeAssert;
@@ -12,13 +13,14 @@ import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaAssert;
-import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
+import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.SchemaResponseAssert;
 import com.gentics.mesh.assertj.impl.SearchQueueAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -113,4 +115,7 @@ public class MeshAssertions extends Assertions {
 		return new SchemaChangeModelAssert(actual);
 	}
 
+	public static MicronodeAssert assertThat(Micronode actual) {
+		return new MicronodeAssert(actual);
+	}
 }
