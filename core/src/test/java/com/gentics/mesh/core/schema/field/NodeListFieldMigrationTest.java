@@ -25,6 +25,15 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATENODELIST, FILL, FETCH, (container, name) -> {
+			assertThat(container.getNodeList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNodeList(name).getValues()).as(NEWFIELDVALUE).containsExactly(folder("2015"), folder("news"));
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATENODELIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -100,12 +109,17 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToNode() throws IOException {
 		changeType(CREATENODELIST, FILL, FETCH, CREATENODE, (container, name) -> {
 			assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("2ß15"));
+			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("2015"));
 		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToNodeList() throws IOException {
+		changeType(CREATENODELIST, FILL, FETCH, CREATENODELIST, (container, name) -> {
+			assertThat(container.getNodeList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNodeList(name).getValues()).as(NEWFIELDVALUE).containsExactly(folder("2015"), folder("news"));
+		});
 	}
 
 	@Override

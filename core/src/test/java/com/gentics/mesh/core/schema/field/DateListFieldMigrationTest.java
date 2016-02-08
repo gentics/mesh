@@ -30,6 +30,15 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEDATELIST, FILL, FETCH, (container, name) -> {
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(DATEVALUE, OTHERDATEVALUE);
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -62,7 +71,12 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToDateList() throws IOException {
+		changeType(CREATEDATELIST, FILL, FETCH, CREATEDATELIST, (container, name) -> {
+			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(DATEVALUE, OTHERDATEVALUE);
+		});
 	}
 
 	@Override
@@ -70,7 +84,8 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToHtml() throws IOException {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo(Long.toString(DATEVALUE));
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE)
+					.isEqualTo(Long.toString(DATEVALUE) + "," + Long.toString(OTHERDATEVALUE));
 		});
 	}
 
@@ -138,7 +153,8 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToString() throws IOException {
 		changeType(CREATEDATELIST, FILL, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo(Long.toString(DATEVALUE));
+			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE)
+					.isEqualTo(Long.toString(DATEVALUE) + "," + Long.toString(OTHERDATEVALUE));
 		});
 	}
 

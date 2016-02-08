@@ -16,13 +16,13 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 
 		Micronode micronode = field.createMicronode(new MicronodeResponse());
 		micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
-		micronode.createString("firstname").setString("Donald");
-		micronode.createString("lastname").setString("Duck");
+		micronode.createString("firstName").setString("Donald");
+		micronode.createString("lastName").setString("Duck");
 
 		micronode = field.createMicronode(new MicronodeResponse());
 		micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
-		micronode.createString("firstname").setString("Mickey");
-		micronode.createString("lastname").setString("Mouse");
+		micronode.createString("firstName").setString("Mickey");
+		micronode.createString("lastName").setString("Mouse");
 	};
 
 	private static final FieldFetcher FETCH = (container, name) -> container.getMicronodeList(name);
@@ -31,6 +31,19 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Test
 	public void testRemove() throws IOException {
 		removeField(CREATEMICRONODELIST, FILL, FETCH);
+	}
+
+	@Override
+	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEMICRONODELIST, FILL, FETCH, (container, name) -> {
+			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getMicronodeList(name).getValues()).as(NEWFIELDVALUE).hasSize(2);
+			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE)
+					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+			assertThat(container.getMicronodeList(name).getValues().get(1)).as(NEWFIELDVALUE)
+					.containsStringField("firstName", "Mickey").containsStringField("lastName", "Mouse");
+		});
 	}
 
 	@Override
@@ -95,12 +108,21 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE)
-					.containsStringField("firstname", "Donald").containsStringField("lastname", "Duck");
+					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
 		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToMicronodeList() throws IOException {
+		changeType(CREATEMICRONODELIST, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
+			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getMicronodeList(name).getValues()).as(NEWFIELDVALUE).hasSize(2);
+			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE)
+					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+			assertThat(container.getMicronodeList(name).getValues().get(1)).as(NEWFIELDVALUE)
+					.containsStringField("firstName", "Mickey").containsStringField("lastName", "Mouse");
+		});
 	}
 
 	@Override

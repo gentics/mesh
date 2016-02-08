@@ -25,6 +25,15 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATENUMBER, FILL, FETCH, (container, name) -> {
+			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATENUMBER, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -136,7 +145,12 @@ public class NumberFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToNumber() throws IOException {
+		changeType(CREATENUMBER, FILL, FETCH, CREATENUMBER, (container, name) -> {
+			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNumber(name).getNumber()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+		});
 	}
 
 	@Override

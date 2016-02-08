@@ -88,8 +88,16 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		String newType = getFieldProperty("type");
 		if (newType != null) {
 			switch (newType) {
+			case "binary":
+				return loadAutoMigrationScript("typechange_binary.js");
 			case "boolean":
 				return loadAutoMigrationScript("typechange_boolean.js");
+			case "date":
+				return loadAutoMigrationScript("typechange_date.js");
+			case "micronode":
+				return loadAutoMigrationScript("typechange_micronode.js");
+			case "node":
+				return loadAutoMigrationScript("typechange_node.js");
 			case "number":
 				return loadAutoMigrationScript("typechange_number.js");
 			case "html":
@@ -101,6 +109,12 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 					switch (newListType) {
 					case "boolean":
 						return loadAutoMigrationScript("typechange_booleanlist.js");
+					case "date":
+						return loadAutoMigrationScript("typechange_datelist.js");
+					case "micronode":
+						return loadAutoMigrationScript("typechange_micronodelist.js");
+					case "node":
+						return loadAutoMigrationScript("typechange_nodelist.js");
 					case "number":
 						return loadAutoMigrationScript("typechange_numberlist.js");
 					case "html":

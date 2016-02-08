@@ -11,6 +11,8 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private static final long NUMBERVALUE = 4711L;
 
+	private static final long OTHERNUMBERVALUE = 815L;
+
 	private static final long ONE = 1L;
 
 	private static final long ZERO = 0L;
@@ -18,8 +20,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private static final DataProvider FILLNUMBERS = (container, name) -> {
 		NumberGraphFieldList field = container.createNumberList(name);
 		field.createNumber(NUMBERVALUE);
-		field.createNumber(ZERO);
-		field.createNumber(ONE);
+		field.createNumber(OTHERNUMBERVALUE);
 	};
 
 	private static final DataProvider FILLONEZERO = (container, name) -> {
@@ -34,6 +35,15 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Test
 	public void testRemove() throws IOException {
 		removeField(CREATENUMBERLIST, FILLNUMBERS, FETCH);
+	}
+
+	@Override
+	@Test
+	public void testRename() throws IOException {
+		renameField(CREATENUMBERLIST, FILLNUMBERS, FETCH, (container, name) -> {
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, OTHERNUMBERVALUE);
+		});
 	}
 
 	@Override
@@ -84,8 +94,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToDateList() throws IOException {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, ZERO,
-					ONE);
+			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, OTHERNUMBERVALUE);
 		});
 	}
 
@@ -95,7 +104,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE)
-					.isEqualTo(Long.toString(NUMBERVALUE) + "," + Long.toString(ZERO) + "," + Long.toString(ONE));
+					.isEqualTo(Long.toString(NUMBERVALUE) + "," + Long.toString(OTHERNUMBERVALUE));
 		});
 	}
 
@@ -105,7 +114,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELD).containsExactly(Long.toString(NUMBERVALUE),
-					Long.toString(ZERO), Long.toString(ONE));
+					Long.toString(OTHERNUMBERVALUE));
 		});
 	}
 
@@ -151,7 +160,12 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToNumberList() throws IOException {
+		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATENUMBERLIST, (container, name) -> {
+			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNumberList(name).getValues()).as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, OTHERNUMBERVALUE);
+		});
 	}
 
 	@Override
@@ -160,7 +174,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE)
-					.isEqualTo(Long.toString(NUMBERVALUE) + "," + Long.toString(ZERO) + "," + Long.toString(ONE));
+					.isEqualTo(Long.toString(NUMBERVALUE) + "," + Long.toString(OTHERNUMBERVALUE));
 		});
 	}
 
@@ -170,7 +184,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE)
-					.containsExactly(Long.toString(NUMBERVALUE), Long.toString(ZERO), Long.toString(ONE));
+					.containsExactly(Long.toString(NUMBERVALUE), Long.toString(OTHERNUMBERVALUE));
 		});
 	}
 }

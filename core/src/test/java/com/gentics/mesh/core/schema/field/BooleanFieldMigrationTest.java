@@ -20,6 +20,20 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEBOOLEAN, FILLTRUE, FETCH, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
+		});
+
+		renameField(CREATEBOOLEAN, FILLFALSE, FETCH, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATEBOOLEAN, FILLTRUE, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -32,7 +46,17 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToBoolean() throws IOException {
+		changeType(CREATEBOOLEAN, FILLTRUE, FETCH, CREATEBOOLEAN, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
+		});
+
+		changeType(CREATEBOOLEAN, FILLFALSE, FETCH, CREATEBOOLEAN, (container, name) -> {
+			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
+		});
 	}
 
 	@Override

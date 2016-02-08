@@ -22,6 +22,15 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEDATE, FILL, FETCH, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(DATEVALUE);
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATEDATE, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -45,7 +54,12 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToDate() throws IOException {
+		changeType(CREATEDATE, FILL, FETCH, CREATEDATE, (container, name) -> {
+			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(DATEVALUE);
+		});
 	}
 
 	@Override

@@ -76,7 +76,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 					NodeResponse restModel = node.transformToRest(ac, languageTag).toBlocking().last();
 					NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
 
-					// remove get all existing fields
+					// remove all existing fields
 					container.getFields(schemaContainer.getSchema()).stream().forEach(GraphField::removeField);
 
 					String nodeJson = JsonUtil.toJson(restModel);
@@ -103,9 +103,6 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 						nodeJson = transformedNodeModel.toString();
 					}
-
-					// remove superfluous fields
-					
 
 					// transform the result back to the Rest Model
 					NodeUpdateRequest updateRequest = JsonUtil.readNode(nodeJson, NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());

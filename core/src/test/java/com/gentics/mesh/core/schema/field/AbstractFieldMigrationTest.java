@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.Language;
@@ -16,6 +17,7 @@ import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaFieldChange;
+import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -127,10 +129,83 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	}
 
 	/**
+	 * Generic method to test node migration where a field is renamed. Actually a new field is added (with the new name) and the old field is removed.
+	 * Data Migration is done with a custom migration script
+	 *
+	 * @param creator creator implementation
+	 * @param dataProvider data provider implementation
+	 * @param fetcher data fetcher implementation
+	 * @param asserter asserter implementation
+	 * @throws IOException
+	 */
+	protected void renameField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher,
+			DataAsserter asserter) throws IOException {
+		String oldFieldName = "oldname";
+		String newFieldName = "newname";
+
+		// create version 1 of the schema
+		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaA = new SchemaImpl();
+		schemaA.setName("migratedSchema");
+		schemaA.setVersion(1);
+		FieldSchema oldField = creator.create(oldFieldName);
+		schemaA.addField(oldField);
+		schemaA.setDisplayField("name");
+		schemaA.setSegmentField("name");
+		containerA.setName("migratedSchema");
+		containerA.setSchema(schemaA);
+
+		// create version 2 of the schema (with the field renamed)
+		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaB = new SchemaImpl();
+		schemaB.setName("migratedSchema");
+		schemaB.setVersion(2);
+		FieldSchema newField = creator.create(newFieldName);
+		schemaB.addField(newField);
+		schemaB.setDisplayField("name");
+		schemaB.setSegmentField("name");
+		containerB.setName("migratedSchema");
+		containerB.setSchema(schemaB);
+
+		// link the schemas with the changes in between
+		AddFieldChangeImpl addFieldChange = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
+		addFieldChange.setFieldName(newFieldName);
+		addFieldChange.setType(newField.getType());
+		addFieldChange.setCustomMigrationScript("node.fields[fieldname] = node.fields[\"oldname\"]");
+
+		RemoveFieldChange removeFieldChange = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		removeFieldChange.setFieldName(oldFieldName);
+
+		addFieldChange.setPreviousSchemaContainer(containerA);
+		addFieldChange.setNextChange(removeFieldChange);
+		removeFieldChange.setNextSchemaContainer(containerB);
+		containerA.setNextVersion(containerB);
+
+		// create a node based on the old schema
+		User user = user();
+		Language english = english();
+		Node parentNode = folder("2015");
+		Node node = parentNode.create(user, containerA, project());
+		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+		dataProvider.set(englishContainer, oldFieldName);
+
+		// migrate the node
+		nodeMigrationHandler.migrateNodes(containerA);
+		node.reload();
+		node.getGraphFieldContainer("en").reload();
+
+		// assert that migration worked
+		assertThat(node).as("Migrated Node").isOf(containerB).hasTranslation("en");
+		assertThat(fetcher.fetch(node.getGraphFieldContainer("en"), oldFieldName)).as("Field '" + oldFieldName + "'")
+				.isNull();
+		asserter.assertThat(node.getGraphFieldContainer("en"), newFieldName);
+	}
+
+	/**
 	 * Generic method to test node migration where the type of a field is changed
 	 * @param oldField creator for the old field
 	 * @param dataProvider data provider for the old field
-	 * @param oldFieldFetcher TODO
+	 * @param oldFieldFetcher field fetcher for the old field
 	 * @param newField creator for the new field
 	 * @param asserter
 	 */
@@ -143,7 +218,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		Schema schemaA = new SchemaImpl();
 		schemaA.setName("migratedSchema");
 		schemaA.setVersion(1);
-		schemaA.addField(oldField.create(fieldName));
+		FieldSchema oldFieldSchema = oldField.create(fieldName);
+		schemaA.addField(oldFieldSchema);
 		schemaA.setDisplayField("name");
 		schemaA.setSegmentField("name");
 		containerA.setName("migratedSchema");
@@ -189,7 +265,15 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(containerB).hasTranslation("en");
-		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
+
+		if (!StringUtils.equals(oldFieldSchema.getType(), newFieldSchema.getType())) {
+			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
+		}
+		if ((oldFieldSchema instanceof ListFieldSchema) && (newFieldSchema instanceof ListFieldSchema)
+				&& !StringUtils.equals(((ListFieldSchema) oldFieldSchema).getListType(),
+						((ListFieldSchema) oldFieldSchema).getListType())) {
+			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
+		}
 		asserter.assertThat(englishContainer, fieldName);
 	}
 
