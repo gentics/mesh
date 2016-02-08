@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -38,14 +39,27 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	protected final static FieldSchemaCreator CREATEDATELIST = name -> FieldUtil.createListFieldSchema(name, "date");
 	protected final static FieldSchemaCreator CREATEHTML = name -> FieldUtil.createHtmlFieldSchema(name);
 	protected final static FieldSchemaCreator CREATEHTMLLIST = name -> FieldUtil.createListFieldSchema(name, "html");
-	protected final static FieldSchemaCreator CREATEMICRONODE = name -> FieldUtil.createMicronodeFieldSchema(name);
-	protected final static FieldSchemaCreator CREATEMICRONODELIST = name -> FieldUtil.createListFieldSchema(name, "micronode");
+	protected final static FieldSchemaCreator CREATEMICRONODE = name -> {
+		MicronodeFieldSchema schema = FieldUtil.createMicronodeFieldSchema(name);
+		schema.setAllowedMicroSchemas(new String[] {"vcard"});
+		return schema;
+	};
+	protected final static FieldSchemaCreator CREATEMICRONODELIST = name -> {
+		ListFieldSchema schema = FieldUtil.createListFieldSchema(name, "micronode");
+		schema.setAllowedSchemas(new String[] {"vcard"});
+		return schema;
+	};
 	protected final static FieldSchemaCreator CREATENODE = name -> FieldUtil.createNodeFieldSchema(name);
 	protected final static FieldSchemaCreator CREATENODELIST = name -> FieldUtil.createListFieldSchema(name, "node");
 	protected final static FieldSchemaCreator CREATENUMBER = name -> FieldUtil.createNumberFieldSchema(name);
 	protected final static FieldSchemaCreator CREATENUMBERLIST = name -> FieldUtil.createListFieldSchema(name, "number");
 	protected final static FieldSchemaCreator CREATESTRING = name -> FieldUtil.createStringFieldSchema(name);
 	protected final static FieldSchemaCreator CREATESTRINGLIST = name -> FieldUtil.createListFieldSchema(name, "string");
+
+	protected final static String NEWFIELD = "New field";
+	protected final static String NEWFIELDVALUE = "New field value";
+	protected final static String OLDFIELD = "Old field";
+	protected final static String OLDFIELDVALUE = "Old field value";
 
 	@Autowired
 	protected NodeMigrationHandler nodeMigrationHandler;
@@ -116,11 +130,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 * Generic method to test node migration where the type of a field is changed
 	 * @param oldField creator for the old field
 	 * @param dataProvider data provider for the old field
+	 * @param oldFieldFetcher TODO
 	 * @param newField creator for the new field
 	 * @param asserter
 	 */
-	protected void changeType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldSchemaCreator newField,
-			DataAsserter asserter) throws IOException {
+	protected void changeType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
+			FieldSchemaCreator newField, DataAsserter asserter) throws IOException {
 		String fieldName = "changedfield";
 
 		// create version 1 of the schema
@@ -165,6 +180,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
 		dataProvider.set(englishContainer, fieldName);
 
+		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
+
 		// migrate the node
 		nodeMigrationHandler.migrateNodes(containerA);
 		node.reload();
@@ -172,6 +189,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(containerB).hasTranslation("en");
+		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
 		asserter.assertThat(englishContainer, fieldName);
 	}
 
