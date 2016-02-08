@@ -35,7 +35,6 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *
 	 * @param schemaContainer
 	 *            schema container
-	 * @return
 	 */
 	public void migrateNodes(SchemaContainer schemaContainer) throws IOException {
 		// get the next schema container (if any)

@@ -18,6 +18,9 @@ public class SchemaChangeModel implements RestModel {
 
 	private Map<String, Object> properties = new HashMap<>();
 
+	public SchemaChangeModel() {
+	}
+
 	/**
 	 * Create a new change that includes field name information.
 	 * 
