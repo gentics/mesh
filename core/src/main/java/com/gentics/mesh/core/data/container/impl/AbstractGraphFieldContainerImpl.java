@@ -121,7 +121,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public StringGraphField getString(String key) {
-		if (fieldExists(key)) {
+		if (fieldExists(key, "string")) {
 			return new StringGraphFieldImpl(key, this);
 		}
 		return null;
@@ -149,7 +149,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public DateGraphField getDate(String key) {
-		if (fieldExists(key)) {
+		if (fieldExists(key, "date")) {
 			return new DateGraphFieldImpl(key, this);
 		}
 		return null;
@@ -164,7 +164,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NumberGraphField getNumber(String key) {
-		if (fieldExists(key)) {
+		if (fieldExists(key, "number")) {
 			return new NumberGraphFieldImpl(key, this);
 		}
 		return null;
@@ -179,7 +179,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public HtmlGraphField getHtml(String key) {
-		if (fieldExists(key)) {
+		if (fieldExists(key, "html")) {
 			return new HtmlGraphFieldImpl(key, this);
 		}
 		return null;
@@ -194,7 +194,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public BooleanGraphField getBoolean(String key) {
-		if (fieldExists(key)) {
+		if (fieldExists(key, "boolean")) {
 			return new BooleanGraphFieldImpl(key, this);
 		}
 		return null;
@@ -628,30 +628,42 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				failOnMissingMandatoryField(ac, graphNodeFieldList, restField, fieldSchema, key, schema);
 				NodeFieldListImpl nodeList = (NodeFieldListImpl) restField;
 
-				if (graphNodeFieldList == null) {
-					graphNodeFieldList = createNodeList(key);
+				if (nodeList.getItems().isEmpty()) {
+					if (graphNodeFieldList != null) {
+						graphNodeFieldList.removeField();
+					}
 				} else {
-					graphNodeFieldList.removeAll();
-				}
+					if (graphNodeFieldList == null) {
+						graphNodeFieldList = createNodeList(key);
+					} else {
+						graphNodeFieldList.removeAll();
+					}
 
-				// Add the listed items
-				AtomicInteger integer = new AtomicInteger();
-				for (NodeFieldListItem item : nodeList.getItems()) {
-					Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
-					graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
+					// Add the listed items
+					AtomicInteger integer = new AtomicInteger();
+					for (NodeFieldListItem item : nodeList.getItems()) {
+						Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
+						graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
+					}
 				}
 			} else if (restField instanceof StringFieldListImpl) {
 				StringGraphFieldList graphStringList = getStringList(key);
 				failOnMissingMandatoryField(ac, graphStringList, restField, fieldSchema, key, schema);
 				StringFieldListImpl stringList = (StringFieldListImpl) restField;
 
-				if (graphStringList == null) {
-					graphStringList = createStringList(key);
+				if (stringList.getItems().isEmpty()) {
+					if (graphStringList != null) {
+						graphStringList.removeField();
+					}
 				} else {
-					graphStringList.removeAll();
-				}
-				for (String item : stringList.getItems()) {
-					graphStringList.createString(item);
+					if (graphStringList == null) {
+						graphStringList = createStringList(key);
+					} else {
+						graphStringList.removeAll();
+					}
+					for (String item : stringList.getItems()) {
+						graphStringList.createString(item);
+					}
 				}
 
 			} else if (restField instanceof HtmlFieldListImpl) {
@@ -659,39 +671,57 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				failOnMissingMandatoryField(ac, graphHtmlFieldList, restField, fieldSchema, key, schema);
 				HtmlFieldListImpl htmlList = (HtmlFieldListImpl) restField;
 
-				if (graphHtmlFieldList == null) {
-					graphHtmlFieldList = createHTMLList(key);
+				if (htmlList.getItems().isEmpty()) {
+					if (graphHtmlFieldList != null) {
+						graphHtmlFieldList.removeField();
+					}
 				} else {
-					graphHtmlFieldList.removeAll();
-				}
-				for (String item : htmlList.getItems()) {
-					graphHtmlFieldList.createHTML(item);
+					if (graphHtmlFieldList == null) {
+						graphHtmlFieldList = createHTMLList(key);
+					} else {
+						graphHtmlFieldList.removeAll();
+					}
+					for (String item : htmlList.getItems()) {
+						graphHtmlFieldList.createHTML(item);
+					}
 				}
 			} else if (restField instanceof NumberFieldListImpl) {
 				NumberGraphFieldList graphNumberFieldList = getNumberList(key);
 				failOnMissingMandatoryField(ac, graphNumberFieldList, restField, fieldSchema, key, schema);
 				NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
 
-				if (graphNumberFieldList == null) {
-					graphNumberFieldList = createNumberList(key);
+				if (numberList.getItems().isEmpty()) {
+					if (graphNumberFieldList != null) {
+						graphNumberFieldList.removeField();
+					}
 				} else {
-					graphNumberFieldList.removeAll();
-				}
-				for (Number item : numberList.getItems()) {
-					graphNumberFieldList.createNumber(item);
+					if (graphNumberFieldList == null) {
+						graphNumberFieldList = createNumberList(key);
+					} else {
+						graphNumberFieldList.removeAll();
+					}
+					for (Number item : numberList.getItems()) {
+						graphNumberFieldList.createNumber(item);
+					}
 				}
 			} else if (restField instanceof BooleanFieldListImpl) {
 				BooleanGraphFieldList graphBooleanFieldList = getBooleanList(key);
 				failOnMissingMandatoryField(ac, graphBooleanFieldList, restField, fieldSchema, key, schema);
 				BooleanFieldListImpl booleanList = (BooleanFieldListImpl) restField;
 
-				if (graphBooleanFieldList == null) {
-					graphBooleanFieldList = createBooleanList(key);
+				if (booleanList.getItems().isEmpty()) {
+					if (graphBooleanFieldList != null) {
+						graphBooleanFieldList.removeField();
+					}
 				} else {
-					graphBooleanFieldList.removeAll();
-				}
-				for (Boolean item : booleanList.getItems()) {
-					graphBooleanFieldList.createBoolean(item);
+					if (graphBooleanFieldList == null) {
+						graphBooleanFieldList = createBooleanList(key);
+					} else {
+						graphBooleanFieldList.removeAll();
+					}
+					for (Boolean item : booleanList.getItems()) {
+						graphBooleanFieldList.createBoolean(item);
+					}
 				}
 			} else if (restField instanceof DateFieldListImpl) {
 
@@ -699,27 +729,38 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				failOnMissingMandatoryField(ac, graphDateFieldList, restField, fieldSchema, key, schema);
 				DateFieldListImpl dateList = (DateFieldListImpl) restField;
 
-				// Create new list if no existing one could be found
-				if (graphDateFieldList == null) {
-					graphDateFieldList = createDateList(key);
+				if (dateList.getItems().isEmpty()) {
+					if (graphDateFieldList != null) {
+						graphDateFieldList.removeField();
+					}
 				} else {
-					graphDateFieldList.removeAll();
-				}
-				for (Long item : dateList.getItems()) {
-					graphDateFieldList.createDate(item);
+					// Create new list if no existing one could be found
+					if (graphDateFieldList == null) {
+						graphDateFieldList = createDateList(key);
+					} else {
+						graphDateFieldList.removeAll();
+					}
+					for (Long item : dateList.getItems()) {
+						graphDateFieldList.createDate(item);
+					}
 				}
 			} else if (restField instanceof MicronodeFieldListImpl) {
 				MicronodeGraphFieldList micronodeGraphFieldList = getMicronodeList(key);
 				failOnMissingMandatoryField(ac, micronodeGraphFieldList, restField, fieldSchema, key, schema);
 				MicronodeFieldList micronodeList = (MicronodeFieldList) restField;
 
-				if (micronodeGraphFieldList == null) {
-					micronodeGraphFieldList = createMicronodeFieldList(key);
+				if (micronodeList.getItems().isEmpty()) {
+					if (micronodeGraphFieldList != null) {
+						micronodeGraphFieldList.removeField();
+					}
+				} else {
+					if (micronodeGraphFieldList == null) {
+						micronodeGraphFieldList = createMicronodeFieldList(key);
+					}
+
+					//TODO instead this method should also return an observable 
+					micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
 				}
-
-				//TODO instead this method should also return an observable 
-				micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
-
 			} else {
 				if (restField == null) {
 					return;

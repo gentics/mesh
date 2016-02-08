@@ -44,6 +44,15 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATESTRINGLIST, FILLTEXT, FETCH, (container, name) -> {
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(TEXT1, TEXT2, TEXT3);
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -117,7 +126,7 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToHtml() throws IOException {
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo(TEXT1);
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo(TEXT1 + "," + TEXT2 + "," + TEXT3);
 		});
 	}
 
@@ -194,11 +203,16 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToString() throws IOException {
 		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo(TEXT1);
+			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo(TEXT1 + "," + TEXT2 + "," + TEXT3);
 		});
 	}
 
 	@Override
+	@Test
 	public void testChangeToStringList() throws IOException {
+		changeType(CREATESTRINGLIST, FILLTEXT, FETCH, CREATESTRINGLIST, (container, name) -> {
+			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(TEXT1, TEXT2, TEXT3);
+		});
 	}
 }

@@ -23,6 +23,15 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATESTRING, FILLTEXT, FETCH, (container, name) -> {
+			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo("<b>HTML</b> content");
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -208,7 +217,12 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToString() throws IOException {
+		changeType(CREATESTRING, FILLTEXT, FETCH, CREATESTRING, (container, name) -> {
+			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo("<b>HTML</b> content");
+		});
 	}
 
 	@Override

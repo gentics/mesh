@@ -19,6 +19,15 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATENODE, FILL, FETCH, (container, name) -> {
+			assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("2015"));
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATENODE, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -90,7 +99,12 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToNode() throws IOException {
+		changeType(CREATENODE, FILL, FETCH, CREATENODE, (container, name) -> {
+			assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("2015"));
+		});
 	}
 
 	@Override

@@ -25,6 +25,15 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEBOOLEANLIST, FILL, FETCH, (container, name) -> {
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).containsExactly(true, false);
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -41,7 +50,12 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToBooleanList() throws IOException {
+		changeType(CREATEBOOLEANLIST, FILL, FETCH, CREATEBOOLEANLIST, (container, name) -> {
+			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBooleanList(name).getValues()).as(NEWFIELDVALUE).containsExactly(true, false);
+		});
 	}
 
 	@Override

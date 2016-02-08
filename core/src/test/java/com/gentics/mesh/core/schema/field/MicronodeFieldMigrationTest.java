@@ -15,8 +15,8 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 		MicronodeGraphField field = container.createMicronode(name, microschemaContainers().get("vcard"));
 
 		Micronode micronode = field.getMicronode();
-		micronode.createString("firstname").setString("Donald");
-		micronode.createString("lastname").setString("Duck");
+		micronode.createString("firstName").setString("Donald");
+		micronode.createString("lastName").setString("Duck");
 	};
 
 	private static final FieldFetcher FETCH = (container, name) -> container.getMicronode(name);
@@ -25,6 +25,16 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Test
 	public void testRemove() throws IOException {
 		removeField(CREATEMICRONODE, FILL, FETCH);
+	}
+
+	@Override
+	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEMICRONODE, FILL, FETCH, (container, name) -> {
+			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE)
+					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+		});
 	}
 
 	@Override
@@ -84,7 +94,13 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToMicronode() throws IOException {
+		changeType(CREATEMICRONODE, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
+			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE)
+					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+		});
 	}
 
 	@Override
@@ -94,7 +110,7 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getMicronodeList(name).getValues()).as(NEWFIELDVALUE).hasSize(1);
 			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE)
-					.containsStringField("firstname", "Donald").containsStringField("lastname", "Duck");
+					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
 		});
 	}
 

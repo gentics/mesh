@@ -23,6 +23,15 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	@Override
 	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEHTML, FILLTEXT, FETCH, (container, name) -> {
+			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("<b>HTML</b> content");
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
@@ -122,7 +131,12 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
 	public void testChangeToHtml() throws IOException {
+		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEHTML, (container, name) -> {
+			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("<b>HTML</b> content");
+		});
 	}
 
 	@Override

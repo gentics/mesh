@@ -26,8 +26,8 @@ public abstract class AbstractBasicGraphFieldContainerImpl extends MeshVertexImp
 		setLinkOut(language.getImpl(), GraphRelationships.HAS_LANGUAGE);
 	}
 
-	public boolean fieldExists(String key) {
-		return getProperty(key + "-field") != null;
+	public boolean fieldExists(String key, String type) {
+		return getProperty(key + "-" + type) != null;
 	}
 
 	public Map<String, String> getI18nProperties() {

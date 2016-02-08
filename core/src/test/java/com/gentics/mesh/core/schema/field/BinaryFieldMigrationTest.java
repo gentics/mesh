@@ -26,7 +26,27 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest {
 	}
 
 	@Override
+	@Test
+	public void testRename() throws IOException {
+		renameField(CREATEBINARY, FILL, FETCH, (container, name) -> {
+			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo("blume.jpg");
+			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo("image/jpg");
+			assertThat(container.getBinary(name).getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+		});
+	}
+
+	@Override
+	@Test
 	public void testChangeToBinary() throws IOException {
+		changeType(CREATEBINARY, FILL, FETCH, CREATEBINARY, (container, name) -> {
+			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
+			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo("blume.jpg");
+			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo("image/jpg");
+			assertThat(container.getBinary(name).getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(
+					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
+		});
 	}
 
 	@Override
