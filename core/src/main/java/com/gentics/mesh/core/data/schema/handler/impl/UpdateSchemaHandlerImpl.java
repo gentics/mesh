@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.AbstractChangeHandler;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeReport;
+import com.gentics.mesh.core.rest.schema.change.impl.ChangeMigrationReport;
 
 import rx.Observable;
 
@@ -22,7 +22,7 @@ public class UpdateSchemaHandlerImpl extends AbstractChangeHandler {
 	}
 
 	@Override
-	public Observable<SchemaChangeReport> handle(SchemaChange change, boolean dryRun) {
+	public Observable<ChangeMigrationReport> handle(SchemaChange change, boolean dryRun) {
 		// displayField:
 		// 1. Iterate over all affected node
 		// Check whether the field exists for all nodes since the displayField requires the field to be mandatory.

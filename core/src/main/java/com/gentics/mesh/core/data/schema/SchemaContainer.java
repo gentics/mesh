@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
@@ -110,7 +111,7 @@ public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaCo
 	SchemaContainer setPreviousChange(SchemaChange change);
 
 	/**
-	 * Generate a schema change list by comparing (diffing) the schema with the specified schema update model which is extracted from the action context.
+	 * Generate a schema change list by comparing the schema with the specified schema update model which is extracted from the action context.
 	 * 
 	 * @param ac
 	 *            Action context that provides the schema update request
@@ -119,5 +120,21 @@ public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaCo
 	 * @return
 	 */
 	Observable<SchemaChangesListModel> diff(InternalActionContext ac, SchemaComparator comparator);
+
+	/**
+	 * Return the latest schema container version.
+	 * 
+	 * @return Latest version
+	 */
+	SchemaContainer getLatestVersion();
+
+	/**
+	 * Apply changes which will be extracted from the action context.
+	 * 
+	 * @param ac
+	 *            Action context that provides the migration request data
+	 * @return
+	 */
+	Observable<SchemaMigrationResponse> applyChanges(InternalActionContext ac);
 
 }

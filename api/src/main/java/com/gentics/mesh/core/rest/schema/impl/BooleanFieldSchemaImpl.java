@@ -29,4 +29,6 @@ public class BooleanFieldSchemaImpl extends AbstractFieldSchema implements Boole
 		return Optional.empty();
 	}
 
+
+
 }

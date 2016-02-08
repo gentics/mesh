@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
+import java.util.Map;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -71,4 +72,11 @@ public interface FieldSchema {
 	 * @return
 	 */
 	Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema);
+
+	/**
+	 * Apply the given field properties to the field schema.
+	 * 
+	 * @param fieldProperties
+	 */
+	void apply(Map<String, Object> fieldProperties);
 }

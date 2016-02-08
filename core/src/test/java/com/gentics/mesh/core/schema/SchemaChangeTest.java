@@ -64,6 +64,7 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 			}
 		}
 
+		containerA.setNextVersion(containerB);
 		assertNull(oldChange.getNextSchemaContainer());
 		oldChange.setNextSchemaContainer(containerB);
 		assertNotNull(oldChange.getNextSchemaContainer());
@@ -90,6 +91,15 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 				firstChange.getPreviousSchemaContainer().getUuid());
 		assertEquals("The chain of changes should now be connected to containerC", containerC.getUuid(),
 				firstChange.getPreviousSchemaContainer().getUuid());
+
+		// Check next version
+		assertNotNull("Container A should have a next version.", containerA.getNextVersion());
+		assertEquals("Container B should be the next version of container A.", containerB.getUuid(), containerA.getNextVersion().getUuid());
+
+		// Check latest version
+		SchemaContainer latest = containerA.getLatestVersion();
+		assertNotNull("There is always a latest version", latest);
+		assertEquals("Container B represents the latest version.", containerB.getUuid(), latest.getUuid());
 	}
 
 }

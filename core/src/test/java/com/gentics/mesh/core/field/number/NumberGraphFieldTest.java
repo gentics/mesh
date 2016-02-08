@@ -35,8 +35,8 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 		Schema schema = node.getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
+//		numberFieldSchema.setMin(10);
+//		numberFieldSchema.setMax(1000);
 		numberFieldSchema.setRequired(true);
 		schema.addField(numberFieldSchema);
 		node.getSchemaContainer().setSchema(schema);

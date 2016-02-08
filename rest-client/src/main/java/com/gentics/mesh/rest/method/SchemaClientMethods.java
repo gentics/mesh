@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.rest.ClientSchemaStorage;
 import com.gentics.mesh.rest.MeshRestClient;
@@ -96,7 +97,7 @@ public interface SchemaClientMethods {
 	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
 
 	/**
-	 * Load multiple microschemas
+	 * Load multiple microschemas.
 	 * 
 	 * @param parameters
 	 * @return
@@ -110,5 +111,16 @@ public interface SchemaClientMethods {
 	 * @return
 	 */
 	Future<Void> initSchemaStorage();
+
+	/**
+	 * Apply the given list of changes to the schema which is identified by the given uuid.
+	 * 
+	 * @param uuid
+	 *            Schema uuid
+	 * @param change
+	 *            List of changes
+	 * @return
+	 */
+	Future<SchemaMigrationResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
 }

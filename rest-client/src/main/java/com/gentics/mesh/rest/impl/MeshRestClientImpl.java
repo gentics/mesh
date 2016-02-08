@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -868,6 +869,12 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<GenericMessageResponse> deleteMicroschema(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(DELETE, "/microschemas/" + uuid, GenericMessageResponse.class);
+	}
+
+	@Override
+	public Future<SchemaMigrationResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return handleRequest(POST, "/schemas/" + uuid + "/changes", SchemaMigrationResponse.class, changes);
 	}
 
 	@Override

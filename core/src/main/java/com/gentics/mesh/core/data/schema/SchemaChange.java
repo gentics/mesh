@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.util.Tuple;
 
@@ -104,12 +105,14 @@ public interface SchemaChange extends MeshVertex {
 
 	/**
 	 * Get the migration script context
+	 * 
 	 * @return context
 	 */
 	List<Tuple<String, Object>> getMigrationScriptContext();
 
 	/**
 	 * Get the automatic migration script (may be null)
+	 * 
 	 * @return automatic migration script
 	 * @throws IOException
 	 */
@@ -132,5 +135,12 @@ public interface SchemaChange extends MeshVertex {
 	 * @return Modified schema
 	 */
 	Schema apply(Schema schema);
+
+	/**
+	 * Set the change specific properties by examining the rest change model.
+	 * 
+	 * @param restChange
+	 */
+	void fill(SchemaChangeModel restChange);
 
 }

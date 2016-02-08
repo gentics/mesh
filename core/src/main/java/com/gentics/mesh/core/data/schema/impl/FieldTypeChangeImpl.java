@@ -1,31 +1,86 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import java.io.IOException;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import com.gentics.mesh.core.data.schema.FieldChange;
+import java.io.IOException;
+import java.util.Optional;
+
+import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
- * Change entry which contains information for a field type change.
+ * @see FieldTypeChange
  */
-public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldChange {
+public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldTypeChange {
 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
 
 	@Override
 	public Schema apply(Schema schema) {
+		Optional<FieldSchema> fieldSchema = schema.getFieldSchema(getFieldName());
+
+		if (!fieldSchema.isPresent()) {
+			throw error(BAD_REQUEST,
+					"Could not find schema field {" + getFieldName() + "} within schema {" + schema.getName() + "} for change {" + getUuid() + "}");
+		}
+
+		FieldSchema field = null;
+		String newType = getFieldProperty("newType");
+		if (newType != null) {
+
+			switch (newType) {
+			case "boolean":
+				field = new BooleanFieldSchemaImpl();
+				break;
+			case "number":
+				field = new NumberFieldSchemaImpl();
+				break;
+			case "date":
+				field = new DateFieldSchemaImpl();
+				break;
+			case "html":
+				field = new HtmlFieldSchemaImpl();
+				break;
+			case "string":
+				field = new StringFieldSchemaImpl();
+				break;
+			case "list":
+				ListFieldSchema listField = new ListFieldSchemaImpl();
+				listField.setListType(getFieldProperty("listType"));
+				field = listField;
+				break;
+			case "micronode":
+				field = new MicronodeFieldSchemaImpl();
+				break;
+			case "node":
+				field = new NodeFieldSchemaImpl();
+				break;
+			default:
+				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
+			}
+			field.setRequired(fieldSchema.get().isRequired());
+			field.setLabel(fieldSchema.get().getLabel());
+			field.setName(fieldSchema.get().getName());
+			// Remove the old field
+			schema.removeField(fieldSchema.get().getName());
+			// Add the new field
+			schema.addField(field);
+		} else {
+			throw error(BAD_REQUEST, "New type was not specified for change {" + getUuid() + "}");
+		}
 		return schema;
-	}
-
-	@Override
-	public void setFieldProperty(String key, String value) {
-		setProperty(FIELD_PROPERTY_PREFIX_KEY + key, value);
-	}
-
-	@Override
-	public String getFieldProperty(String key) {
-		return getProperty(FIELD_PROPERTY_PREFIX_KEY + key);
 	}
 
 	@Override
@@ -58,4 +113,5 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 		return null;
 	}
+
 }

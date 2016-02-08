@@ -8,21 +8,25 @@ import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaSt
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.AddFieldChange;
+import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -30,7 +34,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -250,6 +256,15 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	}
 
 	@Override
+	public SchemaContainer getLatestVersion() {
+		SchemaContainer latest = this;
+		for (SchemaContainer current = latest.getNextVersion(); current != null; current = current.getNextVersion()) {
+			latest = current;
+		}
+		return latest;
+	}
+
+	@Override
 	public SchemaContainer getPreviousVersion() {
 		return in(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
@@ -280,6 +295,72 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	public SchemaContainer setPreviousChange(SchemaChange change) {
 		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
+	}
+
+	@Override
+	public Observable<SchemaMigrationResponse> applyChanges(InternalActionContext ac) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		try {
+			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
+			return db.trx(() -> {
+				if (getNextChange() != null) {
+					throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
+				}
+
+				SchemaChange current = null;
+				for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
+					SchemaChange graphChange = createChange(restChange);
+					// Set the first change to the schema container and chain all other changes to that change.
+					if (current == null) {
+						current = graphChange;
+						setNextChange(current);
+					} else {
+						current.setNextChange(graphChange);
+						current = graphChange;
+					}
+				}
+
+				//TODO create new schema version and assign it to the end of the chain. Make sure to unlink the old schema container from the container root and assign the new version to the root.
+
+				return Observable.just(new SchemaMigrationResponse());
+			});
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
+	}
+
+	/**
+	 * Create a new graph change from the given rest change.
+	 * 
+	 * @param restChange
+	 * @return
+	 */
+	private SchemaChange createChange(SchemaChangeModel restChange) {
+		SchemaChange schemaChange = null;
+		switch (restChange.getOperation()) {
+		case ADDFIELD:
+			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
+			break;
+		case CHANGEFIELDTYPE:
+			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			break;
+		case REMOVEFIELD:
+			schemaChange = getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			break;
+		case UPDATEFIELD:
+			schemaChange = getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			break;
+		case UPDATESCHEMA:
+			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			break;
+		default:
+			//TODO i18n
+			throw error(BAD_REQUEST, "Change operation {" + restChange.getOperation() + "} unknown");
+		}
+
+		schemaChange.fill(restChange);
+		return schemaChange;
+
 	}
 
 }

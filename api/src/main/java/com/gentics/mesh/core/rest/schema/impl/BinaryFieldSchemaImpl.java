@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,5 +56,14 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
+	}
+
+	@Override
+	public void apply(Map<String, Object> fieldProperties) {
+		super.apply(fieldProperties);
+		if (fieldProperties.get("allowedMimeTypes") != null) {
+			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
+		}
+
 	}
 }

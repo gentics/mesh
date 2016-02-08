@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.AbstractChangeHandler;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeReport;
+import com.gentics.mesh.core.rest.schema.change.impl.ChangeMigrationReport;
 
 import rx.Observable;
 
@@ -21,7 +21,7 @@ public class RenameFieldHandlerImpl extends AbstractChangeHandler {
 	}
 
 	@Override
-	public Observable<SchemaChangeReport> handle(SchemaChange change, boolean dryRun) {
+	public Observable<ChangeMigrationReport> handle(SchemaChange change, boolean dryRun) {
 		// 1. get old schema
 		// 2. iterate over all affected nodes
 		// 3. iterate over all languages of the node

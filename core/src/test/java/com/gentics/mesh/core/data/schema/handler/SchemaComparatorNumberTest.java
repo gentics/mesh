@@ -28,18 +28,18 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest<Num
 		Schema schemaA = new SchemaImpl();
 		NumberFieldSchema fieldA = createField("test");
 		fieldA.setLabel("label1");
-		fieldA.setMin(1);
-		fieldA.setMax(2);
+//		fieldA.setMin(1);
+//		fieldA.setMax(2);
 		fieldA.setRequired(true);
-		fieldA.setStep(0.1f);
+//		fieldA.setStep(0.1f);
 		schemaA.addField(fieldA);
 
 		Schema schemaB = new SchemaImpl();
 		NumberFieldSchema fieldB = createField("test");
-		fieldB.setMin(1);
-		fieldB.setMax(2);
+//		fieldB.setMin(1);
+//		fieldB.setMax(2);
 		fieldB.setRequired(true);
-		fieldB.setStep(0.1f);
+//		fieldB.setStep(0.1f);
 		fieldB.setLabel("label2");
 		schemaB.addField(fieldB);
 
@@ -54,18 +54,18 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest<Num
 		Schema schemaA = new SchemaImpl();
 		NumberFieldSchema fieldA = createField("test");
 		fieldA.setLabel("label1");
-		fieldA.setMin(1);
-		fieldA.setMax(2);
+//		fieldA.setMin(1);
+//		fieldA.setMax(2);
 		fieldA.setRequired(true);
-		fieldA.setStep(0.1f);
+//		fieldA.setStep(0.1f);
 		schemaA.addField(fieldA);
 
 		Schema schemaB = new SchemaImpl();
 		NumberFieldSchema fieldB = createField("test");
-		fieldB.setMin(1);
-		fieldB.setMax(2);
+//		fieldB.setMin(1);
+//		fieldB.setMax(2);
 		fieldB.setRequired(true);
-		fieldB.setStep(0.1f);
+//		fieldB.setStep(0.1f);
 		fieldB.setLabel("label2");
 		schemaB.addField(fieldB);
 

@@ -1,29 +1,40 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import com.gentics.mesh.core.data.schema.FieldChange;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import com.gentics.mesh.core.data.schema.UpdateFieldChange;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * Change entry which contains information for a field update. This includes field specific settings.
  */
-public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements FieldChange {
+public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements UpdateFieldChange {
 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEFIELD;
 
 	@Override
 	public Schema apply(Schema schema) {
+		Optional<FieldSchema> fieldSchema = schema.getFieldSchema(getFieldName());
+
+		if (!fieldSchema.isPresent()) {
+			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + schema.getName() + "}");
+		}
+		// Remove prefix from map keys
+		Map<String, Object> properties = new HashMap<>();
+		for (String key : getFieldProperties().keySet()) {
+			Object value = getFieldProperties().get(key);
+			key = key.replace(FIELD_PROPERTY_PREFIX_KEY, "");
+			properties.put(key, value);
+		}
+		fieldSchema.get().apply(properties);
 		return schema;
-	}
-
-	@Override
-	public void setFieldProperty(String key, String value) {
-		setProperty(FIELD_PROPERTY_PREFIX_KEY + key, value);
-	}
-
-	@Override
-	public String getFieldProperty(String key) {
-		return getProperty(FIELD_PROPERTY_PREFIX_KEY + key);
 	}
 
 }

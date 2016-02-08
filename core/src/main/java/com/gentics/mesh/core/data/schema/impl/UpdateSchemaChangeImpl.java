@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import java.util.Map;
+
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
  * @see UpdateSchemaChange
@@ -62,4 +65,8 @@ public class UpdateSchemaChangeImpl extends AbstractSchemaChange implements Upda
 		return getProperty(SEGMENT_FIELD_NAME_KEY);
 	}
 
+	@Override
+	public void fill(SchemaChangeModel restChange) {
+		restChange.getProperties();
+	}
 }

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.schema.handler.impl;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.AbstractChangeHandler;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeReport;
+import com.gentics.mesh.core.rest.schema.change.impl.ChangeMigrationReport;
 
 import rx.Observable;
 
@@ -15,7 +15,7 @@ public class AddFieldHandlerImpl extends AbstractChangeHandler {
 	}
 
 	@Override
-	public Observable<SchemaChangeReport> handle(SchemaChange change, boolean dryRun) {
+	public Observable<ChangeMigrationReport> handle(SchemaChange change, boolean dryRun) {
 		// No checks needed? 
 		// Add SQB for all affected nodes. This way the Search index contains the empty property? 
 		return null;

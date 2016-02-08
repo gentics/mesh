@@ -85,7 +85,12 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	public void handleExecuteSchemaChanges(InternalActionContext ac) {
-		// TODO Auto-generated method stub
+		db.asyncNoTrxExperimental(() -> {
+			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);
+			return obsSchema.flatMap(schema -> {
+				return schema.getLatestVersion().applyChanges(ac);
+			});
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 

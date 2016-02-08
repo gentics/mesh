@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.schema.change.impl;
 /**
  * Rest Model POJO for a schema change report.
  */
-public class SchemaChangeReport {
+public class ChangeMigrationReport {
 
 	private int affectedNodes;
 	private long duration;

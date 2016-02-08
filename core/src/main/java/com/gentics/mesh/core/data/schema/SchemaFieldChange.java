@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.Map;
+
 /**
  * Common field change class which may be used for changes that target a specific field.
  */
@@ -19,5 +21,28 @@ public interface SchemaFieldChange extends SchemaChange {
 	 * @return field name
 	 */
 	String getFieldName();
+
+	/**
+	 * Set a field specific property.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	void setFieldProperty(String key, Object value);
+
+	/**
+	 * Return a field specific property.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	String getFieldProperty(String key);
+
+	/**
+	 * Return field specific properties.
+	 * 
+	 * @return
+	 */
+	<T> Map<String, T> getFieldProperties();
 
 }

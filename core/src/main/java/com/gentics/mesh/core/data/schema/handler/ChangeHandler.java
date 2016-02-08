@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeReport;
+import com.gentics.mesh.core.rest.schema.change.impl.ChangeMigrationReport;
 
 import rx.Observable;
 
@@ -16,8 +16,8 @@ public interface ChangeHandler {
 	 * @param change
 	 *            Change to be handled
 	 * @param dryRun
-	 * @return Observable which yields a {@link SchemaChangeReport}
+	 * @return Observable which yields a {@link ChangeMigrationReport}
 	 * 
 	 */
-	Observable<SchemaChangeReport> handle(SchemaChange change, boolean dryRun);
+	Observable<ChangeMigrationReport> handle(SchemaChange change, boolean dryRun);
 }

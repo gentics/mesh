@@ -33,6 +33,14 @@ public interface FieldSchemaContainer {
 	Optional<FieldSchema> getFieldSchema(String fieldName);
 
 	/**
+	 * Return the field with the given name.
+	 * 
+	 * @param fieldName
+	 * @return
+	 */
+	FieldSchema getField(String fieldName);
+
+	/**
 	 * Return the field schema with the given name.
 	 * 
 	 * @param fieldName

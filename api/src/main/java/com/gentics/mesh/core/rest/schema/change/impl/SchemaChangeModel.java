@@ -6,6 +6,9 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * POJO for a schema change.
+ */
 public class SchemaChangeModel implements RestModel {
 
 	private static final String FIELD_NAME_KEY = "field";
@@ -15,6 +18,8 @@ public class SchemaChangeModel implements RestModel {
 	private String uuid;
 
 	private SchemaChangeOperation operation;
+
+	private String migrationScript;
 
 	private Map<String, Object> properties = new HashMap<>();
 
@@ -94,6 +99,33 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public void setRequired(boolean flag) {
 		getProperties().put(REQUIRED_KEY, flag);
+	}
+
+	/**
+	 * Return the required property for the change.
+	 * 
+	 * @return
+	 */
+	public boolean getRequired() {
+		return Boolean.valueOf(String.valueOf(getProperties().get(REQUIRED_KEY)));
+	}
+
+	/**
+	 * Return the custom migration script.
+	 * 
+	 * @return
+	 */
+	public String getMigrationScript() {
+		return migrationScript;
+	}
+
+	/**
+	 * Set the custom migration script.
+	 * 
+	 * @param migrationScript
+	 */
+	public void setMigrationScript(String migrationScript) {
+		this.migrationScript = migrationScript;
 	}
 
 }

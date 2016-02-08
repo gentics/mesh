@@ -23,4 +23,5 @@ public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	public String getAutoMigrationScript() throws IOException {
 		return loadAutoMigrationScript("fieldremove.js");
 	}
+
 }

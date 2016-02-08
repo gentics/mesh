@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 public class SchemaMutator {
 
 	/**
-	 * Applies the given changes to the schema and returns the updated schema
+	 * Applies the given changes to the schema and returns the updated schema.
 	 * 
 	 * @param schema
 	 *            Schema to be updated

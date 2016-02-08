@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 
+import java.util.Map;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -82,6 +83,13 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			change.getProperties().put("listType", ((ListFieldSchema) fieldSchema).getListType());
 		}
 		return Optional.of(change);
+	}
+
+	@Override
+	public void apply(Map<String, Object> fieldProperties) {
+		if (fieldProperties.get("required") != null) {
+			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get("required"))));
+		}
 	}
 
 }

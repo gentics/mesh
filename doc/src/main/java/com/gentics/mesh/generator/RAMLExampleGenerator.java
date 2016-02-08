@@ -405,16 +405,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		longitudeFieldSchema.setName("longitude");
 		longitudeFieldSchema.setLabel("Longitude");
 		longitudeFieldSchema.setRequired(true);
-		longitudeFieldSchema.setMin(-180);
-		longitudeFieldSchema.setMax(180);
+//		longitudeFieldSchema.setMin(-180);
+//		longitudeFieldSchema.setMax(180);
 		microschema.addField(longitudeFieldSchema);
 
 		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
 		latitudeFieldSchema.setName("latitude");
 		latitudeFieldSchema.setLabel("Latitude");
 		latitudeFieldSchema.setRequired(true);
-		latitudeFieldSchema.setMin(-90);
-		latitudeFieldSchema.setMax(90);
+//		latitudeFieldSchema.setMin(-90);
+//		latitudeFieldSchema.setMax(90);
 		microschema.addField(latitudeFieldSchema);
 
 		microschema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -438,16 +438,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		longitudeFieldSchema.setName("longitude");
 		longitudeFieldSchema.setLabel("Longitude");
 		longitudeFieldSchema.setRequired(true);
-		longitudeFieldSchema.setMin(-180);
-		longitudeFieldSchema.setMax(180);
+//		longitudeFieldSchema.setMin(-180);
+//		longitudeFieldSchema.setMax(180);
 		createRequest.addField(longitudeFieldSchema);
 
 		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
 		latitudeFieldSchema.setName("latitude");
 		latitudeFieldSchema.setLabel("Latitude");
 		latitudeFieldSchema.setRequired(true);
-		latitudeFieldSchema.setMin(-90);
-		latitudeFieldSchema.setMax(90);
+//		latitudeFieldSchema.setMin(-90);
+//		latitudeFieldSchema.setMax(90);
 		createRequest.addField(latitudeFieldSchema);
 
 		return createRequest;
@@ -461,16 +461,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		longitudeFieldSchema.setName("longitude");
 		longitudeFieldSchema.setLabel("Longitude");
 		longitudeFieldSchema.setRequired(true);
-		longitudeFieldSchema.setMin(-180);
-		longitudeFieldSchema.setMax(180);
+//		longitudeFieldSchema.setMin(-180);
+//		longitudeFieldSchema.setMax(180);
 		updateRequest.addField(longitudeFieldSchema);
 
 		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
 		latitudeFieldSchema.setName("latitude");
 		latitudeFieldSchema.setLabel("Latitude");
 		latitudeFieldSchema.setRequired(true);
-		latitudeFieldSchema.setMin(-90);
-		latitudeFieldSchema.setMax(90);
+//		latitudeFieldSchema.setMin(-90);
+//		latitudeFieldSchema.setMax(90);
 		updateRequest.addField(latitudeFieldSchema);
 
 		return updateRequest;
@@ -522,9 +522,9 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("number");
 		numberFieldSchema.setLabel("Number");
-		numberFieldSchema.setMin(2);
-		numberFieldSchema.setMax(10);
-		numberFieldSchema.setStep(0.5F);
+//		numberFieldSchema.setMin(2);
+//		numberFieldSchema.setMax(10);
+//		numberFieldSchema.setStep(0.5F);
 		schema.addField(numberFieldSchema);
 
 		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
