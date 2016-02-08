@@ -74,9 +74,19 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements RestMode
 		if (getDisplayField() == null) {
 			throw new MeshJsonException("The displayField property must be set.");
 		}
+		if (getFields().contains(getDisplayField())) {
+			throw new MeshJsonException("The displayField value {" + getSegmentField() + "} does not match any fields");
+		}
 
 		if (getSegmentField() == null) {
 			throw new MeshJsonException("The segmentField property must be set.");
+		}
+		if (getFields().contains(getSegmentField())) {
+			throw new MeshJsonException("The segmentField value {" + getSegmentField() + "} does not match any fields");
+		}
+
+		if (getFields().isEmpty()) {
+			throw new MeshJsonException("The schema must have at least one field.");
 		}
 
 		//TODO make sure that segment fields are set to mandatory.

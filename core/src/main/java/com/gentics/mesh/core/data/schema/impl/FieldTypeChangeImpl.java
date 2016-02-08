@@ -27,6 +27,9 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
 
+	/**
+	 * Apply the field type change to the specified schema.
+	 */
 	@Override
 	public Schema apply(Schema schema) {
 		Optional<FieldSchema> fieldSchema = schema.getFieldSchema(getFieldName());
