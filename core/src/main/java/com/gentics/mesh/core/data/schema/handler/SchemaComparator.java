@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.schema.handler;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
+
 import java.util.ArrayList;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +18,6 @@ import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,14 +40,6 @@ public class SchemaComparator {
 		Objects.requireNonNull(schemaB, "The schema must not be null");
 
 		List<SchemaChangeModel> changes = new ArrayList<>();
-		// segmentField
-		compareAndAddSchemaProperty(changes, schemaA.getSegmentField(), schemaB.getSegmentField());
-
-		// displayField
-		compareAndAddSchemaProperty(changes, schemaA.getDisplayField(), schemaB.getDisplayField());
-
-		// container flag
-		compareAndAddSchemaProperty(changes, schemaA.isContainer(), schemaB.isContainer());
 
 		// Diff the fields
 		Map<String, FieldSchema> schemaAFields = transformFieldsToMap(schemaA);
@@ -84,10 +78,18 @@ public class SchemaComparator {
 					if (log.isDebugEnabled()) {
 						log.debug("Field " + fieldInB.getName() + " did not change.");
 					}
-					//TODO impl
 				}
 			}
 		}
+
+		// segmentField
+		compareAndAddSchemaProperty(changes, "segmentField", schemaA.getSegmentField(), schemaB.getSegmentField());
+
+		// displayField
+		compareAndAddSchemaProperty(changes, "displayField", schemaA.getDisplayField(), schemaB.getDisplayField());
+
+		// container flag
+		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer());
 
 		return changes;
 	}
@@ -96,42 +98,15 @@ public class SchemaComparator {
 	 * Compare the given objects and add a schema change entry to the given list of changes.
 	 * 
 	 * @param changes
+	 * @param key
 	 * @param objectA
 	 * @param objectB
 	 */
-	private void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, Object objectA, Object objectB) {
-		switch (compare(objectA, objectB)) {
-
-		case ADDED:
-			changes.add(new SchemaChangeModel(UPDATESCHEMA));
-			break;
-		case REMOVED:
-			changes.add(new SchemaChangeModel(UPDATESCHEMA));
-			break;
-		case CHANGED:
-			changes.add(new SchemaChangeModel(UPDATESCHEMA));
-		}
-
-	}
-
-	/**
-	 * Compare two strings and return a difference indicator.
-	 * 
-	 * @param a
-	 * @param b
-	 * @return Difference between both strings
-	 */
-	private Difference compare(Object a, Object b) {
-		if (a == null && b == null) {
-			return Difference.SAME;
-		} else if (a == null && b != null) {
-			return Difference.ADDED;
-		} else if (b == null && a != null) {
-			return Difference.REMOVED;
-		} else if (a.equals(b)) {
-			return Difference.SAME;
-		} else {
-			return Difference.CHANGED;
+	private void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB) {
+		if (!Objects.equals(objectA, objectB)) {
+			SchemaChangeModel change = new SchemaChangeModel(UPDATESCHEMA);
+			change.getProperties().put(key, objectB);
+			changes.add(change);
 		}
 	}
 

@@ -5,6 +5,8 @@ package com.gentics.mesh.core.data.schema;
  */
 public interface FieldChange extends SchemaFieldChange {
 
+	public static final String FIELD_PROPERTY_PREFIX_KEY = "fieldProperty_";
+
 	/**
 	 * Set a field specific property.
 	 * 

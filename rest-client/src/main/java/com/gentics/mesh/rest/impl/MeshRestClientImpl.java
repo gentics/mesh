@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -481,6 +482,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<SchemaChangesListModel> diffSchema(String uuid, SchemaUpdateRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "request must not be null");
+		return handleRequest(POST, "/schemas/" + uuid + "/diff", SchemaChangesListModel.class, request);
+	}
+
+	@Override
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
@@ -803,19 +811,16 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid,
-			String languageTag, String fieldKey, ImageManipulationParameter imageManipulationParameter) {
+	public Future<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
+			ImageManipulationParameter imageManipulationParameter) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
-		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest()
-				.setWidth(imageManipulationParameter.getWidth())
-				.setHeight(imageManipulationParameter.getHeight())
-				.setCropx(imageManipulationParameter.getStartx())
-				.setCropy(imageManipulationParameter.getStarty())
-				.setCroph(imageManipulationParameter.getCroph())
+		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
+				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
+				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
 				.setCropw(imageManipulationParameter.getCropw());
 
 		return handleRequest(POST, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey + "/transform",

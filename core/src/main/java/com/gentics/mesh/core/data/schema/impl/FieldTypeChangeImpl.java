@@ -7,12 +7,11 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
- * Change entry which contains information for a field update. This can include field specific settings or even a field type change.
+ * Change entry which contains information for a field type change.
  */
 public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldChange {
 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
-	private static final String FIELD_PROPERTY_PREFIX_KEY = "fieldProperty_";
 
 	@Override
 	public Schema apply(Schema schema) {
@@ -44,7 +43,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			case "list":
 				String newListType = getFieldProperty("listType");
 				if (newListType != null) {
-					switch(newListType) {
+					switch (newListType) {
 					case "boolean":
 						return loadAutoMigrationScript("typechange_booleanlist.js");
 					case "number":

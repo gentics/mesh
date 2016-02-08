@@ -71,6 +71,14 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements RestMode
 		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
 		// displayNames
 
+		if (getDisplayField() == null) {
+			throw new MeshJsonException("The displayField property must be set.");
+		}
+
+		if (getSegmentField() == null) {
+			throw new MeshJsonException("The segmentField property must be set.");
+		}
+
 		//TODO make sure that segment fields are set to mandatory.
 		Set<String> fieldNames = new HashSet<>();
 		Set<String> fieldLabels = new HashSet<>();

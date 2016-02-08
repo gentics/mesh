@@ -5,9 +5,14 @@ import java.util.List;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.handler.InternalActionContext;
+
+import rx.Observable;
 
 /**
  * A schema container is a graph element which stores the JSON schema data.
@@ -103,5 +108,16 @@ public interface SchemaContainer extends MeshCoreVertex<SchemaResponse, SchemaCo
 	 * @return
 	 */
 	SchemaContainer setPreviousChange(SchemaChange change);
+
+	/**
+	 * Generate a schema change list by comparing (diffing) the schema with the specified schema update model which is extracted from the action context.
+	 * 
+	 * @param ac
+	 *            Action context that provides the schema update request
+	 * @param comparator
+	 *            Comparator to be used to compare the schemas
+	 * @return
+	 */
+	Observable<SchemaChangesListModel> diff(InternalActionContext ac, SchemaComparator comparator);
 
 }

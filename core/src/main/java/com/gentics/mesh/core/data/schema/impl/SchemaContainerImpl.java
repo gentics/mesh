@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
@@ -21,12 +23,14 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -184,6 +188,20 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				setSchema(requestModel);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
+
+	}
+
+	@Override
+	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, SchemaComparator comparator) {
+		try {
+			SchemaChangesListModel list = new SchemaChangesListModel();
+			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			requestModel.validate();
+			list.getChanges().addAll(comparator.diff(transformToRest(ac, null).toBlocking().single(), requestModel));
+			return Observable.just(list);
 		} catch (Exception e) {
 			return Observable.error(e);
 		}

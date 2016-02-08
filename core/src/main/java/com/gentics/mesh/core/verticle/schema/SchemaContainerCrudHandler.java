@@ -4,11 +4,13 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -18,6 +20,9 @@ import rx.Observable;
 @Component
 public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
 
+	@Autowired
+	private SchemaComparator comparator;
+
 	@Override
 	public RootVertex<SchemaContainer> getRootVertex(InternalActionContext ac) {
 		return boot.schemaContainerRoot();
@@ -26,6 +31,13 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> boot.schemaContainerRoot(), "uuid", "schema_deleted");
+	}
+
+	public void handleDiff(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
+			return obsSchema.flatMap(schema -> schema.diff(ac, comparator));
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleReadProjectList(InternalActionContext ac) {
@@ -69,12 +81,12 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	public void handleGetSchemaChanges(InternalActionContext ac) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void handleExecuteSchemaChanges(InternalActionContext ac) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

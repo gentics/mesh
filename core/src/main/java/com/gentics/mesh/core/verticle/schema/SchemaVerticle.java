@@ -42,6 +42,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		addUpdateHandler();
 		addDeleteHandler();
 
+		addDiffHandler();
 		addChangesHandler();
 	}
 
@@ -73,6 +74,13 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
+		});
+	}
+
+	private void addDiffHandler() {
+		Route route = route("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		route.handler(rc -> {
+			crudHandler.handleDiff(InternalActionContext.create(rc));
 		});
 	}
 
