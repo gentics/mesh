@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -13,6 +15,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.util.FieldUtil;
 
 public class SchemaComparatorSchemaTest extends AbstractDBTest {
 
@@ -23,6 +26,33 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	public void testEmptySchema() {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testSchemaFieldReorder() {
+		Schema schemaA = new SchemaImpl();
+		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
+		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));
+
+		Schema schemaB = new SchemaImpl();
+		schemaB.addField(FieldUtil.createHtmlFieldSchema("second"));
+		schemaB.addField(FieldUtil.createHtmlFieldSchema("first"));
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty("order", new String[] { "second", "first" });
+	}
+
+	@Test
+	public void testSchemaFieldNoReorder() {
+		Schema schemaA = new SchemaImpl();
+		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
+		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));
+
+		Schema schemaB = new SchemaImpl();
+		schemaB.addField(FieldUtil.createHtmlFieldSchema("first"));
+		schemaB.addField(FieldUtil.createHtmlFieldSchema("second"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
 	}

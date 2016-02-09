@@ -37,6 +37,11 @@ public class SchemaChangeModel implements RestModel {
 		getProperties().put(FIELD_NAME_KEY, fieldName);
 	}
 
+	/**
+	 * Create a new change.
+	 * 
+	 * @param operation
+	 */
 	public SchemaChangeModel(SchemaChangeOperation operation) {
 		this.operation = operation;
 	}

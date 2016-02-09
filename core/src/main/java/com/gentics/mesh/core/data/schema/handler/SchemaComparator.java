@@ -82,6 +82,9 @@ public class SchemaComparator {
 			}
 		}
 
+		// order of fields
+		compareAndAddOrderChange(changes, schemaA, schemaB);
+
 		// segmentField
 		compareAndAddSchemaProperty(changes, "segmentField", schemaA.getSegmentField(), schemaB.getSegmentField());
 
@@ -92,6 +95,43 @@ public class SchemaComparator {
 		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer());
 
 		return changes;
+	}
+
+	/**
+	 * Compare the schemas field order and determine whether the order of the listed fields was changed.
+	 * 
+	 * @param changes
+	 * @param schemaA
+	 * @param schemaB
+	 */
+	private void compareAndAddOrderChange(List<SchemaChangeModel> changes, Schema schemaA, Schema schemaB) {
+		boolean hasChanges = false;
+
+		List<String> fieldNames = new ArrayList<>();
+		for (FieldSchema fieldSchema : schemaB.getFields()) {
+			fieldNames.add(fieldSchema.getName());
+		}
+
+		// The order has changed if the field size is different
+		if (schemaB.getFields().size() != schemaA.getFields().size()) {
+			hasChanges = true;
+		} else {
+			// Field size is same. Lets compare the names per index
+			for (int i = 0; i < schemaA.getFields().size(); i++) {
+				hasChanges = !fieldNames.get(i).equals(schemaA.getFields().get(i).getName());
+				if (hasChanges) {
+					break;
+				}
+			}
+		}
+
+		if (hasChanges) {
+			SchemaChangeModel change = new SchemaChangeModel();
+			change.setOperation(UPDATESCHEMA);
+			change.getProperties().put("order", fieldNames.toArray());
+			changes.add(change);
+		}
+
 	}
 
 	/**

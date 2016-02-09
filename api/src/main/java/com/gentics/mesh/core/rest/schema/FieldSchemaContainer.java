@@ -70,4 +70,11 @@ public interface FieldSchemaContainer {
 	 */
 	void addField(FieldSchema fieldSchema);
 
+	/**
+	 * Set the list of schema fields.
+	 * 
+	 * @param fields
+	 */
+	void setFields(List<FieldSchema> fields);
+
 }

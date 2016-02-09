@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.List;
+
 /**
  * Change entry that contains information on how to change schema specific attributes.
  */
@@ -46,5 +48,20 @@ public interface UpdateSchemaChange extends SchemaChange {
 	 * @return
 	 */
 	String getSegmentField();
+
+	/**
+	 * Set the field order.
+	 * 
+	 * @param list
+	 * 
+	 */
+	void setOrder(String... fieldNames);
+
+	/**
+	 * Return the field order.
+	 * 
+	 * @return
+	 */
+	List<String> getOrder();
 
 }

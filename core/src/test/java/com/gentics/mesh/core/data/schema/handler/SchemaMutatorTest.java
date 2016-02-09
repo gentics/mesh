@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
+import com.gentics.mesh.util.FieldUtil;
 
 public class SchemaMutatorTest extends AbstractEmptyDBTest {
 
@@ -64,6 +65,25 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		change.setType("html");
 		Schema updatedSchema = mutator.apply(schema, change);
 		assertThat(updatedSchema).hasField("name");
+	}
+
+	@Test
+	public void testFieldOrderChange() {
+		// 1. Create the schema
+		Schema schema = new SchemaImpl();
+		schema.addField(FieldUtil.createHtmlFieldSchema("first"));
+		schema.addField(FieldUtil.createHtmlFieldSchema("second"));
+
+		// 2. Create the schema update change
+		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		change.setOrder("second", "first");
+
+		// 3. Apply the change
+		Schema updatedSchema = mutator.apply(schema, change);
+		assertEquals(2, updatedSchema.getFields().size());
+		assertEquals("The first field should now be the field with name \"second\".", "second", updatedSchema.getFields().get(0).getName());
+		assertEquals("The second field should now be the field with the name \"first\".", "first", updatedSchema.getFields().get(1).getName());
+
 	}
 
 	@Test

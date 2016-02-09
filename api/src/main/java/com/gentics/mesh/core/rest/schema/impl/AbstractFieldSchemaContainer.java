@@ -31,7 +31,7 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 
 	@Override
 	public FieldSchema getField(String fieldName) {
-		return (FieldSchema)fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+		return (FieldSchema) fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
 	}
 
 	@Override
@@ -61,6 +61,11 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	@Override
 	public void addField(FieldSchema fieldSchema) {
 		this.fields.add(fieldSchema);
+	}
+
+	@Override
+	public void setFields(List<FieldSchema> fields) {
+		this.fields = fields;
 	}
 
 }
