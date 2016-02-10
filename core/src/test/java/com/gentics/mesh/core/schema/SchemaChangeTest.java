@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -7,13 +8,15 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class SchemaChangeTest extends AbstractBasicDBTest {
@@ -46,13 +49,26 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 	}
 
 	@Test
+	public void testMicroschemaChanges() {
+		MicroschemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		SchemaChange oldChange = chainChanges(containerA, containerB);
+		validate(containerA, containerB, oldChange);
+	}
+
+	@Test
 	public void testChangeChain() {
 		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaChange oldChange = chainChanges(containerA, containerB);
+		validate(containerA, containerB, oldChange);
+	}
+
+	private SchemaChange chainChanges(GraphFieldSchemaContainer containerA, GraphFieldSchemaContainer containerB) {
 		SchemaChange oldChange = null;
 		for (int i = 0; i < 3; i++) {
 			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			change.setOperation(SchemaChangeOperation.UPDATEFIELD);
+			change.setOperation(UPDATEFIELD);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousSchemaContainer());
@@ -64,7 +80,16 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 				oldChange = change;
 			}
 		}
+		return oldChange;
+	}
 
+	/**
+	 * Validate the chain of changes in between the containers.
+	 * @param containerA
+	 * @param containerB
+	 * @param oldChange
+	 */
+	private void validate(GraphFieldSchemaContainer containerA, GraphFieldSchemaContainer containerB, SchemaChange oldChange) {
 		containerA.setNextVersion(containerB);
 		assertNull(oldChange.getNextContainer());
 		oldChange.setNextSchemaContainer(containerB);
@@ -98,9 +123,10 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		assertEquals("Container B should be the next version of container A.", containerB.getUuid(), containerA.getNextVersion().getUuid());
 
 		// Check latest version
-		SchemaContainer latest = containerA.getLatestVersion();
+		GraphFieldSchemaContainer latest = containerA.getLatestVersion();
 		assertNotNull("There is always a latest version", latest);
 		assertEquals("Container B represents the latest version.", containerB.getUuid(), latest.getUuid());
+
 	}
 
 }
