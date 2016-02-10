@@ -1,110 +1,101 @@
 package com.gentics.mesh.core.schema.field;
 
-import java.io.IOException;
-
 /**
  * Interface for tests for field migrations
  */
 public interface FieldMigrationTest {
 	/**
 	 * Test removing the field
-	 * @throws IOException
 	 */
-	void testRemove() throws IOException;
+	void testRemove();
 
 	/**
 	 * Test renaming the field
-	 * @throws IOException
 	 */
-	void testRename() throws IOException;
+	void testRename();
 
 	/**
 	 * Test changing the field to a binary field
-	 * @throws IOException
 	 */
-	void testChangeToBinary() throws IOException;
+	void testChangeToBinary();
 
 	/**
 	 * Test changing the field to a boolean field
-	 * @throws IOException
 	 */
-	void testChangeToBoolean() throws IOException;
+	void testChangeToBoolean();
 
 	/**
 	 * Test changing to a boolean list field
-	 * @throws IOException
 	 */
-	void testChangeToBooleanList() throws IOException;
+	void testChangeToBooleanList();
 
 	/**
 	 * Test changing to date field
-	 * @throws IOException
 	 */
-	void testChangeToDate() throws IOException;
+	void testChangeToDate();
 
 	/**
 	 * Test changing to date list field
-	 * @throws IOException
 	 */
-	void testChangeToDateList() throws IOException;
+	void testChangeToDateList();
 
 	/**
 	 * Test changing to html field
-	 * @throws IOException
 	 */
-	void testChangeToHtml() throws IOException;
+	void testChangeToHtml();
 
 	/**
 	 * Test changing to html list field
-	 * @throws IOException
 	 */
-	void testChangeToHtmlList() throws IOException;
+	void testChangeToHtmlList();
 
 	/**
 	 * Test changing to micronode field
-	 * @throws IOException
 	 */
-	void testChangeToMicronode() throws IOException;
+	void testChangeToMicronode();
 
 	/**
 	 * Test changing to micronode list field
-	 * @throws IOException
 	 */
-	void testChangeToMicronodeList() throws IOException;
+	void testChangeToMicronodeList();
 
 	/**
 	 * Test changing to node field
-	 * @throws IOException
 	 */
-	void testChangeToNode() throws IOException;
+	void testChangeToNode();
 
 	/**
 	 * Test changing to node list field
-	 * @throws IOException
 	 */
-	void testChangeToNodeList() throws IOException;
+	void testChangeToNodeList();
 
 	/**
 	 * Test changing to number field
-	 * @throws IOException
 	 */
-	void testChangeToNumber() throws IOException;
+	void testChangeToNumber();
 
 	/**
 	 * Test changing to number list field
-	 * @throws IOException
 	 */
-	void testChangeToNumberList() throws IOException;
+	void testChangeToNumberList();
 
 	/**
 	 * Test changing to string field
-	 * @throws IOException
 	 */
-	void testChangeToString() throws IOException;
+	void testChangeToString();
 
 	/**
 	 * Test changing to string list field
-	 * @throws IOException
 	 */
-	void testChangeToStringList() throws IOException;
+	void testChangeToStringList();
+
+	/**
+	 * Test migrating the field with a custom migration script
+	 */
+	void testCustomMigrationScript();
+
+	/**
+	 * Test with an invalid migration script
+	 */
+	void testInvalidMigrationScript();
 }

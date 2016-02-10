@@ -62,7 +62,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Observable<LanguageResponse> transformToRest(InternalActionContext ac, String...languageTags) {
+	public Observable<LanguageResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());

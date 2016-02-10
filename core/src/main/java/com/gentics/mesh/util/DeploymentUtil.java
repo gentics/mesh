@@ -25,22 +25,23 @@ public final class DeploymentUtil {
 	// TODO decrease
 	private static final long DEFAULT_TIMEOUT_IN_SECONDS = 10 * 1000;
 
-	public static String deployAndWait(Vertx vertx, JsonObject config, final Class<? extends AbstractVerticle> clazz) throws InterruptedException {
-		return deployAndWait(vertx, config, clazz.getCanonicalName());
+	public static String deployAndWait(Vertx vertx, JsonObject config, final Class<? extends AbstractVerticle> clazz, boolean worker) throws InterruptedException {
+		return deployAndWait(vertx, config, clazz.getCanonicalName(), worker);
 	}
 
-	public static String deployAndWait(Vertx vertx, JsonObject config, String verticleClass) throws InterruptedException {
+	public static String deployAndWait(Vertx vertx, JsonObject config, String verticleClass, boolean worker) throws InterruptedException {
 		String prefix = SpringVerticleFactory.PREFIX + ":";
-		return deployAndWait(vertx, config, prefix, verticleClass);
+		return deployAndWait(vertx, config, prefix, verticleClass, worker);
 	}
 
-	public static String deployAndWait(Vertx vertx, JsonObject config, String prefix, String verticleClass) throws InterruptedException {
+	public static String deployAndWait(Vertx vertx, JsonObject config, String prefix, String verticleClass, boolean worker) throws InterruptedException {
 		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> deploymentId = new AtomicReference<String>();
 		DeploymentOptions options = new DeploymentOptions();
 		if (config != null) {
 			options = new DeploymentOptions(new JsonObject().put("config", config));
 		}
+		options.setWorker(worker);
 		vertx.deployVerticle(prefix + verticleClass, options, handler -> {
 			if (handler.succeeded()) {
 				deploymentId.set(handler.result());

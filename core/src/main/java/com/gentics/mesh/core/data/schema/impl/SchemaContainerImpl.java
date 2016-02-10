@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -25,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -32,6 +34,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.RestModelHelper;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
 
 /**
@@ -59,7 +62,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
-	public Observable<SchemaResponse> transformToRest(InternalActionContext ac, String... languageTags) {
+	public Observable<SchemaResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
 			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);

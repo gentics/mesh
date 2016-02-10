@@ -145,44 +145,40 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
+	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+		Set<Observable<GroupResponse>> obs = new HashSet<>();
 
-			Set<Observable<GroupResponse>> obs = new HashSet<>();
+		GroupResponse restGroup = new GroupResponse();
+		restGroup.setName(getName());
 
-			GroupResponse restGroup = new GroupResponse();
-			restGroup.setName(getName());
+		// for (User user : group.getUsers()) {
+		// String name = user.getUsername();
+		// if (name != null) {
+		// restGroup.getUsers().add(name);
+		// }
+		// Collections.sort(restGroup.getUsers());
 
-			// for (User user : group.getUsers()) {
-			// String name = user.getUsername();
-			// if (name != null) {
-			// restGroup.getUsers().add(name);
-			// }
-			// Collections.sort(restGroup.getUsers());
-
-			for (Role role : getRoles()) {
-				String name = role.getName();
-				if (name != null) {
-					restGroup.getRoles().add(role.transformToReference(ac));
-				}
+		for (Role role : getRoles()) {
+			String name = role.getName();
+			if (name != null) {
+				restGroup.getRoles().add(role.transformToReference(ac));
 			}
+		}
 
-			// // Set<Group> children = groupRepository.findChildren(group);
-			// Set<Group> children = group.getGroups();
-			// for (Group childGroup : children) {
-			// restGroup.getGroups().add(childGroup.getName());
-			// }
+		// // Set<Group> children = groupRepository.findChildren(group);
+		// Set<Group> children = group.getGroups();
+		// for (Group childGroup : children) {
+		// restGroup.getGroups().add(childGroup.getName());
+		// }
 
-			// Add common fields
-			obs.add(fillCommonRestFields(ac, restGroup));
+		// Add common fields
+		obs.add(fillCommonRestFields(ac, restGroup));
 
-			// Role permissions
-			obs.add(setRolePermissions(ac, restGroup));
+		// Role permissions
+		obs.add(setRolePermissions(ac, restGroup));
 
-			// Merge and complete
-			return Observable.merge(obs).last();
-		});
+		// Merge and complete
+		return Observable.merge(obs).last();
 	}
 
 	@Override

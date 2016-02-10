@@ -3,13 +3,8 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.List;
-
-import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -19,16 +14,11 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * @see SchemaChange
  */
 public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
 	
-	private static final Logger log = LoggerFactory.getLogger(AbstractSchemaChange.class);
-
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
 
 	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
@@ -99,10 +89,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 			migrationScript = getAutoMigrationScript();
 		}
 
-		if (migrationScript != null) {
-			migrationScript = "node = JSON.parse(node);\n" + migrationScript + "\nnode = JSON.stringify(node);";
-		}
-
 		return migrationScript;
 	}
 
@@ -121,30 +107,4 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	public List<Tuple<String, Object>> getMigrationScriptContext() {
 		return null;
 	}
-
-	/**
-	 * Load the automatic migration script with given name
-	 * 
-	 * @param scriptName
-	 *            script name
-	 * @return script file contents
-	 * @throws IOException
-	 */
-	protected String loadAutoMigrationScript(String scriptName) throws IOException {
-		try (InputStream ins = getClass().getResourceAsStream("/script/" + scriptName)) {
-			if (ins == null) {
-				log.error("Json could not be loaded from classpath file {" + scriptName + "}");
-				throw new FileNotFoundException("Could not find script file {" + scriptName + "}");
-			} else {
-				StringWriter writer = new StringWriter();
-				try {
-					IOUtils.copy(ins, writer);
-					return writer.toString();
-				} catch (IOException e) {
-					log.error("Error while reading script file {" + scriptName + "}", e);
-					throw e;
 				}
-			}
-		}
-	}
-}

@@ -84,7 +84,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	}
 
 	@Override
-	public Observable<MicroschemaResponse> transformToRest(InternalActionContext ac, String... languageTags) {
+	public Observable<MicroschemaResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
 			MicroschemaResponse microschema = JsonUtil.readSchema(getJson(), MicroschemaResponse.class);

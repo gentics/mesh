@@ -147,24 +147,21 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
-			Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
+	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+		Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
-			ProjectResponse restProject = new ProjectResponse();
-			restProject.setName(getName());
-			restProject.setRootNodeUuid(getBaseNode().getUuid());
+		ProjectResponse restProject = new ProjectResponse();
+		restProject.setName(getName());
+		restProject.setRootNodeUuid(getBaseNode().getUuid());
 
-			// Add common fields
-			obsParts.add(fillCommonRestFields(ac, restProject));
+		// Add common fields
+		obsParts.add(fillCommonRestFields(ac, restProject));
 
-			// Role permissions
-			obsParts.add(setRolePermissions(ac, restProject));
+		// Role permissions
+		obsParts.add(setRolePermissions(ac, restProject));
 
-			// Merge and complete
-			return Observable.merge(obsParts).last();
-		});
+		// Merge and complete
+		return Observable.merge(obsParts).last();
 	}
 
 	@Override

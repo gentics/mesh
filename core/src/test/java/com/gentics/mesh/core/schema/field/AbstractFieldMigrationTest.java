@@ -2,8 +2,11 @@ package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,7 @@ import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -72,7 +76,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 * @param dataProvider data provider implementation
 	 * @param fetcher field fetcher implementation
 	 */
-	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws IOException {
+	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) {
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
 
@@ -116,7 +120,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		dataProvider.set(englishContainer, removedFieldName);
 
 		// migrate the node
-		nodeMigrationHandler.migrateNodes(containerA);
+		nodeMigrationHandler.migrateNodes(containerA, null).doOnError((e) -> {
+			fail(e.getLocalizedMessage());
+		}).subscribe();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
@@ -139,7 +145,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 * @throws IOException
 	 */
 	protected void renameField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher,
-			DataAsserter asserter) throws IOException {
+			DataAsserter asserter) {
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
 
@@ -171,7 +177,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		AddFieldChangeImpl addFieldChange = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
-		addFieldChange.setCustomMigrationScript("node.fields[fieldname] = node.fields[\"oldname\"]");
+		addFieldChange.setCustomMigrationScript("function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
 		RemoveFieldChange removeFieldChange = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
@@ -190,7 +196,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		dataProvider.set(englishContainer, oldFieldName);
 
 		// migrate the node
-		nodeMigrationHandler.migrateNodes(containerA);
+		nodeMigrationHandler.migrateNodes(containerA, null).doOnError((e) -> {
+			fail(e.getLocalizedMessage());
+		}).subscribe();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
@@ -210,7 +218,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 * @param asserter
 	 */
 	protected void changeType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
-			FieldSchemaCreator newField, DataAsserter asserter) throws IOException {
+			FieldSchemaCreator newField, DataAsserter asserter) {
 		String fieldName = "changedfield";
 
 		// create version 1 of the schema
@@ -259,7 +267,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the node
-		nodeMigrationHandler.migrateNodes(containerA);
+		nodeMigrationHandler.migrateNodes(containerA, null).doOnError((e) -> {
+			fail(e.getLocalizedMessage());
+		}).subscribe();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
@@ -275,6 +285,130 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
 		}
 		asserter.assertThat(englishContainer, fieldName);
+	}
+
+	/**
+	 * Generic test for migrating an existing field with a custom migration script
+	 * @param creator creator implementation
+	 * @param dataProvider data provider implementation
+	 * @param fetcher fetcher implementation
+	 * @param migrationScript migration script to test
+	 * @param asserter assert implementation
+	 */
+	protected void customMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher,
+			String migrationScript, DataAsserter asserter) {
+		String fieldName = "migratedField";
+
+		// create version 1 of the schema
+		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaA = new SchemaImpl();
+		schemaA.setName("migratedSchema");
+		schemaA.setVersion(1);
+		FieldSchema oldField = creator.create(fieldName);
+		schemaA.addField(oldField);
+		schemaA.setDisplayField("name");
+		schemaA.setSegmentField("name");
+		containerA.setName("migratedSchema");
+		containerA.setSchema(schemaA);
+
+		// create version 2 of the schema (with the field renamed)
+		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaB = new SchemaImpl();
+		schemaB.setName("migratedSchema");
+		schemaB.setVersion(2);
+		FieldSchema newField = creator.create(fieldName);
+		schemaB.addField(newField);
+		schemaB.setDisplayField("name");
+		schemaB.setSegmentField("name");
+		containerB.setName("migratedSchema");
+		containerB.setSchema(schemaB);
+
+		// link the schemas with the changes in between
+		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		updateFieldChange.setFieldName(fieldName);
+		updateFieldChange.setCustomMigrationScript(migrationScript);
+
+		updateFieldChange.setPreviousContainer(containerA);
+		updateFieldChange.setNextSchemaContainer(containerB);
+		containerA.setNextVersion(containerB);
+
+		// create a node based on the old schema
+		User user = user();
+		Language english = english();
+		Node parentNode = folder("2015");
+		Node node = parentNode.create(user, containerA, project());
+		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+		dataProvider.set(englishContainer, fieldName);
+
+		// migrate the node
+		nodeMigrationHandler.migrateNodes(containerA, null).doOnError((e) -> {
+			fail(e.getLocalizedMessage());
+		}).subscribe();
+		node.reload();
+		node.getGraphFieldContainer("en").reload();
+
+		// assert that migration worked
+		assertThat(node).as("Migrated Node").isOf(containerB).hasTranslation("en");
+		asserter.assertThat(node.getGraphFieldContainer("en"), fieldName);
+	}
+
+	/**
+	 * Generic method to test migration failure when using an invalid migration script
+	 *
+	 * @param creator creator implementation
+	 * @param dataProvider data provider implementation
+	 */
+	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider) {
+		String fieldName = "migratedField";
+
+		// create version 1 of the schema
+		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaA = new SchemaImpl();
+		schemaA.setName("migratedSchema");
+		schemaA.setVersion(1);
+		FieldSchema oldField = creator.create(fieldName);
+		schemaA.addField(oldField);
+		schemaA.setDisplayField("name");
+		schemaA.setSegmentField("name");
+		containerA.setName("migratedSchema");
+		containerA.setSchema(schemaA);
+
+		// create version 2 of the schema (with the field renamed)
+		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaB = new SchemaImpl();
+		schemaB.setName("migratedSchema");
+		schemaB.setVersion(2);
+		FieldSchema newField = creator.create(fieldName);
+		schemaB.addField(newField);
+		schemaB.setDisplayField("name");
+		schemaB.setSegmentField("name");
+		containerB.setName("migratedSchema");
+		containerB.setSchema(schemaB);
+
+		// link the schemas with the changes in between
+		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		updateFieldChange.setFieldName(fieldName);
+		updateFieldChange.setCustomMigrationScript("this is an invalid script");
+
+		updateFieldChange.setPreviousContainer(containerA);
+		updateFieldChange.setNextSchemaContainer(containerB);
+		containerA.setNextVersion(containerB);
+
+		// create a node based on the old schema
+		User user = user();
+		Language english = english();
+		Node parentNode = folder("2015");
+		Node node = parentNode.create(user, containerA, project());
+		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+		dataProvider.set(englishContainer, fieldName);
+
+		// migrate the node
+		AtomicBoolean failed = new AtomicBoolean(false);
+		nodeMigrationHandler.migrateNodes(containerA, null).subscribe((item) -> {
+		} , (e) -> {
+			failed.set(true);
+		});
+		assertTrue("Migration should have failed", failed.get());
 	}
 
 	@FunctionalInterface

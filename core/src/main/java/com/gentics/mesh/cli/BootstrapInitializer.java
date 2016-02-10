@@ -55,6 +55,7 @@ import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
@@ -111,6 +112,8 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
+	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
+
 	public BootstrapInitializer() {
 
 		// User Group Role verticles
@@ -133,6 +136,9 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(AuthenticationVerticle.class);
 		addMandatoryVerticle(AdminVerticle.class);
 		addMandatoryVerticle(UtilityVerticle.class);
+
+		// Worker verticles
+		addMandatoryWorkerVerticle(NodeMigrationVerticle.class);
 	}
 
 	/**
@@ -146,6 +152,23 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
 		return mandatoryVerticles;
+	}
+
+	/**
+	 * Add the given verticle class to the list of mandatory worker verticles
+	 *
+	 * @param clazz
+	 */
+	private void addMandatoryWorkerVerticle(Class<? extends AbstractVerticle> clazz) {
+		mandatoryWorkerVerticles.put(clazz.getSimpleName(), clazz);
+	}
+
+	/**
+	 * Get the map of mandatory worker verticle classes
+	 * @return
+	 */
+	private Map<String, Class<? extends AbstractVerticle>> getMandatoryWorkerVerticleClasses() {
+		return mandatoryWorkerVerticles;
 	}
 
 	/**
@@ -224,7 +247,19 @@ public class BootstrapInitializer {
 					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
 				}
 				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, clazz);
+				deployAndWait(Mesh.vertx(), defaultConfig, clazz, false);
+			} catch (InterruptedException e) {
+				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
+			}
+		}
+
+		for (Class<? extends AbstractVerticle> clazz : getMandatoryWorkerVerticleClasses().values()) {
+			try {
+				if (log.isInfoEnabled()) {
+					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+				}
+				// TODO handle custom config? i assume we will not allow this
+				deployAndWait(Mesh.vertx(), defaultConfig, clazz, true);
 			} catch (InterruptedException e) {
 				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
 			}
@@ -245,7 +280,7 @@ public class BootstrapInitializer {
 				if (log.isInfoEnabled()) {
 					log.info("Loading configured verticle {" + verticleName + "}.");
 				}
-				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);
+				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName, false);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}

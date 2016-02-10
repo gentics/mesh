@@ -110,32 +110,28 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<TagResponse> transformToRest(InternalActionContext ac, String...languageTags) {
+	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+		Set<Observable<TagResponse>> obs = new HashSet<>();
 
-		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
-			Set<Observable<TagResponse>> obs = new HashSet<>();
+		TagResponse restTag = new TagResponse();
 
-			TagResponse restTag = new TagResponse();
+		TagFamily tagFamily = getTagFamily();
+		if (tagFamily != null) {
+			TagFamilyReference tagFamilyReference = new TagFamilyReference();
+			tagFamilyReference.setName(tagFamily.getName());
+			tagFamilyReference.setUuid(tagFamily.getUuid());
+			restTag.setTagFamily(tagFamilyReference);
+		}
+		restTag.getFields().setName(getName());
 
-			TagFamily tagFamily = getTagFamily();
-			if (tagFamily != null) {
-				TagFamilyReference tagFamilyReference = new TagFamilyReference();
-				tagFamilyReference.setName(tagFamily.getName());
-				tagFamilyReference.setUuid(tagFamily.getUuid());
-				restTag.setTagFamily(tagFamilyReference);
-			}
-			restTag.getFields().setName(getName());
+		// Add common fields
+		obs.add(fillCommonRestFields(ac, restTag));
 
-			// Add common fields
-			obs.add(fillCommonRestFields(ac, restTag));
+		// Role permissions
+		obs.add(setRolePermissions(ac, restTag));
 
-			// Role permissions
-			obs.add(setRolePermissions(ac, restTag));
-
-			// Merge and complete
-			return Observable.merge(obs).last();
-		});
+		// Merge and complete
+		return Observable.merge(obs).last();
 	}
 
 	@Override

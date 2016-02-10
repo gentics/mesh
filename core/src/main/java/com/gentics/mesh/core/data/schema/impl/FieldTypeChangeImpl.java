@@ -4,7 +4,9 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -89,47 +91,8 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
-		String newType = getFieldProperty("type");
-		if (newType != null) {
-			switch (newType) {
-			case "binary":
-				return loadAutoMigrationScript("typechange_binary.js");
-			case "boolean":
-				return loadAutoMigrationScript("typechange_boolean.js");
-			case "date":
-				return loadAutoMigrationScript("typechange_date.js");
-			case "micronode":
-				return loadAutoMigrationScript("typechange_micronode.js");
-			case "node":
-				return loadAutoMigrationScript("typechange_node.js");
-			case "number":
-				return loadAutoMigrationScript("typechange_number.js");
-			case "html":
-			case "string":
-				return loadAutoMigrationScript("typechange_string.js");
-			case "list":
-				String newListType = getFieldProperty("listType");
-				if (newListType != null) {
-					switch (newListType) {
-					case "boolean":
-						return loadAutoMigrationScript("typechange_booleanlist.js");
-					case "date":
-						return loadAutoMigrationScript("typechange_datelist.js");
-					case "micronode":
-						return loadAutoMigrationScript("typechange_micronodelist.js");
-					case "node":
-						return loadAutoMigrationScript("typechange_nodelist.js");
-					case "number":
-						return loadAutoMigrationScript("typechange_numberlist.js");
-					case "html":
-					case "string":
-						return loadAutoMigrationScript("typechange_stringlist.js");
+		return OPERATION.getAutoMigrationScript(
+				Arrays.asList("type", "listType").stream().filter(key -> getFieldProperty(key) != null)
+						.collect(Collectors.toMap(key -> key, key -> getFieldProperty(key))));
 					}
 				}
-			}
-		}
-
-		return null;
-	}
-
-}

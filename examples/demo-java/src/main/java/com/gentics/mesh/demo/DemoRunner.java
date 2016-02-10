@@ -31,8 +31,8 @@ public class DemoRunner {
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", 8080);
-			DeploymentUtil.deployAndWait(vertx, config, DemoVerticle.class);
-			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class);
+			DeploymentUtil.deployAndWait(vertx, config, DemoVerticle.class, false);
+			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class, false);
 		});
 		mesh.run();
 	}

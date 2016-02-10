@@ -326,35 +326,31 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<UserResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+		Set<Observable<UserResponse>> obs = new HashSet<>();
+		UserResponse restUser = new UserResponse();
 
-		return db.asyncNoTrxExperimental(() -> {
-			Set<Observable<UserResponse>> obs = new HashSet<>();
-			UserResponse restUser = new UserResponse();
+		restUser.setUsername(getUsername());
+		restUser.setEmailAddress(getEmailAddress());
+		restUser.setFirstname(getFirstname());
+		restUser.setLastname(getLastname());
+		restUser.setEnabled(isEnabled());
 
-			restUser.setUsername(getUsername());
-			restUser.setEmailAddress(getEmailAddress());
-			restUser.setFirstname(getFirstname());
-			restUser.setLastname(getLastname());
-			restUser.setEnabled(isEnabled());
+		// Users's node reference
+		obs.add(setNodeReference(ac, restUser));
 
-			// Users's node reference
-			obs.add(setNodeReference(ac, restUser));
+		// User's groups
+		obs.add(setGroups(ac, restUser));
 
-			// User's groups
-			obs.add(setGroups(ac, restUser));
+		// User's role permissions
+		obs.add(setRolePermissions(ac, restUser));
 
-			// User's role permissions
-			obs.add(setRolePermissions(ac, restUser));
+		// User's common fields 
+		obs.add(fillCommonRestFields(ac, restUser));
 
-			// User's common fields 
-			obs.add(fillCommonRestFields(ac, restUser));
-
-			// Wait for all async processes to complete
-			return Observable.merge(obs).last();
-			//reduce(restUser, (a, b) -> restUser);
-		});
+		// Wait for all async processes to complete
+		return Observable.merge(obs).last();
+		//reduce(restUser, (a, b) -> restUser);
 	}
 
 	private Observable<UserResponse> setGroups(InternalActionContext ac, UserResponse restUser) {

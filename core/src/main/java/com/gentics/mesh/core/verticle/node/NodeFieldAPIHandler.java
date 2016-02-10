@@ -382,7 +382,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param segmentedPath path to store the binary data
 	 * @return observable emitting the sha512 checksum
 	 */
-	protected Observable<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
+	public Observable<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");

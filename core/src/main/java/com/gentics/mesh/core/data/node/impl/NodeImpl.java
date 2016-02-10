@@ -307,10 +307,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-
-		return db.asyncNoTrxExperimental(() -> {
+	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+		try {
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
@@ -459,7 +457,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Merge and complete
 			return Observable.merge(obs).last();
-		});
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
 	}
 
 	@Override
