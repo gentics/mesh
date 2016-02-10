@@ -14,7 +14,6 @@ import org.apache.commons.io.IOUtils;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -27,6 +26,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @see SchemaChange
  */
 public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
+	
 	private static final Logger log = LoggerFactory.getLogger(AbstractSchemaChange.class);
 
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";

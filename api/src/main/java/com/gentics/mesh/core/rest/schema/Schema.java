@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.json.MeshJsonException;
-
 /**
  * Schema which is used for nodes. Various fields can be added to the schema in order build data structures for nodes.
  */
@@ -39,21 +37,6 @@ public interface Schema extends FieldSchemaContainer {
 	void setContainer(boolean flag);
 
 	/**
-	 * Return the schema description.
-	 * 
-	 * @return Schema description
-	 */
-	String getDescription();
-
-	/**
-	 * Set the description of the schema.
-	 * 
-	 * @param description
-	 *            Schema description
-	 */
-	void setDescription(String description);
-
-	/**
 	 * Return the segment field name.
 	 * 
 	 * @return
@@ -66,22 +49,5 @@ public interface Schema extends FieldSchemaContainer {
 	 * @param segmentField
 	 */
 	void setSegmentField(String segmentField);
-
-	/**
-	 * Return the schema version.
-	 * 
-	 * @return
-	 */
-	int getVersion();
-
-	/**
-	 * Set the schema version.
-	 * 
-	 * @param version
-	 */
-	void setVersion(int version);
-
-
-
 
 }

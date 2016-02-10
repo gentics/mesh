@@ -72,7 +72,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainer<?,?,?>> R getPreviousSchemaContainer();
+	<R extends GraphFieldSchemaContainer<?, ?, ?>> R getPreviousSchemaContainer();
 
 	/**
 	 * Set the <b>in-bound</b> connection from the schema change to the container.
@@ -87,7 +87,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainer<?,?,?>> R getNextContainer();
+	<R extends GraphFieldSchemaContainer<?, ?, ?>> R getNextContainer();
 
 	/**
 	 * Set the out-bound connected schema container.

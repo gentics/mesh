@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 /**
  * Change entry that contains information on how to change microschema specific attributes.
  */
-public interface UpdateMicroschemaChange extends SchemaChange<Microschema> {
+public interface UpdateMicroschemaChange extends FieldSchemaContainerUpdateChange<Microschema> {
 
 	/**
 	 * Set the field order.
@@ -23,4 +23,5 @@ public interface UpdateMicroschemaChange extends SchemaChange<Microschema> {
 	 * @return
 	 */
 	List<String> getOrder();
+	
 }

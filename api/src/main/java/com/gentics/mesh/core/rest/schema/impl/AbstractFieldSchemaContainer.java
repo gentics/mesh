@@ -1,18 +1,42 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.json.MeshJsonException;
 
 public abstract class AbstractFieldSchemaContainer implements FieldSchemaContainer {
 
+	private int version;
+	private String description;
 	private String name;
 
 	private List<FieldSchema> fields = new ArrayList<>();
+
+	@Override
+	public int getVersion() {
+		return version;
+	}
+
+	@Override
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	@Override
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
 	@Override
 	public String getName() {
@@ -66,6 +90,16 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	@Override
 	public void setFields(List<FieldSchema> fields) {
 		this.fields = fields;
+	}
+
+	@Override
+	public void validate() throws MeshJsonException {
+		if (!getFields().stream().map(field -> field.getName()).allMatch(new HashSet<>()::add)) {
+			throw new MeshJsonException("Duplicate field names detected. The name for a field must be unique.");
+		}
+		if (!getFields().stream().map(field -> field.getLabel()).allMatch(new HashSet<>()::add)) {
+			throw new MeshJsonException("Duplicate field labels detected. The label for a field must be unique.");
+		}
 	}
 
 }

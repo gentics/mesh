@@ -27,6 +27,21 @@ public interface FieldSchemaContainer extends RestModel {
 	void setName(String name);
 
 	/**
+	 * Return the container description.
+	 * 
+	 * @return Schema description
+	 */
+	String getDescription();
+
+	/**
+	 * Set the description of the container.
+	 * 
+	 * @param description
+	 *            Container description
+	 */
+	void setDescription(String description);
+
+	/**
 	 * Return the field schema with the given name.
 	 * 
 	 * @param fieldName
@@ -79,6 +94,20 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @param fields
 	 */
 	void setFields(List<FieldSchema> fields);
+
+	/**
+	 * Return the container version.
+	 * 
+	 * @return
+	 */
+	int getVersion();
+
+	/**
+	 * Set the container version.
+	 * 
+	 * @param version
+	 */
+	void setVersion(int version);
 
 	/**
 	 * Validate the schema for correctness.
