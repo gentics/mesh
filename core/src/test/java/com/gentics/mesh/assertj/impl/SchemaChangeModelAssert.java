@@ -6,6 +6,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -31,8 +33,12 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 	public SchemaChangeModelAssert hasProperty(String key, Object value) {
 		assertTrue("The property with key {" + key + "} could not be found within the change.", actual.getProperties().containsKey(key));
 		if (value instanceof String[]) {
-			assertArrayEquals("The value for the given property did not match the expected one.", (Object[]) value,
-					(Object[]) actual.getProperties().get(key));
+			Object actualValue = actual.getProperties().get(key);
+			if (actualValue instanceof List) {
+				actualValue = ((List<Object>) actualValue).toArray();
+			}
+			assertArrayEquals("The value for the given property did not match the expected one.", (Object[]) value, (Object[]) actualValue);
+
 		} else {
 			assertEquals("The value for the given property did not match the expected one.", value, actual.getProperties().get(key));
 		}

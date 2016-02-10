@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -70,8 +71,9 @@ public interface FieldSchema {
 	 * 
 	 * @param fieldSchema
 	 * @return
+	 * @throws IOException 
 	 */
-	Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema);
+	Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException;
 
 	/**
 	 * Apply the given field properties to the field schema.

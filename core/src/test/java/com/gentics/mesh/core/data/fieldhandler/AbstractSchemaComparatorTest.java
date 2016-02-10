@@ -5,7 +5,9 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -39,14 +41,16 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 	/**
 	 * Test comparing two schema fields with same properties. Assert that no change was generated.
+	 * @throws IOException 
 	 */
-	public abstract void testSameField();
+	public abstract void testSameField() throws IOException;
 
 	/**
 	 * Test adding a field to a schema and assert that the expected change was generated.
+	 * @throws IOException 
 	 */
 	@Test
-	public void testAddField() {
+	public void testAddField() throws IOException {
 		C containerA = createContainer();
 		C containerB = createContainer();
 		containerB.addField(createField("test"));
@@ -59,9 +63,10 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 	/**
 	 * Test removing a field from a schema and assert that the expected change was generated.
+	 * @throws IOException 
 	 */
 	@Test
-	public void testRemoveField() {
+	public void testRemoveField() throws IOException {
 		C containerA = createContainer();
 		containerA.addField(createField("test"));
 
@@ -70,18 +75,21 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(REMOVEFIELD).forField("test");
+		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
 	}
 
 	/**
 	 * Test updating the properties of a field and assert that the expected change was generated.
+	 * @throws IOException 
 	 */
-	public abstract void testUpdateField();
+	public abstract void testUpdateField() throws IOException;
 
 	/**
 	 * Test changing the field type in between two fields and assert that the expected change was generated.
+	 * @throws IOException 
 	 */
 	@Test
-	public void testChangeFieldType() {
+	public void testChangeFieldType() throws IOException {
 
 		C containerA = createContainer();
 		T fieldA = createField("test");
@@ -105,6 +113,7 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 		if ("list".equals(newType)) {
 			assertThat(changes.get(0)).hasProperty("listType", "html");
 		}
+		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
 
 	}
 

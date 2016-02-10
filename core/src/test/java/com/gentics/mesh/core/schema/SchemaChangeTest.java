@@ -71,10 +71,10 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 			change.setOperation(UPDATEFIELD);
 			if (oldChange == null) {
 				oldChange = change;
-				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousSchemaContainer());
+				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainer());
 				containerA.setNextChange(oldChange);
 				assertNotNull("The change has been connected to the schema container and thus the connection should be loadable",
-						oldChange.getPreviousSchemaContainer());
+						oldChange.getPreviousContainer());
 			} else {
 				oldChange.setNextChange(change);
 				oldChange = change;
@@ -104,7 +104,7 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 
 		assertEquals("The last change should be connected to the containerB but it was not.", containerB.getUuid(),
 				lastChange.getNextContainer().getUuid());
-		assertNull("The change has no from schema container because it it part of a chain of changes.", lastChange.getPreviousSchemaContainer());
+		assertNull("The change has no from schema container because it it part of a chain of changes.", lastChange.getPreviousContainer());
 
 		assertEquals("The previous change of the schema that was connected to the last change did not match the last change.", lastChange.getUuid(),
 				lastChange.getNextContainer().getPreviousChange().getUuid());
@@ -114,9 +114,9 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaChange firstChange = containerA.getNextChange();
 		firstChange.setPreviousContainer(containerC);
 		assertNotEquals("The first change should no longer be connected to containerA", containerA.getUuid(),
-				firstChange.getPreviousSchemaContainer().getUuid());
+				firstChange.getPreviousContainer().getUuid());
 		assertEquals("The chain of changes should now be connected to containerC", containerC.getUuid(),
-				firstChange.getPreviousSchemaContainer().getUuid());
+				firstChange.getPreviousContainer().getUuid());
 
 		// Check next version
 		assertNotNull("Container A should have a next version.", containerA.getNextVersion());

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +33,7 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
 		if (fieldSchema instanceof MicronodeFieldSchema) {
 			MicronodeFieldSchema micronodeFieldSchema = (MicronodeFieldSchema) fieldSchema;
 
@@ -49,6 +50,7 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 			}
 
 			if (modified) {
+				change.loadMigrationScript();
 				return Optional.of(change);
 			}
 		} else {

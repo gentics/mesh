@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -72,7 +73,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
 		if (fieldSchema instanceof ListFieldSchema) {
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 
@@ -99,6 +100,7 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 			// max
 
 			if (modified) {
+				change.loadMigrationScript();
 				return Optional.of(change);
 			}
 		} else {

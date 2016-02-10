@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -22,7 +23,7 @@ public class SchemaComparatorMicroschemaTest extends AbstractDBTest {
 	private MicroschemaComparator comparator;
 
 	@Test
-	public void testEmptyMicroschema() {
+	public void testEmptyMicroschema() throws IOException {
 		Microschema schemaA = new MicroschemaImpl();
 		Microschema schemaB = new MicroschemaImpl();
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -30,7 +31,7 @@ public class SchemaComparatorMicroschemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSchemaFieldReorder() {
+	public void testSchemaFieldReorder() throws IOException {
 		Microschema schemaA = new MicroschemaImpl();
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));

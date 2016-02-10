@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -17,11 +18,11 @@ public class DateFieldSchemaImpl extends AbstractFieldSchema implements DateFiel
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
 		if (fieldSchema instanceof DateFieldSchema) {
 			DateFieldSchema dateFieldSchema = (DateFieldSchema) fieldSchema;
 			SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldSchema.getName());
-
+			change.loadMigrationScript();
 			if (compareRequiredField(change, dateFieldSchema, false)) {
 				return Optional.of(change);
 			}

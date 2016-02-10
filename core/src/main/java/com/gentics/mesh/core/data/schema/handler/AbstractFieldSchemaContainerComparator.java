@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	@Autowired
 	protected FieldSchemaComparator fieldComparator;
 
-	public List<SchemaChangeModel> diff(FC containerA, FC containerB) {
+	public List<SchemaChangeModel> diff(FC containerA, FC containerB) throws IOException {
 		Objects.requireNonNull(containerA, "containerA must not be null");
 		Objects.requireNonNull(containerB, "containerB must not be null");
 
@@ -44,7 +45,9 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInA.getName() + " was removed.");
 				}
-				changes.add(new SchemaChangeModel(REMOVEFIELD, fieldInA.getName()));
+				SchemaChangeModel change = new SchemaChangeModel(REMOVEFIELD, fieldInA.getName());
+				change.loadMigrationScript();
+				changes.add(change);
 			}
 		}
 

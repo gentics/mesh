@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.schema.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ public class MicroschemaComparator extends AbstractFieldSchemaContainerComparato
 	private static final Logger log = LoggerFactory.getLogger(MicroschemaComparator.class);
 
 	@Override
-	public List<SchemaChangeModel> diff(Microschema containerA, Microschema containerB) {
+	public List<SchemaChangeModel> diff(Microschema containerA, Microschema containerB) throws IOException {
 		return super.diff(containerA, containerB);
 	}
 

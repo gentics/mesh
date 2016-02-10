@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -75,13 +76,15 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	 * 
 	 * @param fieldSchema
 	 * @return
+	 * @throws IOException 
 	 */
-	protected Optional<SchemaChangeModel> createTypeChange(FieldSchema fieldSchema) {
+	protected Optional<SchemaChangeModel> createTypeChange(FieldSchema fieldSchema) throws IOException {
 		SchemaChangeModel change = new SchemaChangeModel(CHANGEFIELDTYPE, fieldSchema.getName());
 		change.getProperties().put("newType", fieldSchema.getType());
 		if (fieldSchema instanceof ListFieldSchema) {
 			change.getProperties().put("listType", ((ListFieldSchema) fieldSchema).getListType());
 		}
+		change.loadMigrationScript();
 		return Optional.of(change);
 	}
 

@@ -61,7 +61,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public <R extends GraphFieldSchemaContainer<?,?,?>> R getPreviousSchemaContainer() {
+	public <R extends GraphFieldSchemaContainer<?,?,?>> R getPreviousContainer() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 

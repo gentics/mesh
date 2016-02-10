@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,7 +26,7 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 	private static final Logger log = LoggerFactory.getLogger(SchemaComparator.class);
 
 	@Override
-	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) {
+	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) throws IOException {
 		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB);
 
 		// segmentField

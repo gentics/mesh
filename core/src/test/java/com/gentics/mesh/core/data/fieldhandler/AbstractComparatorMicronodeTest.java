@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -22,7 +23,7 @@ public abstract class AbstractComparatorMicronodeTest<C extends FieldSchemaConta
 
 	@Test
 	@Override
-	public void testSameField() {
+	public void testSameField() throws IOException {
 		C containerA = createContainer();
 		C containerB = createContainer();
 
@@ -44,7 +45,7 @@ public abstract class AbstractComparatorMicronodeTest<C extends FieldSchemaConta
 
 	@Test
 	@Override
-	public void testUpdateField() {
+	public void testUpdateField() throws IOException {
 		C containerA = createContainer();
 		C containerB = createContainer();
 

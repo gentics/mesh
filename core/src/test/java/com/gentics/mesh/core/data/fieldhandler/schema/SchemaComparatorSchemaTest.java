@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
@@ -24,7 +25,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	private SchemaComparator comparator;
 
 	@Test
-	public void testEmptySchema() {
+	public void testEmptySchema() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -32,7 +33,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSchemaFieldReorder() {
+	public void testSchemaFieldReorder() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));
@@ -46,7 +47,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSchemaFieldNoReorder() {
+	public void testSchemaFieldNoReorder() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));
@@ -59,7 +60,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSegmentFieldAdded() {
+	public void testSegmentFieldAdded() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaB.setSegmentField("someSegement");
@@ -68,7 +69,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSegmentFieldRemoved() {
+	public void testSegmentFieldRemoved() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setSegmentField("someSegement");
@@ -77,7 +78,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSegmentFieldSame() {
+	public void testSegmentFieldSame() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setSegmentField("someSegement");
@@ -87,7 +88,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testSegmentFieldUpdated() {
+	public void testSegmentFieldUpdated() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setSegmentField("test123");
@@ -97,7 +98,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testDisplayFieldAdded() {
+	public void testDisplayFieldAdded() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaB.setDisplayField("someField");
@@ -106,7 +107,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testDisplayFieldRemoved() {
+	public void testDisplayFieldRemoved() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setDisplayField("someField");
@@ -115,7 +116,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testDisplayFieldUpdated() {
+	public void testDisplayFieldUpdated() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setDisplayField("someField");
@@ -125,7 +126,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testDisplayFieldSame() {
+	public void testDisplayFieldSame() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setDisplayField("someField");
@@ -135,7 +136,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testContainerFlagUpdated() {
+	public void testContainerFlagUpdated() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setContainer(true);
@@ -145,7 +146,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testContainerFlagSame() {
+	public void testContainerFlagSame() throws IOException {
 		Schema schemaA = new SchemaImpl();
 		Schema schemaB = new SchemaImpl();
 		schemaA.setContainer(true);

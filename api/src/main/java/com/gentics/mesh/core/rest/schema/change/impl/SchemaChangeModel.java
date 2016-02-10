@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema.change.impl;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -131,6 +132,15 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public void setMigrationScript(String migrationScript) {
 		this.migrationScript = migrationScript;
+	}
+
+	/**
+	 * Load the default (auto) migration script for the operation of the change.
+	 * 
+	 * @throws IOException
+	 */
+	public void loadMigrationScript() throws IOException {
+		setMigrationScript(getOperation().getAutoMigrationScript(getProperties()));
 	}
 
 }

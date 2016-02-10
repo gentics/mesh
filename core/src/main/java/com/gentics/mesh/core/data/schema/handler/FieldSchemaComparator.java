@@ -1,13 +1,15 @@
 package com.gentics.mesh.core.data.schema.handler;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * The field schema comparator can be used to compare two field schemas with each other.
@@ -21,14 +23,17 @@ public class FieldSchemaComparator {
 	 * @param fieldSchemaA
 	 * @param fieldSchemaB
 	 * @return
+	 * @throws IOException
 	 */
-	public Optional<SchemaChangeModel> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
+	public Optional<SchemaChangeModel> compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) throws IOException {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
 			return fieldSchemaA.compareTo(fieldSchemaB);
 		} else if (fieldSchemaA != null && fieldSchemaB == null) {
-			return Optional.of(new SchemaChangeModel(SchemaChangeOperation.REMOVEFIELD));
+			SchemaChangeModel change = new SchemaChangeModel(REMOVEFIELD);
+			change.loadMigrationScript();
+			return Optional.of(change);
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
-			return Optional.of(new SchemaChangeModel(SchemaChangeOperation.ADDFIELD));
+			return Optional.of(new SchemaChangeModel(ADDFIELD));
 		}
 
 		return Optional.empty();

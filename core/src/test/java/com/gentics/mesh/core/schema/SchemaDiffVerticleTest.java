@@ -128,8 +128,10 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
 		assertNotNull(changes);
-		assertThat(changes.getChanges()).hasSize(1);
+		assertThat(changes.getChanges()).hasSize(2);
 		assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("content");
+		assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "name", "filename", "title" });
+		assertNotNull("A default migration script should have been added to the change.", changes.getChanges().get(0).getMigrationScript());
 	}
 
 }

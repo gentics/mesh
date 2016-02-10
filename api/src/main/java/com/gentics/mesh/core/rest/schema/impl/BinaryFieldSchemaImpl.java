@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	}
 
 	@Override
-	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) {
+	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
 		if (fieldSchema instanceof BinaryFieldSchema) {
 			BinaryFieldSchema binaryFieldSchema = (BinaryFieldSchema) fieldSchema;
 
@@ -50,6 +51,7 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 			}
 
 			if (modified) {
+				change.loadMigrationScript();
 				return Optional.of(change);
 			}
 		} else {
