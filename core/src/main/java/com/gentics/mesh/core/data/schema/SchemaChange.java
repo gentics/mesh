@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.util.Tuple;
 
 /**
- * A schema change represents a single manipulation of a schema.
+ * A schema change represents a single manipulation of a field container (eg. Schema, Microschema).
  * 
  * <pre>
  * {@code
@@ -18,7 +20,7 @@ import com.gentics.mesh.util.Tuple;
  * }
  * </pre>
  */
-public interface SchemaChange extends MeshVertex {
+public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex {
 
 	/**
 	 * Set the schema change operation.
@@ -26,7 +28,7 @@ public interface SchemaChange extends MeshVertex {
 	 * @param action
 	 * @return Fluent
 	 */
-	SchemaChange setOperation(SchemaChangeOperation action);
+	SchemaChange<T> setOperation(SchemaChangeOperation action);
 
 	/**
 	 * Return the schema change operation.
@@ -40,7 +42,7 @@ public interface SchemaChange extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	SchemaChange getNextChange();
+	SchemaChange<?> getNextChange();
 
 	/**
 	 * Set the next change.
@@ -48,14 +50,14 @@ public interface SchemaChange extends MeshVertex {
 	 * @param change
 	 * @return
 	 */
-	SchemaChange setNextChange(SchemaChange change);
+	SchemaChange<T> setNextChange(SchemaChange<?> change);
 
 	/**
 	 * Return the previous schema change.
 	 * 
 	 * @return
 	 */
-	SchemaChange getPreviousChange();
+	SchemaChange<?> getPreviousChange();
 
 	/**
 	 * Set the previous change.
@@ -63,14 +65,14 @@ public interface SchemaChange extends MeshVertex {
 	 * @param change
 	 * @return
 	 */
-	SchemaChange setPreviousChange(SchemaChange change);
+	SchemaChange<T> setPreviousChange(SchemaChange<?> change);
 
 	/**
 	 * Return the <b>in-bound</b> connected schema container.
 	 * 
 	 * @return
 	 */
-	SchemaContainer getPreviousSchemaContainer();
+	GraphFieldSchemaContainer<?, ?, ?> getPreviousSchemaContainer();
 
 	/**
 	 * Set the <b>in-bound</b> connection from the schema change to the container.
@@ -78,14 +80,14 @@ public interface SchemaChange extends MeshVertex {
 	 * @param container
 	 * @return Fluent API
 	 */
-	SchemaChange setPreviousSchemaContainer(SchemaContainer container);
+	SchemaChange<T> setPreviousContainer(GraphFieldSchemaContainer<?, ?, ?> container);
 
 	/**
 	 * Return the out-bound connected schema container.
 	 * 
 	 * @return
 	 */
-	SchemaContainer getNextSchemaContainer();
+	GraphFieldSchemaContainer<?, ?, ?> getNextContainer();
 
 	/**
 	 * Set the out-bound connected schema container.
@@ -93,7 +95,7 @@ public interface SchemaChange extends MeshVertex {
 	 * @param container
 	 * @return
 	 */
-	SchemaChange setNextSchemaContainer(SchemaContainer container);
+	SchemaChange<T> setNextSchemaContainer(GraphFieldSchemaContainer<?, ?, ?> container);
 
 	/**
 	 * Get the migration script for the change. May either be a custom script or an automatically created
@@ -125,16 +127,17 @@ public interface SchemaChange extends MeshVertex {
 	 *            migration script
 	 * @return fluent API
 	 */
-	SchemaChange setCustomMigrationScript(String migrationScript);
+	SchemaChange<T> setCustomMigrationScript(String migrationScript);
 
 	/**
-	 * Apply the current change on the schema.
 	 * 
-	 * @param schema
-	 *            Schema to be modified
+	 * Apply the current change on the field schema container (eg. {@link Schema} or {@link Microschema}).
+	 * 
+	 * @param container
+	 *            Field container to be modified
 	 * @return Modified schema
 	 */
-	Schema apply(Schema schema);
+	T apply(T container);
 
 	/**
 	 * Set the change specific properties by examining the rest change model.

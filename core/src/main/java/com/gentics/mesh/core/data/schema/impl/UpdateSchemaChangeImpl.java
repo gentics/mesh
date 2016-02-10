@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 /**
  * @see UpdateSchemaChange
  */
-public class UpdateSchemaChangeImpl extends AbstractSchemaChange implements UpdateSchemaChange {
+public class UpdateSchemaChangeImpl extends AbstractSchemaChange<Schema> implements UpdateSchemaChange {
 
 	private static final String SEGMENT_FIELD_KEY = "segmentFieldname";
 	private static final String CONTAINER_FIELD_KEY = "containerFieldname";

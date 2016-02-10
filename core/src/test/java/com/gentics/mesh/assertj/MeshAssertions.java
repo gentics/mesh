@@ -2,6 +2,7 @@ package com.gentics.mesh.assertj;
 
 import org.assertj.core.api.Assertions;
 
+import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -105,6 +107,10 @@ public class MeshAssertions extends Assertions {
 
 	public static NodeAssert assertThat(Node actual) {
 		return new NodeAssert(actual);
+	}
+
+	public static FieldSchemaContainerAssert assertThat(FieldSchemaContainer actual) {
+		return new FieldSchemaContainerAssert(actual);
 	}
 
 	public static SchemaContainerAssert assertThat(SchemaContainer actual) {

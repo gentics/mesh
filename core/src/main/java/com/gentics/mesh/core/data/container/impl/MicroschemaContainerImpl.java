@@ -10,8 +10,8 @@ import java.io.IOException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
@@ -27,10 +27,15 @@ import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Observable;
 
-public class MicroschemaContainerImpl extends AbstractMeshCoreVertex<MicroschemaResponse, MicroschemaContainer> implements MicroschemaContainer {
+public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaContainer, MicroschemaReference>
+		implements MicroschemaContainer {
 
 	private static final String NAME_PROPERTY_KEY = "name";
-	private static final String DESCRIPTION_PROPERTY_KEY = "description";
+
+	@Override
+	protected Class<MicroschemaContainerImpl> getContainerClass() {
+		return MicroschemaContainerImpl.class;
+	}
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(MicroschemaContainerImpl.class);

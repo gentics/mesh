@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
@@ -20,11 +20,11 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEFIELD;
 
 	@Override
-	public Schema apply(Schema schema) {
-		Optional<FieldSchema> fieldSchema = schema.getFieldSchema(getFieldName());
+	public FieldSchemaContainer apply(FieldSchemaContainer container) {
+		Optional<FieldSchema> fieldSchema = container.getFieldSchema(getFieldName());
 
 		if (!fieldSchema.isPresent()) {
-			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + schema.getName() + "}");
+			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "}");
 		}
 		// Remove prefix from map keys
 		Map<String, Object> properties = new HashMap<>();
@@ -34,7 +34,7 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 			properties.put(key, value);
 		}
 		fieldSchema.get().apply(properties);
-		return schema;
+		return container;
 	}
 
 }

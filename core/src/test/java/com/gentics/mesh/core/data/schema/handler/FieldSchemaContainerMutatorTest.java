@@ -8,6 +8,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -24,6 +26,7 @@ import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -45,10 +48,10 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaMutatorTest extends AbstractEmptyDBTest {
+public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Autowired
-	private SchemaMutator mutator;
+	private FieldSchemaContainerMutator mutator;
 
 	@Test
 	public void testNullOperation() {
@@ -63,7 +66,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("name");
 		change.setType("html");
-		Schema updatedSchema = mutator.apply(schema, change);
+		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
 		assertThat(updatedSchema).hasField("name");
 	}
 
@@ -79,7 +82,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		change.setOrder("second", "first");
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(schema, change);
+		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
 		assertEquals(2, updatedSchema.getFields().size());
 		assertEquals("The first field should now be the field with name \"second\".", "second", updatedSchema.getFields().get(0).getName());
 		assertEquals("The second field should now be the field with the name \"first\".", "first", updatedSchema.getFields().get(1).getName());
@@ -98,7 +101,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		change.setFieldName("test");
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(schema, change);
+		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
 
 		assertThat(updatedSchema).hasNoField("test");
 	}
@@ -110,7 +113,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		change.setFieldName("test");
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(schema, change);
+		FieldSchemaContainer updatedContainer = mutator.apply(schema, Arrays.asList(change));
 
 		fail("TODO define result");
 	}
@@ -213,8 +216,8 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		listFieldUpdate.setFieldProperty("required", false);
 
 		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(schema, binaryFieldUpdate, nodeFieldUpdate, stringFieldUpdate, htmlFieldUpdate, numberFieldUpdate,
-				dateFieldUpdate, booleanFieldUpdate, booleanFieldUpdate, micronodeFieldUpdate, listFieldUpdate);
+		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(binaryFieldUpdate, nodeFieldUpdate, stringFieldUpdate, htmlFieldUpdate, numberFieldUpdate,
+				dateFieldUpdate, booleanFieldUpdate, booleanFieldUpdate, micronodeFieldUpdate, listFieldUpdate));
 
 		// Binary 
 		BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
@@ -279,7 +282,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		fieldTypeUpdate.setFieldProperty("newType", "html");
 
 		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(schema, fieldTypeUpdate);
+		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(fieldTypeUpdate));
 		assertNotNull(updatedSchema);
 		assertEquals("html", updatedSchema.getField("stringField").getType());
 
@@ -303,7 +306,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		fieldTypeUpdate.setFieldProperty("listType", "html");
 
 		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(schema, fieldTypeUpdate);
+		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(fieldTypeUpdate));
 		assertNotNull(updatedSchema);
 		ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
 		assertEquals("list", fieldSchema.getType());
@@ -330,7 +333,7 @@ public class SchemaMutatorTest extends AbstractEmptyDBTest {
 		change.setSegmentField("newSegmentField");
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(schema, change);
+		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
 		assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 		assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
 		assertTrue("The schema container flag was not updated", updatedSchema.isContainer());

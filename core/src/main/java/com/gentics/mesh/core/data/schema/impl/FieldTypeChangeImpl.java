@@ -8,8 +8,8 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -27,16 +27,17 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
 
+	
 	/**
 	 * Apply the field type change to the specified schema.
 	 */
 	@Override
-	public Schema apply(Schema schema) {
-		Optional<FieldSchema> fieldSchema = schema.getFieldSchema(getFieldName());
+	public FieldSchemaContainer apply(FieldSchemaContainer container) {
+		Optional<FieldSchema> fieldSchema = container.getFieldSchema(getFieldName());
 
 		if (!fieldSchema.isPresent()) {
 			throw error(BAD_REQUEST,
-					"Could not find schema field {" + getFieldName() + "} within schema {" + schema.getName() + "} for change {" + getUuid() + "}");
+					"Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "} for change {" + getUuid() + "}");
 		}
 
 		FieldSchema field = null;
@@ -77,13 +78,13 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			field.setLabel(fieldSchema.get().getLabel());
 			field.setName(fieldSchema.get().getName());
 			// Remove the old field
-			schema.removeField(fieldSchema.get().getName());
+			container.removeField(fieldSchema.get().getName());
 			// Add the new field
-			schema.addField(field);
+			container.addField(field);
 		} else {
 			throw error(BAD_REQUEST, "New type was not specified for change {" + getUuid() + "}");
 		}
-		return schema;
+		return container;
 	}
 
 	@Override

@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.schema.SchemaFieldChange;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.util.Tuple;
 
 /**
  * @see SchemaFieldChange
  */
-public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange implements SchemaFieldChange {
+public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange<FieldSchemaContainer> implements SchemaFieldChange {
 
 	private static final String FIELDNAME_KEY = "fieldName";
 

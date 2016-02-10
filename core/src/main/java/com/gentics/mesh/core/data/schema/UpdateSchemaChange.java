@@ -2,10 +2,12 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.List;
 
+import com.gentics.mesh.core.rest.schema.Schema;
+
 /**
  * Change entry that contains information on how to change schema specific attributes.
  */
-public interface UpdateSchemaChange extends SchemaChange {
+public interface UpdateSchemaChange extends SchemaChange<Schema> {
 
 	/**
 	 * Set the displayField name.

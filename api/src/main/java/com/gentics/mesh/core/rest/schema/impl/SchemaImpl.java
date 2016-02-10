@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.MeshJsonException;
 
-public class SchemaImpl extends AbstractFieldSchemaContainer implements RestModel, Schema {
+public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 
 	private int version;
 	private String description;

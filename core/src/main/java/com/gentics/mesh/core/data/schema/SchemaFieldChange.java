@@ -2,10 +2,12 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.Map;
 
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+
 /**
  * Common field change class which may be used for changes that target a specific field.
  */
-public interface SchemaFieldChange extends SchemaChange {
+public interface SchemaFieldChange extends SchemaChange<FieldSchemaContainer> {
 
 	/**
 	 * Set the name of the field which should be handled.

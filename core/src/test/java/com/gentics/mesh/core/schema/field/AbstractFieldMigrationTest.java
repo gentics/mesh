@@ -102,7 +102,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// link the schemas with the change in between
 		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName(removedFieldName);
-		change.setPreviousSchemaContainer(containerA);
+		change.setPreviousContainer(containerA);
 		change.setNextSchemaContainer(containerB);
 		containerA.setNextVersion(containerB);
 
@@ -176,7 +176,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		RemoveFieldChange removeFieldChange = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
 
-		addFieldChange.setPreviousSchemaContainer(containerA);
+		addFieldChange.setPreviousContainer(containerA);
 		addFieldChange.setNextChange(removeFieldChange);
 		removeFieldChange.setNextSchemaContainer(containerB);
 		containerA.setNextVersion(containerB);
@@ -244,7 +244,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		if (newFieldSchema instanceof ListFieldSchema) {
 			change.setFieldProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
 		}
-		change.setPreviousSchemaContainer(containerA);
+		change.setPreviousContainer(containerA);
 		change.setNextSchemaContainer(containerB);
 		containerA.setNextVersion(containerB);
 

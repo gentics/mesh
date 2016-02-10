@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.schema.AddFieldChange;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -30,24 +30,26 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 	}
 
 	@Override
-	public Schema apply(Schema schema) {
+	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 
+		//TODO prevent adding fields to micronodes which are not supported?
+		
 		//TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
 		switch (getType()) {
 		case "html":
-			schema.addField(new HtmlFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new HtmlFieldSchemaImpl().setName(getFieldName()));
 			break;
 		case "string":
-			schema.addField(new StringFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new StringFieldSchemaImpl().setName(getFieldName()));
 			break;
 		case "number":
-			schema.addField(new NumberFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new NumberFieldSchemaImpl().setName(getFieldName()));
 			break;
 
 		default:
 			throw error(BAD_REQUEST, "Unknown type");
 		}
-		return schema;
+		return container;
 	}
 
 }

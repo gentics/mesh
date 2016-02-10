@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import java.io.IOException;
 
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
@@ -14,9 +14,9 @@ public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.REMOVEFIELD;
 
 	@Override
-	public Schema apply(Schema schema) {
-		schema.removeField(getFieldName());
-		return schema;
+	public FieldSchemaContainer apply(FieldSchemaContainer container) {
+		container.removeField(getFieldName());
+		return container;
 	}
 
 	@Override

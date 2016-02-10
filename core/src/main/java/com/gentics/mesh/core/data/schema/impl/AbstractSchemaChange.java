@@ -12,8 +12,10 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
@@ -24,7 +26,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see SchemaChange
  */
-public abstract class AbstractSchemaChange extends MeshVertexImpl implements SchemaChange {
+public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
 	private static final Logger log = LoggerFactory.getLogger(AbstractSchemaChange.class);
 
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
@@ -36,23 +38,23 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 	}
 
 	@Override
-	public SchemaChange getNextChange() {
+	public SchemaChange<?> getNextChange() {
 		return (SchemaChange) out(HAS_CHANGE).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange setNextChange(SchemaChange change) {
+	public SchemaChange<T> setNextChange(SchemaChange<?> change) {
 		setUniqueLinkOutTo(change.getImpl(), HAS_CHANGE);
 		return this;
 	}
 
 	@Override
-	public SchemaChange getPreviousChange() {
+	public SchemaChange<?> getPreviousChange() {
 		return (SchemaChange) in(HAS_CHANGE).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange setPreviousChange(SchemaChange change) {
+	public SchemaChange<T> setPreviousChange(SchemaChange<?> change) {
 		setUniqueLinkInTo(change.getImpl(), HAS_CHANGE);
 		return this;
 	}
@@ -74,18 +76,18 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 	}
 
 	@Override
-	public SchemaChange setPreviousSchemaContainer(SchemaContainer container) {
+	public SchemaChange<T> setPreviousContainer(GraphFieldSchemaContainer<?, ?, ?> container) {
 		setSingleLinkInTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public SchemaContainer getNextSchemaContainer() {
+	public SchemaContainer getNextContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
 
 	@Override
-	public SchemaChange setNextSchemaContainer(SchemaContainer container) {
+	public SchemaChange<T> setNextSchemaContainer(GraphFieldSchemaContainer<?, ?, ?> container) {
 		setSingleLinkOutTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
@@ -105,7 +107,7 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 	}
 
 	@Override
-	public SchemaChange setCustomMigrationScript(String migrationScript) {
+	public SchemaChange<T> setCustomMigrationScript(String migrationScript) {
 		setProperty(MIGRATION_SCRIPT_PROPERTY_KEY, migrationScript);
 		return this;
 	}
@@ -122,7 +124,9 @@ public abstract class AbstractSchemaChange extends MeshVertexImpl implements Sch
 
 	/**
 	 * Load the automatic migration script with given name
-	 * @param scriptName script name
+	 * 
+	 * @param scriptName
+	 *            script name
 	 * @return script file contents
 	 * @throws IOException
 	 */

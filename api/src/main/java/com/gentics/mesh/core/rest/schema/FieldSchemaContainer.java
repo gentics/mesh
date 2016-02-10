@@ -3,10 +3,12 @@ package com.gentics.mesh.core.rest.schema;
 import java.util.List;
 import java.util.Optional;
 
+import com.gentics.mesh.core.rest.common.RestModel;
+
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
  */
-public interface FieldSchemaContainer {
+public interface FieldSchemaContainer extends RestModel {
 
 	/**
 	 * Return the name of the container.

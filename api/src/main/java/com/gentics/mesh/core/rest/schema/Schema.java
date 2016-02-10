@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.schema;
 
-import java.util.List;
-
 import com.gentics.mesh.json.MeshJsonException;
 
 /**

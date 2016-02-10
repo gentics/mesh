@@ -10,12 +10,14 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
  * Assert for a schema container
  */
 public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, SchemaContainer> {
+
 	public SchemaContainerAssert(SchemaContainer actual) {
 		super(actual, SchemaContainerAssert.class);
 	}
 
 	/**
-	 * Assert equality
+	 * Assert equality by comparing name and version of the container.
+	 * 
 	 * @param container
 	 * @return
 	 */

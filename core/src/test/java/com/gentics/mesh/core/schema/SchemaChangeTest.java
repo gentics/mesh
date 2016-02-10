@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
@@ -24,7 +25,7 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainer containerC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
-		SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		assertNull("The previous change should be null since we did not link it to any schema container.", containerA.getPreviousChange());
 		assertNull("The next change should be null since we did not link it to any schema container.", containerA.getNextChange());
 
@@ -65,9 +66,9 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		}
 
 		containerA.setNextVersion(containerB);
-		assertNull(oldChange.getNextSchemaContainer());
+		assertNull(oldChange.getNextContainer());
 		oldChange.setNextSchemaContainer(containerB);
-		assertNotNull(oldChange.getNextSchemaContainer());
+		assertNotNull(oldChange.getNextContainer());
 		assertNotNull("The containerA should have a next change", containerA.getNextChange());
 		assertNull("The container should not have any previous change", containerA.getPreviousChange());
 		SchemaChange secondLastChange = containerA.getNextChange().getNextChange();
@@ -77,16 +78,16 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 				lastChange.getPreviousChange().getUuid());
 
 		assertEquals("The last change should be connected to the containerB but it was not.", containerB.getUuid(),
-				lastChange.getNextSchemaContainer().getUuid());
+				lastChange.getNextContainer().getUuid());
 		assertNull("The change has no from schema container because it it part of a chain of changes.", lastChange.getPreviousSchemaContainer());
 
 		assertEquals("The previous change of the schema that was connected to the last change did not match the last change.", lastChange.getUuid(),
-				lastChange.getNextSchemaContainer().getPreviousChange().getUuid());
+				lastChange.getNextContainer().getPreviousChange().getUuid());
 
 		// Link the chain root to another schema container instead.
 		SchemaContainer containerC = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaChange firstChange = containerA.getNextChange();
-		firstChange.setPreviousSchemaContainer(containerC);
+		firstChange.setPreviousContainer(containerC);
 		assertNotEquals("The first change should no longer be connected to containerA", containerA.getUuid(),
 				firstChange.getPreviousSchemaContainer().getUuid());
 		assertEquals("The chain of changes should now be connected to containerC", containerC.getUuid(),

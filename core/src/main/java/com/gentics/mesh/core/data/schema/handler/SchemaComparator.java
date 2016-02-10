@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 
 import java.util.ArrayList;
@@ -9,9 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -28,62 +24,13 @@ import io.vertx.core.logging.LoggerFactory;
  *
  */
 @Component
-public class SchemaComparator {
+public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Schema> {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaComparator.class);
 
-	@Autowired
-	private FieldSchemaComparator fieldComparator;
-
+	@Override
 	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) {
-		Objects.requireNonNull(schemaA, "The schema must not be null");
-		Objects.requireNonNull(schemaB, "The schema must not be null");
-
-		List<SchemaChangeModel> changes = new ArrayList<>();
-
-		// Diff the fields
-		Map<String, FieldSchema> schemaAFields = transformFieldsToMap(schemaA);
-		Map<String, FieldSchema> schemaBFields = transformFieldsToMap(schemaB);
-
-		for (FieldSchema fieldInA : schemaA.getFields()) {
-			// Check whether the field was removed in schemaB
-			boolean wasRemoved = !schemaBFields.containsKey(fieldInA.getName());
-			if (wasRemoved) {
-				if (log.isDebugEnabled()) {
-					log.debug("Field " + fieldInA.getName() + " was removed.");
-				}
-				changes.add(new SchemaChangeModel(REMOVEFIELD, fieldInA.getName()));
-			}
-		}
-
-		for (FieldSchema fieldInB : schemaB.getFields()) {
-			FieldSchema fieldInA = schemaAFields.get(fieldInB.getName());
-
-			// Check whether the field was added in schemaB 
-			if (fieldInA == null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Field " + fieldInB.getName() + " was added.");
-				}
-				changes.add(new SchemaChangeModel(ADDFIELD, fieldInB.getName()));
-			} else {
-				// Field was not added or removed. It exists in both schemas. Lets see whether it changed
-				Optional<SchemaChangeModel> change = fieldComparator.compare(fieldInA, fieldInB);
-				// Change detected so lets add it to the list of changes
-				if (change.isPresent()) {
-					if (log.isDebugEnabled()) {
-						log.debug("Field " + fieldInB.getName() + " was modified.");
-					}
-					changes.add(change.get());
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Field " + fieldInB.getName() + " did not change.");
-					}
-				}
-			}
-		}
-
-		// order of fields
-		compareAndAddOrderChange(changes, schemaA, schemaB);
+		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB);
 
 		// segmentField
 		compareAndAddSchemaProperty(changes, "segmentField", schemaA.getSegmentField(), schemaB.getSegmentField());
@@ -95,43 +42,6 @@ public class SchemaComparator {
 		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer());
 
 		return changes;
-	}
-
-	/**
-	 * Compare the schemas field order and determine whether the order of the listed fields was changed.
-	 * 
-	 * @param changes
-	 * @param schemaA
-	 * @param schemaB
-	 */
-	private void compareAndAddOrderChange(List<SchemaChangeModel> changes, Schema schemaA, Schema schemaB) {
-		boolean hasChanges = false;
-
-		List<String> fieldNames = new ArrayList<>();
-		for (FieldSchema fieldSchema : schemaB.getFields()) {
-			fieldNames.add(fieldSchema.getName());
-		}
-
-		// The order has changed if the field size is different
-		if (schemaB.getFields().size() != schemaA.getFields().size()) {
-			hasChanges = true;
-		} else {
-			// Field size is same. Lets compare the names per index
-			for (int i = 0; i < schemaA.getFields().size(); i++) {
-				hasChanges = !fieldNames.get(i).equals(schemaA.getFields().get(i).getName());
-				if (hasChanges) {
-					break;
-				}
-			}
-		}
-
-		if (hasChanges) {
-			SchemaChangeModel change = new SchemaChangeModel();
-			change.setOperation(UPDATESCHEMA);
-			change.getProperties().put("order", fieldNames.toArray());
-			changes.add(change);
-		}
-
 	}
 
 	/**
@@ -150,18 +60,4 @@ public class SchemaComparator {
 		}
 	}
 
-	/**
-	 * Transform the fields of the schema into a map in which the key is the name of the field.
-	 * 
-	 * @param schema
-	 * @return
-	 */
-	private Map<String, FieldSchema> transformFieldsToMap(Schema schema) {
-		Map<String, FieldSchema> map = new HashMap<>();
-		for (FieldSchema field : schema.getFields()) {
-			map.put(field.getName(), field);
-		}
-		return map;
-
-	}
 }

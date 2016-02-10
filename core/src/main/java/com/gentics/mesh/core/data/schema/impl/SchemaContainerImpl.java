@@ -1,14 +1,12 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,27 +14,16 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.AddFieldChange;
-import com.gentics.mesh.core.data.schema.FieldTypeChange;
-import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.UpdateFieldChange;
-import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -50,9 +37,12 @@ import rx.Observable;
 /**
  * @see SchemaContainer
  */
-public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, SchemaContainer> implements SchemaContainer {
+public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaContainer, SchemaReference> implements SchemaContainer {
 
-	private static final String VERSION_PROPERTY_KEY = "version";
+	@Override
+	protected Class<? extends SchemaContainer> getContainerClass() {
+		return SchemaContainerImpl.class;
+	}
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
@@ -164,11 +154,6 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 	}
 
 	@Override
-	public int getVersion() {
-		return getProperty(VERSION_PROPERTY_KEY);
-	}
-
-	@Override
 	public Observable<? extends SchemaContainer> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
@@ -194,20 +179,6 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				setSchema(requestModel);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
-		} catch (Exception e) {
-			return Observable.error(e);
-		}
-
-	}
-
-	@Override
-	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, SchemaComparator comparator) {
-		try {
-			SchemaChangesListModel list = new SchemaChangesListModel();
-			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
-			requestModel.validate();
-			list.getChanges().addAll(comparator.diff(transformToRest(ac, null).toBlocking().single(), requestModel));
-			return Observable.just(list);
 		} catch (Exception e) {
 			return Observable.error(e);
 		}
@@ -242,125 +213,6 @@ public class SchemaContainerImpl extends AbstractMeshCoreVertex<SchemaResponse, 
 				}
 			}
 		}
-	}
-
-	@Override
-	public SchemaContainer getNextVersion() {
-		return out(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
-	}
-
-	@Override
-	public SchemaContainer setNextVersion(SchemaContainer container) {
-		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
-		return this;
-	}
-
-	@Override
-	public SchemaContainer getLatestVersion() {
-		SchemaContainer latest = this;
-		for (SchemaContainer current = latest.getNextVersion(); current != null; current = current.getNextVersion()) {
-			latest = current;
-		}
-		return latest;
-	}
-
-	@Override
-	public SchemaContainer getPreviousVersion() {
-		return in(HAS_VERSION).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
-	}
-
-	@Override
-	public SchemaContainer setPreviousVersion(SchemaContainer container) {
-		setSingleLinkInTo(container.getImpl(), HAS_VERSION);
-		return this;
-	}
-
-	@Override
-	public SchemaChange getNextChange() {
-		return (SchemaChange) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
-	}
-
-	@Override
-	public SchemaContainer setNextChange(SchemaChange change) {
-		setSingleLinkOutTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
-		return this;
-	}
-
-	@Override
-	public SchemaChange getPreviousChange() {
-		return (SchemaChange) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
-	}
-
-	@Override
-	public SchemaContainer setPreviousChange(SchemaChange change) {
-		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
-		return this;
-	}
-
-	@Override
-	public Observable<SchemaMigrationResponse> applyChanges(InternalActionContext ac) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		try {
-			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
-			return db.trx(() -> {
-				if (getNextChange() != null) {
-					throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
-				}
-
-				SchemaChange current = null;
-				for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
-					SchemaChange graphChange = createChange(restChange);
-					// Set the first change to the schema container and chain all other changes to that change.
-					if (current == null) {
-						current = graphChange;
-						setNextChange(current);
-					} else {
-						current.setNextChange(graphChange);
-						current = graphChange;
-					}
-				}
-
-				//TODO create new schema version and assign it to the end of the chain. Make sure to unlink the old schema container from the container root and assign the new version to the root.
-
-				return Observable.just(new SchemaMigrationResponse());
-			});
-		} catch (Exception e) {
-			return Observable.error(e);
-		}
-	}
-
-	/**
-	 * Create a new graph change from the given rest change.
-	 * 
-	 * @param restChange
-	 * @return
-	 */
-	private SchemaChange createChange(SchemaChangeModel restChange) {
-		SchemaChange schemaChange = null;
-		switch (restChange.getOperation()) {
-		case ADDFIELD:
-			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			break;
-		case CHANGEFIELDTYPE:
-			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
-			break;
-		case REMOVEFIELD:
-			schemaChange = getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			break;
-		case UPDATEFIELD:
-			schemaChange = getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-			break;
-		case UPDATESCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
-			break;
-		default:
-			//TODO i18n
-			throw error(BAD_REQUEST, "Change operation {" + restChange.getOperation() + "} unknown");
-		}
-
-		schemaChange.fill(restChange);
-		return schemaChange;
-
 	}
 
 }
