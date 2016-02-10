@@ -85,6 +85,12 @@ public abstract class AbstractDBTest {
 		dataProvider.setup();
 	}
 
+	public MicroschemaContainer microschemaContainer(String key) {
+		MicroschemaContainer container = dataProvider.getMicroschemaContainers().get(key);
+		container.reload();
+		return container;
+	}
+
 	public SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = dataProvider.getSchemaContainer(key);
 		container.reload();

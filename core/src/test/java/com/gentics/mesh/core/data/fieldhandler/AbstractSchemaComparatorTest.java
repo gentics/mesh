@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.schema.handler;
+package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
@@ -9,20 +9,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 import com.gentics.mesh.util.FieldUtil;
 
-public abstract class AbstractSchemaComparatorTest<T extends FieldSchema> extends AbstractEmptyDBTest {
+public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C extends FieldSchemaContainer> extends AbstractEmptyDBTest {
 
-	@Autowired
-	protected SchemaComparator comparator;
+	public abstract AbstractFieldSchemaContainerComparator<C> getComparator();
+
+	/**
+	 * Create a new field container instance that will be used for comparison.
+	 * 
+	 * @return
+	 */
+	public abstract C createContainer();
 
 	/**
 	 * Create a new field to be used for the tests.
@@ -42,12 +47,11 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema> extend
 	 */
 	@Test
 	public void testAddField() {
-		Schema schemaA = new SchemaImpl();
+		C containerA = createContainer();
+		C containerB = createContainer();
+		containerB.addField(createField("test"));
 
-		Schema schemaB = new SchemaImpl();
-		schemaB.addField(createField("test"));
-
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(ADDFIELD).forField("test");
 
@@ -58,12 +62,12 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema> extend
 	 */
 	@Test
 	public void testRemoveField() {
-		Schema schemaA = new SchemaImpl();
-		schemaA.addField(createField("test"));
+		C containerA = createContainer();
+		containerA.addField(createField("test"));
 
-		Schema schemaB = new SchemaImpl();
+		C containerB = createContainer();
 
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(REMOVEFIELD).forField("test");
 	}
@@ -79,23 +83,23 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema> extend
 	@Test
 	public void testChangeFieldType() {
 
-		Schema schemaA = new SchemaImpl();
+		C containerA = createContainer();
 		T fieldA = createField("test");
-		schemaA.addField(fieldA);
+		containerA.addField(fieldA);
 		String newType = "html";
-		Schema schemaB = new SchemaImpl();
+		C containerB = createContainer();
 		// Lists -> html field or basic field -> list 
 		if (fieldA instanceof ListFieldSchema) {
 			FieldSchema fieldB = FieldUtil.createHtmlFieldSchema("test");
-			schemaB.addField(fieldB);
+			containerB.addField(fieldB);
 		} else {
 			ListFieldSchema fieldB = FieldUtil.createListFieldSchema("test");
 			fieldB.setListType("html");
-			schemaB.addField(fieldB);
+			containerB.addField(fieldB);
 			newType = "list";
 		}
 
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(CHANGEFIELDTYPE).forField("test").hasProperty("newType", newType);
 		if ("list".equals(newType)) {

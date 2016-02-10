@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.schema.handler;
+package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
@@ -8,13 +8,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest<NumberFieldSchema> {
+public abstract class AbstractComparatorNumberTest<C extends FieldSchemaContainer> extends AbstractSchemaComparatorTest<NumberFieldSchema, C> {
 
 	@Override
 	public NumberFieldSchema createField(String fieldName) {
@@ -25,25 +24,25 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest<Num
 	@Override
 	public void testSameField() {
 
-		Schema schemaA = new SchemaImpl();
+		C containerA = createContainer();
 		NumberFieldSchema fieldA = createField("test");
 		fieldA.setLabel("label1");
-//		fieldA.setMin(1);
-//		fieldA.setMax(2);
+		//		fieldA.setMin(1);
+		//		fieldA.setMax(2);
 		fieldA.setRequired(true);
-//		fieldA.setStep(0.1f);
-		schemaA.addField(fieldA);
+		//		fieldA.setStep(0.1f);
+		containerA.addField(fieldA);
 
-		Schema schemaB = new SchemaImpl();
+		C containerB = createContainer();
 		NumberFieldSchema fieldB = createField("test");
-//		fieldB.setMin(1);
-//		fieldB.setMax(2);
+		//		fieldB.setMin(1);
+		//		fieldB.setMax(2);
 		fieldB.setRequired(true);
-//		fieldB.setStep(0.1f);
+		//		fieldB.setStep(0.1f);
 		fieldB.setLabel("label2");
-		schemaB.addField(fieldB);
+		containerB.addField(fieldB);
 
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).isEmpty();
 	}
 
@@ -51,27 +50,27 @@ public class SchemaComparatorNumberTest extends AbstractSchemaComparatorTest<Num
 	@Override
 	public void testUpdateField() {
 
-		Schema schemaA = new SchemaImpl();
+		C containerA = createContainer();
 		NumberFieldSchema fieldA = createField("test");
 		fieldA.setLabel("label1");
-//		fieldA.setMin(1);
-//		fieldA.setMax(2);
+		//		fieldA.setMin(1);
+		//		fieldA.setMax(2);
 		fieldA.setRequired(true);
-//		fieldA.setStep(0.1f);
-		schemaA.addField(fieldA);
+		//		fieldA.setStep(0.1f);
+		containerA.addField(fieldA);
 
-		Schema schemaB = new SchemaImpl();
+		C containerB = createContainer();
 		NumberFieldSchema fieldB = createField("test");
-//		fieldB.setMin(1);
-//		fieldB.setMax(2);
+		//		fieldB.setMin(1);
+		//		fieldB.setMax(2);
 		fieldB.setRequired(true);
-//		fieldB.setStep(0.1f);
+		//		fieldB.setStep(0.1f);
 		fieldB.setLabel("label2");
-		schemaB.addField(fieldB);
+		containerB.addField(fieldB);
 
 		// required flag:
 		fieldB.setRequired(false);
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", false);
 		assertThat(changes.get(0).getProperties()).hasSize(2);

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.schema.handler;
+package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
@@ -8,13 +8,12 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest<StringFieldSchema> {
+public abstract class AbstractComparatorStringTest<C extends FieldSchemaContainer> extends AbstractSchemaComparatorTest<StringFieldSchema, C> {
 
 	@Override
 	public StringFieldSchema createField(String fieldName) {
@@ -24,27 +23,29 @@ public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest<Str
 	@Test
 	@Override
 	public void testSameField() {
-		Schema schemaA = new SchemaImpl();
-		Schema schemaB = new SchemaImpl();
-		schemaA.addField(createField("test"));
-		schemaB.addField(createField("test"));
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		C containerA = createContainer();
+		C containerB = createContainer();
+
+		containerA.addField(createField("test"));
+		containerB.addField(createField("test"));
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).isEmpty();
 	}
 
 	@Test
 	@Override
 	public void testUpdateField() {
-		Schema schemaA = new SchemaImpl();
-		Schema schemaB = new SchemaImpl();
+		C containerA = createContainer();
+		C containerB = createContainer();
+
 		StringFieldSchema fieldA = createField("test");
-		schemaA.addField(fieldA);
+		containerA.addField(fieldA);
 		StringFieldSchema fieldB = createField("test");
-		schemaB.addField(fieldB);
+		containerB.addField(fieldB);
 
 		// required flag:
 		fieldB.setRequired(true);
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", true);
 		assertThat(changes.get(0).getProperties()).hasSize(2);
@@ -53,7 +54,7 @@ public class SchemaComparatorStringTest extends AbstractSchemaComparatorTest<Str
 		fieldA.setRequired(true);
 		fieldA.setAllowedValues("blib");
 		fieldB.setAllowedValues("changed");
-		changes = comparator.diff(schemaA, schemaB);
+		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasNoProperty("required").hasProperty("allow", new String[] { "changed" });
 		assertThat(changes.get(0).getProperties()).hasSize(2);

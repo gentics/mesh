@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.ext.web.Route;
+
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -30,12 +32,33 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	@Override
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
-		addProjectHandlers();
 
 		addCreateHandler();
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addDiffHandler();
+		addChangesHandler();
+	}
+
+	private void addDiffHandler() {
+		Route route = route("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		route.handler(rc -> {
+			crudHandler.handleDiff(InternalActionContext.create(rc));
+		});
+	}
+
+	private void addChangesHandler() {
+		Route getRoute = route("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+		});
+
+		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
+		executeRoute.handler(rc -> {
+			crudHandler.handleExecuteSchemaChanges(InternalActionContext.create(rc));
+		});
 	}
 
 	private void addReadHandlers() {
@@ -70,11 +93,6 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 		route().method(POST).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
 		});
-
-	}
-
-	private void addProjectHandlers() {
-		// TODO Auto-generated method stub
 
 	}
 

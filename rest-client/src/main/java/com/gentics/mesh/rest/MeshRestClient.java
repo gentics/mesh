@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest;
 
+import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.rest.impl.MeshRestClientImpl;
 import com.gentics.mesh.rest.method.AdminClientMethods;

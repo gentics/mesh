@@ -490,6 +490,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaUpdateRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "request must not be null");
+		return handleRequest(POST, "/microschemas/" + uuid + "/diff", SchemaChangesListModel.class, request);
+	}
+
+	@Override
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(path, "path must not be null");
@@ -875,6 +882,12 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<SchemaMigrationResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return handleRequest(POST, "/schemas/" + uuid + "/changes", SchemaMigrationResponse.class, changes);
+	}
+
+	@Override
+	public Future<SchemaMigrationResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return handleRequest(POST, "/microschemas/" + uuid + "/changes", SchemaMigrationResponse.class, changes);
 	}
 
 	@Override

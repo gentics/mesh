@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.schema.handler;
+package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;

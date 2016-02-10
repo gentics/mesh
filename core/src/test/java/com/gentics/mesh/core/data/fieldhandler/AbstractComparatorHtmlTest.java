@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.schema.handler;
+package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
@@ -8,13 +8,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaComparatorHtmlTest extends AbstractSchemaComparatorTest<HtmlFieldSchema> {
+public abstract class AbstractComparatorHtmlTest<C extends FieldSchemaContainer> extends AbstractSchemaComparatorTest<HtmlFieldSchema, C> {
 
 	@Override
 	public HtmlFieldSchema createField(String fieldName) {
@@ -24,37 +23,37 @@ public class SchemaComparatorHtmlTest extends AbstractSchemaComparatorTest<HtmlF
 	@Test
 	@Override
 	public void testSameField() {
-		Schema schemaA = new SchemaImpl();
-		Schema schemaB = new SchemaImpl();
+		C containerA = createContainer();
+		C containerB = createContainer();
 
 		HtmlFieldSchema fieldA = FieldUtil.createHtmlFieldSchema("test");
 		fieldA.setRequired(true);
-		schemaA.addField(fieldA);
+		containerA.addField(fieldA);
 
 		HtmlFieldSchema fieldB = FieldUtil.createHtmlFieldSchema("test");
 		fieldB.setRequired(true);
-		schemaB.addField(fieldB);
+		containerB.addField(fieldB);
 
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).isEmpty();
 	}
 
 	@Test
 	@Override
 	public void testUpdateField() {
-		Schema schemaA = new SchemaImpl();
-		Schema schemaB = new SchemaImpl();
+		C containerA = createContainer();
+		C containerB = createContainer();
 
 		HtmlFieldSchema fieldA = FieldUtil.createHtmlFieldSchema("test");
 		fieldA.setRequired(true);
-		schemaA.addField(fieldA);
+		containerA.addField(fieldA);
 
 		HtmlFieldSchema fieldB = FieldUtil.createHtmlFieldSchema("test");
-		schemaB.addField(fieldB);
+		containerB.addField(fieldB);
 
 		// required flag:
 		fieldB.setRequired(false);
-		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("required", false);
 		assertThat(changes.get(0).getProperties()).hasSize(2);
