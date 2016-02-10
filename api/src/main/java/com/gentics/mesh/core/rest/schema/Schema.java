@@ -54,13 +54,6 @@ public interface Schema extends FieldSchemaContainer {
 	void setDescription(String description);
 
 	/**
-	 * Validate the schema for correctness.
-	 * 
-	 * @throws MeshJsonException
-	 */
-	void validate() throws MeshJsonException;
-
-	/**
 	 * Return the segment field name.
 	 * 
 	 * @return

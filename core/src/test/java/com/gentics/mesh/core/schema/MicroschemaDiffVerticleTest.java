@@ -42,30 +42,37 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	private MicroschemaUpdateRequest getMicroschemaUpdateRequest() {
-		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-		request.setName("content");
+		MicroschemaUpdateRequest vcardMicroschema = new MicroschemaUpdateRequest();
+		vcardMicroschema.setName("vcard");
+		vcardMicroschema.setDescription("Microschema for a vcard");
 
-		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-		nameFieldSchema.setName("name");
-		nameFieldSchema.setLabel("Name");
-		nameFieldSchema.setRequired(true);
-		request.addField(nameFieldSchema);
+		// firstname field
+		StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
+		firstNameFieldSchema.setName("firstName");
+		firstNameFieldSchema.setLabel("First Name");
+		firstNameFieldSchema.setRequired(true);
+		vcardMicroschema.addField(firstNameFieldSchema);
 
-		StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-		filenameFieldSchema.setName("filename");
-		filenameFieldSchema.setLabel("Filename");
-		request.addField(filenameFieldSchema);
+		// lastname field
+		StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
+		lastNameFieldSchema.setName("lastName");
+		lastNameFieldSchema.setLabel("Last Name");
+		lastNameFieldSchema.setRequired(true);
+		vcardMicroschema.addField(lastNameFieldSchema);
 
-		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-		titleFieldSchema.setName("title");
-		titleFieldSchema.setLabel("Title");
-		request.addField(titleFieldSchema);
+		// address field
+		StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
+		addressFieldSchema.setName("address");
+		addressFieldSchema.setLabel("Address");
+		vcardMicroschema.addField(addressFieldSchema);
 
-		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-		contentFieldSchema.setName("content");
-		contentFieldSchema.setLabel("Content");
-		request.addField(contentFieldSchema);
-		return request;
+		// postcode field
+		StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
+		postcodeFieldSchema.setName("postcode");
+		postcodeFieldSchema.setLabel("Post Code");
+		vcardMicroschema.addField(postcodeFieldSchema);
+
+		return vcardMicroschema;
 	}
 
 	@Test

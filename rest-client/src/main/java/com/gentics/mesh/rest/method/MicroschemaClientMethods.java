@@ -63,6 +63,7 @@ public interface MicroschemaClientMethods {
 	 * Compare the given microschema with a currently stored one and return a list of changes.
 	 * 
 	 * @param uuid
+	 * @param request
 	 * @return
 	 */
 	Future<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaUpdateRequest request);

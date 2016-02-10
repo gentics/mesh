@@ -33,13 +33,14 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 		route("/*").handler(springConfiguration.authHandler());
 
+		addDiffHandler();
+		addChangesHandler();
+
 		addCreateHandler();
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addDiffHandler();
-		addChangesHandler();
 	}
 
 	private void addDiffHandler() {

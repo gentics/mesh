@@ -5,6 +5,7 @@ import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -98,9 +99,12 @@ public interface GraphFieldSchemaContainer<R extends RestModel, V extends GraphF
 	 *            Action context that provides the schema update request
 	 * @param comparator
 	 *            Comparator to be used to compare the schemas
+	 * @param restModel
+	 *            Rest model of the container that should be compared
 	 * @return
 	 */
-	Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator);
+	Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator<?> comparator,
+			FieldSchemaContainer restModel);
 
 	/**
 	 * Return the latest container version.

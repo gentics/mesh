@@ -37,13 +37,13 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		addSchemaProjectHandlers();
 
+		addDiffHandler();
+		addChangesHandler();
+
 		addCreateHandler();
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
-
-		addDiffHandler();
-		addChangesHandler();
 	}
 
 	private void addChangesHandler() {
