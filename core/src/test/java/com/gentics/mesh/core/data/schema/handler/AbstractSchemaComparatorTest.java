@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -49,9 +48,8 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema> extend
 		schemaB.addField(createField("test"));
 
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
-		assertThat(changes).hasSize(2);
+		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(ADDFIELD).forField("test");
-		assertThat(changes.get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "test" });
 
 	}
 

@@ -38,8 +38,6 @@ public class UpdateSchemaChangeImpl extends AbstractSchemaChange<Schema> impleme
 
 		List<String> order = getOrder();
 		if (order != null) {
-			System.out.println(order);
-
 			List<FieldSchema> orderedList = new ArrayList<>();
 			for (String name : order) {
 				orderedList.add(schema.getField(name));

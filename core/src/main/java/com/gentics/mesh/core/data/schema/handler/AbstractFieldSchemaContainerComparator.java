@@ -94,7 +94,12 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 			fieldNames.add(fieldSchema.getName());
 		}
 
-		// The order has changed if the field size is different
+		// We don't need to add a change if the second container contains no or just one field.  
+		if (containerB.getFields().size() <= 1) {
+			return;
+		}
+
+		// The order has changed if the field size is different. 
 		if (containerB.getFields().size() != containerA.getFields().size()) {
 			hasChanges = true;
 		} else {
