@@ -37,7 +37,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		//if (getNode() != null) {
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
 		if (expandField) {
-			return getNode().transformToRest(ac, languageTags.toArray(new String[languageTags.size()]));
+			return getNode().transformToRestSync(ac, languageTags.toArray(new String[languageTags.size()]));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
 			Node node = getNode();

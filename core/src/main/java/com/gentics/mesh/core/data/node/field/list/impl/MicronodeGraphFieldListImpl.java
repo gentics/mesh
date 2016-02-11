@@ -47,7 +47,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		for (MicronodeGraphField item : getList()) {
-			obs.add(item.getMicronode().transformToRest(ac));
+			obs.add(item.getMicronode().transformToRestSync(ac));
 		}
 
 		return RxUtil.concatList(obs).collect(() -> {
