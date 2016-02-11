@@ -76,7 +76,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	 * 
 	 * @param fieldSchema
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected Optional<SchemaChangeModel> createTypeChange(FieldSchema fieldSchema) throws IOException {
 		SchemaChangeModel change = new SchemaChangeModel(CHANGEFIELDTYPE, fieldSchema.getName());
@@ -90,8 +90,12 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
-		if (fieldProperties.get("required") != null) {
-			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get("required"))));
+		if (fieldProperties.get(SchemaChangeModel.REQUIRED_KEY) != null) {
+			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(SchemaChangeModel.REQUIRED_KEY))));
+		}
+		String label = (String) fieldProperties.get(SchemaChangeModel.LABEL_KEY);
+		if (label != null) {
+			setLabel(label);
 		}
 	}
 

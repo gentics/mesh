@@ -61,7 +61,22 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	public void testNullOperation() {
 		Schema schema = new SchemaImpl();
 		Schema updatedSchema = mutator.apply(schema, null);
-		fail("Define error handling");
+		assertNotNull(updatedSchema);
+		assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
+	}
+
+	@Test
+	public void testNameDescription() {
+		Schema schema = new SchemaImpl();
+		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		change.setName("updated");
+		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		assertEquals("updated", updatedSchema.getName());
+
+		change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		change.setDescription("text");
+		updatedSchema = mutator.apply(updatedSchema, Arrays.asList(change));
+		assertEquals("text", updatedSchema.getDescription());
 	}
 
 	@Test
@@ -72,6 +87,17 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		change.setType("html");
 		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
 		assertThat(updatedSchema).hasField("name");
+	}
+
+	@Test
+	public void testUpdateFieldLabel() {
+		Schema schema = new SchemaImpl();
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		change.setFieldName("name");
+		change.setLabel("updated");
+		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		assertEquals("The field label was not updated by the mutator.", "updated", updatedSchema.getField("name").getLabel());
 	}
 
 	@Test
@@ -87,7 +113,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 		// 3. Apply the change
 		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
-		assertEquals(2, updatedSchema.getFields().size());
+		assertNotNull("The updated schema was not generated.", updatedSchema);
+		assertEquals("The updated schema should contain two fields.", 2, updatedSchema.getFields().size());
 		assertEquals("The first field should now be the field with name \"second\".", "second", updatedSchema.getFields().get(0).getName());
 		assertEquals("The second field should now be the field with the name \"first\".", "first", updatedSchema.getFields().get(1).getName());
 
@@ -98,7 +125,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 		// 1. Create schema with field
 		Schema schema = new SchemaImpl();
-		schema.addField(new StringFieldSchemaImpl().setName("test"));
+		schema.addField(FieldUtil.createStringFieldSchema("test"));
 
 		// 2. Create remove field change
 		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);

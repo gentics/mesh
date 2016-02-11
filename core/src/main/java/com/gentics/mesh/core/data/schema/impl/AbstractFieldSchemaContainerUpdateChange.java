@@ -7,26 +7,34 @@ import java.util.List;
 import com.gentics.mesh.core.data.schema.FieldSchemaContainerUpdateChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSchemaContainer> extends AbstractSchemaChange<T>
 		implements FieldSchemaContainerUpdateChange<T> {
 
-	private static final String DESCRIPTION_KEY = "description";
-	private static final String FIELD_ORDER_KEY = "order";
+	@Override
+	public String getName() {
+		return getProperty(SchemaChangeModel.NAME_KEY);
+	}
+
+	@Override
+	public void setName(String name) {
+		setProperty(SchemaChangeModel.NAME_KEY, name);
+	}
 
 	@Override
 	public String getDescription() {
-		return getProperty(DESCRIPTION_KEY);
+		return getProperty(SchemaChangeModel.DESCRIPTION_KEY);
 	}
 
 	@Override
 	public void setDescription(String description) {
-		setProperty(DESCRIPTION_KEY, description);
+		setProperty(SchemaChangeModel.DESCRIPTION_KEY, description);
 	}
 
 	@Override
 	public List<String> getOrder() {
-		String[] fieldNames = getProperty(FIELD_ORDER_KEY);
+		String[] fieldNames = getProperty(SchemaChangeModel.FIELD_ORDER_KEY);
 		if (fieldNames == null) {
 			return null;
 		}
@@ -35,11 +43,16 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 
 	@Override
 	public void setOrder(String... fieldNames) {
-		setProperty(FIELD_ORDER_KEY, fieldNames);
+		setProperty(SchemaChangeModel.FIELD_ORDER_KEY, fieldNames);
 	}
 
 	@Override
 	public T apply(T container) {
+
+		String name = getName();
+		if (name != null) {
+			container.setName(name);
+		}
 
 		String description = getDescription();
 		if (description != null) {
@@ -49,13 +62,13 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 		List<String> order = getOrder();
 		if (order != null) {
 			List<FieldSchema> orderedList = new ArrayList<>();
-			for (String name : order) {
-				orderedList.add(container.getField(name));
+			for (String fieldName : order) {
+				orderedList.add(container.getField(fieldName));
 			}
 			container.setFields(orderedList);
 		}
 
-		return null;
+		return container;
 	}
 
 }

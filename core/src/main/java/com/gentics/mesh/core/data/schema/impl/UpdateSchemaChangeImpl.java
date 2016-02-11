@@ -1,26 +1,21 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FIELD_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
  * @see UpdateSchemaChange
  */
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
 
-	private static final String SEGMENT_FIELD_KEY = "segmentFieldname";
-	private static final String CONTAINER_FIELD_KEY = "containerFieldname";
-	private static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
-
 	@Override
 	public Schema apply(Schema schema) {
 		schema = super.apply(schema);
-		
+
 		String displayFieldname = getDisplayField();
 		if (displayFieldname != null) {
 			schema.setDisplayField(displayFieldname);
@@ -67,11 +62,6 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	@Override
 	public String getSegmentField() {
 		return getProperty(SEGMENT_FIELD_KEY);
-	}
-
-	@Override
-	public void fill(SchemaChangeModel restChange) {
-		restChange.getProperties();
 	}
 
 }

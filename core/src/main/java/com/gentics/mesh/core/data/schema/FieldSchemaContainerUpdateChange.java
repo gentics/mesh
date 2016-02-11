@@ -40,4 +40,18 @@ public interface FieldSchemaContainerUpdateChange<T extends FieldSchemaContainer
 	 * @param description
 	 */
 	void setDescription(String description);
+
+	/**
+	 * Return the field container name.
+	 * 
+	 * @return
+	 */
+	String getName();
+
+	/**
+	 * Set the field container name.
+	 * 
+	 * @param name
+	 */
+	void setName(String name);
 }

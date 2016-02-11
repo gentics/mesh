@@ -12,9 +12,23 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class SchemaChangeModel implements RestModel {
 
-	private static final String FIELD_NAME_KEY = "field";
+	public static final String FIELD_NAME_KEY = "field";
 
-	private static final String REQUIRED_KEY = "required";
+	public static final String REQUIRED_KEY = "required";
+
+	public static final String SEGMENT_FIELD_KEY = "segmentFieldname";
+
+	public static final String CONTAINER_FIELD_KEY = "containerFieldname";
+
+	public static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
+
+	public static final String FIELD_ORDER_KEY = "order";
+
+	public static final String NAME_KEY = "name";
+
+	public static final String DESCRIPTION_KEY = "description";
+
+	public static final String LABEL_KEY = "label";
 
 	private String uuid;
 

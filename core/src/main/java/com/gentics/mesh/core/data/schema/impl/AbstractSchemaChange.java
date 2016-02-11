@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
@@ -18,7 +19,7 @@ import com.gentics.mesh.util.Tuple;
  * @see SchemaChange
  */
 public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
-	
+
 	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
 
 	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
@@ -61,7 +62,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public <R extends GraphFieldSchemaContainer<?,?,?>> R getPreviousContainer() {
+	public <R extends GraphFieldSchemaContainer<?, ?, ?>> R getPreviousContainer() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
@@ -72,7 +73,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public <R extends GraphFieldSchemaContainer<?,?,?>> R getNextContainer() {
+	public <R extends GraphFieldSchemaContainer<?, ?, ?>> R getNextContainer() {
 		return (R) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
@@ -107,4 +108,11 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	public List<Tuple<String, Object>> getMigrationScriptContext() {
 		return null;
 	}
-				}
+
+	@Override
+	public void fill(SchemaChangeModel restChange) {
+		for (String key : restChange.getProperties().keySet()) {
+			setProperty(key, restChange.getProperties().get(key));
+		}
+	}
+}

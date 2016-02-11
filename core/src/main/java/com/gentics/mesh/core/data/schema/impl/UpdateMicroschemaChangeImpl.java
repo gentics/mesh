@@ -11,7 +11,7 @@ public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpd
 	@Override
 	public Microschema apply(Microschema container) {
 		// TODO Auto-generated method stub
-		return null;
+		return container;
 	}
 
 	@Override
