@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.util.FieldUtil;
 
 public class SchemaFieldTest extends AbstractBasicDBTest {
 
@@ -37,12 +38,15 @@ public class SchemaFieldTest extends AbstractBasicDBTest {
 	public void testComplexSchema() throws IOException {
 		Schema schema = new SchemaImpl();
 		schema.setName("dummySchema");
+		schema.setDisplayField("name");
+		schema.setSegmentField("name");
 		schema.setContainer(true);
-		schema.addField(new HtmlFieldSchemaImpl().setLabel("label_1").setName("name_1").setRequired(true));
-		schema.addField(new StringFieldSchemaImpl().setLabel("label_2").setName("name_2").setRequired(true));
-		schema.addField(new NumberFieldSchemaImpl().setLabel("label_3").setName("name_3").setRequired(true));
-		schema.addField(new DateFieldSchemaImpl().setLabel("label_4").setName("name_4").setRequired(true));
-		schema.addField(new BooleanFieldSchemaImpl().setLabel("label_5").setName("name_5").setRequired(true));
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		schema.addField(FieldUtil.createHtmlFieldSchema("name_1").setLabel("label_1").setRequired(true));
+		schema.addField(FieldUtil.createStringFieldSchema("name_2").setLabel("label_2").setRequired(true));
+		schema.addField(FieldUtil.createNumberFieldSchema("name_3").setLabel("label_3").setRequired(true));
+		schema.addField(FieldUtil.createDateFieldSchema("name_4").setLabel("label_4").setRequired(true));
+		schema.addField(FieldUtil.createBooleanFieldSchema("name_5").setLabel("label_5").setRequired(true));
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setLabel("label_7").setName("name_7").setRequired(true);

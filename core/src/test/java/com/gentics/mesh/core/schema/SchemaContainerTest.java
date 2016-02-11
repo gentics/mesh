@@ -172,7 +172,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 
 		schema = schemaContainer.getSchema();
 		schema.setContainer(true);
-		assertTrue(schema.isContainer());
+		assertTrue("The schema container flag should be set to true since we updated it.", schema.isContainer());
 		schemaContainer.setSchema(schema);
 		schema = schemaContainer.getSchema();
 		assertTrue(schema.isContainer());

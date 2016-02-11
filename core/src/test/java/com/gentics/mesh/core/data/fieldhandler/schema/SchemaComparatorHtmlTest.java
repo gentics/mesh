@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 
 public class SchemaComparatorHtmlTest extends AbstractComparatorHtmlTest<Schema> {
-	
+
 	@Autowired
 	protected SchemaComparator comparator;
 

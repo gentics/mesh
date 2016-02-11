@@ -114,8 +114,10 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
 		assertNotNull(changes);
-		assertThat(changes.getChanges()).hasSize(1);
+		assertThat(changes.getChanges()).hasSize(2);
 		assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("binary");
+		assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
+				new String[] { "name", "filename", "title", "content", "binary" });
 	}
 
 	@Test

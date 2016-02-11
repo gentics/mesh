@@ -99,6 +99,16 @@ public class SchemaChangeModel implements RestModel {
 	}
 
 	/**
+	 * Set an additional property to the change.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void setProperty(String key, String value) {
+		properties.put(key, value);
+	}
+
+	/**
 	 * Set the required property for the change. This indicates that the required flag was changed to the given value for this change.
 	 * 
 	 * @param flag

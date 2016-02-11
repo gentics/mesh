@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 import io.vertx.core.logging.Logger;
@@ -51,7 +52,8 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 			}
 		}
 
-		for (FieldSchema fieldInB : containerB.getFields()) {
+		for (int i = 0; i < containerB.getFields().size(); i++) {
+			FieldSchema fieldInB = containerB.getFields().get(i);
 			FieldSchema fieldInA = schemaAFields.get(fieldInB.getName());
 
 			// Check whether the field was added in schemaB 
@@ -59,7 +61,19 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInB.getName() + " was added.");
 				}
-				changes.add(new SchemaChangeModel(ADDFIELD, fieldInB.getName()));
+				SchemaChangeModel change = new SchemaChangeModel(ADDFIELD, fieldInB.getName());
+				change.setProperty("type", fieldInB.getType());
+				if (fieldInB instanceof ListFieldSchema) {
+					change.setProperty("listType", ((ListFieldSchema) fieldInB).getListType());
+				}
+
+				if (i - 1 >= 0) {
+					FieldSchema fieldBefore = containerB.getFields().get(i - 1);
+					if (fieldBefore != null) {
+						change.setProperty("after", fieldBefore.getName());
+					}
+				}
+				changes.add(change);
 			} else {
 				// Field was not added or removed. It exists in both schemas. Lets see whether it changed
 				Optional<SchemaChangeModel> change = fieldComparator.compare(fieldInA, fieldInB);

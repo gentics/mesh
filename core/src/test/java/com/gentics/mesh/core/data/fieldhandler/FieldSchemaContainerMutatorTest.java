@@ -49,6 +49,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 import com.gentics.mesh.util.FieldUtil;
 
+/**
+ * Test for common mutator operations on a field containers.
+ */
 public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Autowired
@@ -217,8 +220,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		listFieldUpdate.setFieldProperty("required", false);
 
 		// 3. Apply the changes
-		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(binaryFieldUpdate, nodeFieldUpdate, stringFieldUpdate, htmlFieldUpdate, numberFieldUpdate,
-				dateFieldUpdate, booleanFieldUpdate, booleanFieldUpdate, micronodeFieldUpdate, listFieldUpdate));
+		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(binaryFieldUpdate, nodeFieldUpdate, stringFieldUpdate, htmlFieldUpdate,
+				numberFieldUpdate, dateFieldUpdate, booleanFieldUpdate, booleanFieldUpdate, micronodeFieldUpdate, listFieldUpdate));
 
 		// Binary 
 		BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
