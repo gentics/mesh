@@ -4,7 +4,9 @@ package com.gentics.mesh.core.verticle.node;
  * JMX MBean for the node migrations
  */
 public class NodeMigrationStatus implements NodeMigrationStatusMBean {
-	protected String schemaName;
+	protected Type type;
+
+	protected String name;
 
 	protected int version;
 
@@ -14,17 +16,19 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 
 	/**
 	 * Create an instance
-	 * @param schemaName schema name
+	 * @param name schema name
 	 * @param version schema version
+	 * @param type type
 	 */
-	public NodeMigrationStatus(String schemaName, int version) {
-		this.schemaName = schemaName;
+	public NodeMigrationStatus(String name, int version, Type type) {
+		this.name = name;
 		this.version = version;
+		this.type = type;
 	}
 
 	@Override
-	public String getSchemaName() {
-		return schemaName;
+	public String getName() {
+		return name;
 	}
 
 	@Override
@@ -55,5 +59,9 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 	 */
 	public void incNodesDone() {
 		nodesDone++;
+	}
+
+	protected static enum Type {
+		schema, microschema
 	}
 }

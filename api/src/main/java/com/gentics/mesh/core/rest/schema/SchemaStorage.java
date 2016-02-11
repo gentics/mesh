@@ -52,13 +52,24 @@ public interface SchemaStorage {
 	void addSchema(Schema schema);
 
 	/**
-	 * Get the microschema with the given name
+	 * Get the microschema with the given name in the newest version
 	 * 
 	 * @param name
 	 *            microschema name
 	 * @return microschema instance or null if the schema could not be found
 	 */
 	Microschema getMicroschema(String name);
+
+	/**
+	 * Return the microschema with the given name in the given version.
+	 * 
+	 * @param name
+	 *            Microschema name
+	 * @param version
+	 * 			  Microschema version
+	 * @return Found microschema or null when no microschema could be found
+	 */
+	Microschema getMicroschema(String name, int version);
 
 	/**
 	 * Add the given microschema to the storage
@@ -75,6 +86,16 @@ public interface SchemaStorage {
 	 *            microschema name
 	 */
 	void removeMicroschema(String name);
+
+	/**
+	 * Remove the microschema with the given name in the given version from the storage.
+	 * 
+	 * @param name
+	 *            microschema name
+	 * @param version
+	 * 			  microschema version
+	 */
+	void removeMicroschema(String name, int version);
 
 	/**
 	 * Return the size of the storage (schemas an microschemas)

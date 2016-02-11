@@ -1,17 +1,17 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 
 /**
  * Assert for a schema container
  */
-public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, SchemaContainer> {
+public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, GraphFieldSchemaContainer<?, ?, ?>> {
 
-	public SchemaContainerAssert(SchemaContainer actual) {
+	public SchemaContainerAssert(GraphFieldSchemaContainer<?, ?, ?> actual) {
 		super(actual, SchemaContainerAssert.class);
 	}
 
@@ -21,7 +21,7 @@ public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert,
 	 * @param container
 	 * @return
 	 */
-	public SchemaContainerAssert equals(SchemaContainer container) {
+	public SchemaContainerAssert equals(GraphFieldSchemaContainer<?, ?, ?> container) {
 		assertThat(actual.getName()).as(descriptionText() + " Name").isEqualTo(container.getName());
 		assertThat(actual.getVersion()).as(descriptionText() + " Version").isEqualTo(container.getVersion());
 		return this;

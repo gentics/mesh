@@ -14,7 +14,7 @@ public class ClientSchemaStorage implements SchemaStorage {
 
 	private Map<String, Map<Integer, Schema>> schemaMap = new HashMap<>();
 
-	private Map<String, Microschema> microschemaMap = new HashMap<>();
+	private Map<String, Map<Integer, Microschema>> microschemaMap = new HashMap<>();
 
 	@Override
 	public void addSchema(Schema schema) {
@@ -47,17 +47,31 @@ public class ClientSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Microschema getMicroschema(String name) {
-		return microschemaMap.get(name);
+		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet()
+				.stream().max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
+	}
+
+	@Override
+	public Microschema getMicroschema(String name, int version) {
+		return microschemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
 	}
 
 	@Override
 	public void addMicroschema(Microschema microschema) {
-		microschemaMap.put(microschema.getName(), microschema);
+		microschemaMap.computeIfAbsent(microschema.getName(), k -> new HashMap<>()).put(microschema.getVersion(), microschema);
 	}
 
 	@Override
 	public void removeMicroschema(String name) {
 		microschemaMap.remove(name);
+	}
+
+	@Override
+	public void removeMicroschema(String name, int version) {
+		if (microschemaMap.containsKey(name)) {
+			microschemaMap.get(name).remove(version);
+		}
 	}
 
 	@Override
