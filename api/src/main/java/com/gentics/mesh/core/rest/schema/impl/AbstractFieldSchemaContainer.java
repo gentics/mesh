@@ -1,14 +1,18 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.json.MeshJsonException;
 
 public abstract class AbstractFieldSchemaContainer implements FieldSchemaContainer {
 
@@ -93,12 +97,15 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	}
 
 	@Override
-	public void validate() throws MeshJsonException {
+	public void validate() {
+		if (StringUtils.isEmpty(getName())) {
+			throw error(BAD_REQUEST, "schema_error_no_name");
+		}
 		if (!getFields().stream().map(field -> field.getName()).allMatch(new HashSet<>()::add)) {
-			throw new MeshJsonException("Duplicate field names detected. The name for a field must be unique.");
+			throw error(BAD_REQUEST, "schema_error_duplicate_field_name");
 		}
 		if (!getFields().stream().map(field -> field.getLabel()).allMatch(new HashSet<>()::add)) {
-			throw new MeshJsonException("Duplicate field labels detected. The label for a field must be unique.");
+			throw error(BAD_REQUEST, "schema_error_duplicate_field_label");
 		}
 	}
 

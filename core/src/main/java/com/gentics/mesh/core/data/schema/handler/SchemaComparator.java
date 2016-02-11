@@ -1,10 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
@@ -37,24 +34,9 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 		// container flag
 		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer());
-
+		
 		return changes;
 	}
 
-	/**
-	 * Compare the given objects and add a schema change entry to the given list of changes.
-	 * 
-	 * @param changes
-	 * @param key
-	 * @param objectA
-	 * @param objectB
-	 */
-	private void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB) {
-		if (!Objects.equals(objectA, objectB)) {
-			SchemaChangeModel change = new SchemaChangeModel(UPDATESCHEMA);
-			change.getProperties().put(key, objectB);
-			changes.add(change);
-		}
-	}
 
 }

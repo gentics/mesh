@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.schema;
 
-import com.gentics.mesh.json.MeshJsonException;
-
 /**
  * Interface for a Microschema. A microschema can be used to create objects that are embedded into other objects.
  */
@@ -24,9 +22,7 @@ public interface Microschema extends FieldSchemaContainer {
 
 	/**
 	 * Validate the microschema for correctness.
-	 * 
-	 * @throws MeshJsonException
 	 */
-	void validate() throws MeshJsonException;
+	void validate();
 
 }

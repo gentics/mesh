@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
 public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 
@@ -40,27 +44,32 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 	}
 
 	@Override
-	public void validate() throws MeshJsonException {
+	public void validate() {
 		super.validate();
 		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
 		// displayNames
+		if (getFields().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_error_no_fields");
+		}
 
 		if (getDisplayField() == null) {
-			throw new MeshJsonException("The displayField property must be set.");
-		}
-		if (getFields().contains(getDisplayField())) {
-			throw new MeshJsonException("The displayField value {" + getSegmentField() + "} does not match any fields");
+			throw error(BAD_REQUEST, "schema_error_displayfield_not_set");
 		}
 
 		if (getSegmentField() == null) {
-			throw new MeshJsonException("The segmentField property must be set.");
-		}
-		if (getFields().contains(getSegmentField())) {
-			throw new MeshJsonException("The segmentField value {" + getSegmentField() + "} does not match any fields");
+			throw error(BAD_REQUEST, "schema_error_segmentfield_not_set");
 		}
 
-		if (getFields().isEmpty()) {
-			throw new MeshJsonException("The schema must have at least one field.");
+		if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getDisplayField()))) {
+			throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
+		}
+
+		if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
+			throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
+		}
+
+		if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
+			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
 		}
 
 		//TODO make sure that segment fields are set to mandatory.

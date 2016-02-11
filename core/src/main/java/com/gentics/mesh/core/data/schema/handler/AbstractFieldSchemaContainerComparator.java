@@ -66,12 +66,12 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				// Change detected so lets add it to the list of changes
 				if (change.isPresent()) {
 					if (log.isDebugEnabled()) {
-						log.debug("Field " + fieldInB.getName() + " was modified.");
+						log.debug("Field {" + fieldInB.getName() + "} was modified.");
 					}
 					changes.add(change.get());
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("Field " + fieldInB.getName() + " did not change.");
+						log.debug("Field {" + fieldInB.getName() + "} did not change.");
 					}
 				}
 			}
@@ -79,6 +79,13 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 
 		// order of fields
 		compareAndAddOrderChange(changes, containerA, containerB);
+
+		//name
+		compareAndAddSchemaProperty(changes, "name", containerA.getName(), containerB.getName());
+
+		// description
+		compareAndAddSchemaProperty(changes, "description", containerA.getDescription(), containerB.getDescription());
+
 		return changes;
 	}
 
@@ -137,5 +144,21 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		}
 		return map;
 
+	}
+
+	/**
+	 * Compare the given objects and add a schema change entry to the given list of changes.
+	 * 
+	 * @param changes
+	 * @param key
+	 * @param objectA
+	 * @param objectB
+	 */
+	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB) {
+		if (!Objects.equals(objectA, objectB)) {
+			SchemaChangeModel change = new SchemaChangeModel(UPDATESCHEMA);
+			change.getProperties().put(key, objectB);
+			changes.add(change);
+		}
 	}
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.json.MeshJsonException;
 
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
@@ -111,9 +110,7 @@ public interface FieldSchemaContainer extends RestModel {
 
 	/**
 	 * Validate the schema for correctness.
-	 * 
-	 * @throws MeshJsonException
 	 */
-	void validate() throws MeshJsonException;
+	void validate();
 
 }

@@ -160,4 +160,57 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 		assertThat(changes).isEmpty();
 	}
 
+	@Test
+	public void testSameDescription() throws IOException {
+		Schema schemaA = new SchemaImpl();
+		Schema schemaB = new SchemaImpl();
+		schemaA.setDescription("test123");
+		schemaB.setDescription("test123");
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testDescriptionUpdated() throws IOException {
+		Schema schemaA = new SchemaImpl();
+		Schema schemaB = new SchemaImpl();
+		schemaA.setDescription("test123");
+		schemaB.setDescription("test123-changed");
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty("description", "test123-changed");
+	}
+
+	@Test
+	public void testDescriptionUpdatedToNull() throws IOException {
+		Schema schemaA = new SchemaImpl();
+		Schema schemaB = new SchemaImpl();
+		schemaA.setDescription("test123");
+		schemaB.setDescription(null);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty("description", null);
+	}
+
+	@Test
+	public void testSameName() throws IOException {
+		Schema schemaA = new SchemaImpl();
+		Schema schemaB = new SchemaImpl();
+		schemaA.setName("test123");
+		schemaB.setName("test123");
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testNameUpdated() throws IOException {
+		Schema schemaA = new SchemaImpl();
+		Schema schemaB = new SchemaImpl();
+		schemaA.setName("test123");
+		schemaB.setName("test123-changed");
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty("name", "test123-changed");
+	}
+
 }
