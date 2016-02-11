@@ -17,7 +17,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 	public void testStartup() throws Exception {
 
 		SpringTestConfiguration.ignored = true;
-		long timeout = DEFAULT_TIMEOUT_SECONDS * 2;
+		long timeout = DEFAULT_TIMEOUT_SECONDS * 6;
 
 		final CountDownLatch latch = new CountDownLatch(2);
 		final Mesh mesh = Mesh.mesh();
