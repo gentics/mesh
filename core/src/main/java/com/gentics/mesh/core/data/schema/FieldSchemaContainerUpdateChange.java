@@ -15,7 +15,7 @@ public interface FieldSchemaContainerUpdateChange<T extends FieldSchemaContainer
 	/**
 	 * Set the field order.
 	 * 
-	 * @param list
+	 * @param fieldNames
 	 * 
 	 */
 	void setOrder(String... fieldNames);

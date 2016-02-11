@@ -12,7 +12,7 @@ public interface UpdateMicroschemaChange extends FieldSchemaContainerUpdateChang
 	/**
 	 * Set the field order.
 	 * 
-	 * @param list
+	 * @param fieldNames
 	 * 
 	 */
 	void setOrder(String... fieldNames);

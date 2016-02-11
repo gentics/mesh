@@ -80,7 +80,6 @@ public interface GraphFieldSchemaContainer<R extends RestModel, V extends GraphF
 	 * Set the next change for the schema. The next change is the first change in the chain of changes that lead to the new schema version.
 	 * 
 	 * @param change
-	 * @return
 	 */
 	void setNextChange(SchemaChange<?> change);
 
@@ -88,7 +87,6 @@ public interface GraphFieldSchemaContainer<R extends RestModel, V extends GraphF
 	 * Set the previous change for the schema. The previous change is the last change in the chain of changes that was used to create the schema container.
 	 * 
 	 * @param change
-	 * @return
 	 */
 	void setPreviousChange(SchemaChange<?> change);
 
