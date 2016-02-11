@@ -53,7 +53,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 			List<Observable<NodeResponse>> futures = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				futures.add(item.getNode().transformToRest(ac, lTagsArray));
+				futures.add(item.getNode().transformToRestSync(ac, lTagsArray));
 			}
 
 			return RxUtil.concatList(futures).collect(() -> {
