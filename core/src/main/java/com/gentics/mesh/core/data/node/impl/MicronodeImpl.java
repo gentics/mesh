@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -110,7 +111,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	protected Node getParentNode() {
+	public NodeGraphFieldContainer getContainer() {
 		// first try to get the container in case for normal fields
 		NodeGraphFieldContainerImpl container = in(HAS_FIELD).has(NodeGraphFieldContainerImpl.class)
 				.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
@@ -120,6 +121,13 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			container = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class,
 					null);
 		}
+
+		return container;
+	}
+
+	@Override
+	public Node getParentNode() {
+		NodeGraphFieldContainer container = getContainer();
 
 		if (container == null) {
 			throw error(BAD_REQUEST, "error_field_container_without_node");

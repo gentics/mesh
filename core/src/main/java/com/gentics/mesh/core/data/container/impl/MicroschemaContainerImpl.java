@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
@@ -7,9 +8,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -63,7 +67,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 
 	@Override
 	public Microschema getMicroschema() {
-		Microschema microschema = getSchemaStorage().getMicroschema(getName());
+		Microschema microschema = getSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
 				microschema = JsonUtil.readSchema(getJson(), MicroschemaImpl.class);
@@ -77,10 +81,11 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 
 	@Override
 	public void setMicroschema(Microschema microschema) {
-		getSchemaStorage().removeMicroschema(microschema.getName());
+		getSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
 		getSchemaStorage().addMicroschema(microschema);
 		String json = JsonUtil.toJson(microschema);
 		setJson(json);
+		setProperty(VERSION_PROPERTY_KEY, microschema.getVersion());
 	}
 
 	@Override
@@ -137,6 +142,11 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public List<? extends Micronode> getMicronodes() {
+		return in(HAS_MICROSCHEMA_CONTAINER).has(MicronodeImpl.class).toListExplicit(MicronodeImpl.class);
 	}
 
 	private String getJson() {

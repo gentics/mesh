@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
+
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -26,5 +29,12 @@ public interface MicroschemaContainer extends GraphFieldSchemaContainer<Microsch
 	 *            microschema instance
 	 */
 	void setMicroschema(Microschema microschema);
+
+	/**
+	 * Return a list of micronodes to which the microschema has been assigned.
+	 * 
+	 * @return
+	 */
+	List<? extends Micronode> getMicronodes();
 
 }

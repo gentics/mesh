@@ -6,96 +6,115 @@ package com.gentics.mesh.core.schema.field;
 public interface FieldMigrationTest {
 	/**
 	 * Test removing the field
+	 * @throws Exception
 	 */
-	void testRemove();
+	void testRemove() throws Exception;
 
 	/**
 	 * Test renaming the field
+	 * @throws Exception
 	 */
-	void testRename();
+	void testRename() throws Exception;
 
 	/**
 	 * Test changing the field to a binary field
+	 * @throws Exception
 	 */
-	void testChangeToBinary();
+	void testChangeToBinary() throws Exception;
 
 	/**
 	 * Test changing the field to a boolean field
+	 * @throws Exception
 	 */
-	void testChangeToBoolean();
+	void testChangeToBoolean() throws Exception;
 
 	/**
 	 * Test changing to a boolean list field
+	 * @throws Exception
 	 */
-	void testChangeToBooleanList();
+	void testChangeToBooleanList() throws Exception;
 
 	/**
 	 * Test changing to date field
+	 * @throws Exception
 	 */
-	void testChangeToDate();
+	void testChangeToDate() throws Exception;
 
 	/**
 	 * Test changing to date list field
+	 * @throws Exception
 	 */
-	void testChangeToDateList();
+	void testChangeToDateList() throws Exception;
 
 	/**
 	 * Test changing to html field
+	 * @throws Exception
 	 */
-	void testChangeToHtml();
+	void testChangeToHtml() throws Exception;
 
 	/**
 	 * Test changing to html list field
+	 * @throws Exception
 	 */
-	void testChangeToHtmlList();
+	void testChangeToHtmlList() throws Exception;
 
 	/**
 	 * Test changing to micronode field
+	 * @throws Exception
 	 */
-	void testChangeToMicronode();
+	void testChangeToMicronode() throws Exception;
 
 	/**
 	 * Test changing to micronode list field
+	 * @throws Exception
 	 */
-	void testChangeToMicronodeList();
+	void testChangeToMicronodeList() throws Exception;
 
 	/**
 	 * Test changing to node field
+	 * @throws Exception
 	 */
-	void testChangeToNode();
+	void testChangeToNode() throws Exception;
 
 	/**
 	 * Test changing to node list field
+	 * @throws Exception
 	 */
-	void testChangeToNodeList();
+	void testChangeToNodeList() throws Exception;
 
 	/**
 	 * Test changing to number field
+	 * @throws Exception
 	 */
-	void testChangeToNumber();
+	void testChangeToNumber() throws Exception;
 
 	/**
 	 * Test changing to number list field
+	 * @throws Exception
 	 */
-	void testChangeToNumberList();
+	void testChangeToNumberList() throws Exception;
 
 	/**
 	 * Test changing to string field
+	 * @throws Exception
 	 */
-	void testChangeToString();
+	void testChangeToString() throws Exception;
 
 	/**
 	 * Test changing to string list field
+	 * @throws Exception
 	 */
-	void testChangeToStringList();
+	void testChangeToStringList() throws Exception;
 
 	/**
 	 * Test migrating the field with a custom migration script
+	 * @throws Exception
 	 */
-	void testCustomMigrationScript();
+	void testCustomMigrationScript() throws Exception;
 
 	/**
 	 * Test with an invalid migration script
+	 * @throws Exception
 	 */
-	void testInvalidMigrationScript();
+	void testInvalidMigrationScript() throws Exception;
 }

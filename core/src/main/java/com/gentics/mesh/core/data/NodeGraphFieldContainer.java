@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
@@ -21,4 +22,10 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 */
 	String getDisplayFieldValue(Schema schema);
 
+	/**
+	 * Get the parent node
+	 *
+	 * @return
+	 */
+	Node getParentNode();
 }

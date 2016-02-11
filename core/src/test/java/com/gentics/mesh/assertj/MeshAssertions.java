@@ -23,7 +23,7 @@ import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -113,7 +113,7 @@ public class MeshAssertions extends Assertions {
 		return new FieldSchemaContainerAssert(actual);
 	}
 
-	public static SchemaContainerAssert assertThat(SchemaContainer actual) {
+	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?> actual) {
 		return new SchemaContainerAssert(actual);
 	}
 

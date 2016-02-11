@@ -8,7 +8,7 @@ public interface NodeMigrationStatusMBean {
 	 * Name of the schema
 	 * @return schema name
 	 */
-	String getSchemaName();
+	String getName();
 
 	/**
 	 * Schema version

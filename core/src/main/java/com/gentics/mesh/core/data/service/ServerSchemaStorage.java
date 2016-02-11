@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
@@ -45,18 +44,22 @@ public class ServerSchemaStorage implements SchemaStorage {
 	 */
 	private Map<String, Map<Integer, Schema>> schemas = new HashMap<>();
 
-	private Map<String, Microschema> microschemas = new HashMap<>();
+	private Map<String, Map<Integer, Microschema>> microschemas = new HashMap<>();
 
 	public void init() {
 		//Iterate over all schemas and load them into the storage
-		for (SchemaContainer container : boot.schemaContainerRoot().findAll()) {
+		boot.schemaContainerRoot().findAll().stream().forEach(container -> {
 			Schema restSchema = container.getSchema();
 			schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(),
 					restSchema);
-		}
+		});
 
 		// load all microschemas and add to storage
-		boot.microschemaContainerRoot().findAll().stream().forEach(container -> addMicroschema(container.getMicroschema()));
+		boot.microschemaContainerRoot().findAll().stream().forEach(container -> {
+			Microschema restMicroschema = container.getMicroschema();
+			microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>())
+					.put(restMicroschema.getVersion(), restMicroschema);
+		});
 	}
 
 	@Override
@@ -121,21 +124,50 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Microschema getMicroschema(String name) {
-		return microschemas.get(name);
+		Map<Integer, Microschema> microschemaMap = microschemas.get(name);
+		if (microschemaMap == null) {
+			return null;
+		}
+		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.entrySet().stream()
+				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		if (maxVersion.isPresent()) {
+			return maxVersion.get().getValue();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public Microschema getMicroschema(String name, int version) {
+		Map<Integer, Microschema> microschemaMap = microschemas.get(name);
+		if (microschemaMap == null) {
+			return null;
+		} else {
+			return microschemaMap.get(version);
+		}
 	}
 
 	@Override
 	public void addMicroschema(Microschema microschema) {
-		if (microschemas.containsKey(microschema.getName())) {
-			log.error("Microschema " + microschema.getName() + " is already stored.");
+		Map<Integer, Microschema> microschemaMap = microschemas.computeIfAbsent(microschema.getName(), k -> new HashMap<>());
+		if (microschemaMap.containsKey(microschema.getVersion())) {
+			log.error("Microschema " + microschema.getName() + ", version " + microschema.getVersion() + " is already stored.");
 			return;
 		} else {
-			microschemas.put(microschema.getName(), microschema);
+			microschemaMap.put(microschema.getVersion(), microschema);
 		}
 	}
 
 	@Override
 	public void removeMicroschema(String name) {
 		microschemas.remove(name);
+	}
+
+	@Override
+	public void removeMicroschema(String name, int version) {
+		Map<Integer, Microschema> microschemaMap = microschemas.get(name);
+		if (microschemaMap != null) {
+			microschemaMap.remove(version);
+		}
 	}
 }

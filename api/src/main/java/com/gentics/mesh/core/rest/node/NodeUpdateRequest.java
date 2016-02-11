@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.rest.node;
 
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 /**
  * POJO for a node update request.
  */
-public class NodeUpdateRequest implements RestModel {
+public class NodeUpdateRequest implements RestModel, FieldContainer {
 
 	private SchemaReference schema;
 

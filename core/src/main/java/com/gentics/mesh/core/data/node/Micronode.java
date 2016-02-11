@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -33,4 +34,10 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 */
 	Microschema getMicroschema();
 
+	/**
+	 * Get the container of this micronode
+	 *
+	 * @return container
+	 */
+	NodeGraphFieldContainer getContainer();
 }
