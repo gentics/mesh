@@ -154,14 +154,14 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
 				DeliveryOptions options = new DeliveryOptions();
 				options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getUuid());
-				ObservableFuture<SchemaMigrationResponse> obsFut = RxHelper.observableFuture();
+//				ObservableFuture<SchemaMigrationResponse> obsFut = RxHelper.observableFuture();
 
 				Mesh.vertx().eventBus().send(getMigrationAddress(), null, options, (rh) -> {
-					if (rh.succeeded()) {
-						obsFut.toHandler().handle(Future.succeededFuture(new SchemaMigrationResponse()));
-					} else {
-						obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
-					}
+//					if (rh.succeeded()) {
+//						obsFut.toHandler().handle(Future.succeededFuture(new SchemaMigrationResponse()));
+//					} else {
+//						obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
+//					}
 				});
 
 				return ObservableFuture.just(message(ac, "migration_invoked", getName()));

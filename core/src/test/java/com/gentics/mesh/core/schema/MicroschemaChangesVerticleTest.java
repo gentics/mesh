@@ -49,6 +49,4 @@ public class MicroschemaChangesVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull("The change should have been added to the schema.", microschema.getNextChange());
 	}
 
-	
-
 }
