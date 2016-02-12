@@ -33,6 +33,7 @@ public class FieldSchemaContainerMutator {
 	 * initially loaded from the graph field container element.
 	 * 
 	 * @param container
+	 *            Graph element that provides the chain of changes and the field container that should be mutated
 	 * @return
 	 */
 	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainer<R, ?, ?> container) {

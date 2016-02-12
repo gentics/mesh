@@ -32,6 +32,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String ALLOW_KEY = "allow";
 
+	public static final String TYPE_KEY = "type";
+
 	private String uuid;
 
 	private SchemaChangeOperation operation;
@@ -167,6 +169,12 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public void loadMigrationScript() throws IOException {
 		setMigrationScript(getOperation().getAutoMigrationScript(getProperties()));
+	}
+
+	public static SchemaChangeModel createAddChange(String fieldName, String type) {
+		SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, fieldName);
+		change.getProperties().put(SchemaChangeModel.TYPE_KEY, "html");
+		return change;
 	}
 
 }

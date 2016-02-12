@@ -3,12 +3,12 @@ package com.gentics.mesh.core.data.schema;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
@@ -131,6 +131,6 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, V ext
 	 *            Action context that provides the migration request data
 	 * @return
 	 */
-	Observable<SchemaMigrationResponse> applyChanges(InternalActionContext ac);
+	Observable<GenericMessageResponse> applyChanges(InternalActionContext ac);
 
 }

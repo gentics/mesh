@@ -5,7 +5,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.rest.ClientSchemaStorage;
 import com.gentics.mesh.rest.MeshRestClient;
@@ -119,6 +118,6 @@ public interface SchemaClientMethods {
 	 *            List of changes
 	 * @return
 	 */
-	Future<SchemaMigrationResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
+	Future<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
 }

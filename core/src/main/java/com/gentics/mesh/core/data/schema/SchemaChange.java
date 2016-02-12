@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.util.Tuple;
 
 /**
- * A schema change represents a single manipulation of a field container (eg. Schema, Microschema).
+ * A schema change represents a single manipulation of a field container (e.g.: {@link Schema}, {@link Microschema}).
  * 
  * <pre>
  * {@code

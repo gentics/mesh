@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -44,6 +45,11 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(SchemaContainerImpl.class);
+	}
+
+	@Override
+	protected String getMigrationAddress() {
+		return NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS;
 	}
 
 	@Override

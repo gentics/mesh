@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.schema;
 
+/**
+ * Change entry which contains information for a field update. This includes field specific settings.
+ */
 public interface UpdateFieldChange extends SchemaFieldChange {
 
 	/**
@@ -12,7 +15,7 @@ public interface UpdateFieldChange extends SchemaFieldChange {
 	/**
 	 * Set the field label.
 	 * 
-	 * @param string
+	 * @param label
 	 */
 	void setLabel(String label);
 

@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -41,6 +42,11 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(MicroschemaContainerImpl.class);
+	}
+
+	@Override
+	protected String getMigrationAddress() {
+		return NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS;
 	}
 
 	@Override
@@ -117,7 +123,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 
 		Microschema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl	.class);
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl.class);
 			requestModel.validate();
 			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().single();
 			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {

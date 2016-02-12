@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
- * Change entry which contains information for a field update. This includes field specific settings.
+ * @see UpdateFieldChange
  */
 public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements UpdateFieldChange {
 

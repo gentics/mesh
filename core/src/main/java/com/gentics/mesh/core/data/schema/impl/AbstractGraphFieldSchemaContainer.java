@@ -2,33 +2,65 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.vertx.core.Future;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.rx.java.ObservableFuture;
+import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
+/**
+ * The {@link AbstractGraphFieldSchemaContainer} contains the abstract graph element implementation for {@link GraphFieldSchemaContainer} implementations (e.g.:
+ * {@link SchemaContainerImpl}, {@link MicroschemaContainerImpl}).
+ * 
+ * @param <R>
+ *            Field container rest model type
+ * @param <V>
+ *            Graph vertex type
+ * @param <RE>
+ *            Field container rest model reference type
+ */
 public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, V extends GraphFieldSchemaContainer<R, V, RE>, RE extends NameUuidReference<RE>>
 		extends AbstractMeshCoreVertex<R, V> implements GraphFieldSchemaContainer<R, V, RE> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
+	/**
+	 * Return the class that is used to construct new containers.
+	 * 
+	 * @return
+	 */
 	protected abstract Class<? extends V> getContainerClass();
+
+	/**
+	 * Return the eventbus migration verticle address.
+	 * 
+	 * @return
+	 */
+	protected abstract String getMigrationAddress();
 
 	@Override
 	public int getVersion() {
@@ -85,7 +117,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Observable<SchemaMigrationResponse> applyChanges(InternalActionContext ac) {
+	public Observable<GenericMessageResponse> applyChanges(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
 			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
@@ -111,9 +143,28 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 				R resultingSchema = FieldSchemaContainerMutator.getInstance().apply(this);
 				resultingSchema.validate();
 
-				//TODO create new schema version and assign it to the end of the chain. Make sure to unlink the old schema container from the container root and assign the new version to the root.
+				// Increment version of the schema
+				resultingSchema.setVersion(getVersion() + 1);
 
-				return Observable.just(new SchemaMigrationResponse());
+				// Create and set the next version of the schema
+				V nextVersion = getGraph().addFramedVertex(getContainerClass());
+				nextVersion.setSchema(resultingSchema);
+				setNextVersion(nextVersion);
+
+				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
+				DeliveryOptions options = new DeliveryOptions();
+				options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getUuid());
+				ObservableFuture<SchemaMigrationResponse> obsFut = RxHelper.observableFuture();
+
+				Mesh.vertx().eventBus().send(getMigrationAddress(), null, options, (rh) -> {
+					if (rh.succeeded()) {
+						obsFut.toHandler().handle(Future.succeededFuture(new SchemaMigrationResponse()));
+					} else {
+						obsFut.toHandler().handle(Future.failedFuture(rh.cause()));
+					}
+				});
+
+				return ObservableFuture.just(message(ac, "migration_invoked", getName()));
 			});
 		} catch (Exception e) {
 			return Observable.error(e);
@@ -127,6 +178,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	 * @return
 	 */
 	private SchemaChange createChange(SchemaChangeModel restChange) {
+
 		SchemaChange schemaChange = null;
 		switch (restChange.getOperation()) {
 		case ADDFIELD:
@@ -145,8 +197,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			break;
 		default:
-			//TODO i18n
-			throw error(BAD_REQUEST, "Change operation {" + restChange.getOperation() + "} unknown");
+			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(restChange.getOperation()));
 		}
 
 		schemaChange.fill(restChange);

@@ -877,9 +877,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaMigrationResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes) {
+	public Future<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(POST, "/schemas/" + uuid + "/changes", SchemaMigrationResponse.class, changes);
+		return handleRequest(POST, "/schemas/" + uuid + "/changes", GenericMessageResponse.class, changes);
 	}
 
 	@Override
