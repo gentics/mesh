@@ -17,6 +17,7 @@ public interface MicronodeFieldSchema extends FieldSchema {
 	 * 
 	 * @param allowedMicroSchemas
 	 *            Allowed schemas
+	 * @return Fluent API
 	 */
-	void setAllowedMicroSchemas(String... allowedMicroSchemas);
+	MicronodeFieldSchema setAllowedMicroSchemas(String... allowedMicroSchemas);
 }

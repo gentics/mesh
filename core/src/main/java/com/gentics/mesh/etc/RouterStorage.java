@@ -68,7 +68,7 @@ public class RouterStorage {
 		RouterStorage.instance = this;
 	}
 
-	public static RouterStorage getRouterStorage() {
+	public static RouterStorage getIntance() {
 		return instance;
 	}
 

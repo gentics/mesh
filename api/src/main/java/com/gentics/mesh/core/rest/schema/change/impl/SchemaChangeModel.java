@@ -30,6 +30,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String LABEL_KEY = "label";
 
+	public static final String ALLOW_KEY = "allow";
+
 	private String uuid;
 
 	private SchemaChangeOperation operation;

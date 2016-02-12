@@ -47,7 +47,7 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 	}
 
 	@Override
-	public T apply(T container) {
+	public <R extends FieldSchemaContainer> R apply(R container) {
 
 		String name = getName();
 		if (name != null) {

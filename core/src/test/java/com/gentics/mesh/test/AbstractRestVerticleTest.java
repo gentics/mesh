@@ -36,9 +36,8 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -146,7 +145,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			getClient().getClientSchemaStorage().addSchema(container.getSchema());
 		}
 		for (MicroschemaContainer container : microschemaContainers().values()) {
-			getClient().getClientSchemaStorage().addMicroschema(container.getMicroschema());
+			getClient().getClientSchemaStorage().addMicroschema(container.getSchema());
 		}
 	}
 
@@ -402,30 +401,30 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	// Schema
-	protected SchemaResponse createSchema(String schemaName) {
-		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+	protected Schema createSchema(String schemaName) {
+		Schema schemaCreateRequest = new SchemaImpl();
 		schemaCreateRequest.setName(schemaName);
 		schemaCreateRequest.setDisplayField("name");
 		schemaCreateRequest.setDescription("Descriptive text");
 		schemaCreateRequest.setDisplayField("name");
 		schemaCreateRequest.setSegmentField("name");
-		Future<SchemaResponse> future = getClient().createSchema(schemaCreateRequest);
+		Future<Schema> future = getClient().createSchema(schemaCreateRequest);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected SchemaResponse readSchema(String uuid) {
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(uuid);
+	protected Schema readSchema(String uuid) {
+		Future<Schema> future = getClient().findSchemaByUuid(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected SchemaResponse updateSchema(String uuid, String schemaName) {
-		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
+	protected Schema updateSchema(String uuid, String schemaName) {
+		Schema schemaUpdateRequest = new SchemaImpl();
 		schemaUpdateRequest.setName(schemaName);
-		Future<SchemaResponse> future = getClient().updateSchema(uuid, schemaUpdateRequest);
+		Future<Schema> future = getClient().updateSchema(uuid, schemaUpdateRequest);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();

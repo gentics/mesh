@@ -13,8 +13,8 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.handler.InternalActionContext;
 
 public final class RestModelHelper {
@@ -22,7 +22,7 @@ public final class RestModelHelper {
 	private RestModelHelper() {
 	}
 
-	public static void setRolePermissions(InternalActionContext ac, SchemaContainerImpl sourceElement, SchemaResponse restSchema) {
+	public static void setRolePermissions(InternalActionContext ac, SchemaContainerImpl sourceElement, Schema restSchema) {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 
 		if (!isEmpty(rolePermissionParameter)) {
@@ -40,7 +40,7 @@ public final class RestModelHelper {
 
 	}
 
-	public static void setRolePermissions(InternalActionContext ac, MicroschemaContainerImpl sourceElement, MicroschemaResponse restSchema) {
+	public static void setRolePermissions(InternalActionContext ac, MicroschemaContainerImpl sourceElement, Microschema restSchema) {
 		String rolePermissionParameter = ac.getRolePermissionParameter();
 
 		if (!StringUtils.isEmpty(rolePermissionParameter)) {

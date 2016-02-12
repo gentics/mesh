@@ -1,9 +1,9 @@
 package com.gentics.mesh.assertj.impl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 public class SchemaAssert extends AbstractMeshAssert<SchemaAssert, Schema> {
@@ -12,6 +12,15 @@ public class SchemaAssert extends AbstractMeshAssert<SchemaAssert, Schema> {
 		super(actual, SchemaAssert.class);
 	}
 
-
+	public void matches(SchemaContainer schema) {
+		// TODO make schemas extends generic nodes?
+		// assertGenericNode(schema, restSchema);
+		assertNotNull(schema);
+		assertNotNull(actual);
+		// assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
+		// assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
+		// assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
+		// TODO verify other fields
+	}
 
 }

@@ -187,7 +187,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
-		RouterStorage.getRouterStorage().removeProjectRouter(getName());
+		RouterStorage.getIntance().removeProjectRouter(getName());
 		getBaseNode().delete(true);
 		getTagFamilyRoot().delete();
 		getNodeRoot().delete();

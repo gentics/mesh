@@ -11,8 +11,8 @@ import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -20,11 +20,11 @@ import com.gentics.mesh.json.JsonUtil;
 import rx.Observable;
 
 @Component
-public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, MicroschemaResponse> {
+public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, Microschema> {
 
 	@Autowired
 	private MicroschemaComparator comparator;
-	
+
 	@Override
 	public RootVertex<MicroschemaContainer> getRootVertex(InternalActionContext ac) {
 		return boot.microschemaContainerRoot();
@@ -34,20 +34,20 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "microschema_deleted");
 	}
-	
+
 	public void handleDiff(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
-			MicroschemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaUpdateRequest.class);
+			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl.class);
 			return obsSchema.flatMap(microschema -> microschema.diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
-	
+
 	public void handleGetSchemaChanges(InternalActionContext ac) {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	public void handleExecuteSchemaChanges(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);

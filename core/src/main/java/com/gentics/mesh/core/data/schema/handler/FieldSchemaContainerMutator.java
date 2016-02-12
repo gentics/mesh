@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import java.util.List;
+import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -16,26 +17,33 @@ import com.gentics.mesh.core.rest.schema.Schema;
 @Component
 public class FieldSchemaContainerMutator {
 
+	private static FieldSchemaContainerMutator instance;
+
+	public static FieldSchemaContainerMutator getInstance() {
+		return instance;
+	}
+
+	@PostConstruct
+	public void setup() {
+		FieldSchemaContainerMutator.instance = this;
+	}
+
 	/**
-	 * Applies the given changes to the schema and returns the updated schema.
+	 * Applies all changes that are connected to the container to the version of the container and returns the mutated version of the field container that was
+	 * initially loaded from the graph field container element.
 	 * 
 	 * @param container
-	 *            Container to be updated
-	 * @param changes
-	 *            Changes that should be applied
-	 * @return Container with applied changes
+	 * @return
 	 */
-	public <T extends FieldSchemaContainer> T apply(T container, List<SchemaChange<T>> changes) {
-		if (changes == null) {
-			return container;
-		}
+	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainer<R, ?, ?> container) {
 
-		FieldSchemaContainer genericContainer = container;
-		// Iterate over all given changes and apply them in order specified
-		for (SchemaChange<T> change : changes) {
-			genericContainer = change.apply(container);
+		R oldSchema = container.getSchema();
+		SchemaChange<?> change = container.getNextChange();
+		while (change != null) {
+			oldSchema = change.apply(oldSchema);
+			change = change.getNextChange();
 		}
-		return (T) genericContainer;
+		return oldSchema;
 	}
 
 }

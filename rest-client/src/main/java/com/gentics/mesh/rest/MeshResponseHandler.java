@@ -3,21 +3,19 @@ package com.gentics.mesh.rest;
 import java.util.Arrays;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -42,7 +40,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private static final Logger log = LoggerFactory.getLogger(MeshResponseHandler.class);
 
 	private Future<T> future;
-	private Class<T> classOfT;
+	private Class<? extends T> classOfT;
 	private Handler<HttpClientResponse> handler;
 	private HttpMethod method;
 	private SchemaStorage schemaStorage;
@@ -60,7 +58,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @param schemaStorage
 	 *            A filled schema storage
 	 */
-	public MeshResponseHandler(Class<T> classOfT, HttpMethod method, String uri, SchemaStorage schemaStorage) {
+	public MeshResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri, SchemaStorage schemaStorage) {
 		this.classOfT = classOfT;
 		this.future = Future.future();
 		this.method = method;
@@ -152,7 +150,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @param clazz
 	 * @return
 	 */
-	private boolean isUserClass(Class<T> clazz) {
+	private boolean isUserClass(Class<? extends T> clazz) {
 		if (clazz.isAssignableFrom(UserResponse.class) || clazz.isAssignableFrom(UserCreateRequest.class)
 				|| clazz.isAssignableFrom(UserUpdateRequest.class)) {
 			return true;
@@ -193,10 +191,8 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @return
 	 */
 	private boolean isSchemaClass(Class<?> clazz) {
-		return Arrays
-				.asList(SchemaResponse.class, SchemaCreateRequest.class, SchemaUpdateRequest.class, SchemaListResponse.class,
-						MicroschemaResponse.class, MicroschemaCreateRequest.class, MicroschemaUpdateRequest.class, MicroschemaListResponse.class)
-				.stream().anyMatch(c -> clazz.isAssignableFrom(c));
+		return Arrays.asList(Schema.class, SchemaImpl.class, SchemaListResponse.class, Microschema.class, MicroschemaImpl.class, Microschema.class,
+				MicroschemaListResponse.class).stream().anyMatch(c -> clazz.isAssignableFrom(c));
 	}
 
 	/**

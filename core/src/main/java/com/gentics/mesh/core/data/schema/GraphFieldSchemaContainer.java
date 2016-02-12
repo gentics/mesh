@@ -4,10 +4,9 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -18,14 +17,28 @@ import rx.Observable;
  * Common graph model interface for schema field containers.
  * 
  * @param <R>
- *            Response model class of the container (e.g.: {@link SchemaResponse})
+ *            Response model class of the container (e.g.: {@link Schema})
  * @param <V>
  *            Vertex implementation class
  * @param <RE>
  *            Response reference model class of the container (e.g.: {@link SchemaReference})
  */
-public interface GraphFieldSchemaContainer<R extends RestModel, V extends GraphFieldSchemaContainer<R, V, RE>, RE extends NameUuidReference<RE>>
+public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, V extends GraphFieldSchemaContainer<R, V, RE>, RE extends NameUuidReference<RE>>
 		extends MeshCoreVertex<R, V>, ReferenceableElement<RE> {
+
+	/**
+	 * Return the schema that is stored within the container.
+	 * 
+	 * @return
+	 */
+	R getSchema();
+
+	/**
+	 * Set the schema for the container.
+	 * 
+	 * @param schema
+	 */
+	void setSchema(R schema);
 
 	/**
 	 * Return the schema version.

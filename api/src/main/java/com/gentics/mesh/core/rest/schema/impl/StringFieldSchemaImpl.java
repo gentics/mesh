@@ -28,8 +28,9 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 	}
 
 	@Override
-	public void setAllowedValues(String... allowedValues) {
+	public StringFieldSchema setAllowedValues(String... allowedValues) {
 		this.allowedValues = allowedValues;
+		return this;
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 
 			// allow
 			if (!Arrays.equals(getAllowedValues(), stringFieldSchema.getAllowedValues())) {
-				change.getProperties().put("allow", stringFieldSchema.getAllowedValues());
+				change.getProperties().put(SchemaChangeModel.ALLOW_KEY, stringFieldSchema.getAllowedValues());
 				modified = true;
 			}
 

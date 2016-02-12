@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.rest.schema;
 
 public interface StringFieldSchema extends FieldSchema {
+
 	/**
-	 * Return a list of values which are allowed for this field.
-	 * Null if no value restriction set
+	 * Return a list of values which are allowed for this field. Null if no value restriction set
 	 * 
 	 * @return Allowed values
 	 */
@@ -14,6 +14,7 @@ public interface StringFieldSchema extends FieldSchema {
 	 * 
 	 * @param allowedValues
 	 *            Allowed values or null
+	 * @return Fluent API
 	 */
-	void setAllowedValues(String... allowedValues);
+	StringFieldSchema setAllowedValues(String... allowedValues);
 }

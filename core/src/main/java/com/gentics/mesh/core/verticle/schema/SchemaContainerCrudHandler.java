@@ -11,8 +11,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -20,7 +20,7 @@ import com.gentics.mesh.json.JsonUtil;
 import rx.Observable;
 
 @Component
-public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
+public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContainer, Schema> {
 
 	@Autowired
 	private SchemaComparator comparator;
@@ -38,7 +38,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleDiff(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
-			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
 			return obsSchema.flatMap(schema -> schema.diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

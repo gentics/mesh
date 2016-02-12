@@ -20,8 +20,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -133,7 +133,7 @@ public class RestAssert {
 		assertEquals(request.getName(), restProject.getName());
 	}
 
-	public void assertSchema(SchemaCreateRequest request, SchemaResponse restSchema) {
+	public void assertSchema(Schema request, Schema restSchema) {
 		assertNotNull(request);
 		assertNotNull(restSchema);
 		// assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());

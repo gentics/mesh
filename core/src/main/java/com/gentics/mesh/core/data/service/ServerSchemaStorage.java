@@ -56,7 +56,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 		// load all microschemas and add to storage
 		boot.microschemaContainerRoot().findAll().stream().forEach(container -> {
-			Microschema restMicroschema = container.getMicroschema();
+			Microschema restMicroschema = container.getSchema();
 			microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>())
 					.put(restMicroschema.getVersion(), restMicroschema);
 		});

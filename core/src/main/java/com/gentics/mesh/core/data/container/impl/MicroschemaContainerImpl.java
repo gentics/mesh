@@ -21,8 +21,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -31,7 +29,7 @@ import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Observable;
 
-public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaContainer, MicroschemaReference>
+public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<Microschema, MicroschemaContainer, MicroschemaReference>
 		implements MicroschemaContainer {
 
 	private static final String NAME_PROPERTY_KEY = "name";
@@ -66,7 +64,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	}
 
 	@Override
-	public Microschema getMicroschema() {
+	public Microschema getSchema() {
 		Microschema microschema = getSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
@@ -80,7 +78,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	}
 
 	@Override
-	public void setMicroschema(Microschema microschema) {
+	public void setSchema(Microschema microschema) {
 		getSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
 		getSchemaStorage().addMicroschema(microschema);
 		String json = JsonUtil.toJson(microschema);
@@ -89,10 +87,10 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	}
 
 	@Override
-	public Observable<MicroschemaResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<Microschema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
-			MicroschemaResponse microschema = JsonUtil.readSchema(getJson(), MicroschemaResponse.class);
+			Microschema microschema = JsonUtil.readSchema(getJson(), MicroschemaImpl.class);
 			microschema.setUuid(getUuid());
 
 			// Role permissions
@@ -117,9 +115,9 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 		Database db = MeshSpringConfiguration.getInstance().database();
 		MicroschemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getMicroschemaContainerRoot();
 
-		MicroschemaUpdateRequest requestModel;
+		Microschema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaUpdateRequest.class);
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl	.class);
 			requestModel.validate();
 			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().single();
 			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {
@@ -130,7 +128,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 				if (!getName().equals(requestModel.getName())) {
 					setName(requestModel.getName());
 				}
-				setMicroschema(requestModel);
+				setSchema(requestModel);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
 		} catch (IOException e) {

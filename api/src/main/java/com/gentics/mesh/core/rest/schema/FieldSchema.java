@@ -59,7 +59,7 @@ public interface FieldSchema {
 	boolean isRequired();
 
 	/**
-	 * Set the required flag
+	 * Set the required flag.
 	 * 
 	 * @param flag
 	 * @return Fluent API
@@ -67,11 +67,11 @@ public interface FieldSchema {
 	FieldSchema setRequired(boolean flag);
 
 	/**
-	 * Compare the field schema with the given field schema
+	 * Compare the field schema with the given field schema.
 	 * 
 	 * @param fieldSchema
-	 * @return
-	 * @throws IOException 
+	 * @return Optional which may or may not contain a detected change
+	 * @throws IOException
 	 */
 	Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException;
 

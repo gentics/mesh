@@ -3,12 +3,12 @@ package com.gentics.mesh.core.rest.schema;
 import java.util.List;
 import java.util.Optional;
 
-import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.common.RestResponse;
 
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
  */
-public interface FieldSchemaContainer extends RestModel {
+public interface FieldSchemaContainer extends RestResponse {
 
 	/**
 	 * Return the name of the container.
@@ -78,7 +78,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * 
 	 * @return List of field schemas
 	 */
-	List<? extends FieldSchema> getFields();
+	List<FieldSchema> getFields();
 
 	/**
 	 * Add the given field schema to the list of field schemas.
@@ -112,5 +112,34 @@ public interface FieldSchemaContainer extends RestModel {
 	 * Validate the schema for correctness.
 	 */
 	void validate();
+
+	/**
+	 * Return the permissions of the schema.
+	 * 
+	 * @return Permissions
+	 */
+	String[] getPermissions();
+
+	/**
+	 * Set the permissions of the schema.
+	 * 
+	 * @param permissions
+	 *            Permissions
+	 */
+	void setPermissions(String... permissions);
+
+	/**
+	 * Return the human readable role permissions for the element.
+	 * 
+	 * @return
+	 */
+	String[] getRolePerms();
+
+	/**
+	 * Set the human readable role permissions for the element.
+	 * 
+	 * @param rolePerms
+	 */
+	void setRolePerms(String... rolePerms);
 
 }

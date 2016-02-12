@@ -762,7 +762,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 			schema.addField(field);
 		}
 		container.setName(name);
-		container.setMicroschema(schema);
+		container.setSchema(schema);
 		return container;
 	}
 

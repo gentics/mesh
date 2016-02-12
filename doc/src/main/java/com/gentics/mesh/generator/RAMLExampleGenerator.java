@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -63,23 +64,20 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -375,9 +373,9 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private void microschemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		write(getMicroschemaResponse());
+		write(getMicroschema());
 		write(getMicroschemaCreateRequest());
-		write(getMicroschemaUpdateRequest());
+		write(getMicroschema());
 		write(getMicroschemaListResponse());
 	}
 
@@ -395,8 +393,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(request);
 	}
 
-	private MicroschemaResponse getMicroschemaResponse() {
-		MicroschemaResponse microschema = new MicroschemaResponse();
+	private Microschema getMicroschema() {
+		Microschema microschema = new MicroschemaImpl();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 		microschema.setUuid(UUIDUtil.randomUUID());
@@ -405,16 +403,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		longitudeFieldSchema.setName("longitude");
 		longitudeFieldSchema.setLabel("Longitude");
 		longitudeFieldSchema.setRequired(true);
-//		longitudeFieldSchema.setMin(-180);
-//		longitudeFieldSchema.setMax(180);
+		//		longitudeFieldSchema.setMin(-180);
+		//		longitudeFieldSchema.setMax(180);
 		microschema.addField(longitudeFieldSchema);
 
 		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
 		latitudeFieldSchema.setName("latitude");
 		latitudeFieldSchema.setLabel("Latitude");
 		latitudeFieldSchema.setRequired(true);
-//		latitudeFieldSchema.setMin(-90);
-//		latitudeFieldSchema.setMax(90);
+		//		latitudeFieldSchema.setMin(-90);
+		//		latitudeFieldSchema.setMax(90);
 		microschema.addField(latitudeFieldSchema);
 
 		microschema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
@@ -424,56 +422,33 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	private MicroschemaListResponse getMicroschemaListResponse() {
 		MicroschemaListResponse microschemaList = new MicroschemaListResponse();
-		microschemaList.getData().add(getMicroschemaResponse());
-		microschemaList.getData().add(getMicroschemaResponse());
+		microschemaList.getData().add(getMicroschema());
+		microschemaList.getData().add(getMicroschema());
 		setPaging(microschemaList, 1, 10, 2, 20);
 		return microschemaList;
 	}
 
-	private MicroschemaCreateRequest getMicroschemaCreateRequest() {
-		MicroschemaCreateRequest createRequest = new MicroschemaCreateRequest();
+	private Microschema getMicroschemaCreateRequest() {
+		Microschema createRequest = new MicroschemaImpl();
 		createRequest.setName("geolocation");
 		createRequest.setDescription("Microschema for Geolocations");
 		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
 		longitudeFieldSchema.setName("longitude");
 		longitudeFieldSchema.setLabel("Longitude");
 		longitudeFieldSchema.setRequired(true);
-//		longitudeFieldSchema.setMin(-180);
-//		longitudeFieldSchema.setMax(180);
+		//		longitudeFieldSchema.setMin(-180);
+		//		longitudeFieldSchema.setMax(180);
 		createRequest.addField(longitudeFieldSchema);
 
 		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
 		latitudeFieldSchema.setName("latitude");
 		latitudeFieldSchema.setLabel("Latitude");
 		latitudeFieldSchema.setRequired(true);
-//		latitudeFieldSchema.setMin(-90);
-//		latitudeFieldSchema.setMax(90);
+		//		latitudeFieldSchema.setMin(-90);
+		//		latitudeFieldSchema.setMax(90);
 		createRequest.addField(latitudeFieldSchema);
 
 		return createRequest;
-	}
-
-	private MicroschemaUpdateRequest getMicroschemaUpdateRequest() {
-		MicroschemaUpdateRequest updateRequest = new MicroschemaUpdateRequest();
-		updateRequest.setName("geolocation");
-		updateRequest.setDescription("Microschema for Geolocations");
-		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
-		longitudeFieldSchema.setName("longitude");
-		longitudeFieldSchema.setLabel("Longitude");
-		longitudeFieldSchema.setRequired(true);
-//		longitudeFieldSchema.setMin(-180);
-//		longitudeFieldSchema.setMax(180);
-		updateRequest.addField(longitudeFieldSchema);
-
-		NumberFieldSchema latitudeFieldSchema = new NumberFieldSchemaImpl();
-		latitudeFieldSchema.setName("latitude");
-		latitudeFieldSchema.setLabel("Latitude");
-		latitudeFieldSchema.setRequired(true);
-//		latitudeFieldSchema.setMin(-90);
-//		latitudeFieldSchema.setMax(90);
-		updateRequest.addField(latitudeFieldSchema);
-
-		return updateRequest;
 	}
 
 	private SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {
@@ -484,16 +459,16 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schemaList;
 	}
 
-	private SchemaUpdateRequest getSchemaUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
-		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
+	private Schema getSchemaUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
+		Schema schemaUpdate = new SchemaImpl();
 		// TODO should i allow changing the name?
 		schemaUpdate.setName("extended-content");
 		schemaUpdate.setDescription("New description");
 		return schemaUpdate;
 	}
 
-	private SchemaCreateRequest getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
-		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
+	private Schema getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
+		Schema schemaUpdateRequest = new SchemaImpl();
 		schemaUpdateRequest.setContainer(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
@@ -505,8 +480,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schemaUpdateRequest;
 	}
 
-	private SchemaResponse getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
-		SchemaResponse schema = new SchemaResponse();
+	private Schema getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
+		Schema schema = new SchemaImpl();
 		schema.setUuid(randomUUID());
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -522,9 +497,9 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("number");
 		numberFieldSchema.setLabel("Number");
-//		numberFieldSchema.setMin(2);
-//		numberFieldSchema.setMax(10);
-//		numberFieldSchema.setStep(0.5F);
+		//		numberFieldSchema.setMin(2);
+		//		numberFieldSchema.setMax(10);
+		//		numberFieldSchema.setStep(0.5F);
 		schema.addField(numberFieldSchema);
 
 		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();

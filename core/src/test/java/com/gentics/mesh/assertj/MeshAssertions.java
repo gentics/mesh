@@ -16,7 +16,7 @@ import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
-import com.gentics.mesh.assertj.impl.SchemaResponseAssert;
+import com.gentics.mesh.assertj.impl.SchemaAssert;
 import com.gentics.mesh.assertj.impl.SearchQueueAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -79,10 +79,6 @@ public class MeshAssertions extends Assertions {
 
 	public static TagResponseAssert assertThat(TagResponse actual) {
 		return new TagResponseAssert(actual);
-	}
-
-	public static SchemaResponseAssert assertThat(SchemaResponse actual) {
-		return new SchemaResponseAssert(actual);
 	}
 
 	public static SchemaAssert assertThat(Schema actual) {

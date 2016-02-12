@@ -22,8 +22,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -37,7 +35,7 @@ import rx.Observable;
 /**
  * @see SchemaContainer
  */
-public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaContainer, SchemaReference> implements SchemaContainer {
+public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schema, SchemaContainer, SchemaReference> implements SchemaContainer {
 
 	@Override
 	protected Class<? extends SchemaContainer> getContainerClass() {
@@ -59,10 +57,10 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
-	public Observable<SchemaResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<Schema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
-			SchemaResponse restSchema = JsonUtil.readSchema(getJson(), SchemaResponse.class);
+			Schema restSchema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
 			restSchema.setUuid(getUuid());
 
 			// TODO Get list of projects to which the schema was assigned
@@ -159,7 +157,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		SchemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getSchemaContainerRoot();
 
 		try {
-			SchemaUpdateRequest requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				throw error(BAD_REQUEST, "error_name_must_be_set");
 			}

@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.MeshAssert;
@@ -60,7 +60,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Override
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
-		SchemaResponse schema = createSchema(newName);
+		Schema schema = createSchema(newName);
 		MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
@@ -73,7 +73,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		final String schemaName = "newschemaname";
-		SchemaResponse schema = createSchema(schemaName);
+		Schema schema = createSchema(schemaName);
 
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
 				new PagingParameter().setPage(1).setPerPage(2));
@@ -92,7 +92,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		final String schemaName = "newschemaname";
-		SchemaResponse schema = createSchema(schemaName);
+		Schema schema = createSchema(schemaName);
 
 		String newSchemaName = "updatedschemaname";
 		updateSchema(schema.getUuid(), newSchemaName);

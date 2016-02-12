@@ -17,11 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -41,8 +40,8 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		return list;
 	}
 
-	private MicroschemaUpdateRequest getMicroschemaUpdateRequest() {
-		MicroschemaUpdateRequest vcardMicroschema = new MicroschemaUpdateRequest();
+	private Microschema getMicroschema() {
+		Microschema vcardMicroschema = new MicroschemaImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 
@@ -78,7 +77,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testNoDiff() {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
-		MicroschemaUpdateRequest request = getMicroschemaUpdateRequest();
+		Microschema request = getMicroschema();
 		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
@@ -90,7 +89,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddField() {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
-		MicroschemaUpdateRequest request = getMicroschemaUpdateRequest();
+		Microschema request = getMicroschema();
 		StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
 		stringField.setAllowedValues("one", "two");
 		request.addField(stringField);
@@ -112,7 +111,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveField() {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
-		MicroschemaUpdateRequest request = getMicroschemaUpdateRequest();
+		Microschema request = getMicroschema();
 		request.removeField("content");
 		Future<SchemaChangesListModel> future = getClient().diffMicroschema(microschema.getUuid(), request);
 		latchFor(future);

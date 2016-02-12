@@ -24,10 +24,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
@@ -56,10 +55,10 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 
 		Node content = content();
 
-		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		SchemaContainer container = schemaContainer("content");
+		Schema request = new SchemaImpl();
 		request.setName("content");
-		request.getFields().addAll(schema.getSchema().getFields());
+		request.getFields().addAll(container.getSchema().getFields());
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("extraname");
 		request.getFields().add(nameFieldSchema);
@@ -69,7 +68,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		clientSchema.addField(nameFieldSchema);
 
 		// Update the schema server side
-		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<Schema> future = getClient().updateSchema(container.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -101,7 +100,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		Node content = content();
 
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		Schema request = new SchemaImpl();
 		request.setName("content");
 		for (FieldSchema fieldSchema : schema.getSchema().getFields()) {
 			if ("title".equals(fieldSchema.getName())) {
@@ -117,7 +116,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		getClient().getClientSchemaStorage().addSchema(clientSchema);
 
 		// Update the schema server side
-		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<Schema> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -138,7 +137,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 
 		// 1. Remove title field from schema
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		Schema request = new SchemaImpl();
 		request.setName("content");
 		for (FieldSchema fieldSchema : schema.getSchema().getFields()) {
 			if ("title".equals(fieldSchema.getName())) {
@@ -156,7 +155,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		clientSchema.addField(titleFieldSchema);
 
 		// Update the schema server side
-		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<Schema> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 

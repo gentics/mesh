@@ -8,20 +8,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -59,60 +59,79 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testNullOperation() {
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		Schema schema = new SchemaImpl();
-		Schema updatedSchema = mutator.apply(schema, null);
+		container.setSchema(schema);
+		Schema updatedSchema = mutator.apply(container);
 		assertNotNull(updatedSchema);
 		assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
 	}
 
 	@Test
 	public void testNameDescription() {
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		Schema schema = new SchemaImpl();
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setName("updated");
-		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		container.setSchema(schema);
+		container.setNextChange(change);
+
+		Schema updatedSchema = mutator.apply(container);
 		assertEquals("updated", updatedSchema.getName());
 
 		change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setDescription("text");
-		updatedSchema = mutator.apply(updatedSchema, Arrays.asList(change));
+		container.setNextChange(change);
+		updatedSchema = mutator.apply(container);
 		assertEquals("text", updatedSchema.getDescription());
 	}
 
 	@Test
 	public void testAddField() {
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 		Schema schema = new SchemaImpl();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("name");
 		change.setType("html");
-		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		container.setSchema(schema);
+		container.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(container);
 		assertThat(updatedSchema).hasField("name");
 	}
 
 	@Test
 	public void testUpdateFieldLabel() {
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+
 		Schema schema = new SchemaImpl();
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		change.setFieldName("name");
 		change.setLabel("updated");
-		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		container.setSchema(schema);
+		container.setNextChange(change);
+
+		FieldSchemaContainer updatedSchema = mutator.apply(container);
 		assertEquals("The field label was not updated by the mutator.", "updated", updatedSchema.getField("name").getLabel());
 	}
 
 	@Test
 	public void testFieldOrderChange() {
-		// 1. Create the schema
+		// 1. Create the schema container
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+
 		Schema schema = new SchemaImpl();
 		schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schema.addField(FieldUtil.createHtmlFieldSchema("second"));
+		container.setSchema(schema);
 
 		// 2. Create the schema update change
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setOrder("second", "first");
+		container.setNextChange(change);
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		Schema updatedSchema = mutator.apply(container);
 		assertNotNull("The updated schema was not generated.", updatedSchema);
 		assertEquals("The updated schema should contain two fields.", 2, updatedSchema.getFields().size());
 		assertEquals("The first field should now be the field with name \"second\".", "second", updatedSchema.getFields().get(0).getName());
@@ -123,6 +142,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	@Test
 	public void testRemoveField() {
 
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+
 		// 1. Create schema with field
 		Schema schema = new SchemaImpl();
 		schema.addField(FieldUtil.createStringFieldSchema("test"));
@@ -131,26 +152,31 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName("test");
 
+		container.setNextChange(change);
+		container.setSchema(schema);
+
 		// 3. Apply the change
-		FieldSchemaContainer updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		FieldSchemaContainer updatedSchema = mutator.apply(container);
 
 		assertThat(updatedSchema).hasNoField("test");
 	}
 
-	@Test
-	public void testRemoveNonExistingField() {
-		Schema schema = new SchemaImpl();
-		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-		change.setFieldName("test");
-
-		// 3. Apply the change
-		FieldSchemaContainer updatedContainer = mutator.apply(schema, Arrays.asList(change));
-
-		fail("TODO define result");
-	}
+	//	@Test
+	//	public void testRemoveNonExistingField() {
+	//		Schema schema = new SchemaImpl();
+	//		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+	//		change.setFieldName("test");
+	//
+	//		// 3. Apply the change
+	//		FieldSchemaContainer updatedContainer = mutator.apply(schema, Arrays.asList(change));
+	//
+	//		fail("TODO define result");
+	//	}
 
 	@Test
 	public void testUpdateFields() {
+
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaImpl();
@@ -205,50 +231,60 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		listField.setRequired(true);
 		schema.addField(listField);
 
+		container.setSchema(schema);
+
 		// 2. Create schema field update change
 		UpdateFieldChange binaryFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		binaryFieldUpdate.setFieldName("binaryField");
 		binaryFieldUpdate.setFieldProperty("allowedMimeTypes", new String[] { "newTypes" });
 		binaryFieldUpdate.setFieldProperty("required", false);
+		container.setNextChange(binaryFieldUpdate);
 
 		UpdateFieldChange nodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		nodeFieldUpdate.setFieldName("nodeField");
 		nodeFieldUpdate.setFieldProperty("allowedSchemas", new String[] { "schemaA", "schemaB" });
 		nodeFieldUpdate.setFieldProperty("required", false);
+		binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
 		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		stringFieldUpdate.setFieldProperty("allowedValues", new String[] { "valueA", "valueB" });
 		stringFieldUpdate.setFieldName("stringField");
 		stringFieldUpdate.setFieldProperty("required", false);
+		nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
 		UpdateFieldChange htmlFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		htmlFieldUpdate.setFieldName("htmlField");
 		htmlFieldUpdate.setFieldProperty("required", false);
+		stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
 		UpdateFieldChange numberFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		numberFieldUpdate.setFieldName("numberField");
 		numberFieldUpdate.setFieldProperty("required", false);
+		htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
 		UpdateFieldChange dateFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		dateFieldUpdate.setFieldName("dateField");
 		dateFieldUpdate.setFieldProperty("required", false);
+		numberFieldUpdate.setNextChange(dateFieldUpdate);
 
 		UpdateFieldChange booleanFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		booleanFieldUpdate.setFieldName("booleanField");
 		booleanFieldUpdate.setFieldProperty("required", false);
+		dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
 		UpdateFieldChange micronodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		micronodeFieldUpdate.setFieldName("micronodeField");
 		micronodeFieldUpdate.setFieldProperty("allowedMicroSchemas", new String[] { "A", "B", "C" });
 		micronodeFieldUpdate.setFieldProperty("required", false);
+		booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
 		UpdateFieldChange listFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		listFieldUpdate.setFieldName("listField");
 		listFieldUpdate.setFieldProperty("required", false);
+		micronodeFieldUpdate.setNextChange(listFieldUpdate);
 
 		// 3. Apply the changes
-		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(binaryFieldUpdate, nodeFieldUpdate, stringFieldUpdate, htmlFieldUpdate,
-				numberFieldUpdate, dateFieldUpdate, booleanFieldUpdate, booleanFieldUpdate, micronodeFieldUpdate, listFieldUpdate));
+		Schema updatedSchema = (Schema) mutator.apply(container);
 
 		// Binary 
 		BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
@@ -299,6 +335,9 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testChangeFieldTypeToHtml() {
+
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+
 		// 1. Create schema
 		Schema schema = new SchemaImpl();
 		schema.setName("testschema");
@@ -313,7 +352,10 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		fieldTypeUpdate.setFieldProperty("newType", "html");
 
 		// 3. Apply the changes
-		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(fieldTypeUpdate));
+		container.setNextChange(fieldTypeUpdate);
+		container.setSchema(schema);
+
+		Schema updatedSchema = (Schema) mutator.apply(container);
 		assertNotNull(updatedSchema);
 		assertEquals("html", updatedSchema.getField("stringField").getType());
 
@@ -321,6 +363,9 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testChangeFieldTypeToList() {
+
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+
 		// 1. Create schema
 		Schema schema = new SchemaImpl();
 		schema.setName("testschema");
@@ -336,8 +381,11 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		fieldTypeUpdate.setFieldProperty("newType", "list");
 		fieldTypeUpdate.setFieldProperty("listType", "html");
 
+		container.setNextChange(fieldTypeUpdate);
+		container.setSchema(schema);
+
 		// 3. Apply the changes
-		Schema updatedSchema = (Schema) mutator.apply(schema, Arrays.asList(fieldTypeUpdate));
+		Schema updatedSchema = (Schema) mutator.apply(container);
 		assertNotNull(updatedSchema);
 		ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
 		assertEquals("list", fieldSchema.getType());
@@ -353,6 +401,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testUpdateSchema() {
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaImpl();
@@ -363,8 +412,12 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		change.setContainerFlag(true);
 		change.setSegmentField("newSegmentField");
 
+		container.setSchema(schema);
+		;
+		container.setNextChange(change);
+
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(schema, Arrays.asList(change));
+		Schema updatedSchema = mutator.apply(container);
 		assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 		assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
 		assertTrue("The schema container flag was not updated", updatedSchema.isContainer());

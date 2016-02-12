@@ -147,7 +147,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
 		microschemaA.addField(oldField);
 		containerA.setName("migratedSchema");
-		containerA.setMicroschema(microschemaA);
+		containerA.setSchema(microschemaA);
 		boot.microschemaContainerRoot().addMicroschema(containerA);
 
 		// create version 2 of the microschema (with the field renamed)
@@ -158,7 +158,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 		microschemaB.addField(newField);
 		containerB.setName("migratedSchema");
-		containerB.setMicroschema(microschemaB);
+		containerB.setSchema(microschemaB);
 		boot.microschemaContainerRoot().addMicroschema(containerB);
 
 		// link the schemas with the changes in between

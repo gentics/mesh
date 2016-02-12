@@ -20,10 +20,11 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -43,8 +44,8 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 		return list;
 	}
 
-	private SchemaUpdateRequest getSchemaUpdateRequest() {
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+	private Schema getSchema() {
+		Schema request = new SchemaImpl();
 		request.setName("content");
 		request.setDisplayField("title");
 		request.setSegmentField("filename");
@@ -77,7 +78,7 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testDiffDisplayField() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = getSchemaUpdateRequest();
+		Schema request = getSchema();
 		request.setDisplayField("name");
 		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
 		latchFor(future);
@@ -93,7 +94,7 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testNoDiff() {
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = getSchemaUpdateRequest();
+		Schema request = getSchema();
 		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
@@ -105,7 +106,7 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testAddField() {
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = getSchemaUpdateRequest();
+		Schema request = getSchema();
 		BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
 		binaryField.setAllowedMimeTypes("one", "two");
 		request.addField(binaryField);
@@ -123,7 +124,7 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testRemoveField() {
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = getSchemaUpdateRequest();
+		Schema request = getSchema();
 		request.removeField("content");
 		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
 		latchFor(future);

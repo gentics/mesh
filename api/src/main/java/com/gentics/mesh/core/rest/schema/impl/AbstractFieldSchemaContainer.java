@@ -16,11 +16,43 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 public abstract class AbstractFieldSchemaContainer implements FieldSchemaContainer {
 
+	private String uuid;
+	private String[] permissions = {};
+	private String[] rolePerms;
 	private int version;
 	private String description;
 	private String name;
-
 	private List<FieldSchema> fields = new ArrayList<>();
+
+	@Override
+	public String getUuid() {
+		return uuid;
+	}
+
+	@Override
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	@Override
+	public String[] getPermissions() {
+		return permissions;
+	}
+
+	@Override
+	public void setPermissions(String... permissions) {
+		this.permissions = permissions;
+	}
+
+	@Override
+	public String[] getRolePerms() {
+		return rolePerms;
+	}
+
+	@Override
+	public void setRolePerms(String... rolePerms) {
+		this.rolePerms = rolePerms;
+	}
 
 	@Override
 	public int getVersion() {

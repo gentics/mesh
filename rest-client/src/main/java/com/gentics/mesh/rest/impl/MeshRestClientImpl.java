@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -35,16 +36,13 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -461,8 +459,8 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaResponse> createSchema(SchemaCreateRequest request) {
-		return handleRequest(POST, "/schemas", SchemaResponse.class, request);
+	public Future<Schema> createSchema(Schema request) {
+		return handleRequest(POST, "/schemas", SchemaImpl.class, request);
 	}
 
 	@Override
@@ -471,26 +469,26 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaResponse> findSchemaByUuid(String uuid, QueryParameterProvider... parameters) {
+	public Future<Schema> findSchemaByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaResponse.class);
+		return handleRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaImpl.class);
 	}
 
 	@Override
-	public Future<SchemaResponse> updateSchema(String uuid, SchemaUpdateRequest request) {
+	public Future<Schema> updateSchema(String uuid, Schema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(PUT, "/schemas/" + uuid, SchemaResponse.class, request);
+		return handleRequest(PUT, "/schemas/" + uuid, SchemaImpl.class, request);
 	}
 
 	@Override
-	public Future<SchemaChangesListModel> diffSchema(String uuid, SchemaUpdateRequest request) {
+	public Future<SchemaChangesListModel> diffSchema(String uuid, Schema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "request must not be null");
 		return handleRequest(POST, "/schemas/" + uuid + "/diff", SchemaChangesListModel.class, request);
 	}
 
 	@Override
-	public Future<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaUpdateRequest request) {
+	public Future<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "request must not be null");
 		return handleRequest(POST, "/microschemas/" + uuid + "/diff", SchemaChangesListModel.class, request);
@@ -565,10 +563,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaResponse> addSchemaToProject(String schemaUuid, String projectUuid) {
+	public Future<Schema> addSchemaToProject(String schemaUuid, String projectUuid) {
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(PUT, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
+		return handleRequest(PUT, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaImpl.class);
 	}
 
 	@Override
@@ -582,10 +580,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid) {
+	public Future<Schema> removeSchemaFromProject(String schemaUuid, String projectUuid) {
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaResponse.class);
+		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaImpl.class);
 	}
 
 	@Override
@@ -595,7 +593,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		ObservableFuture<SchemaListResponse> schemasObservable = RxHelper.observableFuture();
 		schemasFuture.setHandler(schemasObservable.toHandler());
 		schemasObservable.doOnNext(list -> {
-			for (SchemaResponse schema : list.getData()) {
+			for (Schema schema : list.getData()) {
 				getClientSchemaStorage().addSchema(schema);
 				log.info("Added schema {" + schema.getName() + "} to schema storage.");
 			}
@@ -605,7 +603,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		ObservableFuture<MicroschemaListResponse> microschemasObservable = RxHelper.observableFuture();
 		microschemasFuture.setHandler(microschemasObservable.toHandler());
 		microschemasObservable.doOnNext(list -> {
-			for (MicroschemaResponse microschema : list.getData()) {
+			for (Microschema microschema : list.getData()) {
 				getClientSchemaStorage().addMicroschema(microschema);
 				log.info("Added microschema {" + microschema.getName() + "} to schema storage.");
 			}
@@ -851,14 +849,14 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request) {
-		return handleRequest(POST, "/microschemas", MicroschemaResponse.class, request);
+	public Future<Microschema> createMicroschema(Microschema request) {
+		return handleRequest(POST, "/microschemas", MicroschemaImpl.class, request);
 	}
 
 	@Override
-	public Future<MicroschemaResponse> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters) {
+	public Future<Microschema> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaResponse.class);
+		return handleRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaImpl.class);
 	}
 
 	@Override
@@ -867,9 +865,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<MicroschemaResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request) {
+	public Future<Microschema> updateMicroschema(String uuid, Microschema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(PUT, "/microschemas/" + uuid, MicroschemaResponse.class, request);
+		return handleRequest(PUT, "/microschemas/" + uuid, MicroschemaImpl.class, request);
 	}
 
 	@Override

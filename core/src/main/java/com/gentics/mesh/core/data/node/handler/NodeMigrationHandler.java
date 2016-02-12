@@ -189,8 +189,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 					ac.setLanguageTags(Arrays.asList(container.getLanguage().getLanguageTag()));
 
 					MicronodeResponse restModel = micronode.transformToRestSync(ac).toBlocking().last();
-					Microschema oldSchema = microschemaContainer.getMicroschema();
-					Microschema newSchema = nextVersion.getMicroschema();
+					Microschema oldSchema = microschemaContainer.getSchema();
+					Microschema newSchema = nextVersion.getSchema();
 					migrate(ac, micronode, restModel, oldSchema, newSchema, touchedFields, migrationScripts, MicronodeResponse.class);
 					// migrate the microschema reference to the new version
 					micronode.setMicroschemaContainer(nextVersion);

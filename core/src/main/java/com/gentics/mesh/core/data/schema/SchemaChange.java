@@ -137,7 +137,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 *            Field container to be modified
 	 * @return Modified schema
 	 */
-	T apply(T container);
+	<R extends FieldSchemaContainer> R apply(R container);
 
 	/**
 	 * Set the change specific properties by examining the rest change model.

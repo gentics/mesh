@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
@@ -153,7 +152,7 @@ public class RestModelTest extends AbstractDBTest {
 	@Test
 	public void testSchema() throws JsonParseException, JsonMappingException, IOException {
 
-		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+		Schema schemaCreateRequest = new SchemaImpl();
 		schemaCreateRequest.setName("blogpost");
 		schemaCreateRequest.setDisplayField("name");
 
@@ -203,7 +202,7 @@ public class RestModelTest extends AbstractDBTest {
 		assertNotNull(json);
 
 		// Deserialize the object
-		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json, SchemaCreateRequest.class);
+		Schema loadedRequest = JsonUtil.readSchema(json, SchemaImpl.class);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object
@@ -213,7 +212,7 @@ public class RestModelTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeSchemaCreateRequest2() {
+	public void testNodeSchema2() {
 		Schema schema = new SchemaImpl();
 
 		schema.setName("blogpost");

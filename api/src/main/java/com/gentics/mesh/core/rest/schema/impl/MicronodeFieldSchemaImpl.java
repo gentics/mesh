@@ -23,8 +23,9 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 	}
 
 	@Override
-	public void setAllowedMicroSchemas(String... allowedMicroSchemas) {
+	public MicronodeFieldSchema setAllowedMicroSchemas(String... allowedMicroSchemas) {
 		this.allowedMicroSchemas = allowedMicroSchemas;
+		return this;
 	}
 
 	@Override

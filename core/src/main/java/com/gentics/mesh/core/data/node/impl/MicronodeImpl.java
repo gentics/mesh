@@ -49,7 +49,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 		}
 
-		Microschema microschema = microschemaContainer.getMicroschema();
+		Microschema microschema = microschemaContainer.getSchema();
 		if (microschema == null) {
 			throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
 		}
@@ -102,7 +102,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Microschema getMicroschema() {
-		return getMicroschemaContainer().getMicroschema();
+		return getMicroschemaContainer().getSchema();
 	}
 
 	@Override

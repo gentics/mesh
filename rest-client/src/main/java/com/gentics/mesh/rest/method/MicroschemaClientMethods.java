@@ -1,9 +1,7 @@
 package com.gentics.mesh.rest.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
@@ -18,7 +16,7 @@ public interface MicroschemaClientMethods {
 	 *            create request
 	 * @return future for the microschema response
 	 */
-	Future<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request);
+	Future<Microschema> createMicroschema(Microschema request);
 
 	/**
 	 * Load the microschema with the given UUID.
@@ -27,7 +25,7 @@ public interface MicroschemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<MicroschemaResponse> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<Microschema> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Update the microschema with the given request.
@@ -38,7 +36,7 @@ public interface MicroschemaClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<MicroschemaResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request);
+	Future<Microschema> updateMicroschema(String uuid, Microschema request);
 
 	/**
 	 * Delete the given microschema.
@@ -66,5 +64,5 @@ public interface MicroschemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaUpdateRequest request);
+	Future<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request);
 }

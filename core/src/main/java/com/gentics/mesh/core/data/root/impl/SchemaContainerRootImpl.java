@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -105,9 +105,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ObservableFuture<SchemaContainer> obsFut = RxHelper.observableFuture();
 
-		SchemaCreateRequest requestModel;
+		Schema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaCreateRequest.class);
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
 			if (StringUtils.isEmpty(requestModel.getName())) {
 				throw error(BAD_REQUEST, "schema_missing_name");
 			}

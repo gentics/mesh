@@ -1,7 +1,5 @@
 package com.gentics.mesh.rest;
 
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.rest.impl.MeshRestClientImpl;
 import com.gentics.mesh.rest.method.AdminClientMethods;
@@ -22,7 +20,6 @@ import com.gentics.mesh.rest.method.UserClientMethods;
 import com.gentics.mesh.rest.method.UtilityClientMethods;
 import com.gentics.mesh.rest.method.WebRootClientMethods;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.RoutingContext;

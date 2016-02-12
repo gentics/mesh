@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
+import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -88,6 +89,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
 			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
+
 			return db.trx(() -> {
 				if (getNextChange() != null) {
 					throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
@@ -105,6 +107,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 						current = graphChange;
 					}
 				}
+
+				R resultingSchema = FieldSchemaContainerMutator.getInstance().apply(this);
+				resultingSchema.validate();
 
 				//TODO create new schema version and assign it to the end of the chain. Make sure to unlink the old schema container from the container root and assign the new version to the root.
 
@@ -150,7 +155,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator, FieldSchemaContainer fieldContainerModel) {
+	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
+			FieldSchemaContainer fieldContainerModel) {
+
 		try {
 			SchemaChangesListModel list = new SchemaChangesListModel();
 			fieldContainerModel.validate();

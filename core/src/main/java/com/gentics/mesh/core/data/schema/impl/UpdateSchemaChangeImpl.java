@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
@@ -12,27 +13,33 @@ import com.gentics.mesh.core.rest.schema.Schema;
  */
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
 
+	
 	@Override
-	public Schema apply(Schema schema) {
-		schema = super.apply(schema);
-
-		String displayFieldname = getDisplayField();
-		if (displayFieldname != null) {
-			schema.setDisplayField(displayFieldname);
+		public <R extends FieldSchemaContainer> R apply(R container) {
+			// TODO Auto-generated method stub
+			return super.apply(container);
 		}
-
-		String segmentFieldname = getSegmentField();
-		if (segmentFieldname != null) {
-			schema.setSegmentField(segmentFieldname);
-		}
-
-		Boolean containerFlag = getContainerFlag();
-		if (containerFlag != null) {
-			schema.setContainer(containerFlag);
-		}
-
-		return schema;
-	}
+//	@Override
+//	public <R extends FieldSchemaContainer> Schema apply(R container) {
+//		Schema schema = super.apply(container);
+//
+//		String displayFieldname = getDisplayField();
+//		if (displayFieldname != null) {
+//			schema.setDisplayField(displayFieldname);
+//		}
+//
+//		String segmentFieldname = getSegmentField();
+//		if (segmentFieldname != null) {
+//			schema.setSegmentField(segmentFieldname);
+//		}
+//
+//		Boolean containerFlag = getContainerFlag();
+//		if (containerFlag != null) {
+//			schema.setContainer(containerFlag);
+//		}
+//
+//		return schema;
+//	}
 
 	@Override
 	public void setDisplayField(String fieldName) {

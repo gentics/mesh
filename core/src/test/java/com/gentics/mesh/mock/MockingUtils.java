@@ -111,7 +111,7 @@ public final class MockingUtils {
 		when(micronode.getUuid()).thenReturn(randomUUID());
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		when(micronode.getMicroschemaContainer()).thenReturn(microschemaContainer);
-		Microschema microschema = microschemaContainer.getMicroschema();
+		Microschema microschema = microschemaContainer.getSchema();
 		when(micronode.getMicroschema()).thenReturn(microschema);
 
 		// longitude field
@@ -212,7 +212,7 @@ public final class MockingUtils {
 		MicroschemaContainer container = mock(MicroschemaContainerImpl.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(randomUUID());
-		when(container.getMicroschema()).thenReturn(mockGeolocationMicroschema());
+		when(container.getSchema()).thenReturn(mockGeolocationMicroschema());
 		when(container.getCreator()).thenReturn(user);
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);

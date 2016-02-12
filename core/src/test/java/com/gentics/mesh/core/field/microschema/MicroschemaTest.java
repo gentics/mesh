@@ -74,7 +74,7 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		for (String name : microschemaContainers().keySet()) {
 			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().single();
 			assertNotNull("Could not find microschema container for name " + name, container);
-			Microschema microschema = container.getMicroschema();
+			Microschema microschema = container.getSchema();
 			assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
 			assertEquals("Check microschema name", name, microschema.getName());
 		}
