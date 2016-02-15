@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -19,16 +20,11 @@ import com.gentics.mesh.util.Tuple;
  *  (s:Schema)-[:HAS_CHANGE]->(c1:SchemaChange)-[:HAS_CHANGE]->(c2:SchemaChange)-(s2:Schema)
  * }
  * </pre>
+ * 
+ * The schema change stores {@link SchemaChangeModel} data. Since the {@link SchemaChangeModel} class is generic we will also store the model specific
+ * properties in a generic way. The {@link #setRestProperty(String, Object)} method can be used to set such properties.
  */
 public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex {
-
-	/**
-	 * Set the schema change operation.
-	 * 
-	 * @param action
-	 * @return Fluent
-	 */
-	SchemaChange<T> setOperation(SchemaChangeOperation action);
 
 	/**
 	 * Return the schema change operation.
@@ -144,6 +140,37 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * 
 	 * @param restChange
 	 */
-	void fill(SchemaChangeModel restChange);
+	void updateFromRest(SchemaChangeModel restChange);
+
+	/**
+	 * Transform the graph model into the rest representation.
+	 * 
+	 * @return
+	 * @throws IOException 
+	 */
+	SchemaChangeModel transformToRest() throws IOException;
+
+	/**
+	 * Set a REST specific property.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	void setRestProperty(String key, Object value);
+
+	/**
+	 * Return a REST specific property.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	<T> T getRestProperty(String key);
+
+	/**
+	 * Return REST field specific properties.
+	 * 
+	 * @return
+	 */
+	<T> Map<String, T> getRestProperties();
 
 }

@@ -200,7 +200,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(restChange.getOperation()));
 		}
 
-		schemaChange.fill(restChange);
+		schemaChange.updateFromRest(restChange);
 		return schemaChange;
 
 	}

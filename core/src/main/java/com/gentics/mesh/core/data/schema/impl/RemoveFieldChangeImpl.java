@@ -11,7 +11,10 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  */
 public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements RemoveFieldChange {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.REMOVEFIELD;
+	@Override
+	public SchemaChangeOperation getOperation() {
+		return OPERATION;
+	}
 
 	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {

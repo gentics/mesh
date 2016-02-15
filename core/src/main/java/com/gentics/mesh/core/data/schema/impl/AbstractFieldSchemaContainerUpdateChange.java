@@ -14,27 +14,27 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 
 	@Override
 	public String getName() {
-		return getProperty(SchemaChangeModel.NAME_KEY);
+		return getRestProperty(SchemaChangeModel.NAME_KEY);
 	}
 
 	@Override
 	public void setName(String name) {
-		setProperty(SchemaChangeModel.NAME_KEY, name);
+		setRestProperty(SchemaChangeModel.NAME_KEY, name);
 	}
 
 	@Override
 	public String getDescription() {
-		return getProperty(SchemaChangeModel.DESCRIPTION_KEY);
+		return getRestProperty(SchemaChangeModel.DESCRIPTION_KEY);
 	}
 
 	@Override
 	public void setDescription(String description) {
-		setProperty(SchemaChangeModel.DESCRIPTION_KEY, description);
+		setRestProperty(SchemaChangeModel.DESCRIPTION_KEY, description);
 	}
 
 	@Override
 	public List<String> getOrder() {
-		String[] fieldNames = getProperty(SchemaChangeModel.FIELD_ORDER_KEY);
+		String[] fieldNames = getRestProperty(SchemaChangeModel.FIELD_ORDER_KEY);
 		if (fieldNames == null) {
 			return null;
 		}
@@ -43,7 +43,7 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 
 	@Override
 	public void setOrder(String... fieldNames) {
-		setProperty(SchemaChangeModel.FIELD_ORDER_KEY, fieldNames);
+		setRestProperty(SchemaChangeModel.FIELD_ORDER_KEY, fieldNames);
 	}
 
 	@Override

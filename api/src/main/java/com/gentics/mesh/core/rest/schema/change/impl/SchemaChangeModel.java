@@ -34,6 +34,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String TYPE_KEY = "type";
 
+	public static final String LIST_TYPE_KEY = "listType";
+
 	private String uuid;
 
 	private SchemaChangeOperation operation;
@@ -63,11 +65,6 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public SchemaChangeModel(SchemaChangeOperation operation) {
 		this.operation = operation;
-	}
-
-	@JsonIgnore
-	public String getFieldName() {
-		return (String) getProperties().get(FIELD_NAME_KEY);
 	}
 
 	/**
@@ -122,7 +119,7 @@ public class SchemaChangeModel implements RestModel {
 	 * @param key
 	 * @param value
 	 */
-	public void setProperty(String key, String value) {
+	public void setProperty(String key, Object value) {
 		properties.put(key, value);
 	}
 
@@ -179,7 +176,11 @@ public class SchemaChangeModel implements RestModel {
 
 	@Override
 	public String toString() {
-		return getOperation() + ":" + getFieldName() + ":" + getProperties();
+		return getOperation() + ":" + getUuid() + ":" + getProperties();
+	}
+
+	public <T> T getProperty(String key) {
+		return (T) properties.get(key);
 	}
 
 }

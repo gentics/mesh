@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -20,9 +21,9 @@ import com.gentics.mesh.util.Tuple;
  */
 public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> extends MeshVertexImpl implements SchemaChange<T> {
 
-	private static String OPERATION_NAME_PROPERTY_KEY = "operation";
-
 	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
+
+	public static final String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(AbstractSchemaChange.class);
@@ -51,15 +52,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	}
 
 	@Override
-	public SchemaChange setOperation(SchemaChangeOperation operation) {
-		setProperty(OPERATION_NAME_PROPERTY_KEY, operation.name());
-		return this;
-	}
-
-	@Override
-	public SchemaChangeOperation getOperation() {
-		return getProperty(OPERATION_NAME_PROPERTY_KEY);
-	}
+	abstract public SchemaChangeOperation getOperation();
 
 	@Override
 	public <R extends GraphFieldSchemaContainer<?, ?, ?>> R getPreviousContainer() {
@@ -85,7 +78,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public String getMigrationScript() throws IOException {
-		String migrationScript = getProperty(MIGRATION_SCRIPT_PROPERTY_KEY, String.class);
+		String migrationScript = getProperty(MIGRATION_SCRIPT_PROPERTY_KEY);
 		if (migrationScript == null) {
 			migrationScript = getAutoMigrationScript();
 		}
@@ -101,18 +94,53 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
-		return null;
+		return null; // Default value for changes that don't have a script
 	}
 
 	@Override
 	public List<Tuple<String, Object>> getMigrationScriptContext() {
-		return null;
+		return null; // Default value for changes that don't have a script
 	}
 
 	@Override
-	public void fill(SchemaChangeModel restChange) {
+	public void setRestProperty(String key, Object value) {
+		setProperty(REST_PROPERTY_PREFIX_KEY + key, value);
+	}
+
+	@Override
+	public <T> T getRestProperty(String key) {
+		return getProperty(REST_PROPERTY_PREFIX_KEY + key);
+	}
+
+	@Override
+	public <T> Map<String, T> getRestProperties() {
+		return getProperties(REST_PROPERTY_PREFIX_KEY);
+	}
+
+	@Override
+	public void updateFromRest(SchemaChangeModel restChange) {
+		String migrationScript = restChange.getMigrationScript();
+		if (migrationScript != null) {
+			setCustomMigrationScript(migrationScript);
+		}
 		for (String key : restChange.getProperties().keySet()) {
-			setProperty(key, restChange.getProperties().get(key));
+			setRestProperty(key, restChange.getProperties().get(key));
 		}
 	}
+
+	@Override
+	public SchemaChangeModel transformToRest() throws IOException {
+		SchemaChangeModel model = new SchemaChangeModel();
+		// Strip away the prefix
+		for (String key : getRestProperties().keySet()) {
+			Object value = getRestProperties().get(key);
+			key = key.replace(REST_PROPERTY_PREFIX_KEY, "");
+			model.getProperties().put(key, value);
+		}
+		model.setOperation(getOperation());
+		model.setUuid(getUuid());
+		model.setMigrationScript(getMigrationScript());
+		return model;
+	}
+
 }

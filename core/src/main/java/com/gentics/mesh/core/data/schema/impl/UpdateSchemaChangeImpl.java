@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * @see UpdateSchemaChange
@@ -16,12 +17,17 @@ import com.gentics.mesh.core.rest.schema.Schema;
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
 
 	@Override
+	public SchemaChangeOperation getOperation() {
+		return OPERATION;
+	}
+
+	@Override
 	public <R extends FieldSchemaContainer> R apply(R container) {
 		if (!(container instanceof Schema)) {
 			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName());
 		}
-		
-		Schema schema = (Schema)super.apply(container);
+
+		Schema schema = (Schema) super.apply(container);
 
 		String displayFieldname = getDisplayField();
 		if (displayFieldname != null) {
@@ -43,32 +49,32 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 
 	@Override
 	public void setDisplayField(String fieldName) {
-		setProperty(DISPLAY_FIELD_NAME_KEY, fieldName);
+		setRestProperty(DISPLAY_FIELD_NAME_KEY, fieldName);
 	}
 
 	@Override
 	public String getDisplayField() {
-		return getProperty(DISPLAY_FIELD_NAME_KEY);
+		return getRestProperty(DISPLAY_FIELD_NAME_KEY);
 	}
 
 	@Override
 	public void setContainerFlag(Boolean flag) {
-		setProperty(CONTAINER_FIELD_KEY, flag);
+		setRestProperty(CONTAINER_FIELD_KEY, flag);
 	}
 
 	@Override
 	public Boolean getContainerFlag() {
-		return getProperty(CONTAINER_FIELD_KEY);
+		return getRestProperty(CONTAINER_FIELD_KEY);
 	}
 
 	@Override
 	public void setSegmentField(String fieldName) {
-		setProperty(SEGMENT_FIELD_KEY, fieldName);
+		setRestProperty(SEGMENT_FIELD_KEY, fieldName);
 	}
 
 	@Override
 	public String getSegmentField() {
-		return getProperty(SEGMENT_FIELD_KEY);
+		return getRestProperty(SEGMENT_FIELD_KEY);
 	}
 
 }

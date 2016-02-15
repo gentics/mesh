@@ -39,19 +39,24 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	@Override
 	public void handle(RoutingContext rc) {
+		if (rc.statusCode() == 404) {
+			rc.next();
+			return;
+		}
 		if (rc.statusCode() == 401) {
 			// Assume that it has been handled by the BasicAuthHandlerImpl
 			if (log.isDebugEnabled()) {
 				log.debug("Got failure with 401 code.");
 			}
 			rc.next();
+			return;
 		} else {
 			log.error("Error for request in path: " + rc.normalisedPath());
 			Throwable failure = rc.failure();
 			if (failure != null) {
 				log.error("Error:", failure);
 			}
-			
+
 			//TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {

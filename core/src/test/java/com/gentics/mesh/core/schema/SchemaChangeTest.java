@@ -68,7 +68,6 @@ public class SchemaChangeTest extends AbstractBasicDBTest {
 		SchemaChange oldChange = null;
 		for (int i = 0; i < 3; i++) {
 			SchemaChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			change.setOperation(UPDATEFIELD);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainer());

@@ -37,8 +37,8 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 	 * @return Fluent API
 	 */
 	public SchemaChangeModelAssert forField(String fieldName) {
-		assertNotNull("The field for this change could not be identified.", actual.getFieldName());
-		assertEquals("The change field name does not match the expected one.", fieldName, actual.getFieldName());
+		assertNotNull("The field for this change could not be identified.", actual.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
+		assertEquals("The change field name does not match the expected one.", fieldName, actual.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
 		return this;
 	}
 

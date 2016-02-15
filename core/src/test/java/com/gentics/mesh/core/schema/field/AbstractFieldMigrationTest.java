@@ -394,9 +394,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// link the schemas with the change in between
 		SchemaFieldChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
-		change.setFieldProperty("type", newFieldSchema.getType());
+		change.setRestProperty("type", newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
-			change.setFieldProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
+			change.setRestProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
 		}
 		change.setPreviousContainer(containerA);
 		change.setNextSchemaContainer(containerB);
@@ -462,9 +462,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// link the schemas with the change in between
 		SchemaFieldChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
-		change.setFieldProperty("type", newFieldSchema.getType());
+		change.setRestProperty("type", newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
-			change.setFieldProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
+			change.setRestProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
 		}
 		change.setPreviousContainer(containerA);
 		change.setNextSchemaContainer(containerB);

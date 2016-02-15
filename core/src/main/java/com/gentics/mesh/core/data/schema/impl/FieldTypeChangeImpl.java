@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -26,7 +27,30 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
  */
 public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldTypeChange {
 
-	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
+	@Override
+	public SchemaChangeOperation getOperation() {
+		return OPERATION;
+	}
+
+	@Override
+	public String getType() {
+		return getRestProperty(SchemaChangeModel.TYPE_KEY);
+	}
+
+	@Override
+	public void setType(String type) {
+		setRestProperty(SchemaChangeModel.TYPE_KEY, type);
+	}
+
+	@Override
+	public String getListType() {
+		return getRestProperty(SchemaChangeModel.LIST_TYPE_KEY);
+	}
+
+	@Override
+	public void setListType(String listType) {
+		setRestProperty(SchemaChangeModel.LIST_TYPE_KEY, listType);
+	}
 
 	/**
 	 * Apply the field type change to the specified schema.
@@ -41,7 +65,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 		}
 
 		FieldSchema field = null;
-		String newType = getFieldProperty("newType");
+		String newType = getType();
 		if (newType != null) {
 
 			switch (newType) {
@@ -62,7 +86,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 				break;
 			case "list":
 				ListFieldSchema listField = new ListFieldSchemaImpl();
-				listField.setListType(getFieldProperty("listType"));
+				listField.setListType(getListType());
 				field = listField;
 				break;
 			case "micronode":
@@ -89,7 +113,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(Arrays.asList("type", "listType").stream().filter(key -> getFieldProperty(key) != null)
-				.collect(Collectors.toMap(key -> key, key -> getFieldProperty(key))));
+		return OPERATION.getAutoMigrationScript(Arrays.asList("type", "listType").stream().filter(key -> getRestProperty(key) != null)
+				.collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
 	}
 }

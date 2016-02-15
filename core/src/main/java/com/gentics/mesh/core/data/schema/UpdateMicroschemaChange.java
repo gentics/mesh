@@ -3,11 +3,14 @@ package com.gentics.mesh.core.data.schema;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * Change entry that contains information on how to change microschema specific attributes.
  */
 public interface UpdateMicroschemaChange extends FieldSchemaContainerUpdateChange<Microschema> {
+
+	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATEMICROSCHEMA;
 
 	/**
 	 * Set the field order.
@@ -23,5 +26,5 @@ public interface UpdateMicroschemaChange extends FieldSchemaContainerUpdateChang
 	 * @return
 	 */
 	List<String> getOrder();
-	
+
 }

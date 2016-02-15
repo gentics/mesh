@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import java.util.Map;
-
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 /**
@@ -23,28 +21,5 @@ public interface SchemaFieldChange extends SchemaChange<FieldSchemaContainer> {
 	 * @return field name
 	 */
 	String getFieldName();
-
-	/**
-	 * Set a field specific property.
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	void setFieldProperty(String key, Object value);
-
-	/**
-	 * Return a field specific property.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	String getFieldProperty(String key);
-
-	/**
-	 * Return field specific properties.
-	 * 
-	 * @return
-	 */
-	<T> Map<String, T> getFieldProperties();
 
 }

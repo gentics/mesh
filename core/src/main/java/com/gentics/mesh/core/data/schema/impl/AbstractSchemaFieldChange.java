@@ -14,18 +14,14 @@ import com.gentics.mesh.util.Tuple;
  */
 public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange<FieldSchemaContainer> implements SchemaFieldChange {
 
-	private static final String FIELDNAME_KEY = "fieldName";
-
-	public static final String FIELD_PROPERTY_PREFIX_KEY = "fieldProperty_";
-
 	@Override
 	public String getFieldName() {
-		return getProperty(FIELDNAME_KEY);
+		return getRestProperty(SchemaChangeModel.FIELD_NAME_KEY);
 	}
 
 	@Override
 	public void setFieldName(String name) {
-		setProperty(FIELDNAME_KEY, name);
+		setRestProperty(SchemaChangeModel.FIELD_NAME_KEY, name);
 	}
 
 	@Override
@@ -34,27 +30,11 @@ public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange<Fie
 	}
 
 	@Override
-	public void setFieldProperty(String key, Object value) {
-		setProperty(FIELD_PROPERTY_PREFIX_KEY + key, value);
-	}
-
-	@Override
-	public String getFieldProperty(String key) {
-		return getProperty(FIELD_PROPERTY_PREFIX_KEY + key);
-	}
-
-	@Override
-	public <T> Map<String, T> getFieldProperties() {
-		return getProperties(FIELD_PROPERTY_PREFIX_KEY);
-	}
-
-	@Override
-	public void fill(SchemaChangeModel restChange) {
-		setFieldName(restChange.getFieldName());
-		setCustomMigrationScript(restChange.getMigrationScript());
-		for (Map.Entry<String, Object> entry : restChange.getProperties().entrySet()) {
+	public void updateFromRest(SchemaChangeModel model) {
+		setCustomMigrationScript(model.getMigrationScript());
+		for (Map.Entry<String, Object> entry : model.getProperties().entrySet()) {
 			//TODO handle arrays
-			setFieldProperty(entry.getKey(), String.valueOf(entry.getValue()));
+			setRestProperty(entry.getKey(), String.valueOf(entry.getValue()));
 		}
 	}
 

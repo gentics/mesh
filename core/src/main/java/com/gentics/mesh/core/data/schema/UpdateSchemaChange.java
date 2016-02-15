@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.schema;
 
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * Change entry that contains information on how to change schema specific attributes.
  */
 public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Schema> {
+
+	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATESCHEMA;
 
 	/**
 	 * Set the displayField name.
