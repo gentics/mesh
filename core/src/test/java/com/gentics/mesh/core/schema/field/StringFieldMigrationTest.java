@@ -246,6 +246,12 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATESTRING, FILLTEXT);
+		invalidMigrationScript(CREATESTRING, FILLTEXT, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATESTRING, FILLTEXT, KILLERSCRIPT);
 	}
 }

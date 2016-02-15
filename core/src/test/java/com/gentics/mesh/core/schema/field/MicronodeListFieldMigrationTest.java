@@ -191,6 +191,12 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATEMICRONODELIST, FILL);
+		invalidMigrationScript(CREATEMICRONODELIST, FILL, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATEMICRONODELIST, FILL, KILLERSCRIPT);
 	}
 }

@@ -246,6 +246,12 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATEHTML, FILLTEXT);
+		invalidMigrationScript(CREATEHTML, FILLTEXT, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATEHTML, FILLTEXT, KILLERSCRIPT);
 	}
 }

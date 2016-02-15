@@ -202,6 +202,12 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS);
+		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATENUMBERLIST, FILLNUMBERS, KILLERSCRIPT);
 	}
 }
