@@ -148,6 +148,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	List<? extends Node> getChildren();
 
 	/**
+	 * Return the list of children for this node, that the given user has read permission for
+	 *
+	 * @param requestUser user
+	 * @return
+	 */
+	List<? extends Node> getChildren(MeshAuthUser requestUser);
+
+	/**
 	 * Returns the parent node of this node.
 	 * 
 	 * @return

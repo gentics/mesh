@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -57,7 +58,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -521,7 +521,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private Observable<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 			NavigationResponse navigation, NavigationElement currentElement) {
-		List<? extends Node> nodes = node.getChildren();
+		List<? extends Node> nodes = node.getChildren(ac.getUser());
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
 
@@ -612,13 +612,27 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		delete(false);
 	}
 
+	/**
+	 * Get a vertex traversal to find the children of this node, this user has read permission for
+	 *
+	 * @param requestUser user
+	 * @return vertex traversal
+	 */
+	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser) {
+		return in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back();
+	}
+
+	@Override
+	public List<? extends Node> getChildren(MeshAuthUser requestUser) {
+		return getChildrenTraversal(requestUser).toListExplicit(NodeImpl.class);
+	}
+
 	@Override
 	public PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingInfo)
 			throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back();
-		VertexTraversal<?, ?, ?> countTraversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser);
+		VertexTraversal<?, ?, ?> countTraversal = getChildrenTraversal(requestUser);
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 	}
 
