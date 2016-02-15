@@ -79,6 +79,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	protected final static String OLDFIELD = "Old field";
 	protected final static String OLDFIELDVALUE = "Old field value";
 
+	protected final static String INVALIDSCRIPT = "this is an invalid script";
+
+	protected final static String KILLERSCRIPT = "function migrate(node, fieldname) {var System = Java.type('java.lang.System'); System.exit(0);}";
+
 	@Autowired
 	protected NodeMigrationHandler nodeMigrationHandler;
 
@@ -626,15 +630,16 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 *
 	 * @param creator creator implementation
 	 * @param dataProvider data provider implementation
+	 * @param script migration script
 	 * @throws TimeoutException 
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider) throws InterruptedException, ExecutionException, TimeoutException {
+	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException, ExecutionException, TimeoutException {
 		if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-			invalidMicroschemaMigrationScript(creator, dataProvider);
+			invalidMicroschemaMigrationScript(creator, dataProvider, script);
 		} else {
-			invalidSchemaMigrationScript(creator, dataProvider);
+			invalidSchemaMigrationScript(creator, dataProvider, script);
 		}
 	}
 
@@ -643,11 +648,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 *
 	 * @param creator creator implementation
 	 * @param dataProvider data provider implementation
+	 * @param script migration script
 	 * @throws TimeoutException 
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider) throws InterruptedException, ExecutionException, TimeoutException {
+	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException, ExecutionException, TimeoutException {
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
 
@@ -662,7 +668,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript("this is an invalid script");
+		updateFieldChange.setCustomMigrationScript(script);
 
 		updateFieldChange.setPreviousContainer(containerA);
 		updateFieldChange.setNextSchemaContainer(containerB);
@@ -688,11 +694,12 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 *
 	 * @param creator creator implementation
 	 * @param dataProvider data provider implementation
+	 * @param script script
 	 * @throws TimeoutException 
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	private void invalidMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider) throws InterruptedException, ExecutionException, TimeoutException {
+	private void invalidMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException, ExecutionException, TimeoutException {
 		String fieldName = "migratedField";
 		String microschemaName = "migratedSchema";
 		String micronodeFieldName = "micronodefield";
@@ -708,7 +715,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript("this is an invalid script");
+		updateFieldChange.setCustomMigrationScript(script);
 
 		updateFieldChange.setPreviousContainer(containerA);
 		updateFieldChange.setNextSchemaContainer(containerB);

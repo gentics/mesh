@@ -168,6 +168,12 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATENODELIST, FILL);
+		invalidMigrationScript(CREATENODELIST, FILL, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATENODELIST, FILL, KILLERSCRIPT);
 	}
 }

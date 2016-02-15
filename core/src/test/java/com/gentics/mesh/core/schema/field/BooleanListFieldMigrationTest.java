@@ -174,6 +174,12 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATEBOOLEANLIST, FILL);
+		invalidMigrationScript(CREATEBOOLEANLIST, FILL, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
 	}
 }

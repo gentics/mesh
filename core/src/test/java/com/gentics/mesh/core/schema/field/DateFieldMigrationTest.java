@@ -169,6 +169,12 @@ public class DateFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATEDATE, FILL);
+		invalidMigrationScript(CREATEDATE, FILL, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATEDATE, FILL, KILLERSCRIPT);
 	}
 }

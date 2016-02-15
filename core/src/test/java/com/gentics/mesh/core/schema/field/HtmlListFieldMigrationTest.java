@@ -230,6 +230,12 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT);
+		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, KILLERSCRIPT);
 	}
 }

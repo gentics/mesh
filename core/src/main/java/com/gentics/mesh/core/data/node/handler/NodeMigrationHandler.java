@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,11 +46,14 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.rxjava.core.buffer.Buffer;
+import jdk.nashorn.api.scripting.ClassFilter;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import rx.Observable;
 
 /**
  * Handler for node migrations after schema updates
  */
+@SuppressWarnings("restriction")
 @Component
 public class NodeMigrationHandler extends AbstractHandler {
 	@Autowired
@@ -60,7 +62,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	/**
 	 * Script engine factory
 	 */
-	private ScriptEngineManager factory = new ScriptEngineManager();
+	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	/**
 	 * Migrate all nodes referencing the given schema container to the latest
@@ -245,7 +247,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		for (Tuple<String, List<Tuple<String, Object>>> scriptEntry : migrationScripts) {
 			String script = scriptEntry.v1();
 			List<Tuple<String, Object>> context = scriptEntry.v2();
-			ScriptEngine engine = factory.getEngineByName("JavaScript");
+			ScriptEngine engine = factory.getScriptEngine(new Sandbox());
 
 			engine.put("node", nodeJson);
 			engine.put("convert", new TypeConverter());
@@ -326,6 +328,16 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 
 			change = change.getNextChange();
+		}
+	}
+
+	/**
+	 * Sandbox classfilter that filters all classes
+	 */
+	protected static class Sandbox implements ClassFilter {
+		@Override
+		public boolean exposeToScripts(String className) {
+			return false;
 		}
 	}
 }

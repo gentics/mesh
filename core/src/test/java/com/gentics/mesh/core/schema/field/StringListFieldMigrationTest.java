@@ -230,6 +230,12 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test(expected=ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
-		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT);
+		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT, INVALIDSCRIPT);
+	}
+
+	@Override
+	@Test(expected=ExecutionException.class)
+	public void testSystemExit() throws Exception {
+		invalidMigrationScript(CREATESTRINGLIST, FILLTEXT, KILLERSCRIPT);
 	}
 }

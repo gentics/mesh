@@ -117,4 +117,10 @@ public interface FieldMigrationTest {
 	 * @throws Exception
 	 */
 	void testInvalidMigrationScript() throws Exception;
+
+	/**
+	 * Test that trying System.exit in a migration script will throw an error but not kill the JVM
+	 * @throws Exception
+	 */
+	void testSystemExit() throws Exception;
 }
