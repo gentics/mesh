@@ -177,9 +177,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	 * @param restChange
 	 * @return
 	 */
-	private SchemaChange createChange(SchemaChangeModel restChange) {
+	private SchemaChange<?> createChange(SchemaChangeModel restChange) {
 
-		SchemaChange schemaChange = null;
+		SchemaChange<?> schemaChange = null;
 		switch (restChange.getOperation()) {
 		case ADDFIELD:
 			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
@@ -208,7 +208,6 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
 			FieldSchemaContainer fieldContainerModel) {
-
 		try {
 			SchemaChangesListModel list = new SchemaChangesListModel();
 			fieldContainerModel.validate();

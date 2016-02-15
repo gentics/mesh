@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -103,8 +104,9 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	public void testUpdateFieldLabel() {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaImpl("test");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
+
 		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		change.setFieldName("name");
 		change.setLabel("updated");
@@ -174,13 +176,12 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	//	}
 
 	@Test
-	public void testUpdateFields() {
+	public void testAUpdateFields() {
 
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 		// 1. Create schema
-		Schema schema = new SchemaImpl();
-		schema.setName("testschema");
+		Schema schema = new SchemaImpl("testschema");
 
 		BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 		binaryField.setName("binaryField");
@@ -237,54 +238,54 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		UpdateFieldChange binaryFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		binaryFieldUpdate.setFieldName("binaryField");
 		binaryFieldUpdate.setFieldProperty("allowedMimeTypes", new String[] { "newTypes" });
-		binaryFieldUpdate.setFieldProperty("required", false);
+		binaryFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		container.setNextChange(binaryFieldUpdate);
 
 		UpdateFieldChange nodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		nodeFieldUpdate.setFieldName("nodeField");
 		nodeFieldUpdate.setFieldProperty("allowedSchemas", new String[] { "schemaA", "schemaB" });
-		nodeFieldUpdate.setFieldProperty("required", false);
+		nodeFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
 		UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		stringFieldUpdate.setFieldProperty("allowedValues", new String[] { "valueA", "valueB" });
 		stringFieldUpdate.setFieldName("stringField");
-		stringFieldUpdate.setFieldProperty("required", false);
+		stringFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
 		UpdateFieldChange htmlFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		htmlFieldUpdate.setFieldName("htmlField");
-		htmlFieldUpdate.setFieldProperty("required", false);
+		htmlFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
 		UpdateFieldChange numberFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		numberFieldUpdate.setFieldName("numberField");
-		numberFieldUpdate.setFieldProperty("required", false);
+		numberFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
 		UpdateFieldChange dateFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		dateFieldUpdate.setFieldName("dateField");
-		dateFieldUpdate.setFieldProperty("required", false);
+		dateFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		numberFieldUpdate.setNextChange(dateFieldUpdate);
 
 		UpdateFieldChange booleanFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		booleanFieldUpdate.setFieldName("booleanField");
-		booleanFieldUpdate.setFieldProperty("required", false);
+		booleanFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
 		UpdateFieldChange micronodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		micronodeFieldUpdate.setFieldName("micronodeField");
-		micronodeFieldUpdate.setFieldProperty("allowedMicroSchemas", new String[] { "A", "B", "C" });
-		micronodeFieldUpdate.setFieldProperty("required", false);
+		micronodeFieldUpdate.setFieldProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
+		micronodeFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
 		UpdateFieldChange listFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		listFieldUpdate.setFieldName("listField");
-		listFieldUpdate.setFieldProperty("required", false);
+		listFieldUpdate.setFieldProperty(SchemaChangeModel.REQUIRED_KEY, false);
 		micronodeFieldUpdate.setNextChange(listFieldUpdate);
 
 		// 3. Apply the changes
-		Schema updatedSchema = (Schema) mutator.apply(container);
+		Schema updatedSchema = mutator.apply(container);
 
 		// Binary 
 		BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
@@ -301,7 +302,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		// Microschema
 		MicronodeFieldSchema micronodeFieldSchema = updatedSchema.getField("micronodeField", MicronodeFieldSchemaImpl.class);
 		assertNotNull(micronodeFieldSchema);
-		assertArrayEquals(new String[] { "A", "B", "C" }, micronodeField.getAllowedMicroSchemas());
+		assertArrayEquals(new String[] { "A", "B", "C" }, micronodeFieldSchema.getAllowedMicroSchemas());
 		assertFalse("The required flag should now be set to false.", micronodeFieldSchema.isRequired());
 
 		// String
@@ -354,8 +355,11 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		// 3. Apply the changes
 		container.setNextChange(fieldTypeUpdate);
 		container.setSchema(schema);
+		for (FieldSchema field : container.getSchema().getFields()) {
+			System.out.println(field.getName());
+		}
 
-		Schema updatedSchema = (Schema) mutator.apply(container);
+		Schema updatedSchema = mutator.apply(container);
 		assertNotNull(updatedSchema);
 		assertEquals("html", updatedSchema.getField("stringField").getType());
 
@@ -385,18 +389,13 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		container.setSchema(schema);
 
 		// 3. Apply the changes
-		Schema updatedSchema = (Schema) mutator.apply(container);
+		Schema updatedSchema = mutator.apply(container);
 		assertNotNull(updatedSchema);
 		ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
 		assertEquals("list", fieldSchema.getType());
 		assertEquals("html", fieldSchema.getListType());
 		assertEquals("test123", fieldSchema.getLabel());
 
-	}
-
-	@Test
-	public void testUpdateNonExistingField() {
-		fail("implement me");
 	}
 
 	@Test
@@ -413,7 +412,6 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		change.setSegmentField("newSegmentField");
 
 		container.setSchema(schema);
-		;
 		container.setNextChange(change);
 
 		// 3. Apply the change

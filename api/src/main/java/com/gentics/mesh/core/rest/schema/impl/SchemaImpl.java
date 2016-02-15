@@ -13,6 +13,18 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 	private String segmentField;
 	private boolean container = false;
 
+	/**
+	 * Create a new schema with the given name.
+	 * 
+	 * @param name
+	 */
+	public SchemaImpl(String name) {
+		super(name);
+	}
+
+	public SchemaImpl() {
+	}
+
 	@Override
 	public String getDisplayField() {
 		return displayField;

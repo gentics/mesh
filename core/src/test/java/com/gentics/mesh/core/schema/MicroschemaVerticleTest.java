@@ -74,7 +74,6 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Ignore("Not yet implemented")
-
 	@Test
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {

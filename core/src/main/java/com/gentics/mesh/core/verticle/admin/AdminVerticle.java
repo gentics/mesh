@@ -9,13 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.handler.sockjs.BridgeEventType;
-import io.vertx.ext.web.handler.sockjs.BridgeOptions;
-import io.vertx.ext.web.handler.sockjs.PermittedOptions;
-import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -36,20 +31,14 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	@Autowired
 	private AdminHandler handler;
 
-	//	private GitPullChecker gitChecker;
-
 	public AdminVerticle() {
 		super("admin");
 	}
 
 	@Override
 	public void registerEndPoints() throws Exception {
-		//		if (config().getBoolean(GIT_PULL_CHECKER_KEY, DEFAULT_GIT_CHECKER)) {
-		//			gitChecker = new GitPullChecker(config().getLong(GIT_PULL_CHECKER_INTERVAL_KEY, DEFAULT_GIT_CHECKER_INTERVAL));
-		//		}
 
 		addStatusHandler();
-		addEventBusHandler();
 
 		// TODO secure handlers below
 		addBackupHandler();
@@ -59,27 +48,6 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		// addVerticleHandler();
 		// addServiceHandler();
 
-		route("/test").handler(rh -> {
-			JsonObject msg = new JsonObject();
-			msg.put("text", "Hallo Welt" + System.currentTimeMillis());
-			vertx.eventBus().send("some-address", msg);
-			rh.response().end("msg sent");
-		});
-
-	}
-
-	private void addEventBusHandler() {
-		SockJSHandler handler = SockJSHandler.create(vertx);
-		BridgeOptions options = new BridgeOptions();
-		options.addInboundPermitted(new PermittedOptions().setAddress("some-address"));
-		options.addOutboundPermitted(new PermittedOptions().setAddress("some-address"));
-		handler.bridge(options, event -> {
-			if (event.type() == BridgeEventType.SOCKET_CREATED) {
-				log.info("A socket was created");
-			}
-			event.complete(true);
-		});
-		route("/eventbus/*").handler(handler);
 	}
 
 	private void addExportHandler() {

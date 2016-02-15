@@ -177,4 +177,9 @@ public class SchemaChangeModel implements RestModel {
 		return change;
 	}
 
+	@Override
+	public String toString() {
+		return getOperation() + ":" + getFieldName() + ":" + getProperties();
+	}
+
 }

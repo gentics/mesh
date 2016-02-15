@@ -32,8 +32,6 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 
-		//TODO prevent adding fields to micronodes which are not supported?
-
 		//TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
 		switch (getType()) {
 		case "html":

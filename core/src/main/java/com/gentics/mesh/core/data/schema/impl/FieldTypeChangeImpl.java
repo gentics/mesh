@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
@@ -29,17 +28,16 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	public static final SchemaChangeOperation OPERATION = SchemaChangeOperation.CHANGEFIELDTYPE;
 
-	
 	/**
 	 * Apply the field type change to the specified schema.
 	 */
 	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
-		Optional<FieldSchema> fieldSchema = container.getFieldSchema(getFieldName());
+		FieldSchema fieldSchema = container.getField(getFieldName());
 
-		if (!fieldSchema.isPresent()) {
-			throw error(BAD_REQUEST,
-					"Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "} for change {" + getUuid() + "}");
+		if (fieldSchema == null) {
+			throw error(BAD_REQUEST, "Could not find schema field {" + getFieldName() + "} within schema {" + container.getName() + "} for change {"
+					+ getUuid() + "}");
 		}
 
 		FieldSchema field = null;
@@ -76,11 +74,11 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			default:
 				throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 			}
-			field.setRequired(fieldSchema.get().isRequired());
-			field.setLabel(fieldSchema.get().getLabel());
-			field.setName(fieldSchema.get().getName());
+			field.setRequired(fieldSchema.isRequired());
+			field.setLabel(fieldSchema.getLabel());
+			field.setName(fieldSchema.getName());
 			// Remove the old field
-			container.removeField(fieldSchema.get().getName());
+			container.removeField(fieldSchema.getName());
 			// Add the new field
 			container.addField(field);
 		} else {
@@ -91,8 +89,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(
-				Arrays.asList("type", "listType").stream().filter(key -> getFieldProperty(key) != null)
-						.collect(Collectors.toMap(key -> key, key -> getFieldProperty(key))));
-					}
-				}
+		return OPERATION.getAutoMigrationScript(Arrays.asList("type", "listType").stream().filter(key -> getFieldProperty(key) != null)
+				.collect(Collectors.toMap(key -> key, key -> getFieldProperty(key))));
+	}
+}

@@ -46,7 +46,7 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 
 			// allow
 			if (!Arrays.equals(getAllowedMicroSchemas(), micronodeFieldSchema.getAllowedMicroSchemas())) {
-				change.getProperties().put("allow", micronodeFieldSchema.getAllowedMicroSchemas());
+				change.getProperties().put(SchemaChangeModel.ALLOW_KEY, micronodeFieldSchema.getAllowedMicroSchemas());
 				modified = true;
 			}
 
@@ -63,8 +63,8 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
-		if (fieldProperties.get("allowedMicroSchemas") != null) {
-			setAllowedMicroSchemas((String[]) fieldProperties.get("allowedMicroSchemas"));
+		if (fieldProperties.get(SchemaChangeModel.ALLOW_KEY) != null) {
+			setAllowedMicroSchemas((String[]) fieldProperties.get(SchemaChangeModel.ALLOW_KEY));
 		}
 	}
 }

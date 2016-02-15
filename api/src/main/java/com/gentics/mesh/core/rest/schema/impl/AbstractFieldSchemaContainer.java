@@ -24,6 +24,13 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	private String name;
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	public AbstractFieldSchemaContainer(String name) {
+		this.name = name;
+	}
+
+	public AbstractFieldSchemaContainer() {
+	}
+
 	@Override
 	public String getUuid() {
 		return uuid;

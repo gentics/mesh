@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -13,33 +15,31 @@ import com.gentics.mesh.core.rest.schema.Schema;
  */
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
 
-	
 	@Override
-		public <R extends FieldSchemaContainer> R apply(R container) {
-			// TODO Auto-generated method stub
-			return super.apply(container);
+	public <R extends FieldSchemaContainer> R apply(R container) {
+		if (!(container instanceof Schema)) {
+			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName());
 		}
-//	@Override
-//	public <R extends FieldSchemaContainer> Schema apply(R container) {
-//		Schema schema = super.apply(container);
-//
-//		String displayFieldname = getDisplayField();
-//		if (displayFieldname != null) {
-//			schema.setDisplayField(displayFieldname);
-//		}
-//
-//		String segmentFieldname = getSegmentField();
-//		if (segmentFieldname != null) {
-//			schema.setSegmentField(segmentFieldname);
-//		}
-//
-//		Boolean containerFlag = getContainerFlag();
-//		if (containerFlag != null) {
-//			schema.setContainer(containerFlag);
-//		}
-//
-//		return schema;
-//	}
+		
+		Schema schema = (Schema)super.apply(container);
+
+		String displayFieldname = getDisplayField();
+		if (displayFieldname != null) {
+			schema.setDisplayField(displayFieldname);
+		}
+
+		String segmentFieldname = getSegmentField();
+		if (segmentFieldname != null) {
+			schema.setSegmentField(segmentFieldname);
+		}
+
+		Boolean containerFlag = getContainerFlag();
+		if (containerFlag != null) {
+			schema.setContainer(containerFlag);
+		}
+
+		return (R) schema;
+	}
 
 	@Override
 	public void setDisplayField(String fieldName) {
