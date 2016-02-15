@@ -46,9 +46,10 @@ public class WebRootLinkReplacer {
 	 * @param content content containing links to replace
 	 * @param type replacing type
 	 * @param projectName project name (used for 404 links)
+	 * @param languageTags optional language tags
 	 * @return content with links (probably) replaced
 	 */
-	public String replace(String content, Type type, String projectName) {
+	public String replace(String content, Type type, String projectName, List<String> languageTags) {
 		if (isEmpty(content) || type == Type.OFF || type == null) {
 			return content;
 		}
@@ -91,9 +92,11 @@ public class WebRootLinkReplacer {
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 2) {
-				segments.add(resolve(linkArguments[0], linkArguments[1].trim(), type, projectName));
+				segments.add(resolve(linkArguments[0], type, projectName, linkArguments[1].trim()));
+			} else if (languageTags != null) {
+				segments.add(resolve(linkArguments[0], type, projectName, languageTags.toArray(new String[languageTags.size()])));
 			} else {
-				segments.add(resolve(linkArguments[0], null, type, projectName));
+				segments.add(resolve(linkArguments[0], type, projectName));
 			}
 
 			lastPos = endPos + END_TAG.length();
@@ -109,12 +112,12 @@ public class WebRootLinkReplacer {
 	/**
 	 * Resolve the link to the node with uuid (in the given language) into an observable
 	 * @param uuid target uuid
-	 * @param languageTag optional language
 	 * @param type link type
 	 * @param projectName project name (which is used for 404 links)
+	 * @param languageTags optional language tags
 	 * @return observable of the rendered link
 	 */
-	public Observable<String> resolve(String uuid, String languageTag, Type type, String projectName) {
+	public Observable<String> resolve(String uuid, Type type, String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(uuid).toBlocking().single();
@@ -136,11 +139,7 @@ public class WebRootLinkReplacer {
 				return Observable.error(new Exception("Cannot render link with type " + type));
 			}
 		}
-		if (languageTag == null) {
-			return resolve(node, type);
-		} else {
-			return resolve(node, type, languageTag);
-		}
+		return resolve(node, type, languageTags);
 	}
 
 	/**

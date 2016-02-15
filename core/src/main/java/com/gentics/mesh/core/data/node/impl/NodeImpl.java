@@ -443,7 +443,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// Url
 				WebRootLinkReplacer linkReplacer = WebRootLinkReplacer.getInstance();
-				String url = linkReplacer.resolve(getUuid(), restNode.getLanguage(), ac.getResolveLinksType(), getProject().getName()).toBlocking()
+				String url = linkReplacer.resolve(getUuid(), ac.getResolveLinksType(), getProject().getName(), restNode.getLanguage()).toBlocking()
 						.single();
 				restNode.setPath(url);
 

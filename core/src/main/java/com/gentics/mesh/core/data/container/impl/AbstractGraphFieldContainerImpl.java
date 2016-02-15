@@ -348,8 +348,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 						if (project == null) {
 							project = getParentNode().getProject();
 						}
-						stringField.setString(
-								WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType(), project.getName()));
+						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
+								ac.getResolveLinksType(), project.getName(), languageTags));
 					}
 					return stringField;
 				});
@@ -401,7 +401,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 						if (project == null) {
 							project = getParentNode().getProject();
 						}
-						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(), ac.getResolveLinksType(), project.getName()));
+						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(),
+								ac.getResolveLinksType(), project.getName(), languageTags));
 					}
 					return model;
 				});

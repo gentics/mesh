@@ -46,8 +46,9 @@ public class UtilityVerticle extends AbstractCoreApiVerticle {
 				if (projectName == null) {
 					projectName = "project";
 				}
+
 				return Observable.just(WebRootLinkReplacer.getInstance().replace(ac.getBodyAsString(),
-						ac.getResolveLinksType(), projectName));
+						ac.getResolveLinksType(), projectName, ac.getSelectedLanguageTags()));
 			}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body));
 		});
 	}
