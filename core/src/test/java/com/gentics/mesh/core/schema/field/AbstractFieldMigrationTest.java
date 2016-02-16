@@ -26,9 +26,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
+import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaFieldChange;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
@@ -396,11 +396,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		SchemaContainer containerB = createSchema(schemaName, 2, newFieldSchema);
 
 		// link the schemas with the change in between
-		SchemaFieldChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
-		change.setRestProperty("type", newFieldSchema.getType());
+		change.setType(newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
-			change.setRestProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
+			change.setListType(((ListFieldSchema) newFieldSchema).getListType());
 		}
 		change.setPreviousContainer(containerA);
 		change.setNextSchemaContainer(containerB);
@@ -464,11 +464,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		MicroschemaContainer containerB = createMicroschema(microschemaName, 2, newFieldSchema);
 
 		// link the schemas with the change in between
-		SchemaFieldChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.setFieldName(fieldName);
-		change.setRestProperty("type", newFieldSchema.getType());
+		change.setType(newFieldSchema.getType());
 		if (newFieldSchema instanceof ListFieldSchema) {
-			change.setRestProperty("listType", ((ListFieldSchema) newFieldSchema).getListType());
+			change.setListType(((ListFieldSchema) newFieldSchema).getListType());
 		}
 		change.setPreviousContainer(containerA);
 		change.setNextSchemaContainer(containerB);

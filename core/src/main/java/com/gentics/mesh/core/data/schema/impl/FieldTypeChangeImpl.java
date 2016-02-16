@@ -113,7 +113,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(Arrays.asList("type", "listType").stream().filter(key -> getRestProperty(key) != null)
+		return OPERATION.getAutoMigrationScript(Arrays.asList(SchemaChangeModel.TYPE_KEY, SchemaChangeModel.LIST_TYPE_KEY).stream().filter(key -> getRestProperty(key) != null)
 				.collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
 	}
 }
