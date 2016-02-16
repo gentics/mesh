@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
@@ -50,15 +51,13 @@ public class ServerSchemaStorage implements SchemaStorage {
 		//Iterate over all schemas and load them into the storage
 		boot.schemaContainerRoot().findAll().stream().forEach(container -> {
 			Schema restSchema = container.getSchema();
-			schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(),
-					restSchema);
+			schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 		});
 
 		// load all microschemas and add to storage
 		boot.microschemaContainerRoot().findAll().stream().forEach(container -> {
 			Microschema restMicroschema = container.getSchema();
-			microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>())
-					.put(restMicroschema.getVersion(), restMicroschema);
+			microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
 		});
 	}
 
@@ -168,6 +167,19 @@ public class ServerSchemaStorage implements SchemaStorage {
 		Map<Integer, Microschema> microschemaMap = microschemas.get(name);
 		if (microschemaMap != null) {
 			microschemaMap.remove(version);
+		}
+	}
+
+	/**
+	 * Remove the given container from the storage.
+	 * 
+	 * @param container
+	 */
+	public void remove(FieldSchemaContainer container) {
+		if (container instanceof Schema) {
+			removeSchema(container.getName(), container.getVersion());
+		} else if (container instanceof Microschema) {
+			removeMicroschema(container.getName(), container.getVersion());
 		}
 	}
 }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -39,6 +40,7 @@ public class FieldSchemaContainerMutator {
 	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainer<R, ?, ?> container) {
 
 		R oldSchema = container.getSchema();
+		ServerSchemaStorage.getSchemaStorage().remove(oldSchema);
 		SchemaChange<?> change = container.getNextChange();
 		while (change != null) {
 			oldSchema = change.apply(oldSchema);

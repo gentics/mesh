@@ -52,6 +52,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
@@ -135,6 +136,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(SearchVerticle.class);
 		addMandatoryVerticle(AuthenticationVerticle.class);
 		addMandatoryVerticle(AdminVerticle.class);
+		addMandatoryVerticle(EventbusVerticle.class);
 		addMandatoryVerticle(UtilityVerticle.class);
 
 		// Worker verticles
@@ -165,6 +167,7 @@ public class BootstrapInitializer {
 
 	/**
 	 * Get the map of mandatory worker verticle classes
+	 * 
 	 * @return
 	 */
 	private Map<String, Class<? extends AbstractVerticle>> getMandatoryWorkerVerticleClasses() {
@@ -438,7 +441,6 @@ public class BootstrapInitializer {
 				schema.setName("content");
 				schema.setDisplayField("title");
 				schema.setSegmentField("filename");
-				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -473,7 +475,6 @@ public class BootstrapInitializer {
 				schema.setName("folder");
 				schema.setDisplayField("name");
 				schema.setSegmentField("name");
-				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -493,7 +494,6 @@ public class BootstrapInitializer {
 				schema.setName("binary-content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("binary");
-				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");

@@ -291,7 +291,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
+		expectResponseMessage(future, "tag_deleted", uuid + "/" + name);
 
 		tag = boot.tagRoot().findByUuid(uuid).toBlocking().single();
 		assertNull("The tag should have been deleted", tag);

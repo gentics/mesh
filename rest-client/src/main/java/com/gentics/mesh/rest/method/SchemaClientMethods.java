@@ -39,7 +39,7 @@ public interface SchemaClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<Schema> updateSchema(String uuid, Schema request);
+	Future<GenericMessageResponse> updateSchema(String uuid, Schema request);
 
 	/**
 	 * Compare the given schema with the currently stored one and return a list of schema changes.

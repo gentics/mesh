@@ -67,7 +67,7 @@ public class AuthenticationVerticleTest extends AbstractRestVerticleTest {
 		//		assertTrue(client.getCookie().startsWith(MeshOptions.MESH_SESSION_KEY + "=deleted; Max-Age=0;"));
 		meResponse = client.me();
 		latchFor(meResponse);
-		expectMessage(meResponse, HttpResponseStatus.UNAUTHORIZED, "Unauthorized");
+		expectFailureMessage(meResponse, HttpResponseStatus.UNAUTHORIZED, "Unauthorized");
 	}
 
 }

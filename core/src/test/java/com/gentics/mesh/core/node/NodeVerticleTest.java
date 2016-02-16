@@ -244,7 +244,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
 		latchFor(deleteFut);
 		assertSuccess(deleteFut);
-		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
+		expectResponseMessage(deleteFut, "node_deleted", restNode2.getUuid());
 
 		meshRoot().getNodeRoot().reload();
 		Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().single();
@@ -1044,7 +1044,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("de", "en");
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
-		expectMessage(future, BAD_REQUEST,
+		expectFailureMessage(future, BAD_REQUEST,
 				"Can't handle field {displayName} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeUpdateRequest[\"fields\"])");
 
 		assertNull(future.result());
@@ -1078,7 +1078,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		expectMessageResponse("node_deleted", future, uuid);
+		expectResponseMessage(future,"node_deleted", uuid);
 		assertElement(meshRoot().getNodeRoot(), uuid, false);
 		assertThat(searchProvider).recordedDeleteEvents(2);
 		SearchQueue searchQueue = meshRoot().getSearchQueue();

@@ -11,6 +11,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -196,15 +197,17 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Microschema request = new MicroschemaImpl();
 		request.setName(name);
 
-		Future<Microschema> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
-		Microschema restSchema = future.result();
-		assertEquals(request.getName(), restSchema.getName());
-		vcardContainer.reload();
-		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
-		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
-		assertEquals("The name should have been updated", name, reloaded.getName());
+		expectFailureMessage(future, OK, "blub");
+
+		//		
+		//		assertEquals(request.getName(), restSchema.getName());
+		//		vcardContainer.reload();
+		//		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
+		//		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
+		//		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 
@@ -218,7 +221,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Microschema request = new MicroschemaImpl();
 		request.setName("new-name");
 
-		Future<Microschema> future = getClient().updateMicroschema(microschema.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
 	}
@@ -232,7 +235,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Microschema request = new MicroschemaImpl();
 		request.setName("new-name");
 
-		Future<Microschema> future = getClient().updateMicroschema("bogus", request);
+		Future<GenericMessageResponse> future = getClient().updateMicroschema("bogus", request);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -249,7 +252,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("microschema_deleted", future, microschema.getUuid() + "/" + microschema.getName());
+		expectResponseMessage(future, "microschema_deleted", microschema.getUuid() + "/" + microschema.getName());
 
 		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().single();
 		assertNull("The microschema should have been deleted.", reloaded);
@@ -270,19 +273,4 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertElement(boot.microschemaContainerRoot(), microschema.getUuid(), true);
 	}
 
-	@Test
-	public void testUpdateWithConflictingName() {
-		String name = "captionedImage";
-		String originalSchemaName = "vcard";
-		MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
-		assertNotNull(microschema);
-		Microschema request = new MicroschemaImpl();
-		request.setName(name);
-
-		Future<Microschema> future = getClient().updateMicroschema(microschema.getUuid(), request);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "microschema_conflicting_name", name);
-		microschema.reload();
-		assertEquals("The name of the microschema was updated", originalSchemaName, microschema.getName());
-	}
 }

@@ -17,11 +17,16 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see AddFieldChange
  */
 public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements AddFieldChange {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(AddFieldChangeImpl.class);
+	}
 
 	@Override
 	public SchemaChangeOperation getOperation() {

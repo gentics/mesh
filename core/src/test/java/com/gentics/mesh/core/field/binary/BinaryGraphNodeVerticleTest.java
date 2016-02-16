@@ -186,7 +186,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+		expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
 
 		node.reload();
 
@@ -229,7 +229,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", fieldName, binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+		expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
 
 		node.reload();
 

@@ -1,17 +1,19 @@
 package com.gentics.mesh.core.admin;
 
-import static org.junit.Assert.fail;
+import static com.gentics.mesh.util.MeshAssert.latchFor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+
+import io.vertx.core.Future;
 
 public class AdminVerticleTest extends AbstractRestVerticleTest {
 
@@ -26,9 +28,10 @@ public class AdminVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Not yet implemented")
-	public void testAdminStuff() {
-		fail("Not yet implemented");
+	public void testMigrationStatusWithNoMigrationRunning() {
+		Future<GenericMessageResponse> statusFuture = getClient().schemaMigrationStatus();
+		latchFor(statusFuture);
+		expectResponseMessage(statusFuture, "migration_status_idle");
 	}
 
 }

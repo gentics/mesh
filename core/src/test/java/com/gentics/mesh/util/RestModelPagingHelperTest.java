@@ -17,7 +17,7 @@ public class RestModelPagingHelperTest {
 
 	@Test
 	public void testPagingOffsetCorrection() {
-		ListResponse response = new ListResponse();
+		ListResponse<?> response = new ListResponse<>();
 		Page page = mock(PageImpl.class);
 
 		int nPages = 3;

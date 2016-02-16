@@ -167,9 +167,29 @@ public class SchemaChangeModel implements RestModel {
 		setMigrationScript(getOperation().getAutoMigrationScript(getProperties()));
 	}
 
+	/**
+	 * Create a change field type change.
+	 * 
+	 * @param fieldName
+	 * @param type
+	 * @return
+	 */
+	public static SchemaChangeModel createChangeFieldTypeChange(String fieldName, String type) {
+		SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.CHANGEFIELDTYPE, fieldName);
+		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
+		return change;
+	}
+
+	/**
+	 * Create a add field change.
+	 * 
+	 * @param fieldName
+	 * @param type
+	 * @return
+	 */
 	public static SchemaChangeModel createAddChange(String fieldName, String type) {
 		SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, fieldName);
-		change.getProperties().put(SchemaChangeModel.TYPE_KEY, "html");
+		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
 		return change;
 	}
 

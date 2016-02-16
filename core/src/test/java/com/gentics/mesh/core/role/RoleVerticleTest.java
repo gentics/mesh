@@ -123,7 +123,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid() + "/" + restRole.getName());
+		expectResponseMessage(deleteFuture, "role_deleted", restRole.getUuid() + "/" + restRole.getName());
 	}
 
 	@Test
@@ -422,7 +422,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteRole(roleUuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("role_deleted", future, roleUuid + "/" + roleName);
+		expectResponseMessage(future, "role_deleted", roleUuid + "/" + roleName);
 		meshRoot().getRoleRoot().reload();
 		assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 	}

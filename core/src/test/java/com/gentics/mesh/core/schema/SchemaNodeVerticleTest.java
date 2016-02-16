@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -68,7 +69,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		clientSchema.addField(nameFieldSchema);
 
 		// Update the schema server side
-		Future<Schema> future = getClient().updateSchema(container.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -116,7 +117,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		getClient().getClientSchemaStorage().addSchema(clientSchema);
 
 		// Update the schema server side
-		Future<Schema> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 
@@ -155,7 +156,7 @@ public class SchemaNodeVerticleTest extends AbstractRestVerticleTest {
 		clientSchema.addField(titleFieldSchema);
 
 		// Update the schema server side
-		Future<Schema> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 

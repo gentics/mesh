@@ -10,11 +10,16 @@ import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see UpdateSchemaChange
  */
 public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(UpdateSchemaChangeImpl.class);
+	}
 
 	@Override
 	public SchemaChangeOperation getOperation() {

@@ -5,11 +5,16 @@ import java.io.IOException;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see RemoveFieldChange
  */
 public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements RemoveFieldChange {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(UpdateSchemaChangeImpl.class);
+	}
 
 	@Override
 	public SchemaChangeOperation getOperation() {

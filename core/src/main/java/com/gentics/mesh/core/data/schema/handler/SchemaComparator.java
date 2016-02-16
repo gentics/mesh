@@ -3,14 +3,13 @@ package com.gentics.mesh.core.data.schema.handler;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * The schema comparator can be used to generate a set of {@link SchemaChange} objects by comparing two schemas. Some differences in between two schemas may
@@ -20,7 +19,16 @@ import io.vertx.core.logging.LoggerFactory;
 @Component
 public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Schema> {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaComparator.class);
+	private static SchemaComparator instance;
+
+	@PostConstruct
+	public void setup() {
+		SchemaComparator.instance = this;
+	}
+
+	public static SchemaComparator getIntance() {
+		return instance;
+	}
 
 	@Override
 	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) throws IOException {
@@ -34,9 +42,8 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 		// container flag
 		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer());
-		
+
 		return changes;
 	}
-
 
 }

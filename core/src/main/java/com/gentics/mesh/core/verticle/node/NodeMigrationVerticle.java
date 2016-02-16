@@ -14,6 +14,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus.Type;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -37,13 +38,14 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 	@Override
 	public void start() throws Exception {
 		if (log.isDebugEnabled()) {
-			log.debug("Starting " + getClass().getName());
+			log.debug("Starting verticle" + getClass().getName());
 		}
 
 		vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
+			
 			String schemaUuid = message.headers().get(UUID_HEADER);
 			if (log.isDebugEnabled()) {
-				log.debug("Node Migration for schema " + schemaUuid + " was requested");
+				log.debug("Node migration for schema " + schemaUuid + " was requested");
 			}
 
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
@@ -53,6 +55,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 				if (mbs.isRegistered(statusMBeanName)) {
 					message.fail(0, "Migration for schema " + schemaUuid + " is already running");
 				} else {
+					vertx.sharedData().getLocalMap("migrationStatus").put("status", "migration_status_running");
 					db.noTrx(() -> boot.schemaContainerRoot().findByUuid(schemaUuid)).subscribe(schemaContainer -> {
 						NodeMigrationStatus statusBean = db.noTrx(() -> {
 							return new NodeMigrationStatus(schemaContainer.getName(), schemaContainer.getVersion(), Type.schema);
@@ -70,6 +73,9 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						message.reply(null);
 					});
 				}
+
+				done(schemaUuid);
+
 			} catch (Exception e2) {
 				message.fail(0, "Migration for schema " + schemaUuid + " failed: " + e2.getLocalizedMessage());
 			}
@@ -104,10 +110,22 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						}
 						message.reply(null);
 					});
+					done(microschemaUuid);
 				}
 			} catch (Exception e2) {
 				message.fail(0, "Migration for microschema " + microschemaUuid + " failed: " + e2.getLocalizedMessage());
 			}
 		});
+	}
+
+	private void done(String schemaUuid) {
+		if (log.isDebugEnabled()) {
+			log.debug("Migration for container " + schemaUuid + " completed");
+		}
+		JsonObject msg = new JsonObject();
+		msg.put("type", "completed");
+		// TODO use constant
+		vertx.eventBus().publish("mesh.schema.migration", msg);
+		vertx.sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
 	}
 }

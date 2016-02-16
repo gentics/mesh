@@ -83,7 +83,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		new NotImplementedException();
+		throw new NotImplementedException();
 	}
 
 	@Override

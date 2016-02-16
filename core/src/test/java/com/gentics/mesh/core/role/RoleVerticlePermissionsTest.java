@@ -47,7 +47,7 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("role_updated_permission", future, role().getName());
+		expectResponseMessage(future, "role_updated_permission", role().getName());
 
 		assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 	}
@@ -67,7 +67,7 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 				"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("role_updated_permission", future, role().getName());
+		expectResponseMessage(future, "role_updated_permission", role().getName());
 
 		assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 	}
@@ -104,7 +104,7 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 				"projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("role_updated_permission", future, role().getName());
+		expectResponseMessage(future, "role_updated_permission", role().getName());
 
 		assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 	}

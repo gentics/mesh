@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.schema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
+import io.vertx.rx.java.ObservableFuture;
 import rx.Observable;
 
 @Component
@@ -33,6 +35,18 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleDelete(InternalActionContext ac) {
 		deleteElement(ac, () -> boot.schemaContainerRoot(), "uuid", "schema_deleted");
+	}
+
+	@Override
+	public void handleUpdate(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+			RootVertex<SchemaContainer> root = getRootVertex(ac); 
+			return root.loadObject(ac, "uuid", UPDATE_PERM).flatMap(element -> {
+				return element.update(ac).flatMap(updatedElement -> {
+					return ObservableFuture.just(message(ac, "migration_invoked", updatedElement.getName()));
+				});
+			});
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleDiff(InternalActionContext ac) {

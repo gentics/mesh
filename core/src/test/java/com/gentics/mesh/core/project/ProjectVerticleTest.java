@@ -121,7 +121,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteProject(restProject.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("project_deleted", deleteFuture, restProject.getUuid() + "/" + restProject.getName());
+		expectResponseMessage(deleteFuture, "project_deleted", restProject.getUuid() + "/" + restProject.getName());
 
 	}
 
@@ -334,7 +334,7 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteProject(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("project_deleted", future, uuid + "/" + name);
+		expectResponseMessage(future, "project_deleted", uuid + "/" + name);
 		assertElement(meshRoot().getProjectRoot(), uuid, false);
 		// TODO check for removed routers?
 	}

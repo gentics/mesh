@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 
 /**
@@ -24,10 +23,6 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	private static String MIGRATION_SCRIPT_PROPERTY_KEY = "migrationScript";
 
 	public static final String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
-
-	public static void checkIndices(Database database) {
-		database.addVertexType(AbstractSchemaChange.class);
-	}
 
 	@Override
 	public SchemaChange<?> getNextChange() {

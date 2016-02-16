@@ -72,7 +72,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		Future<GenericMessageResponse> future = getClient().invokeReindex();
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("search_admin_reindex_invoked", future);
+		expectResponseMessage(future, "search_admin_reindex_invoked");
 
 		Future<SearchStatusResponse> statusFuture = getClient().loadSearchStatus();
 		latchFor(statusFuture);

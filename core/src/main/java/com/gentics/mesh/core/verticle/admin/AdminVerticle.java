@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.verticle.admin;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -8,6 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
+import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -22,12 +25,6 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminVerticle.class);
 
-	public static final String GIT_PULL_CHECKER_INTERVAL_KEY = "gitPullCheckerInterval";
-	public static final String GIT_PULL_CHECKER_KEY = "gitPullChecker";
-
-	public static final boolean DEFAULT_GIT_CHECKER = false;
-	public static final long DEFAULT_GIT_CHECKER_INTERVAL = 60 * 5 * 100; // 5 Min
-
 	@Autowired
 	private AdminHandler handler;
 
@@ -39,6 +36,7 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 	public void registerEndPoints() throws Exception {
 
 		addStatusHandler();
+		addMigrationStatusHandler();
 
 		// TODO secure handlers below
 		addBackupHandler();
@@ -48,6 +46,12 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		// addVerticleHandler();
 		// addServiceHandler();
 
+	}
+
+	private void addMigrationStatusHandler() {
+		route("/migrationStatus").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			handler.handleMigrationStatus(InternalActionContext.create(rc));
+		});
 	}
 
 	private void addExportHandler() {
@@ -72,14 +76,6 @@ public class AdminVerticle extends AbstractCoreApiVerticle {
 		route("/backup").method(GET).handler(rc -> {
 			handler.handleBackup(rc);
 		});
-	}
-
-	@Override
-	public void stop() throws Exception {
-		super.stop();
-		//		if (gitChecker != null) {
-		//			gitChecker.close();
-		//		}
 	}
 
 	/**

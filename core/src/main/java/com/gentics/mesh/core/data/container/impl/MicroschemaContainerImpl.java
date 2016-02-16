@@ -2,27 +2,23 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.List;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -118,29 +114,14 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 
 	@Override
 	public Observable<? extends MicroschemaContainer> update(InternalActionContext ac) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		MicroschemaContainerRoot root = BootstrapInitializer.getBoot().meshRoot().getMicroschemaContainerRoot();
-
-		Microschema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl.class);
-			requestModel.validate();
-			MicroschemaContainer foundMicroschema = root.findByName(requestModel.getName()).toBlocking().single();
-			if (foundMicroschema != null && !foundMicroschema.getUuid().equals(getUuid())) {
-				throw error(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
-			}
-
-			return db.trx(() -> {
-				if (!getName().equals(requestModel.getName())) {
-					setName(requestModel.getName());
-				}
-				setSchema(requestModel);
-				return addIndexBatch(UPDATE_ACTION);
-			}).process().map(i -> this);
+			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl.class);
+			SchemaChangesListModel model = new SchemaChangesListModel();
+			model.getChanges().addAll(MicroschemaComparator.getIntance().diff(getSchema(), requestModel));
+			return applyChanges(ac, model).map(i -> this);
 		} catch (IOException e) {
 			return Observable.error(e);
 		}
-
 	}
 
 	@Override

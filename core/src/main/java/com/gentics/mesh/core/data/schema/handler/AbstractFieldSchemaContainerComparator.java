@@ -33,6 +33,8 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		Objects.requireNonNull(containerA, "containerA must not be null");
 		Objects.requireNonNull(containerB, "containerB must not be null");
 
+		containerA.validate();
+		containerB.validate();
 		List<SchemaChangeModel> changes = new ArrayList<>();
 
 		// Diff the fields

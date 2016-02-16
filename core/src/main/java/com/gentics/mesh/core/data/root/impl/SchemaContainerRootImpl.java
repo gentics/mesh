@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -46,7 +46,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public String getRootLabel() {
-		return HAS_SCHEMA_CONTAINER;
+		return HAS_SCHEMA_CONTAINER_ITEM;
 	}
 
 	@Override
@@ -63,12 +63,13 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	public SchemaContainer create(Schema schema, User creator) throws MeshSchemaException {
 		validate(schema);
 		SchemaContainerImpl schemaContainer = getGraph().addFramedVertex(SchemaContainerImpl.class);
+
+		// set the initial version
+		schema.setVersion(1);
 		schemaContainer.setSchema(schema);
 		schemaContainer.setName(schema.getName());
 		addSchemaContainer(schemaContainer);
 		schemaContainer.setCreated(creator);
-		// set the initial version
-		schema.setVersion(1);
 
 		return schemaContainer;
 	}

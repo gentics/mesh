@@ -157,6 +157,8 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreate() throws IOException {
 		assertNotNull(getSchemaContainer().getSchema());
+		assertEquals("The schema container and schema rest model version must always be in sync", getSchemaContainer().getVersion(),
+				getSchemaContainer().getSchema().getVersion());
 	}
 
 	@Test

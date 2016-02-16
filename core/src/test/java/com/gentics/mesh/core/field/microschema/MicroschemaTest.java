@@ -79,7 +79,8 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 			assertEquals("Check microschema name", name, microschema.getName());
 		}
 
-		assertNull("Must not find microschema with name " + invalidName, boot.microschemaContainerRoot().findByName(invalidName).toBlocking().single());
+		assertNull("Must not find microschema with name " + invalidName,
+				boot.microschemaContainerRoot().findByName(invalidName).toBlocking().single());
 	}
 
 	@Test
@@ -103,11 +104,12 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		fail("Not yet implemented");
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		fail("Not yet implemented");
+		assertNotNull(microschemaContainer("vcard"));
+		assertEquals("The microschema container and schema rest model version must always be in sync", microschemaContainer("vcard").getVersion(),
+				microschemaContainer("vcard").getSchema().getVersion());
 	}
 
 	@Ignore("Not yet implemented")

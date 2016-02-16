@@ -17,8 +17,6 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import rx.Observable;
-
 public class TitanDBDatabase extends AbstractDatabase {
 
 	TitanGraph graph;

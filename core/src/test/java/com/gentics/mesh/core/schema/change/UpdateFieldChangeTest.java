@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;

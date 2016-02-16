@@ -69,12 +69,14 @@ import com.gentics.mesh.rest.MeshResponseHandler;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.WebSocket;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
@@ -475,9 +477,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<Schema> updateSchema(String uuid, Schema request) {
+	public Future<GenericMessageResponse> updateSchema(String uuid, Schema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(PUT, "/schemas/" + uuid, SchemaImpl.class, request);
+		return handleRequest(PUT, "/schemas/" + uuid, GenericMessageResponse.class, request);
 	}
 
 	@Override
@@ -713,7 +715,12 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<String> getMeshStatus() {
+	public Future<GenericMessageResponse> schemaMigrationStatus() {
+		return handleRequest(GET, "/admin/migrationStatus", GenericMessageResponse.class);
+	}
+
+	@Override
+	public Future<String> meshStatus() {
 		Future<String> future = Future.future();
 		String uri = BASEURI + "/admin/status";
 		HttpClientRequest request = client.request(HttpMethod.GET, uri, rh -> {
@@ -865,9 +872,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<Microschema> updateMicroschema(String uuid, Microschema request) {
+	public Future<GenericMessageResponse> updateMicroschema(String uuid, Microschema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(PUT, "/microschemas/" + uuid, MicroschemaImpl.class, request);
+		return handleRequest(PUT, "/microschemas/" + uuid, GenericMessageResponse.class, request);
 	}
 
 	@Override
@@ -892,5 +899,10 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<String> resolveLinks(String body, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(body, "body must not be null");
 		return handleRequest(POST, "/utilities/linkResolver" + getQuery(parameters), String.class, body);
+	}
+
+	@Override
+	public void eventbus(Handler<WebSocket> wsConnect) {
+		client.websocket(BASEURI + "/eventbus/websocket", wsConnect);
 	}
 }

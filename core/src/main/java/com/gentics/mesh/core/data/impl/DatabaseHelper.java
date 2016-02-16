@@ -30,7 +30,13 @@ import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
+import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
@@ -217,6 +223,14 @@ public class DatabaseHelper {
 		TagFamilyImpl.checkIndices(database);
 		SchemaContainerImpl.checkIndices(database);
 		MicroschemaContainerImpl.checkIndices(database);
+		
+		// Field changes
+		FieldTypeChangeImpl.checkIndices(database);
+		UpdateSchemaChangeImpl.checkIndices(database);
+		RemoveFieldChangeImpl.checkIndices(database);
+		UpdateFieldChangeImpl.checkIndices(database);
+		AddFieldChangeImpl.checkIndices(database);
+		UpdateMicroschemaChangeImpl.checkIndices(database);
 
 	}
 

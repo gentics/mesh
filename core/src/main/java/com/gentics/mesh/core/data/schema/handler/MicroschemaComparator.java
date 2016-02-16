@@ -1,24 +1,23 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import java.io.IOException;
-import java.util.List;
+import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public class MicroschemaComparator extends AbstractFieldSchemaContainerComparator<Microschema> {
 
-	private static final Logger log = LoggerFactory.getLogger(MicroschemaComparator.class);
+	private static MicroschemaComparator instance;
 
-	@Override
-	public List<SchemaChangeModel> diff(Microschema containerA, Microschema containerB) throws IOException {
-		return super.diff(containerA, containerB);
+	@PostConstruct
+	public void setup() {
+		MicroschemaComparator.instance = this;
+	}
+
+	public static MicroschemaComparator getIntance() {
+		return instance;
 	}
 
 }

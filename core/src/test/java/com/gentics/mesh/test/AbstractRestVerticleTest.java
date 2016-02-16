@@ -421,10 +421,10 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return future.result();
 	}
 
-	protected Schema updateSchema(String uuid, String schemaName) {
+	protected GenericMessageResponse updateSchema(String uuid, String schemaName) {
 		Schema schemaUpdateRequest = new SchemaImpl();
 		schemaUpdateRequest.setName(schemaName);
-		Future<Schema> future = getClient().updateSchema(uuid, schemaUpdateRequest);
+		Future<GenericMessageResponse> future = getClient().updateSchema(uuid, schemaUpdateRequest);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -443,14 +443,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
-	protected void expectMessageResponse(String i18nKey, Future<GenericMessageResponse> responseFuture, String... i18nParams) {
+	protected void expectResponseMessage(Future<GenericMessageResponse> responseFuture, String i18nKey, String... i18nParams) {
 		assertTrue("The given future has not yet completed.", responseFuture.isComplete());
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, i18nKey, i18nParams);
 		assertEquals("The response message does not match.", message, responseFuture.result().getMessage());
 	}
 
-	protected void expectMessage(Future<?> future, HttpResponseStatus status, String message) {
+	protected void expectFailureMessage(Future<?> future, HttpResponseStatus status, String message) {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
 		assertNotNull(future.cause());
 
@@ -470,7 +470,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
 		assertNotEquals("Translation for key " + bodyMessageI18nKey + " not found", message, bodyMessageI18nKey);
-		expectMessage(future, status, message);
+		expectFailureMessage(future, status, message);
 	}
 
 }

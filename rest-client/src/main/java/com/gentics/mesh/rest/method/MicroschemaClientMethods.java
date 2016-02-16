@@ -36,7 +36,7 @@ public interface MicroschemaClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<Microschema> updateMicroschema(String uuid, Microschema request);
+	Future<GenericMessageResponse> updateMicroschema(String uuid, Microschema request);
 
 	/**
 	 * Delete the given microschema.
@@ -65,4 +65,5 @@ public interface MicroschemaClientMethods {
 	 * @return
 	 */
 	Future<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request);
+
 }

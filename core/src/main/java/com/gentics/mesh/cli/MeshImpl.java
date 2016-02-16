@@ -139,6 +139,12 @@ public class MeshImpl implements Mesh {
 		log.info("###############################################################");
 	}
 
+	/**
+	 * Return the vertx version.
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("deprecation")
 	private String getVertxVersion() {
 		return new io.vertx.core.Starter().getVersion();
 	}

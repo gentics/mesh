@@ -2,6 +2,8 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -13,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -48,6 +53,25 @@ public class MicroschemaChangesVerticleTest extends AbstractRestVerticleTest {
 		assertSuccess(future);
 		microschema.reload();
 		assertNotNull("The change should have been added to the schema.", microschema.getNextChange());
+	}
+
+	@Test
+	public void testUpdateWithConflictingName() {
+		String name = "captionedImage";
+		String originalSchemaName = "vcard";
+		MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
+		assertNotNull(microschema);
+		Microschema request = new MicroschemaImpl();
+		request.setName(name);
+
+		Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+
+		//TODO assert for conflict
+		expectException(future, BAD_REQUEST, "microschema_conflicting_name", name);
+		microschema.reload();
+		assertEquals("The name of the microschema was updated", originalSchemaName, microschema.getName());
 	}
 
 }

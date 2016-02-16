@@ -17,7 +17,6 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 
 /**
  * OrientDB specific mesh graph database implementation.

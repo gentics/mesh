@@ -21,11 +21,16 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 
 /**
  * @see FieldTypeChange
  */
 public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements FieldTypeChange {
+
+	public static void checkIndices(Database database) {
+		database.addVertexType(FieldTypeChangeImpl.class);
+	}
 
 	@Override
 	public SchemaChangeOperation getOperation() {
@@ -113,7 +118,7 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	@Override
 	public String getAutoMigrationScript() throws IOException {
-		return OPERATION.getAutoMigrationScript(Arrays.asList(SchemaChangeModel.TYPE_KEY, SchemaChangeModel.LIST_TYPE_KEY).stream().filter(key -> getRestProperty(key) != null)
-				.collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
+		return OPERATION.getAutoMigrationScript(Arrays.asList(SchemaChangeModel.TYPE_KEY, SchemaChangeModel.LIST_TYPE_KEY).stream()
+				.filter(key -> getRestProperty(key) != null).collect(Collectors.toMap(key -> key, key -> getRestProperty(key))));
 	}
 }
