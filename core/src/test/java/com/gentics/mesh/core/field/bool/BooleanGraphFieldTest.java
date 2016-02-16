@@ -65,7 +65,7 @@ public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 		field.setBoolean(new Boolean(false));
 		assertEquals("false", container.getProperty("test-boolean"));
 		field.setBoolean(null);
-		assertEquals("null", container.getProperty("test-boolean"));
+		assertNull(container.getProperty("test-boolean"));
 		assertNull(field.getBoolean());
 	}
 
@@ -75,15 +75,18 @@ public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 		BooleanGraphField booleanField = container.createBoolean("booleanField");
 		assertEquals("booleanField", booleanField.getFieldKey());
 		booleanField.setBoolean(true);
-		assertTrue(booleanField.getBoolean());
+		assertTrue("The boolean field value was not changed to true", booleanField.getBoolean());
+
 		booleanField.setBoolean(false);
-		assertFalse(booleanField.getBoolean());
+		assertFalse("The boolean field value was not changed to false", booleanField.getBoolean());
+
 		booleanField.setBoolean(null);
-		assertNull(booleanField.getBoolean());
+		assertNull("The boolean field value was not set to null.", booleanField.getBoolean());
+
 		BooleanGraphField bogusField2 = container.getBoolean("bogus");
-		assertNull(bogusField2);
+		assertNull("No field with the name bogus should have been found.", bogusField2);
+
 		BooleanGraphField reloadedBooleanField = container.getBoolean("booleanField");
-		assertNotNull(reloadedBooleanField);
-		assertEquals("booleanField", reloadedBooleanField.getFieldKey());
+		assertNull("The boolean field value was set to null and thus the field should have been removed.", reloadedBooleanField);
 	}
 }

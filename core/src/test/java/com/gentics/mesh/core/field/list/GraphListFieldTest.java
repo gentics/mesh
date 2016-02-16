@@ -120,9 +120,9 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		assertList(2, "dateList", DateFieldListImpl.class, response);
 		assertList(2, "numberList", NumberFieldListImpl.class, response);
 		assertList(2, "nodeList", NodeFieldListImpl.class, response);
-		assertList(3, "booleanList", BooleanFieldListImpl.class, response);
+		assertList(2, "booleanList", BooleanFieldListImpl.class, response);
 		//TODO Add micronode assertion
-		//assertList(2, "micronodeList", MicronodeFieldListImpl.class, response);
+//		assertList(2, "micronodeList", MicronodeFieldListImpl.class, response);
 
 	}
 
@@ -248,8 +248,8 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		list.createBoolean(true);
 		list.createBoolean(false);
 		list.createBoolean(null);
-		assertEquals(3, list.getList().size());
-		assertEquals(3, list.getSize());
+		assertEquals("Only non-null values are persisted.", 2, list.getList().size());
+		assertEquals(2, list.getSize());
 		assertNotNull(list.getBoolean(1));
 		assertTrue(list.getBoolean(1).getBoolean());
 		list.removeAll();

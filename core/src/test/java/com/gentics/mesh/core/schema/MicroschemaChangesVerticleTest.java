@@ -40,6 +40,7 @@ public class MicroschemaChangesVerticleTest extends AbstractRestVerticleTest {
 		assertNull("The microschema should not yet have any changes", microschema.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, "newField");
+		change.setProperty("type", "html");
 		listOfChanges.getChanges().add(change);
 
 		Future<SchemaMigrationResponse> future = getClient().applyChangesToMicroschema(microschema.getUuid(), listOfChanges);

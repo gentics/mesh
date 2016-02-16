@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -50,7 +49,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	public void handleExecuteSchemaChanges(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);
+			Observable<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});
