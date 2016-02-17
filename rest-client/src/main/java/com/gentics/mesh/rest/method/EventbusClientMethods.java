@@ -3,6 +3,9 @@ package com.gentics.mesh.rest.method;
 import io.vertx.core.Handler;
 import io.vertx.core.http.WebSocket;
 
+/**
+ * Eventbus endpoint specific REST methods.
+ */
 public interface EventbusClientMethods {
 
 	/**
