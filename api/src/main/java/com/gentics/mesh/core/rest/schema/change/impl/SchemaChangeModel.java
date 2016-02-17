@@ -1,5 +1,12 @@
 package com.gentics.mesh.core.rest.schema.change.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +59,7 @@ public class SchemaChangeModel implements RestModel {
 	 * @param operation
 	 * @param fieldName
 	 */
-	public SchemaChangeModel(SchemaChangeOperation operation, String fieldName) {
+	private SchemaChangeModel(SchemaChangeOperation operation, String fieldName) {
 		this(operation);
 		getProperties().put(FIELD_NAME_KEY, fieldName);
 	}
@@ -62,7 +69,7 @@ public class SchemaChangeModel implements RestModel {
 	 * 
 	 * @param operation
 	 */
-	public SchemaChangeModel(SchemaChangeOperation operation) {
+	private SchemaChangeModel(SchemaChangeOperation operation) {
 		this.operation = operation;
 	}
 
@@ -168,6 +175,44 @@ public class SchemaChangeModel implements RestModel {
 	}
 
 	/**
+	 * Create a new update schema change.
+	 * 
+	 * @return
+	 */
+	public static SchemaChangeModel createUpdateSchemaChange() {
+		return new SchemaChangeModel(UPDATESCHEMA);
+	}
+
+	/**
+	 * Create a new update microschema change.
+	 * 
+	 * @return
+	 */
+	public static SchemaChangeModel createUpdateMicroschemaChange() {
+		return new SchemaChangeModel(UPDATEMICROSCHEMA);
+	}
+
+	/**
+	 * Create a new field removal change.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static SchemaChangeModel createRemoveFieldChange(String name) {
+		return new SchemaChangeModel(REMOVEFIELD, name);
+	}
+
+	/**
+	 * Create a new field update change.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static SchemaChangeModel createUpdateFieldChange(String name) {
+		return new SchemaChangeModel(UPDATEFIELD, name);
+	}
+
+	/**
 	 * Create a change field type change.
 	 * 
 	 * @param fieldName
@@ -175,7 +220,7 @@ public class SchemaChangeModel implements RestModel {
 	 * @return
 	 */
 	public static SchemaChangeModel createChangeFieldTypeChange(String fieldName, String type) {
-		SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.CHANGEFIELDTYPE, fieldName);
+		SchemaChangeModel change = new SchemaChangeModel(CHANGEFIELDTYPE, fieldName);
 		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
 		return change;
 	}
@@ -188,7 +233,7 @@ public class SchemaChangeModel implements RestModel {
 	 * @return
 	 */
 	public static SchemaChangeModel createAddChange(String fieldName, String type) {
-		SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.ADDFIELD, fieldName);
+		SchemaChangeModel change = new SchemaChangeModel(ADDFIELD, fieldName);
 		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
 		return change;
 	}
@@ -198,6 +243,12 @@ public class SchemaChangeModel implements RestModel {
 		return getOperation() + ":" + getUuid() + ":" + getProperties();
 	}
 
+	/**
+	 * Return the model property of the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public <T> T getProperty(String key) {
 		return (T) properties.get(key);
 	}

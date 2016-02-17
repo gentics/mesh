@@ -3,7 +3,6 @@ package com.gentics.mesh.rest.method;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.vertx.core.Future;
@@ -55,7 +54,7 @@ public interface MicroschemaClientMethods {
 	 * @param changes
 	 * @return
 	 */
-	Future<SchemaMigrationResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes);
+	Future<GenericMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes);
 
 	/**
 	 * Compare the given microschema with a currently stored one and return a list of changes.

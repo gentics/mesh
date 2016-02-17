@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -41,6 +42,13 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 		assertNotNull(reference);
 		assertEquals(schema.getUuid(), reference.getUuid());
 		assertEquals(schema.getName(), reference.getName());
+	}
+
+	@Test
+	public void testGetRoot() {
+		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
+		RootVertex<SchemaContainer> root = schemaContainer.getRoot();
+		assertNotNull(root);
 	}
 
 	@Test

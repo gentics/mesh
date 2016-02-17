@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 import io.vertx.core.logging.Logger;
@@ -29,7 +30,18 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	@Autowired
 	protected FieldSchemaComparator fieldComparator;
 
-	public List<SchemaChangeModel> diff(FC containerA, FC containerB) throws IOException {
+	/**
+	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specifiy the actual
+	 * field container class.
+	 * 
+	 * @param containerA
+	 * @param containerB
+	 * @return
+	 * @throws IOException
+	 */
+	public abstract List<SchemaChangeModel> diff(FC containerA, FC containerB) throws IOException;
+
+	protected List<SchemaChangeModel> diff(FC containerA, FC containerB, Class<? extends FC> classOfFC) throws IOException {
 		Objects.requireNonNull(containerA, "containerA must not be null");
 		Objects.requireNonNull(containerB, "containerB must not be null");
 
@@ -48,7 +60,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInA.getName() + " was removed.");
 				}
-				SchemaChangeModel change = new SchemaChangeModel(REMOVEFIELD, fieldInA.getName());
+				SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange(fieldInA.getName());
 				change.loadMigrationScript();
 				changes.add(change);
 			}
@@ -63,8 +75,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInB.getName() + " was added.");
 				}
-				SchemaChangeModel change = new SchemaChangeModel(ADDFIELD, fieldInB.getName());
-				change.setProperty("type", fieldInB.getType());
+				SchemaChangeModel change = SchemaChangeModel.createAddChange(fieldInB.getName(), fieldInB.getType());
 				if (fieldInB instanceof ListFieldSchema) {
 					change.setProperty("listType", ((ListFieldSchema) fieldInB).getListType());
 				}
@@ -94,13 +105,13 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		}
 
 		// order of fields
-		compareAndAddOrderChange(changes, containerA, containerB);
+		compareAndAddOrderChange(changes, containerA, containerB, classOfFC);
 
 		//name
-		compareAndAddSchemaProperty(changes, "name", containerA.getName(), containerB.getName());
+		compareAndAddSchemaProperty(changes, SchemaChangeModel.NAME_KEY, containerA.getName(), containerB.getName(), classOfFC);
 
 		// description
-		compareAndAddSchemaProperty(changes, "description", containerA.getDescription(), containerB.getDescription());
+		compareAndAddSchemaProperty(changes, SchemaChangeModel.DESCRIPTION_KEY, containerA.getDescription(), containerB.getDescription(), classOfFC);
 
 		return changes;
 	}
@@ -111,8 +122,9 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @param changes
 	 * @param containerA
 	 * @param containerB
+	 * @param classOfFC
 	 */
-	private void compareAndAddOrderChange(List<SchemaChangeModel> changes, FC containerA, FC containerB) {
+	private void compareAndAddOrderChange(List<SchemaChangeModel> changes, FC containerA, FC containerB, Class<? extends FC> classOfFC) {
 		boolean hasChanges = false;
 
 		List<String> fieldNames = new ArrayList<>();
@@ -139,9 +151,8 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		}
 
 		if (hasChanges) {
-			SchemaChangeModel change = new SchemaChangeModel();
-			change.setOperation(UPDATESCHEMA);
-			change.getProperties().put("order", fieldNames.toArray());
+			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
+			change.getProperties().put(SchemaChangeModel.FIELD_ORDER_KEY, fieldNames.toArray());
 			changes.add(change);
 		}
 
@@ -169,12 +180,32 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @param key
 	 * @param objectA
 	 * @param objectB
+	 * @param classOfFC
 	 */
-	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB) {
+	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
+			Class<? extends FC> classOfFC) {
 		if (!Objects.equals(objectA, objectB)) {
-			SchemaChangeModel change = new SchemaChangeModel(UPDATESCHEMA);
+			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
 			change.getProperties().put(key, objectB);
 			changes.add(change);
 		}
 	}
+
+	/**
+	 * Return the specific update change for the field container.
+	 * 
+	 * @param classOfFC
+	 * @return
+	 */
+	private SchemaChangeModel createFieldContainerUpdateChange(Class<? extends FC> classOfFC) {
+		if (Schema.class.isAssignableFrom(classOfFC)) {
+			return SchemaChangeModel.createUpdateSchemaChange();
+		} else if (Microschema.class.isAssignableFrom(classOfFC)) {
+			return SchemaChangeModel.createUpdateMicroschemaChange();
+		} else {
+			throw error(INTERNAL_SERVER_ERROR, "Unknown field container type {" + classOfFC.getName() + "}");
+		}
+
+	}
+
 }

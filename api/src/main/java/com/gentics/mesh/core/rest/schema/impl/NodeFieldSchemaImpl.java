@@ -38,7 +38,7 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 		if (fieldSchema instanceof NodeFieldSchema) {
 			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
 			boolean modified = false;
-			SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldSchema.getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
 
 			// required flag:
 			modified = compareRequiredField(change, nodeFieldSchema, modified);

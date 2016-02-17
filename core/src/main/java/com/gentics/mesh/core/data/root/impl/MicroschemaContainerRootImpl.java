@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 
 import java.io.IOException;
 
@@ -39,7 +40,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	@Override
 	public String getRootLabel() {
-		return HAS_SCHEMA_CONTAINER;
+		return HAS_SCHEMA_CONTAINER_ITEM;
 	}
 
 	@Override

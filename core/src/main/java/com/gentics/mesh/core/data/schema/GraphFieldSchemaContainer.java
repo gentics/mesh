@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -132,5 +133,12 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, V ext
 	 * @return
 	 */
 	Observable<GenericMessageResponse> applyChanges(InternalActionContext ac);
+
+	/**
+	 * Load the container root vertex of the container.
+	 * 
+	 * @return
+	 */
+	RootVertex<V> getRoot();
 
 }

@@ -45,17 +45,17 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 		container.setNextChange(change);
 		updatedSchema = mutator.apply(container);
 		assertEquals("text", updatedSchema.getDescription());
-
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		SchemaChangeModel model = new SchemaChangeModel();
+		SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
+		model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
 
 		UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 		change.updateFromRest(model);
-
+		assertEquals("someName", change.getName());
 	}
 
 	@Test

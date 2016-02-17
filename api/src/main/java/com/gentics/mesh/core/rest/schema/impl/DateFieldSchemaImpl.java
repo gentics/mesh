@@ -21,7 +21,7 @@ public class DateFieldSchemaImpl extends AbstractFieldSchema implements DateFiel
 	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
 		if (fieldSchema instanceof DateFieldSchema) {
 			DateFieldSchema dateFieldSchema = (DateFieldSchema) fieldSchema;
-			SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldSchema.getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
 			change.loadMigrationScript();
 			if (compareRequiredField(change, dateFieldSchema, false)) {
 				return Optional.of(change);

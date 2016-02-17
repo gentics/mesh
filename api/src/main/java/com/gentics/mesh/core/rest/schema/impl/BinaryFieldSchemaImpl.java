@@ -39,7 +39,7 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 			BinaryFieldSchema binaryFieldSchema = (BinaryFieldSchema) fieldSchema;
 
 			boolean modified = false;
-			SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldSchema.getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
 
 			// required
 			modified = compareRequiredField(change, binaryFieldSchema, modified);

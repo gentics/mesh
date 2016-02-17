@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -20,7 +18,7 @@ public class HtmlFieldSchemaImpl extends AbstractFieldSchema implements HtmlFiel
 	@Override
 	public Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException {
 		if (fieldSchema instanceof HtmlFieldSchema) {
-			SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(getName());
 			HtmlFieldSchema htmlFieldSchema = (HtmlFieldSchema) fieldSchema;
 
 			if (compareRequiredField(change, htmlFieldSchema, false)) {

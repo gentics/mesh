@@ -41,7 +41,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaMigrationResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -890,9 +889,9 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<SchemaMigrationResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes) {
+	public Future<GenericMessageResponse> applyChangesToMicroschema(String uuid, SchemaChangesListModel changes) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(POST, "/microschemas/" + uuid + "/changes", SchemaMigrationResponse.class, changes);
+		return handleRequest(POST, "/microschemas/" + uuid + "/changes", GenericMessageResponse.class, changes);
 	}
 
 	@Override

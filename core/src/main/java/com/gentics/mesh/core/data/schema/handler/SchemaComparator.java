@@ -32,16 +32,16 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 	@Override
 	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) throws IOException {
-		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB);
+		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB, Schema.class);
 
 		// segmentField
-		compareAndAddSchemaProperty(changes, "segmentField", schemaA.getSegmentField(), schemaB.getSegmentField());
+		compareAndAddSchemaProperty(changes, "segmentField", schemaA.getSegmentField(), schemaB.getSegmentField(), Schema.class);
 
 		// displayField
-		compareAndAddSchemaProperty(changes, "displayField", schemaA.getDisplayField(), schemaB.getDisplayField());
+		compareAndAddSchemaProperty(changes, "displayField", schemaA.getDisplayField(), schemaB.getDisplayField(), Schema.class);
 
 		// container flag
-		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer());
+		compareAndAddSchemaProperty(changes, "container", schemaA.isContainer(), schemaB.isContainer(), Schema.class);
 
 		return changes;
 	}

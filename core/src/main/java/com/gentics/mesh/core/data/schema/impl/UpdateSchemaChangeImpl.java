@@ -29,7 +29,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	@Override
 	public <R extends FieldSchemaContainer> R apply(R container) {
 		if (!(container instanceof Schema)) {
-			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName());
+			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName() + " got {" + container.getClass().getName() + "}");
 		}
 
 		Schema schema = (Schema) super.apply(container);

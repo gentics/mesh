@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.verticle.eventbus;
 
+import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
+
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -32,8 +34,8 @@ public class EventbusVerticle extends AbstractCoreApiVerticle {
 	private void addEventBusHandler() {
 		SockJSHandler handler = SockJSHandler.create(vertx);
 		BridgeOptions options = new BridgeOptions();
-		options.addInboundPermitted(new PermittedOptions().setAddress("mesh.schema.migration"));
-		options.addOutboundPermitted(new PermittedOptions().setAddress("mesh.schema.migration"));
+		options.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
+		options.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
 		handler.bridge(options, event -> {
 			if (event.type() == BridgeEventType.SOCKET_CREATED) {
 				log.info("A socket was created");

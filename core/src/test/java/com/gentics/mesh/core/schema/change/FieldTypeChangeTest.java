@@ -16,7 +16,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -100,10 +99,8 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		SchemaChangeModel model = new SchemaChangeModel(SchemaChangeOperation.CHANGEFIELDTYPE);
+		SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 		model.setMigrationScript("test");
-		model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "testField");
-		model.setProperty(SchemaChangeModel.TYPE_KEY, "list");
 		model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
 		FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 		change.updateFromRest(model);

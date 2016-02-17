@@ -16,9 +16,11 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -27,12 +29,20 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
+import rx.Observable;
 
-public class MicroschemaTest extends AbstractBasicObjectTest {
+public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 
-	@Ignore("test does not apply")
+	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		MicroschemaContainer vcard = microschemaContainer("vcard");
+		MicroschemaReference reference = vcard.transformToReference(ac);
+		assertNotNull(reference);
+		assertEquals("vcard", reference.getName());
+		assertEquals(vcard.getUuid(), reference.getUuid());
 	}
 
 	@Ignore("Not yet implemented")
@@ -105,18 +115,42 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testRoot() {
+		MicroschemaContainer vcard = microschemaContainer("vcard");
+		assertNotNull(vcard.getRoot());
+	}
+
+	@Test
 	@Override
 	public void testCreate() throws IOException {
+		Microschema schema = new MicroschemaImpl();
+		schema.setName("test");
+		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
+		assertNotNull("The container was not created.", container);
+		assertNotNull("The container schema was not set", container.getSchema());
+		assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
+	}
+
+	/**
+	 * Assert that the schema version is in sync with its rest model.
+	 */
+	@Test
+	public void testVersionSync() {
 		assertNotNull(microschemaContainer("vcard"));
 		assertEquals("The microschema container and schema rest model version must always be in sync", microschemaContainer("vcard").getVersion(),
 				microschemaContainer("vcard").getSchema().getVersion());
+
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
-	public void testDelete() {
-		fail("Not yet implemented");
+	public void testDelete() throws MeshJsonException {
+		Microschema schema = new MicroschemaImpl();
+		schema.setName("test");
+		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
+		assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
+		container.delete();
+		assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
 	}
 
 	@Ignore("Not yet implemented")
@@ -163,12 +197,14 @@ public class MicroschemaTest extends AbstractBasicObjectTest {
 		testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
 	}
 
-	@Ignore("Not yet implemented")
 	@Test
 	@Override
 	public void testTransformation() throws IOException {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented");
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+		MicroschemaContainer vcard = microschemaContainer("vcard");
+		Microschema schema = vcard.transformToRest(ac, "en").toBlocking().single();
+		assertEquals(vcard.getUuid(), schema.getUuid());
 	}
 
 	@Ignore("Not yet implemented")
