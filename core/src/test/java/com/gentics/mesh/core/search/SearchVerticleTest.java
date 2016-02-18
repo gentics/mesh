@@ -109,10 +109,10 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, "node", SearchQueueEntryAction.CREATE_ACTION);
 		}
 		String documentId = nodeIndexHandler.composeDocumentId(node, "en");
-		searchProvider.deleteDocument("node", node.getSchema().getName(), documentId).toBlocking().single();
+		searchProvider.deleteDocument("node", node.getSchemaContainer().getSchema().getName(), documentId).toBlocking().single();
 		processor.process();
 		assertNotNull("The document with uuid {" + uuid + "} could still be found within the search index.",
-				searchProvider.getDocument("node", node.getSchema().getName(), documentId).toBlocking().first());
+				searchProvider.getDocument("node", node.getSchemaContainer().getSchema().getName(), documentId).toBlocking().first());
 	}
 
 }

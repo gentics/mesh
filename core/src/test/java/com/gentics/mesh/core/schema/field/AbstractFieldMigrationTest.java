@@ -785,7 +785,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 			MicroschemaContainer container, DataProvider dataProvider, String...fieldNames) {
 		Language english = english();
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(container.getName());
 		node.getSchemaContainer().setSchema(schema);

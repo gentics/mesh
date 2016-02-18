@@ -28,7 +28,7 @@ public class BinaryGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testNodeFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
 		binaryFieldSchema.setName("binaryField");
 		binaryFieldSchema.setAllowedMimeTypes("image/jpg", "text/plain");

@@ -33,7 +33,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 		instance = this;
 	}
 
-	public static ServerSchemaStorage getSchemaStorage() {
+	public static ServerSchemaStorage getInstance() {
 		return instance;
 	}
 

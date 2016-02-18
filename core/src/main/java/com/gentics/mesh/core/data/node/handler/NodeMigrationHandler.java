@@ -268,7 +268,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 
 		// transform the result back to the Rest Model
-		T transformedRestModel = JsonUtil.readNode(nodeJson, clazz, ServerSchemaStorage.getSchemaStorage());
+		T transformedRestModel = JsonUtil.readNode(nodeJson, clazz, ServerSchemaStorage.getInstance());
 
 		container.updateFieldsFromRest(ac, transformedRestModel.getFields(), newSchema);
 

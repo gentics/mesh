@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -16,6 +17,8 @@ import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
@@ -25,6 +28,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -35,6 +39,39 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 
 	@Test
 	public void testRemoveField() throws Exception {
+
+		// 1. Create node that uses the microschema
+		Node node = createMicronodeNode();
+
+		// 2. Create changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
+		listOfChanges.getChanges().add(change);
+
+		// 3. Setup eventbus bridged latch
+		CountDownLatch latch = latchForMigrationCompleted();
+
+		// 4. Invoke migration
+		MicroschemaContainer container = microschemaContainer("vcard");
+		assertNull("The microschema should not yet have any changes", container.getNextChange());
+		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
+		latchFor(future);
+		assertSuccess(future);
+		container.reload();
+		assertNotNull("The change should have been added to the schema.", container.getNextChange());
+
+		// 5. Wait for migration to finish
+		failingLatch(latch);
+
+		// 6. Assert migrated node
+		node.reload();
+		NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
+		fieldContainer.reload();
+		assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
+	}
+
+	private Node createMicronodeNode() {
+
 		// 1. Update folder schema
 		Schema schema = schemaContainer("folder").getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
@@ -44,7 +81,10 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		schema.addField(microschemaFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 
-		// 2. Create node that uses the microschema
+		getClient().getClientSchemaStorage().clear();
+		ServerSchemaStorage.getInstance().clear();
+
+		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
 		MicroschemaReference ref = new MicroschemaReference();
 		ref.setName("vcard");
@@ -56,46 +96,34 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		assertNotNull("The node should have been created.", node);
 		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
 
-		// 3. Create changes
-		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
-		listOfChanges.getChanges().add(change);
+		return node;
 
-		// 4. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
-
-		// 5. Invoke migration
-		MicroschemaContainer container = microschemaContainer("vcard");
-		assertNull("The microschema should not yet have any changes", container.getNextChange());
-		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
-		latchFor(future);
-		assertSuccess(future);
-		container.reload();
-		assertNotNull("The change should have been added to the schema.", container.getNextChange());
-
-		// 6. Wait for migration to finish
-		failingLatch(latch);
-
-		// 7. Assert migrated node
-		node.reload();
-		NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
-		fieldContainer.reload();
-		assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 	}
 
 	@Test
-	public void testAddField() {
-		MicroschemaContainer microschema = microschemaContainer("vcard");
-		assertNull("The microschema should not yet have any changes", microschema.getNextChange());
+	public void testAddField() throws Exception {
+		// 1. Setup changes
+		MicroschemaContainer container = microschemaContainer("vcard");
+		assertNull("The microschema should not yet have any changes", container.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createAddChange("newField", "html");
 		listOfChanges.getChanges().add(change);
 
-		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(microschema.getUuid(), listOfChanges);
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = latchForMigrationCompleted();
+
+		// 3. Invoke migration
+		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);
-		microschema.reload();
-		assertNotNull("The change should have been added to the schema.", microschema.getNextChange());
+		expectResponseMessage(future, "migration_invoked", "vcard");
+
+		// 4. Latch for completion
+		failingLatch(latch);
+		container.reload();
+		assertNotNull("The change should have been added to the schema.", container.getNextChange());
+		assertNotNull("The container should now have a new version", container.getNextVersion());
+
 	}
 
 	@Test

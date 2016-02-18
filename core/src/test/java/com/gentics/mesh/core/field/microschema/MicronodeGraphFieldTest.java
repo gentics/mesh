@@ -91,7 +91,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
 		node.getSchemaContainer().setSchema(schema);
 

@@ -129,7 +129,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
-			UserCreateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			UserCreateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getInstance());
 			if (requestModel == null) {
 				throw error(BAD_REQUEST, "error_parse_request_json_error");
 			}

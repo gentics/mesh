@@ -173,7 +173,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		// create micronode based on the old schema
 		Language english = english();
 		Node firstNode = folder("2015");
-		Schema schema = firstNode.getSchema();
+		Schema schema = firstNode.getSchemaContainer().getSchema();
 		schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(containerA.getName());
 		firstNode.getSchemaContainer().setSchema(schema);

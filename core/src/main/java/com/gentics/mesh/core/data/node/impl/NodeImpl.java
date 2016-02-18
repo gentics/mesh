@@ -107,7 +107,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<String> getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
 		if (container != null) {
-			String fieldName = getSchema().getSegmentField();
+			String fieldName = getSchemaContainer().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
 				return Observable.just(field.getString());
@@ -125,7 +125,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		if (container != null) {
-			String fieldName = getSchema().getSegmentField();
+			String fieldName = getSchemaContainer().getSchema().getSegmentField();
 			// 1. Try to load the path segment using the string field
 			StringGraphField stringField = container.getString(fieldName);
 			if (stringField != null) {
@@ -248,11 +248,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public SchemaContainer getSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
-	}
-
-	@Override
-	public Schema getSchema() {
-		return getSchemaContainer().getSchema();
 	}
 
 	@Override
@@ -494,7 +489,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
-			if (!getSchema().isContainer()) {
+			if (!getSchemaContainer().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
 			NavigationResponse response = new NavigationResponse();
@@ -539,7 +534,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Add children
 		for (Node child : nodes) {
-			if (child.getSchema().isContainer()) {
+			if (child.getSchemaContainer().getSchema().isContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -652,7 +647,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return null;
 			} else {
 				// Determine the display field name and load the string value from that field.
-				return container.getDisplayFieldValue(getSchema());
+				return container.getDisplayFieldValue(getSchemaContainer().getSchema());
 			}
 		} catch (Exception e) {
 			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
@@ -675,7 +670,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
-			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getInstance());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
@@ -690,7 +685,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
-				Schema schema = getSchema();
+				Schema schema = getSchemaContainer().getSchema();
 				container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
@@ -715,7 +710,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			parent = parent.getParentNode();
 		}
 
-		if (!targetNode.getSchema().isContainer()) {
+		if (!targetNode.getSchemaContainer().getSchema().isContainer()) {
 			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 		}
 
@@ -752,7 +747,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, String languageTag) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		String indexType = NodeIndexHandler.getDocumentType(getSchema());
+		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainer().getSchema());
 		batch.addEntry(NodeIndexHandler.composeDocumentId(this, languageTag), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
@@ -769,7 +764,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		// TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = NodeIndexHandler.getDocumentType(getSchema());
+			String indexType = NodeIndexHandler.getDocumentType(getSchemaContainer().getSchema());
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
 		addRelatedEntries(batch, action);
@@ -778,7 +773,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PathSegment getSegment(String segment) {
-		Schema schema = getSchema();
+		Schema schema = getSchemaContainer().getSchema();
 
 		// Check the different language versions
 		String segmentFieldName = schema.getSegmentField();

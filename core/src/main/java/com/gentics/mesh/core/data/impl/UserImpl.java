@@ -470,7 +470,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
-			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getInstance());
 			return db.trx(() -> {
 				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
 					User conflictingUser = BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername());

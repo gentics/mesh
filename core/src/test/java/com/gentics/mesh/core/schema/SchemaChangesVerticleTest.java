@@ -178,26 +178,36 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	}
 
 	@Test
-	public void testAddField() {
+	public void testAddField() throws Exception {
+
+		// 1. Setup changes
 		SchemaContainer container = schemaContainer("content");
 		assertNull("The schema should not yet have any changes", container.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createAddChange("newField", "html");
 		listOfChanges.getChanges().add(change);
 
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = latchForMigrationCompleted();
+
+		// 3. Invoke migration
 		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
+
+		// 4. Latch for completion
+		failingLatch(latch);
 		container.reload();
 		assertNotNull("The change should have been added to the schema.", container.getNextChange());
 		assertNotNull("The container should now have a new version", container.getNextVersion());
 
-		//		// Assert that migration worked
-		//		Node node = content();
-		//		node.reload();
-		//		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
-		//				container.getVersion() != node.getSchemaContainer().getVersion());
+		// Assert that migration worked
+		Node node = content();
+		node.reload();
+		assertNotNull("The schema of the node should contain the new field schema", node.getSchemaContainer().getSchema().getField("newField"));
+		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+				container.getVersion() != node.getSchemaContainer().getVersion());
 
 	}
 }

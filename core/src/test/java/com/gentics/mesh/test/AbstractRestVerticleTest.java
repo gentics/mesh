@@ -319,19 +319,25 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertSuccess(future);
 		return future.result();
 	}
-	
+
+	/**
+	 * Create a new folder node by sending a create request which will include the specified field.
+	 * 
+	 * @param fieldKey
+	 * @param field
+	 * @return
+	 */
 	protected NodeResponse createNode(String fieldKey, Field field) {
-		Node node = folder("2015");
+		Node parentNode = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNodeUuid(node.getUuid());
+		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
 		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameter().setLanguages("en"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
@@ -340,7 +346,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 		return future.result();
 	}
-
 
 	protected NodeResponse readNode(String projectName, String uuid) {
 		Future<NodeResponse> future = getClient().findNodeByUuid(projectName, uuid);
@@ -363,7 +368,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return future.result();
 	}
 
-	// TagFamily
+
 	protected TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();
 		tagFamilyCreateRequest.setName(tagFamilyName);

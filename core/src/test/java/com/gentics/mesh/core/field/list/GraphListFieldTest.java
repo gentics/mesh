@@ -46,7 +46,7 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		Node node = folder("2015");
 		Node newsNode = folder("news");
 
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
 		nodeListFieldSchema.setName("nodeList");
 		nodeListFieldSchema.setListType("node");
