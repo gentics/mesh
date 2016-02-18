@@ -749,6 +749,42 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testCreateUpdate() {
+		// Create a user with minimal properties
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(group().getUuid());
+
+		Future<UserResponse> future = getClient().createUser(request);
+		latchFor(future);
+		assertSuccess(future);
+		UserResponse restUser = future.result();
+		test.assertUser(request, restUser);
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		final String LASTNAME = "Epic Stark";
+		final String FIRSTNAME = "Tony Awesome";
+		final String USERNAME = "dummy_user_changed";
+		final String EMAIL = "t.stark@stark-industries.com";
+
+		updateRequest.setEmailAddress(EMAIL);
+		updateRequest.setFirstname(FIRSTNAME);
+		updateRequest.setLastname(LASTNAME);
+		updateRequest.setUsername(USERNAME);
+		updateRequest.setPassword("newPassword");
+		future = getClient().updateUser(restUser.getUuid(), updateRequest);
+		latchFor(future);
+		assertSuccess(future);
+		restUser = future.result();
+		assertEquals(LASTNAME, restUser.getLastname());
+		assertEquals(FIRSTNAME, restUser.getFirstname());
+		assertEquals(EMAIL, restUser.getEmailAddress());
+		assertEquals(USERNAME, restUser.getUsername());
+	}
+
+	@Test
 	@Override
 	public void testCreate() throws Exception {
 		UserCreateRequest request = new UserCreateRequest();

@@ -8,12 +8,11 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -145,7 +144,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<GroupResponse>> obs = new HashSet<>();
 
 		GroupResponse restGroup = new GroupResponse();
@@ -195,11 +194,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return db.noTrx(() -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
-			if (StringUtils.isEmpty(requestModel.getName())) {
+			if (isEmpty(requestModel.getName())) {
 				throw error(BAD_REQUEST, "error_name_must_be_set");
 			}
 
-			if (!getName().equals(requestModel.getName())) {
+			if (shouldUpdate(requestModel.getName(),  getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());

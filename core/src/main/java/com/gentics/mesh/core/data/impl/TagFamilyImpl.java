@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -186,7 +187,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			Project project = ac.getProject();
 			String newName = requestModel.getName();
 
-			if (StringUtils.isEmpty(newName)) {
+			if (isEmpty(newName)) {
 				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
 
