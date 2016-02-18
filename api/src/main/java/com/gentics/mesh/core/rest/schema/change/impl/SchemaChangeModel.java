@@ -234,7 +234,7 @@ public class SchemaChangeModel implements RestModel {
 	 * @param type
 	 * @return
 	 */
-	public static SchemaChangeModel createAddChange(String fieldName, String type) {
+	public static SchemaChangeModel createAddFieldChange(String fieldName, String type) {
 		SchemaChangeModel change = new SchemaChangeModel(ADDFIELD, fieldName);
 		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
 		return change;

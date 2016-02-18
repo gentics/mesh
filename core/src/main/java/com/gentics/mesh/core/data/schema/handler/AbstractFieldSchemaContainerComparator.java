@@ -75,7 +75,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInB.getName() + " was added.");
 				}
-				SchemaChangeModel change = SchemaChangeModel.createAddChange(fieldInB.getName(), fieldInB.getType());
+				SchemaChangeModel change = SchemaChangeModel.createAddFieldChange(fieldInB.getName(), fieldInB.getType());
 				if (fieldInB instanceof ListFieldSchema) {
 					change.setProperty("listType", ((ListFieldSchema) fieldInB).getListType());
 				}
@@ -130,11 +130,6 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		List<String> fieldNames = new ArrayList<>();
 		for (FieldSchema fieldSchema : containerB.getFields()) {
 			fieldNames.add(fieldSchema.getName());
-		}
-
-		// We don't need to add a change if the second container contains no or just one field.  
-		if (containerB.getFields().size() <= 1) {
-			return;
 		}
 
 		// The order has changed if the field size is different. 

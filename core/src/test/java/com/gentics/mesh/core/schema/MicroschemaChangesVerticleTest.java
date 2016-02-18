@@ -81,8 +81,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		schema.addField(microschemaFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 
-		getClient().getClientSchemaStorage().clear();
-		ServerSchemaStorage.getInstance().clear();
+//		getClient().getClientSchemaStorage().clear();
+//		ServerSchemaStorage.getInstance().clear();
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
@@ -106,7 +106,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		MicroschemaContainer container = microschemaContainer("vcard");
 		assertNull("The microschema should not yet have any changes", container.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddChange("newField", "html");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html");
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch

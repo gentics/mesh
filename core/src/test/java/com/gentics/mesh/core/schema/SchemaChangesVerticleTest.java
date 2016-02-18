@@ -184,7 +184,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer container = schemaContainer("content");
 		assertNull("The schema should not yet have any changes", container.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddChange("newField", "html");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html");
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch

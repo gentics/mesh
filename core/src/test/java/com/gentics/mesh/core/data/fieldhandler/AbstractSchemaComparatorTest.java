@@ -89,8 +89,14 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(2);
-		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType()).hasProperty("after",
-				containerA.getFields().get(1).getName());
+		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType());
+
+		if (containerA.getFields().size() > 0) {
+			String lastField = containerA.getFields().get(containerA.getFields().size()-1).getName();
+			assertThat(changes.get(0)).hasProperty("after", lastField);
+		} else {
+			assertThat(changes.get(0)).hasNoProperty("order");
+		}
 		assertThat(changes.get(1)).isUpdateOperation(containerA);
 
 	}
@@ -103,16 +109,11 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 	@Test
 	public void testRemoveField() throws IOException {
 		C containerA = createContainer();
-		containerA.setName("test");
 		containerA.addField(createField("test"));
-
 		C containerB = createContainer();
-		containerB.setName("test");
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
-		assertThat(changes).hasSize(2);
 		assertThat(changes.get(0)).is(REMOVEFIELD).forField("test");
-		assertThat(changes.get(1)).isUpdateOperation(containerA);
 		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
 	}
 
