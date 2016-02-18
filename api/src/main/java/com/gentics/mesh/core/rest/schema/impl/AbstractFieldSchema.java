@@ -1,12 +1,16 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -97,6 +101,13 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		String label = (String) fieldProperties.get(LABEL_KEY);
 		if (label != null) {
 			setLabel(label);
+		}
+	}
+
+	@Override
+	public void validate() {
+		if (StringUtils.isEmpty(getName())) {
+			throw error(BAD_REQUEST, "schema_error_fieldname_not_set");
 		}
 	}
 

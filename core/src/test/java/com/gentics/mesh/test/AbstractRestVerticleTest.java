@@ -60,6 +60,7 @@ import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -434,13 +435,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 
 	// Schema
 	protected Schema createSchema(String schemaName) {
-		Schema schemaCreateRequest = new SchemaImpl();
-		schemaCreateRequest.setName(schemaName);
-		schemaCreateRequest.setDisplayField("name");
-		schemaCreateRequest.setDescription("Descriptive text");
-		schemaCreateRequest.setDisplayField("name");
-		schemaCreateRequest.setSegmentField("name");
-		Future<Schema> future = getClient().createSchema(schemaCreateRequest);
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setName(schemaName);
+		Future<Schema> future = getClient().createSchema(schema);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -454,9 +451,9 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected GenericMessageResponse updateSchema(String uuid, String schemaName) {
-		Schema schemaUpdateRequest = new SchemaImpl();
-		schemaUpdateRequest.setName(schemaName);
-		Future<GenericMessageResponse> future = getClient().updateSchema(uuid, schemaUpdateRequest);
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setName(schemaName);
+		Future<GenericMessageResponse> future = getClient().updateSchema(uuid, schema);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();

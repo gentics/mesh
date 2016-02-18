@@ -62,7 +62,8 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 		final String newName = "newschema";
 		Schema schema = createSchema(newName);
 		MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName), new PagingParameter().setPage(1).setPerPage(2));
+		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
+				new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -101,11 +102,12 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 				new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		assertEquals("The schema with the old name {" + schemaName + "} was found but it should not have been since we updated it.", 0,
+				future.result().getData().size());
 
 		future = getClient().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals(1, future.result().getData().size());
+		assertEquals("The schema with the updated name was not found.", 1, future.result().getData().size());
 	}
 }

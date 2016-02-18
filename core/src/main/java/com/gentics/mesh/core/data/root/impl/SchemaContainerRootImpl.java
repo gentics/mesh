@@ -109,17 +109,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		Schema requestModel;
 		try {
 			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
-			if (StringUtils.isEmpty(requestModel.getName())) {
-				throw error(BAD_REQUEST, "schema_missing_name");
-			}
-			if (StringUtils.isEmpty(requestModel.getSegmentField())) {
-				throw error(BAD_REQUEST, "schema_missing_segmentfield");
-			}
-			if (StringUtils.isEmpty(requestModel.getDisplayField())) {
-				throw error(BAD_REQUEST, "schema_missing_displayfield");
-			}
-			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields
-
+			requestModel.validate();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
 				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {

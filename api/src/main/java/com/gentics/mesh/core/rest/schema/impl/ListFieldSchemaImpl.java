@@ -1,8 +1,14 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -10,6 +16,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFieldSchema {
 
@@ -105,6 +112,19 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
+	}
+
+	@Override
+	public void validate() {
+		super.validate();
+		if (StringUtils.isEmpty(getListType())) {
+			throw error(BAD_REQUEST, "schema_error_list_type_missing", getName());
+		}
+		//TODO the list type should be a enum.
+		List<String> validTypes = Arrays.asList("html", "boolean", "string", "micronode", "node", "number", "date", "binary");
+		if (!validTypes.contains(getListType())) {
+			throw error(BAD_REQUEST, "schema_error_list_type_invalid", getListType(), getName());
+		}
 	}
 
 }

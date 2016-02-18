@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorMicronodeTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.util.FieldUtil;
 
 public class SchemaComparatorMicronodeTest extends AbstractComparatorMicronodeTest<Schema> {
 
@@ -20,7 +20,7 @@ public class SchemaComparatorMicronodeTest extends AbstractComparatorMicronodeTe
 
 	@Override
 	public Schema createContainer() {
-		return new SchemaImpl();
+		return FieldUtil.createMinimalValidSchema();
 	}
 
 }

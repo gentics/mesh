@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerCom
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.util.FieldUtil;
 
 public class MicroschemaComparatorNodeTest extends AbstractComparatorNodeTest<Microschema> {
 
@@ -20,7 +21,7 @@ public class MicroschemaComparatorNodeTest extends AbstractComparatorNodeTest<Mi
 
 	@Override
 	public Microschema createContainer() {
-		return new MicroschemaImpl();
+		return FieldUtil.createMinimalValidMicroschema();
 	}
 
 }

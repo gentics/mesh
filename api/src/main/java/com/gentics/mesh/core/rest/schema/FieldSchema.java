@@ -81,4 +81,9 @@ public interface FieldSchema {
 	 * @param fieldProperties
 	 */
 	void apply(Map<String, Object> fieldProperties);
+
+	/**
+	 * Validate the field properties.
+	 */
+	void validate();
 }

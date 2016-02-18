@@ -42,6 +42,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String LIST_TYPE_KEY = "listType";
 
+	public static final String CONTAINER_FLAG_KEY = "container";
+
 	private String uuid;
 
 	private SchemaChangeOperation operation;

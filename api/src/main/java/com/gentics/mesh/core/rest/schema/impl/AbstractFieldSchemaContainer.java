@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -140,11 +141,23 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 		if (StringUtils.isEmpty(getName())) {
 			throw error(BAD_REQUEST, "schema_error_no_name");
 		}
-		if (!getFields().stream().map(field -> field.getName()).allMatch(new HashSet<>()::add)) {
-			throw error(BAD_REQUEST, "schema_error_duplicate_field_name");
-		}
-		if (!getFields().stream().map(field -> field.getLabel()).allMatch(new HashSet<>()::add)) {
-			throw error(BAD_REQUEST, "schema_error_duplicate_field_label");
+
+		Set<String> fieldLabels = new HashSet<>();
+		Set<String> fieldNames = new HashSet<>();
+
+		for (FieldSchema field : getFields()) {
+			if (field.getName() != null) {
+				if (!fieldNames.add(field.getName())) {
+					throw error(BAD_REQUEST, "schema_error_duplicate_field_name", field.getName());
+				}
+			}
+
+			if (field.getLabel() != null) {
+				if (!fieldLabels.add(field.getLabel())) {
+					throw error(BAD_REQUEST, "schema_error_duplicate_field_label", field.getName(), field.getLabel());
+				}
+			}
+			field.validate();
 		}
 	}
 

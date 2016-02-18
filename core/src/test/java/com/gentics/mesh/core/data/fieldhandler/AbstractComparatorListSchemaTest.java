@@ -18,20 +18,26 @@ public abstract class AbstractComparatorListSchemaTest<C extends FieldSchemaCont
 
 	@Override
 	public ListFieldSchema createField(String fieldName) {
-		return FieldUtil.createListFieldSchema("test");
+		ListFieldSchema field = FieldUtil.createListFieldSchema("test");
+		field.setListType("html");
+		return field;
 	}
 
 	@Test
 	@Override
 	public void testSameField() throws IOException {
 		C containerA = createContainer();
+		containerA.setName("test");
 		C containerB = createContainer();
+		containerB.setName("test");
 
 		ListFieldSchema fieldA = FieldUtil.createListFieldSchema("test");
+		fieldA.setListType("html");
 		fieldA.setRequired(true);
 		containerA.addField(fieldA);
 
 		ListFieldSchema fieldB = FieldUtil.createListFieldSchema("test");
+		fieldB.setListType("html");
 		fieldB.setRequired(true);
 		containerB.addField(fieldB);
 
@@ -44,13 +50,17 @@ public abstract class AbstractComparatorListSchemaTest<C extends FieldSchemaCont
 	@Override
 	public void testUpdateField() throws IOException {
 		C containerA = createContainer();
+		containerA.setName("test");
 		C containerB = createContainer();
+		containerB.setName("test");
 
 		ListFieldSchema fieldA = FieldUtil.createListFieldSchema("test");
 		fieldA.setRequired(true);
+		fieldA.setListType("html");
 		containerA.addField(fieldA);
 
 		ListFieldSchema fieldB = FieldUtil.createListFieldSchema("test");
+		fieldB.setListType("html");
 		containerB.addField(fieldB);
 
 		// required flag:

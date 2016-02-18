@@ -25,7 +25,9 @@ public abstract class AbstractComparatorDateTest<C extends FieldSchemaContainer>
 	@Override
 	public void testSameField() throws IOException {
 		C containerA = createContainer();
+		containerA.setName("test");
 		C containerB = createContainer();
+		containerB.setName("test");
 
 		DateFieldSchema fieldA = FieldUtil.createDateFieldSchema("test");
 		fieldA.setLabel("label1");
@@ -45,7 +47,9 @@ public abstract class AbstractComparatorDateTest<C extends FieldSchemaContainer>
 	@Override
 	public void testUpdateField() throws IOException {
 		C containerA = createContainer();
+		containerA.setName("test");
 		C containerB = createContainer();
+		containerB.setName("test");
 
 		DateFieldSchema fieldA = FieldUtil.createDateFieldSchema("test");
 		fieldA.setLabel("label1");
