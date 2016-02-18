@@ -730,6 +730,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			setLastEditedTimestamp(System.currentTimeMillis());
 			targetNode.setEditor(ac.getUser());
 			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
+			// update the webroot path info for every field container.
+			getGraphFieldContainers().stream().forEach(container -> container.updateWebrootPathInfo("node_conflicting_segmentfield_move"));
 			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 			return batch;
 		}).process().map(i -> {

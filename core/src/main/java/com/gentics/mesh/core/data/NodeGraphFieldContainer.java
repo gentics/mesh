@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
@@ -28,4 +29,14 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 * @return
 	 */
 	Node getParentNode();
+
+	/**
+	 * Update the property webroot path info. This will also check for
+	 * uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found
+	 *
+	 * @param conflictI18n
+	 *            key of the message in case of conflicts
+	 */
+	void updateWebrootPathInfo(String conflictI18n);
 }

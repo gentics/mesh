@@ -44,7 +44,7 @@ public class DatabaseTest extends AbstractBasicDBTest {
 	public void testIndex() {
 		GroupRootImpl.checkIndices(db);
 		GroupRootImpl.checkIndices(db);
-		db.addVertexIndex(LanguageImpl.class, "languageTag");
+		db.addVertexIndex(LanguageImpl.class, true, "languageTag");
 		db.addEdgeIndexSource(GraphRelationships.ASSIGNED_TO_ROLE);
 	}
 

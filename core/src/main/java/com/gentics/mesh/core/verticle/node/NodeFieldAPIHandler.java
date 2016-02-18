@@ -159,6 +159,12 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
+
+							// if the binary field is the segment field, we need to update the webroot info in the node
+							if (binaryField.getFieldKey().equals(node.getSchema().getSegmentField())) {
+								container.updateWebrootPathInfo("node_conflicting_segmentfield_upload");
+							}
+
 							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
