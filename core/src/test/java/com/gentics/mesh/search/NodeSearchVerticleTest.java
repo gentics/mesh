@@ -613,7 +613,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping("node", schema.getName(), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
