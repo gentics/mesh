@@ -245,7 +245,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
 
+	/**
+	 * @deprecated Load the schema container from the {@link GraphFieldContainer} instance.
+	 */
 	@Override
+	@Deprecated
 	public SchemaContainer getSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
@@ -302,7 +306,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
@@ -390,22 +394,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				containerLanguageTags.add(0, restNode.getLanguage());
 
 				for (FieldSchema fieldEntry : schema.getFields()) {
-//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
-					Observable<NodeResponse> obsFields = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(),
-							fieldEntry, containerLanguageTags).map(restField -> {
-						if (fieldEntry.isRequired() && restField == null) {
-							// TODO i18n
-							throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-									+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
-						}
-						if (restField == null) {
-							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-						} else {
-							restNode.getFields().put(fieldEntry.getName(), restField);
-						}
-						return restNode;
+					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
+					Observable<NodeResponse> obsFields = fieldContainer
+							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags).map(restField -> {
+								if (fieldEntry.isRequired() && restField == null) {
+									// TODO i18n
+									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+								}
+								if (restField == null) {
+									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+								} else {
+									restNode.getFields().put(fieldEntry.getName(), restField);
+								}
+								return restNode;
 
-					});
+							});
 					obs.add(obsFields);
 				}
 			}
@@ -507,7 +511,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param maxDepth
 	 *            Maximum depth for the navigation
 	 * @param level
-	 *            Zero based level of the current navigation element 
+	 *            Zero based level of the current navigation element
 	 * @param navigation
 	 *            Current navigation response
 	 * @param currentElement
@@ -518,7 +522,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NavigationResponse navigation, NavigationElement currentElement) {
 		List<? extends Node> nodes = node.getChildren();
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
-
 
 		obsResponses.add(node.transformToRest(ac).map(response -> {
 			// Set current element data

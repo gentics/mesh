@@ -73,6 +73,25 @@ public class RoleVerticlePermissionsTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testAddPermissionsOnGroup() {
+		String pathToElement = "groups";
+
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add("read");
+		request.getPermissions().add("update");
+		request.getPermissions().add("create");
+		assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+
+		Future<GenericMessageResponse> future = getClient().updateRolePermissions(role().getUuid(), pathToElement, request);
+		latchFor(future);
+		assertSuccess(future);
+		expectResponseMessage(future, "role_updated_permission", role().getName());
+		assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
+
+	}
+
+	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
 		// Add permission on own role
 		role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
