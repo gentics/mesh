@@ -10,7 +10,6 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -188,25 +187,8 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Handled via microschema changes verticle test")
 	public void testUpdate() throws Exception {
-		String name = "new-name";
-		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
-		assertNotNull(vcardContainer);
-
-		Microschema request = new MicroschemaImpl();
-		request.setName(name);
-
-		Future<GenericMessageResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		expectFailureMessage(future, OK, "blub");
-
-		//		
-		//		assertEquals(request.getName(), restSchema.getName());
-		//		vcardContainer.reload();
-		//		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
-		//		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
-		//		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 

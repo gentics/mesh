@@ -4,10 +4,8 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -17,8 +15,6 @@ import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
@@ -28,7 +24,6 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -81,8 +76,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		schema.addField(microschemaFieldSchema);
 		schemaContainer("folder").setSchema(schema);
 
-//		getClient().getClientSchemaStorage().clear();
-//		ServerSchemaStorage.getInstance().clear();
+		//		getClient().getClientSchemaStorage().clear();
+		//		ServerSchemaStorage.getInstance().clear();
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
@@ -123,6 +118,29 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		container.reload();
 		assertNotNull("The change should have been added to the schema.", container.getNextChange());
 		assertNotNull("The container should now have a new version", container.getNextVersion());
+
+	}
+
+	@Test
+	public void testUpdateName() throws Exception {
+		String name = "new-name";
+		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		assertNotNull(vcardContainer);
+
+		Microschema request = new MicroschemaImpl();
+		request.setName(name);
+
+		Future<GenericMessageResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		expectFailureMessage(future, OK, "blub");
+
+		//		
+		//		assertEquals(request.getName(), restSchema.getName());
+		//		vcardContainer.reload();
+		//		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
+		//		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
+		//		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 

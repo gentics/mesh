@@ -29,7 +29,6 @@ import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
-import rx.Observable;
 
 public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 

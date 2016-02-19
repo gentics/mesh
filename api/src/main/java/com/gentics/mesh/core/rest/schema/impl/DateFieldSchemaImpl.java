@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
-
 import java.io.IOException;
 import java.util.Optional;
 
