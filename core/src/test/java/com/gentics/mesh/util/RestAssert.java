@@ -132,15 +132,6 @@ public class RestAssert {
 		assertEquals(request.getName(), restProject.getName());
 	}
 
-	public void assertSchema(Schema request, Schema restSchema) {
-		assertNotNull(request);
-		assertNotNull(restSchema);
-		// assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
-		// assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
-		// assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
-		// TODO assert for schema properties
-	}
-
 	public void assertUser(UserCreateRequest request, UserResponse restUser) {
 		assertNotNull(request);
 		assertNotNull(restUser);

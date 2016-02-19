@@ -38,6 +38,7 @@ public class GraphRelationships {
 
 		db.addEdgeType(HAS_SCHEMA_TYPE);
 		db.addEdgeType(HAS_SCHEMA_ROOT);
+		db.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
 		db.addEdgeType(HAS_SCHEMA_CONTAINER);
 		db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
 		db.addEdgeType(HAS_MICROSCHEMA_ROOT);
@@ -56,6 +57,10 @@ public class GraphRelationships {
 		db.addEdgeType(ALLOWED_SCHEMA);
 
 		db.addEdgeType(HAS_LIST);
+
+		// Versioning
+		db.addEdgeType(HAS_VERSION);
+
 	}
 
 	// Auth Relationships

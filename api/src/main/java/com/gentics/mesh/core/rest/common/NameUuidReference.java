@@ -13,6 +13,12 @@ public abstract class NameUuidReference<T> {
 	public NameUuidReference() {
 	}
 
+	/**
+	 * Create a new reference that provides the name and uuid.
+	 * 
+	 * @param name
+	 * @param uuid
+	 */
 	public NameUuidReference(String name, String uuid) {
 		this.name = name;
 		this.uuid = uuid;

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -19,10 +20,17 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
@@ -103,7 +111,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		// Wait for event
 		failingLatch(latch);
-
 		container.reload();
 		assertNotNull("The change should have been added to the schema.", container.getNextChange());
 		assertNotNull("The container should now have a new version", container.getNextVersion());
@@ -112,9 +119,59 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Node node = content();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
+		container.reload();
 		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 				container.getVersion() != node.getSchemaContainer().getVersion());
 		assertNull("There should no longer be a content field of type html", node.getGraphFieldContainer("en").getHtml("content"));
+
+	}
+
+	@Test
+	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
+
+		Node content = content();
+
+		// 1. Remove title field from schema and add new title with different type
+		SchemaContainer container = schemaContainer("content");
+		Schema schema = container.getSchema();
+		schema.removeField("content");
+		schema.addField(FieldUtil.createNumberFieldSchema("content"));
+		container.setSchema(schema);
+
+		// 2. Update the schema client side
+		getClient().getClientSchemaStorage().removeSchema("content");
+		getClient().getClientSchemaStorage().addSchema(schema);
+
+		// 3. Setup eventbus bridged latch
+		CountDownLatch latch = latchForMigrationCompleted();
+
+		// 4. Update the schema server side
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		latchFor(future);
+		assertSuccess(future);
+		failingLatch(latch);
+
+		// 5. Read node and check additional field
+		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
+		latchFor(nodeFuture);
+		assertSuccess(nodeFuture);
+		NodeResponse response = nodeFuture.result();
+		assertNotNull("The response should contain the content field.", response.getField("content"));
+		assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
+				response.getField("content").getClass());
+
+		// 6. Update the node and set the new field
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
+		nodeFuture = getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest);
+		latchFor(nodeFuture);
+		assertSuccess(nodeFuture);
+		response = nodeFuture.result();
+		assertNotNull(response);
+		assertNotNull(response.getField("content"));
+		assertEquals(42.01, ((NumberFieldImpl) response.getField("content")).getNumber());
 
 	}
 
@@ -228,6 +285,82 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertNotNull("The schema of the node should contain the new field schema", node.getSchemaContainer().getSchema().getField("newField"));
 		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 				container.getVersion() != node.getSchemaContainer().getVersion());
+
+	}
+
+	@Test
+	public void testUpdateAddField() throws Exception {
+
+		Node content = content();
+
+		SchemaContainer container = schemaContainer("content");
+		Schema schema = container.getSchema();
+		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
+		container.setSchema(schema);
+
+		// Update the schema client side
+		getClient().getClientSchemaStorage().removeSchema("content");
+		getClient().getClientSchemaStorage().addSchema(schema);
+
+		// Update the schema server side
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		latchFor(future);
+		assertSuccess(future);
+
+		// Read node and check additional field
+		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
+		latchFor(nodeFuture);
+		assertSuccess(nodeFuture);
+		NodeResponse response = nodeFuture.result();
+		assertNotNull(response);
+		assertNotNull(response.getField("extraname"));
+
+		// Update the node and set the new field
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeUpdateRequest.getFields().put("extraname", new StringFieldImpl().setString("sometext"));
+		nodeFuture = getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest);
+		latchFor(nodeFuture);
+		assertSuccess(nodeFuture);
+		response = nodeFuture.result();
+		assertNotNull(response);
+		assertNotNull(response.getField("extraname"));
+		assertEquals("sometext", ((StringFieldImpl) response.getField("extraname")).getString());
+
+	}
+
+	@Test
+	public void testRemoveField2() throws Exception {
+		Node content = content();
+
+		SchemaContainer container = schemaContainer("content");
+		Schema schema = container.getSchema();
+		schema.removeField("content");
+		container.setSchema(schema);
+
+		// Update the schema client side
+		getClient().getClientSchemaStorage().removeSchema("content");
+		getClient().getClientSchemaStorage().addSchema(schema);
+		ServerSchemaStorage.getInstance().clear();
+
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = latchForMigrationCompleted();
+
+		// Update the schema server side
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		latchFor(future);
+		assertSuccess(future);
+
+		failingLatch(latch);
+
+		// Read node and check additional field
+		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
+		latchFor(nodeFuture);
+		assertSuccess(nodeFuture);
+		NodeResponse response = nodeFuture.result();
+		assertNotNull(response);
+		assertNull(response.getField("content"));
 
 	}
 }
