@@ -80,7 +80,8 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		ListResponse<TagResponse> restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags, restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags,
+				restResponse.getData().size());
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
@@ -249,6 +250,19 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest);
 		latchFor(updatedTagFut);
 		expectException(updatedTagFut, CONFLICT, "tag_create_tag_with_same_name_already_exists", newName, tagFamilyName);
+	}
+
+	@Test
+	public void testUpdateTagWithNoName() {
+		Tag tag = tag("red");
+		TagFamily parentTagFamily = tagFamily("colors");
+
+		String uuid = tag.getUuid();
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+
+		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest);
+		latchFor(updatedTagFut);
+		expectException(updatedTagFut, BAD_REQUEST, "tag_name_not_set");
 	}
 
 	@Test
