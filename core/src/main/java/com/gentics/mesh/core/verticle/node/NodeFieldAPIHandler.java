@@ -114,7 +114,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
 
-				BinaryGraphField field =  container.getBinary(fieldName);
+				BinaryGraphField field = container.getBinary(fieldName);
 				if (field == null) {
 					field = container.createBinary(fieldName);
 				}
@@ -161,7 +161,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							// node.setBinaryImageWidth(width);
 
 							// if the binary field is the segment field, we need to update the webroot info in the node
-							if (binaryField.getFieldKey().equals(node.getSchema().getSegmentField())) {
+							if (binaryField.getFieldKey().equals(node.getSchemaContainer().getSchema().getSegmentField())) {
 								container.updateWebrootPathInfo("node_conflicting_segmentfield_upload");
 							}
 
@@ -187,13 +187,13 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	public void handleUpdateField(RoutingContext rc) {
 		handleCreateField(rc);
-//		db.asyncNoTrxExperimental(() -> {
-//			Project project = ac.getProject();
-//			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
-//				// TODO Update SQB
-//				return new GenericMessageResponse("Not yet implemented");
-//			});
-//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+		//		db.asyncNoTrxExperimental(() -> {
+		//			Project project = ac.getProject();
+		//			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+		//				// TODO Update SQB
+		//				return new GenericMessageResponse("Not yet implemented");
+		//			});
+		//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleRemoveField(InternalActionContext ac) {
@@ -247,7 +247,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	/**
 	 * Handle image transformation
-	 * @param rc routing context
+	 * 
+	 * @param rc
+	 *            routing context
 	 */
 	public void handleTransformImage(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
@@ -274,7 +276,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
 
-				BinaryGraphField field =  container.getBinary(fieldName);
+				BinaryGraphField field = container.getBinary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
@@ -285,13 +287,9 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				try {
 					BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
-					ImageManipulationParameter imageManipulationParameter = new ImageManipulationParameter()
-							.setWidth(transformation.getWidth())
-							.setHeight(transformation.getHeight())
-							.setStartx(transformation.getCropx())
-							.setStarty(transformation.getCropy())
-							.setCropw(transformation.getCropw())
-							.setCroph(transformation.getCroph());
+					ImageManipulationParameter imageManipulationParameter = new ImageManipulationParameter().setWidth(transformation.getWidth())
+							.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
+							.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 					if (!imageManipulationParameter.isSet()) {
 						throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 					}
@@ -299,8 +297,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					String fieldSegmentedPath = field.getSegmentedPath();
 
 					Observable<Tuple<String, Integer>> obsHashAndSize = imageManipulator
-							.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter)
-							.flatMap(buffer -> {
+							.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
 						return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
 							return Tuple.tuple(hash, buffer.length());
 						});
@@ -384,8 +381,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * 
 	 * @param buffer
 	 *            buffer which will be handled
-	 * @param uuid uuid of the binary field
-	 * @param segmentedPath path to store the binary data
+	 * @param uuid
+	 *            uuid of the binary field
+	 * @param segmentedPath
+	 *            path to store the binary data
 	 * @return observable emitting the sha512 checksum
 	 */
 	public Observable<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
@@ -420,7 +419,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	/**
 	 * Hash the given buffer and return a sha512 checksum.
 	 * 
-	 * @param buffer buffer
+	 * @param buffer
+	 *            buffer
 	 * @return observable emitting the sha512 checksum
 	 */
 	protected Observable<String> hashBuffer(Buffer buffer) {
@@ -480,8 +480,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	/**
 	 * Store the data in the buffer into the given place
-	 * @param buffer buffer
-	 * @param targetPath target path
+	 * 
+	 * @param buffer
+	 *            buffer
+	 * @param targetPath
+	 *            target path
 	 * @return empty observable
 	 */
 	protected Observable<Void> storeBuffer(Buffer buffer, String targetPath) {

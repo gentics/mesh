@@ -55,7 +55,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		super.updateFieldsFromRest(ac, restFields, schema);
 
 		Node node = getParentNode();
-		String segmentFieldName = node.getSchema().getSegmentField();
+		String segmentFieldName = node.getSchemaContainer().getSchema().getSegmentField();
 		if (restFields.containsKey(segmentFieldName)) {
 			updateWebrootPathInfo("node_conflicting_segmentfield_update");
 		}
@@ -64,7 +64,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateWebrootPathInfo(String conflictI18n) {
 		Node node = getParentNode();
-		String segmentFieldName = node.getSchema().getSegmentField();
+		String segmentFieldName = node.getSchemaContainer().getSchema().getSegmentField();
 		String segment = node.getPathSegment(getLanguage().getLanguageTag()).toBlocking().last();
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);
@@ -79,7 +79,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			if (conflictingContainer != null) {
 				Node conflictingNode = conflictingContainer.getParentNode();
 				throw conflict(conflictingContainer.getParentNode().getUuid(),
-						conflictingContainer.getDisplayFieldValue(conflictingNode.getSchema()), conflictI18n,
+						conflictingContainer.getDisplayFieldValue(conflictingNode.getSchemaContainer().getSchema()), conflictI18n,
 						segmentFieldName, segment);
 			}
 
