@@ -9,6 +9,7 @@ import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -263,6 +265,21 @@ public class ProjectVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	// Update Tests
+
+	@Test
+	public void testUpdateWithConflicitingName() {
+		MeshRoot.getInstance().getProjectRoot().create("Test234", user());
+
+		Project project = project();
+		String uuid = project.getUuid();
+		role().grantPermissions(project, UPDATE_PERM);
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("Test234");
+		Future<ProjectResponse> future = getClient().updateProject(uuid, request);
+		latchFor(future);
+		expectException(future, CONFLICT, "project_conflicting_name");
+
+	}
 
 	@Test
 	@Override

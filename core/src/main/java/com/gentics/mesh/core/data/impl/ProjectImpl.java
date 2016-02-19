@@ -211,9 +211,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 				// Check for conflicting project name
 				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
-					HttpStatusCodeErrorException conflictError = conflict(projectWithSameName.getUuid(), requestModel.getName(),
-							"project_conflicting_name");
-					throw conflictError;
+					throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
 				}
 				setName(requestModel.getName());
 			}
