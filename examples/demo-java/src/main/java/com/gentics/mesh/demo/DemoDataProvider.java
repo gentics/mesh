@@ -297,6 +297,7 @@ public class DemoDataProvider {
 					}
 				}
 			}
+			englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
 			nodes.put(name, node);
 		}
 

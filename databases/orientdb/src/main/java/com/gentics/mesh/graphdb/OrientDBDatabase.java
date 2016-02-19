@@ -30,6 +30,7 @@ import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
+import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.server.OServer;
@@ -240,7 +241,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
 		}
@@ -256,13 +257,37 @@ public class OrientDBDatabase extends AbstractDatabase {
 					v.createProperty(field, OType.STRING);
 				}
 			}
-			if (v.getClassIndex(name) == null) {
-				v.createIndex(name, OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, fields);
+			if (v.getClassIndex(indexName) == null) {
+				v.createIndex(indexName,
+						unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
 			}
 		} finally {
 			tx.shutdown();
 		}
 
+	}
+
+	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+
+		OrientVertexType vertexType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
+		if (vertexType != null) {
+			OIndex<?> index = vertexType.getClassIndex(indexName);
+			if (index != null) {
+				Object recordId = index.get(key);
+				if (recordId != null) {
+					if (recordId.equals(element.getElement().getId())) {
+						return null;
+					} else {
+						return (T)graph.getFramedVertexExplicit(element.getClass(), recordId);
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -410,5 +435,4 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 		((OrientVertex) element).moveToClass(classOfVertex.getSimpleName());
 	}
-
 }

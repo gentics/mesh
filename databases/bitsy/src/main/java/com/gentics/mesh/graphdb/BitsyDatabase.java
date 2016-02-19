@@ -79,8 +79,14 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields) {
 
+	}
+
+	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

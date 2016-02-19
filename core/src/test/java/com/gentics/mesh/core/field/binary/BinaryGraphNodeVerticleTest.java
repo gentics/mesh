@@ -5,6 +5,7 @@ import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -214,6 +215,32 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertEquals(binaryLen, downloadResponse.getBuffer().length());
 		assertEquals(contentType, downloadResponse.getContentType());
 		assertEquals(fileName, downloadResponse.getFilename());
+	}
+
+	@Test
+	public void testUploadWithConflict() throws IOException {
+		String contentType = "application/octet-stream";
+		int binaryLen = 10;
+		String fileName = "somefile.dat";
+		Node folder2014 = folder("2014");
+		Node folder2015 = folder("2015");
+		prepareSchema(folder2014, "", "binary");
+
+		// make binary field the segment field
+		Schema schema = folder2014.getSchemaContainer().getSchema();
+		schema.setSegmentField("binary");
+		folder2014.getSchemaContainer().setSchema(schema);
+		getClient().getClientSchemaStorage().addSchema(schema);
+
+		// upload file to folder 2014
+		Future<GenericMessageResponse> uploadFuture = updateBinaryField(folder2014, "en", "binary", binaryLen, contentType, fileName);
+		latchFor(uploadFuture);
+		assertSuccess(uploadFuture);
+
+		// try to upload same file to folder 2015
+		uploadFuture = updateBinaryField(folder2015, "en", "binary", binaryLen, contentType, fileName);
+		latchFor(uploadFuture);
+		expectException(uploadFuture, CONFLICT, "node_conflicting_segmentfield_upload", "binary", fileName);
 	}
 
 	@Ignore("Image properties are not yet parsed")

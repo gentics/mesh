@@ -105,14 +105,15 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testAsyncSearchQueueUpdates() throws Exception {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
+		String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getSchema());
 		for (int i = 0; i < 10; i++) {
-			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, "node", SearchQueueEntryAction.CREATE_ACTION);
+			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 		}
 		String documentId = nodeIndexHandler.composeDocumentId(node, "en");
-		searchProvider.deleteDocument("node", node.getSchemaContainer().getSchema().getName(), documentId).toBlocking().single();
+		searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();
 		processor.process();
 		assertNotNull("The document with uuid {" + uuid + "} could still be found within the search index.",
-				searchProvider.getDocument("node", node.getSchemaContainer().getSchema().getName(), documentId).toBlocking().first());
+				searchProvider.getDocument(Node.TYPE, indexType, documentId).toBlocking().first());
 	}
 
 }
