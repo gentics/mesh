@@ -10,7 +10,6 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements MicronodeFieldSchema {
 
@@ -39,7 +38,7 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 			MicronodeFieldSchema micronodeFieldSchema = (MicronodeFieldSchema) fieldSchema;
 
 			boolean modified = false;
-			SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldSchema.getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
 
 			// required flag:
 			modified = compareRequiredField(change, micronodeFieldSchema, modified);

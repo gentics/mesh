@@ -105,7 +105,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Optional<FieldSchema> fieldSchema = node.getSchema().getFieldSchema(fieldName);
+				Optional<FieldSchema> fieldSchema = node.getSchemaContainer().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
@@ -266,7 +266,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Optional<FieldSchema> fieldSchema = node.getSchema().getFieldSchema(fieldName);
+				Optional<FieldSchema> fieldSchema = node.getSchemaContainer().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}

@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorBinaryTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.util.FieldUtil;
 
 public class SchemaComparatorBinaryTest extends AbstractComparatorBinaryTest<Schema> {
 
@@ -20,6 +20,6 @@ public class SchemaComparatorBinaryTest extends AbstractComparatorBinaryTest<Sch
 
 	@Override
 	public Schema createContainer() {
-		return new SchemaImpl();
+		return FieldUtil.createMinimalValidSchema();
 	}
 }

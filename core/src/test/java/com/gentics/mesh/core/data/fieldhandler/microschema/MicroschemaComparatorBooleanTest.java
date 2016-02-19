@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorBooleanTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.util.FieldUtil;
 
 public class MicroschemaComparatorBooleanTest extends AbstractComparatorBooleanTest<Microschema> {
 
@@ -20,6 +20,6 @@ public class MicroschemaComparatorBooleanTest extends AbstractComparatorBooleanT
 
 	@Override
 	public Microschema createContainer() {
-		return new MicroschemaImpl();
+		return FieldUtil.createMinimalValidMicroschema();
 	}
 }

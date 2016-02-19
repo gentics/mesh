@@ -168,12 +168,8 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	}
 
-	/**
-	 * Load the container root vertex of the container.
-	 * 
-	 * @return
-	 */
-	private RootVertex<V> getRoot() {
+	@Override
+	public RootVertex<V> getRoot() {
 		return (RootVertex<V>) in(HAS_SCHEMA_CONTAINER_ITEM).nextOrDefault(null);
 	}
 
@@ -209,22 +205,25 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 		case ADDFIELD:
 			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			break;
-		case CHANGEFIELDTYPE:
-			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
-			break;
 		case REMOVEFIELD:
 			schemaChange = getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			break;
 		case UPDATEFIELD:
 			schemaChange = getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			break;
+		case CHANGEFIELDTYPE:
+			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			break;
 		case UPDATESCHEMA:
 			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			break;
+		case UPDATEMICROSCHEMA:
+			schemaChange = getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			break;
 		default:
 			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(restChange.getOperation()));
 		}
-
+		// Set properties from rest model
 		schemaChange.updateFromRest(restChange);
 		return schemaChange;
 

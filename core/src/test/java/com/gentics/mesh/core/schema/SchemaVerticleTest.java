@@ -59,22 +59,19 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws HttpStatusCodeErrorException, Exception {
-		Schema request = new SchemaImpl();
-		request.setName("new schema name");
-		request.setDisplayField("name");
-		request.setSegmentField("name");
+		Schema schema = FieldUtil.createMinimalValidSchema();
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		Future<Schema> future = getClient().createSchema(request);
+		Future<Schema> future = getClient().createSchema(schema);
 		latchFor(future);
 		assertSuccess(future);
 		assertThat(searchProvider).recordedStoreEvents(1);
 		Schema restSchema = future.result();
-		test.assertSchema(request, restSchema);
+		assertThat(schema).matches(restSchema);
 
 		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid()).toBlocking().first();
 		assertNotNull(schemaContainer);
-		assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
+		assertEquals("Name does not match with the requested name", schema.getName(), schemaContainer.getName());
 		// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
@@ -85,19 +82,15 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateReadDelete() throws HttpStatusCodeErrorException, Exception {
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		Schema request = new SchemaImpl();
-		request.setName("new schema name");
-		request.setDisplayField("name");
-		request.setSegmentField("name");
-		Future<Schema> createFuture = getClient().createSchema(request);
+		Schema schema = FieldUtil.createMinimalValidSchema();
+
+		Future<Schema> createFuture = getClient().createSchema(schema);
 		latchFor(createFuture);
 		assertSuccess(createFuture);
 		assertThat(searchProvider).recordedStoreEvents(1);
 		Schema restSchema = createFuture.result();
-		test.assertSchema(request, restSchema);
-
+		assertThat(schema).matches(restSchema);
 		assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
-		// test.assertSchema(schema, restSchema);
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
 		Future<Schema> readFuture = getClient().findSchemaByUuid(restSchema.getUuid());
@@ -288,7 +281,6 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, CONFLICT, "schema_conflicting_name", name);
 	}
-
 
 	@Test
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {

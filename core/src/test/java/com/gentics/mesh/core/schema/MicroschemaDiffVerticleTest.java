@@ -3,6 +3,7 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
@@ -102,7 +104,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(changes);
 		assertThat(changes.getChanges()).hasSize(2);
 		assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
-		assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
+		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
 				new String[] { "firstName", "lastName", "address", "postcode", "someField" });
 	}
 
@@ -130,7 +132,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(changes);
 		assertThat(changes.getChanges()).hasSize(2);
 		assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("postcode");
-		assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
+		assertThat(changes.getChanges().get(1)).is(UPDATEMICROSCHEMA).hasProperty("order",
 				new String[] { "firstName", "lastName", "address" });
 	}
 

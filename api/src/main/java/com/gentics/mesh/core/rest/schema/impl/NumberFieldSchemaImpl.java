@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -62,7 +60,7 @@ public class NumberFieldSchemaImpl extends AbstractFieldSchema implements Number
 		if (fieldSchema instanceof NumberFieldSchema) {
 			NumberFieldSchema numberFieldSchema = (NumberFieldSchema) fieldSchema;
 
-			SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldSchema.getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
 			boolean modified = false;
 
 			// required flag:

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
@@ -77,17 +79,18 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 
 	@Test
 	public void testDiffDisplayField() throws HttpStatusCodeErrorException, Exception {
-		SchemaContainer schema = schemaContainer("content");
+		SchemaContainer container = schemaContainer("content");
 		Schema request = getSchema();
 		request.setDisplayField("name");
-		Future<SchemaChangesListModel> future = getClient().diffSchema(schema.getUuid(), request);
+
+		Future<SchemaChangesListModel> future = getClient().diffSchema(container.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
 		SchemaChangesListModel changes = future.result();
 		assertNotNull(changes);
 		// We expect one change that indicates that the displayField property has changed.
 		assertThat(changes.getChanges()).hasSize(1);
-		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty("displayField", "name");
+		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(DISPLAY_FIELD_NAME_KEY, "name");
 
 	}
 

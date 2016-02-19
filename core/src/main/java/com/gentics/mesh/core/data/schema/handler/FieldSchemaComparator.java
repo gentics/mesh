@@ -29,11 +29,11 @@ public class FieldSchemaComparator {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
 			return fieldSchemaA.compareTo(fieldSchemaB);
 		} else if (fieldSchemaA != null && fieldSchemaB == null) {
-			SchemaChangeModel change = new SchemaChangeModel(REMOVEFIELD);
+			SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange(fieldSchemaA.getName());
 			change.loadMigrationScript();
 			return Optional.of(change);
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
-			return Optional.of(new SchemaChangeModel(ADDFIELD));
+			return Optional.of(SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(),  fieldSchemaB.getType()));
 		}
 
 		return Optional.empty();

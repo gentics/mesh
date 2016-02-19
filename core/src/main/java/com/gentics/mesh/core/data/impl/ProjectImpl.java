@@ -147,7 +147,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
 		ProjectResponse restProject = new ProjectResponse();
@@ -207,8 +207,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		return db.trx(() -> {
-			// Check for conflicting project name
-			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
+			if (shouldUpdate(requestModel.getName(), getName())) {
+				// Check for conflicting project name
 				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
 					HttpStatusCodeErrorException conflictError = conflict(projectWithSameName.getUuid(), requestModel.getName(),

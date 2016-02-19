@@ -1,10 +1,16 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -79,10 +85,9 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	 * @throws IOException
 	 */
 	protected Optional<SchemaChangeModel> createTypeChange(FieldSchema fieldSchema) throws IOException {
-		SchemaChangeModel change = new SchemaChangeModel(CHANGEFIELDTYPE, fieldSchema.getName());
-		change.getProperties().put("newType", fieldSchema.getType());
+		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange(fieldSchema.getName(), fieldSchema.getType());
 		if (fieldSchema instanceof ListFieldSchema) {
-			change.getProperties().put("listType", ((ListFieldSchema) fieldSchema).getListType());
+			change.getProperties().put(LIST_TYPE_KEY, ((ListFieldSchema) fieldSchema).getListType());
 		}
 		change.loadMigrationScript();
 		return Optional.of(change);
@@ -91,11 +96,18 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		if (fieldProperties.get(SchemaChangeModel.REQUIRED_KEY) != null) {
-			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(SchemaChangeModel.REQUIRED_KEY))));
+			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(REQUIRED_KEY))));
 		}
-		String label = (String) fieldProperties.get(SchemaChangeModel.LABEL_KEY);
+		String label = (String) fieldProperties.get(LABEL_KEY);
 		if (label != null) {
 			setLabel(label);
+		}
+	}
+
+	@Override
+	public void validate() {
+		if (StringUtils.isEmpty(getName())) {
+			throw error(BAD_REQUEST, "schema_error_fieldname_not_set");
 		}
 	}
 

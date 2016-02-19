@@ -158,4 +158,15 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		setLastEditedTimestamp(System.currentTimeMillis());
 	}
 
+	/**
+	 * Compare both string values in order to determine whether the graph value should be updated.
+	 * 
+	 * @param restValue
+	 * @param graphValue
+	 * @return true if restValue is not empty or null and the restValue is not equal to the graph value. Otherwise false.
+	 */
+	protected boolean shouldUpdate(String restValue, String graphValue) {
+		return !isEmpty(restValue) && !restValue.equals(graphValue);
+	}
+
 }

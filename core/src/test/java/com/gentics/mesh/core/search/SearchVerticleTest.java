@@ -107,7 +107,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 		String uuid = node.getUuid();
 		String indexType = NodeIndexHandler.getDocumentType(node.getSchema());
 		for (int i = 0; i < 10; i++) {
-			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, SearchQueueEntryAction.CREATE_ACTION, indexType);
+			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 		}
 		String documentId = nodeIndexHandler.composeDocumentId(node, "en");
 		searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();

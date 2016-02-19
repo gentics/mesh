@@ -10,7 +10,6 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 public class StringFieldSchemaImpl extends AbstractFieldSchema implements StringFieldSchema {
 
@@ -39,7 +38,7 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 			StringFieldSchema stringFieldSchema = (StringFieldSchema) fieldSchema;
 
 			boolean modified = false;
-			SchemaChangeModel change = new SchemaChangeModel(SchemaChangeOperation.UPDATEFIELD, fieldSchema.getName());
+			SchemaChangeModel change = SchemaChangeModel.createUpdateFieldChange(fieldSchema.getName());
 
 			// required
 			if (isRequired() != stringFieldSchema.isRequired()) {

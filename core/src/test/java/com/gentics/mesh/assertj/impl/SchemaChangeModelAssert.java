@@ -1,5 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,6 +12,8 @@ import java.util.List;
 
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
@@ -78,6 +82,21 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 	 */
 	public SchemaChangeModelAssert hasNoProperty(String key) {
 		assertFalse("The property with key {" + key + "} could be found within the change.", actual.getProperties().containsKey(key));
+		return this;
+	}
+
+	/**
+	 * Assert that the change is an field container update operation (either UPDATESCHEMA or UPDATEMICROSCHEMA).
+	 * 
+	 * @param container
+	 * @return
+	 */
+	public SchemaChangeModelAssert isUpdateOperation(Object container) {
+		if (container instanceof Schema) {
+			assertEquals("The change operation does not match.", UPDATESCHEMA, actual.getOperation());
+		} else {
+			assertEquals("The change operation does not match.", UPDATEMICROSCHEMA, actual.getOperation());
+		}
 		return this;
 	}
 

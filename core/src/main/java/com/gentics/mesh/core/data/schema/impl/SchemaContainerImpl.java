@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -118,14 +119,14 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 
 	@Override
 	public Schema getSchema() {
-		Schema schema = getSchemaStorage().getSchema(getName(), getVersion());
+		Schema schema = ServerSchemaStorage.getInstance().getSchema(getName(), getVersion());
 		if (schema == null) {
 			try {
 				schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			getSchemaStorage().addSchema(schema);
+			ServerSchemaStorage.getInstance().addSchema(schema);
 		}
 		return schema;
 
@@ -133,8 +134,8 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 
 	@Override
 	public void setSchema(Schema schema) {
-		getSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
-		getSchemaStorage().addSchema(schema);
+		ServerSchemaStorage.getInstance().removeSchema(schema.getName(), schema.getVersion());
+		ServerSchemaStorage.getInstance().addSchema(schema);
 		String json = JsonUtil.toJson(schema);
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());

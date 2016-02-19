@@ -53,9 +53,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		SchemaChangeModel model = new SchemaChangeModel();
-		model.setOperation(UpdateFieldChange.OPERATION);
-		model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
+		SchemaChangeModel model = SchemaChangeModel.createUpdateFieldChange("someField");
 		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		change.updateFromRest(model);
 		assertEquals("someField", change.getFieldName());

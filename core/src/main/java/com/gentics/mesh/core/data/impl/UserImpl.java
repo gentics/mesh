@@ -326,7 +326,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<UserResponse>> obs = new HashSet<>();
 		UserResponse restUser = new UserResponse();
 
@@ -470,9 +470,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
-			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			UserUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserUpdateRequest.class, ServerSchemaStorage.getInstance());
 			return db.trx(() -> {
-				if (requestModel.getUsername() != null && !getUsername().equals(requestModel.getUsername())) {
+				if (shouldUpdate(requestModel.getUsername(), getUsername())) {
 					User conflictingUser = BootstrapInitializer.getBoot().userRoot().findByUsername(requestModel.getUsername());
 					if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 						throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
@@ -480,15 +480,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 					setUsername(requestModel.getUsername());
 				}
 
-				if (!isEmpty(requestModel.getFirstname()) && !getFirstname().equals(requestModel.getFirstname())) {
+				if (shouldUpdate(requestModel.getFirstname(), getFirstname())) {
 					setFirstname(requestModel.getFirstname());
 				}
 
-				if (!isEmpty(requestModel.getLastname()) && !getLastname().equals(requestModel.getLastname())) {
+				if (shouldUpdate(requestModel.getLastname(), getLastname())) {
 					setLastname(requestModel.getLastname());
 				}
 
-				if (!isEmpty(requestModel.getEmailAddress()) && !getEmailAddress().equals(requestModel.getEmailAddress())) {
+				if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
 					setEmailAddress(requestModel.getEmailAddress());
 				}
 

@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -55,16 +54,22 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 	@Test
 	public void testAddField() throws IOException {
 		C containerA = createContainer();
+		containerA.setName("test");
 		containerA.addField(FieldUtil.createStringFieldSchema("first"));
+
 		C containerB = createContainer();
+		containerB.setName("test");
 		containerB.addField(FieldUtil.createStringFieldSchema("first"));
+
+		// Add new field in B
 		T field = createField("test");
 		containerB.addField(field);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(2);
 		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType()).hasProperty("after", "first");
-		assertThat(changes.get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "first", "test" });
+		assertThat(changes.get(1)).isUpdateOperation(containerA);
+		//.hasProperty("order", new String[] { "first", "test" });
 
 	}
 
@@ -74,15 +79,25 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 	 * @throws IOException
 	 */
 	@Test
-	public void testAddFieldToEmptySchema() throws IOException {
+	public void testAddFieldToSchema() throws IOException {
 		C containerA = createContainer();
+		containerA.setName("test");
 		C containerB = createContainer();
+		containerB.setName("test");
 		T field = createField("test");
 		containerB.addField(field);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
-		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType()).hasNoProperty("after");
+		assertThat(changes).hasSize(2);
+		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType());
+
+		if (containerA.getFields().size() > 0) {
+			String lastField = containerA.getFields().get(containerA.getFields().size()-1).getName();
+			assertThat(changes.get(0)).hasProperty("after", lastField);
+		} else {
+			assertThat(changes.get(0)).hasNoProperty("order");
+		}
+		assertThat(changes.get(1)).isUpdateOperation(containerA);
 
 	}
 
@@ -95,11 +110,9 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 	public void testRemoveField() throws IOException {
 		C containerA = createContainer();
 		containerA.addField(createField("test"));
-
 		C containerB = createContainer();
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
-		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(REMOVEFIELD).forField("test");
 		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
 	}
@@ -120,10 +133,13 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 	public void testChangeFieldType() throws IOException {
 
 		C containerA = createContainer();
+		containerA.setName("test");
 		T fieldA = createField("test");
 		containerA.addField(fieldA);
 		String newType = "html";
+
 		C containerB = createContainer();
+		containerB.setName("test");
 		// Lists -> html field or basic field -> list 
 		if (fieldA instanceof ListFieldSchema) {
 			FieldSchema fieldB = FieldUtil.createHtmlFieldSchema("test");
@@ -137,9 +153,9 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(CHANGEFIELDTYPE).forField("test").hasProperty("newType", newType);
+		assertThat(changes.get(0)).is(CHANGEFIELDTYPE).forField("test").hasProperty(SchemaChangeModel.TYPE_KEY, newType);
 		if ("list".equals(newType)) {
-			assertThat(changes.get(0)).hasProperty("listType", "html");
+			assertThat(changes.get(0)).hasProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
 		}
 		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
 

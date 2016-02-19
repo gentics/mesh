@@ -164,11 +164,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		SchemaChangeModel model = new SchemaChangeModel();
-		model.setOperation(ADDFIELD);
+		SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html");
 		model.setMigrationScript("custom");
-		model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "testField");
-		model.setProperty(SchemaChangeModel.TYPE_KEY, "html");
 
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.updateFromRest(model);

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
@@ -117,11 +118,9 @@ public class SchemaTest {
 
 	@Test
 	public void testSegmentFieldNotSet() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
-		schema.setName("test");
-		schema.setDisplayField("name");
-		schema.addField(FieldUtil.createStringFieldSchema("name"));
-		expectErrorOnValidate(schema, "schema_error_segmentfield_not_set");
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setSegmentField(null);
+		schema.validate();
 	}
 
 	@Test
@@ -154,6 +153,40 @@ public class SchemaTest {
 	}
 
 	@Test
+	public void testDuplicateLabelCheckWithNullValues() {
+		Schema schema = new SchemaImpl();
+		schema.setName("test");
+		schema.setSegmentField("fieldA");
+		schema.setDisplayField("fieldB");
+		StringFieldSchema fieldA = FieldUtil.createStringFieldSchema("fieldA");
+		StringFieldSchema fieldB = FieldUtil.createStringFieldSchema("fieldB");
+		// Both labels are not set. Thus no conflict should occur.
+		fieldA.setLabel(null);
+		fieldB.setLabel(null);
+		schema.addField(fieldA);
+		schema.addField(fieldB);
+		schema.validate();
+	}
+
+	@Test
+	public void testInvalidListType() {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		ListFieldSchema listField = FieldUtil.createListFieldSchema("listField");
+		listField.setListType("blabla");
+		schema.addField(listField);
+		expectErrorOnValidate(schema, "schema_error_list_type_invalid", "blabla", "listField");
+	}
+
+	@Test
+	public void testMissingListType() {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		ListFieldSchema listField = FieldUtil.createListFieldSchema("listField");
+		listField.setListType(null);
+		schema.addField(listField);
+		expectErrorOnValidate(schema, "schema_error_list_type_missing", "listField");
+	}
+
+	@Test
 	public void testDisplayFieldInvalid() {
 		Schema schema = new SchemaImpl();
 		schema.setName("test");
@@ -171,7 +204,7 @@ public class SchemaTest {
 		schema.setDisplayField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
-		expectErrorOnValidate(schema, "schema_error_duplicate_field_name");
+		expectErrorOnValidate(schema, "schema_error_duplicate_field_name", "name");
 	}
 
 	@Test
@@ -182,7 +215,7 @@ public class SchemaTest {
 		schema.setDisplayField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name").setLabel("conflict"));
 		schema.addField(FieldUtil.createStringFieldSchema("name2").setLabel("conflict"));
-		expectErrorOnValidate(schema, "schema_error_duplicate_field_label");
+		expectErrorOnValidate(schema, "schema_error_duplicate_field_label", "name2", "conflict");
 	}
 
 	/**

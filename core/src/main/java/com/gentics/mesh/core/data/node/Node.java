@@ -73,13 +73,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	void setSchemaContainer(SchemaContainer schema);
 
 	/**
-	 * Shortcut method for getSchemaContainer().getSchema()
-	 * 
-	 * @return
-	 */
-	Schema getSchema();
-
-	/**
 	 * Return the field container for the given language.
 	 * 
 	 * @param language

@@ -588,7 +588,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addMicronodeField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
 		vcardFieldSchema.setName("vcard");
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
@@ -605,7 +605,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addMicronodeListField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
 		vcardListFieldSchema.setName("vcardlist");
 		vcardListFieldSchema.setListType("micronode");

@@ -9,8 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -116,7 +114,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<RoleResponse>> obs = new HashSet<>();
 
 		RoleResponse restRole = new RoleResponse();
@@ -156,7 +154,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		if (!StringUtils.isEmpty(requestModel.getName()) && !getName().equals(requestModel.getName())) {
+		if (shouldUpdate(requestModel.getName(), getName())) {
+			// Check for conflict
 			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName()).toBlocking().single();
 			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");

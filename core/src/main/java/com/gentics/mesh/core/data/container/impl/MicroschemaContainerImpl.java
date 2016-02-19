@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.service.ServerSchemaStorage.getSchemaStorage;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +13,7 @@ import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -67,22 +67,22 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 
 	@Override
 	public Microschema getSchema() {
-		Microschema microschema = getSchemaStorage().getMicroschema(getName(), getVersion());
+		Microschema microschema = ServerSchemaStorage.getInstance().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
 				microschema = JsonUtil.readSchema(getJson(), MicroschemaImpl.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			getSchemaStorage().addMicroschema(microschema);
+			ServerSchemaStorage.getInstance().addMicroschema(microschema);
 		}
 		return microschema;
 	}
 
 	@Override
 	public void setSchema(Microschema microschema) {
-		getSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
-		getSchemaStorage().addMicroschema(microschema);
+		ServerSchemaStorage.getInstance().removeMicroschema(microschema.getName(), microschema.getVersion());
+		ServerSchemaStorage.getInstance().addMicroschema(microschema);
 		String json = JsonUtil.toJson(microschema);
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, microschema.getVersion());

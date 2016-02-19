@@ -40,7 +40,7 @@ public class FieldSchemaContainerMutator {
 	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainer<R, ?, ?> container) {
 
 		R oldSchema = container.getSchema();
-		ServerSchemaStorage.getSchemaStorage().remove(oldSchema);
+		ServerSchemaStorage.getInstance().remove(oldSchema);
 		SchemaChange<?> change = container.getNextChange();
 		while (change != null) {
 			oldSchema = change.apply(oldSchema);

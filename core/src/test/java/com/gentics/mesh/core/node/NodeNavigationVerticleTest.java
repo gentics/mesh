@@ -108,7 +108,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 		Node node = content();
 
-		assertFalse("The node must not be a container.", node.getSchema().isContainer());
+		assertFalse("The node must not be a container.", node.getSchemaContainer().getSchema().isContainer());
 		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationRequestParameter().setMaxDepth(1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "navigation_error_no_container");

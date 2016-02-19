@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -28,9 +29,11 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -40,12 +43,39 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
  * Utility class that is commonly used for tests and the RAML generator.
  */
 public final class FieldUtil {
+
+	/**
+	 * Create a minimal valid test schema.
+	 * 
+	 * @return
+	 */
+	public static Schema createMinimalValidSchema() {
+		Schema schema = new SchemaImpl();
+		schema.setName("test");
+		schema.setDisplayField("displayFieldName");
+		schema.addField(createStringFieldSchema("displayFieldName"));
+		schema.validate();
+		return schema;
+	}
+
+	/**
+	 * Create a minimal valid test microschema.
+	 * 
+	 * @return
+	 */
+	public static Microschema createMinimalValidMicroschema() {
+		Microschema schema = new MicroschemaImpl();
+		schema.setName("test");
+		schema.validate();
+		return schema;
+	}
 
 	/**
 	 * Create a new string field schema.
@@ -223,7 +253,7 @@ public final class FieldUtil {
 		field.setListType(listType);
 		return field;
 	}
-	
+
 	public static ListFieldSchema createListFieldSchema(String name) {
 		ListFieldSchema field = new ListFieldSchemaImpl();
 		field.setName(name);

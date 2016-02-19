@@ -33,7 +33,7 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 		setupData();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 
 		// 1. Create the node field schema and add it to the schema of the node
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
@@ -41,7 +41,7 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
 		node.getSchemaContainer().setSchema(schema);
-		schemaStorage.addSchema(node.getSchema());
+		schemaStorage.addSchema(node.getSchemaContainer().getSchema());
 
 		// 2. Add the node reference to the node fields
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());

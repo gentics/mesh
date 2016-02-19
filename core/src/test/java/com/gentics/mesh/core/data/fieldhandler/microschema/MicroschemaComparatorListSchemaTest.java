@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorListSchemaTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.util.FieldUtil;
 
 public class MicroschemaComparatorListSchemaTest extends AbstractComparatorListSchemaTest<Microschema> {
-	
+
 	@Autowired
 	protected MicroschemaComparator comparator;
 
@@ -20,7 +20,10 @@ public class MicroschemaComparatorListSchemaTest extends AbstractComparatorListS
 
 	@Override
 	public Microschema createContainer() {
-		return new MicroschemaImpl();
+		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+		microschema.addField(FieldUtil.createStringFieldSchema("fieldA"));
+		microschema.addField(FieldUtil.createStringFieldSchema("fieldB"));
+		return microschema;
 	}
 
 }

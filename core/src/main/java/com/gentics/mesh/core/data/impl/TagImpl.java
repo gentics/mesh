@@ -110,7 +110,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<TagResponse>> obs = new HashSet<>();
 
 		TagResponse restTag = new TagResponse();
@@ -178,37 +178,24 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	@Override
 	public Observable<Tag> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		//TagFamilyReference reference = requestModel.getTagFamily();
-
 		return db.trx(() -> {
-			boolean updateTagFamily = false;
-//			if (reference != null) {
-//				// Check whether a uuid was specified and whether the tag family changed
-//				if (!isEmpty(reference.getUuid())) {
-//					if (!getTagFamily().getUuid().equals(reference.getUuid())) {
-//						updateTagFamily = true;
-//					}
-//				}
-//			}
-
 			String newTagName = requestModel.getFields().getName();
 			if (isEmpty(newTagName)) {
 				throw error(BAD_REQUEST, "tag_name_not_set");
 			} else {
 				TagFamily tagFamily = getTagFamily();
+
+				// Check for conflicts
 				Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName).toBlocking().single();
 				if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
 							tagFamily.getName());
 				}
+
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				setName(requestModel.getFields().getName());
-				if (updateTagFamily) {
-					// TODO update the tagfamily
-				}
 			}
 			return addIndexBatch(UPDATE_ACTION);
 		}).process().map(i -> this);

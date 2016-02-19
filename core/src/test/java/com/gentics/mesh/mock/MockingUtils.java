@@ -273,7 +273,7 @@ public final class MockingUtils {
 		when(node.getEditor()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
 		Schema schema = schemaContainer.getSchema();
-		when(node.getSchema()).thenReturn(schema);
+		when(node.getSchemaContainer().getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();

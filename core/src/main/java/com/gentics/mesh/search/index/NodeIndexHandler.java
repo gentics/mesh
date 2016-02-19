@@ -127,7 +127,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
 
-			addFields(map, container, node.getSchema().getFields());
+			addFields(map, container, node.getSchemaContainer().getSchema().getFields());
 			if (log.isTraceEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.trace("Search index json:");
@@ -136,8 +136,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			// Add display field value
 			Map<String, String> displayFieldMap = new HashMap<>();
-			displayFieldMap.put("key", node.getSchema().getDisplayField());
-			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
+			displayFieldMap.put("key", node.getSchemaContainer().getSchema().getDisplayField());
+			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchemaContainer().getSchema()));
 			map.put("displayField", displayFieldMap);
 			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 		}
@@ -168,7 +168,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
 
-			addFields(map, container, node.getSchema().getFields());
+			addFields(map, container, node.getSchemaContainer().getSchema().getFields());
 			if (log.isDebugEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
