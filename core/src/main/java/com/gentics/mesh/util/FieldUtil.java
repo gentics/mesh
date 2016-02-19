@@ -1,9 +1,5 @@
 package com.gentics.mesh.util;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
-
-import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -39,7 +35,6 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -65,9 +60,7 @@ public final class FieldUtil {
 		Schema schema = new SchemaImpl();
 		schema.setName("test");
 		schema.setDisplayField("displayFieldName");
-		schema.setSegmentField("segmentFieldName");
 		schema.addField(createStringFieldSchema("displayFieldName"));
-		schema.addField(createStringFieldSchema("segmentFieldName"));
 		schema.validate();
 		return schema;
 	}

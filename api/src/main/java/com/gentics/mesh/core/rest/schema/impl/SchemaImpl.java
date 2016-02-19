@@ -68,10 +68,6 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 			throw error(BAD_REQUEST, "schema_error_displayfield_not_set");
 		}
 
-		if (getSegmentField() == null) {
-			throw error(BAD_REQUEST, "schema_error_segmentfield_not_set");
-		}
-
 		if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getDisplayField()))) {
 			throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
 		}
@@ -80,7 +76,7 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 			throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
 		}
 
-		if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
+		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
 		}
 

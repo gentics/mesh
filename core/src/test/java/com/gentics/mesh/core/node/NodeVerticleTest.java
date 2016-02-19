@@ -14,6 +14,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -39,6 +40,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -46,12 +48,13 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -719,6 +722,28 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals("en", response.getLanguage());
 	}
 
+	/**
+	 * Test reading a node with link resolving enabled. Ensure that the schema segment field of the node is not set.
+	 */
+	@Test
+	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
+		Node node = folder("news");
+		// Update the schema
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.setSegmentField(null);
+		node.getSchemaContainer().setSchema(schema);
+		ServerSchemaStorage.getInstance().clear();
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse response = future.result();
+		assertEquals("/api/v1/dummy/webroot/error/404",response.getPath());
+		assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/error/404");
+		assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/error/404");
+	}
+
 	@Test
 	public void testReadByUUIDWithLinkPaths() {
 		Node node = folder("news");
@@ -1078,7 +1103,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		expectResponseMessage(future,"node_deleted", uuid);
+		expectResponseMessage(future, "node_deleted", uuid);
 		assertElement(meshRoot().getNodeRoot(), uuid, false);
 		assertThat(searchProvider).recordedDeleteEvents(2);
 		SearchQueue searchQueue = meshRoot().getSearchQueue();

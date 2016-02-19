@@ -119,9 +119,29 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	}
 
 	@Test
+	public void testUnsetSegmentField() {
+
+		// 1. Create changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createUpdateSchemaChange();
+		change.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, null);
+		listOfChanges.getChanges().add(change);
+
+		// 2. Invoke migration
+		SchemaContainer container = schemaContainer("content");
+		assertNull("The schema should not yet have any changes", container.getNextChange());
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		latchFor(future);
+		assertSuccess(future);
+
+		// 3. Assert updated schema
+		container.reload();
+		assertNull("The segment field reference should have been set to null", container.getSchema().getSegmentField());
+	}
+
+	@Test
 	public void testRemoveSegmentField() throws Exception {
 		Node node = content();
-		assertNotNull("The node should have been created.", node);
 		assertNotNull("The node should have a filename string graph field", node.getGraphFieldContainer("en").getString("filename"));
 
 		// 1. Create changes

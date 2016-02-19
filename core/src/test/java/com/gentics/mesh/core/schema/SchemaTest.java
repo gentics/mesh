@@ -118,11 +118,9 @@ public class SchemaTest {
 
 	@Test
 	public void testSegmentFieldNotSet() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
-		schema.setName("test");
-		schema.setDisplayField("name");
-		schema.addField(FieldUtil.createStringFieldSchema("name"));
-		expectErrorOnValidate(schema, "schema_error_segmentfield_not_set");
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setSegmentField(null);
+		schema.validate();
 	}
 
 	@Test
