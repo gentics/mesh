@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -363,6 +364,17 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
+	}
+
+	@Test
+	public void testUpdateConflictCheck() {
+		MeshRoot.getInstance().getRoleRoot().create("test123", user());
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("test123");
+
+		Future<RoleResponse> future = getClient().updateRole(role().getUuid(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "role_conflicting_name");
 	}
 
 	@Test
