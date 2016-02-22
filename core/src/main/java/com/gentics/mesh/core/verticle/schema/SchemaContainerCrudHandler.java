@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -52,7 +52,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleDiff(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
-			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
+			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
 			return obsSchema.flatMap(schema -> schema.diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

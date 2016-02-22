@@ -32,7 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
@@ -48,7 +48,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	@Test
 	public void testNullOperation() {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		container.setSchema(schema);
 		Schema updatedSchema = mutator.apply(container);
 		assertNotNull(updatedSchema);
@@ -61,7 +61,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 		// 1. Create schema
-		Schema schema = new SchemaImpl("testschema");
+		Schema schema = new SchemaModel("testschema");
 
 		BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 		binaryField.setName("binaryField");

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.util.FieldUtil;
@@ -51,7 +51,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSimpleSchema() throws IOException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("dummySchema");
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
@@ -60,7 +60,7 @@ public class SchemaTest {
 
 	@Test
 	public void testComplexSchema() throws IOException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("dummySchema");
 		schema.setDisplayField("name");
 		schema.setSegmentField("name");
@@ -98,20 +98,20 @@ public class SchemaTest {
 		String json = JsonUtil.toJson(schema);
 		System.out.println(json);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaImpl.class);
+		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaModel.class);
 		assertEquals(schema.getFields().size(), deserializedSchema.getFields().size());
 		assertNotNull(deserializedSchema);
 	}
 
 	@Test
 	public void testNoNameInvalid() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		expectErrorOnValidate(schema, "schema_error_no_name");
 	}
 
 	@Test
 	public void testNoFieldsInvalid() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		expectErrorOnValidate(schema, "schema_error_no_fields");
 	}
@@ -125,7 +125,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSegmentFieldInvalid() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("invalid");
 		schema.setDisplayField("name");
@@ -135,7 +135,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMinimalSchemaValid() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -145,7 +145,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDisplayFieldNotSet() throws MeshJsonException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -154,7 +154,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateLabelCheckWithNullValues() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("fieldA");
 		schema.setDisplayField("fieldB");
@@ -188,7 +188,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDisplayFieldInvalid() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("invalid");
@@ -198,7 +198,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateFieldSchemaName() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -209,7 +209,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateFieldSchemaLabel() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -223,7 +223,7 @@ public class SchemaTest {
 	 */
 	@Test
 	public void testDisplayFieldToNoStringFieldInvalid() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -241,7 +241,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeBinary() {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createBinaryFieldSchema("binary"));
@@ -250,7 +250,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeMicronode() {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createMicronodeFieldSchema("micronode"));
@@ -259,7 +259,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeMicronodeList() {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createListFieldSchema("list").setListType("micronode"));
@@ -268,7 +268,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeBinaryList() {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createListFieldSchema("list").setListType("binary"));

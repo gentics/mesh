@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -461,7 +461,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 	@Override
 	public Future<Schema> createSchema(Schema request) {
-		return handleRequest(POST, "/schemas", SchemaImpl.class, request);
+		return handleRequest(POST, "/schemas", SchemaModel.class, request);
 	}
 
 	@Override
@@ -472,7 +472,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	@Override
 	public Future<Schema> findSchemaByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaImpl.class);
+		return handleRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaModel.class);
 	}
 
 	@Override
@@ -567,7 +567,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<Schema> addSchemaToProject(String schemaUuid, String projectUuid) {
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(PUT, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaImpl.class);
+		return handleRequest(PUT, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaModel.class);
 	}
 
 	@Override
@@ -584,7 +584,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	public Future<Schema> removeSchemaFromProject(String schemaUuid, String projectUuid) {
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaImpl.class);
+		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaModel.class);
 	}
 
 	@Override
@@ -856,13 +856,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 
 	@Override
 	public Future<Microschema> createMicroschema(Microschema request) {
-		return handleRequest(POST, "/microschemas", MicroschemaImpl.class, request);
+		return handleRequest(POST, "/microschemas", MicroschemaModel.class, request);
 	}
 
 	@Override
 	public Future<Microschema> findMicroschemaByUuid(String uuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return handleRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaImpl.class);
+		return handleRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaModel.class);
 	}
 
 	@Override

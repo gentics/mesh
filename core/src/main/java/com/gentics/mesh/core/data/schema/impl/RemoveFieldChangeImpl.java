@@ -13,7 +13,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class RemoveFieldChangeImpl extends AbstractSchemaFieldChange implements RemoveFieldChange {
 
 	public static void checkIndices(Database database) {
-		database.addVertexType(UpdateSchemaChangeImpl.class);
+		database.addVertexType(RemoveFieldChangeImpl.class);
 	}
 
 	@Override

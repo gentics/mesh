@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -23,17 +25,20 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
+import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -41,12 +46,18 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 
 public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
+
 	@Autowired
 	private NodeMigrationVerticle nodeMigrationVerticle;
 
+	@Autowired
+	private EventbusVerticle verticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		return new ArrayList<>();
+		List<AbstractSpringVerticle> list = new ArrayList<>();
+		list.add(verticle);
+		return list;
 	}
 
 	@Override
@@ -59,43 +70,39 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
+	public void testEmptyMigration() throws Throwable {
+		String fieldName = "changedfield";
+
+		Tuple<SchemaContainer, SchemaContainer> tuple = createDummySchemaWithChanges(fieldName);
+		SchemaContainer containerA = tuple.v1();
+
+		DeliveryOptions options = new DeliveryOptions();
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+
+		// Trigger migration by sending a event
+		vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			future.complete(rh);
+		});
+
+		failingLatch(latch);
+
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		if (result.cause() != null) {
+			throw result.cause();
+		}
+
+	}
+
+	@Test
 	public void testStartSchemaMigration() throws Throwable {
 		String fieldName = "changedfield";
 
-		// create version 1 of the schema
-		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		Schema schemaA = new SchemaImpl();
-		schemaA.setName("migratedSchema");
-		schemaA.setVersion(1);
-		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
-		schemaA.addField(oldField);
-		schemaA.setDisplayField("name");
-		schemaA.setSegmentField("name");
-		containerA.setName("migratedSchema");
-		containerA.setSchema(schemaA);
-		boot.schemaContainerRoot().addSchemaContainer(containerA);
-
-		// create version 2 of the schema (with the field renamed)
-		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		Schema schemaB = new SchemaImpl();
-		schemaB.setName("migratedSchema");
-		schemaB.setVersion(2);
-		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
-		schemaB.addField(newField);
-		schemaB.setDisplayField("name");
-		schemaB.setSegmentField("name");
-		containerB.setName("migratedSchema");
-		containerB.setSchema(schemaB);
-		boot.schemaContainerRoot().addSchemaContainer(containerB);
-
-		// link the schemas with the changes in between
-		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript("function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
-
-		updateFieldChange.setPreviousContainer(containerA);
-		updateFieldChange.setNextSchemaContainer(containerB);
-		containerA.setNextVersion(containerB);
+		Tuple<SchemaContainer, SchemaContainer> tuple = createDummySchemaWithChanges(fieldName);
+		SchemaContainer containerA = tuple.v1();
+		SchemaContainer containerB = tuple.v2();
 
 		// create a node based on the old schema
 		User user = user();
@@ -134,6 +141,47 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 				.isEqualTo("modified second content");
 	}
 
+	private Tuple<SchemaContainer, SchemaContainer> createDummySchemaWithChanges(String fieldName) {
+
+		// create version 1 of the schema
+		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaA = new SchemaModel();
+		schemaA.setName("migratedSchema");
+		schemaA.setVersion(1);
+		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
+		schemaA.addField(oldField);
+		schemaA.setDisplayField("name");
+		schemaA.setSegmentField("name");
+		containerA.setName("migratedSchema");
+		containerA.setSchema(schemaA);
+		boot.schemaContainerRoot().addSchemaContainer(containerA);
+
+		// create version 2 of the schema (with the field renamed)
+		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schemaB = new SchemaModel();
+		schemaB.setName("migratedSchema");
+		schemaB.setVersion(2);
+		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
+		schemaB.addField(newField);
+		schemaB.setDisplayField("name");
+		schemaB.setSegmentField("name");
+		containerB.setName("migratedSchema");
+		containerB.setSchema(schemaB);
+		boot.schemaContainerRoot().addSchemaContainer(containerB);
+
+		// link the schemas with the changes in between
+		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+		updateFieldChange.setFieldName(fieldName);
+		updateFieldChange.setCustomMigrationScript(
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+
+		updateFieldChange.setPreviousContainer(containerA);
+		updateFieldChange.setNextSchemaContainer(containerB);
+		containerA.setNextVersion(containerB);
+		return new Tuple<>(containerA, containerB);
+
+	}
+
 	@Test
 	public void testStartMicroschemaMigration() throws Throwable {
 		String fieldName = "changedfield";
@@ -141,7 +189,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		// create version 1 of the microschema
 		MicroschemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
-		Microschema microschemaA = new MicroschemaImpl();
+		Microschema microschemaA = new MicroschemaModel();
 		microschemaA.setName("migratedSchema");
 		microschemaA.setVersion(1);
 		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
@@ -152,7 +200,7 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		// create version 2 of the microschema (with the field renamed)
 		MicroschemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
-		Microschema microschemaB = new MicroschemaImpl();
+		Microschema microschemaB = new MicroschemaModel();
 		microschemaB.setName("migratedSchema");
 		microschemaB.setVersion(2);
 		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
@@ -164,7 +212,8 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
-		updateFieldChange.setCustomMigrationScript("function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
+		updateFieldChange.setCustomMigrationScript(
+				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
 		updateFieldChange.setPreviousContainer(containerA);
 		updateFieldChange.setNextSchemaContainer(containerB);

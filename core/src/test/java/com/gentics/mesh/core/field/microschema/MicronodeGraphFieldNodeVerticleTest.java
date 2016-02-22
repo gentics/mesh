@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
@@ -157,7 +157,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		Node newsOverview = content("news overview");
 		Node newsFolder = folder("news");
 
-		Microschema fullMicroschema = new MicroschemaImpl();
+		Microschema fullMicroschema = new MicroschemaModel();
 		fullMicroschema.setName("full");
 
 		// TODO implement BinaryField in Micronode

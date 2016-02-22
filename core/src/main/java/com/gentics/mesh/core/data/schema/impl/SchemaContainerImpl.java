@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -60,7 +60,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	public Observable<Schema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
-			Schema restSchema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
+			Schema restSchema = JsonUtil.readSchema(getJson(), SchemaModel.class);
 			restSchema.setUuid(getUuid());
 
 			// TODO Get list of projects to which the schema was assigned
@@ -122,7 +122,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 		Schema schema = ServerSchemaStorage.getInstance().getSchema(getName(), getVersion());
 		if (schema == null) {
 			try {
-				schema = JsonUtil.readSchema(getJson(), SchemaImpl.class);
+				schema = JsonUtil.readSchema(getJson(), SchemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -154,7 +154,7 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	@Override
 	public Observable<? extends SchemaContainer> update(InternalActionContext ac) {
 		try {
-			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
+			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
 			SchemaChangesListModel model = new SchemaChangesListModel();
 			model.getChanges().addAll(SchemaComparator.getIntance().diff(getSchema(), requestModel));
 			return applyChanges(ac, model).map(i -> this);

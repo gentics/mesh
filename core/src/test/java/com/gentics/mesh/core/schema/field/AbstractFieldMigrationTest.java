@@ -35,14 +35,14 @@ import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -740,7 +740,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 */
 	protected SchemaContainer createSchema(String name, int version, FieldSchema...fields) {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName(name);
 		schema.setVersion(version);
 		for (FieldSchema field : fields) {
@@ -762,7 +762,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 	 */
 	protected MicroschemaContainer createMicroschema(String name, int version, FieldSchema...fields) {
 		MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName(name);
 		schema.setVersion(version);
 		for (FieldSchema field : fields) {

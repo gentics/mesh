@@ -1,7 +1,7 @@
 package com.gentics.mesh.util;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -43,7 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
@@ -57,7 +57,7 @@ public final class FieldUtil {
 	 * @return
 	 */
 	public static Schema createMinimalValidSchema() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test");
 		schema.setDisplayField("displayFieldName");
 		schema.addField(createStringFieldSchema("displayFieldName"));
@@ -71,7 +71,7 @@ public final class FieldUtil {
 	 * @return
 	 */
 	public static Microschema createMinimalValidMicroschema() {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.validate();
 		return schema;

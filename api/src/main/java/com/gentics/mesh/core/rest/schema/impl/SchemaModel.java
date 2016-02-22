@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
-public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
+public class SchemaModel extends AbstractFieldSchemaContainer implements Schema {
 
 	private String displayField;
 	private String segmentField;
@@ -18,11 +18,11 @@ public class SchemaImpl extends AbstractFieldSchemaContainer implements Schema {
 	 * 
 	 * @param name
 	 */
-	public SchemaImpl(String name) {
+	public SchemaModel(String name) {
 		super(name);
 	}
 
-	public SchemaImpl() {
+	public SchemaModel() {
 	}
 
 	@Override

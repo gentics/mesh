@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -70,7 +70,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 		Microschema microschema = ServerSchemaStorage.getInstance().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
-				microschema = JsonUtil.readSchema(getJson(), MicroschemaImpl.class);
+				microschema = JsonUtil.readSchema(getJson(), MicroschemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -92,7 +92,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	public Observable<Microschema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
-			Microschema microschema = JsonUtil.readSchema(getJson(), MicroschemaImpl.class);
+			Microschema microschema = JsonUtil.readSchema(getJson(), MicroschemaModel.class);
 			microschema.setUuid(getUuid());
 
 			// Role permissions
@@ -115,7 +115,7 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	@Override
 	public Observable<? extends MicroschemaContainer> update(InternalActionContext ac) {
 		try {
-			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl.class);
+			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
 			SchemaChangesListModel model = new SchemaChangesListModel();
 			model.getChanges().addAll(MicroschemaComparator.getIntance().diff(getSchema(), requestModel));
 			return applyChanges(ac, model).map(i -> this);

@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
@@ -115,15 +115,15 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		int totalSchemas;
 		SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 		final int nSchemas = 22;
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("No Perm Schema");
 		schema.setDisplayField("name");
 		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
-		Schema dummySchema = new SchemaImpl();
+		Schema dummySchema = new SchemaModel();
 		dummySchema.setName("dummy");
 		noPermSchema.setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
-			schema = new SchemaImpl();
+			schema = new SchemaModel();
 			schema.setName("extra_schema_" + i);
 			schema.setDisplayField("name");
 			SchemaContainer extraSchema = schemaRoot.create(schema, user());
@@ -271,7 +271,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateWithConflictingName() {
 		String name = "folder";
-		Schema request = new SchemaImpl();
+		Schema request = new SchemaModel();
 		request.setSegmentField("name");
 		request.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
 		request.setDisplayField("name");
@@ -286,7 +286,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = schemaContainer("content");
 		String oldName = schema.getName();
-		Schema request = new SchemaImpl();
+		Schema request = new SchemaModel();
 		request.setName("new-name");
 
 		Future<GenericMessageResponse> future = getClient().updateSchema("bogus", request);
@@ -333,7 +333,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
-		Schema request = new SchemaImpl();
+		Schema request = new SchemaModel();
 		request.setName("new-name");
 
 		int nJobs = 5;
@@ -379,7 +379,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		Schema request = new SchemaImpl();
+		Schema request = new SchemaModel();
 		request.setName("new schema name");
 		request.setDisplayField("name");
 
@@ -412,7 +412,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainer schema = schemaContainer("content");
 		role().revokePermissions(schema, UPDATE_PERM);
 
-		Schema request = new SchemaImpl();
+		Schema request = new SchemaModel();
 		request.setName("new-name");
 
 		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request);

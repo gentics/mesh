@@ -38,4 +38,18 @@ public interface AddFieldChange extends SchemaFieldChange {
 	 */
 	void setListType(String type);
 
+	/**
+	 * Set the insert position. The position refers to an existing fieldname.
+	 * 
+	 * @param string
+	 */
+	void setInsertAfterPosition(String fieldName);
+
+	/**
+	 * Return the insert position.
+	 * 
+	 * @return
+	 */
+	String getInsertAfterPosition();
+
 }

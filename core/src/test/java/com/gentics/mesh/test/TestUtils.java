@@ -1,15 +1,54 @@
 package com.gentics.mesh.test;
 
+import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-public final class TestUtil {
+import com.gentics.mesh.rest.MeshRestClient;
 
-	private TestUtil() {
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
+public final class TestUtils {
+
+	private TestUtils() {
+
+	}
+
+	private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
+
+	/**
+	 * Construct a latch which will release when the migration has finished.
+	 * 
+	 * @return
+	 */
+	public static CountDownLatch latchForMigrationCompleted(MeshRestClient client) {
+		// Construct latch in order to wait until the migration completed event was received 
+		CountDownLatch latch = new CountDownLatch(1);
+		client.eventbus(ws -> {
+			// Register to migration events
+			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION.toString());
+			ws.writeFinalTextFrame(msg.encode());
+
+			// Handle migration events
+			ws.handler(buff -> {
+				String str = buff.toString();
+				JsonObject received = new JsonObject(str);
+				JsonObject rec = received.getJsonObject("body");
+				log.debug("Migration event:" + rec.getString("type"));
+				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
+					latch.countDown();
+				}
+			});
+
+		});
+		return latch;
 	}
 
 	public static void runAndWait(Runnable runnable) {

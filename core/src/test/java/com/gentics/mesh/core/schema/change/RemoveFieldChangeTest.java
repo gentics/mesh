@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -37,7 +37,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 		// 1. Create schema with field
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.addField(FieldUtil.createStringFieldSchema("test"));
 
 		// 2. Create remove field change

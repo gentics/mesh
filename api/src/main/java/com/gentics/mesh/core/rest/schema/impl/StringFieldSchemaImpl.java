@@ -42,7 +42,7 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 
 			// required
 			if (isRequired() != stringFieldSchema.isRequired()) {
-				change.setRequired(fieldSchema.isRequired());
+				change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldSchema.isRequired());
 				modified = true;
 			}
 

@@ -61,7 +61,7 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -71,7 +71,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 public final class MockingUtils {
@@ -221,7 +221,7 @@ public final class MockingUtils {
 	}
 
 	public static Schema mockContentSchema() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("content");
 		schema.setDescription("Content schema");
 		schema.setDisplayField("string");
@@ -247,7 +247,7 @@ public final class MockingUtils {
 	}
 
 	public static Microschema mockGeolocationMicroschema() {
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 

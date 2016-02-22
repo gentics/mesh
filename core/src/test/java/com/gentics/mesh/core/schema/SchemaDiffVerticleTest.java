@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
@@ -46,7 +46,7 @@ public class SchemaDiffVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	private Schema getSchema() {
-		Schema request = new SchemaImpl();
+		Schema request = new SchemaModel();
 		request.setName("content");
 		request.setDisplayField("title");
 		request.setSegmentField("filename");

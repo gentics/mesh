@@ -88,6 +88,17 @@ public interface FieldSchemaContainer extends RestResponse {
 	void addField(FieldSchema fieldSchema);
 
 	/**
+	 * Add the given field schema to the list of field schemas after the field with the given name. The field will be added to the end of the list if the insert
+	 * position could not be determined via the afterFieldName parameter.
+	 * 
+	 * @param fieldSchema
+	 *            Field schema to be added to the container
+	 * @param afterFieldName
+	 *            Field name that identifies the position after which the field will be inserted
+	 */
+	void addField(FieldSchema fieldSchema, String afterFieldName);
+
+	/**
 	 * Set the list of schema fields.
 	 * 
 	 * @param fields

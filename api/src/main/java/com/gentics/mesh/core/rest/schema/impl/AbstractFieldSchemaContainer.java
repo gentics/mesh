@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -129,6 +130,23 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	@Override
 	public void addField(FieldSchema fieldSchema) {
 		this.fields.add(fieldSchema);
+	}
+
+	@Override
+	public void addField(FieldSchema fieldSchema, String afterFieldName) {
+		int index = fields.size();
+		if (afterFieldName != null) {
+			for (int i = 0; i < fields.size(); i++) {
+				if (afterFieldName.equals(fields.get(i).getName())) {
+					index = i;
+					break;
+				}
+			}
+		}
+		if (index < fields.size()) {
+			index = index + 1;
+		}
+		this.fields.add(index, fieldSchema);
 	}
 
 	@Override

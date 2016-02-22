@@ -70,7 +70,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	 */
 	protected boolean compareRequiredField(SchemaChangeModel change, FieldSchema fieldSchema, boolean modified) {
 		if (isRequired() != fieldSchema.isRequired()) {
-			change.setRequired(fieldSchema.isRequired());
+			change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldSchema.isRequired());
 			return true;
 		}
 		return modified;

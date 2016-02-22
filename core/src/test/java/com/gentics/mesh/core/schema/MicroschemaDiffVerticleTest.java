@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -42,7 +42,7 @@ public class MicroschemaDiffVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	private Microschema getMicroschema() {
-		Microschema vcardMicroschema = new MicroschemaImpl();
+		Microschema vcardMicroschema = new MicroschemaModel();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 

@@ -407,12 +407,12 @@ traits:
     description: Create the schema.
     body:
       application/json:
-        example: !include json/SchemaCreateRequest.example.json
+        example: !include json/SchemaModel.example.json
     responses:
       200:
         body:
           application/json:
-            example: !include json/SchemaResponse.example.json
+            example: !include json/SchemaModel.example.json
 
   /{uuid}:
     is: [ localized ]
@@ -423,17 +423,17 @@ traits:
         200:
           body:
             application/json:
-              example: !include json/SchemaResponse.example.json
+              example: !include json/SchemaModel.example.json
     put: 
-      description: Updates the schema with the given uuid.
+      description: Invoke a schema migration.
       body:
         application/json:
-          example: !include json/SchemaUpdateRequest.example.json
+          example: !include json/SchemaModel.example.json
       responses:
         200:
           body:
             application/json:
-              example: !include json/SchemaResponse.example.json
+              example: !include json/GenericMessageResponse.example.json
     delete:
       description: Deletes the schema with the given uuid.
       responses:
@@ -456,6 +456,17 @@ traits:
             body:
               application/json:
                 example: !include json/GenericMessageResponse.example.json
+  /{uuid}/diff:
+    post:
+      description: Create a diff of the latest and posted schema.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/SchemaChangesListModel.example.json
+  /{uuid}/changes:
+    post:
+      description: Invoke a schema migration.
 
 #------------------------------------------------------------------------------
 # Microschema Verticle
@@ -479,12 +490,12 @@ traits:
     description: Create the microschema.
     body:
       application/json:
-        example: !include json/MicroschemaCreateRequest.example.json
+        example: !include json/MicroschemaModel.example.json
     responses:
       200:
         body:
           application/json:
-            example: !include json/MicroschemaResponse.example.json
+            example: !include json/MicroschemaModel.example.json
 
   /{uuid}:
     is: [ localized ]
@@ -494,17 +505,17 @@ traits:
         200:
           body:
             application/json:
-              example: !include json/MicroschemaResponse.example.json
+              example: !include json/MicroschemaModel.example.json
     put:
-      description: Updates the microschema with the given uuid.
+      description: Invoke a microschema migration.
       body:
         application/json:
-          example: !include json/MicroschemaUpdateRequest.example.json
+          example: !include json/MicroschemaModel.example.json
       responses:
         200:
           body:
             application/json:
-              example: !include json/MicroschemaResponse.example.json
+              example: !include json/GenericMessageResponse.example.json
     delete:
       description: Deletes the microschema with the given uuid.
       responses:
@@ -512,6 +523,17 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
+  /{uuid}/diff:
+    post:
+      description: Create a diff of the latest and posted microschema.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/SchemaChangesListModel.example.json
+  /{uuid}/changes:
+    post:
+      description: Invoke a microschema migration.
 
 
 #------------------------------------------------------------------------------
@@ -941,6 +963,33 @@ traits:
   /logout:
     get:
       description: Logout the user.
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include json/GenericMessageResponse.example.json
+
+
+#------------------------------------------------------------------------------
+# Eventbus Bridge Verticle
+#------------------------------------------------------------------------------
+
+/eventbus:
+  displayName: Eventbus Bridge
+  /:
+    description: This endpoint is a SockJS compliant websocket that creates a bridge to the mesh eventbus. It allows handling of various mesh specific events.
+  /websocket:
+    description: Direct access to a websocket. This way the SockJS specific fallback is not used. 
+
+#------------------------------------------------------------------------------
+# Admin Verticle
+#------------------------------------------------------------------------------
+
+/admin:
+  displayName: Administration
+  /migrationStatus:
+    get:
+      description: Fetch the current migration status.
       responses:
         200:
           body:

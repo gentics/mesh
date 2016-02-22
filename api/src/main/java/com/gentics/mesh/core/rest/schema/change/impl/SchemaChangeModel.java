@@ -20,6 +20,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String FIELD_NAME_KEY = "field";
 
+	public static final String ADD_FIELD_AFTER_KEY = "after";
+
 	public static final String REQUIRED_KEY = "required";
 
 	public static final String SEGMENT_FIELD_KEY = "segmentFieldname";
@@ -129,24 +131,6 @@ public class SchemaChangeModel implements RestModel {
 	 */
 	public void setProperty(String key, Object value) {
 		properties.put(key, value);
-	}
-
-	/**
-	 * Set the required property for the change. This indicates that the required flag was changed to the given value for this change.
-	 * 
-	 * @param flag
-	 */
-	public void setRequired(boolean flag) {
-		getProperties().put(REQUIRED_KEY, flag);
-	}
-
-	/**
-	 * Return the required property for the change.
-	 * 
-	 * @return
-	 */
-	public boolean getRequired() {
-		return Boolean.valueOf(String.valueOf(getProperties().get(REQUIRED_KEY)));
 	}
 
 	/**

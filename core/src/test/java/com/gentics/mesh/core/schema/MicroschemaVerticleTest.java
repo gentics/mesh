@@ -29,7 +29,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
@@ -83,7 +83,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		Microschema request = new MicroschemaImpl();
+		Microschema request = new MicroschemaModel();
 		request.setName("new microschema name");
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -115,7 +115,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		Microschema request = new MicroschemaImpl();
+		Microschema request = new MicroschemaModel();
 		request.setName("new microschema name");
 		request.setDescription("microschema description");
 
@@ -199,7 +199,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(microschema);
 		role().revokePermissions(microschema, UPDATE_PERM);
 
-		Microschema request = new MicroschemaImpl();
+		Microschema request = new MicroschemaModel();
 		request.setName("new-name");
 
 		Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
@@ -213,7 +213,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		MicroschemaContainer microschema = microschemaContainers().get("vcard");
 		assertNotNull(microschema);
 		String oldName = microschema.getName();
-		Microschema request = new MicroschemaImpl();
+		Microschema request = new MicroschemaModel();
 		request.setName("new-name");
 
 		Future<GenericMessageResponse> future = getClient().updateMicroschema("bogus", request);

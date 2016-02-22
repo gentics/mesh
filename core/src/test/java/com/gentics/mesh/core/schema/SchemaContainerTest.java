@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -65,7 +65,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	public void testRootNode() throws MeshSchemaException {
 		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 		int nSchemasBefore = root.findAll().size();
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("test123");
 		schema.setDisplayField("name");
 		assertNotNull(root.create(schema, user()));
@@ -126,14 +126,14 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 		assertNotNull(schema);
 		String json = JsonUtil.toJson(schema);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaImpl.class);
+		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaModel.class);
 		assertNotNull(deserializedSchema);
 	}
 
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setDisplayField("name");
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		assertNotNull(newContainer);
@@ -145,7 +145,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setDisplayField("name");
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
@@ -199,7 +199,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setDisplayField("name");
 		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		testPermission(GraphPermission.READ_PERM, newContainer);
@@ -209,7 +209,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setDisplayField("name");
 		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		testPermission(GraphPermission.DELETE_PERM, newContainer);
@@ -219,7 +219,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setDisplayField("name");
 		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		testPermission(GraphPermission.UPDATE_PERM, newContainer);
@@ -229,7 +229,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
 		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setDisplayField("name");
 		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		testPermission(GraphPermission.CREATE_PERM, newContainer);

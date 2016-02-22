@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
@@ -70,12 +70,14 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -376,10 +378,11 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private void schemaJson() throws JsonGenerationException, JsonMappingException, IOException {
-		write(getSchemaResponse());
+		write(getSchema());
 		write(getSchemaCreateRequest());
 		write(getSchemaUpdateRequest());
 		write(getSchemaListResponse());
+		write(getSchemaChangesListModel());
 	}
 
 	private void loginRequest() throws JsonGenerationException, JsonMappingException, IOException {
@@ -390,7 +393,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private Microschema getMicroschema() {
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 		microschema.setUuid(UUIDUtil.randomUUID());
@@ -412,7 +415,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		microschema.addField(latitudeFieldSchema);
 
 		microschema.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
-
+		microschema.validate();
 		return microschema;
 	}
 
@@ -425,7 +428,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private Microschema getMicroschemaCreateRequest() {
-		Microschema createRequest = new MicroschemaImpl();
+		Microschema createRequest = new MicroschemaModel();
 		createRequest.setName("geolocation");
 		createRequest.setDescription("Microschema for Geolocations");
 		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
@@ -449,14 +452,40 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 	private SchemaListResponse getSchemaListResponse() throws JsonGenerationException, JsonMappingException, IOException {
 		SchemaListResponse schemaList = new SchemaListResponse();
-		schemaList.getData().add(getSchemaResponse());
-		schemaList.getData().add(getSchemaResponse());
+		schemaList.getData().add(getSchema());
+		schemaList.getData().add(getSchema());
 		setPaging(schemaList, 1, 10, 2, 20);
 		return schemaList;
 	}
 
+	private SchemaChangesListModel getSchemaChangesListModel() {
+		SchemaChangesListModel model = new SchemaChangesListModel();
+		// Add field
+		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("listFieldToBeAddedField", "list");
+		addFieldChange.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
+		model.getChanges().add(addFieldChange);
+
+		// Change field type
+		model.getChanges().add(SchemaChangeModel.createChangeFieldTypeChange("fieldToBeUpdated", "string"));
+
+		// Remove field
+		model.getChanges().add(SchemaChangeModel.createRemoveFieldChange("fieldToBeRemoved"));
+
+		// Update field
+		SchemaChangeModel updateFieldChange = SchemaChangeModel.createUpdateFieldChange("fieldToBeUpdated");
+		updateFieldChange.setProperty(SchemaChangeModel.LABEL_KEY, "newLabel");
+		model.getChanges().add(updateFieldChange);
+
+		// Update schema
+		SchemaChangeModel updateSchemaChange = SchemaChangeModel.createUpdateSchemaChange();
+		updateFieldChange.setProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY, "newDisplayField");
+		model.getChanges().add(updateSchemaChange);
+
+		return model;
+	}
+
 	private Schema getSchemaUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
-		Schema schemaUpdate = new SchemaImpl();
+		Schema schemaUpdate = new SchemaModel();
 		// TODO should i allow changing the name?
 		schemaUpdate.setName("extended-content");
 		schemaUpdate.setDescription("New description");
@@ -464,7 +493,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	}
 
 	private Schema getSchemaCreateRequest() throws JsonGenerationException, JsonMappingException, IOException {
-		Schema schemaUpdateRequest = new SchemaImpl();
+		Schema schemaUpdateRequest = new SchemaModel();
 		schemaUpdateRequest.setContainer(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
@@ -476,9 +505,10 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		return schemaUpdateRequest;
 	}
 
-	private Schema getSchemaResponse() throws JsonGenerationException, JsonMappingException, IOException {
-		Schema schema = new SchemaImpl();
+	private Schema getSchema() throws JsonGenerationException, JsonMappingException, IOException {
+		Schema schema = new SchemaModel();
 		schema.setUuid(randomUUID());
+		schema.setName("Example Schema");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
 		// schema.setDescription("Description of the schema");
@@ -530,6 +560,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		micronodeListFieldSchema.setListType("micronode");
 		micronodeListFieldSchema.setAllowedSchemas(new String[] { "geolocation" });
 		schema.addField(micronodeListFieldSchema);
+		schema.validate();
 		return schema;
 	}
 

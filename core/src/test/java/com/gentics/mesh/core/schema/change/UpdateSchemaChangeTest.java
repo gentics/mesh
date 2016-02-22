@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -53,7 +53,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApply() {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setName("updated");
 		container.setSchema(schema);
@@ -74,7 +74,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		// 1. Create the schema container
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schema.addField(FieldUtil.createHtmlFieldSchema("second"));
 		container.setSchema(schema);
@@ -98,7 +98,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 		// 1. Create schema
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 
 		// 2. Create schema update change
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
@@ -121,7 +121,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() throws IOException {
 		SchemaChangeModel model = new SchemaChangeModel();
 		model.setMigrationScript("custom");
-		model.setRequired(true);
+		model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
 		model.setProperty(SchemaChangeModel.CONTAINER_FIELD_KEY, true);
 		model.setProperty(SchemaChangeModel.DESCRIPTION_KEY, "description");
 		model.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, "segmentField");

@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -373,7 +373,7 @@ public class DemoDataProvider {
 				StringWriter writer = new StringWriter();
 				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
-				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaImpl.class);
+				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaModel.class);
 				container = boot.schemaContainerRoot().create(schema, getAdmin());
 			}
 			schemaContainers.put(schemaName, container);

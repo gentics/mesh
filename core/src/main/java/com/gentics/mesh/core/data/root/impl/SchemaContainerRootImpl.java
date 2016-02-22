@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -108,7 +108,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		Schema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaImpl.class);
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
 			requestModel.validate();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 

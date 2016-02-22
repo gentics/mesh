@@ -3,7 +3,7 @@ package com.gentics.mesh.rest;
 import java.util.Arrays;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -191,7 +191,7 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 * @return
 	 */
 	private boolean isSchemaClass(Class<?> clazz) {
-		return Arrays.asList(Schema.class, SchemaImpl.class, SchemaListResponse.class, Microschema.class, MicroschemaImpl.class, Microschema.class,
+		return Arrays.asList(Schema.class, SchemaModel.class, SchemaListResponse.class, Microschema.class, MicroschemaModel.class, Microschema.class,
 				MicroschemaListResponse.class).stream().anyMatch(c -> clazz.isAssignableFrom(c));
 	}
 

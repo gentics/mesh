@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.schema.impl.AbstractFieldSchemaContainer;
 /**
  * Implementation of Microschema
  */
-public class MicroschemaImpl extends AbstractFieldSchemaContainer implements Microschema, RestModel {
+public class MicroschemaModel extends AbstractFieldSchemaContainer implements Microschema, RestModel {
 
 	private String description;
 

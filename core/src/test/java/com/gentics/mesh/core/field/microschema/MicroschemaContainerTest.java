@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -122,7 +122,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
 		assertNotNull("The container was not created.", container);
@@ -144,7 +144,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws MeshJsonException {
-		Microschema schema = new MicroschemaImpl();
+		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
 		assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
@@ -162,7 +162,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("someNewMicroschema");
 		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 		testPermission(GraphPermission.READ_PERM, microschemaContainer);
@@ -171,7 +171,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("someNewMicroschema");
 		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 		testPermission(GraphPermission.DELETE_PERM, microschemaContainer);
@@ -181,7 +181,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("someNewMicroschema");
 		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 		testPermission(GraphPermission.UPDATE_PERM, microschemaContainer);
@@ -190,7 +190,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshJsonException {
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("someNewMicroschema");
 		MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 		testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
@@ -219,7 +219,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	public void testCRUDPermissions() throws MeshJsonException {
 		MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
 
-		Microschema microschema = new MicroschemaImpl();
+		Microschema microschema = new MicroschemaModel();
 		microschema.setName("someNewMicroschema");
 		MicroschemaContainer container = root.create(microschema, user());
 

@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -75,7 +75,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
-			Microschema microschema = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaImpl.class);
+			Microschema microschema = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
 			microschema.validate();
 
 			return requestUser.hasPermissionAsync(ac, this, GraphPermission.CREATE_PERM).flatMap(hasPerm -> {

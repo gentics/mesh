@@ -20,6 +20,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Dedicated worker verticle which will handle schema and microschema migrations.
+ */
 @Component
 @Scope("singleton")
 @SpringVerticle
@@ -37,6 +40,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 
 	public final static String UUID_HEADER = "uuid";
 
+	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
 	@Override
 	public void start() throws Exception {
 		if (log.isDebugEnabled()) {
@@ -50,36 +55,24 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 				log.debug("Node migration for schema " + schemaUuid + " was requested");
 			}
 
-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + schemaUuid);
-				// TODO when mesh is running in a cluster, this check is not enough, since JMX beans are bound to the JVM
-				if (mbs.isRegistered(statusMBeanName)) {
+				if (isRunning(statusMBeanName)) {
 					message.fail(0, "Migration for schema " + schemaUuid + " is already running");
 				} else {
-					setRunning();
 					db.noTrx(() -> boot.schemaContainerRoot().findByUuid(schemaUuid)).subscribe(schemaContainer -> {
 						NodeMigrationStatus statusBean = db.noTrx(() -> {
 							return new NodeMigrationStatus(schemaContainer.getName(), schemaContainer.getVersion(), Type.schema);
 						});
-						try {
-							mbs.registerMBean(statusBean, statusMBeanName);
-						} catch (Exception e1) {
-						}
+						setRunning(statusBean, statusMBeanName);
 						nodeMigrationHandler.migrateNodes(schemaContainer, statusBean);
 					} , (e) -> message.fail(0, e.getLocalizedMessage()), () -> {
-						try {
-							mbs.unregisterMBean(statusMBeanName);
-						} catch (Exception e1) {
-						}
+						setDone(schemaUuid, statusMBeanName);
 						message.reply(null);
 					});
 				}
-
-				setDone(schemaUuid);
-
-			} catch (Exception e2) {
-				message.fail(0, "Migration for schema " + schemaUuid + " failed: " + e2.getLocalizedMessage());
+			} catch (Exception e) {
+				message.fail(0, "Migration for schema " + schemaUuid + " failed: " + e.getLocalizedMessage());
 			}
 		});
 
@@ -90,52 +83,55 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 				log.debug("Micronode Migration for microschema " + microschemaUuid + " was requested");
 			}
 
-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + microschemaUuid);
-				// TODO when mesh is running in a cluster, this check is not enough, since JMX beans are bound to the JVM
-				if (mbs.isRegistered(statusMBeanName)) {
+				if (isRunning(statusMBeanName)) {
 					message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
 				} else {
-					setRunning();
 					db.noTrx(() -> boot.microschemaContainerRoot().findByUuid(microschemaUuid)).subscribe(microschemaContainer -> {
 						NodeMigrationStatus statusBean = db.noTrx(() -> {
 							return new NodeMigrationStatus(microschemaContainer.getName(), microschemaContainer.getVersion(), Type.microschema);
 						});
-						try {
-							mbs.registerMBean(statusBean, statusMBeanName);
-						} catch (Exception e1) {
-						}
+						setRunning(statusBean, statusMBeanName);
 						nodeMigrationHandler.migrateMicronodes(microschemaContainer, statusBean);
 					} , (e) -> message.fail(0, e.getLocalizedMessage()), () -> {
-						try {
-							mbs.unregisterMBean(statusMBeanName);
-						} catch (Exception e1) {
-						}
+						setDone(microschemaUuid, statusMBeanName);
 						message.reply(null);
 					});
-					setDone(microschemaUuid);
 				}
-			} catch (Exception e2) {
-				message.fail(0, "Migration for microschema " + microschemaUuid + " failed: " + e2.getLocalizedMessage());
+			} catch (Exception e) {
+				message.fail(0, "Migration for microschema " + microschemaUuid + " failed: " + e.getLocalizedMessage());
 			}
 		});
 	}
 
-	private void setRunning() {
+	private boolean isRunning(ObjectName statusMBeanName) {
+		// TODO when mesh is running in a cluster, this check is not enough, since JMX beans are bound to the JVM
+		return mbs.isRegistered(statusMBeanName);
+	}
+
+	private void setRunning(NodeMigrationStatus statusBean, ObjectName statusMBeanName) {
+		try {
+			mbs.registerMBean(statusBean, statusMBeanName);
+		} catch (Exception e1) {
+		}
 		JsonObject msg = new JsonObject();
 		msg.put("type", "started");
 		vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
 		vertx.sharedData().getLocalMap("migrationStatus").put("status", "migration_status_running");
 	}
 
-	private void setDone(String schemaUuid) {
+	private void setDone(String schemaUuid, ObjectName statusMBeanName) {
 		if (log.isDebugEnabled()) {
 			log.debug("Migration for container " + schemaUuid + " completed");
 		}
+		try {
+			mbs.unregisterMBean(statusMBeanName);
+		} catch (Exception e1) {
+		}
 		JsonObject msg = new JsonObject();
 		msg.put("type", "completed");
-		vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
 		vertx.sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
+		vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
 	}
 }

@@ -11,7 +11,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.DummySearchProvider;
-import com.gentics.mesh.test.TestUtil;
+import com.gentics.mesh.test.TestUtils;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
@@ -31,7 +31,7 @@ public class SpringNoDBConfiguration {
 	@PostConstruct
 	public void setup() {
 		MeshOptions options = new MeshOptions();
-		options.getHttpServerOptions().setPort(TestUtil.getRandomPort());
+		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
 		// The orientdb database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
 		Mesh.mesh(options);

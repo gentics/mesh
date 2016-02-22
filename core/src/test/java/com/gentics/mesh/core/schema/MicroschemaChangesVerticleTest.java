@@ -5,7 +5,9 @@ import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -17,7 +19,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.test.TestUtils;
 
 import io.vertx.core.Future;
 
@@ -44,7 +47,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		listOfChanges.getChanges().add(change);
 
 		// 3. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 4. Invoke migration
 		MicroschemaContainer container = microschemaContainer("vcard");
@@ -105,7 +108,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Invoke migration
 		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
@@ -127,7 +130,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 		assertNotNull(vcardContainer);
 
-		Microschema request = new MicroschemaImpl();
+		Microschema request = new MicroschemaModel();
 		request.setName(name);
 
 		Future<GenericMessageResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
@@ -150,7 +153,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		String originalSchemaName = "vcard";
 		MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
 		assertNotNull(microschema);
-		Microschema request = new MicroschemaImpl();
+		Microschema request = new MicroschemaModel();
 		request.setName(name);
 
 		Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);

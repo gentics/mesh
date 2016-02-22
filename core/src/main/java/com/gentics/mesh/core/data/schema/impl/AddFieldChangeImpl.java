@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -35,59 +37,70 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 
 	@Override
 	public AddFieldChange setType(String type) {
-		setRestProperty(SchemaChangeModel.TYPE_KEY, type);
+		setRestProperty(TYPE_KEY, type);
 		return this;
 	}
 
 	@Override
 	public String getType() {
-		return getRestProperty(SchemaChangeModel.TYPE_KEY);
+		return getRestProperty(TYPE_KEY);
 	}
 
 	@Override
 	public String getListType() {
-		return getRestProperty(SchemaChangeModel.LIST_TYPE_KEY);
+		return getRestProperty(LIST_TYPE_KEY);
 	}
 
 	@Override
 	public void setListType(String type) {
-		setRestProperty(SchemaChangeModel.LIST_TYPE_KEY, type);
+		setRestProperty(LIST_TYPE_KEY, type);
+	}
+
+	@Override
+	public void setInsertAfterPosition(String fieldName) {
+		setRestProperty(ADD_FIELD_AFTER_KEY, fieldName);
+	}
+
+	@Override
+	public String getInsertAfterPosition() {
+		return getRestProperty(ADD_FIELD_AFTER_KEY);
 	}
 
 	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 
+		String position = getInsertAfterPosition();
 		//TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
 		switch (getType()) {
 		case "html":
-			container.addField(new HtmlFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new HtmlFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "string":
-			container.addField(new StringFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new StringFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "number":
-			container.addField(new NumberFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new NumberFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "binary":
-			container.addField(new BinaryFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new BinaryFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "node":
-			container.addField(new NodeFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new NodeFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "micronode":
-			container.addField(new MicronodeFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new MicronodeFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "date":
-			container.addField(new DateFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new DateFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "boolean":
-			container.addField(new BooleanFieldSchemaImpl().setName(getFieldName()));
+			container.addField(new BooleanFieldSchemaImpl().setName(getFieldName()), position);
 			break;
 		case "list":
 			ListFieldSchema field = new ListFieldSchemaImpl();
 			field.setName(getFieldName());
 			field.setListType(getListType());
-			container.addField(field);
+			container.addField(field, position);
 			break;
 		default:
 			throw error(BAD_REQUEST, "Unknown type");

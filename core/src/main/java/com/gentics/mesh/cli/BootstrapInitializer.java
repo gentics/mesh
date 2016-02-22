@@ -48,7 +48,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
@@ -437,7 +437,7 @@ public class BootstrapInitializer {
 			// Content
 			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content").toBlocking().single();
 			if (contentSchemaContainer == null) {
-				Schema schema = new SchemaImpl();
+				Schema schema = new SchemaModel();
 				schema.setName("content");
 				schema.setDisplayField("title");
 				schema.setSegmentField("filename");
@@ -471,7 +471,7 @@ public class BootstrapInitializer {
 			// Folder
 			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder").toBlocking().single();
 			if (folderSchemaContainer == null) {
-				Schema schema = new SchemaImpl();
+				Schema schema = new SchemaModel();
 				schema.setName("folder");
 				schema.setDisplayField("name");
 				schema.setSegmentField("name");
@@ -490,7 +490,7 @@ public class BootstrapInitializer {
 			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content").toBlocking().single();
 			if (binarySchemaContainer == null) {
 
-				Schema schema = new SchemaImpl();
+				Schema schema = new SchemaModel();
 				schema.setName("binary-content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("binary");

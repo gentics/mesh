@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
@@ -102,7 +103,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange("content", "boolean");
 		listOfChanges.getChanges().add(change);
 
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		// Trigger migration
 		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
 		latchFor(future);
@@ -143,7 +144,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		getClient().getClientSchemaStorage().addSchema(schema);
 
 		// 3. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 4. Update the schema server side
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
@@ -233,7 +234,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Invoke migration
 		SchemaContainer container = schemaContainer("content");
@@ -265,7 +266,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		listOfChanges.getChanges().add(change);
 
 		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 3. Invoke migration
 		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
@@ -345,7 +346,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		ServerSchemaStorage.getInstance().clear();
 
 		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = latchForMigrationCompleted();
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// Update the schema server side
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
