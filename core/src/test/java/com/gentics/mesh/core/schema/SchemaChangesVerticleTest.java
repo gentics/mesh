@@ -134,16 +134,13 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		Node content = content();
 
-		// 1. Remove title field from schema and add new title with different type
+		// 1. Create update request by removing the title field from schema and adding a new title with different type
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getSchema();
 		schema.removeField("content");
 		schema.addField(FieldUtil.createNumberFieldSchema("content"));
-		container.setSchema(schema);
 
-		// 2. Update the schema client side
-		getClient().getClientSchemaStorage().removeSchema("content");
-		getClient().getClientSchemaStorage().addSchema(schema);
+		ServerSchemaStorage.getInstance().clear();
 
 		// 3. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
@@ -152,6 +149,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
+		expectResponseMessage(future, "migration_invoked", schema.getName());
 		failingLatch(latch);
 
 		// 5. Read node and check additional field
@@ -300,6 +298,21 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 	}
 
+	/**
+	 * Update the schema without applying any changes.
+	 */
+	@Test
+	public void testNoChangesUpdate() {
+		SchemaContainer container = schemaContainer("content");
+		Schema schema = container.getSchema();
+
+		// Update the schema server side
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		latchFor(future);
+		assertSuccess(future);
+		expectResponseMessage(future, "schema_update_no_difference_detected");
+	}
+
 	@Test
 	public void testUpdateAddField() throws Exception {
 
@@ -308,7 +321,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getSchema();
 		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
-		container.setSchema(schema);
 
 		// Update the schema client side
 		getClient().getClientSchemaStorage().removeSchema("content");

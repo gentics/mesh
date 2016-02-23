@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.FIELD_ORDER_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -38,6 +40,18 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 	}
 
 	@Test
+	public void testChangeFieldType() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		schemaA.addField(FieldUtil.createStringFieldSchema("content"));
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaB.addField(FieldUtil.createNumberFieldSchema("content"));
+
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(CHANGEFIELDTYPE).hasProperty("field", "content").hasProperty(TYPE_KEY, "number");
+	}
+
+	@Test
 	public void testSchemaFieldReorder() throws IOException {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
@@ -48,8 +62,7 @@ public class SchemaComparatorSchemaTest extends AbstractDBTest {
 		schemaB.addField(FieldUtil.createHtmlFieldSchema("first"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(FIELD_ORDER_KEY,
-				new String[] { "displayFieldName", "second", "first" });
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(FIELD_ORDER_KEY, new String[] { "displayFieldName", "second", "first" });
 	}
 
 	@Test

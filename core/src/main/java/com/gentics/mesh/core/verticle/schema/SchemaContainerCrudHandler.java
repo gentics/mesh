@@ -12,13 +12,14 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
-import io.vertx.rx.java.ObservableFuture;
 import rx.Observable;
 
 @Component
@@ -40,11 +41,22 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleUpdate(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
-			RootVertex<SchemaContainer> root = getRootVertex(ac); 
+			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			return root.loadObject(ac, "uuid", UPDATE_PERM).flatMap(element -> {
-				return element.update(ac).flatMap(updatedElement -> {
-					return ObservableFuture.just(message(ac, "migration_invoked", updatedElement.getName()));
-				});
+				try {
+					Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+					SchemaChangesListModel model = new SchemaChangesListModel();
+					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getSchema(), requestModel));
+					if (model.getChanges().isEmpty()) {
+						return Observable.just(message(ac, "schema_update_no_difference_detected", element.getName()));
+					} else {
+						return element.applyChanges(ac, model).flatMap(e -> {
+							return Observable.just(message(ac, "migration_invoked", element.getName()));
+						});
+					}
+				} catch (Exception e) {
+					return Observable.error(e);
+				}
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

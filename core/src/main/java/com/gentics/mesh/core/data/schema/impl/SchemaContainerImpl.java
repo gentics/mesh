@@ -7,16 +7,16 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -152,15 +152,9 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
+	@Deprecated
 	public Observable<? extends SchemaContainer> update(InternalActionContext ac) {
-		try {
-			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
-			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(SchemaComparator.getIntance().diff(getSchema(), requestModel));
-			return applyChanges(ac, model).map(i -> this);
-		} catch (Exception e) {
-			return Observable.error(e);
-		}
+		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
 	@Override

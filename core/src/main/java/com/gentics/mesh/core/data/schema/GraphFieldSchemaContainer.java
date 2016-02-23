@@ -135,6 +135,14 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, V ext
 	Observable<GenericMessageResponse> applyChanges(InternalActionContext ac);
 
 	/**
+	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
+	 * 
+	 * @param ac
+	 * @param listOfChanges
+	 */
+	Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges);
+
+	/**
 	 * Load the container root vertex of the container.
 	 * 
 	 * @return

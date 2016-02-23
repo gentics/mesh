@@ -6,6 +6,8 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -113,15 +115,9 @@ public class MicroschemaContainerImpl extends AbstractGraphFieldSchemaContainer<
 	}
 
 	@Override
+	@Deprecated
 	public Observable<? extends MicroschemaContainer> update(InternalActionContext ac) {
-		try {
-			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
-			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MicroschemaComparator.getIntance().diff(getSchema(), requestModel));
-			return applyChanges(ac, model).map(i -> this);
-		} catch (IOException e) {
-			return Observable.error(e);
-		}
+		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration.");
 	}
 
 	@Override

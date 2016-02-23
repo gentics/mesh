@@ -39,6 +39,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 
 		// 1. Create node that uses the microschema
 		Node node = createMicronodeNode();
+		MicroschemaContainer container = microschemaContainer("vcard");
+		assertNull("The microschema should not yet have any changes", container.getNextChange());
 
 		// 2. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
@@ -49,8 +51,6 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 4. Invoke migration
-		MicroschemaContainer container = microschemaContainer("vcard");
-		assertNull("The microschema should not yet have any changes", container.getNextChange());
 		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);

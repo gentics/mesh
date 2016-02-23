@@ -116,13 +116,8 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
 
-	/**
-	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
-	 * 
-	 * @param ac
-	 * @param listOfChanges
-	 */
-	protected Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
+	@Override
+	public Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}

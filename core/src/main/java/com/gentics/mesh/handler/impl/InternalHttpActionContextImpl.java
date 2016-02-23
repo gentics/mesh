@@ -196,22 +196,6 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		return ImageManipulationParameter.fromQuery(query());
 	}
 
-	/**
-	 * Check the result object and fail early when the result failed as well.
-	 * 
-	 * @param result
-	 *            Result that will be checked
-	 * @return false when the result failed, otherwise true
-	 */
-	@Override
-	public boolean failOnError(AsyncResult<?> result) {
-		if (result.failed()) {
-			fail(result.cause());
-			return false;
-		}
-		return true;
-	}
-
 	@Override
 	public void addCookie(Cookie cookie) {
 		getRoutingContext().addCookie(cookie);

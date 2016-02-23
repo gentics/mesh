@@ -190,10 +190,4 @@ public class NodeMigrationActionContextImpl extends AbstractActionContext implem
 		
 	}
 
-	@Override
-	public boolean failOnError(AsyncResult<?> result) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }
