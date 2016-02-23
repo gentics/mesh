@@ -1,9 +1,0 @@
-{
-  "operation" : "ADDFIELD",
-  "properties" : {
-    "field" : "fieldToBeAdded",
-    "after" : "firstField",
-    "type" : "list",
-    "listType" : "html"
-  }
-}
