@@ -81,7 +81,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>Generate JSON files</id>
+						<id>Generate JSON Example files</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
@@ -126,34 +126,6 @@
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/main/assembly/docs.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-					<execution>
-						<id>dist-es-package</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<attach>true</attach>
-							<appendAssemblyId>true</appendAssemblyId>
-							<descriptors>
-								<descriptor>src/main/assembly/elasticsearch-examples.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-					<execution>
-						<id>dist-json-package</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<attach>true</attach>
-							<appendAssemblyId>true</appendAssemblyId>
-							<descriptors>
-								<descriptor>src/main/assembly/mesh-json.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

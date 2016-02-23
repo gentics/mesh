@@ -4,7 +4,6 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -130,20 +129,22 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 		assertNotNull(vcardContainer);
 
+		// 1. Setup new microschema
 		Microschema request = new MicroschemaModel();
 		request.setName(name);
 
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+
+		// 3. Invoke migration
 		Future<GenericMessageResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
 		latchFor(future);
 		assertSuccess(future);
-		expectFailureMessage(future, OK, "blub");
 
-		//		
-		//		assertEquals(request.getName(), restSchema.getName());
-		//		vcardContainer.reload();
-		//		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
-		//		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
-		//		assertEquals("The name should have been updated", name, reloaded.getName());
+		// 4. Wait and assert
+		failingLatch(latch);
+		vcardContainer.reload();
+		assertEquals("The name of the microschema was not updated", name, vcardContainer.getNextVersion().getName());
 
 	}
 

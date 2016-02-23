@@ -105,7 +105,9 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 		}
 
 		// order of fields
-		compareAndAddOrderChange(changes, containerA, containerB, classOfFC);
+		if (containerB.getFields().size() > 0) {
+			compareAndAddOrderChange(changes, containerA, containerB, classOfFC);
+		}
 
 		//name
 		compareAndAddSchemaProperty(changes, SchemaChangeModel.NAME_KEY, containerA.getName(), containerB.getName(), classOfFC);
