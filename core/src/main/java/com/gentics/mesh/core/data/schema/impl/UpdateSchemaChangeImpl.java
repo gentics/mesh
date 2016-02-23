@@ -5,10 +5,12 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CO
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -40,9 +42,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 		}
 
 		String segmentFieldname = getSegmentField();
-		if (segmentFieldname != null) {
-			schema.setSegmentField(segmentFieldname);
-		}
+		schema.setSegmentField(segmentFieldname);
 
 		Boolean containerFlag = getContainerFlag();
 		if (containerFlag != null) {
@@ -79,7 +79,24 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 
 	@Override
 	public String getSegmentField() {
-		return getRestProperty(SEGMENT_FIELD_KEY);
+		String value = getRestProperty(SEGMENT_FIELD_KEY);
+		// We need to handle empty string as null.
+		if (isEmpty(value)) {
+			return null;
+		}
+		return value;
+	}
+
+	@Override
+	public void updateFromRest(SchemaChangeModel restChange) {
+		/***
+		 * Many graph databases can't handle null values. Tinkerpop blueprint contains constrains which avoid setting null values. We store empty string for the
+		 * segment field name instead. It is possible to set setStandardElementConstraints for each tx to false in order to avoid such checks.
+		 */
+		if (restChange.getProperties().containsKey(SEGMENT_FIELD_KEY) && restChange.getProperty(SEGMENT_FIELD_KEY) == null) {
+			restChange.setProperty(SEGMENT_FIELD_KEY, "");
+		}
+		super.updateFromRest(restChange);
 	}
 
 }

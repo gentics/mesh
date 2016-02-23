@@ -205,7 +205,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		// 3. Assert updated schema
 		container.reload();
-		assertNull("The segment field reference should have been set to null", container.getSchema().getSegmentField());
+		assertNull("The segment field reference should have been set to null", container.getNextVersion().getSchema().getSegmentField());
 	}
 
 	@Test
