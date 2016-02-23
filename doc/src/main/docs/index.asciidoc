@@ -1002,7 +1002,6 @@ include::json/updatemicroschema.json[]
 
 === Description
 
-
 Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
 
 Typical usecases for migration scripts are for example dynamic field removal or even custom reformatting of field data.

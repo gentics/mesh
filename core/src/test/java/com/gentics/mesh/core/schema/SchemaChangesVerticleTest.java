@@ -17,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.ivy.util.FileUtil;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -177,7 +179,16 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	}
 
 	@Test
-	public void testUnsetSegmentField() {
+	public void testApplyWithEmptyChangesList() {
+		SchemaContainer container = schemaContainer("content");
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+		latchFor(future);
+		expectFailureMessage(future, BAD_REQUEST, "empty list of changes provided");
+	}
+
+	@Test
+	public void testUnsetSegmentField() throws JsonParseException, JsonMappingException, IOException {
 
 		// 1. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();

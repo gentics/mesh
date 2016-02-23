@@ -54,7 +54,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
 		executeRoute.handler(rc -> {
-			crudHandler.handleExecuteSchemaChanges(InternalActionContext.create(rc));
+			crudHandler.handleApplySchemaChanges(InternalActionContext.create(rc));
 		});
 	}
 
