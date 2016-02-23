@@ -123,6 +123,9 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	 * @param listOfChanges
 	 */
 	protected Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
+		if (listOfChanges.getChanges().isEmpty()) {
+			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
+		}
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.trx(() -> {
 			SchemaChange<?> current = null;

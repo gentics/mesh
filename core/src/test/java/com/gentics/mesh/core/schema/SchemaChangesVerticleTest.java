@@ -184,7 +184,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
 		latchFor(future);
-		expectFailureMessage(future, BAD_REQUEST, "empty list of changes provided");
+		expectException(future, BAD_REQUEST, "schema_migration_no_changes_specified");
 	}
 
 	@Test
