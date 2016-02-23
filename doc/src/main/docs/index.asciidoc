@@ -1,8 +1,6 @@
 = Gentics Mesh Documentation
 
-:es-json: ../elasticsearch-examples
 :raml-json: ../raml/json
-:mesh-json: ../mesh-json
 
 == Gentics Mesh Documentation
 
@@ -582,7 +580,7 @@ The main ```mesh.json``` configuration file contains various settings to configu
 
 [source,json]
 ----
-include::{mesh-json}/mesh-config.json[]
+include::json/mesh-config.json[]
 ----
 
 [options="header"]
@@ -904,8 +902,132 @@ Valid Links:
 
 ==== Resolver
 
-The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh links within the posted text data. This is useful when resolving links for a preview page. 
+The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh links within the posted text data. This is useful when resolving links for a preview page.
 
+=== Schema / Microschema Migration
+
+Mesh provides a changelog like system in order to apply and keep track of schema changes. A schema change may be a single change that adds a new field to the schema or a change which updates the schema properties.
+
+Mesh supports the following change operations:
+
+==== Operation: addfield
+
+[options="header"]
+|======
+| Properties  | Description
+| after       | Name of the field after which the new field should be inserted
+| field       | Name of the field that should be added
+| type        | Type of the field
+| listType    | Optional list type
+|======
+
+
+[source,json]
+----
+include::json/addfield.json[]
+----
+
+
+==== Operation: removefield
+
+[options="header"]
+|======
+| Properties  | Description
+| field       | Name of the field to be removed
+|======
+
+[source,json]
+----
+include::json/removefield.json[]
+----
+
+==== Operation: changefieldtype
+
+[options="header"]
+|======
+| Properties  | Description
+| field       | Name of the field to be modified
+| type        | New field type
+| listType    | (Only applies for lists) New list type
+|======
+
+[source,json]
+----
+include::json/changefieldtype.json[]
+----
+
+==== Operation: updatefield
+
+[options="header"]
+|======
+| Properties       | Description
+| field            | Field to be updated
+| label            | New field label
+|======
+
+[source,json]
+----
+include::json/updatefield.json[]
+----
+
+==== Operation: updateschema
+
+[options="header"]
+|======
+| Properties       | Description
+| description      | New schema description
+| order            | Array of strings that contains the field order 
+| displayFieldname | New displayFieldname value of the schema
+| segmentFieldname | New segmentFieldname value of the schema
+| container        | New container flag of the schema
+|======
+
+[source,json]
+----
+include::json/updateschema.json[]
+----
+
+==== Operation: updatemicroschema
+
+[options="header"]
+|======
+| Properties       | Description
+| description      | New microschema description
+|======
+
+[source,json]
+----
+include::json/updatemicroschema.json[]
+----
+
+=== Description
+
+
+Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
+
+Typical usecases for migration scripts are for example dynamic field removal or even custom reformatting of field data.
+It is also possible to split a single field value into values for two new fields.
+
+The ```/api/v1/schemas/:uuid/diff``` and ```/api/v1/microschemas/:uuid/diff``` endpoints can be used to generate a list of changes by comparing the stored and posted schema.
+
+This list of changes can be modified and posted to ```/api/v1/schemas/:uuid/changes``` for schemas or ```/api/v1/microschemas/:uuid/changes``` for microschemas.
+The posted list of changes will be validated and stored when valid. A schema migration process will be stared which runs in the background.
+
+The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
+
+Additionally to websocket it is possible to query mesh whether a migration is running via the ```/api/v1/admin/migrationStatus``` endpoint.
+
+Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
+
+Please note that by default conflicting data will be removed and this action can only be avoided by specifying a custom migration script.
+
+
+=== Eventbus Bridge
+
+The ```/api/v1/eventbus``` endpoint allows clients to access the mesh eventbus. This may be useful if you want to react on specific mesh events. 
+Currently only schema migration specific events are handled via this endpoint but more will follow.
+
+The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
 
 
 === Image Manipulation
@@ -962,7 +1084,7 @@ Endpoint: ```/api/v1/search/users```
 
 [source,json]
 ----
-include::{es-json}/user.search.json[]
+include::json/user.search.json[]
 ----
 
 ==== Groups
@@ -971,7 +1093,7 @@ Endpoint: ```/api/v1/search/groups```
 
 [source,json]
 ----
-include::{es-json}/group.search.json[]
+include::json/group.search.json[]
 ----
 
 ==== Roles
@@ -980,7 +1102,7 @@ Endpoint: ```/api/v1/search/roles```
 
 [source,json]
 ----
-include::{es-json}/role.search.json[]
+include::json/role.search.json[]
 ----
 
 ==== Nodes
@@ -989,7 +1111,7 @@ Endpoint: ```/api/v1/search/nodes```
 
 [source,json]
 ----
-include::{es-json}/node.search.json[]
+include::json/node.search.json[]
 ----
 
 *Search nodes by schema name*
@@ -1050,7 +1172,7 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
 
 [source,json]
 ----
-include::{es-json}/project.search.json[]
+include::json/project.search.json[]
 ----
 
 ==== Tags
@@ -1059,7 +1181,7 @@ Endpoint: ```/api/v1/search/tags```
 
 [source,json]
 ----
-include::{es-json}/tag.search.json[]
+include::json/tag.search.json[]
 ----
 
 ==== Tag Families
@@ -1068,7 +1190,7 @@ Endpoint: ```/api/v1/search/tagFamilies```
 
 [source,json]
 ----
-include::{es-json}/tagFamily.search.json[]
+include::json/tagFamily.search.json[]
 ----
 
 ==== Schemas
@@ -1077,7 +1199,7 @@ Endpoint: ```/api/v1/search/schemas```
 
 [source,json]
 ----
-include::{es-json}/schema.search.json[]
+include::json/schema.search.json[]
 ----
 
 ==== Microschemas
@@ -1086,7 +1208,7 @@ Endpoint: ```/api/v1/search/microschemas```
 
 [source,json]
 ----
-include::{es-json}/microschema.search.json[]
+include::json/microschema.search.json[]
 ----
 
 == Mesh Administration UI

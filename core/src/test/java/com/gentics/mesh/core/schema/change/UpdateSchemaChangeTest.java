@@ -122,7 +122,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		SchemaChangeModel model = new SchemaChangeModel();
 		model.setMigrationScript("custom");
 		model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
-		model.setProperty(SchemaChangeModel.CONTAINER_FIELD_KEY, true);
+		model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
 		model.setProperty(SchemaChangeModel.DESCRIPTION_KEY, "description");
 		model.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, "segmentField");
 		model.setProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY, "displayField");
@@ -177,7 +177,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		assertEquals("script", model.getMigrationScript());
 		assertEquals("someName", model.getProperty(SchemaChangeModel.NAME_KEY));
 		assertEquals("someDescription", model.getProperty(SchemaChangeModel.DESCRIPTION_KEY));
-		assertTrue("The container flag should have been set.", model.getProperty(SchemaChangeModel.CONTAINER_FIELD_KEY));
+		assertTrue("The container flag should have been set.", model.getProperty(SchemaChangeModel.CONTAINER_FLAG_KEY));
 
 	}
 }

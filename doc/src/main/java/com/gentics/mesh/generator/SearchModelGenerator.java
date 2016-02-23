@@ -67,7 +67,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "target" + File.separator + "elasticsearch-examples";
+			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "json";
 		}
 		outputDir = new File(baseDirProp);
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");

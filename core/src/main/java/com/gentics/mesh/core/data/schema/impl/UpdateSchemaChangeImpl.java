@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FIELD_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -64,12 +64,12 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 
 	@Override
 	public void setContainerFlag(Boolean flag) {
-		setRestProperty(CONTAINER_FIELD_KEY, flag);
+		setRestProperty(CONTAINER_FLAG_KEY, flag);
 	}
 
 	@Override
 	public Boolean getContainerFlag() {
-		return getRestProperty(CONTAINER_FIELD_KEY);
+		return getRestProperty(CONTAINER_FLAG_KEY);
 	}
 
 	@Override

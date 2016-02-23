@@ -26,7 +26,7 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String SEGMENT_FIELD_KEY = "segmentFieldname";
 
-	public static final String CONTAINER_FIELD_KEY = "containerFieldname";
+	//public static final String CONTAINER_FIELD_KEY = "containerFieldname";
 
 	public static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
 

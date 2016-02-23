@@ -91,7 +91,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
-								<argument>com.gentics.mesh.generator.MeshJsonGenerator</argument>
+								<argument>com.gentics.mesh.generator.MeshExampleGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>

@@ -17,18 +17,6 @@ import com.gentics.mesh.core.rest.schema.impl.AbstractFieldSchemaContainer;
  */
 public class MicroschemaModel extends AbstractFieldSchemaContainer implements Microschema, RestModel {
 
-	private String description;
-
-	@Override
-	public String getDescription() {
-		return description;
-	}
-
-	@Override
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	@Override
 	public void validate() {
 		super.validate();
