@@ -34,11 +34,12 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 
 	@Override
 	public List<String> getOrder() {
-		String[] fieldNames = getRestProperty(SchemaChangeModel.FIELD_ORDER_KEY);
+		Object[] fieldNames = getRestProperty(SchemaChangeModel.FIELD_ORDER_KEY);
 		if (fieldNames == null) {
 			return null;
 		}
-		return Arrays.asList(fieldNames);
+		String[] stringArray = Arrays.copyOf(fieldNames, fieldNames.length, String[].class);
+		return Arrays.asList(stringArray);
 	}
 
 	@Override

@@ -322,6 +322,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Schema schema = container.getSchema();
 		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
 
+		ServerSchemaStorage.getInstance().clear();
+
 		// Update the schema client side
 		getClient().getClientSchemaStorage().removeSchema("content");
 		getClient().getClientSchemaStorage().addSchema(schema);
@@ -337,7 +339,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(nodeFuture);
 		NodeResponse response = nodeFuture.result();
 		assertNotNull(response);
-		assertNotNull(response.getField("extraname"));
 
 		// Update the node and set the new field
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -351,6 +352,14 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertNotNull(response);
 		assertNotNull(response.getField("extraname"));
 		assertEquals("sometext", ((StringFieldImpl) response.getField("extraname")).getString());
+
+		// Read node and check additional field
+		nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
+		latchFor(nodeFuture);
+		assertSuccess(nodeFuture);
+		response = nodeFuture.result();
+		assertNotNull(response);
+		assertNotNull(response.getField("extraname"));
 
 	}
 
