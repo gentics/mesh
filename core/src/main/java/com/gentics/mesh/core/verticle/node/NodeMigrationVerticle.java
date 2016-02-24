@@ -77,7 +77,6 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 		});
 
 		vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
-
 			String microschemaUuid = message.headers().get(UUID_HEADER);
 			if (log.isDebugEnabled()) {
 				log.debug("Micronode Migration for microschema " + microschemaUuid + " was requested");

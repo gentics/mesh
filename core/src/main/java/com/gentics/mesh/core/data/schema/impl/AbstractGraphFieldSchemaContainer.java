@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -29,6 +30,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.rx.java.ObservableFuture;
 import rx.Observable;
 
@@ -161,6 +163,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 			DeliveryOptions options = new DeliveryOptions();
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getUuid());
 			Mesh.vertx().eventBus().send(getMigrationAddress(), null, options);
+
 			return ObservableFuture.just(message(ac, "migration_invoked", getName()));
 		});
 
