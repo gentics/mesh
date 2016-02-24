@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VER
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -30,7 +29,6 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.JsonObject;
 import io.vertx.rx.java.ObservableFuture;
 import rx.Observable;
 
@@ -146,6 +144,8 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 			// Create and set the next version of the schema
 			V nextVersion = getGraph().addFramedVertex(getContainerClass());
+			// The new version inherits the previous version's uuid
+			nextVersion.setUuid(getUuid());
 			nextVersion.setSchema(resultingSchema);
 
 			// Check for conflicting container names
@@ -158,6 +158,11 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 			nextVersion.setName(resultingSchema.getName());
 			setNextVersion(nextVersion);
+
+			// Update the root vertex
+			RootVertex<V> root = getRoot();
+			root.removeItem(nextVersion.getPreviousVersion());
+			root.addItem(nextVersion);
 
 			// Make sure to unlink the old schema container from the container root and assign the new version to the root.
 			DeliveryOptions options = new DeliveryOptions();

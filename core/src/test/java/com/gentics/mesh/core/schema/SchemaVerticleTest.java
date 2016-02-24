@@ -248,23 +248,8 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Update tests are covered by dedicated test class")
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
-		String name = "new-name";
-		SchemaContainer schema = schemaContainer("content");
-		Schema request = schema.getSchema();
-		request.setName(name);
-
-		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		expectResponseMessage(future, "migration_invoked", "content");
-
-		//		GenericMessageResponse message = future.result();
-		//		assertEquals(request.getName(),message.get.getName());
-		//		schema.reload();
-		//		assertEquals("The name of the schema was not updated", name, schema.getName());
-		//		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first();
-		//		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 

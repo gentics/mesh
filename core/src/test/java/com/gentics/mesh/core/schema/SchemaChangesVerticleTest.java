@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -38,6 +39,28 @@ import com.gentics.mesh.util.FieldUtil;
 import io.vertx.core.Future;
 
 public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
+
+	@Test
+	public void testUpdateName() throws HttpStatusCodeErrorException, Exception {
+		String name = "new-name";
+		SchemaContainer container = schemaContainer("content");
+		Schema request = container.getSchema();
+		request.setName(name);
+
+		ServerSchemaStorage.getInstance().clear();
+
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), request);
+		latchFor(future);
+		assertSuccess(future);
+		expectResponseMessage(future, "migration_invoked", "content");
+
+		container.reload();
+		assertEquals("The name of the old version should not be updated", "content", container.getName());
+		assertEquals("The name of the schema was not updated", name, container.getNextVersion().getName());
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(container.getUuid()).toBlocking().first();
+		assertEquals("The name should have been updated", name, reloaded.getName());
+
+	}
 
 	@Test
 	public void testBlockingMigrationStatus() throws InterruptedException, IOException {
