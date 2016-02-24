@@ -15,12 +15,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
@@ -121,12 +123,13 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Test
 	@Override
 	public void testDocumentUpdate() throws Exception {
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+
 		// 1. Create a new schema
 		final String schemaName = "newschemaname";
 		Schema schema = createSchema(schemaName);
 
 		// 2. Setup latch for migration/schema update
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 		String newSchemaName = "updatedschemaname";
 		updateSchema(schema.getUuid(), newSchemaName);
 

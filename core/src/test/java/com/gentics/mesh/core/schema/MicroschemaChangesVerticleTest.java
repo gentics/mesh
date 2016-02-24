@@ -37,15 +37,15 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 	@Test
 	public void testRemoveField() throws Exception {
 
-		// 3. Setup eventbus bridge latch
+		// 1. Setup eventbus bridge latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
-		// 1. Create node that uses the microschema
+		// 2. Create node that uses the microschema
 		Node node = createMicronodeNode();
 		MicroschemaContainer container = microschemaContainer("vcard");
 		assertNull("The microschema should not yet have any changes", container.getNextChange());
 
-		// 2. Create changes
+		// 3. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
 		listOfChanges.getChanges().add(change);
@@ -79,9 +79,6 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(microschemaFieldSchema);
 		schemaContainer("folder").setSchema(schema);
-
-		//		getClient().getClientSchemaStorage().clear();
-		//		ServerSchemaStorage.getInstance().clear();
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();

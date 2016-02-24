@@ -56,6 +56,14 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, V ext
 	V getNextVersion();
 
 	/**
+	 * Return the version of the container.
+	 * 
+	 * @param version
+	 * @return
+	 */
+	V findVersion(String version);
+
+	/**
 	 * Set the next version of the schema container.
 	 * 
 	 * @param container

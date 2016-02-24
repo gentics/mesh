@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -29,7 +30,6 @@ import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.rx.java.ObservableFuture;
 import rx.Observable;
 
 /**
@@ -70,6 +70,28 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public V getNextVersion() {
 		return out(HAS_VERSION).has(getContainerClass()).nextOrDefaultExplicit(getContainerClass(), null);
+	}
+
+	@Override
+	public V findVersion(String version) {
+		if (String.valueOf(getVersion()).equals(version)) {
+			return (V) this;
+		}
+
+		// Search in previous version
+		for (V current = getPreviousVersion(); current != null; current = current.getPreviousVersion()) {
+			if (String.valueOf(current.getVersion()).equals(version)) {
+				return current;
+			}
+		}
+		// Search in next versions
+		for (V current = getNextVersion(); current != null; current = current.getNextVersion()) {
+			if (String.valueOf(current.getVersion()).equals(version)) {
+				return current;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -164,12 +186,20 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 			root.removeItem(nextVersion.getPreviousVersion());
 			root.addItem(nextVersion);
 
-			// Make sure to unlink the old schema container from the container root and assign the new version to the root.
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getUuid());
-			Mesh.vertx().eventBus().send(getMigrationAddress(), null, options);
+			// Update the search index
+			return addIndexBatch(UPDATE_ACTION);
+		}).process().map(i -> {
+			return db.noTrx(() -> {
+				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
+				DeliveryOptions options = new DeliveryOptions();
+				options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getUuid());
+				options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(this.getVersion()));
+				options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(this.getNextVersion().getVersion()));
+				Mesh.vertx().eventBus().send(getMigrationAddress(), null, options);
 
-			return ObservableFuture.just(message(ac, "migration_invoked", getName()));
+				return message(ac, "migration_invoked", getName());
+			});
+
 		});
 
 	}

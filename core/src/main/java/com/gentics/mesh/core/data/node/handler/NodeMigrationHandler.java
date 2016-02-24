@@ -65,27 +65,17 @@ public class NodeMigrationHandler extends AbstractHandler {
 	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	/**
-	 * Migrate all nodes referencing the given schema container to the latest
-	 * version of the schema
+	 * Migrate all nodes referencing the given schema container to the latest version of the schema
 	 *
-	 * @param schemaContainer
-	 *            schema container
-	 * @param statusMBean status MBean
+	 * @param fromSchemaContainer
+	 * @param toSchemaContainer
+	 * @param statusMBean
+	 *            status MBean
 	 */
-	public Observable<Void> migrateNodes(SchemaContainer schemaContainer, NodeMigrationStatus statusMBean) {
-		if (schemaContainer == null) {
-			return Observable.error(new Exception("Cannot start node migration without schema"));
-		}
-		// get the next schema container (if any)
-		SchemaContainer nextVersion = db.noTrx(schemaContainer::getNextVersion);
-
-		// no next version, migration is done
-		if (nextVersion == null) {
-			return Observable.just(null);
-		}
+	public Observable<Void> migrateNodes(SchemaContainer fromSchemaContainer, SchemaContainer toSchemaContainer, NodeMigrationStatus statusMBean) {
 
 		// get the nodes, that need to be transformed
-		List<? extends Node> nodes = db.noTrx(schemaContainer::getNodes);
+		List<? extends Node> nodes = db.noTrx(fromSchemaContainer::getNodes);
 
 		// no nodes, migration is done
 		if (nodes.isEmpty()) {
@@ -100,7 +90,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
 		try (NoTrx noTrx = db.noTrx()) {
-			prepareMigration(schemaContainer, migrationScripts, touchedFields);
+			prepareMigration(fromSchemaContainer, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Observable.error(e);
 		}
@@ -114,12 +104,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 						NodeResponse restModel = node.transformToRestSync(ac, languageTag).toBlocking().last();
 						NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
-						Schema oldSchema = schemaContainer.getSchema();
-						Schema newSchema = nextVersion.getSchema();
+						Schema oldSchema = fromSchemaContainer.getSchema();
+						Schema newSchema = toSchemaContainer.getSchema();
 						migrate(ac, container, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
 					}
 					// migrate the schema reference to the new version
-					node.setSchemaContainer(nextVersion);
+					node.setSchemaContainer(toSchemaContainer);
 
 					return null;
 				} catch (Exception e1) {
@@ -142,25 +132,18 @@ public class NodeMigrationHandler extends AbstractHandler {
 	/**
 	 * Migrate all micronodes referencing the given microschema container to the latest version
 	 *
-	 * @param microschemaContainer microschema container
-	 * @param statusMBean JMX Status bean
+	 * @param fromContainer
+	 *            microschema container to start from
+	 * @param toContainer
+	 *            microschema container to end with
+	 * @param statusMBean
+	 *            JMX Status bean
 	 * @return
 	 */
-	public Observable<Void> migrateMicronodes(MicroschemaContainer microschemaContainer, NodeMigrationStatus statusMBean) {
-		if (microschemaContainer == null) {
-			return Observable.error(new Exception("Cannot start micronode migration without microschema"));
-		}
-		// get the next schema container (if any)
-		MicroschemaContainer nextVersion = db.noTrx(microschemaContainer::getNextVersion);
-
-		// no next version, migration is done
-		if (nextVersion == null) {
-			return Observable.just(null);
-		}
+	public Observable<Void> migrateMicronodes(MicroschemaContainer fromContainer, MicroschemaContainer toContainer, NodeMigrationStatus statusMBean) {
 
 		// get the nodes, that need to be transformed
-		// TODO get micronodes
-		List<? extends Micronode> micronodes = db.noTrx(microschemaContainer::getMicronodes);
+		List<? extends Micronode> micronodes = db.noTrx(fromContainer::getMicronodes);
 
 		// no micronodes, migration is done
 		if (micronodes.isEmpty()) {
@@ -175,7 +158,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
 		try (NoTrx noTrx = db.noTrx()) {
-			prepareMigration(microschemaContainer, migrationScripts, touchedFields);
+			prepareMigration(fromContainer, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Observable.error(e);
 		}
@@ -191,11 +174,11 @@ public class NodeMigrationHandler extends AbstractHandler {
 					ac.setLanguageTags(Arrays.asList(container.getLanguage().getLanguageTag()));
 
 					MicronodeResponse restModel = micronode.transformToRestSync(ac).toBlocking().last();
-					Microschema oldSchema = microschemaContainer.getSchema();
-					Microschema newSchema = nextVersion.getSchema();
+					Microschema oldSchema = fromContainer.getSchema();
+					Microschema newSchema = toContainer.getSchema();
 					migrate(ac, micronode, restModel, oldSchema, newSchema, touchedFields, migrationScripts, MicronodeResponse.class);
 					// migrate the microschema reference to the new version
-					micronode.setMicroschemaContainer(nextVersion);
+					micronode.setMicroschemaContainer(toContainer);
 
 					return null;
 				} catch (Exception e1) {
@@ -218,13 +201,20 @@ public class NodeMigrationHandler extends AbstractHandler {
 	/**
 	 * Migrate the given container
 	 * 
-	 * @param ac context
-	 * @param container container to migrate
-	 * @param restModel rest model of the container
-	 * @param oldSchema old schema
-	 * @param newSchema new schema
-	 * @param touchedFields set of touched fields
-	 * @param migrationScripts list of migration scripts
+	 * @param ac
+	 *            context
+	 * @param container
+	 *            container to migrate
+	 * @param restModel
+	 *            rest model of the container
+	 * @param oldSchema
+	 *            old schema
+	 * @param newSchema
+	 *            new schema
+	 * @param touchedFields
+	 *            set of touched fields
+	 * @param migrationScripts
+	 *            list of migration scripts
 	 * @param clazz
 	 * @throws Exception
 	 */
@@ -233,14 +223,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 		// collect the files for all binary fields (keys are the sha512sums,
 		// values are filepaths to the binary files)
-		Map<String, String> filePaths = container.getFields(oldSchema).stream()
-				.filter(f -> f instanceof BinaryGraphField).map(f -> (BinaryGraphField) f)
-				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath,
-						(existingPath, newPath) -> existingPath));
+		Map<String, String> filePaths = container.getFields(oldSchema).stream().filter(f -> f instanceof BinaryGraphField)
+				.map(f -> (BinaryGraphField) f)
+				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
 
 		// remove all touched fields (if necessary, they will be readded later)
-		container.getFields(oldSchema).stream().filter(f -> touchedFields.contains(f.getFieldKey()))
-				.forEach(GraphField::removeField);
+		container.getFields(oldSchema).stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(GraphField::removeField);
 
 		String nodeJson = JsonUtil.toJson(restModel);
 
@@ -275,10 +263,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// create a map containing fieldnames (as keys) and
 		// sha512sums of the supposedly stored binary contents
 		// of all binary fields
-		Map<String, String> existingBinaryFields = newSchema.getFields().stream()
-				.filter(f -> "binary".equals(f.getType()))
-				.map(f -> Tuple.tuple(f.getName(), (BinaryField) transformedRestModel.getFields().get(f.getName())))
-				.filter(t -> t.v2() != null).collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
+		Map<String, String> existingBinaryFields = newSchema.getFields().stream().filter(f -> "binary".equals(f.getType()))
+				.map(f -> Tuple.tuple(f.getName(), (BinaryField) transformedRestModel.getFields().get(f.getName()))).filter(t -> t.v2() != null)
+				.collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
 
 		// check for every binary field in the migrated node,
 		// whether the binary file is present, if not, copy it
@@ -289,11 +276,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 			BinaryGraphField binaryField = container.getBinary(fieldName);
 			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
-				Buffer buffer = Buffer
-						.newInstance(Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum)));
-				nodeFieldAPIHandler
-						.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath())
-						.toBlocking().last();
+				Buffer buffer = Buffer.newInstance(Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum)));
+				nodeFieldAPIHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath()).toBlocking().last();
 				binaryField.setSHA512Sum(sha512Sum);
 			}
 		});
@@ -302,20 +286,21 @@ public class NodeMigrationHandler extends AbstractHandler {
 	/**
 	 * Collect the migration scripts and set of touched fields when migrating the given container into the next version
 	 *
-	 * @param container container
-	 * @param migrationScripts list of migration scripts (will be modified)
-	 * @param touchedFields set of touched fields (will be modified)
+	 * @param fromContainer
+	 *            Container which contains the expected migration changes
+	 * @param migrationScripts
+	 *            List of migration scripts (will be modified)
+	 * @param touchedFields
+	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(GraphFieldSchemaContainer<?, ?, ?> container,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields)
-					throws IOException {
-		SchemaChange<?> change = container.getNextChange();
+	protected void prepareMigration(GraphFieldSchemaContainer<?, ?, ?> fromContainer,
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
+		SchemaChange<?> change = fromContainer.getNextChange();
 		while (change != null) {
 			String migrationScript = change.getMigrationScript();
 			if (migrationScript != null) {
-				migrationScript = migrationScript
-						+ "\nnode = JSON.stringify(migrate(JSON.parse(node), fieldname, convert));";
+				migrationScript = migrationScript + "\nnode = JSON.stringify(migrate(JSON.parse(node), fieldname, convert));";
 				migrationScripts.add(Tuple.tuple(migrationScript, change.getMigrationScriptContext()));
 			}
 

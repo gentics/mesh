@@ -47,11 +47,12 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
 					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getSchema(), requestModel));
+					String schemaName = element.getName();
 					if (model.getChanges().isEmpty()) {
-						return Observable.just(message(ac, "schema_update_no_difference_detected", element.getName()));
+						return Observable.just(message(ac, "schema_update_no_difference_detected", schemaName));
 					} else {
 						return element.applyChanges(ac, model).flatMap(e -> {
-							return Observable.just(message(ac, "migration_invoked", element.getName()));
+							return Observable.just(message(ac, "migration_invoked", schemaName));
 						});
 					}
 				} catch (Exception e) {
