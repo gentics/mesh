@@ -40,7 +40,6 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.Tuple;
-import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
