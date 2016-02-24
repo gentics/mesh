@@ -47,18 +47,20 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
 		listOfChanges.getChanges().add(change);
 
-		// 3. Setup eventbus bridged latch
+		// 3. Setup eventbus bridge latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
 		// 4. Invoke migration
+		assertNull("The schema should not yet have any changes", container.getNextChange());
 		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);
-		container.reload();
-		assertNotNull("The change should have been added to the schema.", container.getNextChange());
 
 		// 5. Wait for migration to finish
 		failingLatch(latch);
+
+		container.reload();
+		assertNotNull("The change should have been added to the schema.", container.getNextChange());
 
 		// 6. Assert migrated node
 		node.reload();

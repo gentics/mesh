@@ -86,6 +86,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer schema = schemaContainer(originalSchemaName);
 		Schema request = schema.getSchema();
 
+		ServerSchemaStorage.getInstance().clear();
+
 		// Update name to folder to create a conflict
 		request.setName(name);
 
@@ -233,31 +235,31 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	@Test
 	public void testRemoveField() throws Exception {
 
+		// 1. Verify test data
 		Node node = content();
-		assertNotNull("The node should have been created.", node);
+		SchemaContainer container = schemaContainer("content");
 		assertNotNull("The node should have a html graph field", node.getGraphFieldContainer("en").getHtml("content"));
 
-		// 1. Create changes
+		// 2. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("content");
 		listOfChanges.getChanges().add(change);
 
-		// 2. Setup eventbus bridged latch
+		// 3. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
-		// 3. Invoke migration
-		SchemaContainer container = schemaContainer("content");
+		// 4. Invoke migration
 		assertNull("The schema should not yet have any changes", container.getNextChange());
 		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);
 
-		// 6. Wait for migration to finish
+		// 5. Wait for migration to finish
 		failingLatch(latch);
 		container.reload();
 		assertNotNull("The change should have been added to the schema.", container.getNextChange());
 
-		// 7. Assert migrated node
+		// 6. Assert migrated node
 		node.reload();
 		NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
 		fieldContainer.reload();
@@ -316,8 +318,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 	@Test
 	public void testUpdateAddField() throws Exception {
 
+		// 1. Setup schema
 		Node content = content();
-
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getSchema();
 		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
@@ -328,10 +330,14 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		getClient().getClientSchemaStorage().removeSchema("content");
 		getClient().getClientSchemaStorage().addSchema(schema);
 
-		// Update the schema server side
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+
+		// 3. Update the schema server side
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
+		failingLatch(latch);
 
 		// Read node and check additional field
 		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
@@ -370,7 +376,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getSchema();
 		schema.removeField("content");
-		container.setSchema(schema);
 
 		// Update the schema client side
 		getClient().getClientSchemaStorage().removeSchema("content");

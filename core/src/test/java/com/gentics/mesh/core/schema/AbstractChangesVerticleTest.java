@@ -44,8 +44,8 @@ public abstract class AbstractChangesVerticleTest extends AbstractRestVerticleTe
 		list.add(eventbusVerticle);
 		list.add(adminVerticle);
 		list.add(nodeVerticle);
-		list.add(microschemaVerticle);
 		list.add(schemaVerticle);
+		list.add(microschemaVerticle);
 		return list;
 	}
 
