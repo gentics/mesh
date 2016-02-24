@@ -40,6 +40,7 @@ import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
 import com.gentics.mesh.util.Tuple;
+import com.sun.jna.platform.win32.Winsvc.SC_HANDLE;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -79,9 +80,12 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		Tuple<SchemaContainer, SchemaContainer> tuple = createDummySchemaWithChanges(fieldName);
 		SchemaContainer containerA = tuple.v1();
+		SchemaContainer containerB = tuple.v2();
 
 		DeliveryOptions options = new DeliveryOptions();
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(containerA.getVersion()));
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(containerB.getVersion()));
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 
 		// Trigger migration by sending a event
@@ -120,6 +124,8 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		DeliveryOptions options = new DeliveryOptions();
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(containerA.getVersion()));
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(containerB.getVersion()));
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 		vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
@@ -238,6 +244,8 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		DeliveryOptions options = new DeliveryOptions();
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(containerA.getVersion()));
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(containerB.getVersion()));
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 		vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
