@@ -63,7 +63,7 @@ public class SchemaTest {
 		Schema schema = new SchemaModel();
 		schema.setName("dummySchema");
 		schema.setDisplayField("name");
-		schema.setSegmentField("name");
+		schema.setSegmentField("name_2");
 		schema.setContainer(true);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.addField(FieldUtil.createHtmlFieldSchema("name_1").setLabel("label_1").setRequired(true));
@@ -135,11 +135,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMinimalSchemaValid() throws MeshJsonException {
-		Schema schema = new SchemaModel();
-		schema.setName("test");
-		schema.setSegmentField("name");
-		schema.setDisplayField("name");
-		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		Schema schema = FieldUtil.createMinimalValidSchema();
 		schema.validate();
 	}
 
@@ -231,12 +227,23 @@ public class SchemaTest {
 		expectErrorOnValidate(schema, "schema_error_displayfield_type_invalid", "name");
 	}
 
+	@Test
+	public void testSegmentFieldBinaryField() {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.addField(FieldUtil.createBinaryFieldSchema("binaryField"));
+		schema.setSegmentField("binaryField");
+		schema.validate();
+	}
+
 	/**
 	 * The segment field must always point to a string or binary field.
 	 */
 	@Test
 	public void testSegmentFieldToNoStringOrBinaryFieldInvalid() {
-
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.addField(FieldUtil.createNumberFieldSchema("numberField"));
+		schema.setSegmentField("numberField");
+		expectErrorOnValidate(schema, "schema_error_segmentfield_type_invalid", "number");
 	}
 
 	@Test

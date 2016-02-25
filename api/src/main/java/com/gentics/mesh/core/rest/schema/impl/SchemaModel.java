@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -74,6 +75,12 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 
 		if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
 			throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
+		}
+
+		FieldSchema segmentFieldSchema = getField(getSegmentField());
+		if (segmentFieldSchema != null
+				&& (!((segmentFieldSchema instanceof StringFieldSchema) || (segmentFieldSchema instanceof BinaryFieldSchema)))) {
+			throw error(BAD_REQUEST, "schema_error_segmentfield_type_invalid", segmentFieldSchema.getType());
 		}
 
 		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
