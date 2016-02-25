@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -25,7 +25,7 @@ public class UserRestTest {
 	@Test
 	public void testUserJson() throws JsonParseException, JsonMappingException, IOException {
 
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("content");
 
 		ClientSchemaStorage clientSchemaStorage = new ClientSchemaStorage();

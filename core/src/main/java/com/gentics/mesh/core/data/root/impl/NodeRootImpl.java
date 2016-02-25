@@ -21,13 +21,13 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -121,7 +121,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getSchemaStorage();
+		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getInstance();
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 

@@ -4,12 +4,14 @@ import com.gentics.mesh.graphdb.ferma.DelegatingFramedTransactionalOrientGraph;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
 public class OrientDBTrx extends AbstractTrx {
 
 	public OrientDBTrx(OrientGraphFactory factory) {
-		FramedTransactionalGraph transaction = new DelegatingFramedTransactionalOrientGraph(factory.getTx(), true, false);
+		OrientGraph tx = factory.getTx();
+		FramedTransactionalGraph transaction = new DelegatingFramedTransactionalOrientGraph(tx, true, false);
 		init(transaction);
 	}
 

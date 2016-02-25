@@ -1,6 +1,7 @@
 package com.gentics.mesh.util;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -22,8 +23,27 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
+import com.gentics.mesh.core.rest.schema.DateFieldSchema;
+import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 /**
@@ -31,8 +51,42 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
  */
 public final class FieldUtil {
 
-	public static StringFieldSchema createStringFieldSchema(String defaultString) {
+	/**
+	 * Create a minimal valid test schema.
+	 * 
+	 * @return
+	 */
+	public static Schema createMinimalValidSchema() {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setDisplayField("displayFieldName");
+		schema.addField(createStringFieldSchema("displayFieldName"));
+		schema.validate();
+		return schema;
+	}
+
+	/**
+	 * Create a minimal valid test microschema.
+	 * 
+	 * @return
+	 */
+	public static Microschema createMinimalValidMicroschema() {
+		Microschema schema = new MicroschemaModel();
+		schema.setName("test");
+		schema.validate();
+		return schema;
+	}
+
+	/**
+	 * Create a new string field schema.
+	 * 
+	 * @param name
+	 *            Name of the field schema
+	 * @return
+	 */
+	public static StringFieldSchema createStringFieldSchema(String name) {
 		StringFieldSchema fieldSchema = new StringFieldSchemaImpl();
+		fieldSchema.setName(name);
 		return fieldSchema;
 	}
 
@@ -72,7 +126,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createNodeListField(String...uuids) {
+	public static Field createNodeListField(String... uuids) {
 		NodeFieldListImpl field = new NodeFieldListImpl();
 		for (String uuid : uuids) {
 			field.add(new NodeFieldListItemImpl(uuid));
@@ -80,7 +134,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createBooleanListField(Boolean...values) {
+	public static Field createBooleanListField(Boolean... values) {
 		BooleanFieldListImpl field = new BooleanFieldListImpl();
 		for (Boolean value : values) {
 			field.add(value);
@@ -88,7 +142,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createDateListField(Long...values) {
+	public static Field createDateListField(Long... values) {
 		DateFieldListImpl field = new DateFieldListImpl();
 		for (Long value : values) {
 			field.add(value);
@@ -104,7 +158,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createHtmlListField(String...values) {
+	public static Field createHtmlListField(String... values) {
 		HtmlFieldListImpl field = new HtmlFieldListImpl();
 		for (String value : values) {
 			field.add(value);
@@ -121,7 +175,7 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeField createNewMicronodeField(String microschema, Tuple<String, Field>...fields) {
+	public static MicronodeField createNewMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = new MicronodeResponse();
 		MicroschemaReference microschemaReference = new MicroschemaReference();
 		microschemaReference.setName(microschema);
@@ -136,18 +190,73 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>...fields) {
-		MicronodeResponse field = (MicronodeResponse)createNewMicronodeField(microschema, fields);
+	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>... fields) {
+		MicronodeResponse field = (MicronodeResponse) createNewMicronodeField(microschema, fields);
 		field.setUuid(UUIDUtil.randomUUID());
 
 		return field;
 	}
 
-	public static Field createMicronodeListField(MicronodeField...micronodes) {
+	public static Field createMicronodeListField(MicronodeField... micronodes) {
 		MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 		for (MicronodeField micronode : micronodes) {
 			field.add(micronode);
 		}
+		return field;
+	}
+
+	public static BinaryFieldSchema createBinaryFieldSchema(String name) {
+		BinaryFieldSchema field = new BinaryFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static BooleanFieldSchema createBooleanFieldSchema(String name) {
+		BooleanFieldSchema field = new BooleanFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static DateFieldSchema createDateFieldSchema(String name) {
+		DateFieldSchema field = new DateFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static HtmlFieldSchema createHtmlFieldSchema(String name) {
+		HtmlFieldSchema field = new HtmlFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static MicronodeFieldSchema createMicronodeFieldSchema(String name) {
+		MicronodeFieldSchema field = new MicronodeFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static NodeFieldSchema createNodeFieldSchema(String name) {
+		NodeFieldSchema field = new NodeFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static NumberFieldSchema createNumberFieldSchema(String name) {
+		NumberFieldSchema field = new NumberFieldSchemaImpl();
+		field.setName(name);
+		return field;
+	}
+
+	public static ListFieldSchema createListFieldSchema(String name, String listType) {
+		ListFieldSchema field = new ListFieldSchemaImpl();
+		field.setName(name);
+		field.setListType(listType);
+		return field;
+	}
+
+	public static ListFieldSchema createListFieldSchema(String name) {
+		ListFieldSchema field = new ListFieldSchemaImpl();
+		field.setName(name);
 		return field;
 	}
 }

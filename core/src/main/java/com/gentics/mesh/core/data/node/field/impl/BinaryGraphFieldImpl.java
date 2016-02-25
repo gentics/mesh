@@ -171,4 +171,8 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		return binaryFile;
 	}
 
+	@Override
+	public void removeField() {
+		remove();
+	}
 }

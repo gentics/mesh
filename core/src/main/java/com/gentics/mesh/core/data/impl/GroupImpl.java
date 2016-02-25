@@ -8,12 +8,11 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -71,11 +70,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addUser(User user) {
-		setLinkInTo(user.getImpl(), HAS_USER);
+		setUniqueLinkInTo(user.getImpl(), HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles()) {
-			user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
 		}
 	}
 
@@ -93,11 +92,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	public void addRole(Role role) {
-		setLinkInTo(role.getImpl(), HAS_ROLE);
+		setUniqueLinkInTo(role.getImpl(), HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (User user : getUsers()) {
-			user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+			user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
 		}
 
 	}
@@ -145,44 +144,40 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
+	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+		Set<Observable<GroupResponse>> obs = new HashSet<>();
 
-			Set<Observable<GroupResponse>> obs = new HashSet<>();
+		GroupResponse restGroup = new GroupResponse();
+		restGroup.setName(getName());
 
-			GroupResponse restGroup = new GroupResponse();
-			restGroup.setName(getName());
+		// for (User user : group.getUsers()) {
+		// String name = user.getUsername();
+		// if (name != null) {
+		// restGroup.getUsers().add(name);
+		// }
+		// Collections.sort(restGroup.getUsers());
 
-			// for (User user : group.getUsers()) {
-			// String name = user.getUsername();
-			// if (name != null) {
-			// restGroup.getUsers().add(name);
-			// }
-			// Collections.sort(restGroup.getUsers());
-
-			for (Role role : getRoles()) {
-				String name = role.getName();
-				if (name != null) {
-					restGroup.getRoles().add(role.transformToReference(ac));
-				}
+		for (Role role : getRoles()) {
+			String name = role.getName();
+			if (name != null) {
+				restGroup.getRoles().add(role.transformToReference(ac));
 			}
+		}
 
-			// // Set<Group> children = groupRepository.findChildren(group);
-			// Set<Group> children = group.getGroups();
-			// for (Group childGroup : children) {
-			// restGroup.getGroups().add(childGroup.getName());
-			// }
+		// // Set<Group> children = groupRepository.findChildren(group);
+		// Set<Group> children = group.getGroups();
+		// for (Group childGroup : children) {
+		// restGroup.getGroups().add(childGroup.getName());
+		// }
 
-			// Add common fields
-			obs.add(fillCommonRestFields(ac, restGroup));
+		// Add common fields
+		obs.add(fillCommonRestFields(ac, restGroup));
 
-			// Role permissions
-			obs.add(setRolePermissions(ac, restGroup));
+		// Role permissions
+		obs.add(setRolePermissions(ac, restGroup));
 
-			// Merge and complete
-			return Observable.merge(obs).last();
-		});
+		// Merge and complete
+		return Observable.merge(obs).last();
 	}
 
 	@Override
@@ -199,11 +194,11 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return db.noTrx(() -> {
 			GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
-			if (StringUtils.isEmpty(requestModel.getName())) {
+			if (isEmpty(requestModel.getName())) {
 				throw error(BAD_REQUEST, "error_name_must_be_set");
 			}
 
-			if (!getName().equals(requestModel.getName())) {
+			if (shouldUpdate(requestModel.getName(),  getName())) {
 				Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 					throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());

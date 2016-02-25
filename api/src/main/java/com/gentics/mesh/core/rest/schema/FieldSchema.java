@@ -1,5 +1,11 @@
 package com.gentics.mesh.core.rest.schema;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+
 /**
  * A field schema is a field within a schema. In contradiction to node fields a field schema is the blueprint of a field and will not store any data. Instead it
  * only defines a field within a schema.
@@ -53,10 +59,31 @@ public interface FieldSchema {
 	boolean isRequired();
 
 	/**
-	 * Set the required flag
+	 * Set the required flag.
 	 * 
 	 * @param flag
 	 * @return Fluent API
 	 */
 	FieldSchema setRequired(boolean flag);
+
+	/**
+	 * Compare the field schema with the given field schema.
+	 * 
+	 * @param fieldSchema
+	 * @return Optional which may or may not contain a detected change
+	 * @throws IOException
+	 */
+	Optional<SchemaChangeModel> compareTo(FieldSchema fieldSchema) throws IOException;
+
+	/**
+	 * Apply the given field properties to the field schema.
+	 * 
+	 * @param fieldProperties
+	 */
+	void apply(Map<String, Object> fieldProperties);
+
+	/**
+	 * Validate the field properties.
+	 */
+	void validate();
 }

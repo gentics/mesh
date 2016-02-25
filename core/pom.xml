@@ -20,13 +20,7 @@
 
 	<dependencies>
 		<!-- Internal dependencies -->
-		<!-- 
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-git</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		 -->
+		<!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>mesh-git</artifactId> <version>${project.version}</version> </dependency> -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>mesh-api</artifactId>
@@ -140,6 +134,7 @@
 			<artifactId>vertx-dropwizard-metrics</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
+
 
 		<!-- UUID Support -->
 		<dependency>
@@ -392,7 +387,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

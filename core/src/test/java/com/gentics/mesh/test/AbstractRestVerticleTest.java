@@ -1,5 +1,6 @@
 package com.gentics.mesh.test;
 
+import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -21,7 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.SchemaContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -30,15 +32,15 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -53,9 +55,11 @@ import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTrx;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.search.impl.DummySearchProvider;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -88,7 +92,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	@Before
 	public void setupVerticleTest() throws Exception {
 		setupData();
-		port = com.gentics.mesh.test.TestUtil.getRandomPort();
+		port = com.gentics.mesh.test.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
@@ -146,7 +150,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			getClient().getClientSchemaStorage().addSchema(container.getSchema());
 		}
 		for (MicroschemaContainer container : microschemaContainers().values()) {
-			getClient().getClientSchemaStorage().addMicroschema(container.getMicroschema());
+			getClient().getClientSchemaStorage().addMicroschema(container.getSchema());
 		}
 	}
 
@@ -316,6 +320,33 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return future.result();
 	}
 
+	/**
+	 * Create a new folder node by sending a create request which will include the specified field.
+	 * 
+	 * @param fieldKey
+	 * @param field
+	 * @return
+	 */
+	protected NodeResponse createNode(String fieldKey, Field field) {
+		Node parentNode = folder("2015");
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
+		nodeCreateRequest.setLanguage("en");
+		if (fieldKey != null) {
+			nodeCreateRequest.getFields().put(fieldKey, field);
+		}
+
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull("The response could not be found in the result of the future.", future.result());
+		if (fieldKey != null) {
+			assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		}
+		return future.result();
+	}
+
 	protected NodeResponse readNode(String projectName, String uuid) {
 		Future<NodeResponse> future = getClient().findNodeByUuid(projectName, uuid);
 		latchFor(future);
@@ -337,7 +368,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return future.result();
 	}
 
-	// TagFamily
+
 	protected TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();
 		tagFamilyCreateRequest.setName(tagFamilyName);
@@ -402,30 +433,26 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	// Schema
-	protected SchemaResponse createSchema(String schemaName) {
-		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
-		schemaCreateRequest.setName(schemaName);
-		schemaCreateRequest.setDisplayField("name");
-		schemaCreateRequest.setDescription("Descriptive text");
-		schemaCreateRequest.setDisplayField("name");
-		schemaCreateRequest.setSegmentField("name");
-		Future<SchemaResponse> future = getClient().createSchema(schemaCreateRequest);
+	protected Schema createSchema(String schemaName) {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setName(schemaName);
+		Future<Schema> future = getClient().createSchema(schema);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected SchemaResponse readSchema(String uuid) {
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(uuid);
+	protected Schema readSchema(String uuid) {
+		Future<Schema> future = getClient().findSchemaByUuid(uuid);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
 	}
 
-	protected SchemaResponse updateSchema(String uuid, String schemaName) {
-		SchemaUpdateRequest schemaUpdateRequest = new SchemaUpdateRequest();
-		schemaUpdateRequest.setName(schemaName);
-		Future<SchemaResponse> future = getClient().updateSchema(uuid, schemaUpdateRequest);
+	protected GenericMessageResponse updateSchema(String uuid, String schemaName) {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setName(schemaName);
+		Future<GenericMessageResponse> future = getClient().updateSchema(uuid, schema);
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -444,14 +471,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
-	protected void expectMessageResponse(String i18nKey, Future<GenericMessageResponse> responseFuture, String... i18nParams) {
+	protected void expectResponseMessage(Future<GenericMessageResponse> responseFuture, String i18nKey, String... i18nParams) {
 		assertTrue("The given future has not yet completed.", responseFuture.isComplete());
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, i18nKey, i18nParams);
 		assertEquals("The response message does not match.", message, responseFuture.result().getMessage());
 	}
 
-	protected void expectMessage(Future<?> future, HttpResponseStatus status, String message) {
+	protected void expectFailureMessage(Future<?> future, HttpResponseStatus status, String message) {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
 		assertNotNull(future.cause());
 
@@ -471,7 +498,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
 		assertNotEquals("Translation for key " + bodyMessageI18nKey + " not found", message, bodyMessageI18nKey);
-		expectMessage(future, status, message);
+		expectFailureMessage(future, status, message);
 	}
 
 }

@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -298,4 +299,11 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 */
 	void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema);
 
+	/**
+	 * Get all fields defined in the given schema, that are present in this container
+	 *
+	 * @param schema schema
+	 * @return
+	 */
+	List<GraphField> getFields(FieldSchemaContainer schema);
 }

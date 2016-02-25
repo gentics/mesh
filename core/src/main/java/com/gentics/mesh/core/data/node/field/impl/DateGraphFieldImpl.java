@@ -43,4 +43,10 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 		dateField.setDate(getDate());
 		return Observable.just(dateField);
 	}
+
+	@Override
+	public void removeField() {
+		setFieldProperty("date", null);
+		setFieldKey(null);
+	}
 }

@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.TestUtil;
+import com.gentics.mesh.test.TestUtils;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -48,11 +48,11 @@ public final class MeshAssert {
 
 	public static int getTimeout() throws UnknownHostException {
 		int timeout = CI_TIMEOUT_SECONDS;
-		if (TestUtil.isHost("plexus") || TestUtil.isHost("satan3.office")) {
+		if (TestUtils.isHost("plexus") || TestUtils.isHost("satan3.office")) {
 			timeout = DEV_TIMEOUT_SECONDS;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Using test timeout of {" + timeout + "} seconds for host {" + TestUtil.getHostname() + "}");
+			log.debug("Using test timeout of {" + timeout + "} seconds for host {" + TestUtils.getHostname() + "}");
 		}
 		return timeout;
 	}

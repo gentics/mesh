@@ -48,27 +48,6 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		return response;
 	}
 
-	protected NodeResponse createNode(String fieldKey, Field field) {
-		Node node = folder("2015");
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNodeUuid(node.getUuid());
-		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
-		nodeCreateRequest.setLanguage("en");
-		if (fieldKey != null) {
-			nodeCreateRequest.getFields().put(fieldKey, field);
-		}
-
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameter().setLanguages("en"));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull("The response could not be found in the result of the future.", future.result());
-		if (fieldKey != null) {
-			assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
-		}
-		return future.result();
-	}
-
 	protected void createNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
@@ -79,8 +58,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameter().setLanguages("en"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
 		expectException(future, status, bodyMessageI18nKey, i18nParams);
 	}
@@ -132,7 +110,8 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	abstract public void testCreateNodeWithField();
 
 	/**
-	 * Create a new node and set no field value for the field. Make sure the node was correctly loaded and that the field was set to an empty value. Basic fields must be set to null.
+	 * Create a new node and set no field value for the field. Make sure the node was correctly loaded and that the field was set to an empty value. Basic
+	 * fields must be set to null.
 	 */
 	abstract public void testCreateNodeWithNoField();
 

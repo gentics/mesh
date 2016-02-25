@@ -25,7 +25,7 @@
 		<ferma.version>2.2.0-SNAPSHOT</ferma.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
 		<elasticsearch.version>1.7.2</elasticsearch.version>
-		<orientdb.version>2.1.9</orientdb.version>
+		<orientdb.version>2.1.11</orientdb.version>
 
 		<surefire.forkcount>4</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
@@ -39,11 +39,10 @@
 		<tag>mesh-0.1.0-rc6</tag>
 	</scm>
 
-
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.2.0-SNAPSHOT</version>
+		<version>3.2.1</version>
 	</parent>
 
 	<developers>
@@ -90,7 +89,7 @@
 		<module>rest-client</module>
 		<module>databases</module>
 		<module>services</module>
-		<!--  <module>git</module> -->
+		<!-- <module>git</module> -->
 		<module>core</module>
 		<module>verticles</module>
 		<!-- <module>importers</module> -->

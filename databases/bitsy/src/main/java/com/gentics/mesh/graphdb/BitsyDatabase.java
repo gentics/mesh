@@ -17,7 +17,6 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 
 /**
  * OrientDB specific mesh graph database implementation.
@@ -80,8 +79,14 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields) {
 
+	}
+
+	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

@@ -29,7 +29,7 @@ public class StringGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testStringFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
 		stringFieldSchema.setName("stringField");
 		stringFieldSchema.setLabel("Some string field");

@@ -11,9 +11,11 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -38,7 +40,9 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -46,12 +50,13 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
+import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
@@ -244,7 +249,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
 		latchFor(deleteFut);
 		assertSuccess(deleteFut);
-		expectMessageResponse("node_deleted", deleteFut, restNode2.getUuid());
+		expectResponseMessage(deleteFut, "node_deleted", restNode2.getUuid());
 
 		meshRoot().getNodeRoot().reload();
 		Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid()).toBlocking().single();
@@ -719,6 +724,28 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals("en", response.getLanguage());
 	}
 
+	/**
+	 * Test reading a node with link resolving enabled. Ensure that the schema segment field of the node is not set.
+	 */
+	@Test
+	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
+		Node node = folder("news");
+		// Update the schema
+		Schema schema = node.getSchemaContainer().getSchema();
+		schema.setSegmentField(null);
+		node.getSchemaContainer().setSchema(schema);
+		ServerSchemaStorage.getInstance().clear();
+
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
+		latchFor(future);
+		assertSuccess(future);
+		NodeResponse response = future.result();
+		assertEquals("/api/v1/dummy/webroot/error/404",response.getPath());
+		assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/error/404");
+		assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/error/404");
+	}
+
 	@Test
 	public void testReadByUUIDWithLinkPaths() {
 		Node node = folder("news");
@@ -1044,7 +1071,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("de", "en");
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
-		expectMessage(future, BAD_REQUEST,
+		expectFailureMessage(future, BAD_REQUEST,
 				"Can't handle field {displayName} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeUpdateRequest[\"fields\"])");
 
 		assertNull(future.result());
@@ -1078,7 +1105,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		expectMessageResponse("node_deleted", future, uuid);
+		expectResponseMessage(future, "node_deleted", uuid);
 		assertElement(meshRoot().getNodeRoot(), uuid, false);
 		assertThat(searchProvider).recordedDeleteEvents(2);
 		SearchQueue searchQueue = meshRoot().getSearchQueue();
@@ -1103,5 +1130,157 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
 		assertNotNull(meshRoot().getNodeRoot().findByUuid(uuid).toBlocking().first());
+	}
+
+	// Webroot Path Uniqueness Tests
+
+	@Test
+	public void testCreateDuplicateWebrootPath() {
+		String conflictingName = "filename.html";
+		Node parent = folder("2015");
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// create the initial content
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(parent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("name", FieldUtil.createStringField("some name"));
+		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		assertSuccess(future);
+
+		// try to create the new content with same filename
+		create = new NodeCreateRequest();
+		create.setParentNodeUuid(parent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some other title"));
+		create.getFields().put("name", FieldUtil.createStringField("some other name"));
+		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
+	}
+
+	@Test
+	public void testUpdateDuplicateWebrootPath() {
+		String conflictingName = "filename.html";
+		String nonConflictingName = "otherfilename.html";
+		Node parent = folder("2015");
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// create the initial content
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(parent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("name", FieldUtil.createStringField("some name"));
+		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		assertSuccess(future);
+
+		// create a new content
+		create = new NodeCreateRequest();
+		create.setParentNodeUuid(parent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("name", FieldUtil.createStringField("some name"));
+		create.getFields().put("filename", FieldUtil.createStringField(nonConflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		assertSuccess(future);
+		String uuid = future.result().getUuid();
+
+		// try to update with conflict
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		future = getClient().updateNode(PROJECT_NAME, uuid, update);
+		latchFor(future);
+		expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
+	}
+
+	@Test
+	public void testTranslateDuplicateWebrootPath() {
+		String conflictingName = "filename.html";
+		Node parent = folder("2015");
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// create the initial content
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(parent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("name", FieldUtil.createStringField("some name"));
+		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		assertSuccess(future);
+		String uuid = future.result().getUuid();
+
+		// translate the content
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("de");
+		update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		update.getFields().put("title", FieldUtil.createStringField("Irgendein Titel"));
+		update.getFields().put("name", FieldUtil.createStringField("Irgendein Name"));
+		update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		update.getFields().put("content", FieldUtil.createStringField("Gesegnete Mahlzeit!"));
+		future = getClient().updateNode(PROJECT_NAME, uuid, update);
+		latchFor(future);
+		expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
+	}
+
+	@Test
+	public void testMoveDuplicateWebrootPath() {
+		String conflictingName = "filename.html";
+		Node parent = folder("2015");
+		Node otherParent = folder("news");
+		SchemaContainer contentSchema = schemaContainer("content");
+
+		// create the initial content
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setParentNodeUuid(parent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some title"));
+		create.getFields().put("name", FieldUtil.createStringField("some name"));
+		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		assertSuccess(future);
+		String uuid = future.result().getUuid();
+
+		// create a "conflicting" content in another folder
+		create = new NodeCreateRequest();
+		create.setParentNodeUuid(otherParent.getUuid());
+		create.setLanguage("en");
+		create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+		create.getFields().put("title", FieldUtil.createStringField("some other title"));
+		create.getFields().put("name", FieldUtil.createStringField("some other name"));
+		create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
+		create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		future = getClient().createNode(PROJECT_NAME, create);
+		latchFor(future);
+		assertSuccess(future);
+
+		// try to move the original node
+		Future<GenericMessageResponse> moveFuture = getClient().moveNode(PROJECT_NAME, uuid, otherParent.getUuid());
+		latchFor(moveFuture);
+		expectException(moveFuture, CONFLICT, "node_conflicting_segmentfield_move", "filename", conflictingName);
 	}
 }

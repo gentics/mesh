@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -20,8 +20,6 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -131,15 +129,6 @@ public class RestAssert {
 		assertNotNull(restProject);
 		assertNotNull(restProject.getUuid());
 		assertEquals(request.getName(), restProject.getName());
-	}
-
-	public void assertSchema(SchemaCreateRequest request, SchemaResponse restSchema) {
-		assertNotNull(request);
-		assertNotNull(restSchema);
-		// assertEquals("The name of the request schema and the name in the returned json do not match.", request.getName(), restSchema.getName());
-		// assertEquals("The description of the request and the returned json do not match.", request.getDescription(), restSchema.getDescription());
-		// assertEquals("The display name of the request and the returned json do not match.", request.getDisplayName(), restSchema.getDisplayName());
-		// TODO assert for schema properties
 	}
 
 	public void assertUser(UserCreateRequest request, UserResponse restUser) {

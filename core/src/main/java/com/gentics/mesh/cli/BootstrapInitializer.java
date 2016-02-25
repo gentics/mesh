@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -48,13 +48,15 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.auth.AuthenticationVerticle;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.group.GroupVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
@@ -111,6 +113,8 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> mandatoryVerticles = new HashMap<>();
 
+	private Map<String, Class<? extends AbstractVerticle>> mandatoryWorkerVerticles = new HashMap<>();
+
 	public BootstrapInitializer() {
 
 		// User Group Role verticles
@@ -132,7 +136,11 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(SearchVerticle.class);
 		addMandatoryVerticle(AuthenticationVerticle.class);
 		addMandatoryVerticle(AdminVerticle.class);
+		addMandatoryVerticle(EventbusVerticle.class);
 		addMandatoryVerticle(UtilityVerticle.class);
+
+		// Worker verticles
+		addMandatoryWorkerVerticle(NodeMigrationVerticle.class);
 	}
 
 	/**
@@ -146,6 +154,24 @@ public class BootstrapInitializer {
 
 	private Map<String, Class<? extends AbstractVerticle>> getMandatoryVerticleClasses() {
 		return mandatoryVerticles;
+	}
+
+	/**
+	 * Add the given verticle class to the list of mandatory worker verticles
+	 *
+	 * @param clazz
+	 */
+	private void addMandatoryWorkerVerticle(Class<? extends AbstractVerticle> clazz) {
+		mandatoryWorkerVerticles.put(clazz.getSimpleName(), clazz);
+	}
+
+	/**
+	 * Get the map of mandatory worker verticle classes
+	 * 
+	 * @return
+	 */
+	private Map<String, Class<? extends AbstractVerticle>> getMandatoryWorkerVerticleClasses() {
+		return mandatoryWorkerVerticles;
 	}
 
 	/**
@@ -224,7 +250,19 @@ public class BootstrapInitializer {
 					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
 				}
 				// TODO handle custom config? i assume we will not allow this
-				deployAndWait(Mesh.vertx(), defaultConfig, clazz);
+				deployAndWait(Mesh.vertx(), defaultConfig, clazz, false);
+			} catch (InterruptedException e) {
+				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
+			}
+		}
+
+		for (Class<? extends AbstractVerticle> clazz : getMandatoryWorkerVerticleClasses().values()) {
+			try {
+				if (log.isInfoEnabled()) {
+					log.info("Loading mandatory verticle {" + clazz.getName() + "}.");
+				}
+				// TODO handle custom config? i assume we will not allow this
+				deployAndWait(Mesh.vertx(), defaultConfig, clazz, true);
 			} catch (InterruptedException e) {
 				log.error("Could not load mandatory verticle {" + clazz.getSimpleName() + "}.", e);
 			}
@@ -245,7 +283,7 @@ public class BootstrapInitializer {
 				if (log.isInfoEnabled()) {
 					log.info("Loading configured verticle {" + verticleName + "}.");
 				}
-				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName);
+				deployAndWait(Mesh.vertx(), mergedVerticleConfig, verticleName, false);
 			} catch (InterruptedException e) {
 				log.error("Could not load verticle {" + verticleName + "}.", e);
 			}
@@ -399,11 +437,10 @@ public class BootstrapInitializer {
 			// Content
 			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content").toBlocking().single();
 			if (contentSchemaContainer == null) {
-				Schema schema = new SchemaImpl();
+				Schema schema = new SchemaModel();
 				schema.setName("content");
 				schema.setDisplayField("title");
 				schema.setSegmentField("filename");
-				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -434,11 +471,10 @@ public class BootstrapInitializer {
 			// Folder
 			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder").toBlocking().single();
 			if (folderSchemaContainer == null) {
-				Schema schema = new SchemaImpl();
+				Schema schema = new SchemaModel();
 				schema.setName("folder");
 				schema.setDisplayField("name");
 				schema.setSegmentField("name");
-				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -454,11 +490,10 @@ public class BootstrapInitializer {
 			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content").toBlocking().single();
 			if (binarySchemaContainer == null) {
 
-				Schema schema = new SchemaImpl();
+				Schema schema = new SchemaModel();
 				schema.setName("binary-content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("binary");
-				// schema.setMeshVersion(Mesh.getVersion());
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");

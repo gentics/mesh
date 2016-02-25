@@ -2,8 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import com.gentics.mesh.core.data.Translated;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.generic.AbstractMeshVertex;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.syncleus.ferma.AbstractEdgeFrame;
 
 /**
@@ -21,8 +20,8 @@ public class TranslatedImpl extends AbstractEdgeFrame implements Translated {
 		setProperty(LANGUAGE_TAG_KEY, languageTag);
 	}
 
-	public AbstractMeshVertex<?> getStartNode() {
-		return inV().nextOrDefault(AbstractMeshCoreVertex.class, null);
+	public MeshVertexImpl getStartNode() {
+		return inV().nextOrDefault(MeshVertexImpl.class, null);
 	}
 
 	public AbstractBasicGraphFieldContainerImpl getI18NProperties() {

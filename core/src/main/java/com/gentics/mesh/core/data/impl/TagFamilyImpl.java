@@ -10,11 +10,10 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_AC
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -104,7 +103,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void setProject(Project project) {
-		setLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
@@ -148,25 +147,20 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Observable<TagFamilyResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+	public Observable<TagFamilyResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+		Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
 
-		return db.asyncNoTrxExperimental(() -> {
-			Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
+		TagFamilyResponse restTagFamily = new TagFamilyResponse();
+		restTagFamily.setName(getName());
 
-			TagFamilyResponse restTagFamily = new TagFamilyResponse();
-			restTagFamily.setName(getName());
+		// Add common fields
+		obs.add(fillCommonRestFields(ac, restTagFamily));
 
-			// Add common fields
-			obs.add(fillCommonRestFields(ac, restTagFamily));
+		// Role permissions
+		obs.add(setRolePermissions(ac, restTagFamily));
 
-			// Role permissions
-			obs.add(setRolePermissions(ac, restTagFamily));
-
-			// Merge and complete
-			return Observable.merge(obs).last();
-
-		});
+		// Merge and complete
+		return Observable.merge(obs).last();
 	}
 
 	@Override
@@ -191,7 +185,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			Project project = ac.getProject();
 			String newName = requestModel.getName();
 
-			if (StringUtils.isEmpty(newName)) {
+			if (isEmpty(newName)) {
 				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
 

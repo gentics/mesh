@@ -96,7 +96,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("node_moved_to", future, sourceNode.getUuid(), targetNode.getUuid());
+		expectResponseMessage(future, "node_moved_to", sourceNode.getUuid(), targetNode.getUuid());
 
 		sourceNode.reload();
 		try (Trx tx = db.trx()) {

@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.container.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.TagGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
@@ -31,6 +30,13 @@ import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
+import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
+import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueEntryImpl;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
@@ -113,7 +119,7 @@ public class DatabaseHelper {
 			// Add shortcut edges from role to users of this group
 			for (User user : meshRoot.getUserRoot().findAll()) {
 				for (Role role : user.getRoles()) {
-					user.getImpl().setLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
+					user.getImpl().setUniqueLinkOutTo(role.getImpl(), ASSIGNED_TO_ROLE);
 				}
 			}
 			tx.success();
@@ -217,6 +223,14 @@ public class DatabaseHelper {
 		TagFamilyImpl.checkIndices(database);
 		SchemaContainerImpl.checkIndices(database);
 		MicroschemaContainerImpl.checkIndices(database);
+		
+		// Field changes
+		FieldTypeChangeImpl.checkIndices(database);
+		UpdateSchemaChangeImpl.checkIndices(database);
+		RemoveFieldChangeImpl.checkIndices(database);
+		UpdateFieldChangeImpl.checkIndices(database);
+		AddFieldChangeImpl.checkIndices(database);
+		UpdateMicroschemaChangeImpl.checkIndices(database);
 
 	}
 

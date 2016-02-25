@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -37,8 +36,9 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -297,6 +297,7 @@ public class DemoDataProvider {
 					}
 				}
 			}
+			englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
 			nodes.put(name, node);
 		}
 
@@ -372,7 +373,7 @@ public class DemoDataProvider {
 				StringWriter writer = new StringWriter();
 				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
-				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaImpl.class);
+				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaModel.class);
 				container = boot.schemaContainerRoot().create(schema, getAdmin());
 			}
 			schemaContainers.put(schemaName, container);

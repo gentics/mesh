@@ -1,6 +1,5 @@
 package com.gentics.mesh.graphdb;
 
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 

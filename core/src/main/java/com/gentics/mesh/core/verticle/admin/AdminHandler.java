@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 
+import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
@@ -66,6 +68,32 @@ public class AdminHandler extends AbstractHandler {
 			db.importGraph(importFile.getAbsolutePath());
 			return Observable.just(message(ac, "import_finished"));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	public void handleMigrationStatus(InternalActionContext ac) {
+
+		if (vertx.isClustered()) {
+			//TODO implement this
+			throw new NotImplementedException("cluster support for migration status is not yet implemented");
+			//		vertx.sharedData().getClusterWideMap("migrationStatus", rh -> {
+			//			if (rh.failed()) {
+			//				System.out.println("failed");
+			//				rh.cause().printStackTrace();
+			//			} else {
+			//				rh.result().get("status", vh -> {
+			//					ac.respond(message(ac, "test"), OK);
+			//				});
+			//			}
+			//		});
+		} else {
+			LocalMap<String, String> map = vertx.sharedData().getLocalMap("migrationStatus");
+			String statusKey = "migration_status_idle";
+			String currentStatusKey = map.get("status");
+			if (currentStatusKey != null) {
+				statusKey = currentStatusKey;
+			}
+			ac.respond(message(ac, statusKey), OK);
+		}
 	}
 
 }

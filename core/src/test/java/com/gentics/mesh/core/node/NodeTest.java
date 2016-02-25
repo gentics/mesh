@@ -168,7 +168,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("?lang=de,en");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		NodeGraphFieldContainer germanFields = newsNode.getOrCreateGraphFieldContainer(german);
-		assertEquals(germanFields.getString(newsNode.getSchema().getDisplayField()).getString(), newsNode.getDisplayName(ac));
+		assertEquals(germanFields.getString(newsNode.getSchemaContainer().getSchema().getDisplayField()).getString(), newsNode.getDisplayName(ac));
 		// TODO add some fields
 	}
 
@@ -246,8 +246,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRead() throws IOException {
 		Node node = folder("2015");
-		assertEquals("folder", node.getSchema().getName());
-		assertTrue(node.getSchema().isContainer());
+		assertEquals("folder", node.getSchemaContainer().getSchema().getName());
+		assertTrue(node.getSchemaContainer().getSchema().isContainer());
 	}
 
 	@Test

@@ -14,6 +14,7 @@ import com.gentics.mesh.impl.MeshFactoryImpl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -52,6 +53,7 @@ public class MeshImpl implements Mesh {
 	public Vertx getVertx() {
 		if (vertx == null) {
 			VertxOptions options = new VertxOptions();
+			//options.setClustered(true);
 			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
 			// TODO configure worker pool size
 			options.setWorkerPoolSize(12);
@@ -70,6 +72,7 @@ public class MeshImpl implements Mesh {
 		registerShutdownHook();
 
 		printProductInformation();
+		invokeUpdateCheck();
 
 		// Start the spring context
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
@@ -82,6 +85,18 @@ public class MeshImpl implements Mesh {
 			dontExit();
 
 		}
+	}
+
+	/**
+	 * Send a request to the update checker.
+	 */
+	private void invokeUpdateCheck() {
+		log.info("Checking for updates..");
+		Mesh.vertx().createHttpClient().getNow("updates.getmesh.io", "/?v=" + Mesh.getVersion(), rh -> {
+			rh.bodyHandler(bh -> {
+				JsonObject info = bh.toJsonObject();
+			});
+		});
 	}
 
 	/**
@@ -139,6 +154,12 @@ public class MeshImpl implements Mesh {
 		log.info("###############################################################");
 	}
 
+	/**
+	 * Return the vertx version.
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("deprecation")
 	private String getVertxVersion() {
 		return new io.vertx.core.Starter().getVersion();
 	}

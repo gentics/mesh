@@ -34,4 +34,9 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 		return Observable.just(htmlField);
 	}
 
+	@Override
+	public void removeField() {
+		setFieldProperty("html", null);
+		setFieldKey(null);
+	}
 }

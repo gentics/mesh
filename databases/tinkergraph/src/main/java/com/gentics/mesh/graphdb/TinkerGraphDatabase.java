@@ -11,8 +11,6 @@ import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import rx.Observable;
-
 public class TinkerGraphDatabase extends AbstractDatabase {
 
 	private TinkerTransactionalGraphMock mockedGraph;
@@ -73,8 +71,14 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void addVertexIndex(Class<?> clazzOfVertices, String... fields) {
+	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields) {
 		// No supported
+	}
+
+	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
@@ -14,7 +15,7 @@ import rx.Observable;
 /**
  * @see NumberGraphFieldList
  */
-public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl>implements NumberGraphFieldList {
+public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<NumberGraphField, NumberFieldListImpl, Number> implements NumberGraphFieldList {
 
 	@Override
 	public NumberGraphField createNumber(Number number) {
@@ -40,7 +41,7 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
+		getElement().remove();
 	}
 
 	@Override
@@ -52,4 +53,8 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 		return Observable.just(restModel);
 	}
 
+	@Override
+	public List<Number> getValues() {
+		return getList().stream().map(NumberGraphField::getNumber).collect(Collectors.toList());
+	}
 }

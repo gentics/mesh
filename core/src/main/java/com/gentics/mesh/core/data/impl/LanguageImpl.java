@@ -22,7 +22,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
 	public static void checkIndices(Database database) {
-		database.addVertexIndex(LanguageImpl.class, LANGUAGE_TAG_PROPERTY_KEY);
+		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY);
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public Observable<LanguageResponse> transformToRest(InternalActionContext ac, String...languageTags) {
+	public Observable<LanguageResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
 		LanguageResponse model = new LanguageResponse();
 		model.setUuid(getUuid());
 		model.setLanguageTag(getLanguageTag());
@@ -83,7 +83,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		new NotImplementedException();
+		throw new NotImplementedException();
 	}
 
 	@Override

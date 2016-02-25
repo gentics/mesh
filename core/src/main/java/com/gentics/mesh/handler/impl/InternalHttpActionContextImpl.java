@@ -13,8 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -25,7 +23,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalHttpActionContext;
@@ -197,22 +194,6 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 	public ImageManipulationParameter getImageRequestParameter() {
 		//TODO return immutable object
 		return ImageManipulationParameter.fromQuery(query());
-	}
-
-	/**
-	 * Check the result object and fail early when the result failed as well.
-	 * 
-	 * @param result
-	 *            Result that will be checked
-	 * @return false when the result failed, otherwise true
-	 */
-	@Override
-	public boolean failOnError(AsyncResult<?> result) {
-		if (result.failed()) {
-			fail(result.cause());
-			return false;
-		}
-		return true;
 	}
 
 	@Override

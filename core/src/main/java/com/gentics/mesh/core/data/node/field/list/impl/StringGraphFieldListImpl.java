@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
@@ -15,7 +16,7 @@ import rx.Observable;
 /**
  * @see StringGraphFieldList
  */
-public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl> implements StringGraphFieldList {
+public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl, String> implements StringGraphFieldList {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(StringGraphFieldListImpl.class);
@@ -45,7 +46,7 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
+		getElement().remove();
 	}
 
 	@Override
@@ -57,4 +58,8 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		return Observable.just(restModel);
 	}
 
+	@Override
+	public List<String> getValues() {
+		return getList().stream().map(StringGraphField::getString).collect(Collectors.toList());
+	}
 }

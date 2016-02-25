@@ -27,6 +27,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -46,6 +47,7 @@ import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpClientOptions;
 
 public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
@@ -80,7 +82,8 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		ListResponse<TagResponse> restResponse = future.result();
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags, restResponse.getData().size());
+		assertEquals("The response did not contain the correct amount of items. We only have nine basic tags in the test data.", nBasicTags,
+				restResponse.getData().size());
 
 		int perPage = 4;
 		// Extra Tags + permitted tag
@@ -252,6 +255,19 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testUpdateTagWithNoName() {
+		Tag tag = tag("red");
+		TagFamily parentTagFamily = tagFamily("colors");
+
+		String uuid = tag.getUuid();
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+
+		Future<TagResponse> updatedTagFut = getClient().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest);
+		latchFor(updatedTagFut);
+		expectException(updatedTagFut, BAD_REQUEST, "tag_name_not_set");
+	}
+
+	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 
@@ -291,7 +307,7 @@ public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("tag_deleted", future, uuid + "/" + name);
+		expectResponseMessage(future, "tag_deleted", uuid + "/" + name);
 
 		tag = boot.tagRoot().findByUuid(uuid).toBlocking().single();
 		assertNull("The tag should have been deleted", tag);

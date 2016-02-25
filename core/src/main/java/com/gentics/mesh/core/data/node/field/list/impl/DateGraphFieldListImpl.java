@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
@@ -14,7 +15,7 @@ import rx.Observable;
 /**
  * @see DateGraphFieldList
  */
-public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl>implements DateGraphFieldList {
+public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl, Long>implements DateGraphFieldList {
 
 	@Override
 	public DateGraphField createDate(Long date) {
@@ -40,7 +41,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
+		getElement().remove();
 	}
 
 	@Override
@@ -50,5 +51,10 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 			restModel.add(item.getDate());
 		}
 		return Observable.just(restModel);
+	}
+
+	@Override
+	public List<Long> getValues() {
+		return getList().stream().map(DateGraphField::getDate).collect(Collectors.toList());
 	}
 }

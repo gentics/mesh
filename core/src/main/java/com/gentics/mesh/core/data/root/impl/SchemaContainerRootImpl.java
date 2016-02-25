@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -10,15 +10,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.container.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -46,7 +46,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public String getRootLabel() {
-		return HAS_SCHEMA_CONTAINER;
+		return HAS_SCHEMA_CONTAINER_ITEM;
 	}
 
 	@Override
@@ -63,6 +63,9 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	public SchemaContainer create(Schema schema, User creator) throws MeshSchemaException {
 		validate(schema);
 		SchemaContainerImpl schemaContainer = getGraph().addFramedVertex(SchemaContainerImpl.class);
+
+		// set the initial version
+		schema.setVersion(1);
 		schemaContainer.setSchema(schema);
 		schemaContainer.setName(schema.getName());
 		addSchemaContainer(schemaContainer);
@@ -103,20 +106,10 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		Database db = MeshSpringConfiguration.getInstance().database();
 		ObservableFuture<SchemaContainer> obsFut = RxHelper.observableFuture();
 
-		SchemaCreateRequest requestModel;
+		Schema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaCreateRequest.class);
-			if (StringUtils.isEmpty(requestModel.getName())) {
-				throw error(BAD_REQUEST, "schema_missing_name");
-			}
-			if (StringUtils.isEmpty(requestModel.getSegmentField())) {
-				throw error(BAD_REQUEST, "schema_missing_segmentfield");
-			}
-			if (StringUtils.isEmpty(requestModel.getDisplayField())) {
-				throw error(BAD_REQUEST, "schema_missing_displayfield");
-			}
-			// TODO use schema.validate() to validate the schema and make sure that displayfield and segment field reference existing fields
-
+			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+			requestModel.validate();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 
 				Tuple<SearchQueueBatch, SchemaContainer> tuple = db.trx(() -> {

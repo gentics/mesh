@@ -37,10 +37,25 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		route("/*").handler(springConfiguration.authHandler());
 		addSchemaProjectHandlers();
 
+		addDiffHandler();
+		addChangesHandler();
+
 		addCreateHandler();
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+	}
+
+	private void addChangesHandler() {
+		Route getRoute = route("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> {
+			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+		});
+
+		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
+		executeRoute.handler(rc -> {
+			crudHandler.handleApplySchemaChanges(InternalActionContext.create(rc));
+		});
 	}
 
 	private void addSchemaProjectHandlers() {
@@ -59,6 +74,13 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 		Route route = route("/").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
 			crudHandler.handleCreate(InternalActionContext.create(rc));
+		});
+	}
+
+	private void addDiffHandler() {
+		Route route = route("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		route.handler(rc -> {
+			crudHandler.handleDiff(InternalActionContext.create(rc));
 		});
 	}
 

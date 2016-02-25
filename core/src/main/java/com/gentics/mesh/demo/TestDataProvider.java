@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -33,7 +32,8 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -374,7 +374,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		Microschema vcardMicroschema = new MicroschemaImpl();
+		Microschema vcardMicroschema = new MicroschemaModel();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 
@@ -414,7 +414,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		Microschema captionedImageMicroschema = new MicroschemaImpl();
+		Microschema captionedImageMicroschema = new MicroschemaModel();
 		captionedImageMicroschema.setName("captionedImage");
 		captionedImageMicroschema.setDescription("Microschema for a captioned image");
 
@@ -434,29 +434,6 @@ public class TestDataProvider {
 		MicroschemaContainer microschemaContainer = rootService.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 	}
-
-	//	private void addBlogPostSchema() throws MeshSchemaException {
-	//		Schema schema = new SchemaImpl();
-	//		schema.setName("blogpost");
-	//		schema.setDisplayField("title");
-	//		schema.setMeshVersion(Mesh.getVersion());
-	//
-	//		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
-	//		titleFieldSchema.setName("title");
-	//		titleFieldSchema.setLabel("Title");
-	//		schema.addField(titleFieldSchema);
-	//
-	//		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
-	//		titleFieldSchema.setName("content");
-	//		titleFieldSchema.setLabel("Content");
-	//		schema.addField(contentFieldSchema);
-	//
-	//		SchemaContainerRoot schemaRoot = root.getSchemaContainerRoot();
-	//		SchemaContainer blogPostSchemaContainer = schemaRoot.create(schema, getUserInfo().getUser());
-	//		blogPostSchemaContainer.setSchema(schema);
-	//
-	//		schemaContainers.put("blogpost", blogPostSchemaContainer);
-	//	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);

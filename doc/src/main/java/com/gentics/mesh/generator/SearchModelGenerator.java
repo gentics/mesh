@@ -32,11 +32,11 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.GroupIndexHandler;
 import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
@@ -67,7 +67,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "target" + File.separator + "elasticsearch-examples";
+			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "json";
 		}
 		outputDir = new File(baseDirProp);
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");

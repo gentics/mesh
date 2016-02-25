@@ -24,12 +24,18 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -535,6 +541,37 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		}
 	}
 
+	@Test
+	public void testSearchManyNodesWithMicronodes() throws Exception {
+		int numAdditionalNodes = 99;
+		addMicronodeField();
+		User user = user();
+		Language english = english();
+		Node concorde = content("concorde");
+		Project project = concorde.getProject();
+		Node parentNode = concorde.getParentNode();
+		SchemaContainer schemaContainer = concorde.getSchemaContainer();
+
+		for (int i = 0; i < numAdditionalNodes; i++) {
+			Node node = parentNode.create(user, schemaContainer, project);
+			MicronodeGraphField vcardField = node.getOrCreateGraphFieldContainer(english).createMicronode("vcard",
+					microschemaContainers().get("vcard"));
+			vcardField.getMicronode().createString("firstName").setString("Mickey");
+			vcardField.getMicronode().createString("lastName").setString("Mouse");
+			role().grantPermissions(node, GraphPermission.READ_PERM);
+		}
+		MeshRoot.getInstance().getNodeRoot().reload();
+		fullIndex();
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"),
+				new PagingParameter().setPage(1).setPerPage(numAdditionalNodes + 1));
+		latchFor(future);
+		assertSuccess(future);
+
+		NodeListResponse response = future.result();
+		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
+	}
+
 	private void addNumberSpeedField(int number) {
 		Node node = content("concorde");
 
@@ -551,7 +588,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addMicronodeField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
 		vcardFieldSchema.setName("vcard");
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
@@ -568,7 +605,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addMicronodeListField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
 		vcardListFieldSchema.setName("vcardlist");
 		vcardListFieldSchema.setListType("micronode");
@@ -576,7 +613,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping("node", schema.getName(), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

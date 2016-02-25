@@ -4,6 +4,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
 import com.gentics.mesh.rest.impl.MeshRestClientImpl;
 import com.gentics.mesh.rest.method.AdminClientMethods;
 import com.gentics.mesh.rest.method.AuthClientMethods;
+import com.gentics.mesh.rest.method.EventbusClientMethods;
 import com.gentics.mesh.rest.method.GroupClientMethods;
 import com.gentics.mesh.rest.method.MicroschemaClientMethods;
 import com.gentics.mesh.rest.method.NavRootClientMethods;
@@ -26,7 +27,7 @@ import io.vertx.ext.web.RoutingContext;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods {
+		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods, EventbusClientMethods {
 
 	/**
 	 * Create a new mesh rest client.
@@ -103,5 +104,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * Close the client.
 	 */
 	void close();
+
+	
 
 }

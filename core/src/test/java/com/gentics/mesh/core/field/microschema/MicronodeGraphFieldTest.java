@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -70,7 +70,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		Node newOverview = content("news overview");
 		Long date = System.currentTimeMillis();
 
-		Microschema fullMicroschema = new MicroschemaImpl();
+		Microschema fullMicroschema = new MicroschemaModel();
 		fullMicroschema.setName("full");
 
 		//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
@@ -91,7 +91,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
 		node.getSchemaContainer().setSchema(schema);
 
@@ -246,7 +246,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 	 * @throws MeshJsonException
 	 */
 	protected MicroschemaContainer createDummyMicroschema() throws MeshJsonException {
-		Microschema dummyMicroschema = new MicroschemaImpl();
+		Microschema dummyMicroschema = new MicroschemaModel();
 		dummyMicroschema.setName("dummymicroschema");
 
 		// firstname field

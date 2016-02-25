@@ -40,11 +40,19 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		} else {
 			if (languageTags != null) {
-				return micronode.transformToRest(ac, languageTags.toArray(new String[languageTags.size()]));
+				return micronode.transformToRestSync(ac, languageTags.toArray(new String[languageTags.size()]));
 			} else {
-				return micronode.transformToRest(ac);
+				return micronode.transformToRestSync(ac);
 			}
 		}
 	}
 
+	@Override
+	public void removeField() {
+		Micronode micronode = getMicronode();
+		remove();
+		if (micronode != null) {
+			micronode.delete();
+		}
+	}
 }

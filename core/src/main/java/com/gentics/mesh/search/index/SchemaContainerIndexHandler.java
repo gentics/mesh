@@ -15,9 +15,9 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
@@ -73,8 +73,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 				Observable<Void> obs = db.noTrx(() -> {
 					// update the mappings
 					Schema schema = object.getSchema();
-					String schemaName = schema.getName();
-					return nodeIndexHandler.setNodeIndexMapping(Node.TYPE, schemaName, schema);
+					return nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema);
 				});
 				return obs;
 			} else {

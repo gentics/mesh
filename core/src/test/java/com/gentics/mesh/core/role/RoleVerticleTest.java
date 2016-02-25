@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -123,7 +124,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteRole(restRole.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("role_deleted", deleteFuture, restRole.getUuid() + "/" + restRole.getName());
+		expectResponseMessage(deleteFuture, "role_deleted", restRole.getUuid() + "/" + restRole.getName());
 	}
 
 	@Test
@@ -366,6 +367,17 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testUpdateConflictCheck() {
+		MeshRoot.getInstance().getRoleRoot().create("test123", user());
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("test123");
+
+		Future<RoleResponse> future = getClient().updateRole(role().getUuid(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "role_conflicting_name");
+	}
+
+	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
 		RoleUpdateRequest request = new RoleUpdateRequest();
@@ -422,7 +434,7 @@ public class RoleVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteRole(roleUuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("role_deleted", future, roleUuid + "/" + roleName);
+		expectResponseMessage(future, "role_deleted", roleUuid + "/" + roleName);
 		meshRoot().getRoleRoot().reload();
 		assertElement(meshRoot().getRoleRoot(), roleUuid, false);
 	}

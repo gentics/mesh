@@ -1,228 +1,278 @@
 package com.gentics.mesh.core.schema;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Locale;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.SchemaContainer;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.service.I18NUtil;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
-import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.test.AbstractBasicObjectTest;
-import com.gentics.mesh.util.InvalidArgumentException;
+import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.util.FieldUtil;
 
-public class SchemaTest extends AbstractBasicObjectTest {
+public class SchemaTest {
 
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
+	private void expectErrorOnValidate(FieldSchemaContainer container, String bodyMessageI18nKey, String... i18nParams) {
+		try {
+			container.validate();
+			fail("No exception was thrown but we would expect a {" + bodyMessageI18nKey + "} error.");
+		} catch (HttpStatusCodeErrorException e) {
+			assertEquals("The exception did not contain the expected message.", bodyMessageI18nKey, e.getMessage());
+			assertArrayEquals(i18nParams, e.getI18nParameters());
+			// Lets check english translation
+			Locale en = Locale.ENGLISH;
+			String text = I18NUtil.get(en, bodyMessageI18nKey, i18nParams);
+			assertNotEquals("English translation for key " + bodyMessageI18nKey + " not found", text, bodyMessageI18nKey);
 
-	@Test
-	@Override
-	public void testTransformToReference() throws Exception {
-		SchemaContainer schema = schemaContainer("folder");
-		InternalActionContext ac = getMockedInternalActionContext("");
-		SchemaReference reference = schema.transformToReference(ac);
-		assertNotNull(reference);
-		assertEquals(schema.getUuid(), reference.getUuid());
-		assertEquals(schema.getName(), reference.getName());
+			// Lets check german translation
+			Locale de = Locale.GERMAN;
+			text = I18NUtil.get(de, bodyMessageI18nKey, i18nParams);
+			assertNotEquals("German translation for key " + bodyMessageI18nKey + " not found", text, bodyMessageI18nKey);
+		}
 	}
 
 	@Test
-	@Override
-	public void testFindByName() throws IOException {
-		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
-		assertNotNull(schemaContainer);
-		assertEquals("content", schemaContainer.getSchema().getName());
-		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().single());
+	public void testSimpleSchema() throws IOException {
+		Schema schema = new SchemaModel();
+		schema.setName("dummySchema");
+		schema.setContainer(true);
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
+		validateSchema(schema);
 	}
 
 	@Test
-	@Override
-	public void testRootNode() throws MeshSchemaException {
-		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
-		int nSchemasBefore = root.findAll().size();
-		Schema schema = new SchemaImpl();
-		schema.setName("test123");
+	public void testComplexSchema() throws IOException {
+		Schema schema = new SchemaModel();
+		schema.setName("dummySchema");
 		schema.setDisplayField("name");
-		assertNotNull(root.create(schema, user()));
-		int nSchemasAfter = root.findAll().size();
-		assertEquals(nSchemasBefore + 1, nSchemasAfter);
+		schema.setSegmentField("name");
+		schema.setContainer(true);
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		schema.addField(FieldUtil.createHtmlFieldSchema("name_1").setLabel("label_1").setRequired(true));
+		schema.addField(FieldUtil.createStringFieldSchema("name_2").setLabel("label_2").setRequired(true));
+		schema.addField(FieldUtil.createNumberFieldSchema("name_3").setLabel("label_3").setRequired(true));
+		schema.addField(FieldUtil.createDateFieldSchema("name_4").setLabel("label_4").setRequired(true));
+		schema.addField(FieldUtil.createBooleanFieldSchema("name_5").setLabel("label_5").setRequired(true));
+
+		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
+		listFieldSchema.setLabel("label_7").setName("name_7").setRequired(true);
+		listFieldSchema.setAllowedSchemas(new String[] { "folder", "videos" });
+		listFieldSchema.setListType("node");
+		listFieldSchema.setMax(10);
+		listFieldSchema.setMin(3);
+		schema.addField(listFieldSchema);
+
+		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
+		// microschemaFieldSchema.setLabel("label_8").setName("name_8").setRequired(true);
+		// microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "content", "folder" });
+		//
+		// StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
+		// stringFieldSchema.setName("field1").setLabel("label1");
+		// microschemaFieldSchema.getFields().add(stringFieldSchema);
+		// schema.addField(microschemaFieldSchema);
+
+		schema.validate();
+		validateSchema(schema);
 	}
 
-	@Test
-	public void testDefaultSchema() {
-		SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
-		assertEquals(schemaContainers().size(), root.findAll().size());
-	}
-
-	@Test
-	public void testSchemaStorage() {
-		schemaStorage.clear();
-		schemaStorage.init();
-		Schema schema = schemaStorage.getSchema("folder");
-		assertNotNull(schema);
-		assertEquals("folder", schema.getName());
-	}
-
-	@Test
-	@Override
-	public void testFindAllVisible() throws InvalidArgumentException {
-		PageImpl<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
-		assertNotNull(page);
-	}
-
-	@Test
-	@Override
-	public void testFindAll() throws InvalidArgumentException {
-		List<? extends SchemaContainer> schemaContainers = meshRoot().getSchemaContainerRoot().findAll();
-		assertNotNull(schemaContainers);
-		assertEquals(schemaContainers().size(), schemaContainers.size());
-	}
-
-	@Test
-	@Override
-	public void testFindByUUID() throws Exception {
-		String uuid = getSchemaContainer().getUuid();
-		assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
-	}
-
-	@Test
-	@Override
-	public void testDelete() throws Exception {
-		String uuid = getSchemaContainer().getUuid();
-		getSchemaContainer().delete();
-		assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
-	}
-
-	@Test
-	@Override
-	public void testTransformation() throws IOException {
-		SchemaContainer container = getSchemaContainer();
-		Schema schema = container.getSchema();
+	private void validateSchema(Schema schema) throws JsonParseException, JsonMappingException, IOException {
 		assertNotNull(schema);
 		String json = JsonUtil.toJson(schema);
+		System.out.println(json);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaImpl.class);
+		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaModel.class);
+		assertEquals(schema.getFields().size(), deserializedSchema.getFields().size());
 		assertNotNull(deserializedSchema);
 	}
 
 	@Test
-	@Override
-	public void testCreateDelete() throws Exception {
-		Schema schema = new SchemaImpl();
+	public void testNoNameInvalid() throws MeshJsonException {
+		Schema schema = new SchemaModel();
+		expectErrorOnValidate(schema, "schema_error_no_name");
+	}
+
+	@Test
+	public void testNoFieldsInvalid() throws MeshJsonException {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		expectErrorOnValidate(schema, "schema_error_no_fields");
+	}
+
+	@Test
+	public void testSegmentFieldNotSet() throws MeshJsonException {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		schema.setSegmentField(null);
+		schema.validate();
+	}
+
+	@Test
+	public void testSegmentFieldInvalid() throws MeshJsonException {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("invalid");
 		schema.setDisplayField("name");
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
-		assertNotNull(newContainer);
-		String uuid = newContainer.getUuid();
-		newContainer.delete();
-		assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		expectErrorOnValidate(schema, "schema_error_segmentfield_invalid", "invalid");
 	}
 
 	@Test
-	@Override
-	public void testCRUDPermissions() throws MeshSchemaException {
-		Schema schema = new SchemaImpl();
+	public void testMinimalSchemaValid() throws MeshJsonException {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("name");
 		schema.setDisplayField("name");
-		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
-		assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
-		getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
-		assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
-				role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
-
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		schema.validate();
 	}
 
 	@Test
-	@Override
-	public void testRead() throws IOException {
-		assertNotNull(getSchemaContainer().getSchema());
+	public void testDisplayFieldNotSet() throws MeshJsonException {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("name");
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		expectErrorOnValidate(schema, "schema_error_displayfield_not_set");
 	}
 
 	@Test
-	@Override
-	public void testCreate() throws IOException {
-		assertNotNull(getSchemaContainer().getSchema());
+	public void testDuplicateLabelCheckWithNullValues() {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("fieldA");
+		schema.setDisplayField("fieldB");
+		StringFieldSchema fieldA = FieldUtil.createStringFieldSchema("fieldA");
+		StringFieldSchema fieldB = FieldUtil.createStringFieldSchema("fieldB");
+		// Both labels are not set. Thus no conflict should occur.
+		fieldA.setLabel(null);
+		fieldB.setLabel(null);
+		schema.addField(fieldA);
+		schema.addField(fieldB);
+		schema.validate();
 	}
 
 	@Test
-	@Override
-	public void testUpdate() throws IOException {
-		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
-		Schema schema = schemaContainer.getSchema();
-		schema.setName("changed");
-		schemaContainer.setSchema(schema);
-		assertEquals("changed", schemaContainer.getSchema().getName());
-		schemaContainer.setName("changed2");
-		assertEquals("changed2", schemaContainer.getName());
-
-		schema = schemaContainer.getSchema();
-		schema.setContainer(true);
-		assertTrue(schema.isContainer());
-		schemaContainer.setSchema(schema);
-		schema = schemaContainer.getSchema();
-		assertTrue(schema.isContainer());
-
-		schema = schemaContainer.getSchema();
-		schema.setContainer(false);
-		assertFalse(schema.isContainer());
-		schemaContainer.setSchema(schema);
-		schema = schemaContainer.getSchema();
-		assertFalse(schema.isContainer());
+	public void testInvalidListType() {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		ListFieldSchema listField = FieldUtil.createListFieldSchema("listField");
+		listField.setListType("blabla");
+		schema.addField(listField);
+		expectErrorOnValidate(schema, "schema_error_list_type_invalid", "blabla", "listField");
 	}
 
 	@Test
-	@Override
-	public void testReadPermission() throws MeshSchemaException {
-		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
+	public void testMissingListType() {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		ListFieldSchema listField = FieldUtil.createListFieldSchema("listField");
+		listField.setListType(null);
+		schema.addField(listField);
+		expectErrorOnValidate(schema, "schema_error_list_type_missing", "listField");
+	}
+
+	@Test
+	public void testDisplayFieldInvalid() {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("name");
+		schema.setDisplayField("invalid");
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		expectErrorOnValidate(schema, "schema_error_displayfield_invalid", "invalid");
+	}
+
+	@Test
+	public void testDuplicateFieldSchemaName() {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("name");
 		schema.setDisplayField("name");
-		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
-		testPermission(GraphPermission.READ_PERM, newContainer);
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		expectErrorOnValidate(schema, "schema_error_duplicate_field_name", "name");
 	}
 
 	@Test
-	@Override
-	public void testDeletePermission() throws MeshSchemaException {
-		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
+	public void testDuplicateFieldSchemaLabel() {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("name");
 		schema.setDisplayField("name");
-		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
-		testPermission(GraphPermission.DELETE_PERM, newContainer);
+		schema.addField(FieldUtil.createStringFieldSchema("name").setLabel("conflict"));
+		schema.addField(FieldUtil.createStringFieldSchema("name2").setLabel("conflict"));
+		expectErrorOnValidate(schema, "schema_error_duplicate_field_label", "name2", "conflict");
+	}
+
+	/**
+	 * The display field must always point to a string field.
+	 */
+	@Test
+	public void testDisplayFieldToNoStringFieldInvalid() {
+		Schema schema = new SchemaModel();
+		schema.setName("test");
+		schema.setSegmentField("name");
+		schema.setDisplayField("name");
+		schema.addField(FieldUtil.createBinaryFieldSchema("name"));
+		expectErrorOnValidate(schema, "schema_error_displayfield_type_invalid", "name");
+	}
+
+	/**
+	 * The segment field must always point to a string or binary field.
+	 */
+	@Test
+	public void testSegmentFieldToNoStringOrBinaryFieldInvalid() {
+
 	}
 
 	@Test
-	@Override
-	public void testUpdatePermission() throws MeshSchemaException {
-		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
-		schema.setDisplayField("name");
-		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
-		testPermission(GraphPermission.UPDATE_PERM, newContainer);
+	public void testMicroschemaUnsupportedFieldTypeBinary() {
+		Microschema schema = new MicroschemaModel();
+		schema.setName("test");
+		schema.setDescription("some blub");
+		schema.addField(FieldUtil.createBinaryFieldSchema("binary"));
+		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "binary", "binary");
 	}
 
 	@Test
-	@Override
-	public void testCreatePermission() throws MeshSchemaException {
-		SchemaContainer newContainer;
-		Schema schema = new SchemaImpl();
-		schema.setDisplayField("name");
-		newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
-		testPermission(GraphPermission.CREATE_PERM, newContainer);
+	public void testMicroschemaUnsupportedFieldTypeMicronode() {
+		Microschema schema = new MicroschemaModel();
+		schema.setName("test");
+		schema.setDescription("some blub");
+		schema.addField(FieldUtil.createMicronodeFieldSchema("micronode"));
+		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "micronode", "micronode");
+	}
+
+	@Test
+	public void testMicroschemaUnsupportedFieldTypeMicronodeList() {
+		Microschema schema = new MicroschemaModel();
+		schema.setName("test");
+		schema.setDescription("some blub");
+		schema.addField(FieldUtil.createListFieldSchema("list").setListType("micronode"));
+		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "list", "list:micronode");
+	}
+
+	@Test
+	public void testMicroschemaUnsupportedFieldTypeBinaryList() {
+		Microschema schema = new MicroschemaModel();
+		schema.setName("test");
+		schema.setDescription("some blub");
+		schema.addField(FieldUtil.createListFieldSchema("list").setListType("binary"));
+		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "list", "list:binary");
 	}
 
 }

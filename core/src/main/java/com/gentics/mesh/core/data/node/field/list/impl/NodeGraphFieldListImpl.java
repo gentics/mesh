@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
@@ -19,7 +20,7 @@ import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
 
-public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList> implements NodeGraphFieldList {
+public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(NodeGraphFieldListImpl.class);
@@ -37,8 +38,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
-
+		getElement().remove();
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 			List<Observable<NodeResponse>> futures = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				futures.add(item.getNode().transformToRest(ac, lTagsArray));
+				futures.add(item.getNode().transformToRestSync(ac, lTagsArray));
 			}
 
 			return RxUtil.concatList(futures).collect(() -> {
@@ -83,4 +83,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	}
 
+	@Override
+	public List<Node> getValues() {
+		return getList().stream().map(NodeGraphField::getNode).collect(Collectors.toList());
+	}
 }

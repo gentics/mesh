@@ -32,11 +32,11 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 	public void testNumberFieldTransformation() throws Exception {
 		setupData();
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
+//		numberFieldSchema.setMin(10);
+//		numberFieldSchema.setMax(1000);
 		numberFieldSchema.setRequired(true);
 		schema.addField(numberFieldSchema);
 		node.getSchemaContainer().setSchema(schema);

@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,7 +67,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("node_binary_field_updated", future, node.getUuid());
+		expectResponseMessage(future, "node_binary_field_updated", node.getUuid());
 
 		// 3. Try to resolve the path
 		String path = "/News/2015/somefile.dat";
@@ -281,6 +279,6 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 
 		Future<WebRootResponse> webrootFuture = getClient().webroot(PROJECT_NAME, notFoundPath);
 		latchFor(webrootFuture);
-		expectMessage(webrootFuture, NOT_FOUND, null);
+		expectFailureMessage(webrootFuture, NOT_FOUND, null);
 	}
 }

@@ -131,7 +131,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	@Override
 	public Observable<Project> create(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		RouterStorage routerStorage = RouterStorage.getRouterStorage();
+		RouterStorage routerStorage = RouterStorage.getIntance();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 
 		// TODO also create a default object schema for the project. Move this into service class

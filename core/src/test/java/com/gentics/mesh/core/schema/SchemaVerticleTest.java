@@ -27,16 +27,13 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
@@ -48,12 +45,12 @@ import io.vertx.core.Future;
 public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Autowired
-	private SchemaVerticle verticle;
+	private SchemaVerticle schemaVerticle;
 
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
-		list.add(verticle);
+		list.add(schemaVerticle);
 		return list;
 	}
 
@@ -62,22 +59,19 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws HttpStatusCodeErrorException, Exception {
-		SchemaCreateRequest request = new SchemaCreateRequest();
-		request.setName("new schema name");
-		request.setDisplayField("name");
-		request.setSegmentField("name");
+		Schema schema = FieldUtil.createMinimalValidSchema();
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		Future<SchemaResponse> future = getClient().createSchema(request);
+		Future<Schema> future = getClient().createSchema(schema);
 		latchFor(future);
 		assertSuccess(future);
 		assertThat(searchProvider).recordedStoreEvents(1);
-		SchemaResponse restSchemaResponse = future.result();
-		test.assertSchema(request, restSchemaResponse);
+		Schema restSchema = future.result();
+		assertThat(schema).matches(restSchema);
 
-		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchemaResponse.getUuid()).toBlocking().first();
+		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid()).toBlocking().first();
 		assertNotNull(schemaContainer);
-		assertEquals("Name does not match with the requested name", request.getName(), schemaContainer.getName());
+		assertEquals("Name does not match with the requested name", schema.getName(), schemaContainer.getName());
 		// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
@@ -88,29 +82,25 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testCreateReadDelete() throws HttpStatusCodeErrorException, Exception {
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		SchemaCreateRequest request = new SchemaCreateRequest();
-		request.setName("new schema name");
-		request.setDisplayField("name");
-		request.setSegmentField("name");
-		Future<SchemaResponse> createFuture = getClient().createSchema(request);
+		Schema schema = FieldUtil.createMinimalValidSchema();
+
+		Future<Schema> createFuture = getClient().createSchema(schema);
 		latchFor(createFuture);
 		assertSuccess(createFuture);
 		assertThat(searchProvider).recordedStoreEvents(1);
-		SchemaResponse restSchema = createFuture.result();
-		test.assertSchema(request, restSchema);
-
+		Schema restSchema = createFuture.result();
+		assertThat(schema).matches(restSchema);
 		assertElement(boot.meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
-		// test.assertSchema(schema, restSchema);
 		// assertEquals("There should be exactly one property schema.", 1, schema.getPropertyTypes().size());
 
-		Future<SchemaResponse> readFuture = getClient().findSchemaByUuid(restSchema.getUuid());
+		Future<Schema> readFuture = getClient().findSchemaByUuid(restSchema.getUuid());
 		latchFor(readFuture);
 		assertSuccess(readFuture);
 
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteSchema(restSchema.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("schema_deleted", deleteFuture, restSchema.getUuid() + "/" + restSchema.getName());
+		expectResponseMessage(deleteFuture, "schema_deleted", restSchema.getUuid() + "/" + restSchema.getName());
 		// TODO actually also the used nodes should have been deleted
 		assertThat(searchProvider).recordedDeleteEvents(1);
 		assertThat(searchProvider).recordedStoreEvents(1);
@@ -125,15 +115,15 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		int totalSchemas;
 		SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 		final int nSchemas = 22;
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("No Perm Schema");
 		schema.setDisplayField("name");
 		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
-		Schema dummySchema = new SchemaImpl();
+		Schema dummySchema = new SchemaModel();
 		dummySchema.setName("dummy");
 		noPermSchema.setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
-			schema = new SchemaImpl();
+			schema = new SchemaModel();
 			schema.setName("extra_schema_" + i);
 			schema.setDisplayField("name");
 			SchemaContainer extraSchema = schemaRoot.create(schema, user());
@@ -166,7 +156,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 		assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
 
-		List<SchemaResponse> allSchemas = new ArrayList<>();
+		List<Schema> allSchemas = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
 			Future<SchemaListResponse> pageFuture = getClient().findSchemas(new PagingParameter(page, perPage));
 			latchFor(pageFuture);
@@ -179,7 +169,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Verify that the no perm schema is not part of the response
 		// final String noPermSchemaName = noPermSchema.getName();
-		// List<SchemaResponse> filteredSchemaList = allSchemas.parallelStream().filter(restSchema -> restSchema.getName().equals(noPermSchemaName))
+		// List<Schema> filteredSchemaList = allSchemas.parallelStream().filter(restSchema -> restSchema.getName().equals(noPermSchemaName))
 		// .collect(Collectors.toList());
 		// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
@@ -212,10 +202,10 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testReadByUUID() throws Exception {
 		SchemaContainer schemaContainer = schemaContainer("content");
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
+		Future<Schema> future = getClient().findSchemaByUuid(schemaContainer.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		SchemaResponse restSchema = future.result();
+		Schema restSchema = future.result();
 		assertThat(restSchema).matches(schemaContainer);
 	}
 
@@ -225,7 +215,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainer schemaContainer = schemaContainer("content");
 		String uuid = schemaContainer.getUuid();
 
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		Future<Schema> future = getClient().findSchemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());
@@ -242,14 +232,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().grantPermissions(schema, UPDATE_PERM);
 		role().grantPermissions(schema, CREATE_PERM);
 		role().revokePermissions(schema, READ_PERM);
-		Future<SchemaResponse> future = getClient().findSchemaByUuid(schema.getUuid());
+		Future<Schema> future = getClient().findSchemaByUuid(schema.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 	}
 
 	@Test
 	public void testReadSchemaByInvalidUUID() throws Exception {
-		Future<SchemaResponse> future = getClient().findSchemaByUuid("bogus");
+		Future<Schema> future = getClient().findSchemaByUuid("bogus");
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -258,62 +248,33 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Update tests are covered by dedicated test class")
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
-		String name = "new-name";
-		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
-		request.setName(name);
-
-		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		SchemaResponse restSchema = future.result();
-		assertEquals(request.getName(), restSchema.getName());
-		schema.reload();
-		assertEquals("The name of the schema was not updated", name, schema.getName());
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().first();
-		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 
 	@Test
 	public void testCreateWithConflictingName() {
 		String name = "folder";
-		SchemaCreateRequest request = new SchemaCreateRequest();
+		Schema request = new SchemaModel();
 		request.setSegmentField("name");
 		request.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
 		request.setDisplayField("name");
 		request.setName(name);
 
-		Future<SchemaResponse> future = getClient().createSchema(request);
+		Future<Schema> future = getClient().createSchema(request);
 		latchFor(future);
 		expectException(future, CONFLICT, "schema_conflicting_name", name);
-	}
-
-	@Test
-	public void testUpdateWithConflictingName() {
-		String name = "folder";
-		String originalSchemaName = "content";
-		SchemaContainer schema = schemaContainer(originalSchemaName);
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
-		request.setName(name);
-
-		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "schema_conflicting_name", name);
-		schema.reload();
-		assertEquals("The name of the schema was updated", originalSchemaName, schema.getName());
-
 	}
 
 	@Test
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
 		SchemaContainer schema = schemaContainer("content");
 		String oldName = schema.getName();
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		Schema request = new SchemaModel();
 		request.setName("new-name");
 
-		Future<SchemaResponse> future = getClient().updateSchema("bogus", request);
+		Future<GenericMessageResponse> future = getClient().updateSchema("bogus", request);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -331,7 +292,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("schema_deleted", future, schema.getUuid() + "/" + schema.getName());
+		expectResponseMessage(future, "schema_deleted", schema.getUuid() + "/" + schema.getName());
 
 		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().single();
 		assertNull("The schema should have been deleted.", reloaded);
@@ -357,7 +318,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		Schema request = new SchemaModel();
 		request.setName("new-name");
 
 		int nJobs = 5;
@@ -403,7 +364,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Ignore("not yet supported")
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		SchemaCreateRequest request = new SchemaCreateRequest();
+		Schema request = new SchemaModel();
 		request.setName("new schema name");
 		request.setDisplayField("name");
 
@@ -420,11 +381,11 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		SchemaContainer schema = schemaContainer("content");
-		Set<Future<SchemaResponse>> set = new HashSet<>();
+		Set<Future<Schema>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findSchemaByUuid(schema.getUuid()));
 		}
-		for (Future<SchemaResponse> future : set) {
+		for (Future<Schema> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -436,10 +397,10 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainer schema = schemaContainer("content");
 		role().revokePermissions(schema, UPDATE_PERM);
 
-		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		Schema request = new SchemaModel();
 		request.setName("new-name");
 
-		Future<SchemaResponse> future = getClient().updateSchema(schema.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateSchema(schema.getUuid(), request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", schema.getUuid());
 

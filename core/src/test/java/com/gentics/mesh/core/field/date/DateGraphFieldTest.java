@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
+import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -30,8 +31,8 @@ public class DateGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testDateFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
-		DateFieldSchemaImpl dateFieldSchema = new DateFieldSchemaImpl();
+		Schema schema = node.getSchemaContainer().getSchema();
+		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 		dateFieldSchema.setName("dateField");
 		dateFieldSchema.setLabel("Some date field");
 		dateFieldSchema.setRequired(true);

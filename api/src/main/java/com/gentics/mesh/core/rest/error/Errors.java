@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import java.util.HashMap;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import rx.Observable;
 
 public final class Errors {
 

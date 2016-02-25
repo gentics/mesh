@@ -22,14 +22,13 @@ import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.json.JsonUtil;
@@ -59,7 +58,7 @@ public class RestModelTest extends AbstractDBTest {
 	}
 
 	private Schema getDummySchema() {
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("content");
 		schema.setDisplayField("title");
 //		schema.setMeshVersion(Mesh.getVersion());
@@ -153,7 +152,7 @@ public class RestModelTest extends AbstractDBTest {
 	@Test
 	public void testSchema() throws JsonParseException, JsonMappingException, IOException {
 
-		SchemaCreateRequest schemaCreateRequest = new SchemaCreateRequest();
+		Schema schemaCreateRequest = new SchemaModel();
 		schemaCreateRequest.setName("blogpost");
 		schemaCreateRequest.setDisplayField("name");
 
@@ -203,7 +202,7 @@ public class RestModelTest extends AbstractDBTest {
 		assertNotNull(json);
 
 		// Deserialize the object
-		SchemaCreateRequest loadedRequest = JsonUtil.readSchema(json, SchemaCreateRequest.class);
+		Schema loadedRequest = JsonUtil.readSchema(json, SchemaModel.class);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object
@@ -213,8 +212,8 @@ public class RestModelTest extends AbstractDBTest {
 	}
 
 	@Test
-	public void testNodeSchemaCreateRequest2() {
-		Schema schema = new SchemaImpl();
+	public void testNodeSchema2() {
+		Schema schema = new SchemaModel();
 
 		schema.setName("blogpost");
 		schema.setDisplayField("name");

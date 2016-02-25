@@ -20,6 +20,7 @@ public interface ListFieldSchema extends FieldSchema {
 	 *            List type
 	 * @return Fluent API
 	 */
+	//TODO convert the list type to an enum
 	ListFieldSchema setListType(String listType);
 
 	/**

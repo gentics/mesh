@@ -18,7 +18,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -35,6 +34,7 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -78,7 +78,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void addLanguage(Language language) {
-		setLinkOutTo(language.getImpl(), HAS_LANGUAGE);
+		setUniqueLinkOutTo(language.getImpl(), HAS_LANGUAGE);
 	}
 
 	@Override
@@ -147,24 +147,21 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.asyncNoTrxExperimental(() -> {
-			Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
+	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+		Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
-			ProjectResponse restProject = new ProjectResponse();
-			restProject.setName(getName());
-			restProject.setRootNodeUuid(getBaseNode().getUuid());
+		ProjectResponse restProject = new ProjectResponse();
+		restProject.setName(getName());
+		restProject.setRootNodeUuid(getBaseNode().getUuid());
 
-			// Add common fields
-			obsParts.add(fillCommonRestFields(ac, restProject));
+		// Add common fields
+		obsParts.add(fillCommonRestFields(ac, restProject));
 
-			// Role permissions
-			obsParts.add(setRolePermissions(ac, restProject));
+		// Role permissions
+		obsParts.add(setRolePermissions(ac, restProject));
 
-			// Merge and complete
-			return Observable.merge(obsParts).last();
-		});
+		// Merge and complete
+		return Observable.merge(obsParts).last();
 	}
 
 	@Override
@@ -190,7 +187,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
-		RouterStorage.getRouterStorage().removeProjectRouter(getName());
+		RouterStorage.getIntance().removeProjectRouter(getName());
 		getBaseNode().delete(true);
 		getTagFamilyRoot().delete();
 		getNodeRoot().delete();
@@ -210,13 +207,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		return db.trx(() -> {
-			// Check for conflicting project name
-			if (requestModel.getName() != null && !getName().equals(requestModel.getName())) {
+			if (shouldUpdate(requestModel.getName(), getName())) {
+				// Check for conflicting project name
 				Project projectWithSameName = MeshRoot.getInstance().getProjectRoot().findByName(requestModel.getName()).toBlocking().single();
 				if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
-					HttpStatusCodeErrorException conflictError = conflict(projectWithSameName.getUuid(), requestModel.getName(),
-							"project_conflicting_name");
-					throw conflictError;
+					throw conflict(projectWithSameName.getUuid(), requestModel.getName(), "project_conflicting_name");
 				}
 				setName(requestModel.getName());
 			}

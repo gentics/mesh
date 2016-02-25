@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
-import com.gentics.mesh.test.TestUtil;
+import com.gentics.mesh.test.TestUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -207,8 +207,8 @@ public class TrxTest extends AbstractBasicDBTest {
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
 		String result = db.asyncNoTrxExperimental(() -> {
-			TestUtil.run(() -> {
-				TestUtil.sleep(1000);
+			TestUtils.run(() -> {
+				TestUtils.sleep(1000);
 			});
 			return Observable.just("OK");
 		}).toBlocking().last();
@@ -316,7 +316,7 @@ public class TrxTest extends AbstractBasicDBTest {
 			for (int i = 0; i < nThreads; i++) {
 				final int threadNo = i;
 				System.out.println("Thread [" + threadNo + "] Starting");
-				Thread t = TestUtil.run(() -> {
+				Thread t = TestUtils.run(() -> {
 
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {

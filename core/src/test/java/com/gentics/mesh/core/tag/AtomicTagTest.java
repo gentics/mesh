@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 
 public class AtomicTagTest extends AbstractEmptyDBTest {
@@ -28,7 +28,7 @@ public class AtomicTagTest extends AbstractEmptyDBTest {
 		languageRoot.create("Deutsch", "de");
 		languageRoot.create("English", "en");
 
-		Schema schema = new SchemaImpl();
+		Schema schema = new SchemaModel();
 		schema.setName("folder");
 		schema.setDisplayField("name");
 		meshRoot.getSchemaContainerRoot().create(schema, user);

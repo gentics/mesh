@@ -29,7 +29,7 @@ public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
 	@Test
 	public void testSimpleHTML() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphFieldImpl field = new HtmlGraphFieldImpl("test", container);
+		HtmlGraphField field = new HtmlGraphFieldImpl("test", container);
 		assertEquals(2, container.getPropertyKeys().size());
 		assertNull(container.getProperty("test-html"));
 		field.setHtml("dummy HTML");
@@ -39,6 +39,9 @@ public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
 		field.setHtml(null);
 		assertNull(field.getHTML());
 		assertNull(container.getProperty("test-html"));
+
+		HtmlGraphField reloadedField = container.getHtml("test");
+		assertNull("The html field value was set to null and thus was removed", reloadedField);
 	}
 
 	@Test
@@ -59,7 +62,7 @@ public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
 	public void testHtmlFieldTransformation() throws Exception {
 		setupData();
 		Node node = folder("2015");
-		Schema schema = node.getSchema();
+		Schema schema = node.getSchemaContainer().getSchema();
 		HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("htmlField");
 		htmlFieldSchema.setLabel("Some html field");

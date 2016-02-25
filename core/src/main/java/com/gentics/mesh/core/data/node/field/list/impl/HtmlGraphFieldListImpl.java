@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
@@ -14,7 +15,7 @@ import rx.Observable;
 /**
  * @see HtmlGraphFieldList
  */
-public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl> implements HtmlGraphFieldList {
+public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
 	@Override
 	public HtmlGraphField createHTML(String html) {
@@ -40,7 +41,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 
 	@Override
 	public void delete() {
-		// TODO Auto-generated method stub
+		getElement().remove();
 	}
 
 	@Override
@@ -50,5 +51,10 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 			restModel.add(item.getHTML());
 		}
 		return Observable.just(restModel);
+	}
+
+	@Override
+	public List<String> getValues() {
+		return getList().stream().map(HtmlGraphField::getHTML).collect(Collectors.toList());
 	}
 }

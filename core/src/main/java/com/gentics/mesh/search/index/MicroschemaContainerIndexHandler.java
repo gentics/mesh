@@ -53,7 +53,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, microschema);
 		map.put(NAME_KEY, microschema.getName());
-		map.put(DESCRIPTION_KEY, microschema.getMicroschema().getDescription());
+		map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
 		return map;
 	}
 

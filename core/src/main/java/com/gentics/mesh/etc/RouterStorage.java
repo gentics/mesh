@@ -68,7 +68,7 @@ public class RouterStorage {
 		RouterStorage.instance = this;
 	}
 
-	public static RouterStorage getRouterStorage() {
+	public static RouterStorage getIntance() {
 		return instance;
 	}
 
@@ -120,7 +120,7 @@ public class RouterStorage {
 		}
 		// TODO It would be good to have two body handler. One for fileuploads and one for post data handling
 		router.route().handler(springConfiguration.bodyHandler());
-		
+
 		router.route().handler(CookieHandler.create());
 		if (Mesh.mesh().getOptions().getAuthenticationOptions().getAuthenticationMethod() == AuthenticationMethod.BASIC_AUTH) {
 			router.route().handler(springConfiguration.sessionHandler());

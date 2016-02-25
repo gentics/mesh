@@ -23,12 +23,8 @@ import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class NodeLanguagesVerticleTest extends AbstractRestVerticleTest {
-
-	private static final Logger log = LoggerFactory.getLogger(NodeLanguagesVerticleTest.class);
 
 	@Autowired
 	private NodeVerticle verticle;
@@ -50,7 +46,7 @@ public class NodeLanguagesVerticleTest extends AbstractRestVerticleTest {
 
 		assertSuccess(future);
 		node.reload();
-		expectMessageResponse("node_deleted_language", future, node.getUuid(), "en");
+		expectResponseMessage(future, "node_deleted_language", node.getUuid(), "en");
 		assertThat(searchProvider).recordedDeleteEvents(1);
 		assertFalse(node.getAvailableLanguageNames().contains("en"));
 		assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());

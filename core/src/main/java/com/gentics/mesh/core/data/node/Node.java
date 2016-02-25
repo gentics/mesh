@@ -9,13 +9,12 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.path.Path;
@@ -71,13 +70,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @param schema
 	 */
 	void setSchemaContainer(SchemaContainer schema);
-
-	/**
-	 * Shortcut method for getSchemaContainer().getSchema()
-	 * 
-	 * @return
-	 */
-	Schema getSchema();
 
 	/**
 	 * Return the field container for the given language.

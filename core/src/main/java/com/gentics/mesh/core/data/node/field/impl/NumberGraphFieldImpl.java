@@ -48,4 +48,10 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		restModel.setNumber(getNumber());
 		return Observable.just(restModel);
 	}
+
+	@Override
+	public void removeField() {
+		setFieldProperty("number", null);
+		setFieldKey(null);
+	}
 }

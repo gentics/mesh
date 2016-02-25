@@ -1,6 +1,5 @@
 package com.gentics.mesh.path;
 
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 

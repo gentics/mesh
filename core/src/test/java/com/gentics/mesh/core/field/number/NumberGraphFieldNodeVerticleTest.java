@@ -37,8 +37,8 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		Schema schema = schemaContainer("folder").getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("numberField");
-		numberFieldSchema.setMin(10);
-		numberFieldSchema.setMax(1000);
+//		numberFieldSchema.setMin(10);
+//		numberFieldSchema.setMax(1000);
 		numberFieldSchema.setRequired(true);
 		schema.addField(numberFieldSchema);
 		schemaContainer("folder").setSchema(schema);

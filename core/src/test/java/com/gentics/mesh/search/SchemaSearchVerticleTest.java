@@ -1,23 +1,33 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 
 public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
@@ -25,12 +35,33 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Autowired
 	private SchemaVerticle schemaVerticle;
 
+	@Autowired
+	private EventbusVerticle eventbusVerticle;
+
+	@Autowired
+	private NodeMigrationVerticle nodeMigrationVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
 		list.add(schemaVerticle);
+		list.add(eventbusVerticle);
 		return list;
+	}
+
+	@Override
+	@Before
+	public void setupVerticleTest() throws Exception {
+		super.setupVerticleTest();
+		DeploymentOptions options = new DeploymentOptions();
+		options.setWorker(true);
+		vertx.deployVerticle(nodeMigrationVerticle, options);
+	}
+
+	@After
+	public void setopWorkerVerticle() throws Exception {
+		nodeMigrationVerticle.stop();
 	}
 
 	@Test
@@ -60,9 +91,10 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Override
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
-		SchemaResponse schema = createSchema(newName);
+		Schema schema = createSchema(newName);
 		MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
-		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName), new PagingParameter().setPage(1).setPerPage(2));
+		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", newName),
+				new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -73,7 +105,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		final String schemaName = "newschemaname";
-		SchemaResponse schema = createSchema(schemaName);
+		Schema schema = createSchema(schemaName);
 
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
 				new PagingParameter().setPage(1).setPerPage(2));
@@ -90,22 +122,32 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 
 	@Test
 	@Override
-	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		final String schemaName = "newschemaname";
-		SchemaResponse schema = createSchema(schemaName);
+	public void testDocumentUpdate() throws Exception {
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
+		// 1. Create a new schema
+		final String schemaName = "newschemaname";
+		Schema schema = createSchema(schemaName);
+
+		// 2. Setup latch for migration/schema update
 		String newSchemaName = "updatedschemaname";
 		updateSchema(schema.getUuid(), newSchemaName);
 
+		// 3. Wait for migration to complete
+		failingLatch(latch);
+
+		// 4. Search for the original schema
 		Future<SchemaListResponse> future = getClient().searchSchemas(getSimpleTermQuery("name", schemaName),
 				new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		assertEquals("The schema with the old name {" + schemaName + "} was found but it should not have been since we updated it.", 0,
+				future.result().getData().size());
 
+		// 5. Search for the updated schema
 		future = getClient().searchSchemas(getSimpleTermQuery("name", newSchemaName), new PagingParameter().setPage(1).setPerPage(2));
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals(1, future.result().getData().size());
+		assertEquals("The schema with the updated name was not found.", 1, future.result().getData().size());
 	}
 }

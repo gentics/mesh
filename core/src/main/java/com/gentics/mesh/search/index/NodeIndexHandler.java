@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -74,6 +74,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	public static NodeIndexHandler getInstance() {
 		return instance;
+	}
+
+	/**
+	 * Get the document type for documents stored for the given schema
+	 * @param schema schema
+	 * @return document type
+	 */
+	public static String getDocumentType(Schema schema) {
+		return new StringBuilder(schema.getName()).append("-").append(schema.getVersion()).toString();
 	}
 
 	@Override
@@ -118,7 +127,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
 
-			addFields(map, container, node.getSchema().getFields());
+			addFields(map, container, node.getSchemaContainer().getSchema().getFields());
 			if (log.isTraceEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.trace("Search index json:");
@@ -127,8 +136,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			// Add display field value
 			Map<String, String> displayFieldMap = new HashMap<>();
-			displayFieldMap.put("key", node.getSchema().getDisplayField());
-			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchema()));
+			displayFieldMap.put("key", node.getSchemaContainer().getSchema().getDisplayField());
+			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchemaContainer().getSchema()));
 			map.put("displayField", displayFieldMap);
 			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 		}
@@ -159,7 +168,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
 
-			addFields(map, container, node.getSchema().getFields());
+			addFields(map, container, node.getSchemaContainer().getSchema().getFields());
 			if (log.isDebugEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
@@ -409,7 +418,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            language
 	 * @return document ID
 	 */
-	public String composeDocumentId(Node node, String language) {
+	public static String composeDocumentId(Node node, String language) {
 		StringBuilder id = new StringBuilder(node.getUuid());
 		id.append("-").append(language);
 		return id.toString();
@@ -425,7 +434,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	private String getDocumentType(Node node, String language) {
-		return node.getSchemaContainer().getName();
+		return getDocumentType(node.getSchemaContainer().getSchema());
 	}
 
 	/**

@@ -214,12 +214,32 @@ public interface Database {
 	Object createComposedIndexKey(Object... keys);
 
 	/**
-	 * Add an vertex index for the given type of vertex and fields.
-	 * 
+	 * Add a vertex index for the given type of vertex and fields.
 	 * @param clazzOfVertices
+	 * @param unique true to create unique key
 	 * @param fields
 	 */
-	void addVertexIndex(Class<?> clazzOfVertices, String... fields);
+	default void addVertexIndex(Class<?> clazzOfVertices, boolean unique, String... fields) {
+		addVertexIndex(clazzOfVertices.getSimpleName(), clazzOfVertices, unique, fields);
+	}
+
+	/**
+	 * Add a named vertex index for the given type of vertex and fields
+	 * @param indexName index name
+	 * @param clazzOfVertices
+	 * @param unique
+	 * @param fields
+	 */
+	void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields);
+
+	/**
+	 * Check whether the values can be put into the given index for the given element
+	 * @param indexName index name
+	 * @param element element
+	 * @param key index key to check
+	 * @return the conflicting element or null if no conflict exists
+	 */
+	<T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key);
 
 	void addEdgeType(String label, String... stringPropertyKeys);
 

@@ -1,0 +1,164 @@
+package com.gentics.mesh.core.data.fieldhandler;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.junit.Test;
+
+import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.test.AbstractEmptyDBTest;
+import com.gentics.mesh.util.FieldUtil;
+
+public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C extends FieldSchemaContainer> extends AbstractEmptyDBTest {
+
+	public abstract AbstractFieldSchemaContainerComparator<C> getComparator();
+
+	/**
+	 * Create a new field container instance that will be used for comparison.
+	 * 
+	 * @return
+	 */
+	public abstract C createContainer();
+
+	/**
+	 * Create a new field to be used for the tests.
+	 * 
+	 * @param fieldName
+	 * @return
+	 */
+	public abstract T createField(String fieldName);
+
+	/**
+	 * Test comparing two schema fields with same properties. Assert that no change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	public abstract void testSameField() throws IOException;
+
+	/**
+	 * Test adding a field to a schema and assert that the expected change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testAddField() throws IOException {
+		C containerA = createContainer();
+		containerA.setName("test");
+		containerA.addField(FieldUtil.createStringFieldSchema("first"));
+
+		C containerB = createContainer();
+		containerB.setName("test");
+		containerB.addField(FieldUtil.createStringFieldSchema("first"));
+
+		// Add new field in B
+		T field = createField("test");
+		containerB.addField(field);
+
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
+		assertThat(changes).hasSize(2);
+		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType()).hasProperty("after", "first");
+		assertThat(changes.get(1)).isUpdateOperation(containerA);
+		//.hasProperty("order", new String[] { "first", "test" });
+
+	}
+
+	/**
+	 * Test adding a field to a empty schema and assert that the expected change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testAddFieldToSchema() throws IOException {
+		C containerA = createContainer();
+		containerA.setName("test");
+		C containerB = createContainer();
+		containerB.setName("test");
+		T field = createField("test");
+		containerB.addField(field);
+
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
+		assertThat(changes).hasSize(2);
+		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType());
+
+		if (containerA.getFields().size() > 0) {
+			String lastField = containerA.getFields().get(containerA.getFields().size()-1).getName();
+			assertThat(changes.get(0)).hasProperty("after", lastField);
+		} else {
+			assertThat(changes.get(0)).hasNoProperty("order");
+		}
+		assertThat(changes.get(1)).isUpdateOperation(containerA);
+
+	}
+
+	/**
+	 * Test removing a field from a schema and assert that the expected change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testRemoveField() throws IOException {
+		C containerA = createContainer();
+		containerA.addField(createField("test"));
+		C containerB = createContainer();
+
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
+		assertThat(changes.get(0)).is(REMOVEFIELD).forField("test");
+		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
+	}
+
+	/**
+	 * Test updating the properties of a field and assert that the expected change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	public abstract void testUpdateField() throws IOException;
+
+	/**
+	 * Test changing the field type in between two fields and assert that the expected change was generated.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testChangeFieldType() throws IOException {
+
+		C containerA = createContainer();
+		containerA.setName("test");
+		T fieldA = createField("test");
+		containerA.addField(fieldA);
+		String newType = "html";
+
+		C containerB = createContainer();
+		containerB.setName("test");
+		// Lists -> html field or basic field -> list 
+		if (fieldA instanceof ListFieldSchema) {
+			FieldSchema fieldB = FieldUtil.createHtmlFieldSchema("test");
+			containerB.addField(fieldB);
+		} else {
+			ListFieldSchema fieldB = FieldUtil.createListFieldSchema("test");
+			fieldB.setListType("html");
+			containerB.addField(fieldB);
+			newType = "list";
+		}
+
+		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(CHANGEFIELDTYPE).forField("test").hasProperty(SchemaChangeModel.TYPE_KEY, newType);
+		if ("list".equals(newType)) {
+			assertThat(changes.get(0)).hasProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
+		}
+		assertNotNull("A migration script should have been set.", changes.get(0).getMigrationScript());
+
+	}
+
+}

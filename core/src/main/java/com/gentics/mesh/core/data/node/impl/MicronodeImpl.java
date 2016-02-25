@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -41,58 +41,53 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Observable<MicronodeResponse> transformToRest(InternalActionContext ac, String... languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
+	public Observable<MicronodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
+		MicronodeResponse restMicronode = new MicronodeResponse();
+		MicroschemaContainer microschemaContainer = getMicroschemaContainer();
+		if (microschemaContainer == null) {
+			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
+		}
 
-		return db.asyncNoTrxExperimental(() -> {
-			List<Observable<MicronodeResponse>> obs = new ArrayList<>();
-			MicronodeResponse restMicronode = new MicronodeResponse();
-			MicroschemaContainer microschemaContainer = getMicroschemaContainer();
-			if (microschemaContainer == null) {
-				throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
-			}
+		Microschema microschema = microschemaContainer.getSchema();
+		if (microschema == null) {
+			throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
+		}
 
-			Microschema microschema = microschemaContainer.getMicroschema();
-			if (microschema == null) {
-				throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
-			}
+		// Microschema Reference
+		restMicronode.setMicroschema(microschemaContainer.transformToReference(ac));
 
-			// Microschema Reference
-			restMicronode.setMicroschema(microschemaContainer.transformToReference(ac));
+		// Uuid
+		restMicronode.setUuid(getUuid());
 
-			// Uuid
-			restMicronode.setUuid(getUuid());
+		List<String> requestedLanguageTags = new ArrayList<>();
+		if (languageTags.length == 0) {
+			requestedLanguageTags.addAll(ac.getSelectedLanguageTags());
+		} else {
+			requestedLanguageTags.addAll(Arrays.asList(languageTags));
+		}
 
-			List<String> requestedLanguageTags = new ArrayList<>();
-			if (languageTags.length == 0) {
-				requestedLanguageTags.addAll(ac.getSelectedLanguageTags());
-			} else {
-				requestedLanguageTags.addAll(Arrays.asList(languageTags));
-			}
+		// Fields
+		for (FieldSchema fieldEntry : microschema.getFields()) {
+			Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags)
+					.map(restField -> {
+				if (fieldEntry.isRequired() && restField == null) {
+					/* TODO i18n */
+					// TODO no trx fail. Instead let obsRestField fail
+					throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+							+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
+				}
+				if (restField == null) {
+					log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+				} else {
+					restMicronode.getFields().put(fieldEntry.getName(), restField);
+				}
+				return restMicronode;
+			});
+			obs.add(obsRestField);
+		}
 
-			// Fields
-			for (FieldSchema fieldEntry : microschema.getFields()) {
-				Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags)
-						.map(restField -> {
-					if (fieldEntry.isRequired() && restField == null) {
-						/* TODO i18n */
-						// TODO no trx fail. Instead let obsRestField fail
-						throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-								+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
-					}
-					if (restField == null) {
-						log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-					} else {
-						restMicronode.getFields().put(fieldEntry.getName(), restField);
-					}
-					return restMicronode;
-				});
-				obs.add(obsRestField);
-			}
-
-			return Observable.merge(obs).last();
-
-		});
+		return Observable.merge(obs).last();
 	}
 
 	@Override
@@ -107,7 +102,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Microschema getMicroschema() {
-		return getMicroschemaContainer().getMicroschema();
+		return getMicroschemaContainer().getSchema();
 	}
 
 	@Override
@@ -116,7 +111,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	protected Node getParentNode() {
+	public NodeGraphFieldContainer getContainer() {
 		// first try to get the container in case for normal fields
 		NodeGraphFieldContainerImpl container = in(HAS_FIELD).has(NodeGraphFieldContainerImpl.class)
 				.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
@@ -126,6 +121,13 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			container = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class,
 					null);
 		}
+
+		return container;
+	}
+
+	@Override
+	public Node getParentNode() {
+		NodeGraphFieldContainer container = getContainer();
 
 		if (container == null) {
 			throw error(BAD_REQUEST, "error_field_container_without_node");

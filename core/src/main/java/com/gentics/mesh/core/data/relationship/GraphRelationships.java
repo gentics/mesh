@@ -38,6 +38,7 @@ public class GraphRelationships {
 
 		db.addEdgeType(HAS_SCHEMA_TYPE);
 		db.addEdgeType(HAS_SCHEMA_ROOT);
+		db.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
 		db.addEdgeType(HAS_SCHEMA_CONTAINER);
 		db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
 		db.addEdgeType(HAS_MICROSCHEMA_ROOT);
@@ -56,6 +57,10 @@ public class GraphRelationships {
 		db.addEdgeType(ALLOWED_SCHEMA);
 
 		db.addEdgeType(HAS_LIST);
+
+		// Versioning
+		db.addEdgeType(HAS_VERSION);
+
 	}
 
 	// Auth Relationships
@@ -102,6 +107,7 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
+	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
 	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
 
@@ -120,5 +126,9 @@ public class GraphRelationships {
 	public static final String ALLOWED_SCHEMA = "ALLOWED_SCHEMA";
 
 	public static final String HAS_LIST = "HAS_LIST";
+
+	// Versioning
+	public static final String HAS_VERSION = "HAS_VERSION";
+	public static final String HAS_CHANGE = "HAS_CHANGE";
 
 }

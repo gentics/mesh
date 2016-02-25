@@ -20,13 +20,14 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.handler.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
-public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends AbstractMeshVertex<T>
+public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
 		implements MeshCoreVertex<T, R> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
@@ -113,11 +114,16 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
 		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
 
-		return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
-			String[] names = list.toArray(new String[list.size()]);
-			model.setPermissions(names);
-			return model;
-		});
+		if (ac instanceof NodeMigrationActionContextImpl) {
+			// when this is a node migration, do not set user permissions
+			return Observable.just(model);
+		} else {
+			return ac.getUser().getPermissionNamesAsync(ac, this).map(list -> {
+				String[] names = list.toArray(new String[list.size()]);
+				model.setPermissions(names);
+				return model;
+			});
+		}
 	}
 
 	@Override
@@ -150,6 +156,17 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		setCreationTimestamp(System.currentTimeMillis());
 		setEditor(creator);
 		setLastEditedTimestamp(System.currentTimeMillis());
+	}
+
+	/**
+	 * Compare both string values in order to determine whether the graph value should be updated.
+	 * 
+	 * @param restValue
+	 * @param graphValue
+	 * @return true if restValue is not empty or null and the restValue is not equal to the graph value. Otherwise false.
+	 */
+	protected boolean shouldUpdate(String restValue, String graphValue) {
+		return !isEmpty(restValue) && !restValue.equals(graphValue);
 	}
 
 }

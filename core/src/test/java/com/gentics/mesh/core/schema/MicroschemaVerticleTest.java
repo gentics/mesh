@@ -8,10 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,10 +29,8 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.MicroschemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
@@ -77,7 +73,6 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Ignore("Not yet implemented")
-
 	@Test
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws Exception {
@@ -88,7 +83,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+		Microschema request = new MicroschemaModel();
 		request.setName("new microschema name");
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -107,11 +102,11 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(vcardContainer);
 		String uuid = vcardContainer.getUuid();
 
-		Set<Future<MicroschemaResponse>> set = new HashSet<>();
+		Set<Future<Microschema>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			set.add(getClient().findMicroschemaByUuid(uuid));
 		}
-		for (Future<MicroschemaResponse> future : set) {
+		for (Future<Microschema> future : set) {
 			latchFor(future);
 			assertSuccess(future);
 		}
@@ -120,16 +115,16 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+		Microschema request = new MicroschemaModel();
 		request.setName("new microschema name");
 		request.setDescription("microschema description");
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		Future<MicroschemaResponse> future = getClient().createMicroschema(request);
+		Future<Microschema> future = getClient().createMicroschema(request);
 		latchFor(future);
 		assertSuccess(future);
 		assertThat(searchProvider).recordedStoreEvents(1);
-		MicroschemaResponse microschemaResponse = future.result();
+		Microschema microschemaResponse = future.result();
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
 	}
 
@@ -146,11 +141,11 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testReadByUUID() throws Exception {
 		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 		assertNotNull(vcardContainer);
-		Future<MicroschemaResponse> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
+		Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		MicroschemaResponse microschemaResponse = future.result();
-		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getMicroschema(), "name", "description");
+		Microschema microschemaResponse = future.result();
+		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getSchema(), "name", "description");
 	}
 
 	@Test
@@ -160,7 +155,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(vcardContainer);
 		String uuid = vcardContainer.getUuid();
 
-		Future<MicroschemaResponse> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		Future<Microschema> future = getClient().findMicroschemaByUuid(uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull(future.result().getRolePerms());
@@ -178,7 +173,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().grantPermissions(vcardContainer, CREATE_PERM);
 		role().revokePermissions(vcardContainer, READ_PERM);
 
-		Future<MicroschemaResponse> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
+		Future<Microschema> future = getClient().findMicroschemaByUuid(vcardContainer.getUuid());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
 	}
@@ -192,23 +187,8 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	@Override
+	@Ignore("Handled via microschema changes verticle test")
 	public void testUpdate() throws Exception {
-		String name = "new-name";
-		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
-		assertNotNull(vcardContainer);
-
-		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-		request.setName(name);
-
-		Future<MicroschemaResponse> future = getClient().updateMicroschema(vcardContainer.getUuid(), request);
-		latchFor(future);
-		assertSuccess(future);
-		MicroschemaResponse restSchema = future.result();
-		assertEquals(request.getName(), restSchema.getName());
-		vcardContainer.reload();
-		assertEquals("The name of the microschema was not updated", name, vcardContainer.getName());
-		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(vcardContainer.getUuid()).toBlocking().single();
-		assertEquals("The name should have been updated", name, reloaded.getName());
 
 	}
 
@@ -219,10 +199,10 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(microschema);
 		role().revokePermissions(microschema, UPDATE_PERM);
 
-		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		Microschema request = new MicroschemaModel();
 		request.setName("new-name");
 
-		Future<MicroschemaResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
+		Future<GenericMessageResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
 	}
@@ -233,10 +213,10 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		MicroschemaContainer microschema = microschemaContainers().get("vcard");
 		assertNotNull(microschema);
 		String oldName = microschema.getName();
-		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		Microschema request = new MicroschemaModel();
 		request.setName("new-name");
 
-		Future<MicroschemaResponse> future = getClient().updateMicroschema("bogus", request);
+		Future<GenericMessageResponse> future = getClient().updateMicroschema("bogus", request);
 		latchFor(future);
 		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
@@ -253,7 +233,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteMicroschema(microschema.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("microschema_deleted", future, microschema.getUuid() + "/" + microschema.getName());
+		expectResponseMessage(future, "microschema_deleted", microschema.getUuid() + "/" + microschema.getName());
 
 		MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid()).toBlocking().single();
 		assertNull("The microschema should have been deleted.", reloaded);
@@ -274,19 +254,4 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertElement(boot.microschemaContainerRoot(), microschema.getUuid(), true);
 	}
 
-	@Test
-	public void testUpdateWithConflictingName() {
-		String name = "captionedImage";
-		String originalSchemaName = "vcard";
-		MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
-		assertNotNull(microschema);
-		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-		request.setName(name);
-
-		Future<MicroschemaResponse> future = getClient().updateMicroschema(microschema.getUuid(), request);
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "microschema_conflicting_name", name);
-		microschema.reload();
-		assertEquals("The name of the microschema was updated", originalSchemaName, microschema.getName());
-	}
 }

@@ -1,16 +1,15 @@
 package com.gentics.mesh.rest.method;
 
-import io.vertx.core.Future;
-
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.rest.ClientSchemaStorage;
 import com.gentics.mesh.rest.MeshRestClient;
+
+import io.vertx.core.Future;
 
 public interface SchemaClientMethods {
 
@@ -20,7 +19,7 @@ public interface SchemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	Future<SchemaResponse> createSchema(SchemaCreateRequest request);
+	Future<Schema> createSchema(Schema request);
 
 	/**
 	 * Load the schema with the given uuid.
@@ -29,7 +28,7 @@ public interface SchemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<SchemaResponse> findSchemaByUuid(String uuid, QueryParameterProvider... parameters);
+	Future<Schema> findSchemaByUuid(String uuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Update the schema with the given request.
@@ -40,7 +39,15 @@ public interface SchemaClientMethods {
 	 *            Update request
 	 * @return
 	 */
-	Future<SchemaResponse> updateSchema(String uuid, SchemaUpdateRequest request);
+	Future<GenericMessageResponse> updateSchema(String uuid, Schema request);
+
+	/**
+	 * Compare the given schema with the currently stored one and return a list of schema changes.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	Future<SchemaChangesListModel> diffSchema(String uuid, Schema request);
 
 	/**
 	 * Delete the given schema
@@ -58,7 +65,7 @@ public interface SchemaClientMethods {
 	 * @param projectUuid
 	 * @return
 	 */
-	Future<SchemaResponse> addSchemaToProject(String schemaUuid, String projectUuid);
+	Future<Schema> addSchemaToProject(String schemaUuid, String projectUuid);
 
 	/**
 	 * Remove the given schema from the given project.
@@ -67,7 +74,7 @@ public interface SchemaClientMethods {
 	 * @param projectUuid
 	 * @return
 	 */
-	Future<SchemaResponse> removeSchemaFromProject(String schemaUuid, String projectUuid);
+	Future<Schema> removeSchemaFromProject(String schemaUuid, String projectUuid);
 
 	/**
 	 * Load multiple schemas.
@@ -87,7 +94,7 @@ public interface SchemaClientMethods {
 	Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters);
 
 	/**
-	 * Load multiple microschemas
+	 * Load multiple microschemas.
 	 * 
 	 * @param parameters
 	 * @return
@@ -101,5 +108,16 @@ public interface SchemaClientMethods {
 	 * @return
 	 */
 	Future<Void> initSchemaStorage();
+
+	/**
+	 * Apply the given list of changes to the schema which is identified by the given uuid.
+	 * 
+	 * @param uuid
+	 *            Schema uuid
+	 * @param change
+	 *            List of changes
+	 * @return
+	 */
+	Future<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
 }

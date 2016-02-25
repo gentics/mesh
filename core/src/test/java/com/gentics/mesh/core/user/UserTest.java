@@ -194,6 +194,14 @@ public class UserTest extends AbstractBasicObjectTest {
 	}
 
 	@Test
+	public void testSetNameAlias() {
+		User user = user();
+		user.setName("test123");
+		assertEquals("test123", user.getName());
+		assertEquals("test123", user.getUsername());
+	}
+
+	@Test
 	public void testGetPermissionsViaHandle() throws Exception {
 		Language language = english();
 		String[] perms = { "create", "update", "delete", "read" };

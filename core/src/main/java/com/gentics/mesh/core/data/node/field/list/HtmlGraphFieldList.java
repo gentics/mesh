@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.node.field.list;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 
-public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlFieldListImpl> {
+public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlFieldListImpl, String> {
 
 	public static final String TYPE = "html";
 

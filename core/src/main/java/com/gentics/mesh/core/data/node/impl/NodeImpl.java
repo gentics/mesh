@@ -38,12 +38,10 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.SchemaContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.container.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
@@ -53,6 +51,8 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -75,6 +75,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
@@ -107,7 +108,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<String> getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
 		if (container != null) {
-			String fieldName = getSchema().getSegmentField();
+			String fieldName = getSchemaContainer().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
 				return Observable.just(field.getString());
@@ -125,7 +126,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		if (container != null) {
-			String fieldName = getSchema().getSegmentField();
+			String fieldName = getSchemaContainer().getSchema().getSegmentField();
 			// 1. Try to load the path segment using the string field
 			StringGraphField stringField = container.getString(fieldName);
 			if (stringField != null) {
@@ -232,7 +233,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void addTag(Tag tag) {
-		setLinkOutTo(tag.getImpl(), HAS_TAG);
+		setUniqueLinkOutTo(tag.getImpl(), HAS_TAG);
 	}
 
 	@Override
@@ -245,14 +246,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
 
+	/**
+	 * @deprecated Load the schema container from the {@link GraphFieldContainer} instance.
+	 */
 	@Override
+	@Deprecated
 	public SchemaContainer getSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
-	}
-
-	@Override
-	public Schema getSchema() {
-		return getSchemaContainer().getSchema();
 	}
 
 	@Override
@@ -307,10 +307,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRest(InternalActionContext ac, String...languageTags) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-
-		return db.asyncNoTrxExperimental(() -> {
+	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+		try {
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
 			SchemaContainer container = getSchemaContainer();
@@ -397,22 +395,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				containerLanguageTags.add(0, restNode.getLanguage());
 
 				for (FieldSchema fieldEntry : schema.getFields()) {
-//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
-					Observable<NodeResponse> obsFields = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(),
-							fieldEntry, containerLanguageTags).map(restField -> {
-						if (fieldEntry.isRequired() && restField == null) {
-							// TODO i18n
-							throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-									+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
-						}
-						if (restField == null) {
-							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-						} else {
-							restNode.getFields().put(fieldEntry.getName(), restField);
-						}
-						return restNode;
+					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
+					Observable<NodeResponse> obsFields = fieldContainer
+							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags).map(restField -> {
+								if (fieldEntry.isRequired() && restField == null) {
+									// TODO i18n
+									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+											+ "} is a required field but it could not be found in the node. Please add the field using an update call or change the field schema and remove the required flag.");
+								}
+								if (restField == null) {
+									log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+								} else {
+									restNode.getFields().put(fieldEntry.getName(), restField);
+								}
+								return restNode;
 
-					});
+							});
 					obs.add(obsFields);
 				}
 			}
@@ -459,7 +457,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Merge and complete
 			return Observable.merge(obs).last();
-		});
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
 	}
 
 	@Override
@@ -494,7 +494,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
-			if (!getSchema().isContainer()) {
+			if (!getSchemaContainer().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
 			NavigationResponse response = new NavigationResponse();
@@ -512,7 +512,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param maxDepth
 	 *            Maximum depth for the navigation
 	 * @param level
-	 *            Zero based level of the current navigation element 
+	 *            Zero based level of the current navigation element
 	 * @param navigation
 	 *            Current navigation response
 	 * @param currentElement
@@ -523,7 +523,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NavigationResponse navigation, NavigationElement currentElement) {
 		List<? extends Node> nodes = node.getChildren(ac.getUser());
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
-
 
 		obsResponses.add(node.transformToRest(ac).map(response -> {
 			// Set current element data
@@ -539,7 +538,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Add children
 		for (Node child : nodes) {
-			if (child.getSchema().isContainer()) {
+			if (child.getSchemaContainer().getSchema().isContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -666,7 +665,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return null;
 			} else {
 				// Determine the display field name and load the string value from that field.
-				return container.getDisplayFieldValue(getSchema());
+				return container.getDisplayFieldValue(getSchemaContainer().getSchema());
 			}
 		} catch (Exception e) {
 			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
@@ -689,7 +688,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
-			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getSchemaStorage());
+			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getInstance());
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
@@ -704,7 +703,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
-				Schema schema = getSchema();
+				Schema schema = getSchemaContainer().getSchema();
 				container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
@@ -729,7 +728,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			parent = parent.getParentNode();
 		}
 
-		if (!targetNode.getSchema().isContainer()) {
+		if (!targetNode.getSchemaContainer().getSchema().isContainer()) {
 			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 		}
 
@@ -744,6 +743,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			setLastEditedTimestamp(System.currentTimeMillis());
 			targetNode.setEditor(ac.getUser());
 			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
+			// update the webroot path info for every field container.
+			getGraphFieldContainers().stream().forEach(container -> container.updateWebrootPathInfo("node_conflicting_segmentfield_move"));
 			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 			return batch;
 		}).process().map(i -> {
@@ -766,8 +767,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, String languageTag) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		String indexType = getSchema().getName();
-		batch.addEntry(getUuid(), getType(), action, indexType);
+		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainer().getSchema());
+		batch.addEntry(NodeIndexHandler.composeDocumentId(this, languageTag), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
 	}
@@ -783,7 +784,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		// TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = getSchema().getName();
+			String indexType = NodeIndexHandler.getDocumentType(getSchemaContainer().getSchema());
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
 		addRelatedEntries(batch, action);
@@ -792,7 +793,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PathSegment getSegment(String segment) {
-		Schema schema = getSchema();
+		Schema schema = getSchemaContainer().getSchema();
 
 		// Check the different language versions
 		String segmentFieldName = schema.getSegmentField();

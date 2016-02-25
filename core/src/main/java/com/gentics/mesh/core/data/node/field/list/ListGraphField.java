@@ -10,7 +10,7 @@ import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
-public interface ListGraphField<T extends ListableGraphField, RM extends Field> extends MicroschemaListableGraphField, MeshVertex {
+public interface ListGraphField<T extends ListableGraphField, RM extends Field, U> extends MicroschemaListableGraphField, MeshVertex {
 
 	/**
 	 * Return the items of the list.
@@ -18,6 +18,13 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field> 
 	 * @return
 	 */
 	List<? extends T> getList();
+
+	/**
+	 * Return the values stored in the items
+	 *
+	 * @return
+	 */
+	List<U> getValues();
 
 	/**
 	 * Return the current size of the list.

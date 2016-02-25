@@ -142,7 +142,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> deleteFuture = getClient().deleteGroup(restGroup.getUuid());
 		latchFor(deleteFuture);
 		assertSuccess(deleteFuture);
-		expectMessageResponse("group_deleted", deleteFuture, restGroup.getUuid() + "/" + restGroup.getName());
+		expectResponseMessage(deleteFuture, "group_deleted", restGroup.getUuid() + "/" + restGroup.getName());
 	}
 
 	@Test
@@ -167,7 +167,8 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		rootUuid = root.getUuid();
 		role().revokePermissions(root, CREATE_PERM);
 		User user = user();
-		assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().single());
+		assertFalse("The create permission to the groups root node should have been revoked.",
+				user.hasPermissionAsync(ac, root, CREATE_PERM).toBlocking().single());
 
 		Future<GroupResponse> future = getClient().createGroup(request);
 		latchFor(future);
@@ -402,7 +403,7 @@ public class GroupVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> future = getClient().deleteGroup(uuid);
 		latchFor(future);
 		assertSuccess(future);
-		expectMessageResponse("group_deleted", future, uuid + "/" + name);
+		expectResponseMessage(future, "group_deleted", uuid + "/" + name);
 		assertElement(boot.groupRoot(), uuid, false);
 
 	}
