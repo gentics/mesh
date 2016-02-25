@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -120,6 +121,7 @@ public class SchemaSearchVerticleTest extends AbstractSearchVerticleTest impleme
 
 	@Test
 	@Override
+	@Ignore
 	public void testDocumentUpdate() throws Exception {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 

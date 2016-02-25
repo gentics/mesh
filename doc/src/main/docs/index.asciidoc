@@ -1022,13 +1022,18 @@ Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will c
 Please note that by default conflicting data will be removed and this action can only be avoided by specifying a custom migration script.
 
 
-=== Eventbus Bridge
+=== Eventbus Bridge / Websocket
 
 The ```/api/v1/eventbus``` endpoint allows clients to access the mesh eventbus. This may be useful if you want to react on specific mesh events. 
 Currently only schema migration specific events are handled via this endpoint but more will follow.
 
 The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
 
+[options="header"]
+|======
+| Eventname       | Description
+| mesh.migration  | Receive node and micronode migration specific events
+|======
 
 === Image Manipulation
 
