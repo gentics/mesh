@@ -69,6 +69,7 @@ public class MeshImpl implements Mesh {
 	 */
 	@Override
 	public void run() throws Exception {
+		checkSystemRequirements();
 		registerShutdownHook();
 
 		printProductInformation();
@@ -84,6 +85,19 @@ public class MeshImpl implements Mesh {
 
 			dontExit();
 
+		}
+	}
+
+	/**
+	 * Check mesh system requirements.
+	 */
+	private void checkSystemRequirements() {
+		try {
+			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
+		} catch (ClassNotFoundException e) {
+			log.error(
+					"The nashorn classfilter could not be found. You are most likely using an outdated JDK 8. Please update to at least JDK 1.8.0_40");
+			System.exit(10);
 		}
 	}
 
