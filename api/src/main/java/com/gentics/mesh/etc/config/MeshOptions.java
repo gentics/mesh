@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.etc.GraphStorageOptions;
 
@@ -31,6 +32,8 @@ public class MeshOptions {
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
 	private String defaultLanguage = DEFAULT_LANGUAGE;
+
+	private boolean updateCheck = ENABLED;
 
 	private Map<String, MeshVerticleConfiguration> verticles = new HashMap<>();
 
@@ -241,6 +244,25 @@ public class MeshOptions {
 	 */
 	public void setImageOptions(ImageManipulatorOptions imageOptions) {
 		this.imageOptions = imageOptions;
+	}
+
+	/**
+	 * Return update checker flag.
+	 * 
+	 * @return
+	 */
+	@JsonProperty("updateCheck")
+	public boolean isUpdateCheckEnabled() {
+		return updateCheck;
+	}
+
+	/**
+	 * Set the update checker flag. If set to true a update check will be invoked during mesh server startup.
+	 * 
+	 * @param updateCheck
+	 */
+	public void setUpdateCheck(boolean updateCheck) {
+		this.updateCheck = updateCheck;
 	}
 
 }

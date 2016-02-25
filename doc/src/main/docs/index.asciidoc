@@ -586,8 +586,9 @@ include::json/mesh-config.json[]
 [options="header"]
 |======
 | Configuration            | Type   | Description
-| ```clusterMode```        | Flag   | The internal hazelcast in-memory data grid will be enabled when this flag is set to true.
-| ```defaultPageSize```    | Number | Default page size
+| ```clusterMode```        | Flag   | The internal hazelcast in-memory data grid will be enabled if this flag is set to true.
+| ```updateCheck```        | Flag   | A update check to the mesh update server will be invoked during startup if this flag is set to true.
+| ```defaultPageSize```    | Number | Default page size.
 | ```defaultLanguage```    | String | Default language which is used as a fallback when no language was specified.
 | ```verticles```          | List   | List of vert.x java verticle classes which will be loaded during startup.
 | ```tempDirectory```      | Path   | Path to the main temporary filesystem directory.

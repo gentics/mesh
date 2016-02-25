@@ -42,12 +42,12 @@ public class MeshImpl implements Mesh {
 		this.options = options;
 	}
 
-	public MeshImpl(MeshOptions options, Vertx vertx) {
-		Objects.requireNonNull(options, "Please specify a valid options object.");
-		Objects.requireNonNull(vertx, "Please specify a vertx instance.");
-		this.options = options;
-		this.vertx = vertx;
-	}
+	//	public MeshImpl(MeshOptions options, Vertx vertx) {
+	//		Objects.requireNonNull(options, "Please specify a valid options object.");
+	//		Objects.requireNonNull(vertx, "Please specify a vertx instance.");
+	//		this.options = options;
+	//		this.vertx = vertx;
+	//	}
 
 	@Override
 	public Vertx getVertx() {
@@ -73,7 +73,9 @@ public class MeshImpl implements Mesh {
 		registerShutdownHook();
 
 		printProductInformation();
-		invokeUpdateCheck();
+		if (options.isUpdateCheckEnabled()) {
+			invokeUpdateCheck();
+		}
 
 		// Start the spring context
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MeshSpringConfiguration.class)) {
@@ -93,6 +95,7 @@ public class MeshImpl implements Mesh {
 	 */
 	private void checkSystemRequirements() {
 		try {
+			// The needed nashorn classfilter was added in JDK 1.8.0 40
 			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
 		} catch (ClassNotFoundException e) {
 			log.error(
