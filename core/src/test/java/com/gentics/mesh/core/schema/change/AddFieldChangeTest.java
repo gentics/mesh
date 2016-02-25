@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.apache.commons.lang3.StringUtils.upperCase;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -17,7 +16,6 @@ import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;

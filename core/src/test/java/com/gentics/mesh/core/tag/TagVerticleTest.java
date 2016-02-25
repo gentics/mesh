@@ -27,7 +27,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -47,7 +46,6 @@ import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpClientOptions;
 
 public class TagVerticleTest extends AbstractBasicCrudVerticleTest {
 
