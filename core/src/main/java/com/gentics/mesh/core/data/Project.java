@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -92,4 +93,33 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 */
 	NodeRoot getNodeRoot();
 
+	/**
+	 * Get the initial release of the project
+	 *
+	 * @return
+	 */
+	Release getInitialRelease();
+
+	/**
+	 * Set the initial release of the project
+	 *
+	 * @param release
+	 */
+	void setInitialRelease(Release release);
+
+	/**
+	 * Create the initial release of the project
+	 * 
+	 * @param creator
+	 * @param name
+	 * @return
+	 */
+	Release createInitialRelease(User creator, String name);
+
+	/**
+	 * Return the release root aggregation vertex of the project. Internally this method will create the release root when it has not yet been created.
+	 * 
+	 * @return Release root element
+	 */
+	ReleaseRoot getReleaseRoot();
 }

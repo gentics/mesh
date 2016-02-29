@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.root.impl.MicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
+import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -199,12 +200,14 @@ public class DatabaseHelper {
 		ProjectRootImpl.checkIndices(database);
 		SchemaContainerRootImpl.checkIndices(database);
 		MicroschemaContainerRootImpl.checkIndices(database);
+		ReleaseRootImpl.init(database);
 
 		// Nodes
 		SearchQueueImpl.checkIndices(database);
 		SearchQueueBatchImpl.checkIndices(database);
 		SearchQueueEntryImpl.checkIndices(database);
 		ProjectImpl.checkIndices(database);
+		ReleaseImpl.init(database);
 
 		// Fields
 		NodeGraphFieldContainerImpl.checkIndices(database);

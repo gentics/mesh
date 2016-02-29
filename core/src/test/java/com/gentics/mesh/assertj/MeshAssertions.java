@@ -12,6 +12,7 @@ import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
+import com.gentics.mesh.assertj.impl.ReleaseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
@@ -20,6 +21,7 @@ import com.gentics.mesh.assertj.impl.SearchQueueAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -117,5 +119,9 @@ public class MeshAssertions extends Assertions {
 
 	public static MicronodeAssert assertThat(Micronode actual) {
 		return new MicronodeAssert(actual);
+	}
+
+	public static ReleaseAssert assertThat(Release actual) {
+		return new ReleaseAssert(actual);
 	}
 }

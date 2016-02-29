@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BASE_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
@@ -17,6 +19,7 @@ import java.util.Set;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -27,10 +30,12 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
+import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
@@ -249,4 +254,39 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 	}
 
+	@Override
+	public Release getInitialRelease() {
+		return out(HAS_RELEASE).has(ReleaseImpl.class).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	}
+
+	@Override
+	public void setInitialRelease(Release release) {
+		linkOut(release.getImpl(), HAS_RELEASE);
+	}
+
+	@Override
+	public Release createInitialRelease(User creator, String name) {
+		Release initialRelease = getInitialRelease();
+		if (initialRelease == null) {
+			initialRelease = getGraph().addFramedVertex(ReleaseImpl.class);
+			initialRelease.setCreated(creator);
+			initialRelease.setName(name);
+			initialRelease.setActive(true);
+			setInitialRelease(initialRelease);
+
+			// add to project specific aggregation vertex
+			getReleaseRoot().addItem(initialRelease);
+		}
+		return initialRelease;
+	}
+
+	@Override
+	public ReleaseRoot getReleaseRoot() {
+		ReleaseRoot root = out(HAS_RELEASE_ROOT).has(ReleaseRootImpl.class).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+		if (root == null) {
+			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
+			linkOut(root.getImpl(), HAS_RELEASE_ROOT);
+		}
+		return root;
+	}
 }

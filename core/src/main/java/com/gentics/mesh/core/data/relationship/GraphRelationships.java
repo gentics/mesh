@@ -13,6 +13,8 @@ public class GraphRelationships {
 		db.addEdgeType(MEMBER_OF);
 		db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
 		db.addEdgeType(HAS_PROJECT);
+		db.addEdgeType(HAS_RELEASE);
+		db.addEdgeType(HAS_NEXT_RELEASE);
 		db.addEdgeType(HAS_NODE);
 		db.addEdgeType(HAS_NODE_REFERENCE);
 		db.addEdgeType(ASSIGNED_TO_PROJECT);
@@ -50,6 +52,7 @@ public class GraphRelationships {
 		db.addEdgeType(HAS_USER_ROOT);
 		db.addEdgeType(HAS_LANGUAGE_ROOT);
 		db.addEdgeType(HAS_PROJECT_ROOT);
+		db.addEdgeType(HAS_RELEASE_ROOT);
 
 		db.addEdgeType(HAS_FIELD);
 		db.addEdgeType(HAS_ITEM);
@@ -71,6 +74,10 @@ public class GraphRelationships {
 
 	// Project
 	public static final String HAS_PROJECT = "HAS_PROJECT";
+
+	// Release
+	public static final String HAS_RELEASE = "HAS_RELEASE";
+	public static final String HAS_NEXT_RELEASE = "HAS_NEXT_RELEASE";
 
 	// Nodes
 	public static final String HAS_NODE = "HAS_NODE";
@@ -119,6 +126,7 @@ public class GraphRelationships {
 	public static final String HAS_USER_ROOT = "HAS_USER_ROOT";
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
+	public static final String HAS_RELEASE_ROOT = "HAS_RELEASE_ROOT";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
