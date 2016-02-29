@@ -96,6 +96,7 @@
 		<module>server</module>
 		<module>examples</module>
 		<module>doc</module>
+		<module>changelog-system</module>
 	</modules>
 
 	<dependencies>
