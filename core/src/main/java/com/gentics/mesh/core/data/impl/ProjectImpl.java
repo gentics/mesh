@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -43,7 +44,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;

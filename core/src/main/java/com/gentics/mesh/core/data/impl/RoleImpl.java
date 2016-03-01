@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;

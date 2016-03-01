@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.RestModelHelper;

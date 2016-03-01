@@ -3,7 +3,7 @@ package com.gentics.mesh.etc;
 import com.google.gson.JsonObject;
 
 /**
- * Underlying graph database storage configuration
+ * Underlying graph database storage configuration.
  */
 public class GraphStorageOptions {
 

@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

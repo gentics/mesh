@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.schema;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -10,7 +11,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

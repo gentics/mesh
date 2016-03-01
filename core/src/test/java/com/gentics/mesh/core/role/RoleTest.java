@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;

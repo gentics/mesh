@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -41,7 +42,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
 import com.gentics.mesh.graphdb.NoTrx;
-import com.gentics.mesh.handler.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 

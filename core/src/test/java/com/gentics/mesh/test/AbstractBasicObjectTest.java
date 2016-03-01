@@ -3,12 +3,12 @@ package com.gentics.mesh.test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.RoutingContext;
 

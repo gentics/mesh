@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;

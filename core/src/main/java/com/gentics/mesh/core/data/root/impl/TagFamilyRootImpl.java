@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -28,7 +29,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

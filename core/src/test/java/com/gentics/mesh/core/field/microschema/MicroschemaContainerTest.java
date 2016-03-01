@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;

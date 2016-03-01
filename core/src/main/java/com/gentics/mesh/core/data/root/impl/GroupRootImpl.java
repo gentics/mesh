@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

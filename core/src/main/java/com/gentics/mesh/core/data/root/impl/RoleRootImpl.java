@@ -11,6 +11,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

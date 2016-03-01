@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

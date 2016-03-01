@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.node.field.nesting;
 
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.logging.Logger;

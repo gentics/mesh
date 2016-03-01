@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;

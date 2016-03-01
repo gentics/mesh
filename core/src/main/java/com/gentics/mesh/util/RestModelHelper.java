@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.handler.InternalActionContext;
 
 public final class RestModelHelper {
 

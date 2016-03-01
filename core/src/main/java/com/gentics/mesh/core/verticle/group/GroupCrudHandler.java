@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -18,7 +19,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import rx.Observable;

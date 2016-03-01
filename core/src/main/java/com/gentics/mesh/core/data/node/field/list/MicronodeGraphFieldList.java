@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.node.field.list;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

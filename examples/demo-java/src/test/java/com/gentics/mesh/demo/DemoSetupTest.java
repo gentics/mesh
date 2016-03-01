@@ -30,7 +30,7 @@ public class DemoSetupTest {
 	protected BootstrapInitializer boot;
 
 	@Autowired
-	private DemoDataProvider dataProvider;
+	private DemoDataProviderNew dataProvider;
 
 	@Autowired
 	protected DatabaseService databaseService;

@@ -1,13 +1,15 @@
-package com.gentics.mesh.handler;
+package com.gentics.mesh.context;
 
 import java.util.List;
+import java.util.Set;
 
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.impl.InternalHttpActionContextImpl;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.NavigationRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -15,7 +17,9 @@ import com.gentics.mesh.query.impl.PagingParameter;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.auth.User;
+import io.vertx.core.MultiMap;
+import io.vertx.ext.web.Cookie;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -24,7 +28,7 @@ import io.vertx.ext.web.RoutingContext;
 public interface InternalActionContext extends ActionContext {
 
 	public static InternalActionContext create(RoutingContext rc) {
-		return new InternalHttpActionContextImpl(rc);
+		return new InternalRoutingActionContextImpl(rc);
 	}
 
 	/**
@@ -32,10 +36,10 @@ public interface InternalActionContext extends ActionContext {
 	 * 
 	 * @param user
 	 */
-	void setUser(User user);
+	void setUser(MeshAuthUser user);
 
 	/**
-	 * Return the project that may be set when this action context is used for a project specific request (eg. /api/v1/dummy/nodes..)
+	 * Return the project that may be set when this action context is used for a project specific request (e.g.: /api/v1/dummy/nodes..)
 	 * 
 	 * @return
 	 */
@@ -120,5 +124,32 @@ public interface InternalActionContext extends ActionContext {
 	 */
 	void respond(RestModel result, HttpResponseStatus status);
 
+	/**
+	 * Return a list of field name that should be expanded.
+	 * 
+	 * @return List of fields that should be expanded
+	 */
+	List<String> getExpandedFieldnames();
+
+	/**
+	 * Return the set of fileuploads that are accessible through the context.
+	 * 
+	 * @return
+	 */
+	Set<FileUpload> getFileUploads();
+
+	/**
+	 * Return the request headers.
+	 * 
+	 * @return
+	 */
+	MultiMap requestHeaders();
+
+	/**
+	 * Adds a cookie to the response.
+	 * 
+	 * @param cookie
+	 */
+	void addCookie(Cookie cookie);
 
 }

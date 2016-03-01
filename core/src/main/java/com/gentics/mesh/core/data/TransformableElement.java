@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

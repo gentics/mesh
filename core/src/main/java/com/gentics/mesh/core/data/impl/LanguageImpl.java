@@ -2,13 +2,13 @@ package com.gentics.mesh.core.data.impl;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

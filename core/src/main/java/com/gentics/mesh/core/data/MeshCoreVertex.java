@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

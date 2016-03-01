@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 

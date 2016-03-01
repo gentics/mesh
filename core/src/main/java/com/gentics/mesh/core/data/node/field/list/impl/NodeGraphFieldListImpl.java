@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;

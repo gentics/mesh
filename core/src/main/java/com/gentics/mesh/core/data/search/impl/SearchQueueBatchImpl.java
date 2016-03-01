@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -14,7 +15,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.logging.Logger;

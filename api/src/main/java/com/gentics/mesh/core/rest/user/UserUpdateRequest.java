@@ -27,9 +27,11 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @param password
 	 *            Plain text password
+	 * @return Fluent API
 	 */
-	public void setPassword(String password) {
+	public UserUpdateRequest setPassword(String password) {
 		this.password = password;
+		return this;
 	}
 
 	/**
@@ -55,9 +57,11 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @param lastname
 	 *            Lastname of the user
+	 * @return Fluent API
 	 */
-	public void setLastname(String lastname) {
+	public UserUpdateRequest setLastname(String lastname) {
 		this.lastname = lastname;
+		return this;
 	}
 
 	/**
@@ -74,9 +78,11 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @param firstname
 	 *            Firstname of the user
+	 * @return Fluent API
 	 */
-	public void setFirstname(String firstname) {
+	public UserUpdateRequest setFirstname(String firstname) {
 		this.firstname = firstname;
+		return this;
 	}
 
 	/**
@@ -92,9 +98,11 @@ public class UserUpdateRequest implements RestModel {
 	 * Set the user email address.
 	 * 
 	 * @param emailAddress
+	 * @return Fluent API
 	 */
-	public void setEmailAddress(String emailAddress) {
+	public UserUpdateRequest setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
+		return this;
 	}
 
 	/**
@@ -111,9 +119,11 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @param username
 	 *            Username of the user
+	 * @return Fluent API
 	 */
-	public void setUsername(String username) {
+	public UserUpdateRequest setUsername(String username) {
 		this.username = username;
+		return this;
 	}
 
 	/**
@@ -130,9 +140,11 @@ public class UserUpdateRequest implements RestModel {
 	 * 
 	 * @param nodeReference
 	 *            Node reference of the user
+	 * @return Fluent API
 	 */
-	public void setNodeReference(NodeReference nodeReference) {
+	public UserUpdateRequest setNodeReference(NodeReference nodeReference) {
 		this.nodeReference = nodeReference;
+		return this;
 	}
 
 }

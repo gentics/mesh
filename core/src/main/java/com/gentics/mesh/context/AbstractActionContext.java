@@ -1,11 +1,7 @@
-package com.gentics.mesh.handler.impl;
+package com.gentics.mesh.context;
 
-import static com.gentics.mesh.query.impl.NodeRequestParameter.EXPANDFIELDS_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -49,35 +45,12 @@ public abstract class AbstractActionContext implements ActionContext {
 		}
 	}
 
-	protected Map<String, String> splitQuery() {
+	@Override
+	public Map<String, String> splitQuery() {
 		data().computeIfAbsent(QUERY_MAP_DATA_KEY, map -> {
 			return HttpQueryUtils.splitQuery(query());
 		});
 		return (Map<String, String>) data().get(QUERY_MAP_DATA_KEY);
-	}
-
-	/**
-	 * Extracts the lang parameter values from the query.
-	 * 
-	 * @return List of languages. List can be empty.
-	 */
-	@Override
-	public List<String> getExpandedFieldnames() {
-		data().computeIfAbsent(EXPANDED_FIELDNAMED_DATA_KEY, map -> {
-			List<String> expandFieldnames = new ArrayList<>();
-			Map<String, String> queryPairs = splitQuery();
-			if (queryPairs == null) {
-				return new ArrayList<>();
-			}
-
-			String value = queryPairs.get(EXPANDFIELDS_QUERY_PARAM_KEY);
-			if (value != null) {
-				expandFieldnames = new ArrayList<>(Arrays.asList(value.split(",")));
-			}
-			return expandFieldnames;
-		});
-		List<String> fieldList = (List<String>) data().get(EXPANDED_FIELDNAMED_DATA_KEY);
-		return fieldList == null ? new ArrayList<>() : fieldList;
 	}
 
 	public static Locale getLocale(String header) {

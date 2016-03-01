@@ -13,6 +13,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -42,7 +43,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.json.JsonObject;

@@ -1,6 +1,5 @@
 package com.gentics.mesh.handler;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -89,28 +88,11 @@ public interface ActionContext {
 	String query();
 
 	/**
-	 * Fail the action with the given status and return a generic message response which includes the given i18n message.
+	 * Split the query up and provide a map with key value sets for each parameter.
 	 * 
-	 * @param status
-	 *            Http status
-	 * @param i18nKey
-	 *            I18n message key
-	 * @param parameters
-	 *            I18n message parameters
+	 * @return
 	 */
-	void fail(HttpResponseStatus status, String i18nKey, String... parameters);
-
-	/**
-	 * Fail the action with the given status and return a generic message response which includes the given i18n message and cause.
-	 * 
-	 * @param status
-	 *            Http status
-	 * @param i18nKey
-	 *            i18n message key
-	 * @param cause
-	 *            Nested cause
-	 */
-	void fail(HttpResponseStatus status, String i18nKey, Throwable cause);
+	Map<String, String> splitQuery();
 
 	/**
 	 * Fail the action with the given cause.
@@ -143,14 +125,6 @@ public interface ActionContext {
 	 * @return Locale
 	 */
 	Locale getLocale();
-
-	//TODO move this to internal action context
-	/**
-	 * Return a list of field name that should be expanded.
-	 * 
-	 * @return List of fields that should be expanded
-	 */
-	List<String> getExpandedFieldnames();
 
 	/**
 	 * Perform a logout.

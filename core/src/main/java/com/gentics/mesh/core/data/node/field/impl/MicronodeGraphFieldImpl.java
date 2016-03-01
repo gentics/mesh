@@ -5,13 +5,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

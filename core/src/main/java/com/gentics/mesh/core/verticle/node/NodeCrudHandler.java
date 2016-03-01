@@ -13,6 +13,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

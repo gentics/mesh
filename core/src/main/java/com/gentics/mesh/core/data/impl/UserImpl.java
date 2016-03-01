@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -48,7 +49,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;

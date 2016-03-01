@@ -1,4 +1,4 @@
-package com.gentics.mesh.handler.impl;
+package com.gentics.mesh.context;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 
 import org.junit.Test;
+
+import com.gentics.mesh.context.InternalActionContext;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
@@ -20,8 +22,7 @@ public class InternalHttpActionContextImplTest {
 		when(request.query()).thenReturn("bla=123&blub=123");
 		when(rc.request()).thenReturn(request);
 		when(rc.data()).thenReturn(new HashMap<>());
-		InternalHttpActionContextImpl context = new InternalHttpActionContextImpl(rc);
-		System.out.println(context.splitQuery());
-		assertNotNull(context.splitQuery());
+		InternalActionContext ac = InternalActionContext.create(rc);
+		assertNotNull(ac.splitQuery());
 	}
 }

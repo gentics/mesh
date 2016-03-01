@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -10,7 +11,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

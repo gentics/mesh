@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.eventbus.DeliveryOptions;

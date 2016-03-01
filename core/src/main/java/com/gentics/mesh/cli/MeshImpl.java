@@ -1,6 +1,7 @@
 package com.gentics.mesh.cli;
 
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
@@ -30,6 +31,7 @@ public class MeshImpl implements Mesh {
 
 	private MeshOptions options;
 	private Vertx vertx;
+	private CountDownLatch latch = new CountDownLatch(1);
 
 	static {
 		// Use slf4j instead of jul
@@ -149,15 +151,8 @@ public class MeshImpl implements Mesh {
 		});
 	}
 
-	private void dontExit() {
-		while (true) {
-			// TODO use unsafe park instead
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	private void dontExit() throws InterruptedException {
+		latch.await();
 	}
 
 	private void printProductInformation() {
@@ -202,6 +197,7 @@ public class MeshImpl implements Mesh {
 		MeshSpringConfiguration.getInstance().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
+		latch.countDown();
 	}
 
 }

@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
@@ -52,7 +53,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.user.UserVerticle;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;

@@ -125,7 +125,7 @@ public class MeshOptions {
 	}
 
 	/**
-	 * Return the mesh storage options.
+	 * Return the mesh graph database storage options.
 	 * 
 	 * @return Storage options
 	 */

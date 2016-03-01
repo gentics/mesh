@@ -16,6 +16,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.Project;
@@ -90,7 +91,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;

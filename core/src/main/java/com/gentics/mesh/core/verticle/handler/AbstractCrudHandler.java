@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import io.vertx.core.Handler;
@@ -207,8 +207,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 				boolean result = db.noTrx(() -> {
 					T foundElement = getRootVertex(ac).findByUuid(uuid).toBlocking().single();
 					if (foundElement == null) {
-						ac.fail(NOT_FOUND, i18nNotFoundMessage, uuid);
-						return false;
+						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
 					} else {
 						ac.data().put(TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY, foundElement);
 					}

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelHelper;
 
