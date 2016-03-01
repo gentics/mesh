@@ -44,8 +44,10 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "role_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+
+		deleteElement(ac, () -> getRootVertex(ac), uuid, "role_deleted");
 	}
 
 	public void handlePermissionRead(InternalActionContext ac) {

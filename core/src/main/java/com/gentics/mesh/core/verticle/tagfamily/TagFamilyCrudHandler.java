@@ -17,8 +17,8 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily, TagFami
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "tagfamily_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		deleteElement(ac, () -> getRootVertex(ac), uuid, "tagfamily_deleted");
 	}
 
 }

@@ -54,19 +54,27 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 
 		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
 		executeRoute.handler(rc -> {
-			crudHandler.handleApplySchemaChanges(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String schemaUuid = ac.getParameter("schemaUuid");
+			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
 	}
 
 	private void addSchemaProjectHandlers() {
 		Route route = route("/:schemaUuid/projects/:projectUuid").method(PUT).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleAddProjectToSchema(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String schemaUuid = ac.getParameter("schemaUuid");
+			String projectUuid = ac.getParameter("projectUuid");
+			crudHandler.handleAddProjectToSchema(ac, schemaUuid, projectUuid);
 		});
 
 		route = route("/:schemaUuid/projects/:projectUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleRemoveProjectFromSchema(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String schemaUuid = ac.getParameter("schemaUuid");
+			String projectUuid = ac.getParameter("projectUuid");
+			crudHandler.handleRemoveProjectFromSchema(ac, projectUuid, schemaUuid);
 		});
 	}
 
@@ -80,21 +88,27 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 	private void addDiffHandler() {
 		Route route = route("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleDiff(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDiff(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
@@ -104,7 +118,7 @@ public class SchemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc));
+				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
 			}
 		});
 

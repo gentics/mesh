@@ -38,15 +38,24 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
+	public void handleDelete(InternalActionContext ac, String uuid) {
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
 	}
 
-	public void handleDeleteLanguage(InternalActionContext ac) {
+	/**
+	 * Delete a specific language from the node. Only the affected language fields will be removed.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Node to be updated
+	 * @param languageTag
+	 *            Language tag of the language which should be deleted.
+	 */
+	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM).flatMap(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
 				//TODO Don't we need a trx here?!
-				String languageTag = ac.getParameter("languageTag");
+
 				Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -61,15 +70,25 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handleMove(InternalActionContext ac) {
+	/**
+	 * Move a node to another parent node.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Node to be moved
+	 * @param toUuid
+	 *            Target node of the node
+	 */
+	public void handleMove(InternalActionContext ac, String uuid, String toUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(toUuid, "toUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
-			String uuid = ac.getParameter("uuid");
-			String toUuid = ac.getParameter("toUuid");
 
-			Observable<Node> obsSourceNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
-			Observable<Node> obsTargetNode = project.getNodeRoot().loadObject(ac, "toUuid", UPDATE_PERM);
+			Observable<Node> obsSourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Observable<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			return Observable.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
 				// TODO Update SQB
@@ -83,17 +102,19 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handleNavigation(InternalActionContext ac) {
+	public void handleNavigation(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToNavigation(ac);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleReadChildren(InternalActionContext ac) {
+	public void handleReadChildren(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
 					return page.transformToRest(ac);
@@ -104,9 +125,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void readTags(InternalActionContext ac) {
+	public void readTags(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Tag> tagPage = node.getTags(ac);
 					return tagPage.transformToRest(ac);
@@ -117,11 +139,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleAddTag(InternalActionContext ac) {
+	public void handleAddTag(InternalActionContext ac, String uuid, String tagUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(tagUuid, "tagUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
-			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
+			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
@@ -142,12 +167,24 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handleRemoveTag(InternalActionContext ac) {
+	/**
+	 * Remove the specified tag from the node.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the node from which the tag should be removed
+	 * @param tagUuid
+	 *            Uuid of the tag which should be removed from the tag
+	 */
+	public void handleRemoveTag(InternalActionContext ac, String uuid, String tagUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(tagUuid, "tagUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 
 			Project project = ac.getProject();
-			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
-			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
+			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {

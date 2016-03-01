@@ -111,6 +111,9 @@ public class MeshImpl implements Mesh {
 	 */
 	private void invokeUpdateCheck() {
 		log.info("Checking for updates..");
+		//TODO add hostname to header
+		//System.getenv().get("HOSTNAME") // or COMPUTERNAME
+		//"X-Hostname"
 		Mesh.vertx().createHttpClient().getNow("updates.getmesh.io", "/?v=" + Mesh.getVersion(), rh -> {
 			rh.bodyHandler(bh -> {
 				JsonObject info = bh.toJsonObject();

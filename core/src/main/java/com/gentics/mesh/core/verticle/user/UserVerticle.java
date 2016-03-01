@@ -51,7 +51,9 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleRead(ac, uuid);
 		});
 
 		/*
@@ -64,14 +66,18 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 

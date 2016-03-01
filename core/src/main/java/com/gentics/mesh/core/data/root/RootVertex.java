@@ -84,15 +84,16 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
-	/**
-	 * Load object by extracting the uuid from the given uuid parameter name using the action context.
-	 * 
-	 * @param ac
-	 * @param uuidParameterName
-	 * @param perm
-	 * @return
-	 */
-	Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm);
+//	/**
+//	 * Load object by extracting the uuid from the given uuid parameter name using the action context.
+//	 * 
+//	 * @param ac
+//	 * @param uuidParameterName
+//	 * @param perm
+//	 * @return
+//	 */
+//	@Deprecated
+//	Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm);
 
 	/**
 	 * Add the given item to the this root vertex.

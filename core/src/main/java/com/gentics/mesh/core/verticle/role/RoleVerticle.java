@@ -50,19 +50,25 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleRead(ac, uuid);
 		});
 
 		/*

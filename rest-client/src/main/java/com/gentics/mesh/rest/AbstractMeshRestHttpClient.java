@@ -13,9 +13,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
-public abstract class AbstractMeshRestClient implements MeshRestClient {
+public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
-	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestClient.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestHttpClient.class);
 
 	public static final String BASEURI = "/api/v1";
 	public static final int DEFAULT_PORT = 8080;

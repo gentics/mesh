@@ -143,14 +143,4 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	}
 
-	@Override
-	public Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm) {
-		String uuid = ac.getParameter(uuidParameterName);
-		if (StringUtils.isEmpty(uuid)) {
-			throw error(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName);
-		} else {
-			return loadObjectByUuid(ac, uuid, perm);
-		}
-	}
-
 }

@@ -6,21 +6,21 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
-public class LocalActionContextImpl extends AbstractInternalActionContext implements InternalActionContext {
+public class LocalActionContextImpl<T> extends AbstractInternalActionContext implements InternalActionContext {
 
 	private RestModel payloadObject;
 	private MeshAuthUser user;
@@ -30,7 +30,8 @@ public class LocalActionContextImpl extends AbstractInternalActionContext implem
 	private Project project;
 	private String responseBody;
 	private HttpResponseStatus responseStatusCode;
-	private Throwable failure;
+	private Future<T> future = Future.future();
+	private Class<T> classOfResponse;
 
 	@Override
 	public Map<String, Object> data() {
@@ -89,17 +90,16 @@ public class LocalActionContextImpl extends AbstractInternalActionContext implem
 	public void send(String body, HttpResponseStatus statusCode) {
 		this.responseBody = body;
 		this.responseStatusCode = statusCode;
+		try {
+			T model = JsonUtil.readValue(responseBody, classOfResponse);
+			future.complete(model);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getResponseBody() {
 		return responseBody;
-	}
-
-	public <T> T getResponseObject(Class<T> classOfT) throws JsonParseException, JsonMappingException, IOException {
-		if (responseBody == null) {
-			return null;
-		}
-		return JsonUtil.readValue(responseBody, classOfT);
 	}
 
 	public HttpResponseStatus getResponseStatusCode() {
@@ -108,11 +108,7 @@ public class LocalActionContextImpl extends AbstractInternalActionContext implem
 
 	@Override
 	public void fail(Throwable cause) {
-		this.failure = cause;
-	}
-
-	public Throwable getFailure() {
-		return failure;
+		future.fail(cause);
 	}
 
 	@Override
@@ -123,7 +119,6 @@ public class LocalActionContextImpl extends AbstractInternalActionContext implem
 
 	@Override
 	public void logout() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -155,6 +150,14 @@ public class LocalActionContextImpl extends AbstractInternalActionContext implem
 
 	@Override
 	public void addCookie(Cookie cookie) {
+	}
+
+	public void setResponseType(Class<T> classOfT) {
+		this.classOfResponse = classOfT;
+	}
+
+	public Future<T> getFuture() {
+		return future;
 	}
 
 }

@@ -83,7 +83,10 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addTagReadHandler() {
 		Route route = route("/:tagFamilyUuid/tags/:uuid").method(GET).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			tagCrudHandler.handleRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
+			String uuid = ac.getParameter("uuid");
+			tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		});
 
 		Route readAllRoute = route("/:tagFamilyUuid/tags").method(GET).produces(APPLICATION_JSON);
@@ -97,28 +100,38 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addTagDeleteHandler() {
 		Route route = route("/:tagFamilyUuid/tags/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			tagCrudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
+			String uuid = ac.getParameter("uuid");
+			tagCrudHandler.handleDelete(ac);
 		});
 	}
 
 	private void addTaggedNodesHandler() {
 		Route getRoute = route("/:tagFamilyUuid/tags/:uuid/nodes").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			tagCrudHandler.handleTaggedNodesList(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
+			String uuid = ac.getParameter("uuid");
+			tagCrudHandler.handleTaggedNodesList(ac, tagFamilyUuid, uuid);
 		});
 	}
 
 	private void addTagFamilyDeleteHandler() {
 		Route deleteRoute = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
 		deleteRoute.handler(rc -> {
-			tagFamilyCrudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			tagFamilyCrudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addTagFamilyReadHandler() {
 		Route readRoute = route("/:uuid").method(GET).produces(APPLICATION_JSON);
 		readRoute.handler(rc -> {
-			tagFamilyCrudHandler.handleRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			tagFamilyCrudHandler.handleRead(ac, uuid);
 		});
 
 		Route readAllRoute = route("/").method(GET).produces(APPLICATION_JSON);
@@ -137,7 +150,9 @@ public class TagFamilyVerticle extends AbstractProjectRestVerticle {
 	private void addTagFamilyUpdateHandler() {
 		Route updateRoute = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		updateRoute.handler(rc -> {
-			tagFamilyCrudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			tagFamilyCrudHandler.handleUpdate(ac, uuid);
 		});
 	}
 }

@@ -55,13 +55,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	@Autowired
 	private ImageManipulator imageManipulator;
 
-	public void handleReadField(RoutingContext rc) {
+	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			String languageTag = ac.getParameter("languageTag");
-			String fieldName = ac.getParameter("fieldName");
-			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -87,14 +85,25 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		} , ac::fail);
 	}
 
-	public void handleCreateField(RoutingContext rc) {
-
+	/**
+	 * Handle a request to create a new field.
+	 * 
+	 * @param rc
+	 * @param uuid
+	 *            Uuid of the node which should be updated
+	 * @param languageTag
+	 *            Language tag of the node language which should be modified
+	 * @param fieldName
+	 *            Name of the field which should be created
+	 */
+	public void handleCreateField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(languageTag, "languageTag");
+		validateParameter(fieldName, "fieldName");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			String languageTag = ac.getParameter("languageTag");
-			String fieldName = ac.getParameter("fieldName");
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
@@ -185,8 +194,19 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	}
 
-	public void handleUpdateField(RoutingContext rc) {
-		handleCreateField(rc);
+	/**
+	 * Update a specific node field.
+	 * 
+	 * @param rc
+	 * @param uuid
+	 *            Node uuid
+	 * @param languageTag
+	 *            Language which should be handled
+	 * @param fieldName
+	 *            Field which should be updated
+	 */
+	public void handleUpdateField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
+		handleCreateField(rc, uuid, languageTag, fieldName);
 		//		db.asyncNoTrxExperimental(() -> {
 		//			Project project = ac.getProject();
 		//			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
@@ -196,49 +216,52 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleRemoveField(InternalActionContext ac) {
+	public void handleRemoveField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(languageTag, "languageTag");
+		validateParameter(fieldName, "fieldName");
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleRemoveFieldItem(InternalActionContext ac) {
+	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleUpdateFieldItem(InternalActionContext ac) {
+	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleReadFieldItem(InternalActionContext ac) {
+	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleMoveFieldItem(InternalActionContext ac) {
+	public void handleMoveFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
@@ -251,13 +274,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param rc
 	 *            routing context
 	 */
-	public void handleTransformImage(RoutingContext rc) {
+	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			String languageTag = ac.getParameter("languageTag");
-			String fieldName = ac.getParameter("fieldName");
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {

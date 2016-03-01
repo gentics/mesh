@@ -46,19 +46,25 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 	private void addDiffHandler() {
 		Route route = route("/:uuid/diff").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleDiff(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String schemaUuid = ac.getParameter("uuid");
+			crudHandler.handleDiff(ac, schemaUuid);
 		});
 	}
 
 	private void addChangesHandler() {
 		Route getRoute = route("/:schemaUuid/changes").method(GET).produces(APPLICATION_JSON);
 		getRoute.handler(rc -> {
-			crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String schemaUuid = ac.getParameter("schemaUuid");
+			crudHandler.handleGetSchemaChanges(ac, schemaUuid);
 		});
 
 		Route executeRoute = route("/:schemaUuid/changes").method(POST).produces(APPLICATION_JSON);
 		executeRoute.handler(rc -> {
-			crudHandler.handleApplySchemaChanges(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String schemaUuid = ac.getParameter("schemaUuid");
+			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
 		});
 	}
 
@@ -68,7 +74,8 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc));
+				InternalActionContext ac = InternalActionContext.create(rc);
+				crudHandler.handleRead(ac, uuid);
 			}
 		});
 
@@ -79,13 +86,17 @@ public class MicroschemaVerticle extends AbstractCoreApiVerticle {
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleUpdate(ac, uuid);
 		});
 
 	}

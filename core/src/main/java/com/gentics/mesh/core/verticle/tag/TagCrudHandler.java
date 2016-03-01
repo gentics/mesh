@@ -41,18 +41,21 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "tag_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		deleteElement(ac, () -> getRootVertex(ac), uuid, "tag_deleted");
 	}
 
 	/**
 	 * Add the handler that returns a node list for a specified tag.
 	 * 
+	 * @param tagUuid
+	 *            Uuid of the tag
 	 * @param ac
 	 */
-	public void handleTaggedNodesList(InternalActionContext ac) {
+	public void handleTaggedNodesList(InternalActionContext ac, String tagUuid) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).flatMap(tag -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, tagUuid, READ_PERM).flatMap(tag -> {
 				try {
 					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
 					return page.transformToRest(ac);
@@ -63,14 +66,22 @@ public class TagCrudHandler extends AbstractCrudHandler<Tag, TagResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleReadTagList(InternalActionContext ac) {
+	/**
+	 * Read paged list of tags.
+	 * 
+	 * @param ac
+	 * @param tagFamilyUuid
+	 */
+	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
+		validateParameter(tagFamilyUuid, "tagFamilyUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
 
 			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
-			return project.getTagFamilyRoot().loadObject(ac, "tagFamilyUuid", READ_PERM).flatMap(tagFamily -> {
+			return project.getTagFamilyRoot().loadObjectByUuid(ac, tagFamilyUuid, READ_PERM).flatMap(tagFamily -> {
 				try {
 					PageImpl<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
 					return tagPage.transformToRest(ac);

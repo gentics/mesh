@@ -32,11 +32,12 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	@Override
-	public void handleUpdate(InternalActionContext ac) {
+	public void handleUpdate(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
-			return root.loadObject(ac, "uuid", UPDATE_PERM).flatMap(element -> {
+			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				try {
 					Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
@@ -57,26 +58,26 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "microschema_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		deleteElement(ac, () -> getRootVertex(ac), uuid, "microschema_deleted");
 	}
 
-	public void handleDiff(InternalActionContext ac) {
+	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
+			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
 			return obsSchema.flatMap(microschema -> microschema.diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleGetSchemaChanges(InternalActionContext ac) {
+	public void handleGetSchemaChanges(InternalActionContext ac, String schemaUuid) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void handleApplySchemaChanges(InternalActionContext ac) {
+	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);
+			Observable<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});

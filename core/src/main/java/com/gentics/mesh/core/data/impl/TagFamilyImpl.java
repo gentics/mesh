@@ -189,7 +189,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
 
-			Observable<TagFamily> tagFamilyObs = project.getTagFamilyRoot().loadObject(ac, "uuid", UPDATE_PERM);
+			Observable<TagFamily> tagFamilyObs = project.getTagFamilyRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Observable<TagFamily> tagFamilyWithSameNameObs = project.getTagFamilyRoot().findByName(newName);
 
 			Observable<TagFamily> obs = Observable.zip(tagFamilyObs, tagFamilyWithSameNameObs, (tagFamily, tagFamilyWithSameName) -> {

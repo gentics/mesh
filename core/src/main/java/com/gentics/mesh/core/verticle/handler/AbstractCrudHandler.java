@@ -58,25 +58,33 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * Handle delete requests.
 	 * 
 	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element which should be deleted
 	 */
-	abstract public void handleDelete(InternalActionContext ac);
+	abstract public void handleDelete(InternalActionContext ac, String uuid);
 
 	/**
 	 * Handle read requests that target a single object.
 	 * 
 	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element which should be read
 	 */
-	public void handleRead(InternalActionContext ac) {
-		readElement(ac, "uuid", () -> getRootVertex(ac));
+	public void handleRead(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		readElement(ac, uuid, () -> getRootVertex(ac));
 	}
 
 	/**
 	 * Handle update requests.
 	 * 
 	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element which should be updated
 	 */
-	public void handleUpdate(InternalActionContext ac) {
-		updateElement(ac, "uuid", () -> getRootVertex(ac));
+	public void handleUpdate(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		updateElement(ac, uuid, () -> getRootVertex(ac));
 	}
 
 	/**
@@ -108,18 +116,30 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 	}
 
-	protected void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler, String uuidParameterName, String responseMessage) {
+	/**
+	 * Delete the specified element.
+	 * 
+	 * @param ac
+	 * @param handler
+	 *            Handler which provides the root vertex which will be used to load the element
+	 * @param uuid
+	 *            Uuid of the element which should be deleted
+	 * @param responseMessage
+	 *            Response message to be returned on success
+	 */
+	protected void deleteElement(InternalActionContext ac, TrxHandler<RootVertex<T>> handler, String uuid, String responseMessage) {
+		validateParameter(uuid, "uuid");
 
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
-			Observable<T> obs = root.loadObject(ac, uuidParameterName, DELETE_PERM);
+			Observable<T> obs = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			return obs.flatMap(element -> {
 
 				return db.noTrx(() -> {
 
 					Tuple<String, SearchQueueBatch> tuple = db.trx(() -> {
 
-						String uuid = element.getUuid();
+						String elementUuid = element.getUuid();
 						if (element instanceof IndexableElement) {
 							SearchQueueBatch batch = ((IndexableElement) element).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
 							String name = null;
@@ -127,7 +147,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 								name = ((NamedElement) element).getName();
 							}
 							final String objectName = name;
-							String id = objectName != null ? uuid + "/" + objectName : uuid;
+							String id = objectName != null ? elementUuid + "/" + objectName : elementUuid;
 							element.delete();
 							return Tuple.tuple(id, batch);
 						} else {
@@ -147,10 +167,19 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 
 	}
 
-	protected void updateElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<T>> handler) {
+	/**
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element which should be updated
+	 * @param handler
+	 *            Handler which provides the root vertex which should be used when loading the element
+	 * 
+	 */
+	protected void updateElement(InternalActionContext ac, String uuid, TrxHandler<RootVertex<T>> handler) {
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<T> root = handler.call();
-			return root.loadObject(ac, uuidParameterName, UPDATE_PERM).flatMap(element -> {
+			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				return element.update(ac).flatMap(updatedElement -> {
 					// Transform the vertex using a fresh transaction in order to start with a clean cache
 					return db.noTrx(() -> {
@@ -163,10 +192,19 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 
 	}
 
-	protected void readElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<?>> handler) {
+	/**
+	 * Read the element with the given element by loading it from the specified root vertex.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element which should be loaded
+	 * @param handler
+	 *            Handler which provides the root vertex which should be used when loading the element
+	 */
+	protected void readElement(InternalActionContext ac, String uuid, TrxHandler<RootVertex<?>> handler) {
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
-			return root.loadObject(ac, uuidParameterName, READ_PERM).flatMap(node -> {
+			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(node -> {
 				return node.transformToRest(ac);
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -177,6 +215,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * 
 	 * @param ac
 	 * @param handler
+	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	protected void readElementList(InternalActionContext ac, TrxHandler<RootVertex<T>> handler) {
 		db.asyncNoTrxExperimental(() -> {

@@ -32,13 +32,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "group_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		deleteElement(ac, () -> getRootVertex(ac), uuid, "group_deleted");
 	}
 
-	public void handleGroupRolesList(InternalActionContext ac) {
+	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Group> obsGroup = getRootVertex(ac).loadObject(ac, "groupUuid", READ_PERM);
+			Observable<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParameter pagingInfo = ac.getPagingParameter();
 			MeshAuthUser requestUser = ac.getUser();
 			Observable<RestModel> obs = obsGroup.flatMap(group -> {
@@ -53,10 +54,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleAddRoleToGroup(InternalActionContext ac) {
+	/**
+	 * Add the role with the given uuid to the group.
+	 * 
+	 * @param ac
+	 * @param groupUuid
+	 * @param roleUuid
+	 */
+	public void handleAddRoleToGroup(InternalActionContext ac, String groupUuid, String roleUuid) {
+		validateParameter(groupUuid, "groupUuid");
+		validateParameter(roleUuid, "roleUuid");
+
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
-			Observable<Role> obsRole = boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM);
+			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Observable<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsRole, (group, role) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
@@ -76,11 +87,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	}
 
-	public void handleRemoveRoleFromGroup(InternalActionContext ac) {
+	public void handleRemoveRoleFromGroup(InternalActionContext ac, String groupUuid, String roleUuid) {
+		validateParameter(roleUuid, "roleUuid");
+		validateParameter(groupUuid, "groupUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			// TODO check whether the role is actually part of the group
-			Observable<Group> obsGroup = getRootVertex(ac).loadObject(ac, "groupUuid", UPDATE_PERM);
-			Observable<Role> obsRole = boot.roleRoot().loadObject(ac, "roleUuid", READ_PERM);
+			Observable<Group> obsGroup = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Observable<Role> obsRole = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			return Observable.zip(obsGroup, obsRole, (group, role) -> {
 
@@ -100,11 +114,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleGroupUserList(InternalActionContext ac) {
+	/**
+	 * Read users that are assigned to the group and return a paged list.
+	 * 
+	 * @param ac
+	 * @param groupUuid
+	 *            Uuid of the group
+	 */
+	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
+		validateParameter(groupUuid, "groupUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParameter pagingInfo = ac.getPagingParameter();
-			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", READ_PERM);
+			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			return obsGroup.flatMap(group -> {
 				try {
 					PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
@@ -116,11 +139,23 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleAddUserToGroup(InternalActionContext ac) {
+	/**
+	 * Add the given user to a group.
+	 * 
+	 * @param ac
+	 * @param groupUuid
+	 *            Group uuid
+	 * @param userUuid
+	 *            Uuid of the user which should be added to the group
+	 */
+	public void handleAddUserToGroup(InternalActionContext ac, String groupUuid, String userUuid) {
+		validateParameter(groupUuid, "groupUuid");
+		validateParameter(userUuid, "userUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 
-			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
-			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
+			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsUser, (group, user) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					group.addUser(user);
@@ -135,10 +170,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleRemoveUserFromGroup(InternalActionContext ac) {
+	public void handleRemoveUserFromGroup(InternalActionContext ac, String groupUuid, String userUuid) {
+		validateParameter(groupUuid, "groupUuid");
+		validateParameter(userUuid, "userUuid");
+
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Group> obsGroup = boot.groupRoot().loadObject(ac, "groupUuid", UPDATE_PERM);
-			Observable<User> obsUser = boot.userRoot().loadObject(ac, "userUuid", READ_PERM);
+			Observable<Group> obsGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			return Observable.zip(obsUser, obsGroup, (user, group) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);

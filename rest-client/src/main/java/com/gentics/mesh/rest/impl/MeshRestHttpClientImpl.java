@@ -61,7 +61,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.rest.AbstractMeshRestClient;
+import com.gentics.mesh.rest.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.BasicAuthentication;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.MeshResponseHandler;
@@ -80,13 +80,16 @@ import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
 import rx.Observable;
 
-public class MeshRestClientImpl extends AbstractMeshRestClient {
+/**
+ * Http based rest client implementation.
+ */
+public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
-	public MeshRestClientImpl(String host, Vertx vertx) {
+	public MeshRestHttpClientImpl(String host, Vertx vertx) {
 		this(host, DEFAULT_PORT, vertx, AuthenticationMethod.BASIC_AUTH);
 	}
 
-	public MeshRestClientImpl(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
+	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setDefaultPort(port);

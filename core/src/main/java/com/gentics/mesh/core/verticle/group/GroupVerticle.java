@@ -43,37 +43,57 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	private void addGroupRoleHandlers() {
 
 		route("/:groupUuid/roles").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleGroupRolesList(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String groupUuid = ac.getParameter("groupUuid");
+			crudHandler.handleGroupRolesList(ac, groupUuid);
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleAddRoleToGroup(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String groupUuid = ac.getParameter("groupUuid");
+			String roleUuid = ac.getParameter("roleUuid");
+
+			crudHandler.handleAddRoleToGroup(ac, groupUuid, roleUuid);
 		});
 
 		route("/:groupUuid/roles/:roleUuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRemoveRoleFromGroup(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String groupUuid = ac.getParameter("groupUuid");
+			String roleUuid = ac.getParameter("roleUuid");
+
+			crudHandler.handleRemoveRoleFromGroup(ac, groupUuid, roleUuid);
 		});
 	}
 
 	private void addGroupUserHandlers() {
 		route("/:groupUuid/users").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleGroupUserList(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String groupUuid = ac.getParameter("groupUuid");
+			crudHandler.handleGroupUserList(ac, groupUuid);
 		});
 
 		Route route = route("/:groupUuid/users/:userUuid").method(PUT).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleAddUserToGroup(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String groupUuid = ac.getParameter("groupUuid");
+			String userUuid = ac.getParameter("userUuid");
+			crudHandler.handleAddUserToGroup(ac, groupUuid, userUuid);
 		});
 
 		route = route("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
 		route.handler(rc -> {
-			crudHandler.handleRemoveUserFromGroup(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String groupUuid = ac.getParameter("groupUuid");
+			String userUuid = ac.getParameter("userUuid");
+			crudHandler.handleRemoveUserFromGroup(ac, groupUuid, userUuid);
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
@@ -81,14 +101,18 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 	// TODO update timestamps
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleUpdate(ac, uuid);
 		});
 
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleRead(ac, uuid);
 		});
 
 		/*
