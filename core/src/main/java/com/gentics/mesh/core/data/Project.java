@@ -101,20 +101,11 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	Release getInitialRelease();
 
 	/**
-	 * Set the initial release of the project
+	 * Get the latest release of the project
 	 *
-	 * @param release
-	 */
-	void setInitialRelease(Release release);
-
-	/**
-	 * Create the initial release of the project
-	 * 
-	 * @param creator
-	 * @param name
 	 * @return
 	 */
-	Release createInitialRelease(User creator, String name);
+	Release getLatestRelease();
 
 	/**
 	 * Return the release root aggregation vertex of the project. Internally this method will create the release root when it has not yet been created.

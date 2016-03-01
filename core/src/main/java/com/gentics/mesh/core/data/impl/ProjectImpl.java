@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BASE_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
@@ -49,6 +48,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -256,28 +256,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public Release getInitialRelease() {
-		return out(HAS_RELEASE).has(ReleaseImpl.class).nextOrDefaultExplicit(ReleaseImpl.class, null);
+		return getReleaseRoot().getInitialRelease();
 	}
 
 	@Override
-	public void setInitialRelease(Release release) {
-		linkOut(release.getImpl(), HAS_RELEASE);
-	}
-
-	@Override
-	public Release createInitialRelease(User creator, String name) {
-		Release initialRelease = getInitialRelease();
-		if (initialRelease == null) {
-			initialRelease = getGraph().addFramedVertex(ReleaseImpl.class);
-			initialRelease.setCreated(creator);
-			initialRelease.setName(name);
-			initialRelease.setActive(true);
-			setInitialRelease(initialRelease);
-
-			// add to project specific aggregation vertex
-			getReleaseRoot().addItem(initialRelease);
-		}
-		return initialRelease;
+	public Release getLatestRelease() {
+		return getReleaseRoot().getLatestRelease();
 	}
 
 	@Override

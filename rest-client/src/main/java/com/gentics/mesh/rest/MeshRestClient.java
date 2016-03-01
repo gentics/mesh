@@ -12,6 +12,7 @@ import com.gentics.mesh.rest.method.NavigationClientMethods;
 import com.gentics.mesh.rest.method.NodeClientMethods;
 import com.gentics.mesh.rest.method.NodeFieldAPIClientMethods;
 import com.gentics.mesh.rest.method.ProjectClientMethods;
+import com.gentics.mesh.rest.method.ReleaseClientMethods;
 import com.gentics.mesh.rest.method.RoleClientMethods;
 import com.gentics.mesh.rest.method.SchemaClientMethods;
 import com.gentics.mesh.rest.method.SearchClientMethods;
@@ -27,7 +28,8 @@ import io.vertx.ext.web.RoutingContext;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods, EventbusClientMethods {
+		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods, EventbusClientMethods,
+		ReleaseClientMethods {
 
 	/**
 	 * Create a new mesh rest client.

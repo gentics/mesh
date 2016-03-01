@@ -59,6 +59,7 @@ import com.gentics.mesh.core.verticle.navroot.NavRootVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.role.RoleVerticle;
 import com.gentics.mesh.core.verticle.schema.ProjectSchemaVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
@@ -126,6 +127,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(NodeVerticle.class);
 		addMandatoryVerticle(TagFamilyVerticle.class);
 		addMandatoryVerticle(ProjectSchemaVerticle.class);
+		addMandatoryVerticle(ReleaseVerticle.class);
 
 		// Global verticles
 		addMandatoryVerticle(WebRootVerticle.class);

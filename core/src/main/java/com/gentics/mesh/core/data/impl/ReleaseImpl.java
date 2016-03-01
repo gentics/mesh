@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -37,8 +40,16 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Observable<ReleaseResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
-		// TODO Auto-generated method stub
-		return null;
+		Set<Observable<ReleaseResponse>> obsParts = new HashSet<>();
+
+		ReleaseResponse restRelease = new ReleaseResponse();
+		restRelease.setName(getName());
+
+		// Add common fields
+		obsParts.add(fillCommonRestFields(ac, restRelease));
+
+		// Merge and complete
+		return Observable.merge(obsParts).last();
 	}
 
 	@Override

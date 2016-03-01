@@ -13,6 +13,7 @@ import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.ReleaseAssert;
+import com.gentics.mesh.assertj.impl.ReleaseResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -123,5 +125,9 @@ public class MeshAssertions extends Assertions {
 
 	public static ReleaseAssert assertThat(Release actual) {
 		return new ReleaseAssert(actual);
+	}
+
+	public static ReleaseResponseAssert assertThat(ReleaseResponse actual) {
+		return new ReleaseResponseAssert(actual);
 	}
 }

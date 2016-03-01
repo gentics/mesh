@@ -14,6 +14,8 @@ public class GraphRelationships {
 		db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
 		db.addEdgeType(HAS_PROJECT);
 		db.addEdgeType(HAS_RELEASE);
+		db.addEdgeType(HAS_INITIAL_RELEASE);
+		db.addEdgeType(HAS_LATEST_RELEASE);
 		db.addEdgeType(HAS_NEXT_RELEASE);
 		db.addEdgeType(HAS_NODE);
 		db.addEdgeType(HAS_NODE_REFERENCE);
@@ -77,6 +79,8 @@ public class GraphRelationships {
 
 	// Release
 	public static final String HAS_RELEASE = "HAS_RELEASE";
+	public static final String HAS_INITIAL_RELEASE = "HAS_INITIAL_RELEASE";
+	public static final String HAS_LATEST_RELEASE = "HAS_LATEST_RELEASE";
 	public static final String HAS_NEXT_RELEASE = "HAS_NEXT_RELEASE";
 
 	// Nodes

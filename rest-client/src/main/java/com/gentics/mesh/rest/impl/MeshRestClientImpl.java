@@ -30,6 +30,8 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -903,5 +905,14 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
 		client.websocket(BASEURI + "/eventbus/websocket", wsConnect);
+	}
+
+	@Override
+	public Future<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
+
+		return handleRequest(POST, "/" + projectName + "/releases" + getQuery(parameters), ReleaseResponse.class, releaseCreateRequest);
 	}
 }
