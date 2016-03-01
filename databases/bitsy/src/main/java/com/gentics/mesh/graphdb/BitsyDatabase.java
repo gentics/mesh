@@ -90,6 +90,12 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public void reload(MeshElement element) {
 	}
 

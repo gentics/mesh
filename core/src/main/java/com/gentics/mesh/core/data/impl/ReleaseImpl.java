@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
+import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
@@ -16,9 +19,13 @@ import com.gentics.mesh.handler.InternalActionContext;
 import rx.Observable;
 
 public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release> implements Release {
+	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
+
+	public static final String UNIQUENAME_INDEX_NAME = "uniqueReleaseNameIndex";
 
 	public static void init(Database database) {
 		database.addVertexType(ReleaseImpl.class);
+		database.addVertexIndex(UNIQUENAME_INDEX_NAME, ReleaseImpl.class, true, UNIQUENAME_PROPERTY_KEY);
 	}
 
 	@Override
@@ -60,6 +67,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public void setName(String name) {
 		setProperty("name", name);
+		setProperty(UNIQUENAME_PROPERTY_KEY, getRoot().getUuid() + "-" + name);
 	}
 
 	@Override
@@ -84,6 +92,11 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Release getPreviousRelease() {
-		return in(HAS_NEXT_RELEASE).has(ReleaseImpl.class).nextOrDefault(ReleaseImpl.class, null);
+		return in(HAS_NEXT_RELEASE).has(ReleaseImpl.class).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	}
+
+	@Override
+	public ReleaseRoot getRoot() {
+		return in(HAS_RELEASE).has(ReleaseRootImpl.class).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
 	}
 }

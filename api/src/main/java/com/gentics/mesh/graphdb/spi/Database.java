@@ -241,6 +241,15 @@ public interface Database {
 	 */
 	<T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key);
 
+	/**
+	 * Check whether the value can be put into the given index for a new element of given class
+	 * @param indexName index name
+	 * @param classOfT class of the proposed new element
+	 * @param key index key to check
+	 * @return the conflicting element or null if no conflict exists
+	 */
+	<T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
+
 	void addEdgeType(String label, String... stringPropertyKeys);
 
 	void addVertexType(Class<?> clazzOfVertex);

@@ -82,6 +82,12 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public void addEdgeIndexSource(String label) {
 		// No supported
 	}

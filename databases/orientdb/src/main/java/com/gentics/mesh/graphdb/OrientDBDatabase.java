@@ -291,6 +291,25 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+
+		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
+		if (vertexType != null) {
+			OIndex<?> index = vertexType.getClassIndex(indexName);
+			if (index != null) {
+				Object recordId = index.get(key);
+				if (recordId != null) {
+					return (T)graph.getFramedVertexExplicit(classOfT, recordId);
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void reload(MeshElement element) {
 		((OrientVertex) element.getElement()).reload();
 	}

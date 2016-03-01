@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,8 +23,11 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -32,9 +37,12 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Autowired
 	private ReleaseVerticle releaseVerticle;
 
+	@Autowired
+	private ProjectVerticle projectVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle));
+		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle, projectVerticle));
 	}
 
 	@Override
@@ -138,6 +146,64 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid + "/" + name);
+	}
+
+	@Test
+	public void testCreateWithoutName() throws Exception {
+		Project project = project();
+		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), new ReleaseCreateRequest());
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "release_missing_name");
+	}
+
+	@Test
+	public void testCreateWithConflictingName1() throws Exception {
+		Project project = project();
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(project.getName());
+
+		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "release_conflicting_name", project.getName());
+	}
+
+	@Test
+	public void testCreateWithConflictingName2() throws Exception {
+		String releaseName = "New Release";
+		Project project = project();
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(releaseName);
+
+		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
+		latchFor(future);
+		assertSuccess(future);
+
+		future = getClient().createRelease(project.getName(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "release_conflicting_name", releaseName);
+	}
+
+	@Test
+	public void testCreateWithConflictingName3() throws Exception {
+		String releaseName = "New Release";
+		String newProjectName = "otherproject";
+		Project project = project();
+		ReleaseCreateRequest request = new ReleaseCreateRequest();
+		request.setName(releaseName);
+
+		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
+		latchFor(future);
+		assertSuccess(future);
+
+		ProjectCreateRequest createProject = new ProjectCreateRequest();
+		createProject.setName(newProjectName);
+		Future<ProjectResponse> projectFuture = getClient().createProject(createProject);
+		latchFor(projectFuture);
+		assertSuccess(projectFuture);
+
+		future = getClient().createRelease(newProjectName, request);
+		latchFor(future);
+		assertSuccess(future);
 	}
 
 	@Override

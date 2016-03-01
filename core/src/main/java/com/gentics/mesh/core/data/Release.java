@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 
 /**
@@ -37,4 +38,10 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return previous Release
 	 */
 	Release getPreviousRelease();
+
+	/**
+	 * Get the root vertex
+	 * @return
+	 */
+	ReleaseRoot getRoot();
 }

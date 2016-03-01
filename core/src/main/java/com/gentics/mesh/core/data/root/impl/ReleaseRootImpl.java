@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE_ROOT;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -41,10 +42,10 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		Release latestRelease = getLatestRelease();
 
 		Release release = getGraph().addFramedVertex(ReleaseImpl.class);
+		addItem(release);
 		release.setCreated(creator);
 		release.setName(name);
 		release.setActive(true);
-		addItem(release);
 
 		if (latestRelease == null) {
 			// if this is the first release, make it the initial release
@@ -89,10 +90,18 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 			return requestUser.hasPermissionAsync(ac, project, GraphPermission.UPDATE_PERM).flatMap(hasPerm -> {
 				if (hasPerm) {
-					// TODO check for uniqueness of release name (per project)
 
 					Release createdRelease = db.trx(() -> {
 						requestUser.reload();
+
+						// check for uniqueness of release name (per project)
+						Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME,
+								ReleaseImpl.class, getUuid() + "-" + createRequest.getName());
+						if (conflictingRelease != null) {
+							throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(),
+									"release_conflicting_name", createRequest.getName());
+						}
+
 						Release release = create(createRequest.getName(), requestUser);
 
 						// TODO set permissions?
