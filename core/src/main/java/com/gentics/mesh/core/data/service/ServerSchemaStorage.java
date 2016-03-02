@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -98,6 +99,22 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
+	public Schema getLatestSchema(String name) {
+		Map<Integer, Schema> versions = schemas.getOrDefault(name, Collections.emptyMap());
+		if (versions.isEmpty()) {
+			return null;
+		}
+
+		Integer latest = null;
+		for (Integer version : versions.keySet()) {
+			if (latest == null || version > latest) {
+				latest = version;
+			}
+		}
+		return versions.get(latest);
+	}
+
+	@Override
 	public void removeSchema(String name) {
 		schemas.remove(name);
 	}
@@ -144,6 +161,22 @@ public class ServerSchemaStorage implements SchemaStorage {
 		} else {
 			return microschemaMap.get(version);
 		}
+	}
+
+	@Override
+	public Microschema getLatestMicroschema(String name) {
+		Map<Integer, Microschema> versions = microschemas.getOrDefault(name, Collections.emptyMap());
+		if (versions.isEmpty()) {
+			return null;
+		}
+
+		Integer latest = null;
+		for (Integer version : versions.keySet()) {
+			if (latest == null || version > latest) {
+				latest = version;
+			}
+		}
+		return versions.get(latest);
 	}
 
 	@Override

@@ -57,6 +57,13 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
+	public SchemaReference transformToReference(InternalActionContext ac) {
+		SchemaReference schemaReference = super.transformToReference(ac);
+		schemaReference.setVersion(getVersion());
+		return schemaReference;
+	}
+
+	@Override
 	public Observable<Schema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 

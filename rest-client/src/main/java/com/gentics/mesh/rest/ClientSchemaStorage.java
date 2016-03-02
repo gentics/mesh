@@ -23,14 +23,29 @@ public class ClientSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Schema getSchema(String name) {
-		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet()
-				.stream().max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
 	@Override
 	public Schema getSchema(String name, int version) {
 		return schemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
+	}
+
+	public Schema getLatestSchema(String name) {
+		Map<Integer, Schema> versions = schemaMap.getOrDefault(name, Collections.emptyMap());
+		if (versions.isEmpty()) {
+			return null;
+		}
+
+		Integer latest = null;
+		for (Integer version : versions.keySet()) {
+			if (latest == null || version > latest) {
+				latest = version;
+			}
+		}
+		return versions.get(latest);
 	}
 
 	@Override
@@ -47,14 +62,30 @@ public class ClientSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Microschema getMicroschema(String name) {
-		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet()
-				.stream().max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
 	@Override
 	public Microschema getMicroschema(String name, int version) {
 		return microschemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
+	}
+
+	@Override
+	public Microschema getLatestMicroschema(String name) {
+		Map<Integer, Microschema> versions = microschemaMap.getOrDefault(name, Collections.emptyMap());
+		if (versions.isEmpty()) {
+			return null;
+		}
+
+		Integer latest = null;
+		for (Integer version : versions.keySet()) {
+			if (latest == null || version > latest) {
+				latest = version;
+			}
+		}
+		return versions.get(latest);
 	}
 
 	@Override

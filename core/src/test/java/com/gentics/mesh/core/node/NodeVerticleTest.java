@@ -107,6 +107,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
 		schemaReference.setUuid(schemaContainer("content").getUuid());
+		schemaReference.setVersion(1);
 		request.setLanguage("BOGUS");
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
@@ -124,7 +125,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testCreateNodeInBaseNode() {
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setSchema(new SchemaReference().setVersion(1).setName("content").setUuid(schemaContainer("content").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
@@ -149,7 +150,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(parentNode.getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("folder").setUuid(schemaContainer("folder").getUuid()));
+		request.setSchema(new SchemaReference().setName("folder").setVersion(1).setUuid(schemaContainer("folder").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.setPublished(true);

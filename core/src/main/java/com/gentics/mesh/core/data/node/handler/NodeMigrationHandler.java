@@ -106,6 +106,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 						NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
 						Schema oldSchema = fromSchemaContainer.getSchema();
 						Schema newSchema = toSchemaContainer.getSchema();
+						// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
+						restModel.getSchema().setVersion(newSchema.getVersion());
 						migrate(ac, container, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
 					}
 					// migrate the schema reference to the new version

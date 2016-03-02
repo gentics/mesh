@@ -42,6 +42,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 		assertNotNull(reference);
 		assertEquals(schema.getUuid(), reference.getUuid());
 		assertEquals(schema.getName(), reference.getName());
+		assertEquals(schema.getVersion(), reference.getVersion().intValue());
 	}
 
 	@Test
