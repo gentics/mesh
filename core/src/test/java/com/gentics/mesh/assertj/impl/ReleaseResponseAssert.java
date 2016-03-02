@@ -20,4 +20,32 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 		assertThat(actual.getName()).as(descriptionText() + " name").isEqualTo(name);
 		return this;
 	}
+
+	/**
+	 * Assert that the release response has the given uuid
+	 * @param uuid
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as(descriptionText() + " uuid").isEqualTo(uuid);
+		return this;
+	}
+
+	/**
+	 * Assert that the release response is marked active
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert isActive() {
+		assertThat(actual.isActive()).as(descriptionText() + " active").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that the release response is marked inactive
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert isInactive() {
+		assertThat(actual.isActive()).as(descriptionText() + " active").isFalse();
+		return this;
+	}
 }

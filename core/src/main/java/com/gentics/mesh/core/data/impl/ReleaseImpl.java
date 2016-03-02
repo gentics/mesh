@@ -51,9 +51,13 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
+		restRelease.setActive(isActive());
 
 		// Add common fields
 		obsParts.add(fillCommonRestFields(ac, restRelease));
+
+		// Role permissions
+		obsParts.add(setRolePermissions(ac, restRelease));
 
 		// Merge and complete
 		return Observable.merge(obsParts).last();

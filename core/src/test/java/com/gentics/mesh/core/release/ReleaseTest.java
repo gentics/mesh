@@ -10,7 +10,11 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
+
+import io.vertx.ext.web.RoutingContext;
 
 public class ReleaseTest extends AbstractBasicObjectTest {
 
@@ -28,8 +32,15 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	@Override
 	public void testFindAll() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		ReleaseRoot releaseRoot = project.getReleaseRoot();
+		Release initialRelease = releaseRoot.getInitialRelease();
+		Release releaseOne = releaseRoot.create("One", user());
+		Release releaseTwo = releaseRoot.create("Two", user());
+		Release releaseThree = releaseRoot.create("Three", user());
 
+		assertThat(new ArrayList<Release>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid")
+				.containsExactly(initialRelease, releaseOne, releaseTwo, releaseThree);
 	}
 
 	@Test
@@ -128,10 +139,17 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	}
 
+	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		Release release = project.getInitialRelease();
 
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+
+		ReleaseResponse releaseResponse = release.transformToRestSync(ac).toBlocking().first();
+		assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive();
 	}
 
 	@Override

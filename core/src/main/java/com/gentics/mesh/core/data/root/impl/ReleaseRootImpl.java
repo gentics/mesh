@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
@@ -58,6 +59,9 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		// make the new release the latest
 		setSingleLinkOutTo(release.getImpl(), HAS_LATEST_RELEASE);
 
+		// set initial permissions on the release
+		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);
+
 		return release;
 	}
 
@@ -103,8 +107,6 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 						}
 
 						Release release = create(createRequest.getName(), requestUser);
-
-						// TODO set permissions?
 
 						return release;
 					});

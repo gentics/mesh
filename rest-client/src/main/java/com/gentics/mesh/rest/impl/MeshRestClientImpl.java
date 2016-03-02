@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
@@ -914,5 +915,22 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
 
 		return handleRequest(POST, "/" + projectName + "/releases" + getQuery(parameters), ReleaseResponse.class, releaseCreateRequest);
+	}
+
+	@Override
+	public Future<ReleaseResponse> findReleaseByUuid(String projectName, String uuid,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+
+		return handleRequest(GET, "/" + projectName + "/releases/" + uuid + getQuery(parameters), ReleaseResponse.class);
+	}
+
+	@Override
+	public Future<ReleaseListResponse> findReleases(String projectName,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+
+		return handleRequest(GET, "/" + projectName + "/releases" + getQuery(parameters), ReleaseListResponse.class);
 	}
 }

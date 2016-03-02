@@ -8,7 +8,10 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,16 +25,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
+import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
 import io.vertx.core.Future;
+import io.vertx.ext.web.RoutingContext;
 
 public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Autowired
@@ -108,10 +116,18 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertThat(foundReleases).as("Found Releases").containsOnlyElementsOf(uuids);
 	}
 
+	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		// TODO Auto-generated method stub
-
+		int nJobs = 200;
+		Set<Future<ReleaseResponse>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findReleaseByUuid(project().getName(), project().getInitialRelease().getUuid()));
+		}
+		for (Future<ReleaseResponse> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
 	}
 
 	@Test
@@ -128,7 +144,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 
 		ReleaseResponse response = future.result();
-		assertThat(response).as("Release Response").isNotNull().hasName(releaseName);
+		assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive();
 	}
 
 	@Test
@@ -212,28 +228,106 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	}
 
+	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release firstRelease = project.getReleaseRoot().create("One", user());
+		Release secondRelease = project.getReleaseRoot().create("Two", user());
+		Release thirdRelease = project.getReleaseRoot().create("Three", user());
 
+		for (Release release : Arrays.asList(initialRelease, firstRelease, secondRelease, thirdRelease)) {
+			Future<ReleaseResponse> future = getClient().findReleaseByUuid(project.getName(), release.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+			assertThat(future.result()).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive();
+		}
 	}
 
+	@Test
+	public void testReadByBogusUUID() throws Exception {
+		Project project = project();
+		Future<ReleaseResponse> future = getClient().findReleaseByUuid(project.getName(), "bogus");
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+	}
+
+	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		// TODO Auto-generated method stub
+		Project project = project();
+		String projectName = project.getName();
+		String uuid = project.getInitialRelease().getUuid();
 
+		Future<ReleaseResponse> future = getClient().findReleaseByUuid(projectName, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
+		latchFor(future);
+		assertSuccess(future);
+		assertNotNull(future.result().getRolePerms());
+		assertEquals(4, future.result().getRolePerms().length);
 	}
 
+	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		String releaseUuid = project.getInitialRelease().getUuid();
+		String name = project.getName();
+		role().revokePermissions(project.getInitialRelease(), READ_PERM);
 
+		Future<ReleaseResponse> future = getClient().findReleaseByUuid(name, releaseUuid);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", releaseUuid);
 	}
 
+	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release firstRelease = project.getReleaseRoot().create("One", user());
+		Release secondRelease = project.getReleaseRoot().create("Two", user());
+		Release thirdRelease = project.getReleaseRoot().create("Three", user());
 
+		Future<ReleaseListResponse> future = getClient().findReleases(project.getName());
+		latchFor(future);
+		assertSuccess(future);
+
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+
+		ListResponse<ReleaseResponse> responseList = future.result();
+		assertThat(responseList).isNotNull();
+		assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
+				initialRelease.transformToRestSync(ac).toBlocking().single(),
+				firstRelease.transformToRestSync(ac).toBlocking().single(),
+				secondRelease.transformToRestSync(ac).toBlocking().single(),
+				thirdRelease.transformToRestSync(ac).toBlocking().single());
+	}
+
+	@Test
+	public void testReadMultipleWithRestrictedPermissions() throws Exception {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release firstRelease = project.getReleaseRoot().create("One", user());
+		Release secondRelease = project.getReleaseRoot().create("Two", user());
+		Release thirdRelease = project.getReleaseRoot().create("Three", user());
+
+		role().revokePermissions(firstRelease, READ_PERM);
+		role().revokePermissions(thirdRelease, READ_PERM);
+
+		Future<ReleaseListResponse> future = getClient().findReleases(project.getName());
+		latchFor(future);
+		assertSuccess(future);
+
+		RoutingContext rc = getMockedRoutingContext("");
+		InternalActionContext ac = InternalActionContext.create(rc);
+
+		ListResponse<ReleaseResponse> responseList = future.result();
+		assertThat(responseList).isNotNull();
+		assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
+				initialRelease.transformToRestSync(ac).toBlocking().single(),
+				secondRelease.transformToRestSync(ac).toBlocking().single());
 	}
 
 	@Override
