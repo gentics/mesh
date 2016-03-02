@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.release;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.PUT;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
@@ -35,6 +36,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 		addCreateHandler();
 		addReadHandler();
+		addUpdateHandler();
 	}
 
 	private void addCreateHandler() {
@@ -54,6 +56,13 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 		route("/").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleReadList(InternalActionContext.create(rc));
+		});
+	}
+
+	private void addUpdateHandler() {
+		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
+		route.handler(rc -> {
+			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 	}
 }

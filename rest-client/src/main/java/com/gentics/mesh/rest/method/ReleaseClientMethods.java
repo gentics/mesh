@@ -3,6 +3,7 @@ package com.gentics.mesh.rest.method;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.vertx.core.Future;
@@ -39,5 +40,14 @@ public interface ReleaseClientMethods {
 	 * @return
 	 */
 	Future<ReleaseListResponse> findReleases(String projectName, QueryParameterProvider... parameters);
+
+	/**
+	 * Update the release.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @return
+	 */
+	Future<ReleaseResponse> updateRelease(String projectName, String uuid, ReleaseUpdateRequest request);
 
 }

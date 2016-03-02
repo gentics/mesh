@@ -37,4 +37,11 @@ public interface ReleaseRoot extends RootVertex<Release> {
 	 * @return
 	 */
 	Release getLatestRelease();
+
+	/**
+	 * Get the unique index key for names of releases attached to this root
+	 * @param name release name
+	 * @return unique index key
+	 */
+	String getUniqueNameKey(String name);
 }

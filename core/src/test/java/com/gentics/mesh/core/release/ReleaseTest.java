@@ -9,27 +9,49 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 
 import io.vertx.ext.web.RoutingContext;
 
 public class ReleaseTest extends AbstractBasicObjectTest {
 
+	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		Release release = project().getInitialRelease();
+		ReleaseReference reference = release.transformToReference(ac);
+		assertThat(reference).isNotNull();
+		assertThat(reference.getName()).as("Reference name").isEqualTo(release.getName());
+		assertThat(reference.getUuid()).as("Reference uuid").isEqualTo(release.getUuid());
 	}
 
+	@Test
 	@Override
 	public void testFindAllVisible() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		ReleaseRoot releaseRoot = project.getReleaseRoot();
+		Release initialRelease = releaseRoot.getInitialRelease();
+		Release releaseOne = releaseRoot.create("One", user());
+		Release releaseTwo = releaseRoot.create("Two", user());
+		Release releaseThree = releaseRoot.create("Three", user());
 
+		PageImpl<? extends Release> page = releaseRoot.findAll(getRequestUser(), new PagingParameter(1, 25));
+		assertThat(page).isNotNull();
+		ArrayList<Release> arrayList = new ArrayList<Release>();
+		page.iterator().forEachRemaining(r -> arrayList.add(r));
+		assertThat(arrayList).usingElementComparatorOnFields("uuid").containsExactly(initialRelease, releaseOne,
+				releaseTwo, releaseThree);
 	}
 
+	@Test
 	@Override
 	public void testFindAll() throws Exception {
 		Project project = project();
@@ -78,8 +100,6 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	@Override
 	public void testRead() throws Exception {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Test
@@ -109,34 +129,48 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 
 	}
 
+	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		initialRelease.setName("New Release Name");
+		initialRelease.setActive(false);
+		initialRelease.reload();
 
+		assertThat(initialRelease).as("Release").isNamed("New Release Name").isInactive();
 	}
 
+	@Test
 	@Override
 	public void testReadPermission() throws Exception {
-		// TODO Auto-generated method stub
-
+		Project project = project();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+		testPermission(GraphPermission.READ_PERM, newRelease);
 	}
 
+	@Test
 	@Override
 	public void testDeletePermission() throws Exception {
-		// TODO Auto-generated method stub
-
+		Project project = project();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+		testPermission(GraphPermission.DELETE_PERM, newRelease);
 	}
 
+	@Test
 	@Override
 	public void testUpdatePermission() throws Exception {
-		// TODO Auto-generated method stub
-
+		Project project = project();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+		testPermission(GraphPermission.UPDATE_PERM, newRelease);
 	}
 
+	@Test
 	@Override
 	public void testCreatePermission() throws Exception {
-		// TODO Auto-generated method stub
-
+		Project project = project();
+		Release newRelease = project.getReleaseRoot().create("New Release", user());
+		testPermission(GraphPermission.CREATE_PERM, newRelease);
 	}
 
 	@Test

@@ -100,7 +100,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 						// check for uniqueness of release name (per project)
 						Release conflictingRelease = db.checkIndexUniqueness(ReleaseImpl.UNIQUENAME_INDEX_NAME,
-								ReleaseImpl.class, getUuid() + "-" + createRequest.getName());
+								ReleaseImpl.class, getUniqueNameKey(createRequest.getName()));
 						if (conflictingRelease != null) {
 							throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(),
 									"release_conflicting_name", createRequest.getName());
@@ -127,5 +127,10 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	@Override
 	public String getRootLabel() {
 		return HAS_RELEASE;
+	}
+
+	@Override
+	public String getUniqueNameKey(String name) {
+		return getUuid() + "-" + name;
 	}
 }

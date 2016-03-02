@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +13,10 @@ import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -29,9 +33,33 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
+	public ReleaseReference createEmptyReferenceModel() {
+		return new ReleaseReference();
+	}
+
+	@Override
 	public Observable<? extends Release> update(InternalActionContext ac) {
-		// TODO Auto-generated method stub
-		return null;
+		Database db = MeshSpringConfiguration.getInstance().database();
+		ReleaseUpdateRequest requestModel = ac.fromJson(ReleaseUpdateRequest.class);
+
+		return db.trx(() -> {
+			if (shouldUpdate(requestModel.getName(), getName())) {
+				// Check for conflicting project name
+				Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this,
+						getRoot().getUniqueNameKey(requestModel.getName()));
+				if (conflictingRelease != null) {
+					throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(),
+							"release_conflicting_name", requestModel.getName());
+				}
+				setName(requestModel.getName());
+			}
+			if (requestModel.getActive() != null) {
+				setActive(requestModel.getActive());
+			}
+			setEditor(ac.getUser());
+			setLastEditedTimestamp(System.currentTimeMillis());
+			return Observable.just(this);
+		});
 	}
 
 	@Override
@@ -71,7 +99,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public void setName(String name) {
 		setProperty("name", name);
-		setProperty(UNIQUENAME_PROPERTY_KEY, getRoot().getUuid() + "-" + name);
+		setProperty(UNIQUENAME_PROPERTY_KEY, getRoot().getUniqueNameKey(name));
 	}
 
 	@Override

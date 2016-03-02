@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -932,5 +933,13 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 
 		return handleRequest(GET, "/" + projectName + "/releases" + getQuery(parameters), ReleaseListResponse.class);
+	}
+
+	@Override
+	public Future<ReleaseResponse> updateRelease(String projectName, String uuid, ReleaseUpdateRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+
+		return handleRequest(PUT, "/"+projectName+"/releases/" + uuid, ReleaseResponse.class, request);
 	}
 }

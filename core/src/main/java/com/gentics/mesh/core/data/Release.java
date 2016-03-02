@@ -1,12 +1,13 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 
 /**
  * Interface for Release Vertex
  */
-public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement {
+public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference> {
 	public static final String TYPE = "release";
 
 	/**

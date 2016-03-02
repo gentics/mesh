@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -59,10 +60,22 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	}
 
+	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
-		// TODO Auto-generated method stub
+		int nJobs = 200;
+		String projectName = project().getName();
+		String uuid = project().getInitialRelease().getUuid();
 
+		Set<Future<?>> set = new HashSet<>();
+		for (int i = 0; i < nJobs; i++) {
+			set.add(getClient().findReleaseByUuid(projectName, uuid));
+		}
+
+		for (Future<?> future : set) {
+			latchFor(future);
+			assertSuccess(future);
+		}
 	}
 
 	@Override
@@ -330,22 +343,78 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 				secondRelease.transformToRestSync(ac).toBlocking().single());
 	}
 
+	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		// TODO Auto-generated method stub
+		String newName = "New Release Name";
+		String anotherNewName = "Another New Release Name";
+		Project project = project();
+		String projectName = project.getName();
+		String uuid = project.getInitialRelease().getUuid();
 
+		// change name
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		request.setName(newName);
+		Future<ReleaseResponse> future = getClient().updateRelease(projectName, uuid, request);
+		latchFor(future);
+		assertSuccess(future);
+		assertThat(future.result()).as("Updated Release").isNotNull().hasName(newName).isActive();
+
+		// change active
+		request = new ReleaseUpdateRequest();
+		request.setActive(false);
+		future = getClient().updateRelease(projectName, uuid, request);
+		latchFor(future);
+		assertSuccess(future);
+		assertThat(future.result()).as("Updated Release").isNotNull().hasName(newName).isInactive();
+
+		// change active and name
+		request = new ReleaseUpdateRequest();
+		request.setActive(true);
+		request.setName(anotherNewName);
+		future = getClient().updateRelease(projectName, uuid, request);
+		latchFor(future);
+		assertSuccess(future);
+		assertThat(future.result()).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
 	}
 
+	@Test
+	public void testUpdateWithNameConflict() throws Exception {
+		String newName = "New Release Name";
+		Project project = project();
+		project.getReleaseRoot().create(newName, user());
+
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		request.setName(newName);
+		Future<ReleaseResponse> future = getClient().updateRelease(project.getName(), project.getInitialRelease().getUuid(), request);
+		latchFor(future);
+		expectException(future, CONFLICT, "release_conflicting_name", newName);
+	}
+
+	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
+		String projectName = project.getName();
+		role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		request.setActive(false);
+		Future<ReleaseResponse> future = getClient().updateRelease(projectName, project.getInitialRelease().getUuid(), request);
+		latchFor(future);
+		expectException(future, FORBIDDEN, "error_missing_perm", project.getInitialRelease().getUuid());
 	}
 
+	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws HttpStatusCodeErrorException, Exception {
-		// TODO Auto-generated method stub
+		Project project = project();
 
+		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+		request.setActive(false);
+		Future<ReleaseResponse> future = getClient().updateRelease(project.getName(), "bogus", request);
+		latchFor(future);
+		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Override
