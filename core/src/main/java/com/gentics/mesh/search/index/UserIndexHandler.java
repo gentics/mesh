@@ -25,7 +25,7 @@ import io.vertx.core.json.JsonObject;
 @Component
 public class UserIndexHandler extends AbstractIndexHandler<User> {
 
-	public static final String EMAIL_KEY = "emailadress";
+	public static final String EMAIL_KEY = "emailaddress";
 	public static final String USERNAME_KEY = "username";
 	public static final String FIRSTNAME_KEY = "firstname";
 	public static final String LASTNAME_KEY = "lastname";
