@@ -45,7 +45,10 @@ public class UserVerticle extends AbstractCoreApiVerticle {
 
 	private void addReadPermissionHandler() {
 		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handlePermissionRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String userUuid = ac.getParameter("param0");
+			String pathToElement = ac.getParameter("param1");
+			crudHandler.handlePermissionRead(ac, userUuid, pathToElement);
 		});
 	}
 

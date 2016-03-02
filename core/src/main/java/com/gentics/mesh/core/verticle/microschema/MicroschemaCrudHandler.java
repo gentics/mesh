@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.Observable;
@@ -59,7 +60,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		deleteElement(ac, () -> getRootVertex(ac), uuid, "microschema_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "microschema_deleted");
 	}
 
 	public void handleDiff(InternalActionContext ac, String uuid) {

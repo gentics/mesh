@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 @Component
 public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResponse> {
@@ -19,7 +20,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		deleteElement(ac, () -> getRootVertex(ac), uuid, "project_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "project_deleted");
 	}
 
 }

@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.Observable;
@@ -35,7 +36,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		deleteElement(ac, () -> boot.schemaContainerRoot(), uuid, "schema_deleted");
+		HandlerUtilities.deleteElement(ac, () -> boot.schemaContainerRoot(), uuid, "schema_deleted");
 	}
 
 	@Override
@@ -72,7 +73,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	public void handleReadProjectList(InternalActionContext ac) {
-		readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
+		HandlerUtilities.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
 	}
 
 	public void handleAddProjectToSchema(InternalActionContext ac, String schemaUuid, String projectUuid) {

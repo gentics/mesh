@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import rx.Observable;
 
@@ -39,7 +40,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
 	}
 
 	/**

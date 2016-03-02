@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.query.impl.PagingParameter;
 
 import rx.Observable;
@@ -34,7 +35,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		deleteElement(ac, () -> getRootVertex(ac), uuid, "group_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "group_deleted");
 	}
 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {

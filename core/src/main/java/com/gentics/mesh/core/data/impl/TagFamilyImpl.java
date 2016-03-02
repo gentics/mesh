@@ -189,21 +189,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				throw error(BAD_REQUEST, "tagfamily_name_not_set");
 			}
 
-			Observable<TagFamily> tagFamilyObs = project.getTagFamilyRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Observable<TagFamily> tagFamilyWithSameNameObs = project.getTagFamilyRoot().findByName(newName);
-
-			Observable<TagFamily> obs = Observable.zip(tagFamilyObs, tagFamilyWithSameNameObs, (tagFamily, tagFamilyWithSameName) -> {
-				if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
+			Observable<TagFamily> obs = tagFamilyWithSameNameObs.map(tagFamilyWithSameName -> {
+				if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 					throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 				}
 				SearchQueueBatch batch = db.trx(() -> {
-					tagFamily.setName(newName);
+					this.setName(newName);
 					return addIndexBatch(UPDATE_ACTION);
 				});
 
-				// TODO i have no clue why map(i-> tagFamily) is not working.
 				batch.process().toBlocking().first();
-				return tagFamily;
+				return this;
 			});
 			return obs;
 		});

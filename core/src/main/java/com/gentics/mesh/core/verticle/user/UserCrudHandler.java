@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,24 +36,21 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		deleteElement(ac, () -> getRootVertex(ac), uuid, "user_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "user_deleted");
 	}
 
-	public void handlePermissionRead(InternalActionContext ac) {
+	public void handlePermissionRead(InternalActionContext ac, String userUuid, String pathToElement) {
+		if (StringUtils.isEmpty(userUuid)) {
+			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
+		}
+
+		if (StringUtils.isEmpty(pathToElement)) {
+			throw error(BAD_REQUEST, "user_permission_path_missing");
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Handling permission request for element on path {" + pathToElement + "}");
+		}
 		db.asyncNoTrxExperimental(() -> {
-			String userUuid = ac.getParameter("param0");
-			String pathToElement = ac.getParameter("param1");
-			if (StringUtils.isEmpty(userUuid)) {
-				throw error(BAD_REQUEST, "error_uuid_must_be_specified");
-			}
-
-			if (StringUtils.isEmpty(pathToElement)) {
-				throw error(BAD_REQUEST, "user_permission_path_missing");
-			}
-
-			if (log.isDebugEnabled()) {
-				log.debug("Handling permission request for element on path {" + pathToElement + "}");
-			}
 
 			return db.noTrx(() -> {
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions

@@ -44,7 +44,10 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 				});
 
 		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handlePermissionRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String roleUuid = ac.getParameter("param0");
+			String pathToElement = ac.getParameter("param1");
+			crudHandler.handlePermissionRead(ac, roleUuid, pathToElement);
 		});
 	}
 
