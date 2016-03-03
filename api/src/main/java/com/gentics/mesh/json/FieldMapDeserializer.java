@@ -79,7 +79,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		if (schemaName != null) {
 			Schema schema = null;
 			if (schemaVersion == null) {
-				schema = schemaStorage.getLatestSchema(schemaName);
+				schema = schemaStorage.getSchema(schemaName);
 			} else {
 				schema = schemaStorage.getSchema(schemaName, schemaVersion);
 			}
@@ -90,7 +90,7 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 		} else {
 			Microschema microschema = null;
 			if (microschemaVersion == null) {
-				microschema = schemaStorage.getLatestMicroschema(microschemaName);
+				microschema = schemaStorage.getMicroschema(microschemaName);
 			} else {
 				microschema = schemaStorage.getMicroschema(microschemaName, microschemaVersion);
 			}

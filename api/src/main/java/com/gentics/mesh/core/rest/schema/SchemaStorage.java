@@ -44,14 +44,6 @@ public interface SchemaStorage {
 	Schema getSchema(String name, int version);
 
 	/**
-	 * Return the latest version found for the schema with the given name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	Schema getLatestSchema(String name);
-
-	/**
 	 * Add the given schema to the storage. Existing schemas will be updated.
 	 * 
 	 * @param schema
@@ -78,14 +70,6 @@ public interface SchemaStorage {
 	 * @return Found microschema or null when no microschema could be found
 	 */
 	Microschema getMicroschema(String name, int version);
-
-	/**
-	 * Return the latest microschema version with the given name.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	Microschema getLatestMicroschema(String name);
 
 	/**
 	 * Add the given microschema to the storage

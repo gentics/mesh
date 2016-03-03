@@ -33,21 +33,6 @@ public class ClientSchemaStorage implements SchemaStorage {
 		return schemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
 	}
 
-	public Schema getLatestSchema(String name) {
-		Map<Integer, Schema> versions = schemaMap.getOrDefault(name, Collections.emptyMap());
-		if (versions.isEmpty()) {
-			return null;
-		}
-
-		Integer latest = null;
-		for (Integer version : versions.keySet()) {
-			if (latest == null || version > latest) {
-				latest = version;
-			}
-		}
-		return versions.get(latest);
-	}
-
 	@Override
 	public void removeSchema(String name) {
 		schemaMap.remove(name);
@@ -70,22 +55,6 @@ public class ClientSchemaStorage implements SchemaStorage {
 	@Override
 	public Microschema getMicroschema(String name, int version) {
 		return microschemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
-	}
-
-	@Override
-	public Microschema getLatestMicroschema(String name) {
-		Map<Integer, Microschema> versions = microschemaMap.getOrDefault(name, Collections.emptyMap());
-		if (versions.isEmpty()) {
-			return null;
-		}
-
-		Integer latest = null;
-		for (Integer version : versions.keySet()) {
-			if (latest == null || version > latest) {
-				latest = version;
-			}
-		}
-		return versions.get(latest);
 	}
 
 	@Override
