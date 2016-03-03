@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
@@ -248,6 +249,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Node node = folder("2015");
 		assertEquals("folder", node.getSchemaContainer().getSchema().getName());
 		assertTrue(node.getSchemaContainer().getSchema().isContainer());
+		NodeGraphFieldContainer englishVersion = node.getGraphFieldContainer("en");
+		assertThat(englishVersion).as("English").isNotNull().hasVersion("0.1");
 	}
 
 	@Test
