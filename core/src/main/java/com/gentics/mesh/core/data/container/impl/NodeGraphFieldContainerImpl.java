@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -25,6 +26,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
+
+	public static final String VERSION_PROPERTY_KEY = "version";
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
@@ -100,5 +103,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			throw error(BAD_REQUEST, "error_field_container_without_node");
 		}
 		return parentNode;
+	}
+
+	@Override
+	public void setVersion(VersionNumber version) {
+		setProperty(VERSION_PROPERTY_KEY, version.toString());
+	}
+
+	@Override
+	public VersionNumber getVersion() {
+		String version = getProperty(VERSION_PROPERTY_KEY);
+		return version == null ? null : new VersionNumber(version);
 	}
 }

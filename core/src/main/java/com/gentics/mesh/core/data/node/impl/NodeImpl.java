@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -226,7 +227,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	public NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language) {
-		return getOrCreateGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
+		NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
+		// set the initial version number, if no version number set
+		if (container.getVersion() == null) {
+			container.setVersion(new VersionNumber());
+		}
+		return container;
 	}
 
 	@Override

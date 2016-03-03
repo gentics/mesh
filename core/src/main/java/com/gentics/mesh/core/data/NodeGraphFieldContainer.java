@@ -39,4 +39,16 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 *            key of the message in case of conflicts
 	 */
 	void updateWebrootPathInfo(String conflictI18n);
+
+	/**
+	 * Get the Version Number or null if no version set
+	 * @return Version Number
+	 */
+	VersionNumber getVersion();
+
+	/**
+	 * Set the Version Number
+	 * @param version
+	 */
+	void setVersion(VersionNumber version);
 }
