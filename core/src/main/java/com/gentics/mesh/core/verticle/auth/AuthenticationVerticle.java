@@ -41,6 +41,6 @@ public class AuthenticationVerticle extends AbstractCoreApiVerticle {
 		route("/logout").handler(springConfiguration.authHandler());
 		route("/logout").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			restHandler.handleLogout(InternalActionContext.create(rc));
-		});		
+		});
 	}
 }

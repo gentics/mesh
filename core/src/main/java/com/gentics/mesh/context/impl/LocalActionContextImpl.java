@@ -1,5 +1,7 @@
 package com.gentics.mesh.context.impl;
 
+import static com.gentics.mesh.rest.AbstractMeshRestHttpClient.getQuery;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
@@ -11,8 +13,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.query.QueryParameterProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -31,8 +33,14 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private String responseBody;
 	private HttpResponseStatus responseStatusCode;
 	private Future<T> future = Future.future();
-	private Class<T> classOfResponse;
+	private Class<? extends T> classOfResponse;
 
+	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, QueryParameterProvider... parameters) {
+		this.query = getQuery(parameters);
+		this.user = user;
+		this.classOfResponse = classOfResponse;
+	}
+	
 	@Override
 	public Map<String, Object> data() {
 		return data;
@@ -152,10 +160,15 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public void addCookie(Cookie cookie) {
 	}
 
-	public void setResponseType(Class<T> classOfT) {
-		this.classOfResponse = classOfT;
-	}
+	//	public void setResponseType(Class<T> classOfT) {
+	//		this.classOfResponse = classOfT;
+	//	}
 
+	/**
+	 * Return the future which will be completed on sending or failure.
+	 * 
+	 * @return
+	 */
 	public Future<T> getFuture() {
 		return future;
 	}

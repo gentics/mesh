@@ -30,7 +30,7 @@ public class DemoSetupTest {
 	protected BootstrapInitializer boot;
 
 	@Autowired
-	private DemoDataProviderNew dataProvider;
+	private DemoDataProvider dataProvider;
 
 	@Autowired
 	protected DatabaseService databaseService;
@@ -42,6 +42,8 @@ public class DemoSetupTest {
 
 	@Before
 	public void setup() throws Exception {
+		boot.initMandatoryData();
+		boot.initPermissions();
 		dataProvider.setup();
 		tx = db.noTrx();
 	}
