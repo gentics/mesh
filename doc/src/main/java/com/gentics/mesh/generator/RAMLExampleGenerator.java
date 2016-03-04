@@ -51,9 +51,11 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -86,10 +88,12 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -223,7 +227,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setRootNodeUuid(randomUUID());
 
-		ListResponse<ProjectResponse> projectList = new ListResponse<>();
+		ProjectListResponse projectList = new ProjectListResponse();
 		projectList.getData().add(project);
 		projectList.getData().add(project2);
 		setPaging(projectList, 1, 10, 2, 20);
@@ -263,7 +267,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		role2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		role2.setUuid(randomUUID());
 
-		ListResponse<RoleResponse> roleList = new ListResponse<>();
+		RoleListResponse roleList = new RoleListResponse();
 		roleList.getData().add(role);
 		roleList.getData().add(role2);
 		setPaging(roleList, 1, 10, 2, 20);
@@ -327,7 +331,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		tag2.setTagFamily(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 
-		ListResponse<TagResponse> tagList = new ListResponse<>();
+		TagListResponse tagList = new TagListResponse();
 		tagList.getData().add(tag);
 		tagList.getData().add(tag2);
 		setPaging(tagList, 1, 10, 2, 20);
@@ -816,7 +820,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user2.setEnabled(true);
 
-		ListResponse<UserResponse> userList = new ListResponse<>();
+		UserListResponse userList = new UserListResponse();
 		userList.getData().add(user);
 		userList.getData().add(user2);
 		setPaging(userList, 1, 10, 2, 20);
