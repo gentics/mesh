@@ -26,12 +26,12 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 		booleanFieldSchema.setName(FIELD_NAME);
 		booleanFieldSchema.setLabel("Some label");
 		schema.addField(booleanFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test

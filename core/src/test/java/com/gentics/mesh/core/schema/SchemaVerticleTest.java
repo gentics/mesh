@@ -121,13 +121,13 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 		Schema dummySchema = new SchemaModel();
 		dummySchema.setName("dummy");
-		noPermSchema.setSchema(dummySchema);
+		noPermSchema.getLatestVersion().setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
 			schema = new SchemaModel();
 			schema.setName("extra_schema_" + i);
 			schema.setDisplayField("name");
 			SchemaContainer extraSchema = schemaRoot.create(schema, user());
-			extraSchema.setSchema(dummySchema);
+			extraSchema.getLatestVersion().setSchema(dummySchema);
 			role().grantPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema

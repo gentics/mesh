@@ -34,14 +34,14 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("numberField");
 //		numberFieldSchema.setMin(10);
 //		numberFieldSchema.setMax(1000);
 		numberFieldSchema.setRequired(true);
 		schema.addField(numberFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test

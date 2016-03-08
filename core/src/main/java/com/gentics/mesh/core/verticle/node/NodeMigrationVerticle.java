@@ -15,9 +15,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus.Type;
 
 import io.vertx.core.eventbus.Message;
@@ -46,9 +48,9 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 
 	public final static String UUID_HEADER = "uuid";
 
-	public static final String FROM_VERSION_HEADER = "fromVersion";
+	public static final String FROM_VERSION_UUID_HEADER = "fromVersion";
 
-	public static final String TO_VERSION_HEADER = "toVersion";
+	public static final String TO_VERSION_UUID_HEADER = "toVersion";
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
@@ -66,11 +68,11 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 		vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String schemaUuid = message.headers().get(UUID_HEADER);
-			String fromVersion = message.headers().get(FROM_VERSION_HEADER);
-			String toVersion = message.headers().get(TO_VERSION_HEADER);
+			String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
+			String toVersionUuid = message.headers().get(TO_VERSION_UUID_HEADER);
 
 			if (log.isDebugEnabled()) {
-				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersion + "} to version {" + toVersion
+				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuid
 						+ "} was requested");
 			}
 
@@ -85,13 +87,13 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
 						}
-						SchemaContainer fromContainerVersion = schemaContainer.findVersion(fromVersion);
+						SchemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
 						if (fromContainerVersion == null) {
-							throw error(BAD_REQUEST, "Source version {" + fromVersion + "} of schema {" + schemaUuid + "} could not be found.");
+							throw error(BAD_REQUEST, "Source version {" + fromVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
 						}
-						SchemaContainer toContainerVersion = schemaContainer.findVersion(toVersion);
+						SchemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuid);
 						if (toContainerVersion == null) {
-							throw error(BAD_REQUEST, "Target version {" + toVersion + "} of schema {" + schemaUuid + "} could not be found.");
+							throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
 						}
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
@@ -124,11 +126,11 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 		vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String microschemaUuid = message.headers().get(UUID_HEADER);
-			String fromVersion = message.headers().get(FROM_VERSION_HEADER);
-			String toVersion = message.headers().get(TO_VERSION_HEADER);
+			String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
+			String toVersionUuuid = message.headers().get(TO_VERSION_UUID_HEADER);
 
 			if (log.isDebugEnabled()) {
-				log.debug("Micronode migration for microschema {" + microschemaUuid + "} from version {" + fromVersion + "} to version {" + toVersion
+				log.debug("Micronode migration for microschema {" + microschemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuuid
 						+ "} was requested");
 			}
 
@@ -143,18 +145,18 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");
 						}
-						MicroschemaContainer fromContainerVersion = schemaContainer.findVersion(fromVersion);
+						MicroschemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
 						if (fromContainerVersion == null) {
 							throw error(BAD_REQUEST,
-									"Source version {" + fromVersion + "} of microschema {" + microschemaUuid + "} could not be found.");
+									"Source version uuid {" + fromVersionUuid + "} of microschema {" + microschemaUuid + "} could not be found.");
 						}
-						MicroschemaContainer toContainerVersion = schemaContainer.findVersion(toVersion);
+						MicroschemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuuid);
 						if (toContainerVersion == null) {
 							throw error(BAD_REQUEST,
-									"Target version {" + toVersion + "} of microschema {" + microschemaUuid + "} could not be found.");
+									"Target version uuid {" + toVersionUuuid + "} of microschema {" + microschemaUuid + "} could not be found.");
 						}
 
-						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), schemaContainer.getVersion(),
+						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.microschema);
 						setRunning(statusBean, statusMBeanName);
 						nodeMigrationHandler.migrateMicronodes(fromContainerVersion, toContainerVersion, statusBean);

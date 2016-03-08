@@ -24,9 +24,14 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 
+	/**
+	 * Update the schema and add a string field.
+	 * 
+	 * @throws IOException
+	 */
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 		// add non restricted string field
 		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
@@ -38,10 +43,10 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		StringFieldSchema restrictedStringFieldSchema = new StringFieldSchemaImpl();
 		restrictedStringFieldSchema.setName("restrictedstringField");
 		restrictedStringFieldSchema.setLabel("Some label");
-		restrictedStringFieldSchema.setAllowedValues(new String[] {"one", "two", "three"});
+		restrictedStringFieldSchema.setAllowedValues(new String[] { "one", "two", "three" });
 		schema.addField(restrictedStringFieldSchema);
 
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test
@@ -95,7 +100,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 	@Test
 	public void testValueRestrictionInvalidValue() {
-		updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"),
-				HttpResponseStatus.BAD_REQUEST, "node_error_invalid_string_field_value", "restrictedstringField", "invalid");
+		updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"), HttpResponseStatus.BAD_REQUEST,
+				"node_error_invalid_string_field_value", "restrictedstringField", "invalid");
 	}
 }

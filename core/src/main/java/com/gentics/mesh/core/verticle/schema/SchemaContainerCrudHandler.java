@@ -45,12 +45,12 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 				try {
 					Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
-					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getSchema(), requestModel));
+					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					String schemaName = element.getName();
 					if (model.getChanges().isEmpty()) {
 						return Observable.just(message(ac, "schema_update_no_difference_detected", schemaName));
 					} else {
-						return element.applyChanges(ac, model).flatMap(e -> {
+						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
 							return Observable.just(message(ac, "migration_invoked", schemaName));
 						});
 					}
@@ -65,7 +65,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		db.asyncNoTrxExperimental(() -> {
 			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
 			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
-			return obsSchema.flatMap(schema -> schema.diff(ac, comparator, requestModel));
+			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -145,7 +145,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		Microschema microschemaResponse = future.result();
-		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getSchema(), "name", "description");
+		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name", "description");
 	}
 
 	@Test

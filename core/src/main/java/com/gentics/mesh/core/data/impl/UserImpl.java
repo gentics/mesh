@@ -355,7 +355,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	private Observable<UserResponse> setGroups(InternalActionContext ac, UserResponse restUser) {
 		for (Group group : getGroups()) {
-			GroupReference reference = group.transformToReference(ac);
+			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
 		return Observable.just(restUser);

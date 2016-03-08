@@ -23,12 +23,12 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("htmlField");
 		htmlFieldSchema.setLabel("Some label");
 		schema.addField(htmlFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test

@@ -11,9 +11,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -52,40 +52,40 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApply() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setName("updated");
-		container.setSchema(schema);
-		container.setNextChange(change);
+		version.setSchema(schema);
+		version.setNextChange(change);
 
-		Schema updatedSchema = mutator.apply(container);
+		Schema updatedSchema = mutator.apply(version);
 		assertEquals("updated", updatedSchema.getName());
 
 		change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setDescription("text");
-		container.setNextChange(change);
-		updatedSchema = mutator.apply(container);
+		version.setNextChange(change);
+		updatedSchema = mutator.apply(version);
 		assertEquals("text", updatedSchema.getDescription());
 	}
 
 	@Test
 	public void testFieldOrderChange() {
 		// 1. Create the schema container
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		Schema schema = new SchemaModel();
 		schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schema.addField(FieldUtil.createHtmlFieldSchema("second"));
-		container.setSchema(schema);
+		version.setSchema(schema);
 
 		// 2. Create the schema update change
 		UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 		change.setOrder("second", "first");
-		container.setNextChange(change);
+		version.setNextChange(change);
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(container);
+		Schema updatedSchema = mutator.apply(version);
 		assertNotNull("The updated schema was not generated.", updatedSchema);
 		assertEquals("The updated schema should contain two fields.", 2, updatedSchema.getFields().size());
 		assertEquals("The first field should now be the field with name \"second\".", "second", updatedSchema.getFields().get(0).getName());
@@ -95,7 +95,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchema() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaModel();
@@ -106,11 +106,11 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 		change.setContainerFlag(true);
 		change.setSegmentField("newSegmentField");
 
-		container.setSchema(schema);
-		container.setNextChange(change);
+		version.setSchema(schema);
+		version.setNextChange(change);
 
 		// 3. Apply the change
-		Schema updatedSchema = mutator.apply(container);
+		Schema updatedSchema = mutator.apply(version);
 		assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 		assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
 		assertTrue("The schema container flag was not updated", updatedSchema.isContainer());

@@ -36,14 +36,14 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	}
 
 	private void setSchema(String listType) throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName("listField");
 		listFieldSchema.setLabel("Some label");
 		listFieldSchema.setListType(listType);
 		schema.removeField("listField");
 		schema.addField(listFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test

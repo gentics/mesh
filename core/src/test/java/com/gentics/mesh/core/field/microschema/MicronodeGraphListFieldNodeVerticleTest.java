@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.microschema;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,14 +39,14 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName(FIELDNAME);
 		listFieldSchema.setLabel("Some label");
 		listFieldSchema.setListType("micronode");
 		listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(listFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 	}
 

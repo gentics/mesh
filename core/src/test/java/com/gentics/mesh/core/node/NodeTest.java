@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -57,27 +58,27 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertEquals(node.getUuid(), reference.getUuid());
 	}
 
-//	/**
-//	 * Test linking two contents
-//	 */
-//	@Test
-//	public void testPageLinks() {
-//		Node folder = folder("2015");
-//		Node node = folder.create(user(), getSchemaContainer(), project());
-//		Node node2 = folder.create(user(), getSchemaContainer(), project());
-//
-//		NodeGraphFieldContainer englishContainer = node2.getOrCreateGraphFieldContainer(english());
-//		englishContainer.createString("content").setString("english content");
-//		englishContainer.createString("name").setString("english.html");
-//
-//		NodeGraphFieldContainer englishContainer2 = node.getOrCreateGraphFieldContainer(german());
-//		englishContainer2.createString("content").setString("english2 content");
-//		englishContainer2.createString("name").setString("english2.html");
-//		node.createLink(node2);
-//
-//		// TODO verify that link relation has been created
-//		// TODO render content and resolve links
-//	}
+	//	/**
+	//	 * Test linking two contents
+	//	 */
+	//	@Test
+	//	public void testPageLinks() {
+	//		Node folder = folder("2015");
+	//		Node node = folder.create(user(), getSchemaContainer(), project());
+	//		Node node2 = folder.create(user(), getSchemaContainer(), project());
+	//
+	//		NodeGraphFieldContainer englishContainer = node2.getOrCreateGraphFieldContainer(english());
+	//		englishContainer.createString("content").setString("english content");
+	//		englishContainer.createString("name").setString("english.html");
+	//
+	//		NodeGraphFieldContainer englishContainer2 = node.getOrCreateGraphFieldContainer(german());
+	//		englishContainer2.createString("content").setString("english2 content");
+	//		englishContainer2.createString("name").setString("english2.html");
+	//		node.createLink(node2);
+	//
+	//		// TODO verify that link relation has been created
+	//		// TODO render content and resolve links
+	//	}
 
 	@Test
 	public void testGetPath() throws Exception {
@@ -102,7 +103,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Node newsNode = content("news overview");
 		assertNotNull(newsNode);
 		Node newSubNode;
-		newSubNode = newsNode.create(user(), getSchemaContainer(), project());
+		newSubNode = newsNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 
 		assertEquals(1, newsNode.getChildren().size());
 		Node firstChild = newsNode.getChildren().iterator().next();
@@ -167,8 +168,9 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Language german = german();
 		RoutingContext rc = getMockedRoutingContext("?lang=de,en");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		NodeGraphFieldContainer germanFields = newsNode.getOrCreateGraphFieldContainer(german);
-		assertEquals(germanFields.getString(newsNode.getSchemaContainer().getSchema().getDisplayField()).getString(), newsNode.getDisplayName(ac));
+		NodeGraphFieldContainer germanFields = newsNode.createGraphFieldContainer(german, newsNode.getSchemaContainer().getLatestVersion());
+		assertEquals(germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField()).getString(),
+				newsNode.getDisplayName(ac));
 		// TODO add some fields
 	}
 
@@ -226,7 +228,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testCreateDelete() {
 		Node folder = folder("2015");
-		Node subNode = folder.create(user(), getSchemaContainer(), project());
+		Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
 		assertNotNull(subNode.getUuid());
 		subNode.delete();
 	}
@@ -234,7 +236,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		Node node = folder("2015").create(user(), getSchemaContainer(), project());
+		Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 		InternalActionContext ac = getMockedInternalActionContext("");
 		assertFalse(user().hasPermissionAsync(ac, node, GraphPermission.CREATE_PERM).toBlocking().first());
 		user().addCRUDPermissionOnRole(folder("2015"), GraphPermission.CREATE_PERM, node);
@@ -246,8 +248,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testRead() throws IOException {
 		Node node = folder("2015");
-		assertEquals("folder", node.getSchemaContainer().getSchema().getName());
-		assertTrue(node.getSchemaContainer().getSchema().isContainer());
+		assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
+		assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 	}
 
 	@Test
@@ -255,7 +257,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testCreate() {
 		User user = user();
 		Node parentNode = folder("2015");
-		Node node = parentNode.create(user, schemaContainer("content"), project());
+		SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
+		Node node = parentNode.create(user, schemaVersion, project());
 		long ts = System.currentTimeMillis();
 		node.setCreationTimestamp(ts);
 		node.setLastEditedTimestamp(ts);
@@ -270,7 +273,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Language english = english();
 		Language german = german();
 
-		NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, schemaVersion);
 		englishContainer.createString("content").setString("english content");
 		englishContainer.createString("name").setString("english.html");
 		assertNotNull(node.getUuid());
@@ -279,7 +282,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertNotNull(allProperties);
 		assertEquals(1, allProperties.size());
 
-		NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
+		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, schemaVersion);
 		germanContainer.createString("content").setString("german content");
 		assertEquals(2, node.getGraphFieldContainers().size());
 

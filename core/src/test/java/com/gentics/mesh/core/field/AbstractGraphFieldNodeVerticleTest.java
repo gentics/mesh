@@ -63,6 +63,13 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		expectException(future, status, bodyMessageI18nKey, i18nParams);
 	}
 
+	/**
+	 * Update the test node using the provided field field and field key as update data.
+	 * 
+	 * @param fieldKey
+	 * @param field
+	 * @return
+	 */
 	protected NodeResponse updateNode(String fieldKey, Field field) {
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();

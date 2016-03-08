@@ -40,7 +40,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenDepthZero() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
@@ -60,7 +60,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNodeWithNoChildren() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 
 		Node node = folder("2015");
 		String uuid = node.getUuid();
@@ -108,7 +108,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 
 		Node node = content();
 
-		assertFalse("The node must not be a container.", node.getSchemaContainer().getSchema().isContainer());
+		assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 		Future<NavigationResponse> future = getClient().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationRequestParameter().setMaxDepth(1));
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "navigation_error_no_container");
@@ -120,7 +120,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testReadChildrenDepthOne() {
 
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
@@ -142,7 +142,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwo() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
@@ -162,7 +162,7 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenHighDepth() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getSchema());
+		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();

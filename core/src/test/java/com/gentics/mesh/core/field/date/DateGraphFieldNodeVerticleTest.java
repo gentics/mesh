@@ -24,12 +24,12 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 		dateFieldSchema.setName("dateField");
 		dateFieldSchema.setLabel("Some label");
 		schema.addField(dateFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test

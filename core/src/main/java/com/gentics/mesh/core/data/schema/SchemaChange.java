@@ -17,7 +17,7 @@ import com.gentics.mesh.util.Tuple;
  * 
  * <pre>
  * {@code
- *  (s:Schema)-[:HAS_CHANGE]->(c1:SchemaChange)-[:HAS_CHANGE]->(c2:SchemaChange)-(s2:Schema)
+ *  (s:SchemaVersion)-[:HAS_CHANGE]->(c1:SchemaChange)-[:HAS_CHANGE]->(c2:SchemaChange)-(s2:SchemaVersion)
  * }
  * </pre>
  * 
@@ -64,34 +64,34 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	SchemaChange<T> setPreviousChange(SchemaChange<?> change);
 
 	/**
-	 * Return the <b>in-bound</b> connected schema container.
+	 * Return the <b>in-bound</b> connected schema container version.
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainer<?, ?, ?>> R getPreviousContainer();
+	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getPreviousContainerVersion();
 
 	/**
-	 * Set the <b>in-bound</b> connection from the schema change to the container.
+	 * Set the <b>in-bound</b> connection from the schema change to the container version.
 	 * 
-	 * @param container
+	 * @param containerVersion
 	 * @return Fluent API
 	 */
-	SchemaChange<T> setPreviousContainer(GraphFieldSchemaContainer<?, ?, ?> container);
+	SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion);
 
 	/**
-	 * Return the out-bound connected schema container.
+	 * Return the out-bound connected schema container version.
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainer<?, ?, ?>> R getNextContainer();
+	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getNextContainerVersion();
 
 	/**
 	 * Set the out-bound connected schema container.
 	 * 
-	 * @param container
+	 * @param containerVersion
 	 * @return
 	 */
-	SchemaChange<T> setNextSchemaContainer(GraphFieldSchemaContainer<?, ?, ?> container);
+	SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion);
 
 	/**
 	 * Get the migration script for the change. May either be a custom script or an automatically created
@@ -146,7 +146,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * Transform the graph model into the rest representation.
 	 * 
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	SchemaChangeModel transformToRest() throws IOException;
 

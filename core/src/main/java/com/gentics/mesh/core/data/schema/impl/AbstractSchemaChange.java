@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -50,24 +50,24 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	abstract public SchemaChangeOperation getOperation();
 
 	@Override
-	public <R extends GraphFieldSchemaContainer<?, ?, ?>> R getPreviousContainer() {
+	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousContainer(GraphFieldSchemaContainer<?, ?, ?> container) {
-		setSingleLinkInTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
+	public SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion) {
+		setSingleLinkInTo(containerVersion.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public <R extends GraphFieldSchemaContainer<?, ?, ?>> R getNextContainer() {
+	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>> R getNextContainerVersion() {
 		return (R) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setNextSchemaContainer(GraphFieldSchemaContainer<?, ?, ?> container) {
-		setSingleLinkOutTo(container.getImpl(), HAS_SCHEMA_CONTAINER);
+	public SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> containerVersion) {
+		setSingleLinkOutTo(containerVersion.getImpl(), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 

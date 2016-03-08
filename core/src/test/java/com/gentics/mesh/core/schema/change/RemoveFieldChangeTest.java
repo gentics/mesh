@@ -9,9 +9,9 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -34,7 +34,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		// 1. Create schema with field
 		Schema schema = new SchemaModel();
@@ -44,11 +44,11 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 		RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		change.setFieldName("test");
 
-		container.setNextChange(change);
-		container.setSchema(schema);
+		version.setNextChange(change);
+		version.setSchema(schema);
 
 		// 3. Apply the change
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 
 		assertThat(updatedSchema).hasNoField("test");
 

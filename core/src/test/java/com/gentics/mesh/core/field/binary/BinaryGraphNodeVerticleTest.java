@@ -105,9 +105,9 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 
 		// Add a schema called nonBinary
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		getClient().getClientSchemaStorage().addSchema(schema);
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
@@ -227,9 +227,9 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		prepareSchema(folder2014, "", "binary");
 
 		// make binary field the segment field
-		Schema schema = folder2014.getSchemaContainer().getSchema();
+		Schema schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 		schema.setSegmentField("binary");
-		folder2014.getSchemaContainer().setSchema(schema);
+		folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 		getClient().getClientSchemaStorage().addSchema(schema);
 
 		// upload file to folder 2014

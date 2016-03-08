@@ -236,14 +236,14 @@ public class DemoDataProvider {
 			Node parentNode = getNode(parentNodeName);
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
-			Node node = parentNode.create(getAdmin(), schema, project);
+			Node node = parentNode.create(getAdmin(), schema.getLatestVersion(), project);
 
 			JsonArray tagArray = nodeJson.getJsonArray("tags");
 			for (int e = 0; e < tagArray.size(); e++) {
 				String tagName = tagArray.getString(e);
 				node.addTag(getTag(tagName));
 			}
-			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, schema.getLatestVersion());
 			englishContainer.createString("name").setString(name);
 
 			JsonObject binNode = nodeJson.getJsonObject("bin");

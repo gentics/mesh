@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
  * POJO for the micronode rest response model.
  */
 public class MicronodeResponse extends AbstractResponse implements MicronodeField, FieldContainer {
+
 	private MicroschemaReference microschema;
 
 	private FieldMap fields = new FieldMapImpl();

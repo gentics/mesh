@@ -8,8 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -40,11 +40,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				try {
 					Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
-					model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getSchema(), requestModel));
+					model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					if (model.getChanges().isEmpty()) {
 						return Observable.just(message(ac, "schema_update_no_difference_detected", element.getName()));
 					} else {
-						return element.applyChanges(ac, model).flatMap(e -> {
+						return element.getLatestVersion().applyChanges(ac, model).flatMap(e -> {
 							return Observable.just(message(ac, "migration_invoked", element.getName()));
 						});
 					}
@@ -61,11 +61,16 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		deleteElement(ac, () -> getRootVertex(ac), "uuid", "microschema_deleted");
 	}
 
+	/**
+	 * Compare the latest schema version with the given schema model.
+	 * 
+	 * @param ac
+	 */
 	public void handleDiff(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
 			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
-			return obsSchema.flatMap(microschema -> microschema.diff(ac, comparator, requestModel));
+			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

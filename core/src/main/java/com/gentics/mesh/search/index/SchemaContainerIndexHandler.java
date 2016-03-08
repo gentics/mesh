@@ -26,8 +26,6 @@ import rx.Observable;
 @Component
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
 
-	
-
 	private static SchemaContainerIndexHandler instance;
 
 	@Autowired
@@ -61,18 +59,18 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	protected Map<String, Object> transformToDocumentMap(SchemaContainer container) {
 		Map<String, Object> map = new HashMap<>();
 		map.put(NAME_KEY, container.getName());
-		map.put(DESCRIPTION_KEY, container.getSchema().getDescription());
+		map.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());
 		addBasicReferences(map, container);
 		return map;
 	}
 
 	@Override
-	public Observable<Void> store(SchemaContainer object, String type) {
-		return super.store(object, type).flatMap(done -> {
+	public Observable<Void> store(SchemaContainer container, String type) {
+		return super.store(container, type).flatMap(done -> {
 			if (db != null) {
 				Observable<Void> obs = db.noTrx(() -> {
 					// update the mappings
-					Schema schema = object.getSchema();
+					Schema schema = container.getLatestVersion().getSchema();
 					return nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema);
 				});
 				return obs;

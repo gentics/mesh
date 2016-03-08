@@ -21,9 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -147,10 +149,14 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	protected void resetClientSchemaStorage() throws IOException {
 		getClient().getClientSchemaStorage().clear();
 		for (SchemaContainer container : schemaContainers().values()) {
-			getClient().getClientSchemaStorage().addSchema(container.getSchema());
+			for (SchemaContainerVersion version : container.findAll()) {
+				getClient().getClientSchemaStorage().addSchema(version.getSchema());
+			}
 		}
 		for (MicroschemaContainer container : microschemaContainers().values()) {
-			getClient().getClientSchemaStorage().addMicroschema(container.getSchema());
+			for (MicroschemaContainerVersion version : container.findAll()) {
+				getClient().getClientSchemaStorage().addMicroschema(version.getSchema());
+			}
 		}
 	}
 
@@ -367,7 +373,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertSuccess(future);
 		return future.result();
 	}
-
 
 	protected TagFamilyResponse createTagFamily(String projectName, String tagFamilyName) {
 		TagFamilyCreateRequest tagFamilyCreateRequest = new TagFamilyCreateRequest();

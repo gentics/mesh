@@ -38,13 +38,13 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws Exception {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setName(NODE_FIELD_NAME);
 		nodeFieldSchema.setLabel("Some label");
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test

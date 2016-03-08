@@ -123,8 +123,8 @@ public class RestModelTest extends AbstractDBTest {
 	public void testNodeList() throws Exception {
 		setupData();
 		try (NoTrx noTx = db.noTrx()) {
-			Schema folderSchema = schemaContainer("folder").getSchema();
-			Schema contentSchema = schemaContainer("content").getSchema();
+			Schema folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
+			Schema contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 
 			NodeResponse folder = new NodeResponse();
 			folder.setSchema(new SchemaReference().setName(folderSchema.getName()));

@@ -48,7 +48,7 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testTransformToReference() throws Exception {
 		Tag tag = tag("red");
 		InternalActionContext ac = getMockedInternalActionContext("");
-		TagReference reference = tag.transformToReference(ac);
+		TagReference reference = tag.transformToReference();
 		assertNotNull(reference);
 		assertEquals(tag.getUuid(), reference.getUuid());
 		assertEquals(tag.getName(), reference.getName());
@@ -101,9 +101,9 @@ public class TagTest extends AbstractBasicObjectTest {
 		// 2. Create the node
 		final String GERMAN_TEST_FILENAME = "german.html";
 		Node parentNode = folder("2015");
-		Node node = parentNode.create(user(), getSchemaContainer(), project());
+		Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 		Language german = boot.languageRoot().findByLanguageTag("de");
-		NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
+		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, getSchemaContainer().getLatestVersion());
 
 		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 		germanContainer.createString("name").setString("german node name");

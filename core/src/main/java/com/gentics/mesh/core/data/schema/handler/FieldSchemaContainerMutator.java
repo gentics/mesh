@@ -4,7 +4,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -33,15 +33,15 @@ public class FieldSchemaContainerMutator {
 	 * Applies all changes that are connected to the container to the version of the container and returns the mutated version of the field container that was
 	 * initially loaded from the graph field container element.
 	 * 
-	 * @param container
+	 * @param containerVersion
 	 *            Graph element that provides the chain of changes and the field container that should be mutated
 	 * @return
 	 */
-	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainer<R, ?, ?> container) {
+	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainerVersion<R, ?, ?, ?> containerVersion) {
 
-		R oldSchema = container.getSchema();
+		R oldSchema = containerVersion.getSchema();
 		ServerSchemaStorage.getInstance().remove(oldSchema);
-		SchemaChange<?> change = container.getNextChange();
+		SchemaChange<?> change = containerVersion.getNextChange();
 		while (change != null) {
 			oldSchema = change.apply(oldSchema);
 			change = change.getNextChange();

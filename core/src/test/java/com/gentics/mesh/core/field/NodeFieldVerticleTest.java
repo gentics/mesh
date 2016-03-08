@@ -43,13 +43,13 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 	@Test
 	public void testUpdateNodeAndOmitMandatoryField() throws IOException {
 		// 1. create mandatory field
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("htmlField");
 		htmlFieldSchema.setLabel("Some label");
 		htmlFieldSchema.setRequired(true);
 		schema.addField(htmlFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 		// 2. Create new node with mandatory field value
 		Node parentNode = folder("2015");

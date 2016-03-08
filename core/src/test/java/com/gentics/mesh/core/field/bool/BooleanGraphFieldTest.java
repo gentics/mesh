@@ -29,13 +29,15 @@ public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testBooleanFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+
+		// Update the schema and add a boolean field
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
 		booleanFieldSchema.setName("booleanField");
 		booleanFieldSchema.setLabel("Some boolean field");
 		booleanFieldSchema.setRequired(true);
 		schema.addField(booleanFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		BooleanGraphField field = container.createBoolean("booleanField");

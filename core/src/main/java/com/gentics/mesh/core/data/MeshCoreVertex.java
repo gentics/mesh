@@ -9,12 +9,12 @@ import rx.Observable;
  * A mesh core vertex is an vertex which can be manipulated via CRUD by the user. Thus this interface provides various methods that are needed to interact with
  * such vertices.
  * 
- * @param <T>
- *            Rest model class of the core vertex
  * @param <R>
+ *            Rest model class of the core vertex
+ * @param <V>
  *            The core vertex itself
  */
-public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertex, IndexableElement, TransformableElement<T> {
+public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R, V>> extends MeshVertex, IndexableElement, TransformableElement<R> {
 
 	/**
 	 * Return the creator of the vertex.
@@ -81,7 +81,7 @@ public interface MeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T,
 	 * 
 	 * @param ac
 	 */
-	Observable<? extends R> update(InternalActionContext ac);
+	Observable<? extends V> update(InternalActionContext ac);
 
 	/**
 	 * Set the editor and creator references and update the timestamps for created and edited fields.

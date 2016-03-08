@@ -13,7 +13,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -91,12 +91,12 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer);
+		MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer.getLatestVersion());
 		Micronode micronode = micronodeField.getMicronode();
 		assertNotNull("Micronode must not be null", micronode);
 		//		micronode.createBinary("binaryfield");
@@ -170,7 +170,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 	public void testCreateMicronodeField() throws Exception {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema);
+		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 		assertNotNull(field);
 		Micronode micronode = field.getMicronode();
 		assertNotNull(micronode);
@@ -196,7 +196,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 	public void testMicronodeUpdateFromRest() {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema);
+		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 		Micronode micronode = field.getMicronode();
 
 		InternalActionContext ac = getMockedInternalActionContext("");
@@ -218,7 +218,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 	public void testUpdateMicronodeField() throws Exception {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema);
+		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 		Micronode micronode = field.getMicronode();
 		String originalUuid = micronode.getUuid();
 
@@ -228,7 +228,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		}
 
 		// update by recreation
-		MicronodeGraphField updatedField = container.createMicronode("testMicronodeField", dummyMicroschema);
+		MicronodeGraphField updatedField = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 		Micronode updatedMicronode = updatedField.getMicronode();
 
 		assertFalse("Uuid of micronode must be different after update", StringUtils.equalsIgnoreCase(originalUuid, updatedMicronode.getUuid()));

@@ -107,6 +107,8 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
+	public static final String HAS_SCHEMA_CONTAINER_VERSION = "HAS_SCHEMA_CONTAINER_VERSION";
+	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
 	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
@@ -130,5 +132,6 @@ public class GraphRelationships {
 	// Versioning
 	public static final String HAS_VERSION = "HAS_VERSION";
 	public static final String HAS_CHANGE = "HAS_CHANGE";
+	public static final String HAS_LATEST_VERSION = "HAS_LATEST_VERSION";
 
 }

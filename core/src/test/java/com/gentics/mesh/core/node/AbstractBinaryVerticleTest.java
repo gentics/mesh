@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -55,9 +56,11 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 	 */
 	protected void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		ServerSchemaStorage.getInstance().clear();
+		getClient().getClientSchemaStorage().removeSchema(node.getSchemaContainer().getName());
 		getClient().getClientSchemaStorage().addSchema(schema);
 		// node.getSchemaContainer().setSchema(schema);
 	}

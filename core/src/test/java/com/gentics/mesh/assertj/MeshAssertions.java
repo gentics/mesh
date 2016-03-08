@@ -10,19 +10,23 @@ import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeAssert;
+import com.gentics.mesh.assertj.impl.NodeGraphFieldContainerAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
+import com.gentics.mesh.assertj.impl.SchemaContainerVersionAssert;
 import com.gentics.mesh.assertj.impl.SearchQueueAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -107,8 +111,12 @@ public class MeshAssertions extends Assertions {
 		return new FieldSchemaContainerAssert(actual);
 	}
 
-	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?> actual) {
+	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?, ?> actual) {
 		return new SchemaContainerAssert(actual);
+	}
+
+	public static SchemaContainerVersionAssert assertThat(GraphFieldSchemaContainerVersion<?, ?, ?, ?> actual) {
+		return new SchemaContainerVersionAssert(actual);
 	}
 
 	public static SchemaChangeModelAssert assertThat(SchemaChangeModel actual) {
@@ -117,5 +125,9 @@ public class MeshAssertions extends Assertions {
 
 	public static MicronodeAssert assertThat(Micronode actual) {
 		return new MicronodeAssert(actual);
+	}
+
+	public static NodeGraphFieldContainerAssert assertThat(NodeGraphFieldContainer actual) {
+		return new NodeGraphFieldContainerAssert(actual);
 	}
 }

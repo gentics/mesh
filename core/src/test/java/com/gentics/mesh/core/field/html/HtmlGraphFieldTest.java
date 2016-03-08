@@ -62,13 +62,15 @@ public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
 	public void testHtmlFieldTransformation() throws Exception {
 		setupData();
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+
+		// Add html field schema to the schema
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("htmlField");
 		htmlFieldSchema.setLabel("Some html field");
 		htmlFieldSchema.setRequired(true);
 		schema.addField(htmlFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		HtmlGraphField field = container.createHTML("htmlField");

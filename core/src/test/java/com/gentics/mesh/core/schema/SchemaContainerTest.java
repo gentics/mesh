@@ -17,12 +17,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -37,11 +37,10 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		SchemaContainer schema = schemaContainer("folder");
-		InternalActionContext ac = getMockedInternalActionContext("");
-		SchemaReference reference = schema.transformToReference(ac);
+		SchemaReference reference = schema.getLatestVersion().transformToReference();
 		assertNotNull(reference);
 		assertEquals(schema.getUuid(), reference.getUuid());
-		assertEquals(schema.getName(), reference.getName());
+		assertEquals(schema.getLatestVersion().getName(), reference.getName());
 	}
 
 	@Test
@@ -56,7 +55,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	public void testFindByName() throws IOException {
 		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
 		assertNotNull(schemaContainer);
-		assertEquals("content", schemaContainer.getSchema().getName());
+		assertEquals("content", schemaContainer.getLatestVersion().getSchema().getName());
 		assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235").toBlocking().single());
 	}
 
@@ -122,7 +121,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformation() throws IOException {
 		SchemaContainer container = getSchemaContainer();
-		Schema schema = container.getSchema();
+		Schema schema = container.getLatestVersion().getSchema();
 		assertNotNull(schema);
 		String json = JsonUtil.toJson(schema);
 		assertNotNull(json);
@@ -158,40 +157,43 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		assertNotNull(getSchemaContainer().getSchema());
+		assertNotNull(getSchemaContainer().getLatestVersion().getSchema());
 	}
 
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		assertNotNull(getSchemaContainer().getSchema());
-		assertEquals("The schema container and schema rest model version must always be in sync", getSchemaContainer().getVersion(),
-				getSchemaContainer().getSchema().getVersion());
+		assertNotNull(getSchemaContainer().getLatestVersion().getSchema());
+		assertEquals("The schema container and schema rest model version must always be in sync",
+				getSchemaContainer().getLatestVersion().getVersion(), getSchemaContainer().getLatestVersion().getSchema().getVersion());
 	}
 
 	@Test
 	@Override
 	public void testUpdate() throws IOException {
 		SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content").toBlocking().single();
-		Schema schema = schemaContainer.getSchema();
+		SchemaContainerVersion currentVersion = schemaContainer.getLatestVersion();
+		Schema schema = currentVersion.getSchema();
 		schema.setName("changed");
-		schemaContainer.setSchema(schema);
-		assertEquals("changed", schemaContainer.getSchema().getName());
-		schemaContainer.setName("changed2");
-		assertEquals("changed2", schemaContainer.getName());
+		currentVersion.setSchema(schema);
+		assertEquals("changed", currentVersion.getSchema().getName());
+		currentVersion.setName("changed2");
+		// Schema containers and schema versions have different names
+		//TODO CL-348
+		//assertEquals("changed2", schemaContainer.getName());
 
-		schema = schemaContainer.getSchema();
+		schema = currentVersion.getSchema();
 		schema.setContainer(true);
 		assertTrue("The schema container flag should be set to true since we updated it.", schema.isContainer());
-		schemaContainer.setSchema(schema);
-		schema = schemaContainer.getSchema();
+		currentVersion.setSchema(schema);
+		schema = currentVersion.getSchema();
 		assertTrue(schema.isContainer());
 
-		schema = schemaContainer.getSchema();
+		schema = currentVersion.getSchema();
 		schema.setContainer(false);
 		assertFalse(schema.isContainer());
-		schemaContainer.setSchema(schema);
-		schema = schemaContainer.getSchema();
+		currentVersion.setSchema(schema);
+		schema = currentVersion.getSchema();
 		assertFalse(schema.isContainer());
 	}
 

@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.core.data.IndexableElement;
@@ -26,6 +27,7 @@ import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
@@ -169,7 +171,12 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			return root.loadObject(ac, uuidParameterName, READ_PERM).flatMap(node -> {
 				return node.transformToRest(ac);
 			});
-		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+
+		}).subscribe(model -> {
+			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
+			ac.respond(model, code);
+		} , ac::fail);
+
 	}
 
 	/**

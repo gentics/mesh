@@ -31,13 +31,13 @@ public class DateGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testDateFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 		dateFieldSchema.setName("dateField");
 		dateFieldSchema.setLabel("Some date field");
 		dateFieldSchema.setRequired(true);
 		schema.addField(dateFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		DateGraphField field = container.createDate("dateField");

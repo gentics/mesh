@@ -33,15 +33,15 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 		setupData();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 		// 1. Create the node field schema and add it to the schema of the node
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setName(NODE_FIELD_NAME);
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
-		schemaStorage.addSchema(node.getSchemaContainer().getSchema());
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		schemaStorage.addSchema(node.getSchemaContainer().getLatestVersion().getSchema());
 
 		// 2. Add the node reference to the node fields
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());

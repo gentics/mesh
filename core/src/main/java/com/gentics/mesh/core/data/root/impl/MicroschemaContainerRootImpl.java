@@ -9,11 +9,13 @@ import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -56,9 +58,13 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public MicroschemaContainer create(Microschema microschema, User user) throws MeshJsonException {
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
-		container.setName(microschema.getName());
-		container.setSchema(microschema);
+		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		container.setLatestVersion(version);
+		version.setName(microschema.getName());
+		version.setSchema(microschema);
+		version.setSchemaContainer(container);
 		container.setCreated(user);
+		container.setName(microschema.getName());
 		addMicroschema(container);
 
 		return container;
