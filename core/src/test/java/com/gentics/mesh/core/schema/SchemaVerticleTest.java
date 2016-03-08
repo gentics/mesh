@@ -289,12 +289,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 
+		String name = schema.getUuid() + "/" + schema.getName();
+		String uuid = schema.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectResponseMessage(future, "schema_deleted", schema.getUuid() + "/" + schema.getName());
+		expectResponseMessage(future, "schema_deleted", name);
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().single();
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
 		assertNull("The schema should have been deleted.", reloaded);
 	}
 
