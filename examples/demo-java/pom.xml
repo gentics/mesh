@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-examples</artifactId>
-		<version>1.1.0-dev-SNAPSHOT</version>
+		<version>0.6.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -106,20 +106,22 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-			<!-- 
+
 			<plugin>
-				<groupId>org.jolokia</groupId>
+				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.14.2</version>
 				<configuration>
 					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
 					<registry>https://registry.gentics.com</registry>
 					<images>
 						<image>
-							<name>registry.gentics.com/mesh-demo:${project.version}</name>
-							<alias>mesh-demo</alias>
-
+							<name>gentics/mesh-demo</name>
 							<build>
+								<tags>
+									<tag>latest</tag>
+									<tag>${project.version}</tag>
+								</tags>
 								<assembly>
 									<mode>dir</mode>
 									<basedir>/opt/mesh</basedir>
@@ -127,22 +129,12 @@
 									<descriptor>docker-assembly.xml</descriptor>
 								</assembly>
 							</build>
-							<run>
-								<ports>
-									<port>mesh.port:8080</port>
-								</ports>
-								<wait>
-									<url>http://${dockerHost}:${mesh.port}/api/v1/admin/status</url>
-									<log>.*Initalized project.*</log>
-									<time>80000</time>
-								</wait>
-								<log>
-									<color>cyan</color>
-									<prefix>TC</prefix>
-								</log>
-							</run>
 						</image>
 					</images>
+					<authConfig>
+						<username>${dockerhub.username}</username>
+						<password>${dockerhub.password}</password>
+					</authConfig>
 				</configuration>
 				<executions>
 					<execution>
@@ -154,16 +146,8 @@
 							<goal>remove</goal>
 						</goals>
 					</execution>
-					<execution> <id>start</id> <phase>pre-integration-test</phase> <goals> <goal>build</goal> <goal>start</goal> </goals> </execution> <execution> <id>stop</id> <phase>post-integration-test</phase> 
-						<goals> <goal>stop</goal> </goals> </execution>
 				</executions>
 			</plugin>
-			 -->
-			<!-- <plugin> <groupId>com.lazerycode.jmeter</groupId> <artifactId>jmeter-maven-plugin</artifactId> <version>1.8.1</version> <executions> <execution> <phase>integration-test</phase> 
-				<goals> <goal>jmeter</goal> </goals> </execution> </executions> <configuration> <propertiesUser> <webservice.host>${dockerHost}</webservice.host> <webservice.port>${mesh.port}</webservice.port> 
-				</propertiesUser> </configuration> </plugin> <plugin> <artifactId>maven-failsafe-plugin</artifactId> <executions> <execution> <id>integration-test</id> <goals> <goal>integration-test</goal> 
-				</goals> </execution> <execution> <id>verify</id> <goals> <goal>verify</goal> </goals> </execution> </executions> <configuration> <systemPropertyVariables> <mesh.url>http://${dockerHost}:${mesh.port}</mesh.url> 
-				</systemPropertyVariables> </configuration> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -241,7 +225,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -260,7 +244,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore />
+										<ignore/>
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
