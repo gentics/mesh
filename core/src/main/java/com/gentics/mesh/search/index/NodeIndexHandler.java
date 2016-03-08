@@ -65,6 +65,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
+	private static final String VERSION_KEY = "version";
+
 	private static NodeIndexHandler instance;
 
 	@PostConstruct
@@ -78,7 +80,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	/**
 	 * Get the document type for documents stored for the given schema
-	 * @param schema schema
+	 * 
+	 * @param schema
+	 *            schema
 	 * @return document type
 	 */
 	public static String getDocumentType(Schema schema) {
@@ -137,7 +141,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// Add display field value
 			Map<String, String> displayFieldMap = new HashMap<>();
 			displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-//			displayFieldMap.put("value", container.getDisplayFieldValue(container.getSchemaContainerVersion().getSchema()));
+			//			displayFieldMap.put("value", container.getDisplayFieldValue(container.getSchemaContainerVersion().getSchema()));
 			map.put("displayField", displayFieldMap);
 			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 		}
@@ -156,7 +160,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
-		
+
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
@@ -374,10 +378,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void addSchema(Map<String, Object> map, SchemaContainerVersion schemaContainerVersion) {
 		String name = schemaContainerVersion.getName();
-		String uuid = schemaContainerVersion.getUuid();
+		String uuid = schemaContainerVersion.getSchemaContainer().getUuid();
 		Map<String, String> schemaFields = new HashMap<>();
 		schemaFields.put(NAME_KEY, name);
 		schemaFields.put(UUID_KEY, uuid);
+		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
 		map.put("schema", schemaFields);
 	}
 
@@ -405,8 +410,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		parentNodeInfo.put(UUID_KEY, parentNode.getUuid());
 		// TODO check whether nesting of nested elements would also work
 		//TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference: (n:Node)->(sSchemaContainer) ?
-//		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
-//		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
+		//		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
+		//		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		map.put("parentNode", parentNodeInfo);
 	}
 

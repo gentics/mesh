@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.ivy.plugins.version.LatestVersionMatcher;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.Group;
@@ -60,6 +61,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -113,7 +115,8 @@ public final class MockingUtils {
 		Micronode micronode = mock(MicronodeImpl.class);
 		when(micronode.getUuid()).thenReturn(randomUUID());
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
-		when(micronode.getMicroschemaContainerVersion()).thenReturn(microschemaContainer.getLatestVersion());
+		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
+		when(micronode.getMicroschemaContainerVersion()).thenReturn(latestVersion);
 		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getMicroschema()).thenReturn(microschema);
 
@@ -204,6 +207,7 @@ public final class MockingUtils {
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(randomUUID());
 		SchemaContainerVersion latestVersion = mock(SchemaContainerVersionImpl.class);
+		when(latestVersion.getSchemaContainer()).thenReturn(container);
 		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
 		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
@@ -275,6 +279,7 @@ public final class MockingUtils {
 		Mockito.<List<? extends Tag>> when(node.getTags()).thenReturn(tagList);
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
+		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 
 		when(node.getCreator()).thenReturn(user);
@@ -284,6 +289,7 @@ public final class MockingUtils {
 		when(node.getSchemaContainer().getLatestVersion().getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
+		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 //		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 
