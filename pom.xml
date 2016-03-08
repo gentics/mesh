@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.gentics.mesh</groupId>
@@ -229,22 +230,33 @@
 
 	<repositories>
 		<repository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
+			<id>lan.snapshots</id>
+			<name>Gentics Snapshots Repository</name>
+			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
 			<releases>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 		<repository>
-			<id>lan.snapshots</id>
-			<name>Gentics Snapshots Repository</name>
-			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
+			<id>lan.releases.staging.mesh</id>
+			<name>Gentics Releases Repository</name>
+			<url>http://artifactory.office/repository/lan.releases.staging.mesh</url>
 			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
 				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven.gentics.com</id>
+			<name>Gentics Maven Repository</name>
+			<url>https://maven.gentics.com/maven2</url>
+			<releases>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
