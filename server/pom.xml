@@ -60,6 +60,7 @@
 							<name>gentics/mesh</name>
 							<build>
 								<tags>
+									<tag>beta</tag>
 									<tag>latest</tag>
 									<tag>${project.version}</tag>
 								</tags>
