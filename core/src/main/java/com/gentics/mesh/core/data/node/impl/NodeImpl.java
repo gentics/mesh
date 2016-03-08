@@ -642,7 +642,7 @@ public class NodeImpl extends GenericFieldContainerNode<NodeResponse> implements
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, ac.getPagingParameter(), TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, new PagingParameter().setPerPage(Integer.MAX_VALUE), TagImpl.class);
 	}
 
 	@Override
