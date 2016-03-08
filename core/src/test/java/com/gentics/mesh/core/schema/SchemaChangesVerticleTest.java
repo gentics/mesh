@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -14,6 +16,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.ivy.util.FileUtil;
 import org.junit.Test;
@@ -35,10 +39,12 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 
 public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
@@ -331,9 +337,111 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		// Assert that migration worked
 		Node node = content();
 		node.reload();
-		assertNotNull("The schema of the node should contain the new field schema", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
+		assertNotNull("The schema of the node should contain the new field schema",
+				node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
 		assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 				currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+
+	}
+
+	/**
+	 * Construct a latch which will release when the migration has finished.
+	 * 
+	 * @return
+	 */
+	public static CyclicBarrier waitForMigration(MeshRestClient client) {
+		// Construct latch in order to wait until the migration completed event was received 
+		CyclicBarrier barrier = new CyclicBarrier(2);
+		client.eventbus(ws -> {
+			// Register to migration events
+			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION.toString());
+			ws.writeFinalTextFrame(msg.encode());
+
+			// Handle migration events
+			ws.handler(buff -> {
+				String str = buff.toString();
+				JsonObject received = new JsonObject(str);
+				JsonObject rec = received.getJsonObject("body");
+				if ("completed".equalsIgnoreCase(rec.getString("type"))) {
+					try {
+						barrier.await(10, TimeUnit.SECONDS);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+
+		});
+		return barrier;
+	}
+
+	@Test
+	public void testUpdateMultipleTimes() throws Exception {
+
+		// Assert start condition
+		SchemaContainer container = schemaContainer("content");
+		SchemaContainerVersion currentVersion = container.getLatestVersion();
+		assertNull("The schema should not yet have any changes", currentVersion.getNextChange());
+
+		// 2. Setup eventbus bridged latch
+		CyclicBarrier barrier = waitForMigration(getClient());
+
+		for (int i = 0; i < 10; i++) {
+
+			// 1. Setup changes
+			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField_" + i, "html");
+			listOfChanges.getChanges().add(change);
+
+			// 3. Invoke migration
+			Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
+			latchFor(future);
+			assertSuccess(future);
+			expectResponseMessage(future, "migration_invoked", "content");
+
+			// 4. Latch for completion
+			barrier.await(10, TimeUnit.SECONDS);
+			container.reload();
+			container.getLatestVersion().reload();
+			currentVersion.reload();
+			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
+
+			// Assert that migration worked
+			Node node = content();
+			node.reload();
+			node.getGraphFieldContainer("en").reload();
+			node.getGraphFieldContainer("en").getSchemaContainerVersion().reload();
+
+			assertNotNull("The schema of the node should contain the new field schema",
+					node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+
+		}
+
+		// Validate schema changes and versions
+		container.reload();
+		assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, container.findAll().size());
+		assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
+		assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
+
+		SchemaContainerVersion version = container.getLatestVersion();
+		int nVersions = 0;
+		while (true) {
+			version = version.getPreviousVersion();
+			if (version == null) {
+				break;
+			}
+			version.reload();
+			assertNotNull("The schema version {" + version.getUuid() + "-" + version.getVersion() + "} should have a next change",
+					version.getNextChange());
+			assertEquals("The version is not referencing the correct parent container.", container.getUuid(), version.getSchemaContainer().getUuid());
+			nVersions++;
+		}
+
+		assertEquals("The latest version should have exactly 10 previous versions.", nVersions, 10);
+		assertTrue("The user should still have update permissions on the schema", user().hasPermission(container, UPDATE_PERM));
 
 	}
 
