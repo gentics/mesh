@@ -1,5 +1,7 @@
 package com.gentics.mesh.demo;
 
+import java.io.File;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.OptionsLoader;
@@ -19,8 +21,8 @@ public class DemoRunner {
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		System.setProperty("vertx.httpServiceFactory.cacheDir", "tmp");
-		System.setProperty("vertx.cacheDirBase", "tmp");
+		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
+		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 	}
 
 	public static void main(String[] args) throws Exception {
