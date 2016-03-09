@@ -64,7 +64,9 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 		// 1. Load the schema name that was identified by another deserializer and put into the context.
 		String schemaName = (String) ctxt.findInjectableValue("schemaName", null, null);
+		Integer schemaVersion = (Integer) ctxt.findInjectableValue("schemaVersion", null, null);
 		String microschemaName = (String) ctxt.findInjectableValue("microschemaName", null, null);
+		Integer microschemaVersion = (Integer) ctxt.findInjectableValue("microschemaVersion", null, null);
 		if (schemaName == null && microschemaName == null) {
 			throw new MeshJsonException("It is not possible to deserialize the field map because the schemaName could not be extracted.");
 		}
@@ -75,13 +77,23 @@ public class FieldMapDeserializer extends JsonDeserializer<FieldMap> {
 
 		List<? extends FieldSchema> fields = null;
 		if (schemaName != null) {
-			Schema schema = schemaStorage.getSchema(schemaName);
+			Schema schema = null;
+			if (schemaVersion == null) {
+				schema = schemaStorage.getSchema(schemaName);
+			} else {
+				schema = schemaStorage.getSchema(schemaName, schemaVersion);
+			}
 			if (schema == null) {
 				throw new MeshJsonException("Can't find schema {" + schemaName + "} within the schema storage.");
 			}
 			fields = schema.getFields();
 		} else {
-			Microschema microschema = schemaStorage.getMicroschema(microschemaName);
+			Microschema microschema = null;
+			if (microschemaVersion == null) {
+				microschema = schemaStorage.getMicroschema(microschemaName);
+			} else {
+				microschema = schemaStorage.getMicroschema(microschemaName, microschemaVersion);
+			}
 			if (microschema == null) {
 				throw new MeshJsonException("Can't find microschema {" + microschemaName + "} within the schema storage.");
 			}

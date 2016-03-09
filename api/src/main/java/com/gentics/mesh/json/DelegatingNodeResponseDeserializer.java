@@ -35,12 +35,17 @@ public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 
 	private String schemaInjectableName = "schemaName";
 
+	private String schemaInjectableVersionKey = "schemaVersion";
+
 	/**
 	 * Create an instance of the deserializer
 	 * 
-	 * @param nodeMapper node mapper to which the deserialization will be delegated
-	 * @param classOfT requested class to deserialize to
-	 * @param microschema true if deserialization should be done based on a microschema, false for deserialization based on a schema
+	 * @param nodeMapper
+	 *            node mapper to which the deserialization will be delegated
+	 * @param classOfT
+	 *            requested class to deserialize to
+	 * @param microschema
+	 *            true if deserialization should be done based on a microschema, false for deserialization based on a schema
 	 */
 	public DelegatingNodeResponseDeserializer(ObjectMapper nodeMapper, Class<T> classOfT, boolean microschema) {
 		this.nodeMapper = nodeMapper;
@@ -48,6 +53,7 @@ public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 		if (microschema) {
 			schemaFieldName = "microschema";
 			schemaInjectableName = "microschemaName";
+			schemaInjectableVersionKey = "microschemaVersion";
 		}
 	}
 
@@ -67,12 +73,17 @@ public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 		// TODO also get schema/microschema by uuid
 		String schemaName = schemaNode.get("name").textValue();
 		if (StringUtils.isEmpty(schemaName)) {
-			throw new MeshJsonException(
-					"The " + schemaFieldName + " is empty or not set. This field is mandatory for deserialisation.");
+			throw new MeshJsonException("The " + schemaFieldName + " is empty or not set. This field is mandatory for deserialisation.");
+		}
+		JsonNode versionNode = schemaNode.get("version");
+		Integer schemaVersion = null;
+		if (versionNode != null) {
+			schemaVersion = versionNode.intValue();
 		}
 		// NodeResponse nodeResponse = nodeMapper.convertValue(node2, NodeResponse.class);
 		// return nodeResponse;
-		return nodeMapper.reader(getInjectableValueWithSchemaName(schemaName, schemaStorage)).forType(classOfT).readValue(rootNode.toString());
+		return nodeMapper.reader(getInjectableValueWithSchemaInfo(schemaName, schemaVersion, schemaStorage)).forType(classOfT)
+				.readValue(rootNode.toString());
 
 		// NodeResponse nodeResponse = (NodeResponse) defaultDeserializer.deserialize(jsonParser, ctxt);
 		// return super.deserialize(jsonParser, ctxt, new NodeResponse());
@@ -80,7 +91,7 @@ public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 		// return mapper.convertValue(node, NodeResponse.class);
 	}
 
-	private InjectableValues getInjectableValueWithSchemaName(String schemaName, SchemaStorage schemaStorage) {
+	private InjectableValues getInjectableValueWithSchemaInfo(String schemaName, Integer schemaVersion, SchemaStorage schemaStorage) {
 
 		InjectableValues values = new InjectableValues() {
 
@@ -88,6 +99,9 @@ public class DelegatingNodeResponseDeserializer<T> extends JsonDeserializer<T> {
 			public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) {
 				if (schemaInjectableName.equals(valueId.toString())) {
 					return schemaName;
+				}
+				if (schemaInjectableVersionKey.equals(valueId.toString())) {
+					return schemaVersion;
 				}
 				if ("schema_storage".equals(valueId.toString())) {
 					return schemaStorage;

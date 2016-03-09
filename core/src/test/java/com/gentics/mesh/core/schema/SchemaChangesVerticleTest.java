@@ -190,6 +190,11 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		expectResponseMessage(future, "migration_invoked", schema.getName());
 		failingLatch(latch);
 
+		// Add the updated schema to the client store
+		getClient().getClientSchemaStorage().removeSchema("content");
+		schema.setVersion(schema.getVersion() + 1);
+		getClient().getClientSchemaStorage().addSchema(schema);
+
 		// 5. Read node and check additional field
 		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
 		latchFor(nodeFuture);
@@ -483,6 +488,10 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(future);
 		failingLatch(latch);
 
+		getClient().getClientSchemaStorage().removeSchema("content");
+		schema.setVersion(schema.getVersion() + 1);
+		getClient().getClientSchemaStorage().addSchema(schema);
+
 		// Read node and check additional field
 		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
 		latchFor(nodeFuture);
@@ -533,6 +542,10 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
+
+		getClient().getClientSchemaStorage().removeSchema("content");
+		schema.setVersion(schema.getVersion() + 1);
+		getClient().getClientSchemaStorage().addSchema(schema);
 
 		failingLatch(latch);
 

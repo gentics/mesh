@@ -8,10 +8,10 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
  */
 public class SchemaReference extends NameUuidReference<SchemaReference> {
 
-	private Integer version;
+	Integer version;
 
 	/**
-	 * Return the schema version.
+	 * Return the version of the referenced schema.
 	 * 
 	 * @return
 	 */
@@ -20,12 +20,13 @@ public class SchemaReference extends NameUuidReference<SchemaReference> {
 	}
 
 	/**
-	 * Set the schema version.
+	 * Set the version of the referenced schema.
 	 * 
 	 * @param version
+	 * @return Fluent API
 	 */
-	public void setVersion(Integer version) {
+	public SchemaReference setVersion(Integer version) {
 		this.version = version;
+		return this;
 	}
-
 }

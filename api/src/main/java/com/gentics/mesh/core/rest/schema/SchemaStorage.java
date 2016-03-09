@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.schema;
 
 /**
- * A schema storage is a store which hold schemas. Schema storages are used to quickly load a schema in order to deserialize or serialize a node.
- * TODO: add version
+ * A schema storage is a store which hold schemas. Schema storages are used to quickly load a schema in order to deserialize or serialize a node. TODO: add
+ * version
  */
 public interface SchemaStorage {
 	/**
@@ -19,7 +19,7 @@ public interface SchemaStorage {
 	 * @param name
 	 *            Schema name
 	 * @param version
-	 * 			  Schema version
+	 *            Schema version
 	 */
 	void removeSchema(String name, int version);
 
@@ -38,7 +38,7 @@ public interface SchemaStorage {
 	 * @param name
 	 *            Schema name
 	 * @param version
-	 * 			  Schema version
+	 *            Schema version
 	 * @return Found schema or null when no schema could be found
 	 */
 	Schema getSchema(String name, int version);
@@ -66,7 +66,7 @@ public interface SchemaStorage {
 	 * @param name
 	 *            Microschema name
 	 * @param version
-	 * 			  Microschema version
+	 *            Microschema version
 	 * @return Found microschema or null when no microschema could be found
 	 */
 	Microschema getMicroschema(String name, int version);
@@ -93,7 +93,7 @@ public interface SchemaStorage {
 	 * @param name
 	 *            microschema name
 	 * @param version
-	 * 			  microschema version
+	 *            microschema version
 	 */
 	void removeMicroschema(String name, int version);
 

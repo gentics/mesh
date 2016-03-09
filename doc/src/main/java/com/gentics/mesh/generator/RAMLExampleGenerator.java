@@ -746,6 +746,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName(name);
 		schemaReference.setUuid(randomUUID());
+		schemaReference.setVersion(1);
 		return schemaReference;
 	}
 

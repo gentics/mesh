@@ -23,8 +23,8 @@ public class ClientSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Schema getSchema(String name) {
-		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet()
-				.stream().max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
@@ -47,8 +47,8 @@ public class ClientSchemaStorage implements SchemaStorage {
 
 	@Override
 	public Microschema getMicroschema(String name) {
-		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet()
-				.stream().max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 

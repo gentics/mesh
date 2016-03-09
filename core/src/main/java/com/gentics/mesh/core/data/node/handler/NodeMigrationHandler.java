@@ -108,6 +108,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 					Schema oldSchema = fromVersion.getSchema();
 					Schema newSchema = toVersion.getSchema();
+					// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
+					restModel.getSchema().setVersion(newSchema.getVersion());
 					migrate(ac, container, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
 					// migrate the schema reference to the new version
 					container.setSchemaContainerVersion(toVersion);
