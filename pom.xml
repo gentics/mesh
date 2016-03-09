@@ -95,7 +95,7 @@
 		<module>verticles</module>
 		<!-- <module>importers</module> -->
 		<module>server</module>
-		<module>examples</module>
+		<module>demo</module>
 		<module>doc</module>
 	</modules>
 
