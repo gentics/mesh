@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.5.1-SNAPSHOT</version>
+	<version>0.5.1</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -36,7 +36,7 @@
 		<connection>scm:git:git@git.gentics.com:psc/mesh.git</connection>
 		<developerConnection>scm:git:git@git.gentics.com:psc/mesh.git</developerConnection>
 		<url>https://git.gentics.com/psc/mesh</url>
-		<tag>mesh-0.5.0</tag>
+		<tag>mesh-0.5.1</tag>
 	</scm>
 
 
