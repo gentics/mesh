@@ -183,7 +183,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 						user.setReferencedNode(node);
 					} else if (reference != null) {
 						// TODO handle user create using full node rest model.
-						throw error(BAD_REQUEST, "Creation of users with expanded node reference field is not yet implemented.");
+						throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 					}
 
 					return Tuple.tuple(batch, user);

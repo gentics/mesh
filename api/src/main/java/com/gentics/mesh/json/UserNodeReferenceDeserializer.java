@@ -9,12 +9,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Deserialize for node references. The deserializer will first try to deserialize the json node by passing the json to the NodeResponse deserializer. This is
@@ -23,27 +19,18 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public class UserNodeReferenceDeserializer extends JsonDeserializer<NodeReference> {
 
-	private static final Logger log = LoggerFactory.getLogger(UserNodeReferenceDeserializer.class);
-
 	@Override
 	public NodeReference deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
-		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
-		// Try to deserialize the field in the expanded version
-		try {
-			NodeResponse expandedField = JsonUtil.readValue(node.toString(), NodeResponse.class);
-			return expandedField;
-		} catch (MeshJsonException e) {
-			if (log.isTraceEnabled()) {
-				log.trace("Could not deserialize json to expanded Node Response. I'll try to fallback to a collapsed version.", e);
-			}
-			// Fallback to deserialize the node using the basic node reference (collapsed form)
+		// Only the node reference impl version has a project name property.
+		if (node.has("projectName")) {
 			NodeReferenceImpl basicReference = oc.treeToValue(node, NodeReferenceImpl.class);
 			return basicReference;
-		} catch (IOException e) {
-			throw new MeshJsonException("Could not read node reference", e);
+		} else {
+			NodeResponse expandedField = JsonUtil.readValue(node.toString(), NodeResponse.class);
+			return expandedField;
 		}
 	}
 
