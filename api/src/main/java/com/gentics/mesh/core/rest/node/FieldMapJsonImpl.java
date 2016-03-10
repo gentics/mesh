@@ -67,7 +67,10 @@ public class FieldMapJsonImpl implements FieldMap {
 		try {
 			ObjectMapper mapper = JsonUtil.getMapper();
 			JsonNode jsonNode = node.get(key);
-			if (jsonNode == null || jsonNode.isNull()) {
+			if (!node.has(key)) {
+				return null;
+			}
+			if (jsonNode == null) {
 				return null;
 			}
 			// Handle each field type
@@ -123,31 +126,31 @@ public class FieldMapJsonImpl implements FieldMap {
 				}
 				return (T) dateField;
 			case LIST:
-				//				ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
+				// ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
 				switch (listType) {
 				case "node":
-					//TODO use  NodeFieldListItemDeserializer to deserialize the item in expanded form
+					// TODO use NodeFieldListItemDeserializer to deserialize the item in expanded form
 					NodeFieldListImpl nodeListField = new NodeFieldListImpl();
-					//NodeFieldListItemDeserializer deser = new NodeFieldListItemDeserializer();
+					// NodeFieldListItemDeserializer deser = new NodeFieldListItemDeserializer();
 					for (JsonNode node : jsonNode) {
 						nodeListField.getItems().add(mapper.treeToValue(node, NodeFieldListItem.class));
 					}
-					//NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
-					//nodeListField.getItems().addAll(Arrays.asList(itemsArray));
+					// NodeFieldListItem[] itemsArray = oc.treeToValue(jsonNode, NodeFieldListItemImpl[].class);
+					// nodeListField.getItems().addAll(Arrays.asList(itemsArray));
 
-					//					NodeFieldListImpl nodeListField = null;
-					//					try {
-					//						nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class);
-					//					} catch (MeshJsonException e) {
-					//						if (log.isDebugEnabled()) {
-					//							log.debug(
-					//									"Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: "
-					//											+ e.getMessage());
-					//						}
-					//						nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
-					//					} catch (IOException e) {
-					//						throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
-					//					}
+					// NodeFieldListImpl nodeListField = null;
+					// try {
+					// nodeListField = JsonUtil.readNode(jsonNode.toString(), NodeFieldListImpl.class);
+					// } catch (MeshJsonException e) {
+					// if (log.isDebugEnabled()) {
+					// log.debug(
+					// "Could not deserialize json to expanded Node Response this is normal when the json does not contain expanded fields: "
+					// + e.getMessage());
+					// }
+					// nodeListField = oc.treeToValue(jsonNode, NodeFieldListImpl.class);
+					// } catch (IOException e) {
+					// throw new MeshJsonException("Could not read node field for key {" + fieldKey + "}", e);
+					// }
 					return (T) nodeListField;
 				case "micronode":
 					MicronodeFieldList micronodeFieldList = new MicronodeFieldListImpl();
@@ -178,10 +181,10 @@ public class FieldMapJsonImpl implements FieldMap {
 				default:
 					throw new MeshJsonException("Unknown list type {" + listType + "}");
 				}
-				//			} else {
-				//				//TODO handle unexpected error
-				//				throw new MeshJsonException("Unknown field list class type {" + fieldSchema.getClass().getName() + "}");
-				//			}
+				// } else {
+				// //TODO handle unexpected error
+				// throw new MeshJsonException("Unknown field list class type {" + fieldSchema.getClass().getName() + "}");
+				// }
 			case NODE:
 				if (expand) {
 					NodeResponse expandedField = JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
