@@ -993,10 +993,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
-		assertEquals(
-				"Can't handle field {extrafield} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeCreateRequest[\"fields\"])",
-				((MeshRestClientHttpException) future.cause()).getResponseMessage().getInternalMessage());
+		expectException(future, BAD_REQUEST, "node_unhandled_fields", "content", "[extrafield]");
 		assertNull(future.result());
 
 	}
@@ -1067,8 +1064,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("de", "en");
 		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
 		latchFor(future);
-		expectFailureMessage(future, BAD_REQUEST,
-				"Can't handle field {displayName} The schema {content} does not specify this key. (through reference chain: com.gentics.mesh.core.rest.node.NodeUpdateRequest[\"fields\"])");
+		expectException(future, BAD_REQUEST, "node_unhandled_fields", "folder", "[displayName]");
 
 		assertNull(future.result());
 
