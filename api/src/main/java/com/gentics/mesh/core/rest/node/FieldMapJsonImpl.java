@@ -67,7 +67,7 @@ public class FieldMapJsonImpl implements FieldMap {
 		try {
 			ObjectMapper mapper = JsonUtil.getMapper();
 			JsonNode jsonNode = node.get(key);
-			if (jsonNode == null) {
+			if (jsonNode == null || jsonNode.isNull()) {
 				return null;
 			}
 			// Handle each field type
