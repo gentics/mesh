@@ -128,7 +128,6 @@ public interface FieldMap {
 	 *            Optional expected list type of the field
 	 * @param expand
 	 *            The field will be expanded (if possible) when set to true
-	 * @throws IOException
 	 */
 	<T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand);
 
