@@ -15,9 +15,6 @@
 
 		<mesh.admin-ui.version>1.1.0-beta-rc4</mesh.admin-ui.version>
 
-		<gh-pages.url>http://gentics.github.io/mesh/</gh-pages.url>
-		<gh-url>https://github.com/gentics/mesh/tree/master</gh-url>
-
 		<dockerHost>cetus.office</dockerHost>
 		<dockerHostProtocol>http</dockerHostProtocol>
 
@@ -34,9 +31,9 @@
 	</properties>
 
 	<scm>
-		<connection>scm:git:git@github.com:gentics/mesh.git</connection>
-		<developerConnection>scm:git:git@github.com:gentics/mesh.git</developerConnection>
-		<url>https://github.com/gentics/mesh</url>
+		<connection>scm:git:git@git.gentics.com:psc/mesh.git</connection>
+		<developerConnection>scm:git:git@git.gentics.com:psc/mesh.git</developerConnection>
+		<url>https://git.gentics.com/psc/mesh</url>
 		<tag>mesh-0.1.0-rc6</tag>
 	</scm>
 
