@@ -50,9 +50,9 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 		String json = getJson(node);
 		assertTrue("Could not find number within json. Json {" + json + "}", json.indexOf("100.9") > 1);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
-		NumberFieldImpl deserializedNumberField = response.getField("numberField");
+		NumberFieldImpl deserializedNumberField = response.getFields().getNumberField("numberField");
 		assertEquals(100.9, deserializedNumberField.getNumber());
 	}
 

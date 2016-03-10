@@ -219,7 +219,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
-		NodeResponse deserialized = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse deserialized = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(deserialized);
 		// TODO assert for english fields
 	}

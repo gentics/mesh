@@ -108,7 +108,6 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-		getClient().getClientSchemaStorage().addSchema(schema);
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
 		latchFor(future);
@@ -196,7 +195,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(responseFuture);
 		NodeResponse response = responseFuture.result();
 
-		BinaryField binaryField = response.getField("binary", BinaryField.class);
+		BinaryField binaryField = response.getFields().getBinaryField("binary");
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
@@ -230,7 +229,6 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Schema schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 		schema.setSegmentField("binary");
 		folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
-		getClient().getClientSchemaStorage().addSchema(schema);
 
 		// upload file to folder 2014
 		Future<GenericMessageResponse> uploadFuture = updateBinaryField(folder2014, "en", "binary", binaryLen, contentType, fileName);
@@ -265,7 +263,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(responseFuture);
 		NodeResponse response = responseFuture.result();
 
-		BinaryField binaryField = response.getField(fieldName, BinaryField.class);
+		BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());

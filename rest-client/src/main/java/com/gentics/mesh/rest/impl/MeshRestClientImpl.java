@@ -76,9 +76,6 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
 
 public class MeshRestClientImpl extends AbstractMeshRestClient {
 
@@ -503,7 +500,7 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
 		String requestUri = BASEURI + "/" + projectName + "/webroot" + path + getQuery(parameters);
-		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, HttpMethod.GET, requestUri, getClientSchemaStorage());
+		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking get request to {" + requestUri + "}");
@@ -586,63 +583,6 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
 		return handleRequest(DELETE, "/schemas/" + schemaUuid + "/projects/" + projectUuid, SchemaModel.class);
 	}
-
-	@Override
-	public Future<Void> initSchemaStorage() {
-		// TODO handle paging correctly
-		Future<SchemaListResponse> schemasFuture = findSchemas(new PagingParameter(1, 100));
-		ObservableFuture<SchemaListResponse> schemasObservable = RxHelper.observableFuture();
-		schemasFuture.setHandler(schemasObservable.toHandler());
-		schemasObservable.doOnNext(list -> {
-			for (Schema schema : list.getData()) {
-				getClientSchemaStorage().addSchema(schema);
-				log.info("Added schema {" + schema.getName() + "} to schema storage.");
-			}
-		});
-
-		Future<MicroschemaListResponse> microschemasFuture = findMicroschemas(new PagingParameter(1, 100));
-		ObservableFuture<MicroschemaListResponse> microschemasObservable = RxHelper.observableFuture();
-		microschemasFuture.setHandler(microschemasObservable.toHandler());
-		microschemasObservable.doOnNext(list -> {
-			for (Microschema microschema : list.getData()) {
-				getClientSchemaStorage().addMicroschema(microschema);
-				log.info("Added microschema {" + microschema.getName() + "} to schema storage.");
-			}
-		});
-
-		Future<Void> future = Future.future();
-		Observable.merge(schemasObservable, microschemasObservable).doOnCompleted(() -> future.complete()).doOnError(e -> future.fail(e)).subscribe();
-
-		//		schemasFuture.setHandler(rh -> {
-		//			if (rh.failed()) {
-		//				log.error("Could not load schemas", rh.cause());
-		//				future.fail(rh.cause());
-		//			} else {
-		//				SchemaListResponse list = rh.result();
-		//				for (SchemaResponse schema : list.getData()) {
-		//					getClientSchemaStorage().addSchema(schema);
-		//					log.info("Added schema {" + schema.getName() + "} to schema storage.");
-		//				}
-		//				future.complete();
-		//			}
-		//		});
-		return future;
-	}
-
-	// return
-	// MeshResponseHandler<UserResponse> meshHandler = new MeshResponseHandler<>(UserResponse.class, this);
-	// meshHandler.handle(rh -> {
-	// if (rh.statusCode() == 200) {
-	// setCookie(rh.headers().get("Set-Cookie"));
-	// }
-	// });
-	// HttpClientRequest request = client.get(BASEURI + "/auth/login", meshHandler);
-	//// request.headers().add("Authorization", "Basic " + authEnc);
-	// request.headers().add("Accept", "application/json");
-	// request.end();
-	// return meshHandler.getFuture();
-	//
-	// }
 
 	@Override
 	public Future<GenericMessageResponse> permissions(String roleUuid, String objectUuid, Permission permission, boolean recursive) {

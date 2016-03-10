@@ -191,18 +191,16 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		failingLatch(latch);
 
 		// Add the updated schema to the client store
-		getClient().getClientSchemaStorage().removeSchema("content");
 		schema.setVersion(schema.getVersion() + 1);
-		getClient().getClientSchemaStorage().addSchema(schema);
 
 		// 5. Read node and check additional field
 		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
 		latchFor(nodeFuture);
 		assertSuccess(nodeFuture);
 		NodeResponse response = nodeFuture.result();
-		assertNotNull("The response should contain the content field.", response.getField("content"));
+		assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 		assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
-				response.getField("content").getClass());
+				response.getFields().getNumberField("content").getClass());
 
 		// 6. Update the node and set the new field
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -214,8 +212,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(nodeFuture);
 		response = nodeFuture.result();
 		assertNotNull(response);
-		assertNotNull(response.getField("content"));
-		assertEquals(42.01, ((NumberFieldImpl) response.getField("content")).getNumber());
+		assertNotNull(response.getFields().hasField("content"));
+		assertEquals(42.01, response.getFields().getNumberField("content").getNumber());
 
 	}
 
@@ -476,8 +474,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		ServerSchemaStorage.getInstance().clear();
 
 		// Update the schema client side
-		getClient().getClientSchemaStorage().removeSchema("content");
-		getClient().getClientSchemaStorage().addSchema(schema);
 
 		// 2. Setup eventbus bridged latch
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
@@ -488,9 +484,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(future);
 		failingLatch(latch);
 
-		getClient().getClientSchemaStorage().removeSchema("content");
 		schema.setVersion(schema.getVersion() + 1);
-		getClient().getClientSchemaStorage().addSchema(schema);
 
 		// Read node and check additional field
 		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
@@ -509,8 +503,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(nodeFuture);
 		response = nodeFuture.result();
 		assertNotNull(response);
-		assertNotNull(response.getField("extraname"));
-		assertEquals("sometext", response.getField("extraname", StringFieldImpl.class).getString());
+		assertNotNull(response.getFields().getStringField("extraname"));
+		assertEquals("sometext", response.getFields().getStringField("extraname").getString());
 
 		// Read node and check additional field
 		nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
@@ -518,7 +512,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(nodeFuture);
 		response = nodeFuture.result();
 		assertNotNull(response);
-		assertNotNull(response.getField("extraname"));
+		assertNotNull(response.getFields().hasField("extraname"));
 
 	}
 
@@ -531,8 +525,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.removeField("content");
 
 		// Update the schema client side
-		getClient().getClientSchemaStorage().removeSchema("content");
-		getClient().getClientSchemaStorage().addSchema(schema);
 		ServerSchemaStorage.getInstance().clear();
 
 		// 2. Setup eventbus bridged latch
@@ -543,9 +535,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 
-		getClient().getClientSchemaStorage().removeSchema("content");
 		schema.setVersion(schema.getVersion() + 1);
-		getClient().getClientSchemaStorage().addSchema(schema);
 
 		failingLatch(latch);
 
@@ -555,7 +545,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(nodeFuture);
 		NodeResponse response = nodeFuture.result();
 		assertNotNull(response);
-		assertNull(response.getField("content"));
+		assertNull(response.getFields().getStringField("content"));
 
 	}
 }

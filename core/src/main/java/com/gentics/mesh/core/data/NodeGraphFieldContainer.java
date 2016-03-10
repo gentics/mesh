@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.Errors;
-import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
  * A node field container is a aggregation node that holds localized fields.

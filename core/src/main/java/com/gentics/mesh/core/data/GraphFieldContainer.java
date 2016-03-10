@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
-import java.util.Map;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -21,6 +20,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -298,7 +298,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param restFields
 	 * @param schema
 	 */
-	void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema);
+	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema);
 
 	/**
 	 * Get all fields defined in the given schema, that are present in this container

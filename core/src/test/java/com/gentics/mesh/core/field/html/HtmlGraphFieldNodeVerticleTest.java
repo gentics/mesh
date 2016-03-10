@@ -35,7 +35,7 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(null, (Field) null);
-		HtmlFieldImpl htmlField = response.getField("htmlField");
+		HtmlFieldImpl htmlField = response.getFields().getHtmlField("htmlField");
 		assertNotNull(htmlField);
 		assertNull(htmlField.getHTML());
 	}
@@ -44,11 +44,11 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
-		HtmlFieldImpl field = response.getField("htmlField");
+		HtmlFieldImpl field = response.getFields().getHtmlField("htmlField");
 		assertEquals("some<b>html", field.getHTML());
 
 		response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
-		field = response.getField("htmlField");
+		field = response.getFields().getHtmlField("htmlField");
 		assertEquals("some<b>html2", field.getHTML());
 	}
 
@@ -56,7 +56,7 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNode("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
-		HtmlFieldImpl htmlField = response.getField("htmlField");
+		HtmlFieldImpl htmlField = response.getFields().getHtmlField("htmlField");
 		assertEquals("Some<b>html", htmlField.getHTML());
 	}
 
@@ -68,7 +68,7 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		container.createHTML("htmlField").setHtml("some<b>html");
 
 		NodeResponse response = readNode(node);
-		HtmlFieldImpl deserializedHtmlField = response.getField("htmlField");
+		HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField("htmlField");
 		assertNotNull(deserializedHtmlField);
 		assertEquals("some<b>html", deserializedHtmlField.getHTML());
 

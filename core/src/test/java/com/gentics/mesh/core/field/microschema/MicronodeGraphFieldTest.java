@@ -6,8 +6,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +27,8 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -201,7 +200,7 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 
 		InternalActionContext ac = getMockedInternalActionContext("");
 
-		Map<String, Field> restFields = new HashMap<>();
+		FieldMap restFields = new FieldMapImpl();
 		restFields.put("stringfield", new StringFieldImpl().setString("test"));
 		field.getMicronode().updateFieldsFromRest(ac, restFields, micronode.getMicroschema());
 

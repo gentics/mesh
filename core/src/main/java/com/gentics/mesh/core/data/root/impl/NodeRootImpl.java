@@ -138,7 +138,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				Schema schema = schemaContainer.getLatestVersion().getSchema();
 				String body = ac.getBodyAsString();
 
-				NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
+				NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
 				if (isEmpty(requestModel.getParentNodeUuid())) {
 					throw error(BAD_REQUEST, "node_missing_parentnode_field");
 				}

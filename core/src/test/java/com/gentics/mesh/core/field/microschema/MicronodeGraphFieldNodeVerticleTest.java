@@ -55,7 +55,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(FIELDNAME, (Field) null);
-		MicronodeField field = response.getField(FIELDNAME);
+		MicronodeField field = response.getFields().getMicronodeField(FIELDNAME);
 		assertNotNull(field);
 		assertNull(field.getFields());
 	}
@@ -69,17 +69,17 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 		NodeResponse response = updateNode(FIELDNAME, field);
 
-		MicronodeResponse fieldResponse = response.getField(FIELDNAME);
+		MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
 		String uuid = fieldResponse.getUuid();
-		assertEquals("Check micronode firstName", "Max", fieldResponse.getField("firstName", StringField.class).getString());
+		assertEquals("Check micronode firstName", "Max", fieldResponse.getFields().getStringField("firstName").getString());
 
 		field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("vcard"));
 		field.getFields().put("firstName", new StringFieldImpl().setString("Moritz"));
 		response = updateNode(FIELDNAME, field);
 
-		fieldResponse = response.getField(FIELDNAME);
-		assertEquals("Check micronode firstName", "Moritz", fieldResponse.getField("firstName", StringField.class).getString());
+		fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
+		assertEquals("Check micronode firstName", "Moritz", fieldResponse.getFields().getStringField("firstName").getString());
 		assertEquals("Check micronode uuid after update", uuid, fieldResponse.getUuid());
 	}
 
@@ -94,7 +94,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		field.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode(FIELDNAME, field);
 
-		MicronodeResponse createdField = response.getField(FIELDNAME);
+		MicronodeResponse createdField = response.getFields().getMicronodeField(FIELDNAME);
 		assertNotNull("Created field does not exist", createdField);
 		assertNotNull("Micronode has no uuid set", createdField.getUuid());
 
@@ -102,7 +102,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		assertEquals("Check microschema uuid", microschemaContainers().get("vcard").getUuid(), createdField.getMicroschema().getUuid());
 
 		// check micronode fields
-		StringField createdFirstnameField = createdField.getField("firstName");
+		StringField createdFirstnameField = createdField.getFields().getStringField("firstName");
 		assertNotNull("Micronode did not contain firstName field", createdFirstnameField);
 		assertEquals("Check micronode firstName", "Max", createdFirstnameField.getString());
 	}
@@ -140,9 +140,9 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 
 		NodeResponse response = readNode(node);
 
-		MicronodeResponse deserializedMicronodeField = response.getField(FIELDNAME, MicronodeResponse.class);
+		MicronodeResponse deserializedMicronodeField = response.getFields().getMicronodeField(FIELDNAME);
 		assertNotNull("Micronode field must not be null", deserializedMicronodeField);
-		StringField firstNameField = deserializedMicronodeField.getField("firstName");
+		StringField firstNameField = deserializedMicronodeField.getFields().getStringField("firstName");
 		assertNotNull("Micronode must contain firstName field", firstNameField);
 		assertEquals("Check firstName value", "Max", firstNameField.getString());
 	}
@@ -178,7 +178,6 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 		fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 		microschemaContainers().put("full", boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser()));
-		resetClientSchemaStorage();
 
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
@@ -204,6 +203,6 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
 
 		NodeResponse response = updateNode("full", field);
-		assertThat(response.getField("full", MicronodeResponse.class)).matches(field);
+		assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
 	}
 }

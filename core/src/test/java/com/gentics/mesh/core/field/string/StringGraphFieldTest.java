@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -46,10 +45,10 @@ public class StringGraphFieldTest extends AbstractBasicDBTest {
 		String json = getJson(node);
 		assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("someString") > 1);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.StringField deserializedNodeField = response.getField("stringField", StringFieldImpl.class);
+		com.gentics.mesh.core.rest.node.field.StringField deserializedNodeField = response.getFields().getStringField("stringField");
 		assertNotNull(deserializedNodeField);
 		assertEquals("someString", deserializedNodeField.getString());
 	}

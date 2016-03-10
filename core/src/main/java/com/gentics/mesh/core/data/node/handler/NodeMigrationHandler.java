@@ -27,13 +27,11 @@ import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -260,7 +258,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 
 		// transform the result back to the Rest Model
-		T transformedRestModel = JsonUtil.readNode(nodeJson, clazz, ServerSchemaStorage.getInstance());
+		T transformedRestModel = JsonUtil.readValue(nodeJson, clazz);
 
 		container.updateFieldsFromRest(ac, transformedRestModel.getFields(), newSchema);
 
@@ -268,7 +266,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// sha512sums of the supposedly stored binary contents
 		// of all binary fields
 		Map<String, String> existingBinaryFields = newSchema.getFields().stream().filter(f -> "binary".equals(f.getType()))
-				.map(f -> Tuple.tuple(f.getName(), (BinaryField) transformedRestModel.getFields().get(f.getName()))).filter(t -> t.v2() != null)
+				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName()))).filter(t -> t.v2() != null)
 				.collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
 
 		// check for every binary field in the migrated node,

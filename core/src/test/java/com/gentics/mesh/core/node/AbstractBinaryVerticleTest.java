@@ -60,15 +60,12 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		ServerSchemaStorage.getInstance().clear();
-		getClient().getClientSchemaStorage().removeSchema(node.getSchemaContainer().getName());
-		getClient().getClientSchemaStorage().addSchema(schema);
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
 	protected Future<GenericMessageResponse> updateBinaryField(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
 			String fileName) throws IOException {
 
-		resetClientSchemaStorage();
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 

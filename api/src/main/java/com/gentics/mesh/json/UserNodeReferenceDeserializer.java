@@ -33,7 +33,7 @@ public class UserNodeReferenceDeserializer extends JsonDeserializer<NodeReferenc
 		JsonNode node = oc.readTree(jsonParser);
 		// Try to deserialize the field in the expanded version
 		try {
-			NodeResponse expandedField = JsonUtil.readNode(node.toString(), NodeResponse.class, schemaStorage);
+			NodeResponse expandedField = JsonUtil.readValue(node.toString(), NodeResponse.class);
 			return expandedField;
 		} catch (MeshJsonException e) {
 			if (log.isTraceEnabled()) {

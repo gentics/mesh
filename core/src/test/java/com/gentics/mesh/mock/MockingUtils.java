@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.ivy.plugins.version.LatestVersionMatcher;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.Group;

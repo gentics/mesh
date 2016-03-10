@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,6 +37,7 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -610,7 +610,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(randomUUID()));
 		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(randomUUID()));
 
-		Map<String, Field> fields = nodeResponse.getFields();
+		FieldMap fields = nodeResponse.getFields();
 		fields.put("name-stringField", createStringField("Name for language tag de-DE"));
 		fields.put("filename-stringField", createStringField("dummy-content.de.html"));
 		fields.put("teaser-stringField", createStringField("Dummy teaser for de-DE"));
@@ -665,7 +665,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setEditor(getUserReference());
 
-		Map<String, Field> fields = nodeResponse.getFields();
+		FieldMap fields = nodeResponse.getFields();
 		fields.put("name", createStringField("Name for language tag en"));
 		fields.put("filename", createStringField("dummy-content.en.html"));
 		fields.put("teaser", createStringField("Dummy teaser for en"));
@@ -682,7 +682,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		contentCreate.setPublished(true);
 		contentCreate.setSchema(getSchemaReference("content"));
 
-		Map<String, Field> fields = contentCreate.getFields();
+		FieldMap fields = contentCreate.getFields();
 		fields.put("name", createStringField("English name"));
 		fields.put("filename", createStringField("index.en.html"));
 		fields.put("content", createStringField("English content"));
@@ -713,7 +713,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeUpdate.setPublished(true);
 		nodeUpdate.setSchema(getSchemaReference("content"));
 
-		Map<String, Field> fields = nodeUpdate.getFields();
+		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField(100.1));

@@ -707,8 +707,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 		assertNotNull(node);
@@ -778,8 +776,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
-
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 		Node node = folder("products");
 		node.getGraphFieldContainer(english()).delete();
 		String uuid = node.getUuid();
@@ -794,7 +790,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertMeshNode(folder("products"), restNode);
 
 		// Ensure "de" version was returned
-		StringField field = restNode.getField("name");
+		StringField field = restNode.getFields().getStringField("name");
 		String nameText = field.getString();
 		assertEquals("Produkte", nameText);
 
@@ -802,8 +798,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 		Node node = folder("products");
 		String uuid = node.getUuid();
 
@@ -815,7 +809,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		NodeResponse restNode = future.result();
 		test.assertMeshNode(folder("products"), restNode);
 
-		StringField field = restNode.getField("name");
+		StringField field = restNode.getFields().getStringField("name");
 		String nameText = field.getString();
 		assertEquals("Produkte", nameText);
 	}
@@ -823,7 +817,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 		// Create node with nl language
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
 		Node parentNode = folder("products");
 		Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 		SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
@@ -921,7 +914,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		NodeResponse restNode = future.result();
 		assertEquals("en", restNode.getLanguage());
-		StringField field = restNode.getField("name");
+		StringField field = restNode.getFields().getStringField("name");
 		assertEquals(newName, field.getString());
 		assertNotNull(restNode);
 		assertTrue(restNode.isPublished());

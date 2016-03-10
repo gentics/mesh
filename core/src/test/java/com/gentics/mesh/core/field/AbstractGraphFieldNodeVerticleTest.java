@@ -82,7 +82,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
-		assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		assertNotNull("The field was not included in the response.", future.result().getFields().hasField(fieldKey));
 		return future.result();
 	}
 

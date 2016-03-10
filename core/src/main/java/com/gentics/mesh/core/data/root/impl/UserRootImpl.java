@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -129,7 +128,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
-			UserCreateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), UserCreateRequest.class, ServerSchemaStorage.getInstance());
+			UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
 			if (requestModel == null) {
 				throw error(BAD_REQUEST, "error_parse_request_json_error");
 			}

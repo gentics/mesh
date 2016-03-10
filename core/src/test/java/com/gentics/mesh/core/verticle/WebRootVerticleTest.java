@@ -112,7 +112,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		WebRootResponse restNode = future.result();
-		HtmlFieldImpl contentField = restNode.getNodeResponse().getField("content", HtmlFieldImpl.class);
+		HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
 		assertNotNull(contentField);
 		assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>", contentField.getHTML());
 		test.assertMeshNode(content, restNode.getNodeResponse());

@@ -10,7 +10,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -22,10 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -122,7 +117,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		trx = db.noTrx();
 		client.setLogin(user().getUsername(), getUserInfo().getPassword());
 		client.login();
-		resetClientSchemaStorage();
 	}
 
 	public HttpClient createHttpClient() {
@@ -144,20 +138,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		}
 		resetDatabase();
 
-	}
-
-	protected void resetClientSchemaStorage() throws IOException {
-		getClient().getClientSchemaStorage().clear();
-		for (SchemaContainer container : schemaContainers().values()) {
-			for (SchemaContainerVersion version : container.findAll()) {
-				getClient().getClientSchemaStorage().addSchema(version.getSchema());
-			}
-		}
-		for (MicroschemaContainer container : microschemaContainers().values()) {
-			for (MicroschemaContainerVersion version : container.findAll()) {
-				getClient().getClientSchemaStorage().addMicroschema(version.getSchema());
-			}
-		}
 	}
 
 	public abstract List<AbstractSpringVerticle> getAdditionalVertices();
@@ -348,7 +328,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
 		if (fieldKey != null) {
-			assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+			assertNotNull("The field was not included in the response.", future.result().getFields().hasField(fieldKey));
 		}
 		return future.result();
 	}

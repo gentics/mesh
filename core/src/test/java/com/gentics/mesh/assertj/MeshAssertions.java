@@ -2,6 +2,7 @@ package com.gentics.mesh.assertj;
 
 import org.assertj.core.api.Assertions;
 
+import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -129,5 +131,9 @@ public class MeshAssertions extends Assertions {
 
 	public static NodeGraphFieldContainerAssert assertThat(NodeGraphFieldContainer actual) {
 		return new NodeGraphFieldContainerAssert(actual);
+	}
+
+	public static FieldMapAssert assertThat(FieldMap actual) {
+		return new FieldMapAssert(actual);
 	}
 }

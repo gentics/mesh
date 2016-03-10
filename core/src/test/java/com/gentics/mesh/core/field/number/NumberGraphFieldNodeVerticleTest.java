@@ -48,7 +48,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode("numberField", (Field) null);
-		NumberFieldImpl field = response.getField("numberField");
+		NumberFieldImpl field = response.getFields().getNumberField("numberField");
 		assertNotNull(field);
 		assertNull(field.getNumber());
 	}
@@ -77,10 +77,10 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber(42));
-		NumberFieldImpl field = response.getField("numberField");
+		NumberFieldImpl field = response.getFields().getNumberField("numberField");
 		assertEquals(42, field.getNumber());
 		response = updateNode("numberField", new NumberFieldImpl().setNumber(43));
-		field = response.getField("numberField");
+		field = response.getFields().getNumberField("numberField");
 		assertEquals(43, field.getNumber());
 	}
 
@@ -88,7 +88,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Override
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNode("numberField", new NumberFieldImpl().setNumber(1.21));
-		NumberFieldImpl numberField = response.getField("numberField");
+		NumberFieldImpl numberField = response.getFields().getNumberField("numberField");
 		assertEquals(1.21, numberField.getNumber());
 	}
 
@@ -103,7 +103,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 
 		NodeResponse response = readNode(node);
 
-		NumberFieldImpl deserializedNumberField = response.getField("numberField", NumberFieldImpl.class);
+		NumberFieldImpl deserializedNumberField = response.getFields().getNumberField("numberField");
 		assertNotNull(deserializedNumberField);
 		assertEquals(100.9, deserializedNumberField.getNumber());
 	}

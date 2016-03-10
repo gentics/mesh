@@ -156,7 +156,6 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 
 		prepareSchema(node, "*/*", "image");
-		resetClientSchemaStorage();
 
 		// upload non-image data
 		Future<GenericMessageResponse> uploadFuture = getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en",
@@ -177,7 +176,6 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 
 		prepareSchema(node, "image/.*", "image");
-		resetClientSchemaStorage();
 
 		// 2. Transform the image
 		ImageManipulationParameter params = new ImageManipulationParameter();
@@ -217,7 +215,6 @@ public class NodeImageResizeVerticleTest extends AbstractBinaryVerticleTest {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		prepareSchema(node, "image/.*", fieldName);
-		resetClientSchemaStorage();
 
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);

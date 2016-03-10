@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -46,10 +45,10 @@ public class DateGraphFieldTest extends AbstractBasicDBTest {
 		String json = getJson(node);
 		assertTrue("The json should contain the date but it did not.{" + json + "}", json.indexOf("1337") > 1);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getField("dateField", DateFieldImpl.class);
+		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getFields().getDateField("dateField");
 		assertNotNull(deserializedNodeField);
 		assertEquals(1337L, deserializedNodeField.getDate().longValue());
 	}

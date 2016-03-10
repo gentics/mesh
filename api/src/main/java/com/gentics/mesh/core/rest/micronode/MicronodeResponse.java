@@ -5,7 +5,6 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
@@ -30,7 +29,7 @@ public class MicronodeResponse extends AbstractResponse implements MicronodeFiel
 	/**
 	 * Set the microschema reference to the micronode
 	 * 
-	 * @param microschema microschem reference
+	 * @param microschema microschema reference
 	 */
 	public void setMicroschema(MicroschemaReference microschema) {
 		this.microschema = microschema;
@@ -41,33 +40,32 @@ public class MicronodeResponse extends AbstractResponse implements MicronodeFiel
 		return fields;
 	}
 
-	/**
-	 * Return the field with the given key.
-	 * 
-	 * @param key
-	 *            Key of the field to be returned
-	 * @param classOfT
-	 *            Class of the field
-	 * @return Field or null of no field could be found for the given key
-	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Field> T getField(String key, Class<T> classOfT) {
-		return (T) getFields().get(key);
-	}
+//	/**
+//	 * Return the field with the given key.
+//	 * 
+//	 * @param key
+//	 *            Key of the field to be returned
+//	 * @param classOfT
+//	 *            Class of the field
+//	 * @return Field or null of no field could be found for the given key
+//	 */
+//	public <T extends Field> T getField(String key, Class<T> classOfT) {
+//		return getFields().get(key, classOfT);
+//	}
 
-	/**
-	 * Return the field with the given key.
-	 * 
-	 * @param key
-	 *            Name of the field
-	 * @return Found field or null when no field could be found
-	 * @param <T>
-	 *            Class of the field
-	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Field> T getField(String key) {
-		return (T) getFields().get(key);
-	}
+//	/**
+//	 * Return the field with the given key.
+//	 * 
+//	 * @param key
+//	 *            Name of the field
+//	 * @return Found field or null when no field could be found
+//	 * @param <T>
+//	 *            Class of the field
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public <T extends Field> T getField(String key) {
+//		return (T) getFields().get(key);
+//	}
 
 	@Override
 	public String getType() {

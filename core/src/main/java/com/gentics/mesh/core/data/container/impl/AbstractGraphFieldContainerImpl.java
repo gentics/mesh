@@ -10,7 +10,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -61,6 +60,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -841,7 +841,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema) {
 		//TODO: This should return an observable
 		// Initially all fields are not yet handled
 		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
@@ -850,7 +850,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
-			Field restField = restFields.get(key);
+			Field restField = restFields.getField(key, entry);
 			unhandledFieldKeys.remove(key);
 			updateField(ac, key, restField, entry, schema);
 		}

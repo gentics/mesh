@@ -40,8 +40,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenDepthZero() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
-
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
 		assertNotNull(node);
@@ -60,8 +58,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadNodeWithNoChildren() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
-
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 		assertNotNull(node);
@@ -119,9 +115,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenDepthOne() {
-
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
-
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
 		assertNotNull(node);
@@ -142,8 +135,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwo() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
-
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
 		assertNotNull(node);
@@ -162,8 +153,6 @@ public class NodeNavigationVerticleTest extends AbstractRestVerticleTest {
 	 */
 	@Test
 	public void testReadChildrenHighDepth() {
-		getClient().getClientSchemaStorage().addSchema(schemaContainer("folder").getLatestVersion().getSchema());
-
 		Node node = project().getBaseNode();
 		String uuid = node.getUuid();
 		assertNotNull(node);

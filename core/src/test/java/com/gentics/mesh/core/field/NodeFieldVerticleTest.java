@@ -64,7 +64,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
-		assertNotNull("The field was not included in the response.", future.result().getField("htmlField"));
+		assertNotNull("The field was not included in the response.", future.result().getFields().getHtmlField("htmlField"));
 
 		// 3. Update node
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();

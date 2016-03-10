@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -21,14 +20,10 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
-import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -36,9 +31,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.AbstractEmptyDBTest;
 
 public class GraphListFieldTest extends AbstractEmptyDBTest {
-
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
 
 	@Test
 	public void testNodeListTransformation() throws Exception {
@@ -112,24 +104,25 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 
 		String json = getJson(node);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		assertList(2, "stringList", StringFieldListImpl.class, response);
-		assertList(2, "htmlList", StringFieldListImpl.class, response);
-		assertList(2, "dateList", DateFieldListImpl.class, response);
-		assertList(2, "numberList", NumberFieldListImpl.class, response);
-		assertList(2, "nodeList", NodeFieldListImpl.class, response);
-		assertList(2, "booleanList", BooleanFieldListImpl.class, response);
+		assertList(2, "stringList", "string", response);
+		assertList(2, "htmlList", "html", response);
+		assertList(2, "dateList", "date", response);
+		assertList(2, "numberList", "number", response);
+		assertList(2, "nodeList", "node", response);
+		assertList(2, "booleanList", "boolean", response);
 		//TODO Add micronode assertion
-//		assertList(2, "micronodeList", MicronodeFieldListImpl.class, response);
+		//		assertList(2, "micronodeList", MicronodeFieldListImpl.class, response);
 
 	}
 
-	private <T extends AbstractFieldList<?>> void assertList(int expectedItems, String fieldKey, Class<T> classOfT, NodeResponse response) {
-		T deserializedList = response.getField(fieldKey, classOfT);
+	private void assertList(int expectedItems, String fieldKey, String listType, NodeResponse response) {
+		Field deserializedList = response.getFields().getField(fieldKey, FieldTypes.LIST, listType, false);
 		assertNotNull(deserializedList);
-		assertEquals(expectedItems, deserializedList.getItems().size());
+		FieldList<?> listField = (FieldList<?>) deserializedList;
+		assertEquals("The list of type {" + listType + "} did not contain the expected amount of items.", expectedItems, listField.getItems().size());
 	}
 
 	@Test

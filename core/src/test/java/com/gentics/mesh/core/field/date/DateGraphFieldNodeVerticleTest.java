@@ -36,7 +36,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode("dateField", (Field) null);
-		DateFieldImpl field = response.getField("dateField");
+		DateFieldImpl field = response.getFields().getDateField("dateField");
 		assertNotNull(field);
 		assertNull(field.getDate());
 	}
@@ -46,11 +46,11 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testUpdateNodeFieldWithField() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeResponse response = updateNode("dateField", new DateFieldImpl().setDate(nowEpoch));
-		DateFieldImpl field = response.getField("dateField");
+		DateFieldImpl field = response.getFields().getDateField("dateField");
 		assertEquals(nowEpoch, field.getDate());
 
 		response = updateNode("dateField", new DateFieldImpl().setDate(nowEpoch));
-		field = response.getField("dateField");
+		field = response.getFields().getDateField("dateField");
 		assertEquals(nowEpoch, field.getDate());
 	}
 
@@ -59,7 +59,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testCreateNodeWithField() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeResponse response = createNode("dateField", new DateFieldImpl().setDate(nowEpoch));
-		DateField field = response.getField("dateField");
+		DateField field = response.getFields().getDateField("dateField");
 		assertEquals(nowEpoch, field.getDate());
 	}
 
@@ -73,7 +73,7 @@ public class DateGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		container.createDate("dateField").setDate(nowEpoch);
 
 		NodeResponse response = readNode(node);
-		DateField deserializedDateField = response.getField("dateField");
+		DateField deserializedDateField = response.getFields().getDateField("dateField");
 		assertNotNull(deserializedDateField);
 		assertEquals(nowEpoch, deserializedDateField.getDate());
 	}
