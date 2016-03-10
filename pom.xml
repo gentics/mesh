@@ -87,10 +87,8 @@
 		<module>rest-client</module>
 		<module>databases</module>
 		<module>services</module>
-		<!-- <module>git</module> -->
 		<module>core</module>
 		<module>verticles</module>
-		<!-- <module>importers</module> -->
 		<module>server</module>
 		<module>demo</module>
 		<module>doc</module>
