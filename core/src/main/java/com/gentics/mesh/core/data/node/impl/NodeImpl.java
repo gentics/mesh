@@ -410,7 +410,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Tags
-			for (Tag tag : getTags(ac.getPagingParameter())) {
+			for (Tag tag : getTags()) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
 				String tagFamilyUuid = tagFamily.getUuid();
