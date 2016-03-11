@@ -190,6 +190,9 @@ public class FieldMapJsonImpl implements FieldMap {
 					NodeResponse expandedField = JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
 					return (T) expandedField;
 				} else {
+					if (jsonNode.isNull()) {
+						return (T) new NodeResponse();
+					}
 					NodeFieldImpl collapsedField = mapper.treeToValue(jsonNode, NodeFieldImpl.class);
 					NodeResponse restNode = new NodeResponse();
 					restNode.setUuid(collapsedField.getUuid());
