@@ -802,8 +802,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			}
 
 			if (microschemaContainer == null) {
-				//TODO i18n
-				throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}. Could not find microschema by either name or uuid.");
+				throw error(BAD_REQUEST, "microschema_reference_invalid", key);
 			}
 
 			//TODO versioning: Use released schema version instead of latest

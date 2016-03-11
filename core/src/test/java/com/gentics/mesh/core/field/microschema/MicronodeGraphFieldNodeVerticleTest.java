@@ -114,7 +114,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		microschema.setName("notexisting");
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-		createNodeAndExpectFailure(FIELDNAME, field, BAD_REQUEST, "error_parse_request_json_error");
+		createNodeAndExpectFailure(FIELDNAME, field, BAD_REQUEST, "microschema_reference_invalid", "micronodeField");
 	}
 
 	@Test

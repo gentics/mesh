@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -47,67 +48,52 @@ public class FieldMapImpl extends HashMap<String, Field> implements FieldMap {
 
 	@Override
 	public <T extends Field> T get(String key, Class<T> classOfT) {
-		return null;
-	}
-
-	@Override
-	public boolean containsKey(String key) {
-		// TODO Auto-generated method stub
-		return false;
+		return (T) get(key);
 	}
 
 	@Override
 	public HtmlFieldListImpl getHtmlFieldList(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (HtmlFieldListImpl) get(key);
 	}
 
 	@Override
 	public HtmlFieldImpl getHtmlField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (HtmlFieldImpl) get(key);
 	}
 
 	@Override
 	public BinaryField getBinaryField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (BinaryFieldImpl) get(key);
 	}
 
 	@Override
 	public BooleanFieldImpl getBooleanField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (BooleanFieldImpl) get(key);
 	}
 
 	@Override
 	public DateFieldImpl getDateField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (DateFieldImpl) get(key);
 	}
 
 	@Override
 	public MicronodeResponse getMicronodeField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (MicronodeResponse) get(key);
 	}
 
 	@Override
 	public NumberFieldImpl getNumberField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (NumberFieldImpl) get(key);
 	}
 
 	@Override
 	public NodeField getNodeField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (NodeField) get(key);
 	}
 
 	@Override
 	public NodeFieldListImpl getNodeListField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (NodeFieldListImpl) get(key);
 	}
 
 	@Override
@@ -137,8 +123,7 @@ public class FieldMapImpl extends HashMap<String, Field> implements FieldMap {
 
 	@Override
 	public StringFieldListImpl getStringFieldList(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (StringFieldListImpl) get(key);
 	}
 
 	@Override
@@ -164,6 +149,11 @@ public class FieldMapImpl extends HashMap<String, Field> implements FieldMap {
 	@Override
 	public <T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand) {
 		return (T) get(key);
+	}
+
+	@Override
+	public boolean containsKey(String key) {
+		return super.containsKey(key);
 	}
 
 }

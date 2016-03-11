@@ -61,7 +61,7 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 				break;
 			case "list":
 
-				Field field = actual.getFields().get(key, FieldList.class);
+				Field field = actual.getFields().getField(key, fieldSchema);
 				if (field instanceof NodeFieldList) {
 					// compare list of nodes by comparing their uuids
 					assertThat(((NodeFieldList) field).getItems()).usingElementComparator((a, b) -> {
