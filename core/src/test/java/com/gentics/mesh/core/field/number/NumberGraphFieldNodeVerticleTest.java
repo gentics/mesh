@@ -37,8 +37,8 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 		numberFieldSchema.setName("numberField");
-//		numberFieldSchema.setMin(10);
-//		numberFieldSchema.setMax(1000);
+		// numberFieldSchema.setMin(10);
+		// numberFieldSchema.setMax(1000);
 		numberFieldSchema.setRequired(true);
 		schema.addField(numberFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
@@ -63,14 +63,11 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
 		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
-		if (fieldKey != null) {
-			nodeCreateRequest.getFields().put(fieldKey, field);
-		}
+		nodeCreateRequest.getFields().put(fieldKey, field);
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest,
-				new NodeRequestParameter().setLanguages("en"));
+		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_parse_request_json_error");
+		expectException(future, BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
 	}
 
 	@Test

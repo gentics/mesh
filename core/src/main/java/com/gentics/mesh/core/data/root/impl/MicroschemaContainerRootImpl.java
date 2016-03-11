@@ -24,7 +24,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.json.MeshJsonException;
 
 import rx.Observable;
 
@@ -55,7 +54,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(Microschema microschema, User user) throws MeshJsonException {
+	public MicroschemaContainer create(Microschema microschema, User user) {
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);

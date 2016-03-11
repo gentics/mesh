@@ -32,6 +32,6 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * @return
 	 * @throws MeshJsonException 
 	 */
-	MicroschemaContainer create(Microschema microschema, User user) throws MeshJsonException;
+	MicroschemaContainer create(Microschema microschema, User user);
 
 }

@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.node;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,7 +49,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.json.MeshJsonException;
 import com.google.common.collect.Lists;
 
 import io.vertx.core.logging.Logger;
@@ -81,7 +84,7 @@ public class FieldMapJsonImpl implements FieldMap {
 					htmlField.setHTML(jsonNode.textValue());
 				}
 				if (!jsonNode.isNull() && !jsonNode.isTextual()) {
-					throw new MeshJsonException("The field value for {" + key + "} is not a text value. The value was {" + jsonNode.asText() + "}");
+					throw error(BAD_REQUEST, "field_html_error_invalid_type", key, jsonNode.asText());
 				}
 				return (T) htmlField;
 			case STRING:
@@ -90,7 +93,7 @@ public class FieldMapJsonImpl implements FieldMap {
 					stringField.setString(jsonNode.textValue());
 				}
 				if (!jsonNode.isNull() && !jsonNode.isTextual()) {
-					throw new MeshJsonException("The field value for {" + key + "} is not a text value. The value was {" + jsonNode.asText() + "}");
+					throw error(BAD_REQUEST, "The field value for {" + key + "} is not a text value. The value was {" + jsonNode.asText() + "}");
 				}
 				return (T) stringField;
 			case BINARY:
@@ -103,7 +106,7 @@ public class FieldMapJsonImpl implements FieldMap {
 					numberField.setNumber(number);
 				}
 				if (!jsonNode.isNull() && !jsonNode.isNumber()) {
-					throw new MeshJsonException("The field value for {" + key + "} is not a number value. The value was {" + jsonNode.asText() + "}");
+					throw error(BAD_REQUEST, "field_number_error_invalid_type", key, jsonNode.asText());
 				}
 				return (T) numberField;
 			case BOOLEAN:
@@ -112,8 +115,7 @@ public class FieldMapJsonImpl implements FieldMap {
 					booleanField.setValue(jsonNode.booleanValue());
 				}
 				if (!jsonNode.isNull() && !jsonNode.isBoolean()) {
-					throw new MeshJsonException(
-							"The field value for {" + key + "} is not a boolean value. The value was {" + jsonNode.asText() + "}");
+					throw error(BAD_REQUEST, "The field value for {" + key + "} is not a boolean value. The value was {" + jsonNode.asText() + "}");
 				}
 				return (T) booleanField;
 			case DATE:
@@ -122,7 +124,7 @@ public class FieldMapJsonImpl implements FieldMap {
 					dateField.setDate(jsonNode.numberValue().longValue());
 				}
 				if (!jsonNode.isNull() && !jsonNode.isNumber()) {
-					throw new MeshJsonException("The field value for {" + key + "} is not a number value. The value was {" + jsonNode.asText() + "}");
+					throw error(BAD_REQUEST, "The field value for {" + key + "} is not a number value. The value was {" + jsonNode.asText() + "}");
 				}
 				return (T) dateField;
 			case LIST:
@@ -158,7 +160,7 @@ public class FieldMapJsonImpl implements FieldMap {
 						try {
 							micronodeFieldList.getItems().add(JsonUtil.readValue(node.toString(), MicronodeResponse.class));
 						} catch (IOException e) {
-							throw new MeshJsonException("", e);
+							throw error(BAD_REQUEST, "Could not read list item", e);
 						}
 					}
 					return (T) micronodeFieldList;
@@ -179,7 +181,8 @@ public class FieldMapJsonImpl implements FieldMap {
 					Boolean[] itemsBooleanArray = mapper.treeToValue(jsonNode, Boolean[].class);
 					return (T) getBasicList(key, Boolean[].class, new BooleanFieldListImpl(), Boolean.class, itemsBooleanArray);
 				default:
-					throw new MeshJsonException("Unknown list type {" + listType + "}");
+					// TODO i18n
+					throw error(BAD_REQUEST, "Unknown list type {" + listType + "}");
 				}
 				// } else {
 				// //TODO handle unexpected error
@@ -208,10 +211,12 @@ public class FieldMapJsonImpl implements FieldMap {
 						return (T) field;
 					}
 				} catch (IOException e) {
-					throw new MeshJsonException("Could not read node field for key {" + key + "}", e);
+					// TODO i18n
+					throw error(INTERNAL_SERVER_ERROR, "Could not read node field for key {" + key + "}", e);
 				}
 			default:
-				throw new MeshJsonException("Unknown field type {" + type + "}");
+				// TODO i18n
+				throw error(INTERNAL_SERVER_ERROR, "Unknown field type {" + type + "}");
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
