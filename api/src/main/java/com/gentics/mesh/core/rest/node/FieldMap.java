@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;

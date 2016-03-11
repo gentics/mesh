@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -60,9 +62,6 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		super.setup();
 		dummyMicroschema = createDummyMicroschema();
 	}
-
-	//	@Autowired
-	//	private ServerSchemaStorage schemaStorage;
 
 	@Test
 	public void testMicronodeFieldTransformation() throws Exception {
@@ -198,12 +197,17 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 		Micronode micronode = field.getMicronode();
 
+		Microschema schema = micronode.getMicroschemaContainerVersion().getSchema();
+		schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
+		micronode.getMicroschemaContainerVersion().setSchema(schema);
 		InternalActionContext ac = getMockedInternalActionContext("");
+		ServerSchemaStorage.getInstance().clear();
 
 		FieldMap restFields = new FieldMapImpl();
 		restFields.put("stringfield", new StringFieldImpl().setString("test"));
-		field.getMicronode().updateFieldsFromRest(ac, restFields, micronode.getMicroschema());
+		field.getMicronode().updateFieldsFromRest(ac, restFields, schema);
 
+		field.getMicronode().reload();
 		assertNotNull("The field should have been created.", field.getMicronode().getString("stringfield"));
 		assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
 	}

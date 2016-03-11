@@ -32,6 +32,7 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 * 
 	 * @return microschema
 	 */
+	@Deprecated
 	Microschema getMicroschema();
 
 	/**

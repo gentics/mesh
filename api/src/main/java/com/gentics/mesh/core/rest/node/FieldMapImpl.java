@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 
 /**
  * Convenience class which is used to classify a field map so that it can be referenced within the custom json deserializers.
@@ -46,7 +47,6 @@ public class FieldMapImpl extends HashMap<String, Field> implements FieldMap {
 
 	@Override
 	public <T extends Field> T get(String key, Class<T> classOfT) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -112,32 +112,27 @@ public class FieldMapImpl extends HashMap<String, Field> implements FieldMap {
 
 	@Override
 	public boolean hasField(String key) {
-		// TODO Auto-generated method stub
-		return false;
+		return containsKey(key);
 	}
 
 	@Override
 	public NumberFieldListImpl getNumberFieldList(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (NumberFieldListImpl) get(key);
 	}
 
 	@Override
 	public BooleanFieldListImpl getBooleanListField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (BooleanFieldListImpl) get(key);
 	}
 
 	@Override
 	public StringFieldImpl getStringField(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (StringFieldImpl) get(key);
 	}
 
 	@Override
 	public NodeResponse getNodeFieldExpanded(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (NodeResponse) get(key);
 	}
 
 	@Override
@@ -148,26 +143,27 @@ public class FieldMapImpl extends HashMap<String, Field> implements FieldMap {
 
 	@Override
 	public FieldList<MicronodeField> getMicronodeFieldList(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (FieldList<MicronodeField>) get(key);
 	}
 
 	@Override
-	public NodeFieldList getNodeFieldList(String string) {
-		// TODO Auto-generated method stub
-		return null;
+	public NodeFieldList getNodeFieldList(String key) {
+		return (NodeFieldList) get(key);
 	}
 
 	@Override
 	public Field getField(String key, FieldSchema fieldSchema) {
-		// TODO Auto-generated method stub
-		return null;
+		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+		String listType = null;
+		if (fieldSchema instanceof ListFieldSchema) {
+			listType = ((ListFieldSchema) fieldSchema).getListType();
+		}
+		return getField(key, type, listType, false);
 	}
 
 	@Override
 	public <T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand) {
-		// TODO Auto-generated method stub
-		return null;
+		return (T) get(key);
 	}
 
 }
