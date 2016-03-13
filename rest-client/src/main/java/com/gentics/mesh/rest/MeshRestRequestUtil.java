@@ -3,7 +3,6 @@ package com.gentics.mesh.rest;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.Future;
@@ -42,9 +41,9 @@ public final class MeshRestRequestUtil {
 	 * @return
 	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
-			HttpClient client, MeshRestClientAuthenticationProvider authentication, SchemaStorage schemaStorage) {
+			HttpClient client, MeshRestClientAuthenticationProvider authentication) {
 		String uri = BASEURI + path;
-		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, method, uri, schemaStorage);
+		MeshResponseHandler<T> handler = new MeshResponseHandler<>(classOfT, method, uri);
 
 		HttpClientRequest request = client.request(method, uri, handler);
 		// Let the response handler fail when an error ocures
@@ -104,14 +103,14 @@ public final class MeshRestRequestUtil {
 	 * @return
 	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, HttpClient client,
-			MeshRestClientAuthenticationProvider authentication, SchemaStorage schemaStorage) {
+			MeshRestClientAuthenticationProvider authentication) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}
 		buffer.appendString(json);
-		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication, schemaStorage);
+		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication);
 	}
 
 	/**
@@ -134,18 +133,18 @@ public final class MeshRestRequestUtil {
 	 * @return
 	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, HttpClient client,
-			MeshRestClientAuthenticationProvider authentication, SchemaStorage schemaStorage) {
+			MeshRestClientAuthenticationProvider authentication) {
 
 		Buffer buffer = Buffer.buffer();
 		if (!StringUtils.isEmpty(jsonBodyData)) {
 			buffer.appendString(jsonBodyData);
 		}
 
-		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication, schemaStorage);
+		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication);
 	}
 
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
-			MeshRestClientAuthenticationProvider authentication, SchemaStorage schemaStorage) {
-		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication, schemaStorage);
+			MeshRestClientAuthenticationProvider authentication) {
+		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication);
 	}
 }

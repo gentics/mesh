@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.microschema;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +25,6 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
@@ -39,14 +38,14 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName(FIELDNAME);
 		listFieldSchema.setLabel("Some label");
 		listFieldSchema.setListType("micronode");
 		listFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(listFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 	}
 
@@ -65,17 +64,17 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		field.add(createItem("Moritz", "Böse"));
 
 		NodeResponse response = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> responseField = response.getField(FIELDNAME);
+		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELDNAME);
 		List<String> uuids = new ArrayList<>();
 		for (MicronodeField item : responseField.getItems()) {
 			uuids.add(item.getUuid());
 		}
 
-		responseField.getItems().get(0).getField("firstName", StringField.class).setString("Strammer Max");
-		responseField.getItems().get(1).getField("firstName", StringField.class).setString("Strammer Moritz");
+		responseField.getItems().get(0).getFields().getStringField("firstName").setString("Strammer Max");
+		responseField.getItems().get(1).getFields().getStringField("firstName").setString("Strammer Moritz");
 
 		NodeResponse updateResponse = updateNode(FIELDNAME, responseField);
-		FieldList<MicronodeField> updatedField = updateResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
 
 		assertFieldEquals(responseField, updatedField);
 		assertMicronodes(updatedField);
@@ -92,19 +91,19 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELDNAME, field);
 
-		FieldList<MicronodeField> initialField = initialResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
 		FieldList<MicronodeField> reorderedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> reorderedField.add(item));
 
 		Collections.sort(reorderedField.getItems(), new Comparator<MicronodeField>() {
 			@Override
 			public int compare(MicronodeField o1, MicronodeField o2) {
-				return o1.getField("firstName", StringField.class).getString().compareTo(o2.getField("firstName", StringField.class).getString());
+				return o1.getFields().getStringField("firstName").getString().compareTo(o2.getFields().getStringField("firstName").getString());
 			}
 		});
 
 		NodeResponse updateResponse = updateNode(FIELDNAME, reorderedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
 
 		assertFieldEquals(reorderedField, updatedField);
 		assertMicronodes(updatedField);
@@ -120,14 +119,14 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 		changedField.getItems().add(1, createItem("Four", "Four"));
 
 		NodeResponse updateResponse = updateNode(FIELDNAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
 		assertFieldEquals(changedField, updatedField);
 		assertMicronodes(updatedField);
 	}
@@ -142,14 +141,14 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 		changedField.getItems().remove(1);
 
 		NodeResponse updateResponse = updateNode(FIELDNAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
 		assertFieldEquals(changedField, updatedField);
 		assertMicronodes(updatedField);
 	}
@@ -169,7 +168,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELDNAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELDNAME);
 
 		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
@@ -178,12 +177,12 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		Collections.sort(changedField.getItems(), new Comparator<MicronodeField>() {
 			@Override
 			public int compare(MicronodeField o1, MicronodeField o2) {
-				return o1.getField("firstName", StringField.class).getString().compareTo(o2.getField("firstName", StringField.class).getString());
+				return o1.getFields().getStringField("firstName").getString().compareTo(o2.getFields().getStringField("firstName").getString());
 			}
 		});
 
 		NodeResponse updateResponse = updateNode(FIELDNAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getField(FIELDNAME);
+		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELDNAME);
 		assertFieldEquals(changedField, updatedField);
 		assertMicronodes(updatedField);
 	}
@@ -197,7 +196,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		assertThat(field.getItems()).hasSize(2);
 		NodeResponse response = createNode(FIELDNAME, field);
 
-		FieldList<MicronodeField> responseField = response.getField(FIELDNAME);
+		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELDNAME);
 		assertNotNull(responseField);
 		assertFieldEquals(field, responseField);
 		assertMicronodes(responseField);
@@ -207,7 +206,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(FIELDNAME, (Field) null);
-		FieldList<MicronodeField> field = response.getField(FIELDNAME);
+		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELDNAME);
 		assertNotNull(field);
 		assertTrue("List field must be empty", field.getItems().isEmpty());
 		assertMicronodes(field);
@@ -244,8 +243,8 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 			MicronodeField expectedMicronode = expected.getItems().get(i);
 			MicronodeField micronode = field.getItems().get(i);
 			for (String fieldName : Arrays.asList("firstName", "lastName")) {
-				assertEquals("Check " + fieldName + " of item # " + (i + 1), expectedMicronode.getField(fieldName, StringField.class).getString(),
-						micronode.getField(fieldName, StringField.class).getString());
+				assertEquals("Check " + fieldName + " of item # " + (i + 1), expectedMicronode.getFields().getStringField(fieldName).getString(),
+						micronode.getFields().getStringField(fieldName).getString());
 			}
 
 			if (!StringUtils.isEmpty(expectedMicronode.getUuid())) {

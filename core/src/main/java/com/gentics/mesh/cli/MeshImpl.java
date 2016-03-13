@@ -1,5 +1,9 @@
 package com.gentics.mesh.cli;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,9 +16,10 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -41,13 +46,6 @@ public class MeshImpl implements Mesh {
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
 	}
-
-	//	public MeshImpl(MeshOptions options, Vertx vertx) {
-	//		Objects.requireNonNull(options, "Please specify a valid options object.");
-	//		Objects.requireNonNull(vertx, "Please specify a vertx instance.");
-	//		this.options = options;
-	//		this.vertx = vertx;
-	//	}
 
 	@Override
 	public Vertx getVertx() {
@@ -95,11 +93,11 @@ public class MeshImpl implements Mesh {
 	 */
 	private void checkSystemRequirements() {
 		try {
-			// The needed nashorn classfilter was added in JDK 1.8.0 40
+			// The needed nashorn classfilter was added in JRE 1.8.0 40
 			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
 		} catch (ClassNotFoundException e) {
 			log.error(
-					"The nashorn classfilter could not be found. You are most likely using an outdated JDK 8. Please update to at least JDK 1.8.0_40");
+					"The nashorn classfilter could not be found. You are most likely using an outdated JRE 8. Please update to at least JRE 1.8.0_40");
 			System.exit(10);
 		}
 	}
@@ -107,13 +105,39 @@ public class MeshImpl implements Mesh {
 	/**
 	 * Send a request to the update checker.
 	 */
-	private void invokeUpdateCheck() {
+	public void invokeUpdateCheck() {
 		log.info("Checking for updates..");
-		Mesh.vertx().createHttpClient().getNow("updates.getmesh.io", "/?v=" + Mesh.getVersion(), rh -> {
+
+		HttpClientRequest request = Mesh.vertx().createHttpClient().get("updates.getmesh.io", "/api/updatecheck?v=" + Mesh.getVersion(), rh -> {
 			rh.bodyHandler(bh -> {
-				JsonObject info = bh.toJsonObject();
+				//JsonObject info = bh.toJsonObject();
 			});
 		});
+
+		MultiMap headers = request.headers();
+		headers.set("content-type", "application/json");
+		String hostname = getHostname();
+		if (!isEmpty(hostname)) {
+			headers.set("X-Hostname", hostname);
+		}
+		request.end();
+	}
+
+	public String getHostname() {
+		try {
+			return InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			String OS = System.getProperty("os.name").toLowerCase();
+			if (OS.indexOf("win") >= 0) {
+				return System.getenv("COMPUTERNAME");
+			} else {
+				if (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0) {
+					return System.getenv("HOSTNAME");
+				}
+			}
+		}
+		return null;
+
 	}
 
 	/**
@@ -167,7 +191,7 @@ public class MeshImpl implements Mesh {
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
-		log.info(infoLine("Name: " + MeshNameProvider.getInstance().getName()));
+		log.info(infoLine("Mesh Node Id: " + MeshNameProvider.getInstance().getName()));
 		log.info("###############################################################");
 	}
 

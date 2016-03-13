@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 
 	private final DataProvider FILL = (container, name) -> {
-		MicronodeGraphField field = container.createMicronode(name, microschemaContainers().get("vcard"));
+		MicronodeGraphField field = container.createMicronode(name, microschemaContainers().get("vcard").getLatestVersion());
 
 		Micronode micronode = field.getMicronode();
 		micronode.createString("firstName").setString("Donald");

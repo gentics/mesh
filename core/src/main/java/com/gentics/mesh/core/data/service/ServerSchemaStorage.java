@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -50,14 +52,18 @@ public class ServerSchemaStorage implements SchemaStorage {
 	public void init() {
 		//Iterate over all schemas and load them into the storage
 		boot.schemaContainerRoot().findAll().stream().forEach(container -> {
-			Schema restSchema = container.getSchema();
-			schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
+			for (SchemaContainerVersion version : container.findAll()) {
+				Schema restSchema = version.getSchema();
+				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
+			}
 		});
 
 		// load all microschemas and add to storage
 		boot.microschemaContainerRoot().findAll().stream().forEach(container -> {
-			Microschema restMicroschema = container.getSchema();
-			microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
+			for (MicroschemaContainerVersion version : container.findAll()) {
+				Microschema restMicroschema = version.getSchema();
+				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
+			}
 		});
 	}
 

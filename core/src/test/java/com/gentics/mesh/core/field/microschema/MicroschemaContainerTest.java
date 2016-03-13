@@ -13,11 +13,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -35,10 +35,8 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		RoutingContext rc = getMockedRoutingContext("");
-		InternalActionContext ac = InternalActionContext.create(rc);
 		MicroschemaContainer vcard = microschemaContainer("vcard");
-		MicroschemaReference reference = vcard.transformToReference(ac);
+		MicroschemaReference reference = vcard.transformToReference();
 		assertNotNull(reference);
 		assertEquals("vcard", reference.getName());
 		assertEquals(vcard.getUuid(), reference.getUuid());
@@ -83,7 +81,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 		for (String name : microschemaContainers().keySet()) {
 			MicroschemaContainer container = boot.microschemaContainerRoot().findByName(name).toBlocking().single();
 			assertNotNull("Could not find microschema container for name " + name, container);
-			Microschema microschema = container.getSchema();
+			Microschema microschema = container.getLatestVersion().getSchema();
 			assertNotNull("Container for microschema " + name + " did not contain a microschema", microschema);
 			assertEquals("Check microschema name", name, microschema.getName());
 		}
@@ -126,7 +124,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 		schema.setName("test");
 		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
 		assertNotNull("The container was not created.", container);
-		assertNotNull("The container schema was not set", container.getSchema());
+		assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
 		assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
 	}
 
@@ -136,8 +134,8 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	public void testVersionSync() {
 		assertNotNull(microschemaContainer("vcard"));
-		assertEquals("The microschema container and schema rest model version must always be in sync", microschemaContainer("vcard").getVersion(),
-				microschemaContainer("vcard").getSchema().getVersion());
+		assertEquals("The microschema container and schema rest model version must always be in sync", microschemaContainer("vcard").getLatestVersion().getVersion(),
+				microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
 
 	}
 

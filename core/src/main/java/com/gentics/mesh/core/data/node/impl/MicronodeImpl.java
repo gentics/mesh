@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -44,7 +44,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	public Observable<MicronodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		MicronodeResponse restMicronode = new MicronodeResponse();
-		MicroschemaContainer microschemaContainer = getMicroschemaContainer();
+		MicroschemaContainerVersion microschemaContainer = getMicroschemaContainerVersion();
 		if (microschemaContainer == null) {
 			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 		}
@@ -55,7 +55,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		}
 
 		// Microschema Reference
-		restMicronode.setMicroschema(microschemaContainer.transformToReference(ac));
+		restMicronode.setMicroschema(microschemaContainer.transformToReference());
 
 		// Uuid
 		restMicronode.setUuid(getUuid());
@@ -91,18 +91,18 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public MicroschemaContainer getMicroschemaContainer() {
-		return out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerImpl.class).nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+	public MicroschemaContainerVersion getMicroschemaContainerVersion() {
+		return out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public void setMicroschemaContainer(MicroschemaContainer microschema) {
+	public void setMicroschemaContainerVersion(MicroschemaContainerVersion microschema) {
 		setLinkOut(microschema.getImpl(), HAS_MICROSCHEMA_CONTAINER);
 	}
 
 	@Override
 	public Microschema getMicroschema() {
-		return getMicroschemaContainer().getSchema();
+		return getMicroschemaContainerVersion().getSchema();
 	}
 
 	@Override

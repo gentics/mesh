@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -53,7 +52,7 @@ public class RestModelTest extends AbstractDBTest {
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
-		NodeResponse deserializedResponse = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse deserializedResponse = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(deserializedResponse);
 	}
 
@@ -110,12 +109,12 @@ public class RestModelTest extends AbstractDBTest {
 		assertEquals("content", info.getSchema().getName());
 
 		// Deserialize NodeCreateRequest using the schema info
-		NodeCreateRequest loadedRequest = JsonUtil.readNode(json, NodeCreateRequest.class, schemaStorage);
-		Map<String, Field> fields = loadedRequest.getFields();
+		NodeCreateRequest loadedRequest = JsonUtil.readValue(json, NodeCreateRequest.class);
+		FieldMap fields = loadedRequest.getFields();
 		assertNotNull(fields);
-		assertNotNull(fields.get("name"));
-		assertNotNull(((StringField) fields.get("name")).getString());
-		assertEquals(StringFieldImpl.class.getName(), fields.get("name").getClass().getName());
+		assertNotNull(fields.hasField("name"));
+		assertNotNull(fields.getStringField("name").getString());
+		assertEquals(StringFieldImpl.class.getName(), fields.getStringField("name").getClass().getName());
 
 	}
 
@@ -123,8 +122,8 @@ public class RestModelTest extends AbstractDBTest {
 	public void testNodeList() throws Exception {
 		setupData();
 		try (NoTrx noTx = db.noTrx()) {
-			Schema folderSchema = schemaContainer("folder").getSchema();
-			Schema contentSchema = schemaContainer("content").getSchema();
+			Schema folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
+			Schema contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 
 			NodeResponse folder = new NodeResponse();
 			folder.setSchema(new SchemaReference().setName(folderSchema.getName()));
@@ -144,7 +143,7 @@ public class RestModelTest extends AbstractDBTest {
 			list.getData().add(folder);
 			list.getData().add(content);
 			String json = JsonUtil.toJson(list);
-			NodeListResponse deserializedList = JsonUtil.readNode(json, NodeListResponse.class, storage);
+			NodeListResponse deserializedList = JsonUtil.readValue(json, NodeListResponse.class);
 			assertNotNull(deserializedList);
 		}
 	}

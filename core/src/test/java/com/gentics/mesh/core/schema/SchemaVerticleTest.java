@@ -121,13 +121,13 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 		Schema dummySchema = new SchemaModel();
 		dummySchema.setName("dummy");
-		noPermSchema.setSchema(dummySchema);
+		noPermSchema.getLatestVersion().setSchema(dummySchema);
 		for (int i = 0; i < nSchemas; i++) {
 			schema = new SchemaModel();
 			schema.setName("extra_schema_" + i);
 			schema.setDisplayField("name");
 			SchemaContainer extraSchema = schemaRoot.create(schema, user());
-			extraSchema.setSchema(dummySchema);
+			extraSchema.getLatestVersion().setSchema(dummySchema);
 			role().grantPermissions(extraSchema, READ_PERM);
 		}
 		// Don't grant permissions to no perm schema
@@ -289,12 +289,14 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	public void testDeleteByUUID() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 
+		String name = schema.getUuid() + "/" + schema.getName();
+		String uuid = schema.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
 		assertSuccess(future);
-		expectResponseMessage(future, "schema_deleted", schema.getUuid() + "/" + schema.getName());
+		expectResponseMessage(future, "schema_deleted", name);
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(schema.getUuid()).toBlocking().single();
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
 		assertNull("The schema should have been deleted.", reloaded);
 	}
 

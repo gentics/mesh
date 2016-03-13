@@ -6,9 +6,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.query.QueryParameterProvider;
-import com.gentics.mesh.rest.ClientSchemaStorage;
-import com.gentics.mesh.rest.MeshRestClient;
-
 import io.vertx.core.Future;
 
 public interface SchemaClientMethods {
@@ -100,14 +97,6 @@ public interface SchemaClientMethods {
 	 * @return
 	 */
 	Future<MicroschemaListResponse> findMicroschemas(QueryParameterProvider... parameters);
-
-	/**
-	 * Initialize the schema storage. This will effectively load all schemas into the {@link ClientSchemaStorage} of the {@link MeshRestClient} that is
-	 * currently in use.
-	 * 
-	 * @return
-	 */
-	Future<Void> initSchemaStorage();
 
 	/**
 	 * Apply the given list of changes to the schema which is identified by the given uuid.

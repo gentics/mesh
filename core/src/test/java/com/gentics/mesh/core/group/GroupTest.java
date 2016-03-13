@@ -34,7 +34,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		GroupReference reference = group().transformToReference(ac);
+		GroupReference reference = group().transformToReference();
 		assertNotNull(reference);
 		assertEquals(group().getUuid(), reference.getUuid());
 		assertEquals(group().getName(), reference.getName());

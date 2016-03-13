@@ -27,7 +27,8 @@ import io.vertx.ext.web.RoutingContext;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods, EventbusClientMethods {
+		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
+		EventbusClientMethods {
 
 	/**
 	 * Create a new mesh rest client.
@@ -86,25 +87,8 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	MeshRestClient initializeAuthenticationProvider(RoutingContext context);
 
 	/**
-	 * Return the client schema storage that is used to deserialize those responses that use a schema.
-	 * 
-	 * @return
-	 */
-	ClientSchemaStorage getClientSchemaStorage();
-
-	/**
-	 * Set the schema storage.
-	 * 
-	 * @param schemaStorage
-	 * @return Fluent API
-	 */
-	MeshRestClient setClientSchemaStorage(ClientSchemaStorage schemaStorage);
-
-	/**
 	 * Close the client.
 	 */
 	void close();
-
-	
 
 }

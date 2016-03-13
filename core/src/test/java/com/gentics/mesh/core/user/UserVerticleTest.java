@@ -558,7 +558,7 @@ public class UserVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<UserResponse> future = getClient().createUser(newUser);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "user_incomplete_node_reference");
+		expectException(future, BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 	}
 
 	@Test

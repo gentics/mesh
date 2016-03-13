@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -58,20 +59,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	List<? extends Tag> getTags();
 
 	/**
-	 * Return the schema container that holds the schema that is used in combination with this node.
-	 * 
-	 * @return
-	 */
-	SchemaContainer getSchemaContainer();
-
-	/**
-	 * Set the schema container that is used in combination with this node.
-	 * 
-	 * @param schema
-	 */
-	void setSchemaContainer(SchemaContainer schema);
-
-	/**
 	 * Return the field container for the given language.
 	 * 
 	 * @param language
@@ -88,12 +75,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
 
 	/**
-	 * Return the field container for the given language. Create the container when non was found.
+	 * Create a new graph field container for the given language and assign the schema version to the container.
 	 * 
 	 * @param language
+	 * @param schemaVersion 
 	 * @return
 	 */
-	NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language);
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, SchemaContainerVersion schemaVersion);
 
 	/**
 	 * Return a list of graph field containers for the node.
@@ -105,11 +93,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	/**
 	 * Return a page of tags that are assigned to the node.
 	 * 
-	 * @param ac
+	 * @param params
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException;
+	PageImpl<? extends Tag> getTags(PagingParameter params) throws InvalidArgumentException;
 
 	/**
 	 * Return a list of language names.
@@ -142,7 +130,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	/**
 	 * Return the list of children for this node, that the given user has read permission for
 	 *
-	 * @param requestUser user
+	 * @param requestUser
+	 *            user
 	 * @return
 	 */
 	List<? extends Node> getChildren(MeshAuthUser requestUser);
@@ -165,11 +154,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * Create a child node in this node.
 	 * 
 	 * @param creator
-	 * @param schemaContainer
+	 * @param schemaVersion
 	 * @param project
 	 * @return
 	 */
-	Node create(User creator, SchemaContainer schemaContainer, Project project);
+	Node create(User creator, SchemaContainerVersion schemaVersion, Project project);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -314,5 +303,19 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @return
 	 */
 	Observable<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode);
+
+	/**
+	 * Return the schema container for the node.
+	 * 
+	 * @return
+	 */
+	SchemaContainer getSchemaContainer();
+
+	/**
+	 * Set the schema container of the node.
+	 * 
+	 * @param container
+	 */
+	void setSchemaContainer(SchemaContainer container);
 
 }

@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -19,6 +18,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
@@ -59,8 +59,12 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -110,8 +114,9 @@ public final class MockingUtils {
 		Micronode micronode = mock(MicronodeImpl.class);
 		when(micronode.getUuid()).thenReturn(randomUUID());
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
-		when(micronode.getMicroschemaContainer()).thenReturn(microschemaContainer);
-		Microschema microschema = microschemaContainer.getSchema();
+		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
+		when(micronode.getMicroschemaContainerVersion()).thenReturn(latestVersion);
+		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getMicroschema()).thenReturn(microschema);
 
 		// longitude field
@@ -200,7 +205,10 @@ public final class MockingUtils {
 		SchemaContainer container = mock(SchemaContainerImpl.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(randomUUID());
-		when(container.getSchema()).thenReturn(mockContentSchema());
+		SchemaContainerVersion latestVersion = mock(SchemaContainerVersionImpl.class);
+		when(latestVersion.getSchemaContainer()).thenReturn(container);
+		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
+		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);
@@ -212,7 +220,10 @@ public final class MockingUtils {
 		MicroschemaContainer container = mock(MicroschemaContainerImpl.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(randomUUID());
-		when(container.getSchema()).thenReturn(mockGeolocationMicroschema());
+		MicroschemaContainerVersionImpl latestVersion = mock(MicroschemaContainerVersionImpl.class);
+		when(latestVersion.getSchema()).thenReturn(mockGeolocationMicroschema());
+
+		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);
@@ -267,16 +278,18 @@ public final class MockingUtils {
 		Mockito.<List<? extends Tag>> when(node.getTags()).thenReturn(tagList);
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
+		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 
 		when(node.getCreator()).thenReturn(user);
 		when(node.getEditor()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
-		Schema schema = schemaContainer.getSchema();
-		when(node.getSchemaContainer().getSchema()).thenReturn(schema);
+		Schema schema = schemaContainer.getLatestVersion().getSchema();
+		when(node.getSchemaContainer().getLatestVersion().getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
-		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
+		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
+//		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 
 		return node;

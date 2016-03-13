@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -204,9 +204,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		list.createString("three");
 		list.createString("four");
 
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		// Create the update entry in the search queue
 		SearchQueueBatch batch;
@@ -548,14 +548,15 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		User user = user();
 		Language english = english();
 		Node concorde = content("concorde");
+		
 		Project project = concorde.getProject();
 		Node parentNode = concorde.getParentNode();
-		SchemaContainer schemaContainer = concorde.getSchemaContainer();
+		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 		for (int i = 0; i < numAdditionalNodes; i++) {
-			Node node = parentNode.create(user, schemaContainer, project);
-			MicronodeGraphField vcardField = node.getOrCreateGraphFieldContainer(english).createMicronode("vcard",
-					microschemaContainers().get("vcard"));
+			Node node = parentNode.create(user, schemaVersion, project);
+			MicronodeGraphField vcardField = node.createGraphFieldContainer(english, schemaVersion).createMicronode("vcard",
+					microschemaContainers().get("vcard").getLatestVersion());
 			vcardField.getMicronode().createString("firstName").setString("Mickey");
 			vcardField.getMicronode().createString("lastName").setString("Mouse");
 			role().grantPermissions(node, GraphPermission.READ_PERM);
@@ -575,9 +576,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addNumberSpeedField(int number) {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		node.getGraphFieldContainer(english()).createNumber("speed").setNumber(number);
 	}
@@ -588,13 +589,13 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addMicronodeField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
 		vcardFieldSchema.setName("vcard");
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard", microschemaContainers().get("vcard"));
+		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
 	}
@@ -605,21 +606,22 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	private void addMicronodeListField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchemaContainer().getSchema();
+		// Update the schema
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
 		vcardListFieldSchema.setName("vcardlist");
 		vcardListFieldSchema.setListType("micronode");
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
-		// set the mapping for the schema
+		// Set the mapping for the schema
 		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			MicronodeField field = new MicronodeResponse();
 			Micronode micronode = vcardListField.createMicronode(field);
-			micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
+			micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString(testdata.v1());
 			micronode.createString("lastName").setString(testdata.v2());
 		}

@@ -7,8 +7,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -29,21 +29,21 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 		Microschema schema = new MicroschemaModel();
 
 		UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 		change.setName("updated");
-		container.setSchema(schema);
-		container.setNextChange(change);
+		version.setSchema(schema);
+		version.setNextChange(change);
 
-		Microschema updatedSchema = mutator.apply(container);
+		Microschema updatedSchema = mutator.apply(version);
 		assertEquals("updated", updatedSchema.getName());
 
 		change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 		change.setDescription("text");
-		container.setNextChange(change);
-		updatedSchema = mutator.apply(container);
+		version.setNextChange(change);
+		updatedSchema = mutator.apply(version);
 		assertEquals("text", updatedSchema.getDescription());
 	}
 

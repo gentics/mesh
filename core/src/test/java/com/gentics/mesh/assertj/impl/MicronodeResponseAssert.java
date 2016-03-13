@@ -6,16 +6,11 @@ import static org.junit.Assert.assertNull;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
 
 public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAssert, MicronodeResponse> {
 
@@ -24,57 +19,61 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 	}
 
 	@SuppressWarnings("unchecked")
-	public MicronodeResponseAssert matches(MicronodeResponse expected) {
+	public MicronodeResponseAssert matches(MicronodeResponse expected, Microschema schema) {
 		if (expected == null) {
 			assertNull(descriptionText() + " must be null", actual);
 			return this;
 		}
+		for (FieldSchema fieldSchema : schema.getFields()) {
+			String key = fieldSchema.getName();
 
-		for (String key : actual.getFields().keySet()) {
-			Field field = actual.getField(key);
-			if (field instanceof BinaryField) {
-				// TODO implement assertions
-			}
-			if (field instanceof BooleanField) {
-				assertThat(expected.getField(key, BooleanField.class)).isNotNull();
-				assertThat(actual.getField(key, BooleanField.class).getValue()).as("Field " + key)
-						.isEqualTo(expected.getField(key, BooleanField.class).getValue());
-			}
-			if (field instanceof DateField) {
-				assertThat(expected.getField(key, DateField.class)).isNotNull();
-				assertThat(actual.getField(key, DateField.class).getDate()).as("Field " + key)
-						.isEqualTo(expected.getField(key, DateField.class).getDate());
-			}
-			if (field instanceof HtmlField) {
-				assertThat(expected.getField(key, HtmlField.class)).isNotNull();
-				assertThat(actual.getField(key, HtmlField.class).getHTML()).as("Field " + key)
-						.isEqualTo(expected.getField(key, HtmlField.class).getHTML());
-			}
-			if (field instanceof NodeField) {
-				assertThat(expected.getField(key, NodeField.class)).isNotNull();
-				assertThat(actual.getField(key, NodeField.class).getUuid()).as("Field " + key)
-						.isEqualTo(expected.getField(key, NodeField.class).getUuid());
-			}
-			if (field instanceof NumberField) {
-				assertThat(expected.getField(key, NumberField.class)).isNotNull();
-				assertThat(actual.getField(key, NumberField.class).getNumber()).as("Field " + key)
-						.isEqualTo(expected.getField(key, NumberField.class).getNumber());
-			}
-			if (field instanceof StringField) {
-				assertThat(expected.getField(key, StringField.class)).isNotNull();
-				assertThat(actual.getField(key, StringField.class).getString()).as("Field " + key)
-						.isEqualTo(expected.getField(key, StringField.class).getString());
+			switch (fieldSchema.getType()) {
+			case "html":
+				assertThat(expected.getFields().getHtmlField(key)).isNotNull();
+				assertThat(actual.getFields().getHtmlField(key).getHTML()).as("Field " + key)
+						.isEqualTo(expected.getFields().getHtmlField(key).getHTML());
+				break;
+			case "binary":
+			case "boolean":
+				assertThat(expected.getFields().getBooleanField(key)).isNotNull();
+				assertThat(actual.getFields().getBooleanField(key).getValue()).as("Field " + key)
+						.isEqualTo(expected.getFields().getBooleanField(key).getValue());
+				break;
+			case "date":
+				assertThat(expected.getFields().getDateField(key)).isNotNull();
+				assertThat(actual.getFields().getDateField(key).getDate()).as("Field " + key)
+						.isEqualTo(expected.getFields().getDateField(key).getDate());
+				break;
+			case "node":
+				assertThat(expected.getFields().getNodeField(key)).isNotNull();
+				assertThat(actual.getFields().getNodeField(key).getUuid()).as("Field " + key)
+						.isEqualTo(expected.getFields().getNodeField(key).getUuid());
+				break;
+			case "string":
+				assertThat(expected.getFields().getStringField(key)).isNotNull();
+				assertThat(actual.getFields().getStringField(key).getString()).as("Field " + key)
+						.isEqualTo(expected.getFields().getStringField(key).getString());
+				break;
+			case "number":
+				assertThat(expected.getFields().getNumberField(key)).isNotNull();
+				assertThat(actual.getFields().getNumberField(key).getNumber()).as("Field " + key)
+						.isEqualTo(expected.getFields().getNumberField(key).getNumber());
+				break;
+			case "list":
+
+				Field field = actual.getFields().getField(key, fieldSchema);
+				if (field instanceof NodeFieldList) {
+					// compare list of nodes by comparing their uuids
+					assertThat(((NodeFieldList) field).getItems()).usingElementComparator((a, b) -> {
+						return a.getUuid().compareTo(b.getUuid());
+					}).containsExactlyElementsOf(expected.getFields().getNodeFieldList(key).getItems());
+				} else if (field instanceof FieldList) {
+					assertThat(((FieldList<?>) field).getItems())
+							.containsExactlyElementsOf(expected.getFields().get(key, FieldList.class).getItems());
+				}
+
 			}
 
-			if (field instanceof NodeFieldList) {
-				// compare list of nodes by comparing their uuids
-				assertThat(((NodeFieldList) field).getItems()).usingElementComparator((a, b) -> {
-					return a.getUuid().compareTo(b.getUuid());
-				}).containsExactlyElementsOf(expected.getField(key, NodeFieldList.class).getItems());
-			} else if (field instanceof FieldList) {
-				assertThat(((FieldList<?>) field).getItems())
-						.containsExactlyElementsOf(expected.getField(key, FieldList.class).getItems());
-			}
 		}
 
 		return this;

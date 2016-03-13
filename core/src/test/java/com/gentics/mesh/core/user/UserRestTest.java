@@ -41,7 +41,7 @@ public class UserRestTest {
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
-		UserResponse deserializedResponse = JsonUtil.readNode(json, UserResponse.class, clientSchemaStorage);
+		UserResponse deserializedResponse = JsonUtil.readValue(json, UserResponse.class);
 		assertNotNull(deserializedResponse);
 		assertNotNull("The node reference field could not be found.", deserializedResponse.getNodeReference());
 		assertEquals(NodeResponse.class, deserializedResponse.getNodeReference().getClass());
@@ -56,7 +56,7 @@ public class UserRestTest {
 		json = JsonUtil.toJson(response);
 		assertNotNull(json);
 
-		deserializedResponse = JsonUtil.readNode(json, UserResponse.class, clientSchemaStorage);
+		deserializedResponse = JsonUtil.readValue(json, UserResponse.class);
 		assertNotNull(deserializedResponse);
 		assertNotNull("The node reference field could not be found.", deserializedResponse.getNodeReference());
 		assertEquals(reference.getUuid(), deserializedResponse.getNodeReference().getUuid());

@@ -121,7 +121,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		restRole.setName(getName());
 
 		for (Group group : getGroups()) {
-			restRole.getGroups().add(group.transformToReference(ac));
+			restRole.getGroups().add(group.transformToReference());
 		}
 
 		// Add common fields

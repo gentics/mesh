@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -57,7 +58,9 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = content("news_2015");
 
 		// 1. Transform the node into a binary content
-		node.setSchemaContainer(schemaContainer("binary-content"));
+		SchemaContainer container = schemaContainer("binary-content");
+		node.setSchemaContainer(container);
+		node.getGraphFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 		prepareSchema(node, "image/*", "binary");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
@@ -109,7 +112,7 @@ public class WebRootVerticleTest extends AbstractBinaryVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		WebRootResponse restNode = future.result();
-		HtmlFieldImpl contentField = restNode.getNodeResponse().getField("content", HtmlFieldImpl.class);
+		HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
 		assertNotNull(contentField);
 		assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>", contentField.getHTML());
 		test.assertMeshNode(content, restNode.getNodeResponse());

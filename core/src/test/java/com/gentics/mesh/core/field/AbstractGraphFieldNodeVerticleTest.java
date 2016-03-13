@@ -48,7 +48,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		return response;
 	}
 
-	protected void createNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
@@ -63,6 +63,13 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		expectException(future, status, bodyMessageI18nKey, i18nParams);
 	}
 
+	/**
+	 * Update the test node using the provided field field and field key as update data.
+	 * 
+	 * @param fieldKey
+	 * @param field
+	 * @return
+	 */
 	protected NodeResponse updateNode(String fieldKey, Field field) {
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -75,7 +82,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		latchFor(future);
 		assertSuccess(future);
 		assertNotNull("The response could not be found in the result of the future.", future.result());
-		assertNotNull("The field was not included in the response.", future.result().getField(fieldKey));
+		assertNotNull("The field was not included in the response.", future.result().getFields().hasField(fieldKey));
 		return future.result();
 	}
 

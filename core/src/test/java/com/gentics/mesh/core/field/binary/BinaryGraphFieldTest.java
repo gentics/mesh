@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -28,12 +27,14 @@ public class BinaryGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testNodeFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+
+		// Update the schema and add a binary field
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
 		binaryFieldSchema.setName("binaryField");
 		binaryFieldSchema.setAllowedMimeTypes("image/jpg", "text/plain");
 		schema.addField(binaryFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		BinaryGraphField field = container.createBinary("binaryField");
@@ -46,10 +47,10 @@ public class BinaryGraphFieldTest extends AbstractBasicDBTest {
 		String json = getJson(node);
 		System.out.println(json);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		BinaryField deserializedNodeField = response.getField("binaryField", BinaryFieldImpl.class);
+		BinaryField deserializedNodeField = response.getFields().getBinaryField("binaryField");
 		assertNotNull(deserializedNodeField);
 		assertEquals(200, deserializedNodeField.getHeight().intValue());
 		assertEquals(300, deserializedNodeField.getWidth().intValue());

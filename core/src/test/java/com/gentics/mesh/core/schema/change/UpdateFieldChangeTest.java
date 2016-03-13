@@ -7,9 +7,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -34,7 +34,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		Schema schema = new SchemaModel("test");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -42,10 +42,10 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 		UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		change.setFieldName("name");
 		change.setLabel("updated");
-		container.setSchema(schema);
-		container.setNextChange(change);
+		version.setSchema(schema);
+		version.setNextChange(change);
 
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertEquals("The field label was not updated by the mutator.", "updated", updatedSchema.getField("name").getLabel());
 
 	}

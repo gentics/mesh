@@ -22,19 +22,24 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	}
 
 	/**
-	 * Optionally creates a new field container for the given container and language.
+	 * Optionally creates a new field container for the given container type and language.
 	 * 
 	 * @param language
+	 *            Language of the field container
+	 * @param classOfU
+	 *            Container implementation class to be used for element creation
 	 * @return i18n properties vertex entity
 	 */
 	protected <U extends BasicFieldContainer> U getOrCreateGraphFieldContainer(Language language, Class<U> classOfU) {
 
+		// Check all existing containers in order to find existing ones
 		U container = null;
 		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(TranslatedImpl.LANGUAGE_TAG_KEY, language.getLanguageTag());
 		if (edgeTraversal.hasNext()) {
 			container = edgeTraversal.next().inV().has(classOfU).nextOrDefault(classOfU, null);
 		}
 
+		// Create a new container if no existing one was found
 		if (container == null) {
 			container = getGraph().addFramedVertex(classOfU);
 			container.setLanguage(language);

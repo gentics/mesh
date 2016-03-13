@@ -1,17 +1,18 @@
 package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.util.Map;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -22,6 +23,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
+
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
@@ -34,7 +36,19 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public String getDisplayFieldValue(Schema schema) {
+	public void setSchemaContainerVersion(SchemaContainerVersion schema) {
+		setSingleLinkOutTo(schema.getImpl(), HAS_SCHEMA_CONTAINER_VERSION);
+	}
+
+	@Override
+	public SchemaContainerVersion getSchemaContainerVersion() {
+		return out(HAS_SCHEMA_CONTAINER_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+	}
+
+	@Override
+	public String getDisplayFieldValue() {
+		//TODO use schema storage instead
+		Schema schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		StringGraphField field = getString(displayFieldName);
 		if (field != null) {
@@ -50,12 +64,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields,
-			FieldSchemaContainer schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema) {
 		super.updateFieldsFromRest(ac, restFields, schema);
 
-		Node node = getParentNode();
-		String segmentFieldName = node.getSchemaContainer().getSchema().getSegmentField();
+		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		if (restFields.containsKey(segmentFieldName)) {
 			updateWebrootPathInfo("node_conflicting_segmentfield_update");
 		}
@@ -64,7 +76,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateWebrootPathInfo(String conflictI18n) {
 		Node node = getParentNode();
-		String segmentFieldName = node.getSchemaContainer().getSchema().getSegmentField();
+		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		String segment = node.getPathSegment(getLanguage().getLanguageTag()).toBlocking().last();
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);
@@ -78,9 +90,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					.checkIndexUniqueness(WEBROOT_INDEX_NAME, this, webRootInfo.toString());
 			if (conflictingContainer != null) {
 				Node conflictingNode = conflictingContainer.getParentNode();
-				throw conflict(conflictingContainer.getParentNode().getUuid(),
-						conflictingContainer.getDisplayFieldValue(conflictingNode.getSchemaContainer().getSchema()), conflictI18n,
-						segmentFieldName, segment);
+				throw conflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictI18n, segmentFieldName, segment);
 			}
 
 			setProperty(WEBROOT_PROPERTY_KEY, webRootInfo.toString());
