@@ -101,10 +101,6 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<shadedArtifactAttached>true</shadedArtifactAttached>
-						<!-- 
-							<shadedClassifierName>combined</shadedClassifierName>
-							 -->
 							<filters>
 								<filter>
 									<artifact>org.elasticsearch:elasticsearch</artifact>
