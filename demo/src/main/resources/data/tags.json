@@ -1,0 +1,19 @@
+{
+  "data": [
+     {"name": "Red"   , "tagFamily": "Colors"},
+     {"name": "Blue"  , "tagFamily": "Colors"},
+     {"name": "Green" , "tagFamily": "Colors"},
+     {"name": "Yellow", "tagFamily": "Colors"},
+     {"name": "Orange", "tagFamily": "Colors"},
+     {"name": "White" , "tagFamily": "Colors"},
+     {"name": "Black" , "tagFamily": "Colors"},
+     {"name": "Silver", "tagFamily": "Colors"},
+
+     {"name": "Gasoline",    "tagFamily": "Fuels"},
+     {"name": "Kerosene",    "tagFamily": "Fuels"},
+     {"name": "Hydrogen",    "tagFamily": "Fuels"},
+     {"name": "Diesel"  ,    "tagFamily": "Fuels"},
+     {"name": "Electricity", "tagFamily": "Fuels"},
+     {"name": "Solar",       "tagFamily": "Fuels"}
+  ]
+}

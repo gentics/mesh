@@ -24,7 +24,7 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-server</artifactId>
 			<version>${project.version}</version>
-			<classifier>combined</classifier>
+			<classifier>shaded</classifier>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>

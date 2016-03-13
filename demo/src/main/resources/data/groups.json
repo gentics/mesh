@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "name": "Client Group", "roles": ["Client Role", "admin"] },
+    { "name": "Editor Group", "roles": ["Editor Role", "admin"] }
+  ]
+}
