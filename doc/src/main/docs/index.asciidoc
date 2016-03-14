@@ -18,6 +18,10 @@ Mesh will also provide you a lot of powerful tools build around and for those do
  * Clustering (in development)
  * Versioning of your documents (in development)
 
+== Changelog
+
+* link:changelog.html[Changelog]
+
 == REST API
 
 The link:raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element. 
@@ -38,7 +42,9 @@ The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncd
 ==== Overview
 
 Mesh currently supports two ways of authentication: `Basic` and `Json Web Token (JWT)`. A user can be authenticated by setting the Authentication HTTP header in a request.
-Edit the mesh configuration file (`mesh.json`) to set your prefered authentication method. Here is an example:
+Edit the mesh configuration file (`mesh.json`) to set your prefered authentication method. 
+
+Here is an example:
 
 [source,bash]
 ----
@@ -552,13 +558,15 @@ java -jar mesh-demo-0.6.0.jar
 
 === Docker
 
-Alternativly you can start mesh using docker via:
+Alternatively you can start mesh using docker via:
 
 The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains mesh which provides the demo data and demo application.
 
 [source]
 ----
 docker run -p 8080:8080 gentics/mesh-demo
+or
+docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
 ----
 
 The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty mesh server without any demo content.
@@ -566,7 +574,11 @@ The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty mesh se
 [source]
 ----
 docker run -p 8080:8080 gentics/mesh
+or
+docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
+
+
 
 === System Requirements
 

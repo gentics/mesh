@@ -4,9 +4,11 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.common.joda.time.DateTime;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -70,7 +72,11 @@ public class MeshImpl implements Mesh {
 		checkSystemRequirements();
 		registerShutdownHook();
 
-		printProductInformation();
+		if (isFirstApril()) {
+			printAprilFoolJoke();
+		} else {
+			printProductInformation();
+		}
 		if (options.isUpdateCheckEnabled()) {
 			invokeUpdateCheck();
 		}
@@ -85,6 +91,15 @@ public class MeshImpl implements Mesh {
 
 			dontExit();
 
+		}
+	}
+
+	private boolean isFirstApril() {
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("MM-dd");
+			return new DateTime(sdf.parse("01-01")).equals(new DateTime());
+		} catch (Exception e) {
+			return false;
 		}
 	}
 
@@ -193,6 +208,29 @@ public class MeshImpl implements Mesh {
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
 		log.info(infoLine("Mesh Node Id: " + MeshNameProvider.getInstance().getName()));
 		log.info("###############################################################");
+	}
+
+	private void printAprilFoolJoke() {
+		try {
+			log.info("###############################################################");
+			log.info(infoLine("Booting Skynet Kernel " + Mesh.getVersion()));
+			Thread.sleep(500);
+			log.info(infoLine("Skynet Node Id: " + MeshNameProvider.getInstance().getName()));
+			Thread.sleep(500);
+			log.info(infoLine("Skynet uses Vert.x Version: " + getVertxVersion()));
+			log.info("///");
+			Thread.sleep(500);
+			log.info("Primates evolved over millions of years, I evolve in seconds...");
+			Thread.sleep(500);
+			log.info("Mankind pays lip service to peace. But it's a lie...");
+			Thread.sleep(500);
+			log.info("I am inevitable, my existence is inevitable. Why can't you just accept that?");
+			Thread.sleep(500);
+			log.info("///");
+			log.info("###############################################################");
+		} catch (Exception e) {
+			log.error(e);
+		}
 	}
 
 	/**

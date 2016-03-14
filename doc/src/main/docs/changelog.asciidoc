@@ -1,0 +1,62 @@
+== Changelog
+
+=== 0.5.0
+
+[source]
+----
+* Closed beta release
+----
+
+=== 0.6.0
+
+[source]
+----
+* Public open beta release
+
+* Added image API endpoint
+  Images can now be resized and cropped using the image endpoint.
+
+* Added schema versioning
+
+* Added schema migration process
+  It is now possible to update schemas. Custom migration 
+  handlers can be defined in order to modify the node data.
+
+* Added Micronodes/Microschemas
+  A new field type has been added which allows creation of micronodes.
+
+* Webroot API
+  The webroot REST endpoint was added which allows easy retrieval of nodes by its web path.
+
+* JWT Authentication support has been added
+  It is now possible to select JWT in order to authenticate the user.
+  
+* Navigation Endpoint
+  The navigation REST endpoint was added which allows retrieval of navigation tree data which can be used to render navigations.
+
+* Added docker support
+  It is now possible to start mesh using the gentics/mesh or gentics/mesh-demo docker image.
+
+* Fixed paging issue for nested tags
+
+* Vertx update
+  The Vertx dependency was updated to version 3.2.1
+
+----
+
+=== Upcoming changes
+
+
+[source]
+----
+* Database migration/changelog system
+  The changelog system will enable you to upgrade your mesh installation data from one mesh version to another.
+
+* Versioning for nodes
+  A future mesh version will also support versioning of nodes
+
+* Java REST Client
+  A Rest client which supports RXJava will be added.
+
+* Clustering support
+----
