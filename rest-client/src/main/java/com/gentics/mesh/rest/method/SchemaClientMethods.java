@@ -103,7 +103,7 @@ public interface SchemaClientMethods {
 	 * 
 	 * @param uuid
 	 *            Schema uuid
-	 * @param change
+	 * @param changes
 	 *            List of changes
 	 * @return
 	 */

@@ -37,7 +37,6 @@ public final class MeshRestRequestUtil {
 	 *            Client to use
 	 * @param authentication
 	 *            Authentication provider to use
-	 * @param schemaStorage
 	 * @return
 	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
@@ -98,8 +97,6 @@ public final class MeshRestRequestUtil {
 	 *            Http client to be used
 	 * @param authentication
 	 *            Authentication provider to use
-	 * @param schemaStorage
-	 *            Schema storage
 	 * @return
 	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel, HttpClient client,
@@ -128,8 +125,6 @@ public final class MeshRestRequestUtil {
 	 *            Http client to be used
 	 * @param authentication
 	 *            Authentication provider to use
-	 * @param schemaStorage
-	 *            Schema storage
 	 * @return
 	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData, HttpClient client,
@@ -143,6 +138,21 @@ public final class MeshRestRequestUtil {
 		return handleRequest(method, path, classOfT, buffer, "application/json", client, authentication);
 	}
 
+	/**
+	 * Handle the request.
+	 * 
+	 * @param method
+	 *            Request method
+	 * @param path
+	 *            Request path
+	 * @param classOfT
+	 *            Expected response object class
+	 * @param client
+	 *            Http client to be used
+	 * @param authentication
+	 *            Authentication provider to use
+	 * @return
+	 */
 	public static <T> Future<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
 			MeshRestClientAuthenticationProvider authentication) {
 		return handleRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication);

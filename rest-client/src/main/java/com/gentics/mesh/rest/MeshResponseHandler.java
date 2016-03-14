@@ -53,8 +53,6 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 *            Method that was used for the request
 	 * @param uri
 	 *            Uri that was queried
-	 * @param schemaStorage
-	 *            A filled schema storage
 	 */
 	public MeshResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
 		this.classOfT = classOfT;
