@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -33,15 +32,15 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 		setupData();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 		// 1. Create the node field schema and add it to the schema of the node
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setName(NODE_FIELD_NAME);
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
-		schemaStorage.addSchema(node.getSchemaContainer().getSchema());
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
+		schemaStorage.addSchema(node.getSchemaContainer().getLatestVersion().getSchema());
 
 		// 2. Add the node reference to the node fields
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
@@ -50,10 +49,10 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 		// 3. Transform the node to json and examine the data
 		String json = getJson(node);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		NodeField deserializedNodeField = response.getField(NODE_FIELD_NAME, NodeFieldImpl.class);
+		NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD_NAME);
 		assertNotNull("The field {" + NODE_FIELD_NAME + "} should not be null. Json: {" + json + "}", deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}

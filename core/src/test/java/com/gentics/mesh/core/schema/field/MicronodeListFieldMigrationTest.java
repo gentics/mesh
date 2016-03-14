@@ -15,12 +15,12 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 		MicronodeGraphFieldList field = container.createMicronodeFieldList(name);
 
 		Micronode micronode = field.createMicronode(new MicronodeResponse());
-		micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
+		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Donald");
 		micronode.createString("lastName").setString("Duck");
 
 		micronode = field.createMicronode(new MicronodeResponse());
-		micronode.setMicroschemaContainer(microschemaContainers().get("vcard"));
+		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Mickey");
 		micronode.createString("lastName").setString("Mouse");
 	};

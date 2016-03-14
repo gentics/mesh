@@ -179,24 +179,33 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
 	}
 
+	/**
+	 * Unwrap the current thread local graph.
+	 * 
+	 * @return
+	 */
+	private OrientBaseGraph unwrapCurrentGraph() {
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
+		return tx;
+	}
+
 	@Override
 	public void addEdgeType(String label, String... stringPropertyKeys) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
-		try {
-			OrientEdgeType e = tx.getEdgeType(label);
-			if (e == null) {
-				e = tx.createEdgeType(label);
+		OrientBaseGraph tx = unwrapCurrentGraph();
+
+		OrientEdgeType e = tx.getEdgeType(label);
+		if (e == null) {
+			e = tx.createEdgeType(label);
+		}
+		for (String key : stringPropertyKeys) {
+			if (e.getProperty(key) == null) {
+				e.createProperty(key, OType.STRING);
 			}
-			for (String key : stringPropertyKeys) {
-				if (e.getProperty(key) == null) {
-					e.createProperty(key, OType.STRING);
-				}
-			}
-		} finally {
-			tx.shutdown();
 		}
 	}
 
@@ -258,8 +267,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			if (v.getClassIndex(indexName) == null) {
-				v.createIndex(indexName,
-						unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
+				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, fields);
 			}
 		} finally {
 			tx.shutdown();
@@ -270,8 +278,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
 		FramedGraph graph = Database.getThreadLocalGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
 		if (vertexType != null) {
@@ -282,7 +289,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					if (recordId.equals(element.getElement().getId())) {
 						return null;
 					} else {
-						return (T)graph.getFramedVertexExplicit(element.getClass(), recordId);
+						return (T) graph.getFramedVertexExplicit(element.getClass(), recordId);
 					}
 				}
 			}

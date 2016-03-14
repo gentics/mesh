@@ -26,12 +26,12 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 
 	@Before
 	public void updateSchema() throws IOException {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 		booleanFieldSchema.setName(FIELD_NAME);
 		booleanFieldSchema.setLabel("Some label");
 		schema.addField(booleanFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test
@@ -41,7 +41,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		container.createBoolean(FIELD_NAME).setBoolean(true);
 		NodeResponse response = readNode(node);
-		BooleanFieldImpl deserializedBooleanField = response.getField(FIELD_NAME);
+		BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);
 		assertNotNull(deserializedBooleanField);
 		assertTrue(deserializedBooleanField.getValue());
 	}
@@ -52,10 +52,10 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 		for (int i = 0; i < 20; i++) {
 			boolean flag = Math.random() > 0.5;
 			NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
-			BooleanFieldImpl field = response.getField(FIELD_NAME);
+			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(flag, field.getValue());
 			response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
-			field = response.getField(FIELD_NAME);
+			field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(!flag, field.getValue());
 		}
 	}
@@ -64,7 +64,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(FIELD_NAME, (Field) null);
-		BooleanFieldImpl field = response.getField(FIELD_NAME);
+		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 		assertNotNull(field);
 		assertNull(field.getValue());
 	}
@@ -73,7 +73,7 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Override
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
-		BooleanFieldImpl field = response.getField(FIELD_NAME);
+		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 		assertTrue(field.getValue());
 	}
 

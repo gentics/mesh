@@ -88,25 +88,8 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	MeshRestClient initializeAuthenticationProvider(RoutingContext context);
 
 	/**
-	 * Return the client schema storage that is used to deserialize those responses that use a schema.
-	 * 
-	 * @return
-	 */
-	ClientSchemaStorage getClientSchemaStorage();
-
-	/**
-	 * Set the schema storage.
-	 * 
-	 * @param schemaStorage
-	 * @return Fluent API
-	 */
-	MeshRestClient setClientSchemaStorage(ClientSchemaStorage schemaStorage);
-
-	/**
 	 * Close the client.
 	 */
 	void close();
-
-	
 
 }

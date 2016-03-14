@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -86,10 +87,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(User creator, SchemaContainer container, Project project) {
+	public Node create(User creator, SchemaContainerVersion version, Project project) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
-		node.setSchemaContainer(container);
+		node.setSchemaContainer(version.getSchemaContainer());
 
 		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
 		project.getNodeRoot().addNode(node);
@@ -115,6 +116,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		getElement().remove();
 	}
 
+	/**
+	 * Create a new node using the specified schema container.
+	 * 
+	 * @param ac
+	 * @param obsSchemaContainer
+	 * @return
+	 */
+	//TODO use schema container version instead of container
 	private Observable<Node> createNode(InternalActionContext ac, Observable<SchemaContainer> obsSchemaContainer) {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
@@ -126,10 +135,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
 			Observable<Tuple<SearchQueueBatch, Node>> obsTuple = db.noTrx(() -> {
-				Schema schema = schemaContainer.getSchema();
+				Schema schema = schemaContainer.getLatestVersion().getSchema();
 				String body = ac.getBodyAsString();
 
-				NodeCreateRequest requestModel = JsonUtil.readNode(body, NodeCreateRequest.class, schemaStorage);
+				NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
 				if (isEmpty(requestModel.getParentNodeUuid())) {
 					throw error(BAD_REQUEST, "node_missing_parentnode_field");
 				}
@@ -141,14 +150,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				// Load the parent node in order to create the node
 				return project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).map(parentNode -> {
 					return db.trx(() -> {
-						Node node = parentNode.create(requestUser, schemaContainer, project);
+						Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 						}
-						NodeGraphFieldContainer container = node.getOrCreateGraphFieldContainer(language);
+						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, schemaContainer.getLatestVersion());
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						return Tuple.tuple(batch, node);
@@ -189,6 +198,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				});
 			}
 
+			//TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
 			// 3. Or just schema reference by name
 			if (!isEmpty(schemaInfo.getSchema().getName())) {
 				SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName()).toBlocking().single();

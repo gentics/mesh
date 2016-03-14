@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.node;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 
@@ -13,29 +13,30 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	public static final String TYPE = "micronode";
 
 	/**
-	 * Return the microschema container that holds the microschema that is used in combination with this micronode.
+	 * Return the microschema container version that holds the microschema that is used in combination with this micronode.
 	 * 
-	 * @return microschema container
+	 * @return microschema container version
 	 */
-	MicroschemaContainer getMicroschemaContainer();
+	MicroschemaContainerVersion getMicroschemaContainerVersion();
 
 	/**
-	 * Set the microschema container that is used in combination with this micronode.
+	 * Set the microschema container version that is used in combination with this micronode.
 	 * 
 	 * @param microschema
 	 *            microschema container
 	 */
-	void setMicroschemaContainer(MicroschemaContainer microschema);
+	void setMicroschemaContainerVersion(MicroschemaContainerVersion microschema);
 
 	/**
-	 * Shortcut method for getMicroschemaContainer().getMicroschema()
+	 * Shortcut method for getMicroschemaContainerVersion().getMicroschema()
 	 * 
 	 * @return microschema
 	 */
+	@Deprecated
 	Microschema getMicroschema();
 
 	/**
-	 * Get the container of this micronode
+	 * Get the container of this micronode.
 	 *
 	 * @return container
 	 */

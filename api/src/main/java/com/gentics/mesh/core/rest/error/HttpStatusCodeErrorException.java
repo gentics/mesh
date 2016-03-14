@@ -120,7 +120,11 @@ public class HttpStatusCodeErrorException extends RuntimeException {
 
 	@Override
 	public String toString() {
-		return getStatus() + " " + getMessage() + " params {" + String.join(",", getI18nParameters()) + "}";
+		String extraInfo = "";
+		if (getI18nParameters() != null) {
+			extraInfo = " params {" + String.join(",", getI18nParameters()) + "}";
+		}
+		return getStatus() + " " + getMessage() + extraInfo;
 	}
 
 }

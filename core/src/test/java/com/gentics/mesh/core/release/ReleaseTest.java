@@ -27,7 +27,7 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 	public void testTransformToReference() throws Exception {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		Release release = project().getInitialRelease();
-		ReleaseReference reference = release.transformToReference(ac);
+		ReleaseReference reference = release.transformToReference();
 		assertThat(reference).isNotNull();
 		assertThat(reference.getName()).as("Reference name").isEqualTo(release.getName());
 		assertThat(reference.getUuid()).as("Reference uuid").isEqualTo(release.getUuid());

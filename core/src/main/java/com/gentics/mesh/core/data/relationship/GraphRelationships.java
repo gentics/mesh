@@ -9,62 +9,68 @@ import com.gentics.mesh.graphdb.spi.Database;
 public class GraphRelationships {
 
 	public static void checkIndices(Database db) {
-		db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
-		db.addEdgeType(MEMBER_OF);
-		db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
-		db.addEdgeType(HAS_PROJECT);
-		db.addEdgeType(HAS_RELEASE);
-		db.addEdgeType(HAS_INITIAL_RELEASE);
-		db.addEdgeType(HAS_LATEST_RELEASE);
-		db.addEdgeType(HAS_NEXT_RELEASE);
-		db.addEdgeType(HAS_NODE);
-		db.addEdgeType(HAS_NODE_REFERENCE);
-		db.addEdgeType(ASSIGNED_TO_PROJECT);
-		db.addEdgeType(HAS_GROUP_ROOT);
-		db.addEdgeType(HAS_USER);
-		db.addEdgeType(HAS_ROLE);
 
-		db.addEdgeType(HAS_TAG_ROOT);
-		db.addEdgeType(HAS_TAG_FAMILY);
-		db.addEdgeType(HAS_TAG);
+		db.noTrx(() -> {
+			db.addEdgeIndexSource(ASSIGNED_TO_ROLE);
+			db.addEdgeType(MEMBER_OF);
+			db.addEdgeType(HAS_SEARCH_QUEUE_ROOT);
+			db.addEdgeType(HAS_PROJECT);
+			db.addEdgeType(HAS_RELEASE);
+			db.addEdgeType(HAS_INITIAL_RELEASE);
+			db.addEdgeType(HAS_LATEST_RELEASE);
+			db.addEdgeType(HAS_NEXT_RELEASE);
+			db.addEdgeType(HAS_NODE);
+			db.addEdgeType(HAS_NODE_REFERENCE);
+			db.addEdgeType(ASSIGNED_TO_PROJECT);
+			db.addEdgeType(HAS_GROUP_ROOT);
+			db.addEdgeType(HAS_USER);
+			db.addEdgeType(HAS_ROLE);
 
-		db.addEdgeType(LINKED);
-		db.addEdgeType(HAS_CREATOR);
-		db.addEdgeType(HAS_EDITOR);
-		db.addEdgeType(PARENT_OF);
-		db.addEdgeType(HAS_LOCALIZED_TAGS);
-		db.addEdgeType(HAS_LANGUAGE);
-		db.addEdgeType(HAS_LOCALISATION);
-		db.addEdgeType(HAS_FIELD_CONTAINER);
-		db.addEdgeType(HAS_CHILD);
-		db.addEdgeType(HAS_PARENT_NODE);
-		db.addEdgeType(HAS_BASE_NODE);
+			db.addEdgeType(HAS_TAG_ROOT);
+			db.addEdgeType(HAS_TAG_FAMILY);
+			db.addEdgeType(HAS_TAG);
 
-		db.addEdgeType(HAS_SCHEMA_TYPE);
-		db.addEdgeType(HAS_SCHEMA_ROOT);
-		db.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
-		db.addEdgeType(HAS_SCHEMA_CONTAINER);
-		db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
-		db.addEdgeType(HAS_MICROSCHEMA_ROOT);
-		db.addEdgeType(HAS_PROPERTY_TYPE);
+			db.addEdgeType(LINKED);
+			db.addEdgeType(HAS_CREATOR);
+			db.addEdgeType(HAS_EDITOR);
+			db.addEdgeType(PARENT_OF);
+			db.addEdgeType(HAS_LOCALIZED_TAGS);
+			db.addEdgeType(HAS_LANGUAGE);
+			db.addEdgeType(HAS_LOCALISATION);
+			db.addEdgeType(HAS_FIELD_CONTAINER);
+			db.addEdgeType(HAS_CHILD);
+			db.addEdgeType(HAS_PARENT_NODE);
+			db.addEdgeType(HAS_BASE_NODE);
 
-		db.addEdgeType(HAS_NODE_ROOT);
-		db.addEdgeType(HAS_TAGFAMILY_ROOT);
-		db.addEdgeType(HAS_ROLE_ROOT);
-		db.addEdgeType(HAS_USER_ROOT);
-		db.addEdgeType(HAS_LANGUAGE_ROOT);
-		db.addEdgeType(HAS_PROJECT_ROOT);
-		db.addEdgeType(HAS_RELEASE_ROOT);
+			db.addEdgeType(HAS_SCHEMA_TYPE);
+			db.addEdgeType(HAS_SCHEMA_ROOT);
+			db.addEdgeType(HAS_SCHEMA_CONTAINER_ITEM);
+			db.addEdgeType(HAS_SCHEMA_CONTAINER);
+			db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
+			db.addEdgeType(HAS_MICROSCHEMA_ROOT);
+			db.addEdgeType(HAS_PROPERTY_TYPE);
 
-		db.addEdgeType(HAS_FIELD);
-		db.addEdgeType(HAS_ITEM);
-		db.addEdgeType(HAS_BATCH);
-		db.addEdgeType(ALLOWED_SCHEMA);
+			db.addEdgeType(HAS_NODE_ROOT);
+			db.addEdgeType(HAS_TAGFAMILY_ROOT);
+			db.addEdgeType(HAS_ROLE_ROOT);
+			db.addEdgeType(HAS_USER_ROOT);
+			db.addEdgeType(HAS_LANGUAGE_ROOT);
+			db.addEdgeType(HAS_PROJECT_ROOT);
+			db.addEdgeType(HAS_RELEASE_ROOT);
 
-		db.addEdgeType(HAS_LIST);
+			db.addEdgeType(HAS_FIELD);
+			db.addEdgeType(HAS_ITEM);
+			db.addEdgeType(HAS_BATCH);
+			db.addEdgeType(ALLOWED_SCHEMA);
 
-		// Versioning
-		db.addEdgeType(HAS_VERSION);
+			db.addEdgeType(HAS_LIST);
+
+			// Versioning
+			db.addEdgeType(HAS_VERSION);
+			db.addEdgeIndex(HAS_LATEST_VERSION);
+			db.addEdgeIndex(HAS_PARENT_CONTAINER);
+			return null;
+		});
 
 	}
 
@@ -118,6 +124,8 @@ public class GraphRelationships {
 	public static final String HAS_SCHEMA_TYPE = "HAS_SCHEMA_TYPE";
 	public static final String HAS_SCHEMA_ROOT = "HAS_ROOT_SCHEMA";
 	public static final String HAS_SCHEMA_CONTAINER = "HAS_SCHEMA_CONTAINER";
+	public static final String HAS_SCHEMA_CONTAINER_VERSION = "HAS_SCHEMA_CONTAINER_VERSION";
+	public static final String HAS_PARENT_CONTAINER = "HAS_PARENT_CONTAINER";
 	public static final String HAS_SCHEMA_CONTAINER_ITEM = "HAS_SCHEMA_CONTAINER_ITEM";
 	public static final String HAS_MICROSCHEMA_CONTAINER = "HAS_MICROSCHEMA_CONTAINER";
 	public static final String HAS_PROPERTY_TYPE = "HAS_PROPERTY_TYPE";
@@ -142,5 +150,6 @@ public class GraphRelationships {
 	// Versioning
 	public static final String HAS_VERSION = "HAS_VERSION";
 	public static final String HAS_CHANGE = "HAS_CHANGE";
+	public static final String HAS_LATEST_VERSION = "HAS_LATEST_VERSION";
 
 }

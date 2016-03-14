@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacer.Type;
@@ -173,14 +174,15 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		Language english = english();
 		Node parentNode = folder("2015");
 
+		SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
 		// Create some dummy content
-		Node content = parentNode.create(user(), schemaContainer("content"), project());
-		NodeGraphFieldContainer germanContainer = content.getOrCreateGraphFieldContainer(german);
+		Node content = parentNode.create(user(), schemaVersion, project());
+		NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, schemaVersion);
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
-		Node content2 = parentNode.create(user(), schemaContainer("content"), project());
-		NodeGraphFieldContainer englishContainer = content2.getOrCreateGraphFieldContainer(english);
+		Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+		NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, schemaVersion);
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 
@@ -194,10 +196,10 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 
 		// Transform the node into a node with a binary field.
 		String fileName = "somefile.dat";
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 		schema.setSegmentField("binary");
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		node.getGraphFieldContainer(english()).createBinary("binary").setFileName(fileName);
 
 		// Render the link

@@ -17,14 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -39,7 +43,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
-import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -77,14 +80,14 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		String fieldName = "changedfield";
 
-		Tuple<SchemaContainer, SchemaContainer> tuple = createDummySchemaWithChanges(fieldName);
-		SchemaContainer containerA = tuple.v1();
-		SchemaContainer containerB = tuple.v2();
+		SchemaContainer container = createDummySchemaWithChanges(fieldName);
+		SchemaContainerVersion versionB = container.getLatestVersion();
+		SchemaContainerVersion versionA = versionB.getPreviousVersion();
 
 		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
-		options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(containerA.getVersion()));
-		options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(containerB.getVersion()));
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 
 		// Trigger migration by sending a event
@@ -105,26 +108,26 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 	public void testStartSchemaMigration() throws Throwable {
 		String fieldName = "changedfield";
 
-		Tuple<SchemaContainer, SchemaContainer> tuple = createDummySchemaWithChanges(fieldName);
-		SchemaContainer containerA = tuple.v1();
-		SchemaContainer containerB = tuple.v2();
+		SchemaContainer container = createDummySchemaWithChanges(fieldName);
+		SchemaContainerVersion versionB = container.getLatestVersion();
+		SchemaContainerVersion versionA = versionB.getPreviousVersion();
 
 		// create a node based on the old schema
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
-		Node firstNode = parentNode.create(user, containerA, project());
-		NodeGraphFieldContainer firstEnglishContainer = firstNode.getOrCreateGraphFieldContainer(english);
+		Node firstNode = parentNode.create(user, versionA, project());
+		NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, versionA);
 		firstEnglishContainer.createString(fieldName).setString("first content");
 
-		Node secondNode = parentNode.create(user, containerA, project());
-		NodeGraphFieldContainer secondEnglishContainer = secondNode.getOrCreateGraphFieldContainer(english);
+		Node secondNode = parentNode.create(user, versionA, project());
+		NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english, versionA);
 		secondEnglishContainer.createString(fieldName).setString("second content");
 
 		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
-		options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(containerA.getVersion()));
-		options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(containerB.getVersion()));
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 		vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
@@ -138,20 +141,23 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		// assert that migration worked
 		firstNode.reload();
 		firstNode.getGraphFieldContainer("en").reload();
-		assertThat(firstNode).as("Migrated Node").isOf(containerB).hasTranslation("en");
+		assertThat(firstNode).as("Migrated Node").isOf(versionB).hasTranslation("en");
 		assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 				.isEqualTo("modified first content");
 		secondNode.reload();
 		secondNode.getGraphFieldContainer("en").reload();
-		assertThat(secondNode).as("Migrated Node").isOf(containerB).hasTranslation("en");
+		assertThat(secondNode).as("Migrated Node").isOf(versionB).hasTranslation("en");
 		assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 				.isEqualTo("modified second content");
 	}
 
-	private Tuple<SchemaContainer, SchemaContainer> createDummySchemaWithChanges(String fieldName) {
+	private SchemaContainer createDummySchemaWithChanges(String fieldName) {
+
+		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		boot.schemaContainerRoot().addSchemaContainer(container);
 
 		// create version 1 of the schema
-		SchemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schemaA = new SchemaModel();
 		schemaA.setName("migratedSchema");
 		schemaA.setVersion(1);
@@ -159,12 +165,12 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		schemaA.addField(oldField);
 		schemaA.setDisplayField("name");
 		schemaA.setSegmentField("name");
-		containerA.setName("migratedSchema");
-		containerA.setSchema(schemaA);
-		boot.schemaContainerRoot().addSchemaContainer(containerA);
+		versionA.setName("migratedSchema");
+		versionA.setSchema(schemaA);
+		versionA.setSchemaContainer(container);
 
 		// create version 2 of the schema (with the field renamed)
-		SchemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schemaB = new SchemaModel();
 		schemaB.setName("migratedSchema");
 		schemaB.setVersion(2);
@@ -172,9 +178,9 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		schemaB.addField(newField);
 		schemaB.setDisplayField("name");
 		schemaB.setSegmentField("name");
-		containerB.setName("migratedSchema");
-		containerB.setSchema(schemaB);
-		boot.schemaContainerRoot().addSchemaContainer(containerB);
+		versionB.setName("migratedSchema");
+		versionB.setSchema(schemaB);
+		versionB.setSchemaContainer(container);
 
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -182,10 +188,14 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		updateFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
-		updateFieldChange.setPreviousContainer(containerA);
-		updateFieldChange.setNextSchemaContainer(containerB);
-		containerA.setNextVersion(containerB);
-		return new Tuple<>(containerA, containerB);
+		updateFieldChange.setPreviousContainerVersion(versionA);
+		updateFieldChange.setNextSchemaContainerVersion(versionB);
+
+		// Link everything together
+		container.setLatestVersion(versionB);
+		versionA.setNextVersion(versionB);
+		boot.schemaContainerRoot().addSchemaContainer(container);
+		return container;
 
 	}
 
@@ -195,26 +205,31 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		MicroschemaContainer containerA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		container.setLatestVersion(versionA);
+		versionA.setSchemaContainer(container);
+
 		Microschema microschemaA = new MicroschemaModel();
 		microschemaA.setName("migratedSchema");
 		microschemaA.setVersion(1);
 		FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
 		microschemaA.addField(oldField);
-		containerA.setName("migratedSchema");
-		containerA.setSchema(microschemaA);
-		boot.microschemaContainerRoot().addMicroschema(containerA);
+		versionA.setName("migratedSchema");
+		versionA.setSchema(microschemaA);
+		boot.microschemaContainerRoot().addMicroschema(container);
 
 		// create version 2 of the microschema (with the field renamed)
-		MicroschemaContainer containerB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		versionB.setSchemaContainer(container);
 		Microschema microschemaB = new MicroschemaModel();
 		microschemaB.setName("migratedSchema");
 		microschemaB.setVersion(2);
 		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 		microschemaB.addField(newField);
-		containerB.setName("migratedSchema");
-		containerB.setSchema(microschemaB);
-		boot.microschemaContainerRoot().addMicroschema(containerB);
+		versionB.setName("migratedSchema");
+		versionB.setSchema(microschemaB);
+		//boot.microschemaContainerRoot().addMicroschema(container);
 
 		// link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -222,29 +237,29 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		updateFieldChange.setCustomMigrationScript(
 				"function migrate(node, fieldname, convert) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}");
 
-		updateFieldChange.setPreviousContainer(containerA);
-		updateFieldChange.setNextSchemaContainer(containerB);
-		containerA.setNextVersion(containerB);
+		updateFieldChange.setPreviousContainerVersion(versionA);
+		updateFieldChange.setNextSchemaContainerVersion(versionB);
+		versionA.setNextVersion(versionB);
 
 		// create micronode based on the old schema
 		Language english = english();
 		Node firstNode = folder("2015");
-		Schema schema = firstNode.getSchemaContainer().getSchema();
+		Schema schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
-		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(containerA.getName());
-		firstNode.getSchemaContainer().setSchema(schema);
+		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
+		firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		MicronodeGraphField firstMicronodeField = firstNode.getOrCreateGraphFieldContainer(english).createMicronode(micronodeFieldName, containerA);
+		MicronodeGraphField firstMicronodeField = firstNode.createGraphFieldContainer(english, firstNode.getSchemaContainer().getLatestVersion()).createMicronode(micronodeFieldName, versionA);
 		firstMicronodeField.getMicronode().createString(fieldName).setString("first content");
 
 		Node secondNode = folder("news");
-		MicronodeGraphField secondMicronodeField = secondNode.getOrCreateGraphFieldContainer(english).createMicronode(micronodeFieldName, containerA);
+		MicronodeGraphField secondMicronodeField = secondNode.createGraphFieldContainer(english, firstNode.getSchemaContainer().getLatestVersion()).createMicronode(micronodeFieldName, versionA);
 		secondMicronodeField.getMicronode().createString(fieldName).setString("second content");
 
 		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, containerA.getUuid());
-		options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(containerA.getVersion()));
-		options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(containerB.getVersion()));
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 		vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
@@ -257,12 +272,12 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 
 		// assert that migration worked
 		firstMicronodeField.getMicronode().reload();
-		assertThat(firstMicronodeField.getMicronode()).as("Migrated Micronode").isOf(containerB);
+		assertThat(firstMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
 		assertThat(firstMicronodeField.getMicronode().getString(fieldName).getString()).as("Migrated field value")
 				.isEqualTo("modified first content");
 
 		secondMicronodeField.getMicronode().reload();
-		assertThat(secondMicronodeField.getMicronode()).as("Migrated Micronode").isOf(containerB);
+		assertThat(secondMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
 		assertThat(secondMicronodeField.getMicronode().getString(fieldName).getString()).as("Migrated field value")
 				.isEqualTo("modified second content");
 	}

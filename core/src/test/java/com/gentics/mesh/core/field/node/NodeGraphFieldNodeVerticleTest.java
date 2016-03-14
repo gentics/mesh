@@ -38,13 +38,13 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Before
 	public void updateSchema() throws Exception {
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 		nodeFieldSchema.setName(NODE_FIELD_NAME);
 		nodeFieldSchema.setLabel("Some label");
 		nodeFieldSchema.setAllowedSchemas("folder");
 		schema.addField(nodeFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 	}
 
 	@Test
@@ -55,13 +55,13 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 		// Update the field to point to node
 		NodeResponse response = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(node.getUuid()));
-		NodeResponse field = response.getField(NODE_FIELD_NAME);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals("We updated the node field in node 2015 but the response did not contain the expected node reference value", node.getUuid(),
 				field.getUuid());
 
 		// Update the field to point to node2
 		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
-		field = response.getField("nodeField");
+		field = response.getFields().getNodeFieldExpanded("nodeField");
 		assertEquals("We updated the node field in node 2015 but the response did not contain the expected node2 reference value", node2.getUuid(),
 				field.getUuid());
 	}
@@ -79,25 +79,25 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 		// Update the field to point to node
 		NodeResponse response = updateNode(NODE_FIELD_NAME, loadedNode);
-		NodeResponse field = response.getField(NODE_FIELD_NAME);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
 		Future<NodeResponse> loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
 				new NodeRequestParameter().setLanguages("en"));
 		latchFor(loadedNodeFuture);
 		assertSuccess(loadedNodeFuture);
-		field = loadedNodeFuture.result().getField(NODE_FIELD_NAME);
+		field = loadedNodeFuture.result().getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
 		// Update the field to point to node2
 		response = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(node2.getUuid()));
-		field = response.getField(NODE_FIELD_NAME);
+		field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node2.getUuid(), field.getUuid());
 
 		loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeRequestParameter().setLanguages("en"));
 		latchFor(loadedNodeFuture);
 		assertSuccess(loadedNodeFuture);
-		field = loadedNodeFuture.result().getField("nodeField");
+		field = loadedNodeFuture.result().getFields().getNodeFieldExpanded("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
 
 	}
@@ -107,7 +107,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testCreateDeleteNodeField() {
 
 		NodeResponse response = createNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
-		NodeResponse field = response.getField(NODE_FIELD_NAME);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(folder("news").getUuid(), field.getUuid());
 
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
@@ -121,14 +121,14 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		assertSuccess(future);
 		response = future.result();
 
-		assertNull("The field should have been deleted", response.getField(NODE_FIELD_NAME));
+		assertNull("The field should have been deleted", response.getFields().getNodeField(NODE_FIELD_NAME));
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
 		NodeResponse response = createNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
-		NodeResponse field = response.getField(NODE_FIELD_NAME);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(folder("news").getUuid(), field.getUuid());
 	}
 
@@ -141,7 +141,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		container.createNode(NODE_FIELD_NAME, newsNode);
 		NodeResponse response = readNode(node);
-		NodeField deserializedNodeField = response.getField(NODE_FIELD_NAME, NodeFieldImpl.class);
+		NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}
@@ -150,14 +150,13 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(NODE_FIELD_NAME, (Field) null);
-		NodeResponse field = response.getField(NODE_FIELD_NAME);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertNotNull(field);
 		assertNull(field.getUuid());
 	}
 
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
-		resetClientSchemaStorage();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 
@@ -170,7 +169,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		assertSuccess(future);
 
 		// Check expanded node field
-		NodeResponse deserializedExpandedNodeField = future.result().getField(NODE_FIELD_NAME, NodeResponse.class);
+		NodeResponse deserializedExpandedNodeField = future.result().getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertNotNull("The ", deserializedExpandedNodeField);
 		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
 		assertEquals(newsNode.getUuid(), expandedField.getUuid());
@@ -180,7 +179,6 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
-		resetClientSchemaStorage();
 		Node newsNode = folder("news");
 		Node node = folder("2015");
 
@@ -190,24 +188,24 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 		// 1. Read node with collapsed fields and check that the collapsed node field can be read
 		NodeResponse responseCollapsed = readNode(node);
-		NodeField deserializedNodeField = responseCollapsed.getField(NODE_FIELD_NAME, NodeFieldImpl.class);
+		NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(NODE_FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
 		// Check whether it is possible to read the field in an expanded form.
-		NodeResponse deserializedExpandedNodeField = responseCollapsed.getField(NODE_FIELD_NAME, NodeResponse.class);
+		NodeResponse deserializedExpandedNodeField = responseCollapsed.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertNotNull(deserializedExpandedNodeField);
 
 		// 2. Read node with expanded fields
 		NodeResponse responseExpanded = readNode(node, NODE_FIELD_NAME, "bogus");
 
 		// Check collapsed node field
-		deserializedNodeField = responseExpanded.getField(NODE_FIELD_NAME, NodeFieldImpl.class);
+		deserializedNodeField = responseExpanded.getFields().getNodeField(NODE_FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
 		// Check expanded node field
-		deserializedExpandedNodeField = responseExpanded.getField(NODE_FIELD_NAME, NodeResponse.class);
+		deserializedExpandedNodeField = responseExpanded.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
 		assertNotNull(expandedField);
 		assertEquals(newsNode.getUuid(), expandedField.getUuid());
@@ -261,7 +259,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 			assertSuccess(resultFuture);
 			NodeResponse response = resultFuture.result();
 			assertEquals("Check node language", "de", response.getLanguage());
-			NodeResponse nodeField = response.getField(NODE_FIELD_NAME, NodeResponse.class);
+			NodeResponse nodeField = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 			assertNotNull("Field must be present", nodeField);
 			assertEquals("Check target node language", "de", nodeField.getLanguage());
 		}

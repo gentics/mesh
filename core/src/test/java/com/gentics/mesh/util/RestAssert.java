@@ -90,7 +90,6 @@ public class RestAssert {
 		assertEquals(schema.getUuid(), restNode.getSchema().getUuid());
 		assertNotNull(restNode.getParentNode().getUuid());
 		// TODO match fields
-
 	}
 
 	public void assertGenericNode(MeshCoreVertex<?, ?> node, AbstractGenericRestResponse model) {

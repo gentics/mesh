@@ -35,7 +35,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	public void testTransformToReference() throws Exception {
 		TagFamily tagFamily = tagFamily("colors");
 		InternalActionContext ac = getMockedInternalActionContext("");
-		TagFamilyReference reference = tagFamily.transformToReference(ac);
+		TagFamilyReference reference = tagFamily.transformToReference();
 		assertNotNull(reference);
 		assertEquals(tagFamily.getUuid(), reference.getUuid());
 		assertEquals(tagFamily.getName(), reference.getName());

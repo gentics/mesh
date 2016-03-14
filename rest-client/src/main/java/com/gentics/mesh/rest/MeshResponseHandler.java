@@ -14,7 +14,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -43,7 +42,6 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	private Class<? extends T> classOfT;
 	private Handler<HttpClientResponse> handler;
 	private HttpMethod method;
-	private SchemaStorage schemaStorage;
 	private String uri;
 
 	/**
@@ -55,15 +53,12 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 	 *            Method that was used for the request
 	 * @param uri
 	 *            Uri that was queried
-	 * @param schemaStorage
-	 *            A filled schema storage
 	 */
-	public MeshResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri, SchemaStorage schemaStorage) {
+	public MeshResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
 		this.classOfT = classOfT;
 		this.future = Future.future();
 		this.method = method;
 		this.uri = uri;
-		this.schemaStorage = schemaStorage;
 	}
 
 	@Override
@@ -82,13 +77,13 @@ public class MeshResponseHandler<T> implements Handler<HttpClientResponse> {
 					try {
 						// Hack to fallback to node responses when dealing with object classes
 						if (classOfT.equals(Object.class)) {
-							NodeResponse restObj = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+							NodeResponse restObj = JsonUtil.readValue(json, NodeResponse.class);
 							future.complete((T) restObj);
 						} else if (isSchemaClass(classOfT)) {
 							T restObj = JsonUtil.readSchema(json, classOfT);
 							future.complete(restObj);
 						} else if (isNodeClass(classOfT) || isUserListClass(classOfT) || isNodeListClass(classOfT) || isUserClass(classOfT)) {
-							T restObj = JsonUtil.readNode(json, classOfT, schemaStorage);
+							T restObj = JsonUtil.readValue(json, classOfT);
 							future.complete(restObj);
 						} else {
 							T restObj = JsonUtil.readValue(json, classOfT);

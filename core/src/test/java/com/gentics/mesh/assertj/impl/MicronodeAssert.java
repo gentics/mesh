@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 
 public class MicronodeAssert extends AbstractAssert<MicronodeAssert, Micronode> {
 	public MicronodeAssert(Micronode actual) {
@@ -25,8 +25,8 @@ public class MicronodeAssert extends AbstractAssert<MicronodeAssert, Micronode> 
 	 * @param microschemaContainer microschema container
 	 * @return fluent API
 	 */
-	public MicronodeAssert isOf(MicroschemaContainer microschemaContainer) {
-		assertThat(actual.getMicroschemaContainer()).as(descriptionText() + " Microschema").equals(microschemaContainer);
+	public MicronodeAssert isOf(MicroschemaContainerVersion microschemaContainer) {
+		assertThat(actual.getMicroschemaContainerVersion()).as(descriptionText() + " Microschema").equals(microschemaContainer);
 		return this;
 	}
 

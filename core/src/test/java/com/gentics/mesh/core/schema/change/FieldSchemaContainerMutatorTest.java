@@ -8,10 +8,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
@@ -47,10 +47,10 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 	@Test
 	public void testNullOperation() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
-		container.setSchema(schema);
-		Schema updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		Schema updatedSchema = mutator.apply(version);
 		assertNotNull(updatedSchema);
 		assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
 	}
@@ -58,7 +58,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 	@Test
 	public void testAUpdateFields() {
 
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaModel("testschema");
@@ -112,14 +112,14 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		listField.setRequired(true);
 		schema.addField(listField);
 
-		container.setSchema(schema);
+		version.setSchema(schema);
 
 		// 2. Create schema field update change
 		UpdateFieldChange binaryFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		binaryFieldUpdate.setFieldName("binaryField");
 		binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
 		binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-		container.setNextChange(binaryFieldUpdate);
+		version.setNextChange(binaryFieldUpdate);
 
 		UpdateFieldChange nodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		nodeFieldUpdate.setFieldName("nodeField");
@@ -165,7 +165,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		micronodeFieldUpdate.setNextChange(listFieldUpdate);
 
 		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(container);
+		Schema updatedSchema = mutator.apply(version);
 
 		// Binary 
 		BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);

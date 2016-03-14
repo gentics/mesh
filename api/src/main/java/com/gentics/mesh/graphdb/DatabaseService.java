@@ -52,7 +52,7 @@ public class DatabaseService {
 			serviceError.printStackTrace();
 		}
 		if (database == null) {
-			throw new RuntimeException("Could not find image provider.");
+			throw new RuntimeException("Could not find database provider.");
 		}
 		return database;
 	}

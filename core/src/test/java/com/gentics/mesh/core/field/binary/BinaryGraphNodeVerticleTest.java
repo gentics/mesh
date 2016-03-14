@@ -105,10 +105,9 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		Node node = folder("news");
 
 		// Add a schema called nonBinary
-		Schema schema = node.getSchemaContainer().getSchema();
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
-		node.getSchemaContainer().setSchema(schema);
-		getClient().getClientSchemaStorage().addSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "nonBinary", binaryLen, contentType, fileName);
 		latchFor(future);
@@ -196,7 +195,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(responseFuture);
 		NodeResponse response = responseFuture.result();
 
-		BinaryField binaryField = response.getField("binary", BinaryField.class);
+		BinaryField binaryField = response.getFields().getBinaryField("binary");
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());
@@ -227,10 +226,9 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		prepareSchema(folder2014, "", "binary");
 
 		// make binary field the segment field
-		Schema schema = folder2014.getSchemaContainer().getSchema();
+		Schema schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 		schema.setSegmentField("binary");
-		folder2014.getSchemaContainer().setSchema(schema);
-		getClient().getClientSchemaStorage().addSchema(schema);
+		folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		// upload file to folder 2014
 		Future<GenericMessageResponse> uploadFuture = updateBinaryField(folder2014, "en", "binary", binaryLen, contentType, fileName);
@@ -265,7 +263,7 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(responseFuture);
 		NodeResponse response = responseFuture.result();
 
-		BinaryField binaryField = response.getField(fieldName, BinaryField.class);
+		BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 		assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
 		assertEquals("The contentType was correctly set in the response.", contentType, binaryField.getMimeType());
 		assertEquals("The binary length was not correctly set in the response.", binaryLen, binaryField.getFileSize());

@@ -5,7 +5,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
 /**
  * Assert for Node
@@ -16,18 +16,22 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	}
 
 	/**
-	 * Assert that the node uses the given schema
-	 * @param schemaContainer schema container
+	 * Assert that the node uses the given schema.
+	 * 
+	 * @param schemaVersion
+	 *            schema container
 	 * @return fluent API
 	 */
-	public NodeAssert isOf(SchemaContainer schemaContainer) {
-		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").equals(schemaContainer);
+	public NodeAssert isOf(SchemaContainerVersion schemaVersion) {
+		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").equals(schemaVersion.getSchemaContainer());
 		return this;
 	}
 
 	/**
-	 * Assert that the node has a translation in the given language
-	 * @param languageTag language tag
+	 * Assert that the node has a translation in the given language.
+	 * 
+	 * @param languageTag
+	 *            language tag
 	 * @return fluent API
 	 */
 	public NodeAssert hasTranslation(String languageTag) {
@@ -36,8 +40,10 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	}
 
 	/**
-	 * Assert that the node does not have a translation in the given language
-	 * @param languageTag language tag
+	 * Assert that the node does not have a translation in the given language.
+	 * 
+	 * @param languageTag
+	 *            language tag
 	 * @return fluent API
 	 */
 	public NodeAssert doesNotHaveTranslation(String languageTag) {

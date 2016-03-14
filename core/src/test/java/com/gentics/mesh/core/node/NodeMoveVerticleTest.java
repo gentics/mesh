@@ -68,7 +68,7 @@ public class NodeMoveVerticleTest extends AbstractRestVerticleTest {
 
 		Future<GenericMessageResponse> future = getClient().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid());
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
+		expectException(future, BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
 		assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode().getUuid());
 	}

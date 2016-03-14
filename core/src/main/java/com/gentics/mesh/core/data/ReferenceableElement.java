@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.rest.common.NameUuidReference;
-import com.gentics.mesh.handler.InternalActionContext;
 
 /**
  * A referenceable element is an graph element which can be transformed to a rest reference model.
@@ -15,10 +14,8 @@ public interface ReferenceableElement<TR extends NameUuidReference<TR>> extends 
 
 	/**
 	 * Transform the element to a rest model that represents a references.
-	 * 
-	 * @param ac
 	 */
-	default TR transformToReference(InternalActionContext ac) {
+	default TR transformToReference() {
 		TR reference = createEmptyReferenceModel();
 		reference.setName(getName());
 		reference.setUuid(getUuid());

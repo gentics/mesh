@@ -14,8 +14,8 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 
 import io.vertx.core.json.JsonObject;
 
@@ -53,7 +53,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, microschema);
 		map.put(NAME_KEY, microschema.getName());
-		map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
+		//map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
 		return map;
 	}
 

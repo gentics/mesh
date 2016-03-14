@@ -111,10 +111,12 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 			Database db = MeshSpringConfiguration.getInstance().database();
 			try (NoTrx noTrx = db.noTrx()) {
 				for (String languageTag : languageTags) {
-					Iterator<Vertex> it = db.getVertices(LanguageImpl.class,
-							new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY }, new Object[] { languageTag });
-					if (!it.hasNext()) {
-						throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+					if (languageTag != null) {
+						Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
+								new Object[] { languageTag });
+						if (!it.hasNext()) {
+							throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+						}
 					}
 				}
 			}
@@ -175,13 +177,13 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 
 	@Override
 	public PagingParameter getPagingParameter() {
-		//TODO return immutable object
+		// TODO return immutable object
 		return PagingParameter.fromQuery(query());
 	}
 
 	@Override
 	public NavigationRequestParameter getNavigationRequestParameter() {
-		//TODO return immutable object
+		// TODO return immutable object
 		return NavigationRequestParameter.fromQuery(query());
 	}
 
@@ -192,7 +194,7 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 
 	@Override
 	public ImageManipulationParameter getImageRequestParameter() {
-		//TODO return immutable object
+		// TODO return immutable object
 		return ImageManipulationParameter.fromQuery(query());
 	}
 

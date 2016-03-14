@@ -51,7 +51,7 @@ public class MeshOptions {
 
 	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
 
-	private String tempDirectory = new File("tmp").getAbsolutePath();
+	private String tempDirectory = "data" + File.separator + "tmp";
 
 	public MeshOptions() {
 	}

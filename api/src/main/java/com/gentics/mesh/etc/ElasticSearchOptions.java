@@ -1,11 +1,13 @@
 package com.gentics.mesh.etc;
 
+import java.io.File;
+
 /**
  * Search engine options POJO.
  */
 public class ElasticSearchOptions {
 
-	public static final String DEFAULT_DIRECTORY = "mesh-searchindex";
+	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "mesh-searchindex";
 
 	private String directory = DEFAULT_DIRECTORY;
 

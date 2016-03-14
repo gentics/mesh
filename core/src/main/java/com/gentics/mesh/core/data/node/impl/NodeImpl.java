@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -51,11 +52,11 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -107,7 +108,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<String> getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
 		if (container != null) {
-			String fieldName = getSchemaContainer().getSchema().getSegmentField();
+			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
 			if (field != null) {
 				return Observable.just(field.getString());
@@ -125,7 +126,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		if (container != null) {
-			String fieldName = getSchemaContainer().getSchema().getSegmentField();
+			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			// 1. Try to load the path segment using the string field
 			StringGraphField stringField = container.getString(fieldName);
 			if (stringField != null) {
@@ -226,12 +227,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return getGraphFieldContainer(languageTag, NodeGraphFieldContainerImpl.class);
 	}
 
-	public NodeGraphFieldContainer getOrCreateGraphFieldContainer(Language language) {
-		NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
-		// set the initial version number, if no version number set
-		if (container.getVersion() == null) {
-			container.setVersion(new VersionNumber());
-		}
+	@Override
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, SchemaContainerVersion schemaVersion) {
+		NodeGraphFieldContainerImpl container = getOrCreateGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
+		container.setSchemaContainerVersion(schemaVersion);
 		return container;
 	}
 
@@ -250,11 +249,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setLinkOut(schema.getImpl(), HAS_SCHEMA_CONTAINER);
 	}
 
-	/**
-	 * @deprecated Load the schema container from the {@link GraphFieldContainer} instance.
-	 */
 	@Override
-	@Deprecated
 	public SchemaContainer getSchemaContainer() {
 		return out(HAS_SCHEMA_CONTAINER).has(SchemaContainerImpl.class).nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 	}
@@ -288,10 +283,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(User creator, SchemaContainer schemaContainer, Project project) {
+	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project) {
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node.
-		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaContainer, project);
+		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaVersion, project);
 		node.setParentNode(this);
+		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		setCreated(creator);
 		return node;
 	}
@@ -320,39 +316,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 			}
 
-			Schema schema = container.getSchema();
-			if (schema == null) {
-				throw error(BAD_REQUEST, "The schema for node {" + getUuid() + "} could not be found.");
-			}
-			restNode.setDisplayField(schema.getDisplayField());
 			restNode.setPublished(isPublished());
-
-			// Load the children information
-			if (schema.isContainer()) {
-				for (Node child : getChildren()) {
-					if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
-						String schemaName = child.getSchemaContainer().getName();
-						NodeChildrenInfo info = restNode.getChildrenInfo().get(schemaName);
-						if (info == null) {
-							info = new NodeChildrenInfo();
-							String schemaUuid = child.getSchemaContainer().getUuid();
-							info.setSchemaUuid(schemaUuid);
-							info.setCount(1);
-							restNode.getChildrenInfo().put(schemaName, info);
-						} else {
-							info.setCount(info.getCount() + 1);
-						}
-					}
-				}
-				restNode.setContainer(true);
-
-			}
-
-			// Schema reference
-			SchemaContainer schemaContainer = getSchemaContainer();
-			if (schemaContainer != null) {
-				restNode.setSchema(schemaContainer.transformToReference(ac));
-			}
 
 			// Parent node reference
 			Node parentNode = getParentNode();
@@ -361,6 +325,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					restNode.setParentNode(transformedParentNode);
 					return restNode;
 				}));
+			} else {
+				// Only the base node of the project has no parent. Therefore this node must be a container.
+				restNode.setContainer(true);
 			}
 
 			// Role permissions
@@ -368,6 +335,23 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Languages
 			restNode.setAvailableLanguages(getAvailableLanguageNames());
+
+			// Load the children information
+			for (Node child : getChildren()) {
+				if (ac.getUser().hasPermissionSync(ac, child, READ_PERM)) {
+					String schemaName = child.getSchemaContainer().getName();
+					NodeChildrenInfo info = restNode.getChildrenInfo().get(schemaName);
+					if (info == null) {
+						info = new NodeChildrenInfo();
+						String schemaUuid = child.getSchemaContainer().getUuid();
+						info.setSchemaUuid(schemaUuid);
+						info.setCount(1);
+						restNode.getChildrenInfo().put(schemaName, info);
+					} else {
+						info.setCount(info.getCount() + 1);
+					}
+				}
+			}
 
 			// Fields
 			NodeGraphFieldContainer fieldContainer = null;
@@ -384,20 +368,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
 							+ langInfo + "}. Fields will be empty.");
 				}
-
-				// TODO The base node has no fields. We need to take care of that edgecase first
-				// noTrx.fail(error(ac, NOT_FOUND, "node_no_language_found", langInfo));
-				// return;
+				// No field container was found so we can only set the schema reference that points to the container (no version information will be included)
+				restNode.setSchema(getSchemaContainer().transformToReference());
+				//TODO return a 404 and adapt mesh rest client in order to return a mesh response
+				//				ac.data().put("statuscode", NOT_FOUND.code());
 			} else {
+				Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
+				restNode.setContainer(schema.isContainer());
+				restNode.setDisplayField(schema.getDisplayField());
+
 				restNode.setLanguage(fieldContainer.getLanguage().getLanguageTag());
-
-				List<String> fieldsToExpand = ac.getExpandedFieldnames();
-
+				//				List<String> fieldsToExpand = ac.getExpandedFieldnames();
 				// modify the language fallback list by moving the container's language to the front
 				List<String> containerLanguageTags = new ArrayList<>(requestedLanguageTags);
 				containerLanguageTags.remove(restNode.getLanguage());
 				containerLanguageTags.add(0, restNode.getLanguage());
 
+				// Schema reference
+				restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
+
+				// Fields
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 					Observable<NodeResponse> obsFields = fieldContainer
@@ -417,14 +407,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 							});
 					obs.add(obsFields);
 				}
+
 			}
 
 			// Tags
-			for (Tag tag : getTags(ac)) {
+			for (Tag tag : getTags()) {
 				TagFamily tagFamily = tag.getTagFamily();
 				String tagFamilyName = tagFamily.getName();
 				String tagFamilyUuid = tagFamily.getUuid();
-				TagReference reference = tag.transformToReference(ac);
+				TagReference reference = tag.transformToReference();
 				TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
 				if (group == null) {
 					group = new TagFamilyTagGroup();
@@ -498,7 +489,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
-			if (!getSchemaContainer().getSchema().isContainer()) {
+			//TODO assure that the schema version is correct
+			if (!getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
 			NavigationResponse response = new NavigationResponse();
@@ -542,7 +534,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Add children
 		for (Node child : nodes) {
-			if (child.getSchemaContainer().getSchema().isContainer()) {
+			//TODO assure that the schema version is correct?
+			if (child.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -560,7 +553,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeReferenceImpl nodeReference = new NodeReferenceImpl();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
-		nodeReference.setSchema(getSchemaContainer().transformToReference(ac));
+		nodeReference.setSchema(getSchemaContainer().transformToReference());
 		return Observable.just(nodeReference);
 	}
 
@@ -618,12 +611,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	/**
 	 * Get a vertex traversal to find the children of this node, this user has read permission for
 	 *
-	 * @param requestUser user
+	 * @param requestUser
+	 *            user
 	 * @return vertex traversal
 	 */
 	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser) {
-		return in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER)
-				.retain(requestUser.getImpl()).back();
+		return in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
 	}
 
 	@Override
@@ -640,11 +633,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public PageImpl<? extends Tag> getTags(InternalActionContext ac) throws InvalidArgumentException {
+	public PageImpl<? extends Tag> getTags(PagingParameter params) throws InvalidArgumentException {
 		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		VertexTraversal<?, ?, ?> countTraversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, countTraversal, ac.getPagingParameter(), TagImpl.class);
+		return TraversalHelper.getPagedResult(traversal, countTraversal, params, TagImpl.class);
 	}
 
 	@Override
@@ -669,7 +662,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return null;
 			} else {
 				// Determine the display field name and load the string value from that field.
-				return container.getDisplayFieldValue(getSchemaContainer().getSchema());
+				return container.getDisplayFieldValue();
 			}
 		} catch (Exception e) {
 			log.error("Could not determine displayName for node {" + getUuid() + "} and fieldName {" + displayFieldName + "}", e);
@@ -692,7 +685,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Observable<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
-			NodeUpdateRequest requestModel = JsonUtil.readNode(ac.getBodyAsString(), NodeUpdateRequest.class, ServerSchemaStorage.getInstance());
+			NodeUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), NodeUpdateRequest.class);
 			if (StringUtils.isEmpty(requestModel.getLanguage())) {
 				throw error(BAD_REQUEST, "error_language_not_set");
 			}
@@ -706,9 +699,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				setPublished(requestModel.isPublished());
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
-				NodeGraphFieldContainer container = getOrCreateGraphFieldContainer(language);
-				Schema schema = getSchemaContainer().getSchema();
-				container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+
+				NodeGraphFieldContainer container = getGraphFieldContainer(language);
+				if (container == null) {
+					SchemaContainerVersion latestSchemaVersion = getSchemaContainer().getLatestVersion();
+					Schema schema = latestSchemaVersion.getSchema();
+					// Create a new field
+					container = createGraphFieldContainer(language, latestSchemaVersion);
+					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+				} else {
+					// Update the existing field
+					SchemaContainerVersion latestSchemaVersion = container.getSchemaContainerVersion();
+					Schema schema = latestSchemaVersion.getSchema();
+					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+				}
 				return addIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
 
@@ -727,12 +731,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Node parent = targetNode.getParentNode();
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
-				throw error(BAD_REQUEST, "node_move_error_not_allowd_to_move_node_into_one_of_its_children");
+				throw error(BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 			}
 			parent = parent.getParentNode();
 		}
 
-		if (!targetNode.getSchemaContainer().getSchema().isContainer()) {
+		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 			throw error(BAD_REQUEST, "node_move_error_targetnode_is_no_folder");
 		}
 
@@ -763,16 +767,25 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (container == null) {
 				throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
 			}
+			// Create batch the batch first since we can't delete the container and access it later in batch creation  
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION, container);
 			container.delete();
-			return addIndexBatch(SearchQueueEntryAction.DELETE_ACTION, language.getLanguageTag());
+			return batch;
 		}).process().map(i -> this);
 	}
 
-	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, String languageTag) {
+	/**
+	 * Add a search queue batch which contains information about the affected node language.
+	 * 
+	 * @param action
+	 * @param container
+	 * @return
+	 */
+	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, NodeGraphFieldContainer container) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainer().getSchema());
-		batch.addEntry(NodeIndexHandler.composeDocumentId(this, languageTag), getType(), action, indexType);
+		String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion().getSchema());
+		batch.addEntry(NodeIndexHandler.composeDocumentId(this, container.getLanguage().getLanguageTag()), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
 	}
@@ -788,7 +801,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		// TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = NodeIndexHandler.getDocumentType(getSchemaContainer().getSchema());
+			String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion().getSchema());
 			batch.addEntry(getUuid(), getType(), action, indexType);
 		}
 		addRelatedEntries(batch, action);
@@ -797,11 +810,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PathSegment getSegment(String segment) {
-		Schema schema = getSchemaContainer().getSchema();
 
 		// Check the different language versions
-		String segmentFieldName = schema.getSegmentField();
-		for (GraphFieldContainer container : getGraphFieldContainers()) {
+		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
+			Schema schema = container.getSchemaContainerVersion().getSchema();
+			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
 			StringGraphField field = container.getString(segmentFieldName);
 			if (field != null) {
