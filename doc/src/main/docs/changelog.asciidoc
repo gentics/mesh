@@ -1,13 +1,13 @@
 == Changelog
 
-=== 0.5.0
+=== 0.5.0 - 17.11.2015
 
 [source]
 ----
 * Closed beta release
 ----
 
-=== 0.6.0
+=== 0.6.0 - 14.03.2016
 
 [source]
 ----
@@ -42,6 +42,14 @@
 * Vertx update
   The Vertx dependency was updated to version 3.2.1
 
+----
+
+
+=== 0.6.1 - 14.03.2016
+
+[source]
+----
+* Add mesh-ui to gentics/mesh docker image
 ----
 
 === Upcoming changes
