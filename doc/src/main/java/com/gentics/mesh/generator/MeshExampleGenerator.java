@@ -67,8 +67,8 @@ public class MeshExampleGenerator {
 	private static void writeMeshConfig() throws JsonProcessingException, IOException {
 
 		MeshOptions conf = new MeshOptions();
-		conf.setTempDirectory("/opt/mesh/tmp");
-		conf.getUploadOptions().setTempDirectory("/opt/mesh/tmp/temp-uploads");
+		conf.setTempDirectory("/opt/mesh/data/tmp");
+		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
 		writeJson(conf, "mesh-config.json");
 	}
 

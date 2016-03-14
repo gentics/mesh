@@ -14,7 +14,9 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -62,16 +64,20 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public SchemaContainer create(Schema schema, User creator) throws MeshSchemaException {
 		validate(schema);
-		SchemaContainerImpl schemaContainer = getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		container.setLatestVersion(version);
 
 		// set the initial version
 		schema.setVersion(1);
-		schemaContainer.setSchema(schema);
-		schemaContainer.setName(schema.getName());
-		addSchemaContainer(schemaContainer);
-		schemaContainer.setCreated(creator);
+		version.setSchema(schema);
+		version.setName(schema.getName());
+		version.setSchemaContainer(container);
+		container.setCreated(creator);
+		container.setName(schema.getName());
 
-		return schemaContainer;
+		addSchemaContainer(container);
+		return container;
 	}
 
 	private void validate(Schema schema) throws HttpStatusCodeErrorException {

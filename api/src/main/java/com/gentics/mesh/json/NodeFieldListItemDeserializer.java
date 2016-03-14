@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
 /**
  * Deserializer which is used to deserialize node list items.
@@ -23,17 +22,16 @@ public class NodeFieldListItemDeserializer extends JsonDeserializer<NodeFieldLis
 	public NodeFieldListItem deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode jsonNode = oc.readTree(jsonParser);
-		SchemaStorage schemaStorage = (SchemaStorage) ctxt.findInjectableValue("schema_storage", null, null);
-		return deserialize(jsonNode, jsonParser, schemaStorage);
+		return deserialize(jsonNode, jsonParser);
 	}
 
-	public NodeFieldListItem deserialize(JsonNode jsonNode, JsonParser jsonParser, SchemaStorage schemaStorage) throws JsonProcessingException {
+	public NodeFieldListItem deserialize(JsonNode jsonNode, JsonParser jsonParser) throws JsonProcessingException {
 		ObjectCodec oc = jsonParser.getCodec();
 
 		NodeResponse nodeItem = null;
 		try {
 			// Try to deserialize the node response in the expanded form.
-			nodeItem = JsonUtil.readNode(jsonNode.toString(), NodeResponse.class, schemaStorage);
+			nodeItem = JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
 		} catch (MeshJsonException e) {
 			// Fallback and deseralize the element using the collapsed form.
 			NodeFieldListItemImpl collapsedItem = oc.treeToValue(jsonNode, NodeFieldListItemImpl.class);

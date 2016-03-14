@@ -57,7 +57,7 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testTransformToReference() throws Exception {
 		User user = user();
 		InternalActionContext ac = getMockedInternalActionContext("");
-		UserReference reference = user.transformToReference(ac);
+		UserReference reference = user.transformToReference();
 		assertNotNull(reference);
 		assertEquals(user.getUuid(), reference.getUuid());
 		assertEquals(user.getName(), reference.getName());

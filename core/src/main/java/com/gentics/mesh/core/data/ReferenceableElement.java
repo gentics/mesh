@@ -15,10 +15,8 @@ public interface ReferenceableElement<TR extends NameUuidReference<TR>> extends 
 
 	/**
 	 * Transform the element to a rest model that represents a references.
-	 * 
-	 * @param ac
 	 */
-	default TR transformToReference(InternalActionContext ac) {
+	default TR transformToReference() {
 		TR reference = createEmptyReferenceModel();
 		reference.setName(getName());
 		reference.setUuid(getUuid());

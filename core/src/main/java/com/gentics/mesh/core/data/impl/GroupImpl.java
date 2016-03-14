@@ -160,7 +160,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (Role role : getRoles()) {
 			String name = role.getName();
 			if (name != null) {
-				restGroup.getRoles().add(role.transformToReference(ac));
+				restGroup.getRoles().add(role.transformToReference());
 			}
 		}
 

@@ -1,25 +1,23 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+
+import java.util.List;
+
+import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.Mesh;
+
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -28,8 +26,12 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-
-import io.vertx.core.eventbus.DeliveryOptions;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import rx.Observable;
 
 /**
@@ -38,245 +40,94 @@ import rx.Observable;
  * 
  * @param <R>
  *            Field container rest model type
- * @param <V>
- *            Graph vertex type
  * @param <RE>
  *            Field container rest model reference type
+ * @param <SC>
+ *            Graph vertex type
+ * @param <SCV>
+ *            Graph vertex version type
  */
-public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, V extends GraphFieldSchemaContainer<R, V, RE>, RE extends NameUuidReference<RE>>
-		extends AbstractMeshCoreVertex<R, V> implements GraphFieldSchemaContainer<R, V, RE> {
-
-	public static final String VERSION_PROPERTY_KEY = "version";
+public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>>
+		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> {
 
 	/**
 	 * Return the class that is used to construct new containers.
 	 * 
 	 * @return
 	 */
-	protected abstract Class<? extends V> getContainerClass();
+	protected abstract Class<? extends SC> getContainerClass();
 
 	/**
-	 * Return the eventbus migration verticle address.
+	 * Return the class that is used to construct new container versions.
 	 * 
 	 * @return
 	 */
-	protected abstract String getMigrationAddress();
+	protected abstract Class<? extends SCV> getContainerVersionClass();
 
 	@Override
-	public int getVersion() {
-		return getProperty(VERSION_PROPERTY_KEY);
+	public SCV getLatestVersion() {
+		return out(HAS_LATEST_VERSION).nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
-	public V getNextVersion() {
-		return out(HAS_VERSION).has(getContainerClass()).nextOrDefaultExplicit(getContainerClass(), null);
+	public void setLatestVersion(SCV version) {
+		setSingleLinkOutTo(version.getImpl(), HAS_LATEST_VERSION);
 	}
 
 	@Override
-	public V findVersion(String version) {
-		if (String.valueOf(getVersion()).equals(version)) {
-			return (V) this;
-		}
-
-		// Search in previous version
-		for (V current = getPreviousVersion(); current != null; current = current.getPreviousVersion()) {
-			if (String.valueOf(current.getVersion()).equals(version)) {
-				return current;
-			}
-		}
-		// Search in next versions
-		for (V current = getNextVersion(); current != null; current = current.getNextVersion()) {
-			if (String.valueOf(current.getVersion()).equals(version)) {
-				return current;
-			}
-		}
-
-		return null;
+	public List<? extends SCV> findAll() {
+		return out(HAS_PARENT_CONTAINER).toListExplicit(getContainerVersionClass());
 	}
 
 	@Override
-	public void setNextVersion(V container) {
-		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
+	public SCV findVersionByUuid(String uuid) {
+		return out(HAS_PARENT_CONTAINER).has("uuid", uuid).nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
-	public V getLatestVersion() {
-		V latest = (V) this;
-		for (V current = latest.getNextVersion(); current != null; current = current.getNextVersion()) {
-			latest = current;
-		}
-		return latest;
+	public SCV findVersionByRev(Integer version) {
+		return out(HAS_PARENT_CONTAINER).has(AbstractGraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY, version)
+				.nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
-	public V getPreviousVersion() {
-		return in(HAS_VERSION).has(getContainerClass()).nextOrDefaultExplicit(getContainerClass(), null);
+	public Observable<? extends SC> update(InternalActionContext ac) {
+		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
 	@Override
-	public void setPreviousVersion(V container) {
-		setSingleLinkInTo(container.getImpl(), HAS_VERSION);
-	}
-
-	@Override
-	public SchemaChange<?> getNextChange() {
-		return (SchemaChange<?>) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
-	}
-
-	@Override
-	public void setNextChange(SchemaChange<?> change) {
-		setSingleLinkOutTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
-	}
-
-	@Override
-	public SchemaChange<?> getPreviousChange() {
-		return (SchemaChange<?>) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
-	}
-
-	@Override
-	public void setPreviousChange(SchemaChange<?> change) {
-		setSingleLinkInTo(change.getImpl(), HAS_SCHEMA_CONTAINER);
-	}
-
-	@Override
-	public Observable<GenericMessageResponse> applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges) {
-		if (listOfChanges.getChanges().isEmpty()) {
-			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
-		}
-		Database db = MeshSpringConfiguration.getInstance().database();
-		return db.trx(() -> {
-			SchemaChange<?> current = null;
-			for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
-				SchemaChange<?> graphChange = createChange(restChange);
-				// Set the first change to the schema container and chain all other changes to that change.
-				if (current == null) {
-					current = graphChange;
-					setNextChange(current);
-				} else {
-					current.setNextChange(graphChange);
-					current = graphChange;
-				}
-			}
-
-			R resultingSchema = FieldSchemaContainerMutator.getInstance().apply(this);
-			resultingSchema.validate();
-
-			// Increment version of the schema
-			resultingSchema.setVersion(resultingSchema.getVersion() + 1);
-
-			// Create and set the next version of the schema
-			V nextVersion = getGraph().addFramedVertex(getContainerClass());
-			// The new version inherits the previous version's uuid
-			nextVersion.setUuid(getUuid());
-			nextVersion.setSchema(resultingSchema);
-
-			// Check for conflicting container names
-			String newName = resultingSchema.getName();
-			V foundContainer = getRoot().findByName(resultingSchema.getName()).toBlocking().single();
-			if (foundContainer != null && !foundContainer.getUuid().equals(getUuid())) {
-				//throw error(BAD_REQUEST, "microschema_conflicting_name", requestModel.getName());
-				throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
-			}
-
-			nextVersion.setName(resultingSchema.getName());
-			setNextVersion(nextVersion);
-
-			// Update the root vertex
-			RootVertex<V> root = getRoot();
-			root.removeItem(nextVersion.getPreviousVersion());
-			root.addItem(nextVersion);
-
-			// Update the search index
-			return addIndexBatch(UPDATE_ACTION);
-		}).process().map(i -> {
-			return db.noTrx(() -> {
-				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
-				DeliveryOptions options = new DeliveryOptions();
-				options.addHeader(NodeMigrationVerticle.UUID_HEADER, this.getUuid());
-				options.addHeader(NodeMigrationVerticle.FROM_VERSION_HEADER, String.valueOf(this.getVersion()));
-				options.addHeader(NodeMigrationVerticle.TO_VERSION_HEADER, String.valueOf(this.getNextVersion().getVersion()));
-				Mesh.vertx().eventBus().send(getMigrationAddress(), null, options);
-
-				return message(ac, "migration_invoked", getName());
-			});
-
-		});
+	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 
 	}
 
 	@Override
-	public RootVertex<V> getRoot() {
-		return (RootVertex<V>) in(HAS_SCHEMA_CONTAINER_ITEM).nextOrDefault(null);
+	public Observable<R> transformToRest(InternalActionContext ac, String... languageTags) {
+		// Delegate transform call to latest version 
+		return getLatestVersion().transformToRest(ac, languageTags);
 	}
 
 	@Override
-	public Observable<GenericMessageResponse> applyChanges(InternalActionContext ac) {
-		Database db = MeshSpringConfiguration.getInstance().database();
-		try {
-			SchemaChangesListModel listOfChanges = JsonUtil.readValue(ac.getBodyAsString(), SchemaChangesListModel.class);
-
-			return db.trx(() -> {
-				if (getNextChange() != null) {
-					throw error(INTERNAL_SERVER_ERROR, "migration_error_version_already_contains_changes", String.valueOf(getVersion()), getName());
-				}
-
-				return applyChanges(ac, listOfChanges);
-
-			});
-		} catch (Exception e) {
-			return Observable.error(e);
-		}
-	}
-
-	/**
-	 * Create a new graph change from the given rest change.
-	 * 
-	 * @param restChange
-	 * @return
-	 */
-	private SchemaChange<?> createChange(SchemaChangeModel restChange) {
-
-		SchemaChange<?> schemaChange = null;
-		switch (restChange.getOperation()) {
-		case ADDFIELD:
-			schemaChange = getGraph().addFramedVertex(AddFieldChangeImpl.class);
-			break;
-		case REMOVEFIELD:
-			schemaChange = getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
-			break;
-		case UPDATEFIELD:
-			schemaChange = getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
-			break;
-		case CHANGEFIELDTYPE:
-			schemaChange = getGraph().addFramedVertex(FieldTypeChangeImpl.class);
-			break;
-		case UPDATESCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
-			break;
-		case UPDATEMICROSCHEMA:
-			schemaChange = getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
-			break;
-		default:
-			throw error(BAD_REQUEST, "error_change_operation_unknown", String.valueOf(restChange.getOperation()));
-		}
-		// Set properties from rest model
-		schemaChange.updateFromRest(restChange);
-		return schemaChange;
-
+	public Observable<R> transformToRestSync(InternalActionContext ac, String... languageTags) {
+		// Delegate transform call to latest version
+		return getLatestVersion().transformToRestSync(ac, languageTags);
 	}
 
 	@Override
-	public Observable<SchemaChangesListModel> diff(InternalActionContext ac, AbstractFieldSchemaContainerComparator comparator,
-			FieldSchemaContainer fieldContainerModel) {
-		try {
-			SchemaChangesListModel list = new SchemaChangesListModel();
-			fieldContainerModel.validate();
-			list.getChanges().addAll(comparator.diff(transformToRest(ac, null).toBlocking().single(), fieldContainerModel));
-			return Observable.just(list);
-		} catch (Exception e) {
-			return Observable.error(e);
-		}
+	public String getName() {
+		return getProperty("name");
+	}
 
+	@Override
+	public void setName(String name) {
+		setProperty("name", name);
+	}
+
+	@Override
+	public void delete() {
+		// TODO should all references be updated to a new fallback schema?
+		addIndexBatch(DELETE_ACTION);
+		getElement().remove();
+		//TODO delete versions and nodes as well
 	}
 
 }

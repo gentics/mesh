@@ -131,7 +131,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
-					PageImpl<? extends Tag> tagPage = node.getTags(ac);
+					PageImpl<? extends Tag> tagPage = node.getTags(ac.getPagingParameter());
 					return tagPage.transformToRest(ac);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);

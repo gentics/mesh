@@ -27,6 +27,5 @@ mesh-graphdb
 /node
 /node_modules
 /typings
-
 binaryImageCache
 .factorypath

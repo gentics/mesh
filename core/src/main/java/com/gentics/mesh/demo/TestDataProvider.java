@@ -19,7 +19,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -32,7 +31,9 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -436,15 +437,16 @@ public class TestDataProvider {
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
-		Node folderNode = rootNode.create(userInfo.getUser(), schemaContainers.get("folder"), project);
+		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
+		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
 
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.getOrCreateGraphFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, schemaVersion);
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.getOrCreateGraphFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, schemaVersion);
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
@@ -474,9 +476,9 @@ public class TestDataProvider {
 	}
 
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
-		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content"), project);
+		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.getOrCreateGraphFieldContainer(english);
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, schema.getLatestVersion());
 			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -485,7 +487,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.getOrCreateGraphFieldContainer(german);
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, schema.getLatestVersion());
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " english title");
 			germanContainer.createString("displayName").setString(name + " german");

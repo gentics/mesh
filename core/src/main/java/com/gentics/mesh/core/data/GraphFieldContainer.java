@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
-import java.util.Map;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
@@ -21,6 +20,8 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -157,13 +158,13 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	MicronodeGraphField getMicronode(String key);
 
 	/**
-	 * Create a new micronode graph field.
+	 * Create a new micronode graph field. This method ensures that only one micronode exists per key.
 	 * 
 	 * @param key
-	 * @param microschema
+	 * @param microschemaVersion
 	 * @return
 	 */
-	MicronodeGraphField createMicronode(String key, MicroschemaContainer microschema);
+	MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschemaVersion);
 
 	// Lists
 
@@ -291,18 +292,19 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags);
 
 	/**
-	 * Use the given map of rest fields and the schema information to set the data from the map to this container. 
+	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
 	 * 
 	 * @param ac
 	 * @param restFields
 	 * @param schema
 	 */
-	void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema);
+	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema);
 
 	/**
 	 * Get all fields defined in the given schema, that are present in this container
 	 *
-	 * @param schema schema
+	 * @param schema
+	 *            schema
 	 * @return
 	 */
 	List<GraphField> getFields(FieldSchemaContainer schema);

@@ -114,7 +114,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Optional<FieldSchema> fieldSchema = node.getSchemaContainer().getSchema().getFieldSchema(fieldName);
+				Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
@@ -170,7 +170,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							// node.setBinaryImageWidth(width);
 
 							// if the binary field is the segment field, we need to update the webroot info in the node
-							if (binaryField.getFieldKey().equals(node.getSchemaContainer().getSchema().getSegmentField())) {
+							if (binaryField.getFieldKey().equals(container.getSchemaContainerVersion().getSchema().getSegmentField())) {
 								container.updateWebrootPathInfo("node_conflicting_segmentfield_upload");
 							}
 
@@ -289,7 +289,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				Optional<FieldSchema> fieldSchema = node.getSchemaContainer().getSchema().getFieldSchema(fieldName);
+				Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
 				if (!fieldSchema.isPresent()) {
 					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}

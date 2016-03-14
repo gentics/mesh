@@ -215,8 +215,10 @@ public interface Database {
 
 	/**
 	 * Add a vertex index for the given type of vertex and fields.
+	 * 
 	 * @param clazzOfVertices
-	 * @param unique true to create unique key
+	 * @param unique
+	 *            true to create unique key
 	 * @param fields
 	 */
 	default void addVertexIndex(Class<?> clazzOfVertices, boolean unique, String... fields) {
@@ -225,7 +227,9 @@ public interface Database {
 
 	/**
 	 * Add a named vertex index for the given type of vertex and fields
-	 * @param indexName index name
+	 * 
+	 * @param indexName
+	 *            index name
 	 * @param clazzOfVertices
 	 * @param unique
 	 * @param fields
@@ -234,19 +238,40 @@ public interface Database {
 
 	/**
 	 * Check whether the values can be put into the given index for the given element
-	 * @param indexName index name
-	 * @param element element
-	 * @param key index key to check
+	 * 
+	 * @param indexName
+	 *            index name
+	 * @param element
+	 *            element
+	 * @param key
+	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
 	<T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key);
 
+	/**
+	 * Create a new edge type for the given label.
+	 * 
+	 * @param label
+	 * @param stringPropertyKeys
+	 */
 	void addEdgeType(String label, String... stringPropertyKeys);
 
+	/**
+	 * Create a new vertex type for the given vertex class type.
+	 * 
+	 * @param clazzOfVertex
+	 */
 	void addVertexType(Class<?> clazzOfVertex);
 
 	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
 
+	/**
+	 * Update the vertex type for the given element using the class type.
+	 * 
+	 * @param element
+	 * @param classOfVertex
+	 */
 	void setVertexType(Element element, Class<?> classOfVertex);
 
 }

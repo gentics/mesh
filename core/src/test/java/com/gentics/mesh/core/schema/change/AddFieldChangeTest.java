@@ -11,9 +11,9 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.AddFieldChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -50,20 +50,20 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("name");
 		change.setType("html");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("name");
 	}
 
 	@Test
 	public void testApplayStringFieldAtEndPosition() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 		schema.addField(FieldUtil.createStringFieldSchema("secondField"));
@@ -73,10 +73,10 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		change.setFieldName("stringField");
 		change.setType("string");
 		change.setInsertAfterPosition("thirdField");
-		container.setSchema(schema);
-		container.setNextChange(change);
+		version.setSchema(schema);
+		version.setNextChange(change);
 
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertArrayEquals(new String[] { "firstField", "secondField", "thirdField", "stringField" },
 				updatedSchema.getFields().stream().map(field -> field.getName()).toArray());
 		assertThat(updatedSchema).hasField("stringField");
@@ -86,7 +86,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyStringFieldAtPosition() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 		schema.addField(FieldUtil.createStringFieldSchema("secondField"));
@@ -96,10 +96,10 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 		change.setFieldName("stringField");
 		change.setType("string");
 		change.setInsertAfterPosition("firstField");
-		container.setSchema(schema);
-		container.setNextChange(change);
+		version.setSchema(schema);
+		version.setNextChange(change);
 
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertArrayEquals(new String[] { "firstField", "stringField", "secondField", "thirdField" },
 				updatedSchema.getFields().stream().map(field -> field.getName()).toArray());
 		assertThat(updatedSchema).hasField("stringField");
@@ -108,28 +108,28 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyStringField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("stringField");
 		change.setType("string");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("stringField");
 		assertTrue("The created field was not of the string string field.", updatedSchema.getField("stringField") instanceof StringFieldSchema);
 	}
 
 	@Test
 	public void testApplyNodeField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("nodeField");
 		change.setType("node");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("nodeField");
 		assertTrue("The created field was not of the type node field." + updatedSchema.getField("nodeField").getClass(),
 				updatedSchema.getField("nodeField") instanceof NodeFieldSchema);
@@ -137,14 +137,14 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyMicronodeField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("micronodeField");
 		change.setType("micronode");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("micronodeField");
 		assertTrue("The created field was not of the type micronode field.",
 				updatedSchema.getField("micronodeField") instanceof MicronodeFieldSchema);
@@ -152,57 +152,57 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyDateField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("dateField");
 		change.setType("date");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("dateField");
 		assertTrue("The created field was not of the type date field.", updatedSchema.getField("dateField") instanceof DateFieldSchema);
 	}
 
 	@Test
 	public void testApplyNumberField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("numberField");
 		change.setType("number");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("numberField");
 		assertTrue("The created field was not of the type number field.", updatedSchema.getField("numberField") instanceof NumberFieldSchema);
 	}
 
 	@Test
 	public void testApplyBinaryField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("binaryField");
 		change.setType("binary");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("binaryField");
 		assertTrue("The created field was not of the type binary field.", updatedSchema.getField("binaryField") instanceof BinaryFieldSchema);
 	}
 
 	@Test
 	public void testApplyListField() {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		Schema schema = new SchemaModel();
 		AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 		change.setFieldName("listField");
 		change.setType("list");
 		change.setListType("html");
-		container.setSchema(schema);
-		container.setNextChange(change);
-		FieldSchemaContainer updatedSchema = mutator.apply(container);
+		version.setSchema(schema);
+		version.setNextChange(change);
+		FieldSchemaContainer updatedSchema = mutator.apply(version);
 		assertThat(updatedSchema).hasField("listField");
 		assertTrue("The created field was not of the type binary field.", updatedSchema.getField("listField") instanceof ListFieldSchema);
 		ListFieldSchema list = (ListFieldSchema) updatedSchema.getField("listField");

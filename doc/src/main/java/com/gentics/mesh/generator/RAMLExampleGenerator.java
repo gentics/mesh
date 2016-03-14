@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,6 +37,7 @@ import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -51,9 +51,11 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -86,10 +88,12 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -223,7 +227,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		project2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		project2.setRootNodeUuid(randomUUID());
 
-		ListResponse<ProjectResponse> projectList = new ListResponse<>();
+		ProjectListResponse projectList = new ProjectListResponse();
 		projectList.getData().add(project);
 		projectList.getData().add(project2);
 		setPaging(projectList, 1, 10, 2, 20);
@@ -263,7 +267,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		role2.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		role2.setUuid(randomUUID());
 
-		ListResponse<RoleResponse> roleList = new ListResponse<>();
+		RoleListResponse roleList = new RoleListResponse();
 		roleList.getData().add(role);
 		roleList.getData().add(role2);
 		setPaging(roleList, 1, 10, 2, 20);
@@ -327,7 +331,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		tag2.setTagFamily(tagFamilyReference);
 		tag2.setPermissions("READ", "CREATE");
 
-		ListResponse<TagResponse> tagList = new ListResponse<>();
+		TagListResponse tagList = new TagListResponse();
 		tagList.getData().add(tag);
 		tagList.getData().add(tag2);
 		setPaging(tagList, 1, 10, 2, 20);
@@ -610,7 +614,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(randomUUID()));
 		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(randomUUID()));
 
-		Map<String, Field> fields = nodeResponse.getFields();
+		FieldMap fields = nodeResponse.getFields();
 		fields.put("name-stringField", createStringField("Name for language tag de-DE"));
 		fields.put("filename-stringField", createStringField("dummy-content.de.html"));
 		fields.put("teaser-stringField", createStringField("Dummy teaser for de-DE"));
@@ -665,7 +669,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setEditor(getUserReference());
 
-		Map<String, Field> fields = nodeResponse.getFields();
+		FieldMap fields = nodeResponse.getFields();
 		fields.put("name", createStringField("Name for language tag en"));
 		fields.put("filename", createStringField("dummy-content.en.html"));
 		fields.put("teaser", createStringField("Dummy teaser for en"));
@@ -682,7 +686,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		contentCreate.setPublished(true);
 		contentCreate.setSchema(getSchemaReference("content"));
 
-		Map<String, Field> fields = contentCreate.getFields();
+		FieldMap fields = contentCreate.getFields();
 		fields.put("name", createStringField("English name"));
 		fields.put("filename", createStringField("index.en.html"));
 		fields.put("content", createStringField("English content"));
@@ -713,7 +717,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeUpdate.setPublished(true);
 		nodeUpdate.setSchema(getSchemaReference("content"));
 
-		Map<String, Field> fields = nodeUpdate.getFields();
+		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
 		fields.put("relatedProduct-nodeField", createNodeField(randomUUID()));
 		fields.put("price-numberField", createNumberField(100.1));
@@ -746,6 +750,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName(name);
 		schemaReference.setUuid(randomUUID());
+		schemaReference.setVersion(1);
 		return schemaReference;
 	}
 
@@ -816,7 +821,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user2.setEnabled(true);
 
-		ListResponse<UserResponse> userList = new ListResponse<>();
+		UserListResponse userList = new UserListResponse();
 		userList.getData().add(user);
 		userList.getData().add(user2);
 		setPaging(userList, 1, 10, 2, 20);

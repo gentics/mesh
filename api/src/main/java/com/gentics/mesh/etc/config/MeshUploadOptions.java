@@ -8,9 +8,9 @@ public class MeshUploadOptions {
 
 	private long byteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
-	private String directory = "binaryFiles";
+	private String directory = "data" + File.separator + "binaryFiles";
 
-	private String tempDirectory = new File("tmp", "file-uploads").getAbsolutePath();
+	private String tempDirectory = "data" + File.separator + "tmp" + File.separator + "file-uploads";
 
 	/**
 	 * Return the upload limit in bytes.

@@ -8,9 +8,9 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -35,7 +35,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaModel();
@@ -51,13 +51,13 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 		fieldTypeUpdate.setType("html");
 
 		// 3. Apply the changes
-		container.setNextChange(fieldTypeUpdate);
-		container.setSchema(schema);
-		for (FieldSchema field : container.getSchema().getFields()) {
+		version.setNextChange(fieldTypeUpdate);
+		version.setSchema(schema);
+		for (FieldSchema field : version.getSchema().getFields()) {
 			System.out.println(field.getName());
 		}
 
-		Schema updatedSchema = mutator.apply(container);
+		Schema updatedSchema = mutator.apply(version);
 		assertNotNull(updatedSchema);
 		assertEquals("html", updatedSchema.getField("stringField").getType());
 
@@ -66,7 +66,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	public void testChangeFieldTypeToList() {
 
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 		// 1. Create schema
 		Schema schema = new SchemaModel();
@@ -83,11 +83,11 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 		fieldTypeUpdate.setType("list");
 		fieldTypeUpdate.setListType("html");
 
-		container.setNextChange(fieldTypeUpdate);
-		container.setSchema(schema);
+		version.setNextChange(fieldTypeUpdate);
+		version.setSchema(schema);
 
 		// 3. Apply the changes
-		Schema updatedSchema = mutator.apply(container);
+		Schema updatedSchema = mutator.apply(version);
 		assertNotNull(updatedSchema);
 		ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
 		assertEquals("list", fieldSchema.getType());

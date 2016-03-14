@@ -12,10 +12,11 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
@@ -43,7 +44,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		// 2. Create node that uses the microschema
 		Node node = createMicronodeNode();
 		MicroschemaContainer container = microschemaContainer("vcard");
-		assertNull("The microschema should not yet have any changes", container.getNextChange());
+		MicroschemaContainerVersion currentVersion = container.getLatestVersion();
+		assertNull("The microschema should not yet have any changes", container.getLatestVersion().getNextChange());
 
 		// 3. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
@@ -51,7 +53,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		listOfChanges.getChanges().add(change);
 
 		// 4. Invoke migration
-		assertNull("The schema should not yet have any changes", container.getNextChange());
+		assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
 		Future<GenericMessageResponse> future = getClient().applyChangesToMicroschema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);
@@ -60,7 +62,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		failingLatch(latch);
 
 		container.reload();
-		assertNotNull("The change should have been added to the schema.", container.getNextChange());
+		currentVersion.reload();
+		assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 
 		// 6. Assert migrated node
 		node.reload();
@@ -72,13 +75,13 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 	private Node createMicronodeNode() {
 
 		// 1. Update folder schema
-		Schema schema = schemaContainer("folder").getSchema();
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 		microschemaFieldSchema.setName("micronodeField");
 		microschemaFieldSchema.setLabel("Some label");
 		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(microschemaFieldSchema);
-		schemaContainer("folder").setSchema(schema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
@@ -100,7 +103,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 	public void testAddField() throws Exception {
 		// 1. Setup changes
 		MicroschemaContainer container = microschemaContainer("vcard");
-		assertNull("The microschema should not yet have any changes", container.getNextChange());
+		MicroschemaContainerVersion currentVersion = container.getLatestVersion();
+		assertNull("The microschema should not yet have any changes", currentVersion.getNextChange());
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html");
 		listOfChanges.getChanges().add(change);
@@ -117,8 +121,9 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		// 4. Latch for completion
 		failingLatch(latch);
 		container.reload();
-		assertNotNull("The change should have been added to the schema.", container.getNextChange());
-		assertNotNull("The container should now have a new version", container.getNextVersion());
+		currentVersion.reload();
+		assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
+		assertNotNull("The container should now have a new version", currentVersion.getNextVersion());
 
 	}
 
@@ -126,6 +131,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 	public void testUpdateName() throws Exception {
 		String name = "new-name";
 		MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		MicroschemaContainerVersion currentVersion = vcardContainer.getLatestVersion();
 		assertNotNull(vcardContainer);
 
 		// 1. Setup new microschema
@@ -143,7 +149,8 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		// 4. Wait and assert
 		failingLatch(latch);
 		vcardContainer.reload();
-		assertEquals("The name of the microschema was not updated", name, vcardContainer.getNextVersion().getName());
+		currentVersion.reload();
+		assertEquals("The name of the microschema was not updated", name, currentVersion.getNextVersion().getName());
 
 	}
 

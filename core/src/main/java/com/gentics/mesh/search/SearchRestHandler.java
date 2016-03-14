@@ -109,6 +109,9 @@ public class SearchRestHandler {
 		SearchRequestBuilder builder = null;
 		try {
 			JSONObject queryStringObject = new JSONObject(searchQuery);
+			/**
+			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more efficient ways to do deep scrolling.
+			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			//TODO BUG we need to filter by one index only

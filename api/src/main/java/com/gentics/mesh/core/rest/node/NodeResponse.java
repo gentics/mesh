@@ -8,7 +8,6 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -188,40 +187,39 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		this.project = project;
 	}
 
-	/**
-	 * Return the field with the given key.
-	 * 
-	 * @param key
-	 *            Key of the field to be returned
-	 * @param classOfT
-	 *            Class of the field
-	 * @return Field or null of no field could be found for the given key
-	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Field> T getField(String key, Class<T> classOfT) {
-		return (T) getFields().get(key);
-	}
+//	/**
+//	 * Return the field with the given key.
+//	 * 
+//	 * @param key
+//	 *            Key of the field to be returned
+//	 * @param classOfT
+//	 *            Class of the field
+//	 * @return Field or null of no field could be found for the given key
+//	 */
+//	public <T extends Field> T getField(String key, Class<T> classOfT) {
+//		return getFields().get(key, 22);
+//	}
 
-	/**
-	 * Return the field with the given key.
-	 * 
-	 * @param key
-	 *            Name of the field
-	 * @return Found field or null when no field could be found
-	 * @param <T>
-	 *            Class of the field
-	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Field> T getField(String key) {
-		return (T) getFields().get(key);
-	}
+//	/**
+//	 * Return the field with the given key.
+//	 * 
+//	 * @param key
+//	 *            Name of the field
+//	 * @return Found field or null when no field could be found
+//	 * @param <T>
+//	 *            Class of the field
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public <T extends Field> T getField(String key) {
+//		return (T) getFields().get(key);
+//	}
 
 	/**
 	 * Return a map with fields of the node.
 	 * 
 	 * @return Map with fields
 	 */
-	public Map<String, Field> getFields() {
+	public FieldMap getFields() {
 		return fields;
 	}
 
@@ -320,5 +318,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	public String getType() {
 		return FieldTypes.NODE.toString();
 	}
+
 
 }

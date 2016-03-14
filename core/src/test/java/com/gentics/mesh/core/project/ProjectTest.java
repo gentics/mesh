@@ -33,8 +33,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		InternalActionContext ac = getMockedInternalActionContext("");
-		ProjectReference reference = project().transformToReference(ac);
+		ProjectReference reference = project().transformToReference();
 		assertNotNull(reference);
 		assertEquals(project().getUuid(), reference.getUuid());
 		assertEquals(project().getName(), reference.getName());

@@ -79,10 +79,12 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 			Database db = MeshSpringConfiguration.getInstance().database();
 			try (NoTrx noTrx = db.noTrx()) {
 				for (String languageTag : languageTags) {
-					Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
-							new Object[] { languageTag });
-					if (!it.hasNext()) {
-						throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+					if (languageTag != null) {
+						Iterator<Vertex> it = db.getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
+								new Object[] { languageTag });
+						if (!it.hasNext()) {
+							throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+						}
 					}
 				}
 			}
@@ -92,26 +94,8 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	}
 
 	@Override
-	public PagingParameter getPagingParameter() {
-		//TODO return immutable object
-		return PagingParameter.fromQuery(query());
-	}
-
-	@Override
-	public NavigationRequestParameter getNavigationRequestParameter() {
-		//TODO return immutable object
-		return NavigationRequestParameter.fromQuery(query());
-	}
-
-	@Override
 	public void respond(RestModel restModel, HttpResponseStatus status) {
 		send(JsonUtil.toJson(restModel), status);
-	}
-
-	@Override
-	public ImageManipulationParameter getImageRequestParameter() {
-		//TODO return immutable object
-		return ImageManipulationParameter.fromQuery(query());
 	}
 
 	@Override
@@ -122,15 +106,6 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 			}
 		};
 		return handler;
-	}
-
-	@Override
-	public String getRolePermissionParameter() {
-		Map<String, String> queryPairs = splitQuery();
-		if (queryPairs == null) {
-			return null;
-		}
-		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
 
 	@Override
@@ -147,8 +122,35 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	}
 
 	@Override
+	public PagingParameter getPagingParameter() {
+		// TODO return immutable object
+		return PagingParameter.fromQuery(query());
+	}
+
+	@Override
+	public NavigationRequestParameter getNavigationRequestParameter() {
+		// TODO return immutable object
+		return NavigationRequestParameter.fromQuery(query());
+	}
+
+	@Override
+	public ImageManipulationParameter getImageRequestParameter() {
+		// TODO return immutable object
+		return ImageManipulationParameter.fromQuery(query());
+	}
+
+	@Override
 	public Database getDatabase() {
 		return MeshSpringConfiguration.getInstance().database();
+	}
+
+	@Override
+	public String getRolePermissionParameter() {
+		Map<String, String> queryPairs = splitQuery();
+		if (queryPairs == null) {
+			return null;
+		}
+		return queryPairs.get(RolePermissionParameter.ROLE_PERMISSION_QUERY_PARAM_KEY);
 	}
 
 	@Override
@@ -163,5 +165,4 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		}
 		return false;
 	}
-
 }

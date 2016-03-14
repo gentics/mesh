@@ -99,7 +99,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		User creator = getCreator();
 		if (creator != null) {
-			model.setCreator(creator.transformToReference(ac));
+			model.setCreator(creator.transformToReference());
 		} else {
 			log.error("The object has no creator. Omitting creator field");
 			// TODO throw error and log something
@@ -107,7 +107,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		User editor = getEditor();
 		if (editor != null) {
-			model.setEditor(editor.transformToReference(ac));
+			model.setEditor(editor.transformToReference());
 		} else {
 			// TODO throw error and log something
 		}

@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -29,13 +28,15 @@ public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 	@Test
 	public void testBooleanFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getSchema();
+
+		// Update the schema and add a boolean field
+		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
 		booleanFieldSchema.setName("booleanField");
 		booleanFieldSchema.setLabel("Some boolean field");
 		booleanFieldSchema.setRequired(true);
 		schema.addField(booleanFieldSchema);
-		node.getSchemaContainer().setSchema(schema);
+		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		BooleanGraphField field = container.createBoolean("booleanField");
@@ -44,10 +45,10 @@ public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 		String json = getJson(node);
 		assertTrue("The json should contain the boolean field but it did not.{" + json + "}", json.indexOf("booleanField\" : true") > 1);
 		assertNotNull(json);
-		NodeResponse response = JsonUtil.readNode(json, NodeResponse.class, schemaStorage);
+		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		com.gentics.mesh.core.rest.node.field.BooleanField deserializedNodeField = response.getField("booleanField", BooleanFieldImpl.class);
+		com.gentics.mesh.core.rest.node.field.BooleanField deserializedNodeField = response.getFields().getBooleanField("booleanField");
 		assertNotNull(deserializedNodeField);
 		assertEquals(true, deserializedNodeField.getValue());
 	}

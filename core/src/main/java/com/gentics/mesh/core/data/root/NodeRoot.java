@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -37,12 +37,12 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * @param user
 	 *            User that is used to set creator and editor references
 	 * @param container
-	 *            Schema that should be used when creating the node
+	 *            Schema version that should be used when creating the node
 	 * @param project
 	 *            Project to which the node should be assigned to
 	 * @return Created node
 	 */
-	Node create(User user, SchemaContainer container, Project project);
+	Node create(User user, SchemaContainerVersion container, Project project);
 
 	/**
 	 * Add the node to the aggregation node.

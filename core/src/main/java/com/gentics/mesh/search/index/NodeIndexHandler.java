@@ -21,7 +21,6 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -40,7 +39,8 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -65,6 +65,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
+	private static final String VERSION_KEY = "version";
+
 	private static NodeIndexHandler instance;
 
 	@PostConstruct
@@ -78,7 +80,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	/**
 	 * Get the document type for documents stored for the given schema
-	 * @param schema schema
+	 * 
+	 * @param schema
+	 *            schema
 	 * @return document type
 	 */
 	public static String getDocumentType(Schema schema) {
@@ -110,7 +114,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
-		addSchema(map, node.getSchemaContainer());
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
@@ -126,8 +129,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
+			addSchema(map, container.getSchemaContainerVersion());
 
-			addFields(map, container, node.getSchemaContainer().getSchema().getFields());
+			addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
 			if (log.isTraceEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.trace("Search index json:");
@@ -136,8 +140,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			// Add display field value
 			Map<String, String> displayFieldMap = new HashMap<>();
-			displayFieldMap.put("key", node.getSchemaContainer().getSchema().getDisplayField());
-			displayFieldMap.put("value", container.getDisplayFieldValue(node.getSchemaContainer().getSchema()));
+			displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
+			//			displayFieldMap.put("value", container.getDisplayFieldValue(container.getSchemaContainerVersion().getSchema()));
 			map.put("displayField", displayFieldMap);
 			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 		}
@@ -156,7 +160,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
-		addSchema(map, node.getSchemaContainer());
+
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
@@ -167,8 +171,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			map.remove("language");
 			String language = container.getLanguage().getLanguageTag();
 			map.put("language", language);
-
-			addFields(map, container, node.getSchemaContainer().getSchema().getFields());
+			addSchema(map, container.getSchemaContainerVersion());
+			addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
 			if (log.isDebugEnabled()) {
 				String json = JsonUtil.toJson(map);
 				log.debug(json);
@@ -295,7 +299,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
 								Map<String, Object> itemMap = new HashMap<>();
 								Micronode micronode = item.getMicronode();
-								addMicroschema(itemMap, micronode.getMicroschemaContainer());
+								addMicroschema(itemMap, micronode.getMicroschemaContainerVersion());
 								addFields(itemMap, micronode, micronode.getMicroschema().getFields());
 								return itemMap;
 							}).toList().toBlocking().first());
@@ -336,7 +340,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					Micronode micronode = micronodeGraphField.getMicronode();
 					if (micronode != null) {
 						Map<String, Object> micronodeMap = new HashMap<>();
-						addMicroschema(micronodeMap, micronode.getMicroschemaContainer());
+						addMicroschema(micronodeMap, micronode.getMicroschemaContainerVersion());
 						addFields(micronodeMap, micronode, micronode.getMicroschema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
@@ -370,14 +374,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Transform the given schema and add it to the source map.
 	 * 
 	 * @param map
-	 * @param schemaContainer
+	 * @param schemaContainerVersion
 	 */
-	private void addSchema(Map<String, Object> map, SchemaContainer schemaContainer) {
-		String name = schemaContainer.getName();
-		String uuid = schemaContainer.getUuid();
+	private void addSchema(Map<String, Object> map, SchemaContainerVersion schemaContainerVersion) {
+		String name = schemaContainerVersion.getName();
+		String uuid = schemaContainerVersion.getSchemaContainer().getUuid();
 		Map<String, String> schemaFields = new HashMap<>();
 		schemaFields.put(NAME_KEY, name);
 		schemaFields.put(UUID_KEY, uuid);
+		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
 		map.put("schema", schemaFields);
 	}
 
@@ -385,12 +390,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Transform the given microschema container and add it to the source map.
 	 * 
 	 * @param map
-	 * @param microschemaContainer
+	 * @param microschemaContainerVersion
 	 */
-	private void addMicroschema(Map<String, Object> map, MicroschemaContainer microschemaContainer) {
+	private void addMicroschema(Map<String, Object> map, MicroschemaContainerVersion microschemaContainerVersion) {
 		Map<String, String> microschemaFields = new HashMap<>();
-		microschemaFields.put(NAME_KEY, microschemaContainer.getName());
-		microschemaFields.put(UUID_KEY, microschemaContainer.getUuid());
+		microschemaFields.put(NAME_KEY, microschemaContainerVersion.getName());
+		microschemaFields.put(UUID_KEY, microschemaContainerVersion.getUuid());
 		map.put("microschema", microschemaFields);
 	}
 
@@ -404,8 +409,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		Map<String, Object> parentNodeInfo = new HashMap<>();
 		parentNodeInfo.put(UUID_KEY, parentNode.getUuid());
 		// TODO check whether nesting of nested elements would also work
-		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
-		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
+		//TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference: (n:Node)->(sSchemaContainer) ?
+		//		parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
+		//		parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		map.put("parentNode", parentNodeInfo);
 	}
 
@@ -434,7 +440,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	private String getDocumentType(Node node, String language) {
-		return getDocumentType(node.getSchemaContainer().getSchema());
+		//TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference: (n:Node)->(sSchemaContainer) ?
+		return getDocumentType(node.getSchemaContainer().getLatestVersion().getSchema());
 	}
 
 	/**

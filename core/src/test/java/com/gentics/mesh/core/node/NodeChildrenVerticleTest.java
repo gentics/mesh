@@ -148,7 +148,7 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		NodeResponse restNode = future.result();
 
 		test.assertMeshNode(node, restNode);
-		assertFalse(restNode.isContainer());
+		assertFalse("The node should not be a container", restNode.isContainer());
 		assertNull(restNode.getChildrenInfo().get("folder"));
 	}
 

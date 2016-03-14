@@ -83,7 +83,7 @@ public class BasicAuthentication extends AbstractAuthenticationProvider {
 	@Override
 	public Observable<GenericMessageResponse> logout(HttpClient client) {
 		return Observable.create(sub -> {
-			MeshRestRequestUtil.handleRequest(HttpMethod.GET, "/auth/logout", GenericMessageResponse.class, client, this, null).setHandler(rh -> {
+			MeshRestRequestUtil.handleRequest(HttpMethod.GET, "/auth/logout", GenericMessageResponse.class, client, this).setHandler(rh -> {
 				if (rh.failed()) {
 					sub.onError(rh.cause());
 				} else {

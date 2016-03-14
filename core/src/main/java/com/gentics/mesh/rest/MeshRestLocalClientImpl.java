@@ -126,7 +126,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 
 	@Autowired
 	private AuthenticationRestHandler authRestHandler;
-	
+
 	@Autowired
 	private UtilityHandler utilityHandler;
 
@@ -449,12 +449,6 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<MicroschemaListResponse> ac = createContext(MicroschemaListResponse.class, parameters);
 		microschemaCrudHandler.handleReadList(ac);
 		return ac.getFuture();
-	}
-
-	@Override
-	public Future<Void> initSchemaStorage() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -853,18 +847,6 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRestClient initializeAuthenticationProvider(RoutingContext context) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ClientSchemaStorage getClientSchemaStorage() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRestClient setClientSchemaStorage(ClientSchemaStorage schemaStorage) {
 		// TODO Auto-generated method stub
 		return null;
 	}

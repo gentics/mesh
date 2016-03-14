@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.1.0-dev-SNAPSHOT</version>
+		<version>0.6.2-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -329,6 +329,7 @@
 					<!-- Don't execute more than one test per jvm fork! -->
 					<threadCount>1</threadCount>
 					<threadCountClasses>1</threadCountClasses>
+					<rerunFailingTestsCount>2</rerunFailingTestsCount>
 					<testFailureIgnore>true</testFailureIgnore>
 					<trimStackTrace>false</trimStackTrace>
 					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
@@ -387,7 +388,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

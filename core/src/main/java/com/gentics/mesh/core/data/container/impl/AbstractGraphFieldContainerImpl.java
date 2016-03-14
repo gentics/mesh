@@ -4,12 +4,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.MicroschemaContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -56,10 +55,13 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -201,7 +203,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public MicronodeGraphField createMicronode(String key, MicroschemaContainer microschema) {
+	public MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschema) {
 		// delete existing micronode
 		MicronodeGraphField existing = getMicronode(key);
 		if (existing != null) {
@@ -209,7 +211,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		}
 
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
-		micronode.setMicroschemaContainer(microschema);
+		micronode.setMicroschemaContainerVersion(microschema);
 		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
@@ -348,8 +350,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 						if (project == null) {
 							project = getParentNode().getProject();
 						}
-						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(),
-								ac.getResolveLinksType(), project.getName(), languageTags));
+						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType(),
+								project.getName(), languageTags));
 					}
 					return stringField;
 				});
@@ -401,8 +403,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 						if (project == null) {
 							project = getParentNode().getProject();
 						}
-						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(),
-								ac.getResolveLinksType(), project.getName(), languageTags));
+						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(), ac.getResolveLinksType(), project.getName(),
+								languageTags));
 					}
 					return model;
 				});
@@ -776,8 +778,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			if (restField == null) {
 				return;
 			}
-			MicronodeField micronodeField = (MicronodeField) restField;
-			MicroschemaReference microschemaReference = micronodeField.getMicroschema();
+			MicronodeField micronodeRestField = (MicronodeField) restField;
+			MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
 			// TODO check for null
 			if (microschemaReference == null) {
 				return;
@@ -793,24 +795,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			// 1. Load microschema by uuid
 			if (isEmpty(microschemaUuid)) {
 				microschemaContainer = boot.microschemaContainerRoot().findByUuid(microschemaUuid).toBlocking().single();
-				//					if (microschemaContainer == null) {
-				//						throw error(BAD_REQUEST, "Could not find microschema for uuid  {" + microschemaUuid + "}");
-				//					}
 			}
 			// 2. Load microschema by name
 			if (microschemaContainer == null && !isEmpty(microschemaName)) {
 				microschemaContainer = boot.microschemaContainerRoot().findByName(microschemaName).toBlocking().single();
-				//					if (microschemaContainer == null) {
-				//						//TODO i18n
-				//						throw error(BAD_REQUEST, "Could not find microschema for name {" + microschemaName + "}");
-				//					}
 			}
 
 			if (microschemaContainer == null) {
-				//TODO i18n
-				throw error(BAD_REQUEST, "Unable to update microschema field {" + key + "}. Could not find microschema by either name or uuid.");
+				throw error(BAD_REQUEST, "microschema_reference_invalid", key);
 			}
 
+			//TODO versioning: Use released schema version instead of latest
+			MicroschemaContainerVersion microschemaContainerVersion = microschemaContainer.getLatestVersion();
 			Micronode micronode = null;
 			MicronodeGraphField micronodeGraphField = getMicronode(key);
 
@@ -822,29 +818,29 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 			// graphfield not set -> create one
 			if (micronodeGraphField == null) {
-				micronodeGraphField = createMicronode(key, microschemaContainer);
+				micronodeGraphField = createMicronode(key, microschemaContainerVersion);
 				micronode = micronodeGraphField.getMicronode();
 			} else {
 				// check whether uuid is equal
 				micronode = micronodeGraphField.getMicronode();
 				// TODO check whether micronode is null
 
-				MicroschemaContainer existingContainer = micronode.getMicroschemaContainer();
-				if ((!StringUtils.isEmpty(micronodeField.getUuid()) && !StringUtils.equalsIgnoreCase(micronode.getUuid(), micronodeField.getUuid()))
-						|| !StringUtils.equalsIgnoreCase(microschemaContainer.getUuid(), existingContainer.getUuid())) {
-					micronodeGraphField = createMicronode(key, microschemaContainer);
+				MicroschemaContainerVersion existingContainerVersion = micronode.getMicroschemaContainerVersion();
+				if ((!isEmpty(micronodeRestField.getUuid()) && !equalsIgnoreCase(micronode.getUuid(), micronodeRestField.getUuid()))
+						|| !equalsIgnoreCase(microschemaContainerVersion.getUuid(), existingContainerVersion.getUuid())) {
+					micronodeGraphField = createMicronode(key, microschemaContainerVersion);
 					micronode = micronodeGraphField.getMicronode();
 				}
 			}
 
-			micronode.updateFieldsFromRest(ac, micronodeField.getFields(), micronode.getMicroschema());
+			micronode.updateFieldsFromRest(ac, micronodeRestField.getFields(), micronode.getMicroschema());
 
 			break;
 		}
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, Map<String, Field> restFields, FieldSchemaContainer schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema) {
 		//TODO: This should return an observable
 		// Initially all fields are not yet handled
 		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
@@ -853,7 +849,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
-			Field restField = restFields.get(key);
+			Field restField = restFields.getField(key, entry);
 			unhandledFieldKeys.remove(key);
 			updateField(ac, key, restField, entry, schema);
 		}
@@ -891,7 +887,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				field = getHtml(fieldSchema.getName());
 				break;
 			case LIST:
-				ListFieldSchema listFieldSchema = (ListFieldSchema)fieldSchema;
+				ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 				switch (listFieldSchema.getListType()) {
 				case "boolean":
 					field = getBooleanList(fieldSchema.getName());

@@ -48,7 +48,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider{
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
 			
-			MeshRestRequestUtil.handleRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null, null).setHandler(rh -> {
+			MeshRestRequestUtil.handleRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null).setHandler(rh -> {
 				if (rh.failed()) {
 					sub.onError(rh.cause());
 				} else {

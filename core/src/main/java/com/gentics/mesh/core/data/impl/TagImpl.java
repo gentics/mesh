@@ -102,14 +102,6 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public TagReference transformToReference(InternalActionContext ac) {
-		TagReference tagReference = new TagReference();
-		tagReference.setName(getName());
-		tagReference.setUuid(getUuid());
-		return tagReference;
-	}
-
-	@Override
 	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<TagResponse>> obs = new HashSet<>();
 

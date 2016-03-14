@@ -45,7 +45,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		InternalActionContext ac = getMockedInternalActionContext("");
-		RoleReference reference = role().transformToReference(ac);
+		RoleReference reference = role().transformToReference();
 		assertNotNull(reference);
 		assertEquals(role().getUuid(), reference.getUuid());
 		assertEquals(role().getName(), reference.getName());
@@ -72,7 +72,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		// node2
 		Node parentNode = folder("2015");
-		Node node2 = parentNode.create(user(), getSchemaContainer(), project());
+		Node node2 = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 		// NodeFieldContainer englishContainer = node2.getFieldContainer(english());
 		// englishContainer.setI18nProperty("content", "Test");
 		role.grantPermissions(node2, READ_PERM, DELETE_PERM);
@@ -193,7 +193,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		Node node = parentNode.create(user(), getSchemaContainer(), project());
+		Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 		assertEquals(0, requestUser.getPermissions(ac, node).size());
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 		ac.data().clear();
