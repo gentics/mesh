@@ -244,7 +244,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			getSchemaContainer().setLatestVersion(nextVersion);
 
 			// Update the search index
-			return addIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(UPDATE_ACTION);
 		}).process().map(i -> {
 			return db.noTrx(() -> {
 				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
@@ -265,7 +265,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	 * Overwrite default implementation since we need to add the parent container of all versions to the index and not the current version.
 	 */
 	@Override
-	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this.getSchemaContainer(), action);

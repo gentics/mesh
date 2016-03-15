@@ -144,7 +144,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void delete() {
 		// TODO don't allow deletion of admin role
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getVertex().remove();
 	}
 
@@ -163,7 +163,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 			return db.trx(() -> {
 				setName(requestModel.getName());
-				return addIndexBatch(UPDATE_ACTION);
+				return createIndexBatch(UPDATE_ACTION);
 			}).process().map(b -> this);
 		}
 		// No update required

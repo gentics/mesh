@@ -183,7 +183,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void delete() {
 		// TODO don't allow deletion of the admin group
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
 
@@ -206,7 +206,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 				return db.trx(() -> {
 					setName(requestModel.getName());
-					return addIndexBatch(UPDATE_ACTION);
+					return createIndexBatch(UPDATE_ACTION);
 				}).process().map(i -> this);
 
 			} else {

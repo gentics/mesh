@@ -12,12 +12,15 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -110,5 +113,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			throw error(BAD_REQUEST, "error_field_container_without_node");
 		}
 		return parentNode;
+	}
+
+	@Override
+	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
+		System.out.println("Adding entry for" + getParentNode().getUuid() + " " + indexType +  " action " + action  );
+		batch.addEntry(getParentNode().getUuid(), getParentNode().getType(), action, indexType);
 	}
 }

@@ -125,38 +125,6 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		if (action == DELETE_ACTION) {
-			// TODO Delete handling is not yet supported for schemas
-		} else {
-			String previousDocumentType = null;
-
-			// TODO uncomment this code (in replacement for the following lines), as soon as getting previous schema containers is implemented
-			//			SchemaContainer previousSchemaContainer = getPreviousVersion();
-			//			if (previousSchemaContainer != null) {
-			//				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
-			//			}
-			int previousVersion = getVersion() - 1;
-			if (previousVersion > 0) {
-				previousDocumentType = getName() + "-" + previousVersion;
-			}
-
-			for (NodeGraphFieldContainer container : getFieldContainers()) {
-				Node node = container.getParentNode();
-				batch.addEntry(node, UPDATE_ACTION);
-
-				if (previousDocumentType != null) {
-					List<String> languageNames = node.getAvailableLanguageNames();
-					for (String languageTag : languageNames) {
-						batch.addEntry(NodeIndexHandler.composeDocumentId(node, languageTag), node.getType(), DELETE_ACTION, previousDocumentType);
-					}
-				}
-			}
-
-		}
-	}
-
-	@Override
 	public SchemaReference transformToReference() {
 		SchemaReference reference = createEmptyReferenceModel();
 		reference.setName(getName());

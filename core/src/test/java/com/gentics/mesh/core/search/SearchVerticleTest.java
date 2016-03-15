@@ -105,7 +105,7 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testAsyncSearchQueueUpdates() throws Exception {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
-		String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion().getSchema());
+		String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion());
 		for (int i = 0; i < 10; i++) {
 			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
 		}

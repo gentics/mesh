@@ -132,7 +132,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 					TagFamily tagFamily = create(name, requestUser);
 					addTagFamily(tagFamily);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
-					SearchQueueBatch batch = tagFamily.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					SearchQueueBatch batch = tagFamily.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					return Tuple.tuple(batch, tagFamily);
 				});
 				SearchQueueBatch batch = tuple.v1();

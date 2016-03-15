@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -27,6 +28,9 @@ import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -42,6 +46,7 @@ import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.handler.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
@@ -70,8 +75,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @param toVersion
 	 * @param statusMBean
 	 *            status MBean
+	 * @return Observable which contains the search queue batch which needs to be processed
 	 */
-	public Observable<Void> migrateNodes(SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
+	public Observable<SearchQueueBatch> migrateNodes(SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+			NodeMigrationStatus statusMBean) {
 
 		// get the nodes, that need to be transformed
 		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTrx(fromVersion::getFieldContainers);
@@ -93,7 +100,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 		} catch (IOException e) {
 			return Observable.error(e);
 		}
-
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
 			Exception e = db.trx(() -> {
@@ -108,10 +116,19 @@ public class NodeMigrationHandler extends AbstractHandler {
 					Schema newSchema = toVersion.getSchema();
 					// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
 					restModel.getSchema().setVersion(newSchema.getVersion());
+
+					// Invoke the migration
 					migrate(ac, container, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
-					// migrate the schema reference to the new version
+
+					// Add a new delete action entry while the contains still references the old schema version. 
+					// This way the old document will be removed from the search index.
+					container.addIndexBatchEntry(batch, SearchQueueEntryAction.DELETE_ACTION);
+
+					// Update the schema reference to the new version
 					container.setSchemaContainerVersion(toVersion);
 
+					// Lastly add a search queue entry for the updated container
+					container.addIndexBatchEntry(batch, SearchQueueEntryAction.UPDATE_ACTION);
 					return null;
 				} catch (Exception e1) {
 					return e1;
@@ -127,7 +144,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 		}
 
-		return Observable.just(null);
+		// Process the search queue batch in order to update the search index
+		return batch.process();
 	}
 
 	/**
@@ -178,10 +196,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 					MicronodeResponse restModel = micronode.transformToRestSync(ac).toBlocking().last();
 					Microschema oldSchema = fromVersion.getSchema();
 					Microschema newSchema = toVersion.getSchema();
+
+					// Migrate the micronode
 					migrate(ac, micronode, restModel, oldSchema, newSchema, touchedFields, migrationScripts, MicronodeResponse.class);
-					// migrate the microschema reference to the new version
+
+					// Update the microschema reference to the new version
 					micronode.setMicroschemaContainerVersion(toVersion);
 
+					//TODO do we need to update the search queue batch? Micrnodes are not searchable at the moment.
 					return null;
 				} catch (Exception e1) {
 					return e1;
@@ -261,7 +283,6 @@ public class NodeMigrationHandler extends AbstractHandler {
 		T transformedRestModel = JsonUtil.readValue(nodeJson, clazz);
 
 		container.updateFieldsFromRest(ac, transformedRestModel.getFields(), newSchema);
-
 		// create a map containing fieldnames (as keys) and
 		// sha512sums of the supposedly stored binary contents
 		// of all binary fields

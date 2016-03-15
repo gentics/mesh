@@ -159,7 +159,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						}
 						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, schemaContainer.getLatestVersion());
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						return Tuple.tuple(batch, node);
 					});
 				});

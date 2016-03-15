@@ -592,7 +592,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
 		ServerSchemaStorage.getInstance().clear();
 
-		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(schemaVersion.getSchemaContainer().getUuid(), schema);
+		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(concorde.getSchemaContainer().getUuid(), schema);
 		latchFor(migrationFuture);
 		assertSuccess(migrationFuture);
 		expectResponseMessage(migrationFuture, "migration_invoked", "content");
@@ -606,7 +606,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertSuccess(future);
 
 		NodeListResponse response = future.result();
-		assertEquals("Check returned search results", 1, response.getData().size());
+		assertEquals("We only expect to find the two language versions.", 2, response.getData().size());
 	}
 
 	@Test
@@ -684,7 +684,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, schema.getName() + "-" + schema.getVersion(), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

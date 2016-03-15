@@ -129,7 +129,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 					requestUser.reload();
 					SchemaContainer container = create(requestModel, requestUser);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					SearchQueueBatch batch = container.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					return Tuple.tuple(batch, container);
 				});
 

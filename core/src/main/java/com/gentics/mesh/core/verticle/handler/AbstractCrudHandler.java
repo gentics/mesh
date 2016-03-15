@@ -123,7 +123,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 
 						String uuid = element.getUuid();
 						if (element instanceof IndexableElement) {
-							SearchQueueBatch batch = ((IndexableElement) element).addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+							SearchQueueBatch batch = ((IndexableElement) element).createIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
 							String name = null;
 							if (element instanceof NamedElement) {
 								name = ((NamedElement) element).getName();

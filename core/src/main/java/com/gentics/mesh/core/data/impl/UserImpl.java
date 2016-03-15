@@ -450,7 +450,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
 
@@ -518,7 +518,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						setReferencedNode(node);
 					}
 				}
-				return addIndexBatch(UPDATE_ACTION);
+				return createIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
 
 		} catch (IOException e) {

@@ -165,7 +165,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void delete() {
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
@@ -198,7 +198,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				}
 				SearchQueueBatch batch = db.trx(() -> {
 					tagFamily.setName(newName);
-					return addIndexBatch(UPDATE_ACTION);
+					return createIndexBatch(UPDATE_ACTION);
 				});
 
 				// TODO i have no clue why map(i-> tagFamily) is not working.

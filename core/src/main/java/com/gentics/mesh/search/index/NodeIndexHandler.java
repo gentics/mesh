@@ -81,12 +81,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	/**
 	 * Get the document type for documents stored for the given schema
 	 * 
-	 * @param schema
-	 *            schema
+	 * @param schemaVersion
+	 *            Schema container version
 	 * @return document type
 	 */
-	public static String getDocumentType(Schema schema) {
-		return new StringBuilder(schema.getName()).append("-").append(schema.getVersion()).toString();
+	public static String getDocumentType(SchemaContainerVersion schemaVersion) {
+		return new StringBuilder(schemaVersion.getName()).append("-").append(schemaVersion.getVersion()).toString();
 	}
 
 	@Override
@@ -143,7 +143,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 			//			displayFieldMap.put("value", container.getDisplayFieldValue(container.getSchemaContainerVersion().getSchema()));
 			map.put("displayField", displayFieldMap);
-			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
+			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
+					composeDocumentId(node, language), map));
 		}
 
 		return Observable.merge(obs).doOnCompleted(() -> {
@@ -178,7 +179,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.debug(json);
 			}
 
-			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
+			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
+					composeDocumentId(node, language), map));
 
 		}
 
@@ -428,20 +430,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		StringBuilder id = new StringBuilder(node.getUuid());
 		id.append("-").append(language);
 		return id.toString();
-	}
-
-	/**
-	 * Compose the document type for the index document
-	 * 
-	 * @param node
-	 *            node
-	 * @param language
-	 *            language
-	 * @return
-	 */
-	private String getDocumentType(Node node, String language) {
-		//TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference: (n:Node)->(sSchemaContainer) ?
-		return getDocumentType(node.getSchemaContainer().getLatestVersion().getSchema());
 	}
 
 	/**
