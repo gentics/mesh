@@ -60,7 +60,6 @@
 
 === Upcoming changes
 
-
 [source]
 ----
 * Database migration/changelog system
