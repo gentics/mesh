@@ -94,30 +94,29 @@ public class DemoDataProvider {
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		long start = System.currentTimeMillis();
 
-		db.noTrx(() -> {
-			//bootstrapInitializer.initMandatoryData();
+		//bootstrapInitializer.initMandatoryData();
 
-			MeshAuthUser user = MeshRoot.getInstance().getUserRoot().findMeshAuthUserByUsername("admin");
-			client.setUser(user);
-
-			//			root = boot.meshRoot();
-			//			english = boot.languageRoot().findByLanguageTag("en");
-			//			german = boot.languageRoot().findByLanguageTag("de");
-
-			addBootstrappedData();
-
-			addRoles();
-			addGroups();
-			addUsers();
-
-			addProjects();
-			addTagFamilies();
-			addTags();
-
-			addSchemaContainers();
-			addNodes();
-			return null;
+		MeshAuthUser user = db.noTrx(() -> {
+			return MeshRoot.getInstance().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
+		client.setUser(user);
+
+		//			root = boot.meshRoot();
+		//			english = boot.languageRoot().findByLanguageTag("en");
+		//			german = boot.languageRoot().findByLanguageTag("de");
+
+		addBootstrappedData();
+
+		addRoles();
+		addGroups();
+		addUsers();
+
+		addProjects();
+		addTagFamilies();
+		addTags();
+
+		addSchemaContainers();
+		addNodes();
 		//		updatePermissions();
 		//		invokeFullIndex();
 		long duration = System.currentTimeMillis() - start;
@@ -196,7 +195,7 @@ public class DemoDataProvider {
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		if(latch.await(10, TimeUnit.SECONDS)) {
+		if (!latch.await(50, TimeUnit.SECONDS)) {
 			throw new RuntimeException("Timeout reached");
 		}
 
@@ -230,7 +229,7 @@ public class DemoDataProvider {
 	}
 
 	/**
-	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
+	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (e.g.: admin groups, roles, users)
 	 * 
 	 * @throws InterruptedException
 	 */

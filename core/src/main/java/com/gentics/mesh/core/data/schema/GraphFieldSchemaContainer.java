@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.schema;
 
-import com.gentics.mesh.context.InternalActionContext;
 import java.util.List;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -10,10 +9,6 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-
-import rx.Observable;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 
 /**
  * Common graph model interface for schema field containers.

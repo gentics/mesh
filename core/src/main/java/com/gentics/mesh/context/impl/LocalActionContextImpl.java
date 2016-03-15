@@ -160,10 +160,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public void addCookie(Cookie cookie) {
 	}
 
-	//	public void setResponseType(Class<T> classOfT) {
-	//		this.classOfResponse = classOfT;
-	//	}
-
 	/**
 	 * Return the future which will be completed on sending or failure.
 	 * 

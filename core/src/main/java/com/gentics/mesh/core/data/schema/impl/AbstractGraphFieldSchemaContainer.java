@@ -8,10 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.Mesh;
-
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -20,18 +17,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.etc.MeshSpringConfiguration;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
 import rx.Observable;
 
 /**

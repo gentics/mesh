@@ -7,21 +7,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.context.InternalActionContext;
 
-import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 

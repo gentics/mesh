@@ -52,7 +52,16 @@ public class DemoVerticle extends AbstractWebVerticle {
 	public void registerEndPoints() throws Exception {
 		// We only want to setup the demo data once
 		if (BootstrapInitializer.isInitialSetup) {
-			demoDataProvider.setup();
+			vertx.executeBlocking(bc -> {
+				try {
+					demoDataProvider.setup();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} , rh -> {
+				System.out.println("Done");
+			});
 		} else {
 			log.info("Demo graph was already setup once. Not invoking demo data setup.");
 		}

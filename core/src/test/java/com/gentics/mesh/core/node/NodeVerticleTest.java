@@ -58,7 +58,6 @@ import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
