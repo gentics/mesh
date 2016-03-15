@@ -107,7 +107,7 @@ public class SchemaContainerVersionImpl extends
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
 
-			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, this));
+			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
 
 			return Observable.just(restSchema);
 		} catch (IOException e) {

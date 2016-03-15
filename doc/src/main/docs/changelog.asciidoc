@@ -13,35 +13,34 @@
 ----
 * Public open beta release
 
-* Added image API endpoint
+* Enhancement: Added image API endpoint
   Images can now be resized and cropped using the image endpoint.
 
-* Added schema versioning
+* Enhancement: Added schema versioning
 
-* Added schema migration process
+* Enhancement: Added schema migration process
   It is now possible to update schemas. Custom migration 
   handlers can be defined in order to modify the node data.
 
-* Added Micronodes/Microschemas
+* Enhancement: Added Micronodes/Microschemas
   A new field type has been added which allows creation of micronodes.
 
-* Webroot API
+* Enhancement: Webroot API
   The webroot REST endpoint was added which allows easy retrieval of nodes by its web path.
 
-* JWT Authentication support has been added
+* Enhancement: JWT Authentication support has been added
   It is now possible to select JWT in order to authenticate the user.
   
-* Navigation Endpoint
+* Enhancement: Navigation Endpoint
   The navigation REST endpoint was added which allows retrieval of navigation tree data which can be used to render navigations.
 
-* Added docker support
+* Enhancement: Added docker support
   It is now possible to start mesh using the gentics/mesh or gentics/mesh-demo docker image.
 
-* Fixed paging issue for nested tags
+* Fix: Fixed paging issue for nested tags
 
-* Vertx update
+* Enhancement: Vertx update
   The Vertx dependency was updated to version 3.2.1
-
 ----
 
 
@@ -49,7 +48,14 @@
 
 [source]
 ----
-* Add mesh-ui to gentics/mesh docker image
+* Enhancement: Add mesh-ui to gentics/mesh docker image
+----
+
+=== 0.6.2 - 15.03.2016
+
+[source]
+----
+* Fix: The microschema and schema permission field was always empty for newly created elements.
 ----
 
 === Upcoming changes
