@@ -58,6 +58,14 @@
 * Fix: The microschema and schema permission field was always empty for newly created elements.
 ----
 
+=== 0.6.3
+
+[source]
+----
+* Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now. 
+----
+
+
 === Upcoming changes
 
 [source]
