@@ -90,7 +90,7 @@ public class MicroschemaChangesVerticleTest extends AbstractChangesVerticleTest 
 		micronode.setMicroschema(ref);
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
-		NodeResponse response = createNode("micronodeField", micronode);
+		NodeResponse response = createNodeAndCheck("micronodeField", micronode);
 		Node node = MeshRoot.getInstance().getNodeRoot().findByUuid(response.getUuid()).toBlocking().single();
 		assertNotNull("The node should have been created.", node);
 		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
