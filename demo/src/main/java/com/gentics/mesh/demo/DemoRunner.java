@@ -32,7 +32,7 @@ public class DemoRunner {
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
-			config.put("port", 8080);
+			config.put("port", options.getHttpServerOptions().getPort());
 			DeploymentUtil.deployAndWait(vertx, config, DemoVerticle.class, false);
 			DeploymentUtil.deployAndWait(vertx, config, AdminGUIVerticle.class, false);
 		});

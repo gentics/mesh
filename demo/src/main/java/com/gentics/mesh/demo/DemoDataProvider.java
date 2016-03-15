@@ -1,7 +1,5 @@
 package com.gentics.mesh.demo;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -198,7 +196,9 @@ public class DemoDataProvider {
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		assertTrue("The timeout of the latch was reached.", latch.await(10, TimeUnit.SECONDS));
+		if(latch.await(10, TimeUnit.SECONDS)) {
+			throw new RuntimeException("Timeout reached");
+		}
 
 		if (future.failed()) {
 			throw new RuntimeException(future.cause());
