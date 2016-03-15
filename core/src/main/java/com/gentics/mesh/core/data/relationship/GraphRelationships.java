@@ -61,9 +61,10 @@ public class GraphRelationships {
 			db.addEdgeType(HAS_LIST);
 
 			// Versioning
+			db.addEdgeType(HAS_CHANGE);
 			db.addEdgeType(HAS_VERSION);
-			db.addEdgeIndex(HAS_LATEST_VERSION);
-			db.addEdgeIndex(HAS_PARENT_CONTAINER);
+			db.addEdgeType(HAS_LATEST_VERSION);
+			db.addEdgeType(HAS_PARENT_CONTAINER);
 			return null;
 		});
 
