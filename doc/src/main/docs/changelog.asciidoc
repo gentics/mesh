@@ -62,7 +62,8 @@
 
 [source]
 ----
-* Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now. 
+* Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
+* Fix: A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358) 
 ----
 
 

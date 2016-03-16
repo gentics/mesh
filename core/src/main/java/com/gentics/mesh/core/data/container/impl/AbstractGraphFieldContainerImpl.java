@@ -646,6 +646,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 					AtomicInteger integer = new AtomicInteger();
 					for (NodeFieldListItem item : nodeList.getItems()) {
 						Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
+						if (node == null) {
+							throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
+						}
 						graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
 					}
 				}

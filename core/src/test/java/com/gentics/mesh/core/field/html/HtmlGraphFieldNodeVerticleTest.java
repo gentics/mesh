@@ -34,7 +34,7 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(null, (Field) null);
+		NodeResponse response = createNodeAndCheck(null, (Field) null);
 		HtmlFieldImpl htmlField = response.getFields().getHtmlField("htmlField");
 		assertNotNull(htmlField);
 		assertNull(htmlField.getHTML());
@@ -55,7 +55,7 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
+		NodeResponse response = createNodeAndCheck("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 		HtmlFieldImpl htmlField = response.getFields().getHtmlField("htmlField");
 		assertEquals("Some<b>html", htmlField.getHTML());
 	}

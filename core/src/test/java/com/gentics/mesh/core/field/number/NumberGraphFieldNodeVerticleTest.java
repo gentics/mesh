@@ -47,7 +47,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode("numberField", (Field) null);
+		NodeResponse response = createNodeAndCheck("numberField", (Field) null);
 		NumberFieldImpl field = response.getFields().getNumberField("numberField");
 		assertNotNull(field);
 		assertNull(field.getNumber());
@@ -84,7 +84,7 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("numberField", new NumberFieldImpl().setNumber(1.21));
+		NodeResponse response = createNodeAndCheck("numberField", new NumberFieldImpl().setNumber(1.21));
 		NumberFieldImpl numberField = response.getFields().getNumberField("numberField");
 		assertEquals(1.21, numberField.getNumber());
 	}
