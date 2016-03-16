@@ -52,7 +52,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(null, (Field) null);
+		NodeResponse response = createNodeAndCheck(null, (Field) null);
 		StringFieldImpl stringField = response.getFields().getStringField("stringField");
 		assertNotNull(stringField);
 		assertNull(stringField.getString());
@@ -73,7 +73,7 @@ public class StringGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("stringField", new StringFieldImpl().setString("someString"));
+		NodeResponse response = createNodeAndCheck("stringField", new StringFieldImpl().setString("someString"));
 		StringFieldImpl field = response.getFields().getStringField("stringField");
 		assertEquals("someString", field.getString());
 	}

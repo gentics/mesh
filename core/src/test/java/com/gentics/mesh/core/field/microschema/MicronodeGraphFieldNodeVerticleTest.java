@@ -54,7 +54,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELDNAME, (Field) null);
+		NodeResponse response = createNodeAndCheck(FIELDNAME, (Field) null);
 		MicronodeField field = response.getFields().getMicronodeField(FIELDNAME);
 		assertNotNull(field);
 		assertNull(field.getFields());
@@ -92,7 +92,7 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		field.setMicroschema(microschema);
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		field.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
-		NodeResponse response = createNode(FIELDNAME, field);
+		NodeResponse response = createNodeAndCheck(FIELDNAME, field);
 
 		MicronodeResponse createdField = response.getFields().getMicronodeField(FIELDNAME);
 		assertNotNull("Created field does not exist", createdField);

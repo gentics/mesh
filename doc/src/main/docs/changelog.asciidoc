@@ -66,6 +66,9 @@
 * Fix: The schema migration process did not update the node search index correctly. 
        In some cases duplicate nodes would be returned (the old node and the migrated one).
        This has been fixed. Only the latest version of nodes will be returned now.
+||||||| merged common ancestors
+* Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now. 
+* Fix: A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358) 
 ----
 
 

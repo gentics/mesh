@@ -194,7 +194,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		assertThat(field.getItems()).hasSize(2);
-		NodeResponse response = createNode(FIELDNAME, field);
+		NodeResponse response = createNodeAndCheck(FIELDNAME, field);
 
 		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELDNAME);
 		assertNotNull(responseField);
@@ -205,7 +205,7 @@ public class MicronodeGraphListFieldNodeVerticleTest extends AbstractGraphFieldN
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELDNAME, (Field) null);
+		NodeResponse response = createNodeAndCheck(FIELDNAME, (Field) null);
 		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELDNAME);
 		assertNotNull(field);
 		assertTrue("List field must be empty", field.getItems().isEmpty());
