@@ -6,5 +6,9 @@ function sleep(ms) {
 }
 
 function migrate(node, fieldname, convert) {
-	sleep(10000); // Wait 10s
+	if (node.fields['content']== "triggerWait") {
+		sleep(10000); // Wait 1s
+	}
+	node.fields['content'] = false;
+	return node;
 }
