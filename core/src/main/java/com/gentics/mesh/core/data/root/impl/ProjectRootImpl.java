@@ -163,7 +163,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				// TODO add microschema root crud perms
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
-				SearchQueueBatch batch = project.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+				SearchQueueBatch batch = project.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 				return Tuple.tuple(batch, project);
 			});
 

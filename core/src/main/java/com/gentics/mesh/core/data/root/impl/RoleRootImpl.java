@@ -98,7 +98,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			requestUser.reload();
 			Role role = create(requestModel.getName(), requestUser);
 			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-			SearchQueueBatch batch = role.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+			SearchQueueBatch batch = role.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 			return Tuple.tuple(batch, role);
 		});
 

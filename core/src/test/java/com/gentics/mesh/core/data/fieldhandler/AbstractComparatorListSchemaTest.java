@@ -77,5 +77,12 @@ public abstract class AbstractComparatorListSchemaTest<C extends FieldSchemaCont
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("listType", "boolean");
 		assertThat(changes.get(0).getProperties()).hasSize(2);
+
+		// allow flag:
+		fieldB.setAllowedSchemas("test");
+		changes = getComparator().diff(containerA, containerB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty("allow", new String[] { "test" });
+		assertThat(changes.get(0).getProperties()).hasSize(3);
 	}
 }

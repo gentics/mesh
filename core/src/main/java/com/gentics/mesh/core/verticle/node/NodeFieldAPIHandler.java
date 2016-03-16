@@ -174,7 +174,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 								container.updateWebrootPathInfo("node_conflicting_segmentfield_upload");
 							}
 
-							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
 
@@ -337,7 +337,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
-							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
 

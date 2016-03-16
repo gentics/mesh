@@ -106,7 +106,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Ignore("Field deletion is currently not implemented.")
 	public void testCreateDeleteNodeField() {
 
-		NodeResponse response = createNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse response = createNodeAndCheck(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(folder("news").getUuid(), field.getUuid());
 
@@ -127,7 +127,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
+		NodeResponse response = createNodeAndCheck(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(folder("news").getUuid(), field.getUuid());
 	}
@@ -149,7 +149,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(NODE_FIELD_NAME, (Field) null);
+		NodeResponse response = createNodeAndCheck(NODE_FIELD_NAME, (Field) null);
 		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertNotNull(field);
 		assertNull(field.getUuid());

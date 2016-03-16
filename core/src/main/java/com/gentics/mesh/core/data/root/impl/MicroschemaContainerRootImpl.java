@@ -88,7 +88,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 					requestUser.reload();
 					MicroschemaContainer container = create(microschema, requestUser);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					SearchQueueBatch batch = container.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					SearchQueueBatch batch = container.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					return Tuple.tuple(batch, container);
 				});
 

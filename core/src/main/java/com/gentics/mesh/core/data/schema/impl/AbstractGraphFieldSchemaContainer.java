@@ -110,7 +110,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public void delete() {
 		// TODO should all references be updated to a new fallback schema?
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 		//TODO delete versions and nodes as well
 	}

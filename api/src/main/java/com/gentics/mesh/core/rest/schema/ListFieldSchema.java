@@ -4,7 +4,7 @@ public interface ListFieldSchema extends FieldSchema {
 
 	String[] getAllowedSchemas();
 
-	ListFieldSchema setAllowedSchemas(String[] allowedSchemas);
+	ListFieldSchema setAllowedSchemas(String... allowedSchemas);
 
 	/**
 	 * Return the list type (string, number, date...)

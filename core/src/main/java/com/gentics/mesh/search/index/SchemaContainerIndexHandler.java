@@ -71,7 +71,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 				Observable<Void> obs = db.noTrx(() -> {
 					// update the mappings
 					Schema schema = container.getLatestVersion().getSchema();
-					return nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema);
+					return nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(container.getLatestVersion()), schema);
 				});
 				return obs;
 			} else {

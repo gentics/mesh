@@ -92,7 +92,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 					requestUser.reload();
 					Group group = create(requestModel.getName(), requestUser);
 					requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
-					SearchQueueBatch batch = group.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 					return Tuple.tuple(batch, group);
 				});
 				SearchQueueBatch batch = tuple.v1();

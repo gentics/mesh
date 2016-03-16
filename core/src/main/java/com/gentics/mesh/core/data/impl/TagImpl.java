@@ -151,7 +151,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getVertex().remove();
 	}
 
@@ -189,7 +189,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				setLastEditedTimestamp(System.currentTimeMillis());
 				setName(requestModel.getFields().getName());
 			}
-			return addIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(UPDATE_ACTION);
 		}).process().map(i -> this);
 
 	}

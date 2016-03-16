@@ -98,7 +98,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateNodes(fromContainerVersion, toContainerVersion, statusBean);
+						nodeMigrationHandler.migrateNodes(fromContainerVersion, toContainerVersion, statusBean).toBlocking().lastOrDefault(null);
 						return null;
 					});
 					setDone(schemaUuid, statusMBeanName);

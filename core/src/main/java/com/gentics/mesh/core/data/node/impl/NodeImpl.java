@@ -712,7 +712,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					Schema schema = latestSchemaVersion.getSchema();
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				}
-				return addIndexBatch(UPDATE_ACTION);
+				return createIndexBatch(UPDATE_ACTION);
 			}).process().map(i -> this);
 
 		} catch (IOException e1) {
@@ -752,7 +752,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
 			// update the webroot path info for every field container.
 			getGraphFieldContainers().stream().forEach(container -> container.updateWebrootPathInfo("node_conflicting_segmentfield_move"));
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			SearchQueueBatch batch = createIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 			return batch;
 		}).process().map(i -> {
 			return null;
@@ -783,7 +783,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, NodeGraphFieldContainer container) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion().getSchema());
+		String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion());
 		batch.addEntry(NodeIndexHandler.composeDocumentId(this, container.getLanguage().getLanguageTag()), getType(), action, indexType);
 		addRelatedEntries(batch, action);
 		return batch;
@@ -795,13 +795,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		// TODO is this a bug? should we not add the document id (uuid+lang) to the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion().getSchema());
-			batch.addEntry(getUuid(), getType(), action, indexType);
+			container.addIndexBatchEntry(batch, action);
 		}
 		addRelatedEntries(batch, action);
 		return batch;

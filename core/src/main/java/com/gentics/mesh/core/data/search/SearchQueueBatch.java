@@ -36,10 +36,13 @@ public interface SearchQueueBatch extends MeshVertex {
 	/**
 	 * Add an entry to this batch.
 	 * 
-	 * @param uuid Uuid of the element to be added
-	 * @param elementType Type of the element to be added
+	 * @param uuid
+	 *            Uuid of the element to be added
+	 * @param elementType
+	 *            Type of the element to be added
 	 * @param action
 	 * @param indexType
+	 *            Search index type
 	 */
 	void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType);
 

@@ -217,7 +217,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			return addIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(UPDATE_ACTION);
 		}).process().map(i -> this);
 	}
 

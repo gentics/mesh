@@ -72,7 +72,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsRole, (group, role) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
 					group.addRole(role);
 					return Tuple.tuple(batch, group);
 				});
@@ -100,7 +100,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			return Observable.zip(obsGroup, obsRole, (group, role) -> {
 
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
 					group.removeRole(role);
 					return Tuple.tuple(batch, group);
 				});
@@ -160,7 +160,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsUser, (group, user) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					group.addUser(user);
-					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
 					return Tuple.tuple(batch, group);
 				});
 				SearchQueueBatch batch = tuple.v1();
@@ -180,7 +180,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			return Observable.zip(obsUser, obsGroup, (user, group) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.addIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
 					batch.addEntry(user, UPDATE_ACTION);
 					group.removeUser(user);
 					return Tuple.tuple(batch, group);

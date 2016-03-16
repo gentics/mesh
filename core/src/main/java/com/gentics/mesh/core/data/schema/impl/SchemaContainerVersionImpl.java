@@ -107,7 +107,7 @@ public class SchemaContainerVersionImpl extends
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
 
-			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, this));
+			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
 
 			return Observable.just(restSchema);
 		} catch (IOException e) {
@@ -122,38 +122,6 @@ public class SchemaContainerVersionImpl extends
 		String json = JsonUtil.toJson(schema);
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
-	}
-
-	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		if (action == DELETE_ACTION) {
-			// TODO Delete handling is not yet supported for schemas
-		} else {
-			String previousDocumentType = null;
-
-			// TODO uncomment this code (in replacement for the following lines), as soon as getting previous schema containers is implemented
-			//			SchemaContainer previousSchemaContainer = getPreviousVersion();
-			//			if (previousSchemaContainer != null) {
-			//				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
-			//			}
-			int previousVersion = getVersion() - 1;
-			if (previousVersion > 0) {
-				previousDocumentType = getName() + "-" + previousVersion;
-			}
-
-			for (NodeGraphFieldContainer container : getFieldContainers()) {
-				Node node = container.getParentNode();
-				batch.addEntry(node, UPDATE_ACTION);
-
-				if (previousDocumentType != null) {
-					List<String> languageNames = node.getAvailableLanguageNames();
-					for (String languageTag : languageNames) {
-						batch.addEntry(NodeIndexHandler.composeDocumentId(node, languageTag), node.getType(), DELETE_ACTION, previousDocumentType);
-					}
-				}
-			}
-
-		}
 	}
 
 	@Override

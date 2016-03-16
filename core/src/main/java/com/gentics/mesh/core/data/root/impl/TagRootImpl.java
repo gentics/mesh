@@ -164,7 +164,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
 				foundFamily.getTagRoot().addTag(newTag);
 
-				SearchQueueBatch batch = newTag.addIndexBatch(CREATE_ACTION);
+				SearchQueueBatch batch = newTag.createIndexBatch(CREATE_ACTION);
 				return Tuple.tuple(batch, newTag);
 			});
 
