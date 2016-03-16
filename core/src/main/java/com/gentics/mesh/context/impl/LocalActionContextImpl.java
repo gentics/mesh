@@ -8,11 +8,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.QueryParameterProvider;
 
@@ -40,7 +42,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		this.user = user;
 		this.classOfResponse = classOfResponse;
 	}
-	
+
 	@Override
 	public Map<String, Object> data() {
 		return data;
@@ -138,10 +140,16 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	/**
 	 * Set the project that will be used to invoke project scope specific actions.
 	 * 
-	 * @param project
+	 * @param projectName
 	 */
-	public void setProject(Project project) {
-		this.project = project;
+	public void setProject(String projectName) {
+		MeshSpringConfiguration.getInstance().database().noTrx(() -> {
+			BootstrapInitializer boot = BootstrapInitializer.getBoot();
+			boot.projectRoot().reload();
+			Project project = boot.projectRoot().findByName(projectName).toBlocking().single();
+			this.project = project;
+			return null;
+		});
 	}
 
 	@Override

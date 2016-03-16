@@ -16,7 +16,7 @@
   }, {
     "name" : "image",
     "label" : "Image",
-    "required" : true,
+    "required" : false,
     "type" : "binary"
   } ]
 }

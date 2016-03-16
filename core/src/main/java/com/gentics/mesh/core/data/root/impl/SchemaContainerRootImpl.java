@@ -114,7 +114,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		Schema requestModel;
 		try {
-			requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+			requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			requestModel.validate();
 			if (requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
 

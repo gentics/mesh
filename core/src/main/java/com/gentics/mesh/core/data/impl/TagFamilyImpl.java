@@ -1,19 +1,23 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -30,6 +34,7 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
@@ -38,6 +43,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -109,16 +115,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public Project getProject() {
 		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
-	//
-	//	@Override
-	//	public Tag findTagByName(String name) {
-	//		return out(HAS_TAG).has(TagImpl.class).mark().out(HAS_FIELD_CONTAINER).has("name", name).back().nextOrDefaultExplicit(TagImpl.class, null);
-	//	}
-	//
-	//	@Override
-	//	public List<? extends Tag> getTags() {
-	//		return out(HAS_TAG).has(TagImpl.class).toListExplicit(TagImpl.class);
-	//	}
 
 	@Override
 	public PageImpl<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException {
@@ -128,17 +124,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		return TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, TagImpl.class);
 	}
 
-	//	@Override
-	//	public void addTag(Tag tag) {
-	//		setLinkOutTo(tag.getImpl(), HAS_TAG);
-	//	}
-	//
-	//	@Override
-	//	public void removeTag(Tag tag) {
-	//		unlinkOut(tag.getImpl(), HAS_TAG);
-	//		// TODO delete tag node?!
-	//	}
-
 	@Override
 	public Tag create(String name, Project project, User creator) {
 		Tag tag = getTagRoot().create(name, project, this, creator);
@@ -146,7 +131,70 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Observable<TagFamilyResponse> transformToRestSync(InternalActionContext ac, String...languageTags) {
+	public Observable<Tag> create(InternalActionContext ac) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+
+		return db.noTrx(() -> {
+			Project project = ac.getProject();
+			TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
+			String tagName = requestModel.getFields().getName();
+			if (isEmpty(tagName)) {
+				throw error(BAD_REQUEST, "tag_name_not_set");
+			}
+
+			//			TagFamilyReference reference = requestModel.getTagFamily();
+			//			if (reference == null) {
+			//				throw error(BAD_REQUEST, "tag_tagfamily_reference_not_set");
+			//			}
+			//			boolean hasName = !isEmpty(reference.getName());
+			//			boolean hasUuid = !isEmpty(reference.getUuid());
+			//			if (!hasUuid && !hasName) {
+			//				throw error(BAD_REQUEST, "tag_tagfamily_reference_uuid_or_name_missing");
+			//			}
+
+			// First try the tag family reference by uuid if specified
+			//			TagFamily tagFamily = null;
+			//			String nameOrUuid = null;
+			//			if (hasUuid) {
+			//				nameOrUuid = reference.getUuid();
+			//				tagFamily = project.getTagFamilyRoot().findByUuid(reference.getUuid()).toBlocking().first();
+			//			} else if (hasName) {
+			//				nameOrUuid = reference.getName();
+			//				tagFamily = project.getTagFamilyRoot().findByName(reference.getName()).toBlocking().first();
+			//			}
+
+			MeshAuthUser requestUser = ac.getUser();
+			if (!requestUser.hasPermissionSync(ac, this, CREATE_PERM)) {
+				throw error(FORBIDDEN, "error_missing_perm", getUuid());
+			}
+
+			Tag conflictingTag = getTagRoot().findByName(tagName).toBlocking().single();
+			if (conflictingTag != null) {
+				throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
+			}
+
+			Tuple<SearchQueueBatch, Tag> tuple = db.trx(() -> {
+				this.reload();
+				requestUser.reload();
+				project.reload();
+				Tag newTag = create(requestModel.getFields().getName(), project, requestUser);
+				ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
+				getTagRoot().addTag(newTag);
+
+				SearchQueueBatch batch = newTag.createIndexBatch(CREATE_ACTION);
+				return Tuple.tuple(batch, newTag);
+			});
+
+			SearchQueueBatch batch = tuple.v1();
+			Tag tag = tuple.v2();
+
+			return batch.process().map(t -> tag);
+		});
+	}
+
+	@Override
+	public Observable<TagFamilyResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
 
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();

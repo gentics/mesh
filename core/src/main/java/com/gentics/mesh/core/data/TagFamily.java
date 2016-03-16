@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -8,6 +9,8 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
+
+import rx.Observable;
 
 /**
  * The TagFamily Domain Model interface.
@@ -91,4 +94,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @return
 	 */
 	TagRoot getTagRoot();
+
+	Observable<Tag> create(InternalActionContext ac);
 }

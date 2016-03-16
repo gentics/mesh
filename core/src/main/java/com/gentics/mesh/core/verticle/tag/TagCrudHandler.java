@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.springframework.stereotype.Component;
@@ -81,11 +82,14 @@ public class TagCrudHandler extends AbstractHandler {
 
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
-
-		HandlerUtilities.createElement(ac, () -> {
-			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
-		});
-
+		db.asyncNoTrxExperimental(() -> {
+			return getTagFamily(ac, tagFamilyUuid).create(ac).flatMap(tag -> {
+				return db.noTrx(() -> {
+					// created.reload();
+					return tag.transformToRest(ac);
+				});
+			});
+		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 	}
 
 	public void handleUpdate(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {

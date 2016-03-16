@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -98,7 +99,7 @@ public class SchemaTest {
 		String json = JsonUtil.toJson(schema);
 		System.out.println(json);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaModel.class);
+		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModel.class);
 		assertEquals(schema.getFields().size(), deserializedSchema.getFields().size());
 		assertNotNull(deserializedSchema);
 	}
@@ -233,6 +234,15 @@ public class SchemaTest {
 		schema.addField(FieldUtil.createBinaryFieldSchema("binaryField"));
 		schema.setSegmentField("binaryField");
 		schema.validate();
+	}
+
+	@Test
+	public void testBinaryFieldMandatory() {
+		Schema schema = FieldUtil.createMinimalValidSchema();
+		BinaryFieldSchema field = FieldUtil.createBinaryFieldSchema("binaryField");
+		field.setRequired(true);
+		schema.addField(field);
+		expectErrorOnValidate(schema, "schema_error_binaryfield_must_not_be_mandatory", "binaryField");
 	}
 
 	/**

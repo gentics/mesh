@@ -20,7 +20,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -32,6 +31,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -92,8 +92,6 @@ public class DemoDataProvider {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		long start = System.currentTimeMillis();
-
 		//bootstrapInitializer.initMandatoryData();
 
 		MeshAuthUser user = db.noTrx(() -> {
@@ -119,7 +117,7 @@ public class DemoDataProvider {
 		addNodes();
 		//		updatePermissions();
 		//		invokeFullIndex();
-		long duration = System.currentTimeMillis() - start;
+		System.out.println("Done");
 	}
 
 	/**
@@ -252,6 +250,12 @@ public class DemoDataProvider {
 		for (RoleResponse role : rolesFuture.result().getData()) {
 			roles.put(role.getName(), role);
 		}
+
+		Future<SchemaListResponse> schemasFuture = client.findSchemas();
+		latchFor(schemasFuture);
+		for (Schema schema : schemasFuture.result().getData()) {
+			schemas.put(schema.getName(), schema);
+		}
 	}
 
 	/**
@@ -274,6 +278,7 @@ public class DemoDataProvider {
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
@@ -320,9 +325,9 @@ public class DemoDataProvider {
 					throw new NullPointerException("Could not find binary file within path {" + path + "}");
 				}
 
-				Future<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
-						fileData, filenName, contentType);
-				latchFor(binaryUpdateFuture);
+//				Future<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
+//						fileData, filenName, contentType);
+//				latchFor(binaryUpdateFuture);
 
 			}
 
@@ -388,6 +393,7 @@ public class DemoDataProvider {
 			//client.assignLanguageToProject(projectFuture.result().getUuid(), getGerman().getUuid());
 			ProjectResponse project = projectFuture.result();
 
+			// Load the project basenode
 			Future<NodeResponse> nodeFuture = client.findNodeByUuid(PROJECT_NAME, project.getRootNodeUuid());
 			latchFor(nodeFuture);
 
@@ -426,22 +432,26 @@ public class DemoDataProvider {
 			//			if (container == null) {
 			StringWriter writer = new StringWriter();
 			InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
-			IOUtils.copy(ins, writer, Charsets.UTF_8.name());
-			Schema schema = JsonUtil.readSchema(writer.toString(), SchemaModel.class);
-			Future<Schema> future = client.createSchema(schema);
-			latchFor(future);
-			//container = boot.schemaContainerRoot().create(schema, getAdmin());
-			//			}
-			Schema schemaResponse = future.result();
-			schemas.put(schemaName, schemaResponse);
+			if (ins != null) {
+				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
+				Schema schema = JsonUtil.readValue(writer.toString(), SchemaModel.class);
+				Future<Schema> future = client.createSchema(schema);
+				latchFor(future);
+				//container = boot.schemaContainerRoot().create(schema, getAdmin());
+				//			}
+				Schema schemaResponse = future.result();
+				schemas.put(schemaName, schemaResponse);
+			}
 
-			// Assign the schema to all projects
+			// Assign all schemas to all projects
 			JsonArray projectsArray = schemaJson.getJsonArray("projects");
 			for (int e = 0; e < projectsArray.size(); e++) {
 				String projectName = projectsArray.getString(e);
 				ProjectResponse project = getProject(projectName);
-				Future<Schema> updateFuture = client.addSchemaToProject(schemaResponse.getUuid(), project.getUuid());
-				latchFor(updateFuture);
+				for (Schema schema : schemas.values()) {
+					Future<Schema> updateFuture = client.addSchemaToProject(schema.getUuid(), project.getUuid());
+					latchFor(updateFuture);
+				}
 				//project.getSchemaContainerRoot().addSchemaContainer(container);
 			}
 		}

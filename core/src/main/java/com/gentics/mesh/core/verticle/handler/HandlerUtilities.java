@@ -36,7 +36,6 @@ public final class HandlerUtilities {
 	 * @param ac
 	 * @param handler
 	 */
-
 	public static <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
 			TrxHandler<RootVertex<?>> handler) {
 		Database db = MeshSpringConfiguration.getInstance().database();

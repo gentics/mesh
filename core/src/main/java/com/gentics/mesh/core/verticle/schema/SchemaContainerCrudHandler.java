@@ -46,7 +46,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				try {
-					Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+					Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
 					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					String schemaName = element.getName();
@@ -67,7 +67,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

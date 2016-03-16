@@ -126,7 +126,7 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 		assertNotNull(schema);
 		String json = JsonUtil.toJson(schema);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaModel.class);
+		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModel.class);
 		assertNotNull(deserializedSchema);
 	}
 

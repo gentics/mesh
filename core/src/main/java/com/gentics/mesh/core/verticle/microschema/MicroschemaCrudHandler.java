@@ -40,7 +40,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				try {
-					Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
+					Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
 					model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					if (model.getChanges().isEmpty()) {
@@ -73,7 +73,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
+			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

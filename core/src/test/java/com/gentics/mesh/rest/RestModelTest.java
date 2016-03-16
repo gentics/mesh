@@ -201,7 +201,7 @@ public class RestModelTest extends AbstractDBTest {
 		assertNotNull(json);
 
 		// Deserialize the object
-		Schema loadedRequest = JsonUtil.readSchema(json, SchemaModel.class);
+		Schema loadedRequest = JsonUtil.readValue(json, SchemaModel.class);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object

@@ -69,7 +69,7 @@ public class SchemaContainerVersionImpl extends
 		Schema schema = ServerSchemaStorage.getInstance().getSchema(getName(), getVersion());
 		if (schema == null) {
 			try {
-				schema = JsonUtil.readSchema(getJson(), SchemaModel.class);
+				schema = JsonUtil.readValue(getJson(), SchemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -83,7 +83,7 @@ public class SchemaContainerVersionImpl extends
 	public Observable<Schema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
-			Schema restSchema = JsonUtil.readSchema(getJson(), SchemaModel.class);
+			Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
 			restSchema.setUuid(getSchemaContainer().getUuid());
 
 			// TODO Get list of projects to which the schema was assigned

@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -66,6 +69,14 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
 		}
 	}
-	
+
+	@Override
+	public void validate() {
+		super.validate();
+
+		if (isRequired()) {
+			throw error(BAD_REQUEST, "schema_error_binaryfield_must_not_be_mandatory", getName());
+		}
+	}
 
 }

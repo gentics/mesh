@@ -1,5 +1,8 @@
 package com.gentics.mesh.rest;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -130,8 +133,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Autowired
 	private UtilityHandler utilityHandler;
 
-	//@Autowired
-	//private Navigation
+	private Map<String, Project> projects = new HashMap<>();
 
 	/**
 	 * Set the user which is used for authentication.
@@ -145,7 +147,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NodeResponse> findNodeByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
-		setProject(projectName, ac);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleRead(ac, uuid);
 		return ac.getFuture();
 	}
@@ -153,7 +155,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
-		//TODO set project
+		ac.setProject(projectName);
 		ac.setPayloadObject(nodeCreateRequest);
 		nodeCrudHandler.handleCreate(ac);
 		return ac.getFuture();
@@ -163,7 +165,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	public Future<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
-		setProject(projectName, ac);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleUpdate(ac, uuid);
 		return ac.getFuture();
 	}
@@ -171,7 +173,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
-		setProject(projectName, ac);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleDelete(ac, uuid);
 		return ac.getFuture();
 	}
@@ -179,7 +181,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> deleteNode(String projectName, String uuid, String languageTag) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
-
+		ac.setProject(projectName);
 		ac.setQuery("?lang=" + languageTag);
 		//TODO set project
 		nodeCrudHandler.handleDelete(ac, uuid);
@@ -189,6 +191,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NodeListResponse> findNodes(String projectName, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeListResponse> ac = createContext(NodeListResponse.class, parameters);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleReadList(ac);
 		return ac.getFuture();
 	}
@@ -196,6 +199,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NodeListResponse> findNodeChildren(String projectName, String parentNodeUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeListResponse> ac = createContext(NodeListResponse.class, parameters);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleReadChildren(ac, parentNodeUuid);
 		return ac.getFuture();
 	}
@@ -203,12 +207,14 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NodeListResponse> findNodesForTag(String projectName, String tagFamilyUuid, String tagUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeListResponse> ac = createContext(NodeListResponse.class, parameters);
+		ac.setProject(projectName);
 		return ac.getFuture();
 	}
 
 	@Override
 	public Future<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleAddTag(ac, nodeUuid, tagUuid);
 		return ac.getFuture();
 	}
@@ -216,6 +222,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NodeResponse> removeTagFromNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleRemoveTag(ac, nodeUuid, tagUuid);
 		return ac.getFuture();
 
@@ -224,6 +231,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setProject(projectName);
 		nodeCrudHandler.handleMove(ac, nodeUuid, targetFolderUuid);
 		return ac.getFuture();
 	}
@@ -231,12 +239,14 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
+		ac.setProject(projectName);
 		return ac.getFuture();
 	}
 
 	@Override
 	public Future<TagResponse> createTag(String projectName, String tagFamilyUuid, TagCreateRequest request) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
+		ac.setProject(projectName);
 		ac.setPayloadObject(request);
 		tagCrudHandler.handleCreate(ac, tagFamilyUuid);
 		return ac.getFuture();
@@ -245,6 +255,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class, parameters);
+		ac.setProject(projectName);
 		tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		return ac.getFuture();
 	}
@@ -252,6 +263,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagResponse> updateTag(String projectName, String tagFamilyUuid, String uuid, TagUpdateRequest request) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
+		ac.setProject(projectName);
 		ac.setPayloadObject(request);
 		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
 		return ac.getFuture();
@@ -260,6 +272,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setProject(projectName);
 		tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
 		return ac.getFuture();
 	}
@@ -267,6 +280,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagListResponse> findTags(String projectName, String tagFamilyUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
+		ac.setProject(projectName);
 		tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
 		return ac.getFuture();
 	}
@@ -324,6 +338,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class, parameters);
+		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleRead(ac, uuid);
 		return ac.getFuture();
 	}
@@ -331,7 +346,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagFamilyListResponse> findTagFamilies(String projectName, PagingParameter pagingInfo) {
 		LocalActionContextImpl<TagFamilyListResponse> ac = createContext(TagFamilyListResponse.class, pagingInfo);
-		//TODO set project / name
+		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleReadList(ac);
 		return ac.getFuture();
 	}
@@ -340,6 +355,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	public Future<TagFamilyResponse> createTagFamily(String projectName, TagFamilyCreateRequest request) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
 		ac.setPayloadObject(request);
+		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleCreate(ac);
 		return ac.getFuture();
 	}
@@ -347,6 +363,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> deleteTagFamily(String projectName, String uuid) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleDelete(ac, uuid);
 		return ac.getFuture();
 	}
@@ -355,6 +372,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	public Future<TagFamilyResponse> updateTagFamily(String projectName, String tagFamilyUuid, TagFamilyUpdateRequest request) {
 		LocalActionContextImpl<TagFamilyResponse> ac = createContext(TagFamilyResponse.class);
 		ac.setPayloadObject(request);
+		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
 		return ac.getFuture();
 	}
@@ -362,6 +380,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<TagFamilyListResponse> findTagFamilies(String projectName, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<TagFamilyListResponse> ac = createContext(TagFamilyListResponse.class, parameters);
+		ac.setProject(projectName);
 		tagFamilyCrudHandler.handleReadList(ac);
 		return ac.getFuture();
 	}
@@ -369,6 +388,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<WebRootResponse> webroot(String projectName, String path, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
+		ac.setProject(projectName);
 		//		webrootHandler.handleGetPath(rc);
 		return ac.getFuture();
 	}
@@ -376,6 +396,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<WebRootResponse> webroot(String projectName, String[] pathSegments, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<WebRootResponse> ac = createContext(WebRootResponse.class, parameters);
+		ac.setProject(projectName);
 		return ac.getFuture();
 	}
 
@@ -434,12 +455,14 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<SchemaListResponse> findSchemas(QueryParameterProvider... parameters) {
 		LocalActionContextImpl<SchemaListResponse> ac = createContext(SchemaListResponse.class, parameters);
+		schemaCrudHandler.handleReadList(ac);
 		return ac.getFuture();
 	}
 
 	@Override
 	public Future<SchemaListResponse> findSchemas(String projectName, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<SchemaListResponse> ac = createContext(SchemaListResponse.class, parameters);
+		ac.setProject(projectName);
 		schemaCrudHandler.handleReadList(ac);
 		return ac.getFuture();
 	}
@@ -805,6 +828,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	public Future<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 			ImageManipulationParameter imageManipulationParameter) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setProject(projectName);
 		return ac.getFuture();
 	}
 
@@ -818,6 +842,7 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<NavigationResponse> loadNavigation(String projectName, String uuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NavigationResponse> ac = createContext(NavigationResponse.class, parameters);
+		ac.setProject(projectName);
 		return ac.getFuture();
 	}
 
@@ -870,13 +895,8 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 		return ac;
 	}
 
-	private void setProject(String projectName, LocalActionContextImpl<?> ac) {
-		database.noTrx(() -> {
-			boot.projectRoot().reload();
-			Project project = boot.projectRoot().findByName(projectName).toBlocking().single();
-			ac.setProject(project);
-			return null;
-		});
+	public void addProject(String name, Project project) {
+		this.projects.put(name, project);
 	}
 
 }

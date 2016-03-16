@@ -80,7 +80,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		Database db = MeshSpringConfiguration.getInstance().database();
 
 		try {
-			Microschema microschema = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
+			Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			microschema.validate();
 
 			return requestUser.hasPermissionAsync(ac, this, GraphPermission.CREATE_PERM).flatMap(hasPerm -> {

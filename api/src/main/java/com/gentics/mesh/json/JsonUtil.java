@@ -42,8 +42,6 @@ public final class JsonUtil {
 
 	protected static ObjectMapper defaultMapper;
 
-	protected static ObjectMapper schemaMapper;
-
 	/**
 	 * When enabled indented JSON will be produced.
 	 */
@@ -58,25 +56,7 @@ public final class JsonUtil {
 	 * Initialize the schema mapper.
 	 */
 	private static void initSchemaMapper() {
-		schemaMapper = new ObjectMapper();
-		schemaMapper.setSerializationInclusion(Include.NON_NULL);
-		schemaMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		SimpleModule module = new SimpleModule();
-		//		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
-		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
-		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 
-		schemaMapper.registerModule(new SimpleModule("interfaceMapping") {
-			private static final long serialVersionUID = -4667167382238425197L;
-
-			@Override
-			public void setupModule(SetupContext context) {
-				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaModel.class));
-				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Microschema.class, MicroschemaModel.class));
-			}
-		});
-
-		schemaMapper.registerModule(module);
 	}
 
 	/**
@@ -112,25 +92,21 @@ public final class JsonUtil {
 
 		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
 		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
-		//		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
+		//		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
+		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
+		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 
-		//		nodeMapper.registerModule(new SimpleModule("interfaceMapping") {
-		//		private static final long serialVersionUID = -4667167382238425197L;
-		//
-		//		@Override
-		//		public void setupModule(SetupContext context) {
-		//			context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaModel.class));
-		//		}
-		//	});
-		//
-		//		module.addDeserializer(NodeResponse.class, new DelegatingNodeResponseDeserializer<NodeResponse>(nodeMapper, NodeResponse.class, false));
-		//		module.addDeserializer(NodeCreateRequest.class,
-		//				new DelegatingNodeResponseDeserializer<NodeCreateRequest>(nodeMapper, NodeCreateRequest.class, false));
-		//		module.addDeserializer(NodeUpdateRequest.class,
-		//				new DelegatingNodeResponseDeserializer<NodeUpdateRequest>(nodeMapper, NodeUpdateRequest.class, false));
-		//		module.addDeserializer(MicronodeResponse.class,
-		//				new DelegatingNodeResponseDeserializer<MicronodeResponse>(nodeMapper, MicronodeResponse.class, true));
 		defaultMapper.registerModule(module);
+
+		defaultMapper.registerModule(new SimpleModule("interfaceMapping") {
+			private static final long serialVersionUID = -4667167382238425197L;
+
+			@Override
+			public void setupModule(SetupContext context) {
+				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaModel.class));
+				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Microschema.class, MicroschemaModel.class));
+			}
+		});
 
 	}
 
@@ -151,10 +127,6 @@ public final class JsonUtil {
 
 	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
 		return defaultMapper.readValue(content, valueType);
-	}
-
-	public static <T> T readSchema(String json, Class<T> classOfT) throws JsonParseException, JsonMappingException, IOException {
-		return (T) schemaMapper.readValue(json, classOfT);
 	}
 
 	public static ObjectMapper getMapper() {

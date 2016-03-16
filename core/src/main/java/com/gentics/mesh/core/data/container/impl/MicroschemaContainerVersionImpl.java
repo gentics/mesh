@@ -65,7 +65,7 @@ public class MicroschemaContainerVersionImpl
 		Microschema microschema = ServerSchemaStorage.getInstance().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
-				microschema = JsonUtil.readSchema(getJson(), MicroschemaModel.class);
+				microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -87,7 +87,7 @@ public class MicroschemaContainerVersionImpl
 	public Observable<Microschema> transformToRestSync(InternalActionContext ac, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
-			Microschema microschema = JsonUtil.readSchema(getJson(), MicroschemaModel.class);
+			Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			microschema.setUuid(getSchemaContainer().getUuid());
 
 			// Role permissions
