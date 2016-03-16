@@ -45,6 +45,10 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addReadHandler() {
+		route("/:uuid/schemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc));
+		});
+
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
 			String uuid = rc.request().params().get("uuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -60,8 +64,10 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addUpdateHandler() {
-		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> {
+		route("/:uuid/schemas").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
+			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc));
+		});
+		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
 			crudHandler.handleUpdate(InternalActionContext.create(rc));
 		});
 	}

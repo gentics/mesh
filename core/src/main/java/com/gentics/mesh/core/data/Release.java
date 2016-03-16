@@ -1,8 +1,13 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.util.InvalidArgumentException;
 
 /**
  * Interface for Release Vertex
@@ -45,4 +50,47 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return
 	 */
 	ReleaseRoot getRoot();
+
+	/**
+	 * Assign the given schema version to the release.
+	 * Unassign all other schema versions of the schema
+	 * @param schemaContainerVersion
+	 */
+	void assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
+
+	/**
+	 * Unassign all schema versions of the given schema from this release
+	 * @param schemaContainer
+	 */
+	void unassignSchema(SchemaContainer schemaContainer);
+
+	/**
+	 * Check whether a version of this schema container is assigned to this release
+	 *
+	 * @param schema schema
+	 * @return true iff assigned
+	 */
+	boolean contains(SchemaContainer schema);
+
+	/**
+	 * Check whether the given schema container version is assigned to this release
+	 *
+	 * @param schemaContainerVersion schema container version
+	 * @return true iff assigned
+	 */
+	boolean contains(SchemaContainerVersion schemaContainerVersion);
+
+	/**
+	 * Get the schema container version of the given schema container, that is assigned to this release or null if not assigned at all
+	 * @param schemaContainer schema container
+	 * @return assigned version or null
+	 */
+	SchemaContainerVersion getVersion(SchemaContainer schemaContainer);
+
+	/**
+	 * Get list of all schema container versions
+	 * @return list
+	 * @throws InvalidArgumentException
+	 */
+	List<? extends SchemaContainerVersion> findAllSchemaVersions() throws InvalidArgumentException;
 }

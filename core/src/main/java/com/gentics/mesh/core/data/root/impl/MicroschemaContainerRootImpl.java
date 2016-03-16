@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
 
@@ -20,6 +23,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -101,4 +105,27 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		}
 	}
 
+	@Override
+	public Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference) {
+		if (reference == null) {
+			return Observable.error(error(INTERNAL_SERVER_ERROR, "Missing microschema reference"));
+		}
+		String microschemaName = reference.getName();
+		String microschemaUuid = reference.getUuid();
+		Integer version = reference.getVersion();
+		Observable<MicroschemaContainer> containerObs = null;
+		if (!isEmpty(microschemaName)) {
+			containerObs = findByName(microschemaName);
+		} else {
+			containerObs = findByUuid(microschemaUuid);
+		}
+		// Return the specified version or fallback to latest version.
+		return containerObs.map(container -> {
+			if (version == null) {
+				return container.getLatestVersion();
+			} else {
+				return container.findVersionByRev(version);
+			}
+		});
+	}
 }

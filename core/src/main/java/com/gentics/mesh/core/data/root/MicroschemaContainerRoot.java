@@ -2,7 +2,11 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+
+import rx.Observable;
 
 public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
 
@@ -32,4 +36,10 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 */
 	MicroschemaContainer create(Microschema microschema, User user);
 
+	/**
+	 * Get the microschema container version from the given reference
+	 * @param reference reference
+	 * @return
+	 */
+	Observable<MicroschemaContainerVersion> fromReference(MicroschemaReference reference);
 }

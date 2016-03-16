@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -112,9 +113,10 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public SchemaContainerRoot getSchemaContainerRoot() {
-		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(SchemaContainerRootImpl.class, null);
+		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT).has(ProjectSchemaContainerRootImpl.class)
+				.nextOrDefaultExplicit(ProjectSchemaContainerRootImpl.class, null);
 		if (root == null) {
-			root = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
+			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
 			linkOut(root.getImpl(), HAS_SCHEMA_ROOT);
 		}
 		return root;

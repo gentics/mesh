@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,6 @@ import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldL
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
@@ -92,23 +90,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				String microschemaName = microschemaReference.getName();
-				String microschemaUuid = microschemaReference.getUuid();
-				Integer version = microschemaReference.getVersion();
-				Observable<MicroschemaContainer> containerObs = null;
-				if (!isEmpty(microschemaName)) {
-					containerObs = boot.microschemaContainerRoot().findByName(microschemaName);
-				} else {
-					containerObs = boot.microschemaContainerRoot().findByUuid(microschemaUuid);
-				}
-				// Return the specified version or fallback to latest version.
-				return containerObs.map(container -> {
-					if (version == null) {
-						return container.getLatestVersion();
-					} else {
-						return container.findVersionByRev(version);
-					}
-				});
+				return boot.microschemaContainerRoot().fromReference(microschemaReference);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			} , (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field

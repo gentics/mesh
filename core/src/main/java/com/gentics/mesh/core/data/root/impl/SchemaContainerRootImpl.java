@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
@@ -20,6 +22,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -145,4 +148,38 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	}
 
+	@Override
+	public Observable<SchemaContainerVersion> fromReference(SchemaReference reference) {
+		if (reference == null) {
+			return Observable.error(error(INTERNAL_SERVER_ERROR, "Missing schema reference"));
+		}
+		String schemaName = reference.getName();
+		String schemaUuid = reference.getUuid();
+		Integer schemaVersion = reference.getVersion();
+
+		Observable<SchemaContainer> obs = null;
+		if (!isEmpty(schemaName)) {
+			obs = findByName(schemaName);
+		} else {
+			obs = findByUuid(schemaUuid);
+		}
+
+		return obs.map(schemaContainer -> {
+			if (schemaContainer == null) {
+				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
+						isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+			}
+			if (schemaVersion == null) {
+				return schemaContainer.getLatestVersion();
+			} else {
+				SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
+				if (foundVersion == null) {
+					throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
+							isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+				} else {
+					return foundVersion;
+				}
+			}
+		});
+	}
 }

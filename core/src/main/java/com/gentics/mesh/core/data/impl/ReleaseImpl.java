@@ -1,16 +1,23 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
@@ -19,6 +26,7 @@ import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
 
@@ -130,5 +138,59 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public ReleaseRoot getRoot() {
 		return in(HAS_RELEASE).has(ReleaseRootImpl.class).nextOrDefaultExplicit(ReleaseRootImpl.class, null);
+	}
+
+	@Override
+	public void assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
+		setUniqueLinkOutTo(schemaContainerVersion.getImpl(), HAS_VERSION);
+
+		// unlink all other versions
+		SchemaContainerVersion previous = schemaContainerVersion.getPreviousVersion();
+		while (previous != null) {
+			unlinkOut(previous.getImpl(), HAS_VERSION);
+			previous = previous.getPreviousVersion();
+		}
+
+		SchemaContainerVersion next = schemaContainerVersion.getNextVersion();
+		while (next != null) {
+			unlinkOut(next.getImpl(), HAS_VERSION);
+			next = next.getNextVersion();
+		}
+	}
+
+	@Override
+	public void unassignSchema(SchemaContainer schemaContainer) {
+		SchemaContainerVersion version = schemaContainer.getLatestVersion();
+
+		while (version != null) {
+			unlinkOut(version.getImpl(), HAS_VERSION);
+			version = version.getPreviousVersion();
+		}
+	}
+
+	@Override
+	public boolean contains(SchemaContainer schemaContainer) {
+		SchemaContainer foundSchemaContainer = out(HAS_VERSION).has(SchemaContainerVersionImpl.class).in(HAS_PARENT_CONTAINER).has("name", schemaContainer.getName())
+				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
+		return foundSchemaContainer != null;
+	}
+
+	@Override
+	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
+		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_VERSION).has(SchemaContainerVersionImpl.class).has("uuid", schemaContainerVersion.getUuid())
+				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+		return foundSchemaContainerVersion != null;
+	}
+
+	@Override
+	public SchemaContainerVersion getVersion(SchemaContainer schemaContainer) {
+		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).mark().in(HAS_PARENT_CONTAINER).has("name", schemaContainer.getName()).back()
+				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+	}
+
+	@Override
+	public List<? extends SchemaContainerVersion> findAllSchemaVersions()
+			throws InvalidArgumentException {
+		return out(HAS_VERSION).has(SchemaContainerVersionImpl.class).toListExplicit(SchemaContainerVersionImpl.class);
 	}
 }

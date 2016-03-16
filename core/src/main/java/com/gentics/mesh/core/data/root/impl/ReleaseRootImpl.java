@@ -10,6 +10,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -20,6 +22,7 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -61,6 +64,12 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 		// set initial permissions on the release
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);
+
+		// assign the newest schema versions of all project schemas to the release
+		List<? extends SchemaContainer> projectSchemas = getProject().getSchemaContainerRoot().findAll();
+		for (SchemaContainer schemaContainer : projectSchemas) {
+			release.assignSchemaVersion(schemaContainer.getLatestVersion());
+		}
 
 		return release;
 	}

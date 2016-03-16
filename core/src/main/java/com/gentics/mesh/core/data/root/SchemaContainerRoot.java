@@ -2,8 +2,12 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.error.MeshSchemaException;
+
+import rx.Observable;
 
 public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
@@ -43,4 +47,11 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 */
 	boolean contains(SchemaContainer schema);
 
+	/**
+	 * Find the referenced schema container version.
+	 * Throws an error, if the referenced schema container version can not be found
+	 * @param reference reference
+	 * @return observable emitting the referenced version
+	 */
+	Observable<SchemaContainerVersion> fromReference(SchemaReference reference);
 }

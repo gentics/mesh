@@ -486,4 +486,42 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		expectFailureMessage(future, status, message);
 	}
 
+	/**
+	 * Call the given handler, latch for the future and assert success. Then return the result.
+	 * 
+	 * @param handler handler
+	 * @param <T> type of the returned object
+	 * @return result of the future
+	 */
+	protected <T> T call(ClientHandler<T> handler) {
+		Future<T> future = handler.handle();
+		latchFor(future);
+		assertSuccess(future);
+		return future.result();
+	}
+
+	/**
+	 * Call the given handler, latch for the future and expect the given failure in the future
+	 *
+	 * @param handler handler
+	 * @param status expected response status
+	 * @param bodyMessageI18nKey i18n of the expected response message
+	 * @param i18nParams parameters of the expected response message
+	 */
+	protected <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+		Future<T> future = handler.handle();
+		latchFor(future);
+		expectException(future, status, bodyMessageI18nKey, i18nParams);
+	}
+
+	/**
+	 * 
+	 * @author norbert
+	 *
+	 * @param <T>
+	 */
+	@FunctionalInterface
+	protected static interface ClientHandler<T> {
+		Future<T> handle();
+	}
 }

@@ -33,8 +33,12 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
+import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
@@ -49,9 +53,12 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Autowired
 	private ProjectVerticle projectVerticle;
 
+	@Autowired
+	private SchemaVerticle schemaVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
-		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle, projectVerticle));
+		return new ArrayList<AbstractSpringVerticle>(Arrays.asList(releaseVerticle, projectVerticle, schemaVerticle));
 	}
 
 	@Override
@@ -429,4 +436,149 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	}
 
+	@Test
+	public void testReadSchemaVersions() throws Exception {
+		Project project = project();
+		SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+
+		SchemaReference content = schemaContainer("content").getLatestVersion().transformToReference();
+		SchemaReference folder = schemaContainer("folder").getLatestVersion().transformToReference();
+		SchemaReference binaryContent = schemaContainer("binary-content").getLatestVersion().transformToReference();
+
+		assertThat(list).as("release schema versions")
+				.usingElementComparatorOnFields("name", "uuid", "version").containsOnly(content, folder, binaryContent);
+	}
+
+	@Test
+	public void testAssignSchemaVersion() throws Exception {
+		// create version 1 of a schema
+		Schema schema = createSchema("schemaname");
+		Project project = project();
+
+		// assign schema to project
+		call(() -> getClient().addSchemaToProject(schema.getUuid(), project.getUuid()));
+
+		// generate version 2
+		updateSchema(schema.getUuid(), "newschemaname");
+
+		// generate version 3
+		updateSchema(schema.getUuid(), "anothernewschemaname");
+
+		// check that version 1 is assigned to release
+		SchemaReferenceList list = call(
+				() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new SchemaReference().setName("schemaname").setUuid(schema.getUuid())
+						.setVersion(1));
+
+		// assign version 2 to the release
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReferenceList(Arrays.asList(new SchemaReference().setUuid(schema.getUuid()).setVersion(2)))));
+
+		// assert
+		list = call(
+				() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid())
+						.setVersion(2));
+	}
+
+	@Test
+	public void testAssignBogusSchemaVersion() throws Exception {
+		Project project = project();
+
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(4711)), BAD_REQUEST,
+				"error_schema_reference_not_found", "content", "-", "4711");
+	}
+
+	@Test
+	public void testAssignBogusSchemaUuid() throws Exception {
+		Project project = project();
+
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReference().setUuid("bogusuuid").setVersion(1)), BAD_REQUEST,
+				"error_schema_reference_not_found", "-", "bogusuuid", "1");
+	}
+
+	@Test
+	public void testAssignBogusSchemaName() throws Exception {
+		Project project = project();
+
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReference().setName("bogusname").setVersion(1)), BAD_REQUEST,
+				"error_schema_reference_not_found", "bogusname", "-", "1");
+	}
+
+	@Test
+	public void testAssignUnassignedSchemaVersion() throws Exception {
+		Schema schema = createSchema("schemaname");
+		Project project = project();
+
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReference().setName(schema.getName()).setVersion(schema.getVersion())), BAD_REQUEST,
+				"error_schema_reference_not_found", schema.getName(), "-", Integer.toString(schema.getVersion()));
+	}
+
+	@Test
+	public void testAssignOlderSchemaVersion() throws Exception {
+		// create version 1 of a schema
+		Schema schema = createSchema("schemaname");
+		Project project = project();
+
+		// generate version 2
+		updateSchema(schema.getUuid(), "newschemaname");
+
+		// assign schema to project
+		call(() -> getClient().addSchemaToProject(schema.getUuid(), project.getUuid()));
+
+		// try to downgrade schema version
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReference().setUuid(schema.getUuid()).setVersion(1)), BAD_REQUEST,
+				"error_release_downgrade_schema_version", "schemaname", "2", "1");
+	}
+
+	@Test
+	public void testAssignSchemaVersionNoPermission() throws Exception {
+		Project project = project();
+		role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
+
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(1)),
+				FORBIDDEN, "error_missing_perm", project.getInitialRelease().getUuid());
+	}
+
+	@Test
+	public void testAssignLatestSchemaVersion() throws Exception {
+		// create version 1 of a schema
+		Schema schema = createSchema("schemaname");
+		Project project = project();
+
+		// assign schema to project
+		call(() -> getClient().addSchemaToProject(schema.getUuid(), project.getUuid()));
+
+		// generate version 2
+		updateSchema(schema.getUuid(), "newschemaname");
+
+		// generate version 3
+		updateSchema(schema.getUuid(), "anothernewschemaname");
+
+		// check that version 1 is assigned to release
+		SchemaReferenceList list = call(
+				() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new SchemaReference().setName("schemaname").setUuid(schema.getUuid())
+						.setVersion(1));
+
+		// assign latest version to the release
+		call(() -> getClient().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
+				new SchemaReferenceList(Arrays.asList(new SchemaReference().setUuid(schema.getUuid())))));
+
+		// assert
+		list = call(
+				() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		assertThat(list).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new SchemaReference().setName("anothernewschemaname").setUuid(schema.getUuid())
+						.setVersion(3));
+	}
 }

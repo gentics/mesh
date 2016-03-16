@@ -1,10 +1,13 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
 public class ReleaseAssert extends AbstractAssert<ReleaseAssert, Release> {
 	public ReleaseAssert(Release actual) {
@@ -81,6 +84,46 @@ public class ReleaseAssert extends AbstractAssert<ReleaseAssert, Release> {
 	 */
 	public ReleaseAssert hasPrevious(Release release) {
 		assertThat(actual.getPreviousRelease()).as(descriptionText() + " previous release").matches(release);
+		return this;
+	}
+
+	/**
+	 * Assert that the schema version is assigned to the release
+	 * @param version schema version
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasSchemaVersion(SchemaContainerVersion version) {
+		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that the schema version is not assigned to the release
+	 * @param version schema version
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasNotSchemaVersion(SchemaContainerVersion version) {
+		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
+		return this;
+	}
+
+	/**
+	 * Assert that the schema is assigned (in any version) to the release
+	 * @param schemaContainer schema
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasSchema(SchemaContainer schemaContainer) {
+		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that the schema is not assigned (in any version) to the release
+	 * @param schemaContainer schema
+	 * @return fluent API
+	 */
+	public ReleaseAssert hasNotSchema(SchemaContainer schemaContainer) {
+		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
 }

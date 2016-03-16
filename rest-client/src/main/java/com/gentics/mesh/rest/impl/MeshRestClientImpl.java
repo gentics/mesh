@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.PUT;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -44,6 +45,8 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
@@ -859,12 +862,12 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<ReleaseResponse> findReleaseByUuid(String projectName, String uuid,
+	public Future<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid,
 			QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return handleRequest(GET, "/" + projectName + "/releases/" + uuid + getQuery(parameters), ReleaseResponse.class);
+		return handleRequest(GET, "/" + projectName + "/releases/" + releaseUuid + getQuery(parameters), ReleaseResponse.class);
 	}
 
 	@Override
@@ -876,10 +879,34 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<ReleaseResponse> updateRelease(String projectName, String uuid, ReleaseUpdateRequest request) {
+	public Future<ReleaseResponse> updateRelease(String projectName, String releaseUuid, ReleaseUpdateRequest request) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return handleRequest(PUT, "/"+projectName+"/releases/" + uuid, ReleaseResponse.class, request);
+		return handleRequest(PUT, "/" + projectName + "/releases/" + releaseUuid, ReleaseResponse.class, request);
+	}
+
+	@Override
+	public Future<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
+		return handleRequest(GET, "/" + projectName + "/releases/" + releaseUuid + "/schemas", SchemaReferenceList.class);
+	}
+
+	@Override
+	public Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+			SchemaReferenceList schemaVersionReferences) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
+
+		return handleRequest(PUT, "/" + projectName + "/releases/" + releaseUuid + "/schemas", SchemaReferenceList.class, schemaVersionReferences);
+	}
+
+	@Override
+	public Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+			SchemaReference... schemaVersionReferences) {
+		return assignReleaseSchemaVersions(projectName, releaseUuid,
+				new SchemaReferenceList(Arrays.asList(schemaVersionReferences)));
 	}
 }
