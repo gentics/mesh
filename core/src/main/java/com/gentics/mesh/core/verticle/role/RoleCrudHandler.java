@@ -84,10 +84,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	}
 
-	public void handlePermissionUpdate(InternalActionContext ac) {
+	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
 		db.asyncNoTrxExperimental(() -> {
-			String roleUuid = ac.getParameter("param0");
-			String pathToElement = ac.getParameter("param1");
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}

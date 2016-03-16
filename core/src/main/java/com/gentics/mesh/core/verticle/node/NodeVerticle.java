@@ -77,7 +77,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
 			String fieldName = rc.request().getParam("fieldName");
-			fieldAPIHandler.handleCreateField(rc, uuid, languageTag, fieldName);
+			InternalActionContext ac = InternalActionContext.create(rc);
+			fieldAPIHandler.handleCreateField(ac, uuid, languageTag, fieldName);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(GET).handler(rc -> {
@@ -91,7 +92,8 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			String uuid = rc.request().getParam("uuid");
 			String languageTag = rc.request().getParam("languageTag");
 			String fieldName = rc.request().getParam("fieldName");
-			fieldAPIHandler.handleUpdateField(rc, uuid, languageTag, fieldName);
+			InternalActionContext ac = InternalActionContext.create(rc);
+			fieldAPIHandler.handleUpdateField(ac, uuid, languageTag, fieldName);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {

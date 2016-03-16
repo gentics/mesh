@@ -4,6 +4,7 @@ import static com.gentics.mesh.rest.AbstractMeshRestHttpClient.getQuery;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private HttpResponseStatus responseStatusCode;
 	private Future<T> future = Future.future();
 	private Class<? extends T> classOfResponse;
+	private Set<FileUpload> fileUploads = new HashSet<>();
 
 	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, QueryParameterProvider... parameters) {
 		this.query = getQuery(parameters);
@@ -154,8 +156,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public Set<FileUpload> getFileUploads() {
-		// TODO Auto-generated method stub
-		return null;
+		return fileUploads;
 	}
 
 	@Override

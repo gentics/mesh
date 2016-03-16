@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -29,6 +29,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -73,12 +74,6 @@ public class DemoDataProvider {
 	@Autowired
 	private MeshRestLocalClientImpl client;
 
-	private Language english;
-
-	private Language german;
-
-	//	private MeshRoot root;
-
 	private Map<String, ProjectResponse> projects = new HashMap<>();
 	private Map<String, Schema> schemas = new HashMap<>();
 	private Map<String, TagFamilyResponse> tagFamilies = new HashMap<>();
@@ -115,9 +110,19 @@ public class DemoDataProvider {
 
 		addSchemaContainers();
 		addNodes();
+		addWebclientPermissions();
 		//		updatePermissions();
 		//		invokeFullIndex();
-		System.out.println("Done");
+		log.info("Demo data setup completed");
+	}
+
+	private void addWebclientPermissions() throws InterruptedException {
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add("read");
+		request.getPermissions().add("update");
+		Future<GenericMessageResponse> future = client.updateRolePermissions(getRole("Client Role").getUuid(), "projects/" + getProject("demo").getUuid(), request);
+		latchFor(future);
 	}
 
 	/**
@@ -193,7 +198,7 @@ public class DemoDataProvider {
 		future.setHandler(rh -> {
 			latch.countDown();
 		});
-		if (!latch.await(50, TimeUnit.SECONDS)) {
+		if (!latch.await(20, TimeUnit.SECONDS)) {
 			throw new RuntimeException("Timeout reached");
 		}
 
@@ -314,7 +319,6 @@ public class DemoDataProvider {
 			// Upload binary data
 			JsonObject binNode = nodeJson.getJsonObject("bin");
 			if (binNode != null) {
-				Buffer fileData = Buffer.buffer();
 				String path = binNode.getString("path");
 				//				int height = binNode.getInteger("height");
 				//				int width = binNode.getInteger("width");
@@ -324,10 +328,12 @@ public class DemoDataProvider {
 				if (ins == null) {
 					throw new NullPointerException("Could not find binary file within path {" + path + "}");
 				}
+				byte[] bytes = IOUtils.toByteArray(ins);
+				Buffer fileData = Buffer.buffer(bytes);
 
-//				Future<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
-//						fileData, filenName, contentType);
-//				latchFor(binaryUpdateFuture);
+				Future<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
+						fileData, filenName, contentType);
+				latchFor(binaryUpdateFuture);
 
 			}
 
@@ -457,37 +463,10 @@ public class DemoDataProvider {
 		}
 	}
 
-	//	private void updatePermissions() {
-	//		db.noTrx(() -> {
-	//			for (RoleResponse role : roles.values()) {
-	//				for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
-	//					WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-	//					MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-	//					if (log.isTraceEnabled()) {
-	//						log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId()
-	//								+ "}");
-	//					}
-	//					role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
-	//				}
-	//				log.info("Added BasicPermissions to nodes for role {" + role.getName() + "}");
-	//			}
-	//			return null;
-	//		});
-	//
-	//	}
-
 	private JsonObject loadJson(String name) throws IOException {
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(getClass().getResourceAsStream("/data/" + name + ".json"), writer, Charsets.UTF_8.name());
 		return new JsonObject(writer.toString());
-	}
-
-	private Language getEnglish() {
-		return english;
-	}
-
-	private Language getGerman() {
-		return german;
 	}
 
 	private TagFamilyResponse getTagFamily(String name) {
@@ -518,18 +497,6 @@ public class DemoDataProvider {
 		RoleResponse role = roles.get(name);
 		Objects.requireNonNull(role, "Role with name {" + name + "} could not be found.");
 		return role;
-	}
-
-	private GroupResponse getGroup(String name) {
-		GroupResponse group = groups.get(name);
-		Objects.requireNonNull(group, "Group for name {" + name + "} could not be found.");
-		return group;
-	}
-
-	private UserResponse getUser(String name) {
-		UserResponse user = users.get(name);
-		Objects.requireNonNull(user, "User for name {" + name + "} could not be found.");
-		return user;
 	}
 
 	private NodeResponse getNode(String name) {

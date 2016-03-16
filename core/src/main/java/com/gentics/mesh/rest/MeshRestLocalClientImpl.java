@@ -1,11 +1,13 @@
 package com.gentics.mesh.rest;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -59,6 +61,7 @@ import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.verticle.group.GroupCrudHandler;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaCrudHandler;
 import com.gentics.mesh.core.verticle.node.NodeCrudHandler;
+import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 import com.gentics.mesh.core.verticle.project.ProjectCrudHandler;
 import com.gentics.mesh.core.verticle.role.RoleCrudHandler;
 import com.gentics.mesh.core.verticle.schema.SchemaContainerCrudHandler;
@@ -71,12 +74,15 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.QueryParameterProvider;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
@@ -120,6 +126,9 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 
 	@Autowired
 	private NodeCrudHandler nodeCrudHandler;
+
+	@Autowired
+	private NodeFieldAPIHandler fieldAPIHandler;
 
 	@Autowired
 	private WebRootHandler webrootHandler;
@@ -643,6 +652,8 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> updateRolePermissions(String roleUuid, String pathToElement, RolePermissionRequest request) {
 		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setPayloadObject(request);
+		roleCrudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
 		return ac.getFuture();
 	}
 
@@ -812,8 +823,59 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
 			Buffer fileData, String fileName, String contentType) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Vertx vertx = Mesh.vertx();
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+		ac.setProject(projectName);
+
+		Runnable task = () -> {
+
+			File tmpFile = new File(System.getProperty("java.io.tmpdir"), UUIDUtil.randomUUID() + ".upload");
+			vertx.fileSystem().writeFileBlocking(tmpFile.getAbsolutePath(), fileData);
+			ac.getFileUploads().add(new FileUpload() {
+
+				@Override
+				public String uploadedFileName() {
+					return tmpFile.getAbsolutePath();
+				}
+
+				@Override
+				public long size() {
+					return fileData.length();
+				}
+
+				@Override
+				public String name() {
+					return fileName;
+				}
+
+				@Override
+				public String fileName() {
+					return fileName;
+				}
+
+				@Override
+				public String contentType() {
+					return contentType;
+				}
+
+				@Override
+				public String contentTransferEncoding() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public String charSet() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			});
+
+			fieldAPIHandler.handleUpdateField(ac, nodeUuid, languageTag, fieldKey);
+		};
+		new Thread(task).start();
+		return ac.getFuture();
 	}
 
 	@Override

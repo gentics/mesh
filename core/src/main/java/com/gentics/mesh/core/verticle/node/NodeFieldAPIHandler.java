@@ -88,7 +88,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	/**
 	 * Handle a request to create a new field.
 	 * 
-	 * @param rc
+	 * @param ac
 	 * @param uuid
 	 *            Uuid of the node which should be updated
 	 * @param languageTag
@@ -96,11 +96,10 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param fieldName
 	 *            Name of the field which should be created
 	 */
-	public void handleCreateField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
+	public void handleCreateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
 		validateParameter(uuid, "uuid");
 		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
-		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
@@ -134,7 +133,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 				try {
-					Set<FileUpload> fileUploads = rc.fileUploads();
+					Set<FileUpload> fileUploads = ac.getFileUploads();
 					if (fileUploads.isEmpty()) {
 						throw error(BAD_REQUEST, "node_error_no_binarydata_found");
 					}
@@ -197,7 +196,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	/**
 	 * Update a specific node field.
 	 * 
-	 * @param rc
+	 * @param ac
 	 * @param uuid
 	 *            Node uuid
 	 * @param languageTag
@@ -205,15 +204,8 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param fieldName
 	 *            Field which should be updated
 	 */
-	public void handleUpdateField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
-		handleCreateField(rc, uuid, languageTag, fieldName);
-		//		db.asyncNoTrxExperimental(() -> {
-		//			Project project = ac.getProject();
-		//			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
-		//				// TODO Update SQB
-		//				return new GenericMessageResponse("Not yet implemented");
-		//			});
-		//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	public void handleUpdateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		handleCreateField(ac, uuid, languageTag, fieldName);
 	}
 
 	public void handleRemoveField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
