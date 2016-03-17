@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -821,7 +822,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 		SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 		Node node = parentNode.create(user(), version, project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl, version);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl,
+				node.getProject().getLatestRelease(), Type.DRAFT);
 		englishContainer.createString("name").setString("name");
 		englishContainer.createString("title").setString("title");
 		englishContainer.createString("displayName").setString("displayName");
@@ -1069,7 +1071,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNull(future.result());
 
 		NodeGraphFieldContainer englishContainer = folder("2015").createGraphFieldContainer(english(),
-				folder("2015").getSchemaContainer().getLatestVersion());
+				project().getLatestRelease(), Type.DRAFT);
 		assertNotEquals(newName, englishContainer.getString("name").getString());
 
 	}

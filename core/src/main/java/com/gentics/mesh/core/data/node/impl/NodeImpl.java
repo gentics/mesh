@@ -32,15 +32,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -228,9 +229,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, SchemaContainerVersion schemaVersion) {
-		NodeGraphFieldContainerImpl container = getOrCreateGraphFieldContainer(language, NodeGraphFieldContainerImpl.class);
-		container.setSchemaContainerVersion(schemaVersion);
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, Type type) {
+		NodeGraphFieldContainerImpl container = getOrCreateGraphFieldContainer(language, release, type, NodeGraphFieldContainerImpl.class);
+		container.setSchemaContainerVersion(release.getVersion(getSchemaContainer()));
 		return container;
 	}
 
@@ -705,7 +706,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					SchemaContainerVersion latestSchemaVersion = getSchemaContainer().getLatestVersion();
 					Schema schema = latestSchemaVersion.getSchema();
 					// Create a new field
-					container = createGraphFieldContainer(language, latestSchemaVersion);
+					// TODO specify release and type (from the request)
+					container = createGraphFieldContainer(language, null, null);
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} else {
 					// Update the existing field

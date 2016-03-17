@@ -10,6 +10,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -177,12 +178,14 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
 		// Create some dummy content
 		Node content = parentNode.create(user(), schemaVersion, project());
-		NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, schemaVersion);
+		NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german,
+				content.getProject().getLatestRelease(), GraphFieldContainerEdge.Type.DRAFT);
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
 		Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
-		NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, schemaVersion);
+		NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english,
+				content2.getProject().getLatestRelease(), GraphFieldContainerEdge.Type.DRAFT);
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -124,5 +125,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public VersionNumber getVersion() {
 		String version = getProperty(VERSION_PROPERTY_KEY);
 		return version == null ? null : new VersionNumber(version);
+	}
+
+	@Override
+	public NodeGraphFieldContainer getNextVersion() {
+		return out(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+}
+
+	@Override
+	public void setNextVersion(NodeGraphFieldContainer container) {
+		setSingleLinkOutTo(container.getImpl(), HAS_VERSION);
+	}
+
+	@Override
+	public NodeGraphFieldContainer getPreviousVersion() {
+		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 	}
 }

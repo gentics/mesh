@@ -4,11 +4,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
 
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -75,13 +77,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
 
 	/**
-	 * Create a new graph field container for the given language and assign the schema version to the container.
+	 * Create a new graph field container for the given language and assign the schema version of the release to the container.
 	 * 
 	 * @param language
-	 * @param schemaVersion 
+	 * @param release release
+	 * @param type type
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, SchemaContainerVersion schemaVersion);
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, Type type);
 
 	/**
 	 * Return a list of graph field containers for the node.

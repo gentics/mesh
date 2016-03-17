@@ -27,6 +27,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
@@ -555,8 +556,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		for (int i = 0; i < numAdditionalNodes; i++) {
 			Node node = parentNode.create(user, schemaVersion, project);
-			MicronodeGraphField vcardField = node.createGraphFieldContainer(english, schemaVersion).createMicronode("vcard",
-					microschemaContainers().get("vcard").getLatestVersion());
+			MicronodeGraphField vcardField = node
+					.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT)
+					.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 			vcardField.getMicronode().createString("firstName").setString("Mickey");
 			vcardField.getMicronode().createString("lastName").setString("Mouse");
 			role().grantPermissions(node, GraphPermission.READ_PERM);

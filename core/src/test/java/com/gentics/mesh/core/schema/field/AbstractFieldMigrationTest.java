@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -151,7 +152,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT);
 		dataProvider.set(englishContainer, persistentFieldName);
 		dataProvider.set(englishContainer, removedFieldName);
 
@@ -298,7 +299,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT);
 		dataProvider.set(englishContainer, oldFieldName);
 
 		// migrate the node
@@ -449,7 +450,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT);
 		dataProvider.set(englishContainer, fieldName);
 
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
@@ -615,7 +616,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT);
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
@@ -751,7 +752,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT);
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
@@ -888,7 +889,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(schemaVersion.getName());
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getSchemaContainer().getLatestVersion());
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english,
+				node.getProject().getLatestRelease(), Type.DRAFT);
 		MicronodeGraphField micronodeField = englishContainer.createMicronode(micronodeFieldName, schemaVersion);
 		for (String fieldName : fieldNames) {
 			dataProvider.set(micronodeField.getMicronode(), fieldName);

@@ -19,6 +19,7 @@ import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -117,11 +118,13 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node firstNode = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english,
+				firstNode.getProject().getLatestRelease(), Type.DRAFT);
 		firstEnglishContainer.createString(fieldName).setString("first content");
 
 		Node secondNode = parentNode.create(user, versionA, project());
-		NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english, versionA);
+		NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english,
+				secondNode.getProject().getLatestRelease(), Type.DRAFT);
 		secondEnglishContainer.createString(fieldName).setString("second content");
 
 		DeliveryOptions options = new DeliveryOptions();
@@ -249,11 +252,15 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
 		firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		MicronodeGraphField firstMicronodeField = firstNode.createGraphFieldContainer(english, firstNode.getSchemaContainer().getLatestVersion()).createMicronode(micronodeFieldName, versionA);
+		MicronodeGraphField firstMicronodeField = firstNode
+				.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), Type.DRAFT)
+				.createMicronode(micronodeFieldName, versionA);
 		firstMicronodeField.getMicronode().createString(fieldName).setString("first content");
 
 		Node secondNode = folder("news");
-		MicronodeGraphField secondMicronodeField = secondNode.createGraphFieldContainer(english, firstNode.getSchemaContainer().getLatestVersion()).createMicronode(micronodeFieldName, versionA);
+		MicronodeGraphField secondMicronodeField = secondNode
+				.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease(), Type.DRAFT)
+				.createMicronode(micronodeFieldName, versionA);
 		secondMicronodeField.getMicronode().createString(fieldName).setString("second content");
 
 		DeliveryOptions options = new DeliveryOptions();

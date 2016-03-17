@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -169,7 +170,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Language german = german();
 		RoutingContext rc = getMockedRoutingContext("?lang=de,en");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		NodeGraphFieldContainer germanFields = newsNode.createGraphFieldContainer(german, newsNode.getSchemaContainer().getLatestVersion());
+		NodeGraphFieldContainer germanFields = newsNode.createGraphFieldContainer(german,
+				newsNode.getProject().getLatestRelease(), Type.DRAFT);
 		assertEquals(germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField()).getString(),
 				newsNode.getDisplayName(ac));
 		// TODO add some fields
@@ -275,7 +277,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Language english = english();
 		Language german = german();
 
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, schemaVersion);
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), Type.DRAFT);
 		englishContainer.createString("content").setString("english content");
 		englishContainer.createString("name").setString("english.html");
 		assertNotNull(node.getUuid());
@@ -284,7 +286,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertNotNull(allProperties);
 		assertEquals(1, allProperties.size());
 
-		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, schemaVersion);
+		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, null, null);
 		germanContainer.createString("content").setString("german content");
 		assertEquals(2, node.getGraphFieldContainers().size());
 

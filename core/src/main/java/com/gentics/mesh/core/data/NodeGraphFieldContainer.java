@@ -64,4 +64,22 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 * @param schema
 	 */
 	void setSchemaContainerVersion(SchemaContainerVersion schema);
+
+	/**
+	 * Get the next version
+	 * @return next version or null
+	 */
+	NodeGraphFieldContainer getNextVersion();
+
+	/**
+	 * Set the next version
+	 * @param container
+	 */
+	void setNextVersion(NodeGraphFieldContainer container);
+
+	/**
+	 * Get the previous version
+	 * @return previous version or null
+	 */
+	NodeGraphFieldContainer getPreviousVersion();
 }

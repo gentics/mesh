@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -103,7 +104,8 @@ public class TagTest extends AbstractBasicObjectTest {
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 		Language german = boot.languageRoot().findByLanguageTag("de");
-		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, getSchemaContainer().getLatestVersion());
+		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german,
+				node.getProject().getLatestRelease(), Type.DRAFT);
 
 		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 		germanContainer.createString("name").setString("german node name");

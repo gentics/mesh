@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -157,7 +158,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						if (language == null) {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 						}
-						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, schemaContainer.getLatestVersion());
+						// TODO specify release
+						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, null, Type.INITIAL);
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 						return Tuple.tuple(batch, node);

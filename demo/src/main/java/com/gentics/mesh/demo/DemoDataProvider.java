@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -243,7 +244,7 @@ public class DemoDataProvider {
 				String tagName = tagArray.getString(e);
 				node.addTag(getTag(tagName));
 			}
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, schema.getLatestVersion());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), Type.DRAFT);
 			englishContainer.createString("name").setString(name);
 
 			JsonObject binNode = nodeJson.getJsonObject("bin");
