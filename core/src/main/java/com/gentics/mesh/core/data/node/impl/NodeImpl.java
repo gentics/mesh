@@ -67,6 +67,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
@@ -462,6 +463,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// Schema reference
 				restNode.setSchema(fieldContainer.getSchemaContainerVersion().transformToReference());
 
+				// Version reference
+				if (fieldContainer.getVersion() != null) {
+					restNode.setVersion(new VersionReference(fieldContainer.getUuid(), fieldContainer.getVersion().toString()));
+				}
+
 				// Fields
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
@@ -771,22 +777,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 				}
 
+				Release release = ac.getRelease();
+
 				/* TODO handle other fields, etc. */
 				setPublished(requestModel.isPublished());
 				setEditor(ac.getUser());
 				setLastEditedTimestamp(System.currentTimeMillis());
 
-				// TODO add release
-				NodeGraphFieldContainer container = getGraphFieldContainer(language, null, Type.DRAFT);
+				NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
 				if (container == null) {
 					SchemaContainerVersion latestSchemaVersion = getSchemaContainer().getLatestVersion();
 					Schema schema = latestSchemaVersion.getSchema();
-					// Create a new field
-					// TODO specify release and type (from the request)
-					container = createGraphFieldContainer(language, null);
+					// Create a new field container
+					container = createGraphFieldContainer(language, release);
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} else {
-					// Update the existing field
+					// TODO check for conflict
+					// when there already is a DRAFT version for the release, the request must contain a version reference, otherwise a conflict is detected
+
+					// TODO create new field container as clone of the existing
+					// Update the existing fields
 					SchemaContainerVersion latestSchemaVersion = container.getSchemaContainerVersion();
 					Schema schema = latestSchemaVersion.getSchema();
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);

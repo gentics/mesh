@@ -222,6 +222,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 
 		NodeResponse deserialized = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(deserialized);
+
+		assertThat(deserialized).as("node response").hasVersion("0.1");
 		// TODO assert for english fields
 	}
 

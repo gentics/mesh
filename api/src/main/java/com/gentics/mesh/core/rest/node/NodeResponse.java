@@ -52,6 +52,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private List<NodeReferenceImpl> breadcrumb = new ArrayList<>();
 
+	private VersionReference version;
+
 	public NodeResponse() {
 	}
 
@@ -311,6 +313,22 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	public void setBreadcrumb(List<NodeReferenceImpl> breadcrumb) {
 		this.breadcrumb = breadcrumb;
+	}
+
+	/**
+	 * Get the version of the fields
+	 * @return version number
+	 */
+	public VersionReference getVersion() {
+		return version;
+	}
+
+	/**
+	 * Set the version of the fields
+	 * @param version
+	 */
+	public void setVersion(VersionReference version) {
+		this.version = version;
 	}
 
 	@JsonIgnore

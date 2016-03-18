@@ -6,6 +6,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.*;
 
 public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeResponse> {
@@ -40,5 +42,15 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 		return false;
 	}
 
-	
+	/**
+	 * Assert that the node response contains a version reference with the given number
+	 *
+	 * @param number
+	 * @return fluent API
+	 */
+	public NodeResponseAssert hasVersion(String number) {
+		assertThat(actual.getVersion()).as(descriptionText() + " version").isNotNull();
+		assertThat(actual.getVersion().getNumber()).as(descriptionText() + " version number").isEqualTo(number);
+		return this;
+	}
 }
