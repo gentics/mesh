@@ -1005,15 +1005,17 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testUpdate() throws HttpStatusCodeErrorException, Exception {
 		final String newName = "english renamed name";
-		Node node = folder("2015");
+		Node node = content("concorde");
 		String uuid = node.getUuid();
-		assertEquals("2015", node.getGraphFieldContainer(english()).getString("name").getString());
+		NodeGraphFieldContainer origContainer = node.getGraphFieldContainer(english());
+		assertEquals("Concorde_english_name", origContainer.getString("name").getString());
+		assertEquals("Concorde english title", origContainer.getString("title").getString());
 
 		// Prepare the request
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("folder");
-		schemaReference.setUuid(schemaContainer("folder").getUuid());
+		schemaReference.setName("content");
+		schemaReference.setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
 		request.setPublished(true);
@@ -1022,19 +1024,21 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		parameters.setLanguages("en", "de");
 
 		// Update the node
-		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, uuid, request, parameters);
-		latchFor(future);
-		assertSuccess(future);
+		NodeResponse restNode = call(() -> getClient().updateNode(PROJECT_NAME, uuid, request, parameters));
 
-		NodeResponse restNode = future.result();
-		assertEquals("en", restNode.getLanguage());
-		StringField field = restNode.getFields().getStringField("name");
-		assertEquals(newName, field.getString());
-		assertNotNull(restNode);
+		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("0.2")
+				.hasStringField("name", newName)
+				.hasStringField("title", "Concorde english title");
 		assertTrue(restNode.isPublished());
+		node.reload();
+		origContainer.reload();
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		container.reload();
 		assertEquals(newName, container.getString("name").getString());
+		assertEquals("Concorde english title", container.getString("title").getString());
+
+		assertThat(container).as("new container").hasPrevious(origContainer).isLast();
+		assertThat(origContainer).as("orig container").hasNext(container).isFirst();
 
 		assertEquals(1, searchProvider.getStoreEvents().size());
 

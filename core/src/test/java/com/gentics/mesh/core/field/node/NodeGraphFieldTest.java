@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -74,5 +75,20 @@ public class NodeGraphFieldTest extends AbstractEmptyDBTest {
 		assertNotNull(loadedField.getNode());
 		assertEquals(node.getUuid(), loadedField.getNode().getUuid());
 
+	}
+
+	@Test
+	public void testClone() {
+		Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NodeGraphField testField = container.createNode("testField", node);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
+		assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull()
+				.isEqualToComparingFieldByField(node);
 	}
 }

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.list;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -8,6 +9,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
@@ -21,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
@@ -250,4 +253,114 @@ public class GraphListFieldTest extends AbstractEmptyDBTest {
 		assertEquals(0, list.getList().size());
 	}
 
+	@Test
+	public void testCloneStringList() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		StringGraphFieldList testField = container.createStringList("testField");
+		testField.createString("one");
+		testField.createString("two");
+		testField.createString("three");
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getStringList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	public void testCloneNodeList() {
+		Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NodeGraphFieldList testField = container.createNodeList("testField");
+		testField.createNode("1", node);
+		testField.createNode("2", node);
+		testField.createNode("3", node);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getNodeList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	public void testCloneNumberList() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NumberGraphFieldList testField = container.createNumberList("testField");
+		testField.createNumber(47);
+		testField.createNumber(11);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getNumberList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	public void testCloneDateList() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		DateGraphFieldList testField = container.createDateList("testField");
+		testField.createDate(47L);
+		testField.createDate(11L);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getDateList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	public void testCloneHtmlList() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphFieldList testField = container.createHTMLList("testField");
+		testField.createHTML("<b>One</b>");
+		testField.createHTML("<i>Two</i>");
+		testField.createHTML("<u>Three</u>");
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getHTMLList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	public void testCloneMicronodeList() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphFieldList testField = container.createMicronodeFieldList("testField");
+		
+		Micronode micronode = testField.createMicronode(new MicronodeResponse());
+		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+		micronode.createString("firstName").setString("Donald");
+		micronode.createString("lastName").setString("Duck");
+
+		micronode = testField.createMicronode(new MicronodeResponse());
+		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
+		micronode.createString("firstName").setString("Mickey");
+		micronode.createString("lastName").setString("Mouse");
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getMicronodeList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	public void testCloneBooleanList() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphFieldList testField = container.createBooleanList("testField");
+		testField.createBoolean(true);
+		testField.createBoolean(false);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getBooleanList("testField")).as("cloned field")
+				.isEqualToComparingFieldByField(testField);
+	}
 }

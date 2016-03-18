@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
 
@@ -32,5 +35,11 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	@Override
 	public void removeField() {
 		delete();
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		container.getImpl().linkOut(getImpl(), HAS_LIST);
+		return container.getList(getClass(), getFieldKey());
 	}
 }

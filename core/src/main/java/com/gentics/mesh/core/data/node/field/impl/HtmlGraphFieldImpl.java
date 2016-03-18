@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -38,5 +40,12 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	public void removeField() {
 		setFieldProperty("html", null);
 		setFieldKey(null);
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		HtmlGraphField clone = container.createHTML(getFieldKey());
+		clone.setHtml(getHTML());
+		return clone;
 	}
 }

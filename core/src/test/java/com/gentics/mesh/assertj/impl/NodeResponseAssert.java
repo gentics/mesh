@@ -53,4 +53,27 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 		assertThat(actual.getVersion().getNumber()).as(descriptionText() + " version number").isEqualTo(number);
 		return this;
 	}
+
+	/**
+	 * Assert that the node response contains the given string field
+	 * @param name field name
+	 * @param value field value
+	 * @return fluent API
+	 */
+	public NodeResponseAssert hasStringField(String name, String value) {
+		assertThat(actual.getFields().getStringField(name)).as(descriptionText() + " string field").isNotNull();
+		assertThat(actual.getFields().getStringField(name).getString()).as(descriptionText() + " string field value").isEqualTo(value);
+		return this;
+	}
+
+	/**
+	 * Assert that the node response has the given language
+	 * 
+	 * @param languageTag
+	 * @return fluent API
+	 */
+	public NodeResponseAssert hasLanguage(String languageTag) {
+		assertThat(actual.getLanguage()).as(descriptionText() + " language").isEqualTo(languageTag);
+		return this;
+	}
 }

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -44,5 +45,12 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	public void removeField() {
 		setFieldProperty("boolean", null);
 		setFieldKey(null);
+	}
+
+	@Override
+	public BooleanGraphField cloneTo(GraphFieldContainer container) {
+		BooleanGraphField clone = container.createBoolean(getFieldKey());
+		clone.setBoolean(getBoolean());
+		return clone;
 	}
 }

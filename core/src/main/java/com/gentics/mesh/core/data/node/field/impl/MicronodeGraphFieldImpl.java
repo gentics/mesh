@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -54,5 +56,14 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		if (micronode != null) {
 			micronode.delete();
 		}
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		Micronode micronode = getMicronode();
+
+		MicronodeGraphField field = getGraph().addFramedEdge(container.getImpl(), micronode.getImpl(), HAS_FIELD, MicronodeGraphFieldImpl.class);
+		field.setFieldKey(getFieldKey());
+		return field;
 	}
 }

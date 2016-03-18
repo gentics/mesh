@@ -82,4 +82,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer {
 	 * @return previous version or null
 	 */
 	NodeGraphFieldContainer getPreviousVersion();
+
+	/**
+	 * Make this container a clone of the given container.
+	 * Property Vertices are reused
+	 *
+	 * @param container container
+	 */
+	void clone(NodeGraphFieldContainer container);
 }

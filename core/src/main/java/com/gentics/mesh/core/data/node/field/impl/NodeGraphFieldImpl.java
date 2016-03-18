@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+
 import java.util.List;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -54,5 +57,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	@Override
 	public void removeField() {
 		remove();
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		NodeGraphFieldImpl field = getGraph().addFramedEdge(container.getImpl(), getNode().getImpl(), HAS_FIELD, NodeGraphFieldImpl.class);
+		field.setFieldKey(getFieldKey());
+		return field;
 	}
 }

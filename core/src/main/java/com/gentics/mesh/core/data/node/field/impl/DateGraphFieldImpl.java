@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -48,5 +50,12 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	public void removeField() {
 		setFieldProperty("date", null);
 		setFieldKey(null);
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		DateGraphField clone = container.createDate(getFieldKey());
+		clone.setDate(getDate());
+		return clone;
 	}
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.microschema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -240,6 +241,19 @@ public class MicronodeGraphFieldTest extends AbstractBasicDBTest {
 		for (MicronodeImpl foundMicronode : existingMicronodes) {
 			assertEquals(updatedMicronode.getUuid(), foundMicronode.getUuid());
 		}
+	}
+
+	@Test
+	public void testClone() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		field.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
+		assertThat(otherContainer.getMicronode("testMicronodeField").getMicronode()).as("cloned micronode").isNotNull()
+				.isEqualToComparingFieldByField(field.getMicronode());
 	}
 
 	/**

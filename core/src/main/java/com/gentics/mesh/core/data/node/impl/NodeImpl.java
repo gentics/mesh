@@ -278,7 +278,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (previous != null) {
 			// set the next version number
 			container.setVersion(previous.getVersion().nextDraft());
-			// TODO clone the previous container
+			previous.setNextVersion(container);
+
+			// clone the previous container
+			container.clone(previous);
 		} else {
 			// set the initial version number
 			container.setVersion(new VersionNumber());
@@ -795,7 +798,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					// TODO check for conflict
 					// when there already is a DRAFT version for the release, the request must contain a version reference, otherwise a conflict is detected
 
-					// TODO create new field container as clone of the existing
+					// create new field container as clone of the existing
+					container = createGraphFieldContainer(language, release);
+
 					// Update the existing fields
 					SchemaContainerVersion latestSchemaVersion = container.getSchemaContainerVersion();
 					Schema schema = latestSchemaVersion.getSchema();

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.html;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -85,5 +86,18 @@ public class HtmlGraphFieldTest extends AbstractEmptyDBTest {
 		assertNotNull(deserializedNodeField);
 		assertEquals("Some<b>htmlABCDE", deserializedNodeField.getHTML());
 
+	}
+
+	@Test
+	public void testClone() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphField htmlField = container.createHTML("htmlField");
+		htmlField.setHtml("<i>HTML</i>");
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		htmlField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getHtml("htmlField")).as("cloned field").isNotNull()
+				.isEqualToIgnoringGivenFields(htmlField, "parentContainer");
 	}
 }

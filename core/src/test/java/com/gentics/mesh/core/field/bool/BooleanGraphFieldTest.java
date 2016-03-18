@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.bool;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -89,5 +90,23 @@ public class BooleanGraphFieldTest extends AbstractBasicDBTest {
 
 		BooleanGraphField reloadedBooleanField = container.getBoolean("booleanField");
 		assertNull("The boolean field value was set to null and thus the field should have been removed.", reloadedBooleanField);
+	}
+
+	@Test
+	public void testClone() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphField trueBooleanField = container.createBoolean("trueBooleanField");
+		trueBooleanField.setBoolean(true);
+		BooleanGraphField falseBooleanField = container.createBoolean("falseBooleanField");
+		falseBooleanField.setBoolean(false);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		trueBooleanField.cloneTo(otherContainer);
+		falseBooleanField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getBoolean("trueBooleanField")).as("cloned true field").isNotNull()
+				.isEqualToIgnoringGivenFields(trueBooleanField, "parentContainer");
+		assertThat(otherContainer.getBoolean("falseBooleanField")).as("cloned false field").isNotNull()
+				.isEqualToIgnoringGivenFields(falseBooleanField, "parentContainer");
 	}
 }

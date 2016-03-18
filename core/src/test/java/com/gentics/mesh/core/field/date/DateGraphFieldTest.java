@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.date;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -80,5 +81,19 @@ public class DateGraphFieldTest extends AbstractBasicDBTest {
 		DateGraphField reloadedDateField = container.getDate("dateField");
 		assertNotNull(reloadedDateField);
 		assertEquals("dateField", reloadedDateField.getFieldKey());
+	}
+
+	@Test
+	public void testClone() {
+		Long nowEpoch = System.currentTimeMillis() / 1000;
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		DateGraphField dateField = container.createDate("dateField");
+		dateField.setDate(nowEpoch);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		dateField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getDate("dateField")).as("cloned field").isNotNull()
+				.isEqualToIgnoringGivenFields(dateField, "parentContainer");
 	}
 }

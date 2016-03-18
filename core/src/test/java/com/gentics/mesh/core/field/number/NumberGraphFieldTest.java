@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.number;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -84,5 +85,18 @@ public class NumberGraphFieldTest extends AbstractEmptyDBTest {
 		NumberGraphField reloadedNumberField = container.getNumber("numberField");
 		assertNotNull(reloadedNumberField);
 		assertEquals("numberField", reloadedNumberField.getFieldKey());
+	}
+
+	@Test
+	public void testClone() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		NumberGraphField testField = container.createNumber("testField");
+		testField.setNumber(4711);
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull()
+				.isEqualToIgnoringGivenFields(testField, "parentContainer");
 	}
 }

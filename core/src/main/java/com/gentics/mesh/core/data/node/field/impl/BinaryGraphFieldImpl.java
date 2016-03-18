@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+
 import java.io.File;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -174,5 +178,13 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	@Override
 	public void removeField() {
 		remove();
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		MeshEdgeImpl edge = getGraph().addFramedEdge(container.getImpl(), this, HAS_FIELD, MeshEdgeImpl.class);
+		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, getFieldKey());
+
+		return container.getBinary(getFieldKey());
 	}
 }

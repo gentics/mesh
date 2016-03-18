@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
@@ -308,4 +309,12 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @return
 	 */
 	List<GraphField> getFields(FieldSchemaContainer schema);
+
+	/**
+	 * Get the list graph field of specified type
+	 * @param classOfT
+	 * @param fieldKey
+	 * @return
+	 */
+	<T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey);
 }

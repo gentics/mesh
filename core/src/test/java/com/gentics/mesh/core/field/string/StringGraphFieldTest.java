@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.string;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -76,4 +77,16 @@ public class StringGraphFieldTest extends AbstractBasicDBTest {
 		assertEquals("stringField", reloadedStringField.getFieldKey());
 	}
 
+	@Test
+	public void testClone() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		StringGraphField testField = container.createString("testField");
+		testField.setString("this is the string");
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		testField.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull()
+				.isEqualToIgnoringGivenFields(testField, "parentContainer");
+	}
 }

@@ -1,14 +1,13 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
-import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 
-public class MicronodeAssert extends AbstractAssert<MicronodeAssert, Micronode> {
+public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micronode> {
 	public MicronodeAssert(Micronode actual) {
 		super(actual, MicronodeAssert.class);
 	}

@@ -7,9 +7,12 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.List;
+
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -140,5 +143,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public NodeGraphFieldContainer getPreviousVersion() {
 		return in(HAS_VERSION).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+	}
+
+	@Override
+	public void clone(NodeGraphFieldContainer container) {
+		List<GraphField> otherFields = container.getFields(container.getSchemaContainerVersion().getSchema());
+
+		for (GraphField graphField : otherFields) {
+			graphField.cloneTo(this);
+		}
 	}
 }

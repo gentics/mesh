@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -37,5 +39,12 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	public void removeField() {
 		setFieldProperty("string", null);
 		setFieldKey(null);
+	}
+
+	@Override
+	public GraphField cloneTo(GraphFieldContainer container) {
+		StringGraphField clone = container.createString(getFieldKey());
+		clone.setString(getString());
+		return clone;
 	}
 }
