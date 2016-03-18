@@ -80,6 +80,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange("content", "boolean");
 
+		// Update a single node field in order to trigger a single blocking migration script
+		content().getGraphFieldContainer(english()).getHtml("content").setHtml("triggerWait");
+
 		String blockingScript = FileUtil.readEntirely(getClass().getResourceAsStream("/testscripts/longMigrate.js"));
 		change.setMigrationScript(blockingScript);
 		listOfChanges.getChanges().add(change);
@@ -102,7 +105,6 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		statusFuture = getClient().schemaMigrationStatus();
 		latchFor(statusFuture);
 		expectResponseMessage(statusFuture, "migration_status_running");
-
 		Thread.sleep(10000);
 
 		// Assert migration has finished
