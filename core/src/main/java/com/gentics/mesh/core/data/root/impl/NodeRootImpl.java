@@ -16,13 +16,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -129,6 +130,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Project project = ac.getProject();
+		Release release = ac.getRelease();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getInstance();
@@ -158,10 +160,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						if (language == null) {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 						}
-						// TODO specify release
-						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, null, Type.INITIAL);
+						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release);
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION, container);
 						return Tuple.tuple(batch, node);
 					});
 				});

@@ -93,7 +93,8 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		future = updateBinaryField(node, "en", "binary", binaryLen, contentType, "updated.dat");
 		latchFor(future);
 		assertSuccess(future);
-		assertEquals("The binary filename was not updated.", "updated.dat", node.getGraphFieldContainer(english()).getBinary("binary").getFileName());
+		assertEquals("The binary filename was not updated.", "updated.dat",
+				node.getGraphFieldContainer(english()).getBinary("binary").getFileName());
 	}
 
 	@Test
@@ -167,7 +168,8 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 		assertSuccess(future);
 
 		// Load the uploaded binary field and return the segment path to the field
-		BinaryGraphField binaryField = node.getGraphFieldContainer(english()).getBinary("binary");
+		BinaryGraphField binaryField = node.getGraphFieldContainer(english())
+				.getBinary("binary");
 		String uuid = "b677504736ed47a1b7504736ed07a14a";
 		binaryField.setUuid(uuid);
 		String path = binaryField.getSegmentedPath();

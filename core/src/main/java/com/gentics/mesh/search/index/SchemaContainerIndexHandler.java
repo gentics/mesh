@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
@@ -65,8 +66,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Observable<Void> store(SchemaContainer container, String type) {
-		return super.store(container, type).flatMap(done -> {
+	public Observable<Void> store(SchemaContainer container, String type, SearchQueueEntry entry) {
+		return super.store(container, type, entry).flatMap(done -> {
 			if (db != null) {
 				Observable<Void> obs = db.noTrx(() -> {
 					// update the mappings

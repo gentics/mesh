@@ -85,7 +85,7 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 		String name = tag.getName();
 		String uuid = tag.getUuid();
 		// Add the tag to the index
-		tagIndexHandler.store(tag, Tag.TYPE).toBlocking().first();
+		tagIndexHandler.store(tag, Tag.TYPE, null).toBlocking().first();
 		searchProvider.refreshIndex();
 
 		// 1. Verify that the tag is indexed

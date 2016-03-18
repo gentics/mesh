@@ -127,6 +127,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					node.addTag(tag);
+					// TODO get release specific containers
 					SearchQueueBatch batch = node.addIndexBatch(UPDATE_ACTION);
 					return Tuple.tuple(batch, node);
 				});
@@ -151,6 +152,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
+					// TODO get release specific containers
 					SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 					node.removeTag(tag);
 					return Tuple.tuple(batch, node);

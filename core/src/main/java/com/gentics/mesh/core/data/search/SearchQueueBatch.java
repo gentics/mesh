@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.search;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.util.Tuple;
 
 import rx.Observable;
 
@@ -23,7 +25,9 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param type
 	 * @param action
 	 */
-	void addEntry(String uuid, String type, SearchQueueEntryAction action);
+	default void addEntry(String uuid, String type, SearchQueueEntryAction action) {
+		addEntry(uuid, type, action, null, null);
+	}
 
 	/**
 	 * Add an entry to this batch.
@@ -31,7 +35,9 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param vertex
 	 * @param action
 	 */
-	void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action);
+	default void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action) {
+		addEntry(vertex.getUuid(), vertex.getType(), action, null, null);
+	}
 
 	/**
 	 * Add an entry to this batch.
@@ -41,7 +47,21 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @param action
 	 * @param indexType
 	 */
-	void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType);
+	default void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType) {
+		addEntry(uuid, elementType, action, indexType, null);
+	}
+
+	/**
+	 * Add an entry to this batch.
+	 * 
+	 * @param uuid Uuid of the element to be added
+	 * @param elementType Type of the element to be added
+	 * @param action
+	 * @param indexType
+	 * @param customProperties
+	 */
+	void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType,
+			Collection<Tuple<String, Object>> customProperties);
 
 	/**
 	 * Add an entry to this batch.

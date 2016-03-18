@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -95,20 +96,21 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * Update the search index document which is represented by the given object.
 	 * 
 	 * @param object
+	 * @param entry
 	 * @return
 	 */
-	public Observable<Void> update(T object) {
+	public Observable<Void> update(T object, SearchQueueEntry entry) {
 		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
 	}
 
 	@Override
-	public Observable<Void> update(String uuid, String type) {
+	public Observable<Void> update(String uuid, String type, SearchQueueEntry entry) {
 		ObservableFuture<Void> fut = RxHelper.observableFuture();
 		getRootVertex().findByUuid(uuid).map(element -> {
 			if (element == null) {
 				return Observable.error(new Exception("Element {" + uuid + "} for index type {" + type + "} could not be found within graph."));
 			} else {
-				return update(element);
+				return update(element, entry);
 			}
 		});
 		return fut;
@@ -119,9 +121,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * 
 	 * @param object
 	 * @param type
+	 * @param entry
 	 * @return
 	 */
-	public Observable<Void> store(T object, String type) {
+	public Observable<Void> store(T object, String type, SearchQueueEntry entry) {
 		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
@@ -131,19 +134,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String type) {
+	public Observable<Void> delete(String uuid, String type, SearchQueueEntry entry) {
 		// We don't need to resolve the uuid and load the graph object in this case.
 		return searchProvider.deleteDocument(getIndex(), type, uuid);
 	}
 
 	@Override
-	public Observable<Void> store(String uuid, String indexType) {
+	public Observable<Void> store(String uuid, String indexType, SearchQueueEntry entry) {
 		return getRootVertex().findByUuid(uuid).flatMap(element -> {
 			return db.noTrx(() -> {
 				if (element == null) {
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_index_type_not_found", uuid, indexType);
 				} else {
-					return store(element, indexType);
+					return store(element, indexType, entry);
 				}
 			});
 		});
@@ -232,7 +235,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> handleAction(String uuid, String actionName, String indexType) {
+	public Observable<Void> handleAction(SearchQueueEntry entry) {
+		String uuid = entry.getElementUuid();
+		String actionName = entry.getElementActionName();
+		String indexType = entry.getElementIndexType();
+
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);
@@ -245,12 +252,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
 		case CREATE_ACTION:
-			return store(uuid, indexType);
+			return store(uuid, indexType, entry);
 		case DELETE_ACTION:
-			return delete(uuid, indexType);
+			return delete(uuid, indexType, entry);
 		case UPDATE_ACTION:
 			// update(uuid, handler);
-			return store(uuid, indexType);
+			return store(uuid, indexType, entry);
 		default:
 			return Observable.error(new Exception("Action type {" + action + "} is unknown."));
 		}

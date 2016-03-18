@@ -87,4 +87,17 @@ public interface SearchQueueEntry extends MeshVertex {
 	 */
 	Observable<Void> process();
 
+	/**
+	 * Get property with given name
+	 * @param name property name
+	 * @return property
+	 */
+	<T> T getCustomProperty(final String name);
+
+	/**
+	 * Set the property with given name
+	 * @param name property name
+	 * @param value property value
+	 */
+	void setCustomProperty(final String name, final Object value);
 }

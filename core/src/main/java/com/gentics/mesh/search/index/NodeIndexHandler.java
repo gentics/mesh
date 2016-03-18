@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -62,6 +63,10 @@ import rx.Observable;
  */
 @Component
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
+
+	public final static String DOCUMENT_ID_NAME = "documentId";
+
+	public final static String FIELD_CONTAINER_UUID_NAME = "fieldContainerUuid";
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
@@ -110,7 +115,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> store(Node node, String type) {
+	public Observable<Void> delete(String uuid, String type, SearchQueueEntry entry) {
+		return searchProvider.deleteDocument(getIndex(), type, entry.getCustomProperty(DOCUMENT_ID_NAME));
+	}
+
+	@Override
+	public Observable<Void> store(Node node, String type, SearchQueueEntry entry) {
+		// TODO filter the correct container
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -146,6 +157,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
 		}
 
+		// add a dummy entry (so we have at least one entry)
+		obs.add(Observable.just(null));
 		return Observable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
@@ -156,7 +169,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> update(Node node) {
+	public Observable<Void> update(Node node, SearchQueueEntry entry) {
+		// TODO filter the correct container
 
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
@@ -182,6 +196,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		}
 
+		// add a dummy entry (so we have at least one entry)
+		obs.add(Observable.just(null));
 		return Observable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Updated node in index.");

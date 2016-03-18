@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.link.WebRootLinkReplacer.Type;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -124,6 +125,12 @@ public class NodeMigrationActionContextImpl extends AbstractActionContext implem
 
 	@Override
 	public Project getProject() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Release getRelease() {
 		// TODO Auto-generated method stub
 		return null;
 	}

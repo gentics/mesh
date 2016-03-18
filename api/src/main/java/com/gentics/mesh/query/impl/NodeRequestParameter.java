@@ -1,5 +1,8 @@
 package com.gentics.mesh.query.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import com.gentics.mesh.query.QueryParameterProvider;
 
 public class NodeRequestParameter implements QueryParameterProvider {
@@ -12,10 +15,13 @@ public class NodeRequestParameter implements QueryParameterProvider {
 
 	public static final String RESOLVE_LINKS_QUERY_PARAM_KEY = "resolveLinks";
 
+	public static final String RELEASE_QUERY_PARAM_KEY = "release";
+
 	private String[] languages;
 	private String[] expandedFieldNames;
 	private Boolean expandAll;
 	private LinkType resolveLinks;
+	private String release;
 
 	/**
 	 * Set the <code>lang</code> request parameter values.
@@ -60,6 +66,17 @@ public class NodeRequestParameter implements QueryParameterProvider {
 		return this;
 	}
 
+	/**
+	 * Set the release by name or uuid.
+	 *
+	 * @param release name or uuid
+	 * @return fluent API
+	 */
+	public NodeRequestParameter setRelease(String release) {
+		this.release = release;
+		return this;
+	}
+
 	@Override
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
@@ -99,6 +116,17 @@ public class NodeRequestParameter implements QueryParameterProvider {
 			}
 			query.append(RESOLVE_LINKS_QUERY_PARAM_KEY + "=" + resolveLinks.toString().toLowerCase());
 		}
+
+		if (release != null) {
+			if (query.length() != 0) {
+				query.append("&");
+			}
+			try {
+				query.append(RELEASE_QUERY_PARAM_KEY + "=" + URLEncoder.encode(release, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+			}
+		}
+
 		return query.toString();
 	}
 

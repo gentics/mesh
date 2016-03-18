@@ -41,6 +41,8 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	private static final String ELEMENT_TYPE = "element_type";
 	private static final String ELEMENT_INDEX_TYPE = "element_index_type";
 
+	private static final String CUSTOM_PREFIX = "custom_";
+
 	public static void checkIndices(Database database) {
 		database.addVertexType(SearchQueueEntryImpl.class);
 	}
@@ -141,7 +143,7 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 			throw error(BAD_REQUEST, "No index handler could be found for type {" + getElementType() + "} of element {" + getElementUuid() + "}");
 		}
 		//TODO it would be possible to avoid loading by uuid for update and create requests. We should not reload the element by uuid.
-		return indexHandler.handleAction(getElementUuid(), getElementActionName(), getElementIndexType());
+		return indexHandler.handleAction(this);
 	}
 
 	@Override
@@ -149,4 +151,13 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 		return "uuid: " + getElementUuid() + " type: " + getElementType() + " action: " + getElementActionName();
 	}
 
+	@Override
+	public <T> T getCustomProperty(String name) {
+		return getProperty(CUSTOM_PREFIX + name);
+	}
+
+	@Override
+	public void setCustomProperty(String name, Object value) {
+		setProperty(CUSTOM_PREFIX + name, value);
+	}
 }

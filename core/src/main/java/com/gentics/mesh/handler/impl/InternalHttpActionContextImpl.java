@@ -6,17 +6,20 @@ import static com.gentics.mesh.query.impl.NodeRequestParameter.LANGUAGES_QUERY_P
 import static com.gentics.mesh.query.impl.NodeRequestParameter.RESOLVE_LINKS_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -29,6 +32,7 @@ import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.query.impl.NavigationRequestParameter;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.tinkerpop.blueprints.Vertex;
@@ -69,6 +73,31 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 
 	protected String getProjectName(RoutingContext rc) {
 		return rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
+	}
+
+	@Override
+	public Release getRelease() {
+		Project project = getProject();
+		if (project == null) {
+			throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
+		}
+
+		Release release = null;
+
+		String releaseNameOrUuid = getParameter(NodeRequestParameter.RELEASE_QUERY_PARAM_KEY);
+		if (!isEmpty(releaseNameOrUuid)) {
+			release = project.getReleaseRoot().findByUuid(releaseNameOrUuid).toBlocking().single();
+			if (release == null) {
+				release = project.getReleaseRoot().findByName(releaseNameOrUuid).toBlocking().single();
+			}
+			if (release == null) {
+				throw error(BAD_REQUEST, "error_release_not_found", releaseNameOrUuid);
+			}
+		} else {
+			release = project.getLatestRelease();
+		}
+
+		return release;
 	}
 
 	@Override

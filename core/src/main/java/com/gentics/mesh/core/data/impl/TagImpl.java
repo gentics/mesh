@@ -78,12 +78,12 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 
 	@Override
 	public TagGraphFieldContainer getFieldContainer(Language language) {
-		return getGraphFieldContainer(language, TagGraphFieldContainerImpl.class);
+		return getGraphFieldContainer(language, null, null, TagGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	public TagGraphFieldContainer getOrCreateFieldContainer(Language language) {
-		return getOrCreateGraphFieldContainer(language, null, null, TagGraphFieldContainerImpl.class);
+		return getOrCreateGraphFieldContainer(language, TagGraphFieldContainerImpl.class);
 	}
 
 	@Override

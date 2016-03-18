@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -40,6 +41,15 @@ public interface InternalActionContext extends ActionContext {
 	 * @return
 	 */
 	Project getProject();
+
+	/**
+	 * Return the release that may be specified in this action context as query parameter.
+	 * This method will fail, if no project is set, or if the specified release does not exist for the project
+	 * When no release was specified (but a project was set), this will return the latest release of the project
+	 *
+	 * @return
+	 */
+	Release getRelease();
 
 	/**
 	 * Return the mesh auth user.

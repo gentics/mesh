@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -179,13 +178,13 @@ public class LinkRendererTest extends AbstractBasicDBTest {
 		// Create some dummy content
 		Node content = parentNode.create(user(), schemaVersion, project());
 		NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german,
-				content.getProject().getLatestRelease(), GraphFieldContainerEdge.Type.DRAFT);
+				content.getProject().getLatestRelease());
 		germanContainer.createString("displayName").setString("german name");
 		germanContainer.createString("name").setString("german.html");
 
 		Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
 		NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english,
-				content2.getProject().getLatestRelease(), GraphFieldContainerEdge.Type.DRAFT);
+				content2.getProject().getLatestRelease());
 		englishContainer.createString("displayName").setString("content 2 english");
 		englishContainer.createString("name").setString("english.html");
 

@@ -16,6 +16,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -61,7 +63,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	List<? extends Tag> getTags();
 
 	/**
-	 * Return the field container for the given language.
+	 * Return the draft field container for the given language in the latest release
 	 * 
 	 * @param language
 	 * @return
@@ -69,7 +71,17 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	NodeGraphFieldContainer getGraphFieldContainer(Language language);
 
 	/**
-	 * Return the field container for the given language.
+	 * Return the field container for the given language, type and release
+	 * 
+	 * @param language
+	 * @param release
+	 * @param type type
+	 * @return
+	 */
+	NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, Type type);
+
+	/**
+	 * Return the draft field container for the given language in the latest release
 	 * 
 	 * @param languageTag
 	 * @return
@@ -77,21 +89,42 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
 
 	/**
+	 * Return the field container for the given language, type and release Uuid
+	 * 
+	 * @param languageTag
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
+	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String releaseUuid, Type type);
+
+	/**
 	 * Create a new graph field container for the given language and assign the schema version of the release to the container.
+	 * The graph field container will be the (only) DRAFT version for the language/release. If this is the first container for the
+	 * language, it will also be the INITIAL version. Otherwise the container will be a clone of the last draft and will have the next version
+	 * number
 	 * 
 	 * @param language
 	 * @param release release
-	 * @param type type
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, Type type);
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release);
 
 	/**
-	 * Return a list of graph field containers for the node.
+	 * Return a list of draft graph field containers for the node in the latest release
 	 * 
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
+
+	/**
+	 * Return a list of graph field containers of given type for the node in the given release
+	 *
+	 * @param release
+	 * @param type
+	 * @return
+	 */
+	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, Type type);
 
 	/**
 	 * Return a page of tags that are assigned to the node.
@@ -321,4 +354,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 */
 	void setSchemaContainer(SchemaContainer container);
 
+	/**
+	 * Add a search queue batch which contains information about the affected node language.
+	 * 
+	 * @param action
+	 * @param containers
+	 * @return
+	 */
+	SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, NodeGraphFieldContainer...containers);
 }

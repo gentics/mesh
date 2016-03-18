@@ -3,10 +3,10 @@ package com.gentics.mesh.core.data.search.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -16,6 +16,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,28 +39,25 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 	}
 
 	@Override
-	public void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType) {
+	public void addEntry(String uuid, String elementType, SearchQueueEntryAction action, String indexType, Collection<Tuple<String, Object>> customProperties) {
 		SearchQueueEntry entry = getGraph().addFramedVertex(SearchQueueEntryImpl.class);
 		entry.setElementUuid(uuid);
 		entry.setElementType(elementType);
 		entry.setElementAction(action.getName());
 		entry.setElementIndexType(indexType);
+
+		if (customProperties != null) {
+			for (Tuple<String, Object> custom : customProperties) {
+				entry.setCustomProperty(custom.v1(), custom.v2());
+			}
+		}
+
 		addEntry(entry);
 	}
 
 	@Override
 	public void addEntry(SearchQueueEntry batch) {
 		setUniqueLinkOutTo(batch.getImpl(), HAS_ITEM);
-	}
-
-	@Override
-	public void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action) {
-		addEntry(vertex.getUuid(), vertex.getType(), action);
-	}
-
-	@Override
-	public void addEntry(String uuid, String type, SearchQueueEntryAction action) {
-		addEntry(uuid, type, action, null);
 	}
 
 	@Override

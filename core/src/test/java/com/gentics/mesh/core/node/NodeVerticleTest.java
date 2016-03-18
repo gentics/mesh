@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,9 +38,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -59,7 +62,6 @@ import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
-import com.gentics.mesh.rest.MeshRestClientHttpException;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 import com.gentics.mesh.util.FieldUtil;
 
@@ -201,6 +203,116 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		// assertEquals(restNode.getUuid(), entry.getElementUuid());
 		// assertEquals(Node.TYPE, entry.getElementType());
 		// assertEquals(SearchQueueEntryAction.CREATE_ACTION, entry.getElementAction());
+	}
+
+	@Test
+	public void testCreateForReleaseByName() {
+		Project project = project();
+		Release initialRelease = project.getReleaseRoot().getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(uuid);
+
+		NodeResponse nodeResponse = call(() -> getClient().createNode(project.getName(), request,
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+
+		meshRoot().getNodeRoot().reload();
+		Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
+		for (Type type : Arrays.asList(Type.INITIAL, Type.DRAFT)) {
+			assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type))
+					.as(type + " Field container for initial release").isNotNull().hasVersion("0.1");
+			assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type))
+					.as(type + " Field Container for new release").isNull();
+		}
+	}
+
+	@Test
+	public void testCreateForReleaseByUuid() {
+		Project project = project();
+		Release initialRelease = project.getReleaseRoot().getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(uuid);
+
+		NodeResponse nodeResponse = call(() -> getClient().createNode(project.getName(), request,
+				new NodeRequestParameter().setRelease(initialRelease.getUuid())));
+
+		meshRoot().getNodeRoot().reload();
+		Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
+		for (Type type : Arrays.asList(Type.INITIAL, Type.DRAFT)) {
+			assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type))
+					.as(type + " Field container for initial release").isNotNull().hasVersion("0.1");
+			assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type))
+					.as(type + " Field Container for new release").isNull();
+		}
+	}
+
+	@Test
+	public void testCreateForLatestRelease() {
+		Project project = project();
+		Release initialRelease = project.getReleaseRoot().getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(uuid);
+
+		NodeResponse nodeResponse = call(() -> getClient().createNode(project.getName(), request));
+
+		meshRoot().getNodeRoot().reload();
+		Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid()).toBlocking().single();
+
+		for (Type type : Arrays.asList(Type.INITIAL, Type.DRAFT)) {
+			assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type))
+					.as(type + " Field container for initial release").isNull();
+			assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type))
+					.as(type + " Field Container for new release").isNotNull().hasVersion("0.1");
+		}
+	}
+
+	@Test
+	public void testCreateForBogusRelease() {
+		Project project = project();
+		project.getReleaseRoot().create("newrelease", user());
+
+		Node parentNode = folder("news");
+		String uuid = parentNode.getUuid();
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(uuid);
+
+		call(() -> getClient().createNode(project.getName(), request,
+				new NodeRequestParameter().setRelease("bogusrelease")), BAD_REQUEST, "error_release_not_found", "bogusrelease");
 	}
 
 	@Test
@@ -823,7 +935,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 		Node node = parentNode.create(user(), version, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl,
-				node.getProject().getLatestRelease(), Type.DRAFT);
+				node.getProject().getLatestRelease());
 		englishContainer.createString("name").setString("name");
 		englishContainer.createString("title").setString("title");
 		englishContainer.createString("displayName").setString("displayName");
@@ -1070,8 +1182,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		assertNull(future.result());
 
-		NodeGraphFieldContainer englishContainer = folder("2015").createGraphFieldContainer(english(),
-				project().getLatestRelease(), Type.DRAFT);
+		NodeGraphFieldContainer englishContainer = folder("2015").getGraphFieldContainer(english());
 		assertNotEquals(newName, englishContainer.getString("name").getString());
 
 	}

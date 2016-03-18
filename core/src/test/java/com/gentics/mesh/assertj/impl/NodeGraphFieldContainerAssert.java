@@ -1,5 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import org.assertj.core.api.AbstractAssert;
@@ -23,6 +24,17 @@ public class NodeGraphFieldContainerAssert extends AbstractAssert<NodeGraphField
 	public NodeGraphFieldContainerAssert isOf(SchemaContainerVersion schemaVersion) {
 		assertEquals("The schema uuid of the field container {" + actual.getUuid() + "} did not match the expected one.", schemaVersion,
 				actual.getSchemaContainerVersion());
+		return this;
+	}
+
+	/**
+	 * Assert that the field container is of the version
+	 *
+	 * @param version
+	 * @return
+	 */
+	public NodeGraphFieldContainerAssert hasVersion(String version) {
+		assertThat(actual.getVersion()).as(descriptionText() + " version").isNotNull().hasToString(version);
 		return this;
 	}
 }
