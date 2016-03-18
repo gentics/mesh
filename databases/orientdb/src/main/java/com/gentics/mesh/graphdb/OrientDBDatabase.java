@@ -39,6 +39,7 @@ import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
@@ -87,6 +88,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			noTx.shutdown();
 		}
+	}
+
+	@Override
+	public TransactionalGraph rawTx() {
+		return factory.getTx();
 	}
 
 	@Override

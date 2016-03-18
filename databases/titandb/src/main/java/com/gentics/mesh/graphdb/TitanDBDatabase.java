@@ -15,6 +15,7 @@ import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TitanDBDatabase extends AbstractDatabase {
@@ -24,6 +25,11 @@ public class TitanDBDatabase extends AbstractDatabase {
 	@Override
 	public void stop() {
 		graph.shutdown();
+	}
+
+	@Override
+	public TransactionalGraph rawTx() {
+		return graph.newTransaction();
 	}
 
 	@Override

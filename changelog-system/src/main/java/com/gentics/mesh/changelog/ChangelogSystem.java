@@ -2,56 +2,59 @@ package com.gentics.mesh.changelog;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
-import com.gentics.mesh.etc.GraphStorageOptions;
-import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.tinkerpop.blueprints.TransactionalGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Component
-@Scope(value = "singleton")
 public class ChangelogSystem {
 
 	private static final Logger log = LoggerFactory.getLogger(ChangelogSystem.class);
 
-	public Database getDatabase() {
-		DatabaseService databaseService = DatabaseService.getInstance();
-		Database database = databaseService.getDatabase();
-		if (database == null) {
-			String message = "No database provider could be found.";
-			log.error(message);
-			throw new RuntimeException(message);
-		}
-		try {
-			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			database.init(options, Mesh.vertx());
-			// TODO should we perhaps check the db also within the bootstrap initalizer?
-			//			DatabaseHelper helper = new DatabaseHelper(database);
-			//			helper.init();
-			//			helper.migrate();
-			return database;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	private Database db;
+
+	public ChangelogSystem(Database db) {
+		this.db = db;
 	}
 
-	public void applyChanges() {
+	/**
+	 * Apply all listed changes.
+	 * 
+	 * @return Flag which indicates whether all changes were applied successfully
+	 */
+	public boolean applyChanges() {
 
 		List<Change> list = ChangesList.getList();
 		for (Change change : list) {
 			// Execute each change in a new transaction
-			getDatabase().trx(() -> {
-				change.apply();
-				//change.validate();
-				return change.doesForceReindex();
-				// TODO mark change as executed and set the reindex flag if desired
-			});
+			TransactionalGraph graph = db.rawTx();
+			change.setGraph(graph);
+			try {
+				if (!change.isApplied()) {
+					log.info("Handling change {" + change.getUuid() + "}");
+					log.info("Name: " + change.getName());
+					log.info("Description: " + change.getDescription());
+
+					long start = System.currentTimeMillis();
+					change.apply();
+					change.setDuration(System.currentTimeMillis() - start);
+					change.markAsComplete();
+					//change.validate();
+					change.doesForceReindex();
+					// TODO mark change as executed and set the reindex flag if desired
+				} else {
+					log.debug("Change {" + change.getUuid() + "} is already applied.");
+				}
+			} catch (Exception e) {
+				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}", e);
+				graph.rollback();
+				return false;
+			} finally {
+				graph.shutdown();
+			}
 		}
+		return true;
 	}
 }

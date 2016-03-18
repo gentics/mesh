@@ -9,6 +9,7 @@ import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerGraphDatabase extends AbstractDatabase {
@@ -17,6 +18,11 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 
 	@Override
 	public void stop() {
+	}
+
+	@Override
+	public TransactionalGraph rawTx() {
+		return mockedGraph;
 	}
 
 	@Override
@@ -100,16 +106,16 @@ public class TinkerGraphDatabase extends AbstractDatabase {
 	public void addVertexType(Class<?> clazzOfVertex) {
 		// TODO Auto-generated method stub
 	}
-	
+
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public void setVertexType(Element element, Class<?> classOfVertex) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

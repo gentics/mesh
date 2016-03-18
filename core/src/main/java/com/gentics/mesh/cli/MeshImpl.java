@@ -90,9 +90,7 @@ public class MeshImpl implements Mesh {
 			ctx.start();
 			initalizer.init(options, verticleLoader);
 			ctx.registerShutdownHook();
-
 			dontExit();
-
 		}
 	}
 

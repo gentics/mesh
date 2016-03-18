@@ -27,6 +27,10 @@
 		<surefire.forkcount>4</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
+		<dockerHost>cetus.office</dockerHost>
+		<dockerHostProtocol>http</dockerHostProtocol>
+		<docker.tag>snapshot</docker.tag>
+		<docker.skip>true</docker.skip>
 	</properties>
 
 	<scm>

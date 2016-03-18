@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc;
+package com.gentics.mesh;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Utility class that is used to create and load mesh options.
@@ -32,7 +32,7 @@ public final class OptionsLoader {
 	 */
 	public static MeshOptions createOrloadOptions() {
 		File confFile = new File(MESH_CONF_FILENAME);
-		InputStream ins = MeshImpl.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
+		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
 		// 1. Try to load from classpath
 		if (ins != null) {
 			log.info("Loading configuration file from classpath.");

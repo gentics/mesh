@@ -2,8 +2,8 @@ package com.gentics.mesh.impl;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshFactory;
+import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.cli.MeshImpl;
-import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 /**

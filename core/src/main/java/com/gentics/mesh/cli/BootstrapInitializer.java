@@ -229,7 +229,7 @@ public class BootstrapInitializer {
 
 	}
 
-	private void initSearchIndex() {
+	public void initSearchIndex() {
 		for (IndexHandler handler : searchHandlerRegistry.getHandlers()) {
 			handler.init().toBlocking().single();
 		}

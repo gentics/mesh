@@ -3,8 +3,8 @@ package com.gentics.mesh.demo;
 import java.io.File;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
-import com.gentics.mesh.etc.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;

@@ -12,6 +12,7 @@ import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
@@ -273,5 +274,7 @@ public interface Database {
 	 * @param classOfVertex
 	 */
 	void setVertexType(Element element, Class<?> classOfVertex);
+
+	TransactionalGraph rawTx();
 
 }
