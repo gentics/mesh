@@ -7,7 +7,7 @@ import java.io.File;
  */
 public class ElasticSearchOptions {
 
-	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "mesh-searchindex";
+	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "searchindex";
 
 	private String directory = DEFAULT_DIRECTORY;
 

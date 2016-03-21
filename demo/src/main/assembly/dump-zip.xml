@@ -8,7 +8,7 @@
 	<fileSets>
 		<fileSet>
 			<outputDirectory>/</outputDirectory>
-			<directory>${basedir}/target/dump</directory>
+			<directory>${basedir}/target/dump/data</directory>
 			<includes>
 				<include>**/*</include>
 			</includes>

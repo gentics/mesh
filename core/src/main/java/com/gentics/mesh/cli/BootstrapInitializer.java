@@ -193,6 +193,7 @@ public class BootstrapInitializer {
 	 * Use the hazelcast cluster manager to join the cluster of mesh instances.
 	 */
 	private void joinCluster() {
+		log.info("Joining cluster...");
 		HazelcastClusterManager manager = new HazelcastClusterManager();
 		manager.setVertx(Mesh.vertx());
 		manager.join(rh -> {
@@ -239,13 +240,19 @@ public class BootstrapInitializer {
 	 * @throws InterruptedException
 	 */
 	private void invokeSearchQueueProcessing() throws InterruptedException {
-		meshRoot().getSearchQueue().processAll();
+		db.trx(() -> {
+			log.info("Starting search queue processing of remaining entries...");
+			long prcessed = meshRoot().getSearchQueue().processAll();
+			log.info("Processed {" + prcessed + "} elements.");
+			return null;
+		});
 	}
 
 	/**
 	 * Invoke the changelog system to execute database changes.
 	 */
 	private void invokeChangelog() {
+		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
 		if (!cls.applyChanges()) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");

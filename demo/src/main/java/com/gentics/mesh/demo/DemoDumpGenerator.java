@@ -11,17 +11,25 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 public class DemoDumpGenerator {
 
+	static {
+		DemoDumpConfiguration.enabled = true;
+	}
+
 	public static void main(String[] args) throws Exception {
 		new DemoDumpGenerator().dump();
 	}
 
 	private void dump() throws Exception {
+		// Cleanup in preparation for dumping the demo data
 		FileUtils.deleteDirectory(new File("target" + File.separator + "dump"));
-
+		File confFile = new File("mesh.json");
+		if (confFile.exists()) {
+			confFile.delete();
+		}
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(DemoDumpConfiguration.class)) {
 			ctx.start();
 			ctx.registerShutdownHook();
-			// Init mesh
+			// Initialize mesh
 			BootstrapInitializer boot = ctx.getBean(BootstrapInitializer.class);
 			boot.initSearchIndex();
 			boot.initMandatoryData();
