@@ -1,5 +1,7 @@
 package com.gentics.mesh.demo;
 
+import static com.gentics.mesh.demo.DemoZipHelper.unzip;
+
 import java.io.File;
 
 import com.gentics.mesh.Mesh;
@@ -26,10 +28,14 @@ public class DemoRunner {
 	}
 
 	public static void main(String[] args) throws Exception {
+		// Extract dump file on first time startup to speedup startup
+		if (!new File("mesh.json").exists()) {
+			unzip("/mesh-dump.zip", "data");
+		}
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-		options.getStorageOptions().setDirectory(null);
+
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
