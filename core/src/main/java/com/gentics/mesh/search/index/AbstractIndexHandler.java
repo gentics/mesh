@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
@@ -9,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +28,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -251,9 +255,25 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		case UPDATE_ACTION:
 			// update(uuid, handler);
 			return store(uuid, indexType);
+		case REINDEX_ALL:
+			return reindexAll();
 		default:
 			return Observable.error(new Exception("Action type {" + action + "} is unknown."));
 		}
+	}
+
+	@Override
+	public Observable<Void> reindexAll() {
+		log.info("Handling full reindex entry");
+		for (T element : getRootVertex().findAll()) {
+			log.info("Invoking reindex for {" + getType() + "/" + element.getUuid() + "}");
+			SearchQueueBatch batch = element.createIndexBatch(UPDATE_ACTION);
+			for (SearchQueueEntry entry : batch.getEntries()) {
+				entry.process().toBlocking().lastOrDefault(null);
+			}
+			batch.delete();
+		}
+		return Observable.just(null);
 	}
 
 	/**

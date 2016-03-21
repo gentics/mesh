@@ -10,10 +10,13 @@ import com.gentics.mesh.changelog.Change;
  */
 public final class ChangesList {
 
-	public static List<Change> getList() {
-		List<Change> list = new ArrayList<>();
-		list.add(new Change_424FA7436B6541269E6CE90C8C3D812D());
+	public static List<Change> list = new ArrayList<>();
+
+	static {
 		list.add(new Change_093BEFB47FA4476FBE37FD27C613F7AA());
+	}
+
+	public static List<Change> getList() {
 		return list;
 	}
 }

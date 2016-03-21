@@ -70,13 +70,4 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 		}
 	}
 
-	@Override
-	public void validate() {
-		super.validate();
-
-		if (isRequired()) {
-			throw error(BAD_REQUEST, "schema_error_binaryfield_must_not_be_mandatory", getName());
-		}
-	}
-
 }

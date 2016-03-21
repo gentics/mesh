@@ -76,4 +76,10 @@ public interface IndexHandler {
 	 */
 	Observable<Void> update(String uuid, String type);
 
+	/**
+	 * Reindex all documents for the type which the handler is capable of.
+	 * 
+	 * @return
+	 */
+	Observable<Void> reindexAll();
 }

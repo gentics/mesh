@@ -48,6 +48,13 @@
 			<artifactId>httpcore</artifactId>
 			<version>4.2.5</version>
 		</dependency>
+
+		<!-- UUID Support -->
+		<dependency>
+			<groupId>com.fasterxml.uuid</groupId>
+			<artifactId>java-uuid-generator</artifactId>
+			<version>3.1.4</version>
+		</dependency>
 	</dependencies>
 
 	<build>

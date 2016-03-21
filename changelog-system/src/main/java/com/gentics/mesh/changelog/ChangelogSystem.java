@@ -41,14 +41,15 @@ public class ChangelogSystem {
 					change.apply();
 					change.setDuration(System.currentTimeMillis() - start);
 					change.markAsComplete();
-					//change.validate();
-					change.doesForceReindex();
+					if (!change.validate()) {
+						throw new Exception("Validation for change {" + change.getUuid() + "/" + change.getName() + "} failed.");
+					}
 					// TODO mark change as executed and set the reindex flag if desired
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
 				}
 			} catch (Exception e) {
-				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}", e);
+				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}. Invoking rollback..", e);
 				graph.rollback();
 				return false;
 			} finally {

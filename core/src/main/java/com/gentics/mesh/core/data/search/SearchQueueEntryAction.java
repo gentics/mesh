@@ -5,7 +5,7 @@ package com.gentics.mesh.core.data.search;
  */
 public enum SearchQueueEntryAction {
 
-	CREATE_ACTION("create"), DELETE_ACTION("delete"), UPDATE_ACTION("update");
+	CREATE_ACTION("create"), DELETE_ACTION("delete"), UPDATE_ACTION("update"), REINDEX_ALL("reindex_all");
 
 	private String name;
 

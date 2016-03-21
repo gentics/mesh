@@ -11,18 +11,12 @@ public class Change_093BEFB47FA4476FBE37FD27C613F7AA extends AbstractChange {
 
 	@Override
 	public String getDescription() {
-		return "Recreate index due new publish field in node documents";
-	}
-
-	@Override
-	public boolean doesForceReindex() {
-		// TODO Auto-generated method stub
-		return false;
+		return "Reindex all noes due to new publish field in node documents";
 	}
 
 	@Override
 	public void apply() {
-		// No graph change needed
+		addFullReindexEntry("node");
 	}
 
 }

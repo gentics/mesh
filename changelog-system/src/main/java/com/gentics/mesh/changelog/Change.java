@@ -41,13 +41,6 @@ public interface Change {
 	String getDescription();
 
 	/**
-	 * Return a flag that indicates whether the change should force a rebuild of the search index after all changes have been applied.
-	 * 
-	 * @return
-	 */
-	boolean doesForceReindex();
-
-	/**
 	 * Set the graph instance to be used when handling the change.
 	 * 
 	 * @param graph
@@ -79,5 +72,12 @@ public interface Change {
 	 * @return
 	 */
 	long getDuration();
+
+	/**
+	 * Validate the change. A unsuccessful validation will abort the changelog execution.
+	 * 
+	 * @return true if validation was successful. Otherwise false.
+	 */
+	boolean validate();
 
 }
