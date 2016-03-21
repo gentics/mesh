@@ -40,7 +40,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "node_deleted");
 	}
 
 	/**

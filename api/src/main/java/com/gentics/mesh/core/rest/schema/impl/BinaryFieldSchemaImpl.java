@@ -1,8 +1,5 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
