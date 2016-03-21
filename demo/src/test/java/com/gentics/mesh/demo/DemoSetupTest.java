@@ -1,5 +1,6 @@
 package com.gentics.mesh.demo;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -63,12 +64,14 @@ public class DemoSetupTest {
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().single().getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 		assertNotNull(user);
+		assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
 		Group group = user.getGroups().get(0);
-		assertNotNull(group);
 		Role role = group.getRoles().get(0);
+		assertNotNull("The webclient group should also have a role assigned to it", role);
 
-		assertTrue(role.hasPermission(GraphPermission.READ_PERM, user));
-		assertTrue(user.hasPermission(user, GraphPermission.READ_PERM));
-		assertTrue(user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
+		assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
+		assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
+		assertTrue("The webclient user has no read permission on the user root node..",
+				user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
 	}
 }

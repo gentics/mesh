@@ -236,15 +236,6 @@ public class SchemaTest {
 		schema.validate();
 	}
 
-	@Test
-	public void testBinaryFieldMandatory() {
-		Schema schema = FieldUtil.createMinimalValidSchema();
-		BinaryFieldSchema field = FieldUtil.createBinaryFieldSchema("binaryField");
-		field.setRequired(true);
-		schema.addField(field);
-		expectErrorOnValidate(schema, "schema_error_binaryfield_must_not_be_mandatory", "binaryField");
-	}
-
 	/**
 	 * The segment field must always point to a string or binary field.
 	 */

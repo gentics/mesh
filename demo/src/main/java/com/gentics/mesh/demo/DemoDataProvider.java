@@ -87,16 +87,12 @@ public class DemoDataProvider {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		//bootstrapInitializer.initMandatoryData();
+		// bootstrapInitializer.initMandatoryData();
 
 		MeshAuthUser user = db.noTrx(() -> {
 			return MeshRoot.getInstance().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
-
-		//			root = boot.meshRoot();
-		//			english = boot.languageRoot().findByLanguageTag("en");
-		//			german = boot.languageRoot().findByLanguageTag("de");
 
 		addBootstrappedData();
 
@@ -111,8 +107,8 @@ public class DemoDataProvider {
 		addSchemaContainers();
 		addNodes();
 		addWebclientPermissions();
-		//		updatePermissions();
-		//		invokeFullIndex();
+		// updatePermissions();
+		// invokeFullIndex();
 		log.info("Demo data setup completed");
 	}
 
@@ -121,7 +117,11 @@ public class DemoDataProvider {
 		request.setRecursive(true);
 		request.getPermissions().add("read");
 		request.getPermissions().add("update");
-		Future<GenericMessageResponse> future = client.updateRolePermissions(getRole("Client Role").getUuid(), "projects/" + getProject("demo").getUuid(), request);
+		Future<GenericMessageResponse> future = client.updateRolePermissions(getRole("Client Role").getUuid(),
+				"projects/" + getProject("demo").getUuid(), request);
+		latchFor(future);
+
+		future = client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request);
 		latchFor(future);
 	}
 
@@ -152,12 +152,11 @@ public class DemoDataProvider {
 			request.setPassword(password);
 			Future<UserResponse> future = client.createUser(request);
 			latchFor(future);
-
 			users.put(username, future.result());
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
-				//				user.addGroup(getGroup(groupArray.getString(e)));
+				client.addUserToGroup(groups.get(groupArray.getString(e)).getUuid(), future.result().getUuid());
 			}
 		}
 
@@ -226,7 +225,7 @@ public class DemoDataProvider {
 			Future<RoleResponse> roleFuture = client.createRole(request);
 			latchFor(roleFuture);
 
-			//role.grantPermissions(role, READ_PERM);
+			// role.grantPermissions(role, READ_PERM);
 			roles.put(name, roleFuture.result());
 		}
 	}
@@ -310,7 +309,7 @@ public class DemoDataProvider {
 					}
 				}
 			}
-			//englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
+			// englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
 
 			Future<NodeResponse> nodeCreateFuture = client.createNode(project.getName(), nodeCreateRequest);
 			latchFor(nodeCreateFuture);
@@ -320,8 +319,6 @@ public class DemoDataProvider {
 			JsonObject binNode = nodeJson.getJsonObject("bin");
 			if (binNode != null) {
 				String path = binNode.getString("path");
-				//				int height = binNode.getInteger("height");
-				//				int width = binNode.getInteger("width");
 				String filenName = binNode.getString("filename");
 				String contentType = binNode.getString("contentType");
 				InputStream ins = getClass().getResourceAsStream("/data/" + path);
@@ -394,9 +391,9 @@ public class DemoDataProvider {
 			Future<ProjectResponse> projectFuture = client.createProject(request);
 			latchFor(projectFuture);
 
-			//TODO impl. once endpoint exists
-			//client.assignLanguageToProject(projectFuture.result().getUuid(), getEnglish().getUuid());
-			//client.assignLanguageToProject(projectFuture.result().getUuid(), getGerman().getUuid());
+			// TODO impl. once endpoint exists
+			// client.assignLanguageToProject(projectFuture.result().getUuid(), getEnglish().getUuid());
+			// client.assignLanguageToProject(projectFuture.result().getUuid(), getGerman().getUuid());
 			ProjectResponse project = projectFuture.result();
 
 			// Load the project basenode
@@ -419,7 +416,7 @@ public class DemoDataProvider {
 			log.info("Creating tagfamily {" + name + "} for project {" + projectName + "}");
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
-			//			request.setDescription("Description for basic tag family");
+			// request.setDescription("Description for basic tag family");
 			Future<TagFamilyResponse> future = client.createTagFamily(PROJECT_NAME, request);
 			latchFor(future);
 			tagFamilies.put(name, future.result());
@@ -434,8 +431,6 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject schemaJson = dataArray.getJsonObject(i);
 			String schemaName = schemaJson.getString("name");
-			//			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName).toBlocking().single();
-			//			if (container == null) {
 			StringWriter writer = new StringWriter();
 			InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 			if (ins != null) {
@@ -443,8 +438,6 @@ public class DemoDataProvider {
 				Schema schema = JsonUtil.readValue(writer.toString(), SchemaModel.class);
 				Future<Schema> future = client.createSchema(schema);
 				latchFor(future);
-				//container = boot.schemaContainerRoot().create(schema, getAdmin());
-				//			}
 				Schema schemaResponse = future.result();
 				schemas.put(schemaName, schemaResponse);
 			}
@@ -458,7 +451,6 @@ public class DemoDataProvider {
 					Future<Schema> updateFuture = client.addSchemaToProject(schema.getUuid(), project.getUuid());
 					latchFor(updateFuture);
 				}
-				//project.getSchemaContainerRoot().addSchemaContainer(container);
 			}
 		}
 	}

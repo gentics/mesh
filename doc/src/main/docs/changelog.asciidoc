@@ -66,9 +66,11 @@
 * Fix: The schema migration process did not update the node search index correctly. 
        In some cases duplicate nodes would be returned (the old node and the migrated one).
        This has been fixed. Only the latest version of nodes will be returned now.
-||||||| merged common ancestors
-* Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now. 
-* Fix: A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358) 
+* Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
+* Fix: A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
+* Enhancement: Database migration/changelog system.
+       The changelog system is used to upgrade mesh data from one mesh version to another.
+* Enhancement: The *published* flag can now be referenced within an elasticsearch query.
 ----
 
 
@@ -76,11 +78,8 @@
 
 [source]
 ----
-* Database migration/changelog system
-  The changelog system will enable you to upgrade your mesh installation data from one mesh version to another.
-
 * Versioning for nodes
-  A future mesh version will also support versioning of nodes
+  A future mesh version will also support versioning of nodes.
 
 * Java REST Client
   A Rest client which supports RXJava will be added.
