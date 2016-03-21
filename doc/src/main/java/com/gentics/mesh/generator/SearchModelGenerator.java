@@ -79,15 +79,20 @@ public class SearchModelGenerator extends AbstractGenerator {
 			ctx.registerShutdownHook();
 			provider = ctx.getBean("dummySearchProvider", DummySearchProvider.class);
 
-			writeNodeDocumentExample();
-			writeTagDocumentExample();
-			writeGroupDocumentExample();
-			writeUserDocumentExample();
-			writeRoleDocumentExample();
-			writeProjectDocumentExample();
-			writeTagFamilyDocumentExample();
-			writeSchemaDocumentExample();
-			writeMicroschemaDocumentExample();
+			try {
+				writeNodeDocumentExample();
+				writeTagDocumentExample();
+				writeGroupDocumentExample();
+				writeUserDocumentExample();
+				writeRoleDocumentExample();
+				writeProjectDocumentExample();
+				writeTagFamilyDocumentExample();
+				writeSchemaDocumentExample();
+				writeMicroschemaDocumentExample();
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(10);
+			}
 			System.exit(0);
 		}
 

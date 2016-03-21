@@ -208,6 +208,7 @@ public final class MockingUtils {
 		SchemaContainerVersion latestVersion = mock(SchemaContainerVersionImpl.class);
 		when(latestVersion.getSchemaContainer()).thenReturn(container);
 		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
+		when(latestVersion.getName()).thenReturn(name);
 		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
@@ -280,18 +281,14 @@ public final class MockingUtils {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
-
 		when(node.getCreator()).thenReturn(user);
 		when(node.getEditor()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
-		Schema schema = schemaContainer.getLatestVersion().getSchema();
-		when(node.getSchemaContainer().getLatestVersion().getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
-//		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
-		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 
+		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 		return node;
 	}
 
