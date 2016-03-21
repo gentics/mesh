@@ -90,12 +90,12 @@
 		<module>rest-client</module>
 		<module>databases</module>
 		<module>services</module>
+		<module>changelog-system</module>
 		<module>core</module>
 		<module>verticles</module>
 		<module>server</module>
 		<module>demo</module>
 		<module>doc</module>
-		<module>changelog-system</module>
 	</modules>
 
 	<dependencies>

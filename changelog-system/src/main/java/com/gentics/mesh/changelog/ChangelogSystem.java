@@ -57,4 +57,21 @@ public class ChangelogSystem {
 		}
 		return true;
 	}
+
+	/**
+	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
+	 */
+	public void markAllAsApplied() {
+		List<Change> list = ChangesList.getList();
+		TransactionalGraph graph = db.rawTx();
+		try {
+			for (Change change : list) {
+				change.setGraph(graph);
+				change.markAsComplete();
+				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as complete.");
+			}
+		} finally {
+			graph.shutdown();
+		}
+	}
 }

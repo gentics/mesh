@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -213,9 +214,12 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		initSearchIndex();
 		initMandatoryData();
 		initPermissions();
+		invokeChangelog();
+		initSearchIndex();
+		invokeSearchQueueProcessing();
+
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
@@ -229,6 +233,28 @@ public class BootstrapInitializer {
 
 	}
 
+	/**
+	 * Process remaining search queue batches.
+	 * 
+	 * @throws InterruptedException
+	 */
+	private void invokeSearchQueueProcessing() throws InterruptedException {
+		meshRoot().getSearchQueue().processAll();
+	}
+
+	/**
+	 * Invoke the changelog system to execute database changes.
+	 */
+	private void invokeChangelog() {
+		ChangelogSystem cls = new ChangelogSystem(db);
+		if (!cls.applyChanges()) {
+			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
+		}
+	}
+
+	/**
+	 * Initialize the search queue handlers.
+	 */
 	public void initSearchIndex() {
 		for (IndexHandler handler : searchHandlerRegistry.getHandlers()) {
 			handler.init().toBlocking().single();

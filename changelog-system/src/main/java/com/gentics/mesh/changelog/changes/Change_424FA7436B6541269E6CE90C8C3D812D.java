@@ -9,11 +9,6 @@ import com.tinkerpop.blueprints.Vertex;
 public class Change_424FA7436B6541269E6CE90C8C3D812D extends AbstractChange {
 
 	@Override
-	public String getUuid() {
-		return getClass().getName().replaceAll("Change_", "");
-	}
-
-	@Override
 	public String getName() {
 		return "Add fancy moped";
 	}

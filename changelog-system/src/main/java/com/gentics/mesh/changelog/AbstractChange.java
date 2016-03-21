@@ -21,6 +21,11 @@ public abstract class AbstractChange implements Change {
 	public abstract void apply();
 
 	@Override
+	public String getUuid() {
+		return getClass().getName().replaceAll("Change_", "");
+	}
+
+	@Override
 	public boolean isApplied() {
 		ChangelogRootWrapper changelogRoot = changelogRoot();
 		return changelogRoot.hasChange(getUuid());

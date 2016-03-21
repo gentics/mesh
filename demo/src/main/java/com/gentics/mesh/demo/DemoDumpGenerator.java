@@ -5,7 +5,9 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.graphdb.spi.Database;
 
 public class DemoDumpGenerator {
 
@@ -24,6 +26,10 @@ public class DemoDumpGenerator {
 			boot.initSearchIndex();
 			boot.initMandatoryData();
 			boot.initPermissions();
+
+			Database db = ctx.getBean(Database.class);
+			ChangelogSystem cls = new ChangelogSystem(db);
+			cls.markAllAsApplied();
 
 			// Setup demo data
 			DemoDataProvider provider = ctx.getBean("demoDataProvider", DemoDataProvider.class);

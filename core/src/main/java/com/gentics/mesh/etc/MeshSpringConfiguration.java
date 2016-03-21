@@ -96,12 +96,9 @@ public class MeshSpringConfiguration {
 		}
 		try {
 			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			options.setStartServer(true);
 			database.init(options, Mesh.vertx());
-			// TODO should we perhaps check the db also within the bootstrap initalizer?
 			DatabaseHelper helper = new DatabaseHelper(database);
 			helper.init();
-			helper.migrate();
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);

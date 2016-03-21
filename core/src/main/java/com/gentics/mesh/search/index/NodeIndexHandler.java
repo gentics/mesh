@@ -123,6 +123,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (node.getParentNode() != null) {
 			addParentNodeInfo(map, node.getParentNode());
 		}
+		map.put("published", node.isPublished());
 		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
 
 			removeFieldEntries(map);

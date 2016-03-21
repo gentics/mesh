@@ -1,18 +1,27 @@
 package com.gentics.mesh.changelog;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -22,16 +31,45 @@ import com.tinkerpop.blueprints.Vertex;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
+@RunWith(value = Parameterized.class)
 public class TestChangelogRunner {
 
 	File targetDir = new File("target/dump");
+	private String version;
+
+	public TestChangelogRunner(String version) {
+		this.version = version;
+	}
+
+	/**
+	 * Get the test parameters
+	 * 
+	 * @return collection of test parameter sets
+	 * @throws Exception
+	 */
+	@Parameters(name = "{index}: version {0}")
+	public static Collection<Object[]> data() throws Exception {
+
+		MavenMetadata metadata = MavenUtilities
+				.getMavenMetadata(new URL("http://artifactory.office/repository/lan.releases/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
+
+		Collection<Object[]> data = new ArrayList<Object[]>();
+		for (String version : metadata.getVersions()) {
+			// Only test mesh release dumps since a specific version
+			if (VersionNumber.parse(version).compareTo(VersionNumber.parse("0.6.1")) >= 0) {
+				data.add(new Object[] { version });
+			}
+		}
+		return data;
+	}
 
 	@Before
 	public void downloadDump() throws IOException, ZipException {
-
-		FileUtils.deleteDirectory(targetDir);
 		URL website = new URL(
 				"http://artifactory.office/repository/lan.snapshots.mesh/com/gentics/mesh/mesh-demo/0.6.3-SNAPSHOT/mesh-demo-0.6.3-20160318.101338-6-dump.zip");
+
+		FileUtils.deleteDirectory(targetDir);
+
 		ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 		File zipFile = new File("target" + File.separator + "dump.zip");
 		FileOutputStream fos = new FileOutputStream(zipFile);
