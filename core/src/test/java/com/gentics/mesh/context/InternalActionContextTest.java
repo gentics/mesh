@@ -13,7 +13,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 
-public class InternalHttpActionContextImplTest {
+public class InternalActionContextTest {
 
 	@Test
 	public void testSplitQuery() throws Exception {

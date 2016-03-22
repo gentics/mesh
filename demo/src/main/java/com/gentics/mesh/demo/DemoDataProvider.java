@@ -46,7 +46,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.MeshRestLocalClientImpl;
+import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
@@ -72,7 +72,7 @@ public class DemoDataProvider {
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	private MeshRestLocalClientImpl client;
+	private MeshLocalClientImpl client;
 
 	private Map<String, ProjectResponse> projects = new HashMap<>();
 	private Map<String, Schema> schemas = new HashMap<>();
@@ -87,8 +87,6 @@ public class DemoDataProvider {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		// bootstrapInitializer.initMandatoryData();
-
 		MeshAuthUser user = db.noTrx(() -> {
 			return MeshRoot.getInstance().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
@@ -225,7 +223,6 @@ public class DemoDataProvider {
 			Future<RoleResponse> roleFuture = client.createRole(request);
 			latchFor(roleFuture);
 
-			// role.grantPermissions(role, READ_PERM);
 			roles.put(name, roleFuture.result());
 		}
 	}

@@ -242,8 +242,8 @@ public class BootstrapInitializer {
 	private void invokeSearchQueueProcessing() throws InterruptedException {
 		db.trx(() -> {
 			log.info("Starting search queue processing of remaining entries...");
-			long prcessed = meshRoot().getSearchQueue().processAll();
-			log.info("Processed {" + prcessed + "} elements.");
+			long processed = meshRoot().getSearchQueue().processAll();
+			log.info("Processed {" + processed + "} elements.");
 			return null;
 		});
 	}

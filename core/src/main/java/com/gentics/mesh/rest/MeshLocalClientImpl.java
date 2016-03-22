@@ -90,7 +90,7 @@ import rx.Observable;
  * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.
  */
 @Component
-public class MeshRestLocalClientImpl implements MeshRestClient {
+public class MeshLocalClientImpl implements MeshRestClient {
 
 	private MeshAuthUser user;
 
