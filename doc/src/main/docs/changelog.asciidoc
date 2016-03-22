@@ -58,19 +58,19 @@
 * Fix: The microschema and schema permission field was always empty for newly created elements.
 ----
 
-=== 0.6.3
+=== 0.6.3 - 22.03.2016
 
 [source]
 ----
+* Enhancement: Database migration/changelog system.
+       A changelog system was added to mesh. The system is used to upgrade mesh data from one mesh version to another.
+* Enhancement: The *published* flag can now be referenced within an elasticsearch query.
 * Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
 * Fix: The schema migration process did not update the node search index correctly. 
        In some cases duplicate nodes would be returned (the old node and the migrated one).
        This has been fixed. Only the latest version of nodes will be returned now.
 * Fix: It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
 * Fix: A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
-* Enhancement: Database migration/changelog system.
-       The changelog system is used to upgrade mesh data from one mesh version to another.
-* Enhancement: The *published* flag can now be referenced within an elasticsearch query.
 * Fix: A typo within the search model document for users was fixed.
        The property emailadress was renamed to emailaddress. 
 ----
