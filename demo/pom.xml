@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.6.3-SNAPSHOT</version>
+		<version>0.6.3</version>
 	</parent>
 
 	<properties>
@@ -89,7 +89,7 @@
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>com.gentics.mesh.demo.DemoDumpGenerator</argument>
 							</arguments>
 						</configuration>
@@ -253,7 +253,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -272,7 +272,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
