@@ -75,7 +75,7 @@ public abstract class AbstractChange implements Change {
 
 		// 2. Add entry to batch 
 		Vertex entry = getGraph().addVertex(null);
-		entry.setProperty("element_type", "node");
+		entry.setProperty("element_type", elementType);
 		entry.setProperty("element_action", "reindex_all");
 		batch.addEdge("HAS_ITEM", entry);
 	}

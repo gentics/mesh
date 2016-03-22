@@ -33,7 +33,7 @@ public class DemoRunner {
 
 	public static void main(String[] args) throws Exception {
 		// Extract dump file on first time startup to speedup startup
-		if (!new File("mesh.json").exists()) {
+		if (!new File("data").exists()) {
 			log.info("Extracting demo data since this is the first time you start mesh...");
 			unzip("/mesh-dump.zip", "data");
 			log.info("Done.");

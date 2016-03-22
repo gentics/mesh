@@ -45,11 +45,10 @@ public class ChangelogSystem {
 					long start = System.currentTimeMillis();
 					change.apply();
 					change.setDuration(System.currentTimeMillis() - start);
-					change.markAsComplete();
 					if (!change.validate()) {
 						throw new Exception("Validation for change {" + change.getUuid() + "/" + change.getName() + "} failed.");
 					}
-					// TODO mark change as executed and set the reindex flag if desired
+					change.markAsComplete();
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
 				}
