@@ -100,7 +100,6 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		Tuple<SearchQueueBatch, Role> tuple = db.trx(() -> {
 			requestUser.reload();
 			Role role = create(requestModel.getName(), requestUser);
-//			role.grantPermissions(role.getImpl(), UPDATE_PERM, DELETE_PERM, READ_PERM);
 			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
 			SearchQueueBatch batch = role.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
 			return Tuple.tuple(batch, role);

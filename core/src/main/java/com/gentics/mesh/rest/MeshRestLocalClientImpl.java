@@ -87,7 +87,7 @@ import io.vertx.ext.web.RoutingContext;
 import rx.Observable;
 
 /**
- * Local client implementation.
+ * Local client implementation. This client will invoke endpoint handlers instead of sending http rest requests.
  */
 @Component
 public class MeshRestLocalClientImpl implements MeshRestClient {
@@ -941,7 +941,6 @@ public class MeshRestLocalClientImpl implements MeshRestClient {
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**

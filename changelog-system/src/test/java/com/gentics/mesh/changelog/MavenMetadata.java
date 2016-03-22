@@ -2,6 +2,9 @@ package com.gentics.mesh.changelog;
 
 import java.util.List;
 
+/**
+ * POJO which represents the contents of a maven-metadata.xml
+ */
 public class MavenMetadata {
 
 	private String groupId;
@@ -46,7 +49,7 @@ public class MavenMetadata {
 	}
 
 	/**
-	 * Gets the artifact id of this metadata descriptor
+	 * Gets the artifact id of this metadata descriptor.
 	 * 
 	 * @return
 	 */
@@ -55,7 +58,7 @@ public class MavenMetadata {
 	}
 
 	/**
-	 * Sets the artifactId
+	 * Sets the artifactId.
 	 * 
 	 * @param artifactId
 	 */
@@ -64,7 +67,7 @@ public class MavenMetadata {
 	}
 
 	/**
-	 * Returns the version of this artifact
+	 * Returns the version of this artifact.
 	 * 
 	 * @return
 	 */
@@ -72,20 +75,49 @@ public class MavenMetadata {
 		return version;
 	}
 
+	/**
+	 * Set the artifact version.
+	 * 
+	 * @param version
+	 */
 	public void setVersion(String version) {
 		this.version = version;
 	}
 
+	/**
+	 * Return the build number of the latest artifact.
+	 * 
+	 * @return
+	 */
 	public int getBuildNumber() {
 		return buildNumber;
 	}
 
+	/**
+	 * Set the build number for the lastest artifact.
+	 * 
+	 * @param buildNumber
+	 */
 	public void setBuildNumber(int buildNumber) {
 		this.buildNumber = buildNumber;
 	}
 
+	/**
+	 * Set the update timestamp.
+	 * 
+	 * @param timestamp
+	 */
 	public void setTimestamp(String timestamp) {
 		this.timestamp = timestamp;
+	}
+
+	/**
+	 * Return the update timestamp.
+	 * 
+	 * @return
+	 */
+	public String getTimestamp() {
+		return timestamp;
 	}
 
 	/**
@@ -122,10 +154,6 @@ public class MavenMetadata {
 	 */
 	public void setVersions(List<String> versions) {
 		this.versions = versions;
-	}
-
-	public String getTimestamp() {
-		return timestamp;
 	}
 
 }

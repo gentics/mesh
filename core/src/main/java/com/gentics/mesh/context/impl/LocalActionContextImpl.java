@@ -25,6 +25,12 @@ import io.vertx.core.MultiMap;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
+/**
+ * Implementation of a local action context. The local action context does not rely on a routing context.
+ *
+ * @param <T>
+ *            Type of the response object
+ */
 public class LocalActionContextImpl<T> extends AbstractInternalActionContext implements InternalActionContext {
 
 	private RestModel payloadObject;
@@ -39,6 +45,16 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Class<? extends T> classOfResponse;
 	private Set<FileUpload> fileUploads = new HashSet<>();
 
+	/**
+	 * Create a new local action context.
+	 * 
+	 * @param user
+	 *            User to be used for authentication
+	 * @param classOfResponse
+	 *            Response object class
+	 * @param parameters
+	 *            Query parameters which will form the complete query string
+	 */
 	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, QueryParameterProvider... parameters) {
 		this.query = getQuery(parameters);
 		this.user = user;
@@ -79,6 +95,11 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		return user;
 	}
 
+	/**
+	 * Set the payload object.
+	 * 
+	 * @param model
+	 */
 	public void setPayloadObject(RestModel model) {
 		this.payloadObject = model;
 	}
@@ -110,10 +131,20 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		}
 	}
 
+	/**
+	 * Return the response body string.
+	 * 
+	 * @return
+	 */
 	public String getResponseBody() {
 		return responseBody;
 	}
 
+	/**
+	 * Return the response status code.
+	 * 
+	 * @return
+	 */
 	public HttpResponseStatus getResponseStatusCode() {
 		return responseStatusCode;
 	}
@@ -161,12 +192,13 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public MultiMap requestHeaders() {
-		// TODO Auto-generated method stub
+		// Not supported
 		return null;
 	}
 
 	@Override
 	public void addCookie(Cookie cookie) {
+		// Not supported
 	}
 
 	/**

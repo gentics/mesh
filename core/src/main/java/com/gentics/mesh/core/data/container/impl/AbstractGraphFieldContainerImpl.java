@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -814,8 +815,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			MicronodeGraphField micronodeGraphField = getMicronode(key);
 
 			// check whether microschema is allowed
-			if (microschemaFieldSchema.getAllowedMicroSchemas() == null
-					|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
+			if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas()) || !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
 				throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", key, microschemaContainer.getName());
 			}
 

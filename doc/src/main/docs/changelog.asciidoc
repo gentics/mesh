@@ -71,6 +71,8 @@
 * Enhancement: Database migration/changelog system.
        The changelog system is used to upgrade mesh data from one mesh version to another.
 * Enhancement: The *published* flag can now be referenced within an elasticsearch query.
+* Fix: A typo within the search model document for users was fixed.
+       The property emailadress was renamed to emailaddress. 
 ----
 
 

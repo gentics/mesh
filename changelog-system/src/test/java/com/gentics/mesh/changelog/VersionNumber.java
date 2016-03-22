@@ -3,6 +3,9 @@ package com.gentics.mesh.changelog;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Comparable abstraction of a version number that has the format: (x.y.z-SNAPSHOT / x.y.z)
+ */
 public class VersionNumber implements Comparable<VersionNumber> {
 
 	/**

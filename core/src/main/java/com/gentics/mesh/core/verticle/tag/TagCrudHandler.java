@@ -12,14 +12,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+
 import rx.Observable;
 
 @Component
 public class TagCrudHandler extends AbstractHandler {
-
-	private static final Logger log = LoggerFactory.getLogger(TagCrudHandler.class);
 
 	public TagFamily getTagFamily(InternalActionContext ac, String uuid) {
 		return ac.getProject().getTagFamilyRoot().findByUuidSync(uuid);
@@ -59,27 +56,18 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		//		db.asyncNoTrxExperimental(() -> {
-		//			Project project = ac.getProject();
-		//			MeshAuthUser requestUser = ac.getUser();
-		//			PagingParameter pagingInfo = ac.getPagingParameter();
-		//
-		//			// TODO this is not checking for the project name and project relationship. We _need_ to fix this!
-		//			return project.getTagFamilyRoot().loadObjectByUuid(ac, tagFamilyUuid, READ_PERM).flatMap(tagFamily -> {
-		//				try {
-		//					PageImpl<? extends Tag> tagPage = tagFamily.getTags(requestUser, pagingInfo);
-		//					return tagPage.transformToRest(ac);
-		//				} catch (Exception e) {
-		//					return Observable.error(e);
-		//				}
-		//			});
-		//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
-
 		HandlerUtilities.readElementList(ac, () -> {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
 		});
 	}
 
+	/**
+	 * Handle a tag create request.
+	 * 
+	 * @param ac
+	 * @param tagFamilyUuid
+	 *            Uuid of the tagfamily in which the tag should be created
+	 */
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		db.asyncNoTrxExperimental(() -> {
@@ -92,6 +80,15 @@ public class TagCrudHandler extends AbstractHandler {
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
 	}
 
+	/**
+	 * Handle a tag delete request.
+	 * 
+	 * @param ac
+	 * @param tagFamilyUuid
+	 *            The tags tagfamily uuid
+	 * @param tagUuid
+	 *            Uuid of the tag which should be deleted
+	 */
 	public void handleUpdate(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
@@ -102,6 +99,15 @@ public class TagCrudHandler extends AbstractHandler {
 
 	}
 
+	/**
+	 * Handle a tag read request.
+	 * 
+	 * @param ac
+	 * @param tagFamilyUuid
+	 *            Uuid of the tagfamily to which the tag belongs
+	 * @param tagUuid
+	 *            Uuid of the tag which should be read
+	 */
 	public void handleRead(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
@@ -112,6 +118,15 @@ public class TagCrudHandler extends AbstractHandler {
 
 	}
 
+	/**
+	 * Handle a tag delete request.
+	 * 
+	 * @param ac
+	 * @param tagFamilyUuid
+	 *            Uuid of the tagfamily to which the tag belongs
+	 * @param tagUuid
+	 *            Uuid of the tag which should be deleted
+	 */
 	public void handleDelete(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");

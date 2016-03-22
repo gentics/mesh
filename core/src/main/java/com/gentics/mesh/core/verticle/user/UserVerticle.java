@@ -14,16 +14,12 @@ import org.springframework.stereotype.Component;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
 
 @Component
 @Scope("singleton")
 @SpringVerticle
 public class UserVerticle extends AbstractCoreApiVerticle {
-
-	private static final Logger log = LoggerFactory.getLogger(UserVerticle.class);
 
 	@Autowired
 	private UserCrudHandler crudHandler;

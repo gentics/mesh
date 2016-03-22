@@ -17,7 +17,11 @@ import io.vertx.core.MultiMap;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
+/**
+ * Action context implementation which will be used within the node migration.
+ */
 public class NodeMigrationActionContextImpl extends AbstractInternalActionContext {
+
 	private Map<String, Object> data;
 
 	private String body;
@@ -95,7 +99,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void setUser(MeshAuthUser user) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -125,7 +129,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void addCookie(Cookie cookie) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -137,13 +141,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void send(String body, HttpResponseStatus statusCode) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void fail(Throwable cause) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -155,8 +159,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public void logout() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
 
 }

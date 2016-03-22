@@ -6,7 +6,7 @@ import java.util.List;
 import com.gentics.mesh.changelog.Change;
 
 /**
- * Static list of all changes in the system.
+ * Static list of all changes in the system. Please note that the order of changes is very important and new changes should always be appended to the list.
  */
 public final class ChangesList {
 

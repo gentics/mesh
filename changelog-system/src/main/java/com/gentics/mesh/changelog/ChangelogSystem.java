@@ -9,6 +9,11 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Central changelog system class which is responsible for handling listed changes.
+ * 
+ * A change must be added to the {@link ChangesList} in order to be handled by the {@link ChangelogSystem}.
+ */
 public class ChangelogSystem {
 
 	private static final Logger log = LoggerFactory.getLogger(ChangelogSystem.class);

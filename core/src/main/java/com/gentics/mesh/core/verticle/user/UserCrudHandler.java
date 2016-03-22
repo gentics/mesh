@@ -39,6 +39,13 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "user_deleted");
 	}
 
+	/**
+	 * Handle a permission read request.
+	 * 
+	 * @param ac
+	 * @param userUuid
+	 * @param pathToElement
+	 */
 	public void handlePermissionRead(InternalActionContext ac, String userUuid, String pathToElement) {
 		if (StringUtils.isEmpty(userUuid)) {
 			throw error(BAD_REQUEST, "error_uuid_must_be_specified");

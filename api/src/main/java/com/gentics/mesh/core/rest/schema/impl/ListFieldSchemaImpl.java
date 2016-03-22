@@ -50,27 +50,27 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 		return this;
 	}
 
-	@Override
-	public Integer getMax() {
-		return max;
-	}
-
-	@Override
-	public ListFieldSchema setMax(Integer max) {
-		this.max = max;
-		return this;
-	}
-
-	@Override
-	public Integer getMin() {
-		return min;
-	}
-
-	@Override
-	public ListFieldSchema setMin(Integer min) {
-		this.min = min;
-		return this;
-	}
+//	@Override
+//	public Integer getMax() {
+//		return max;
+//	}
+//
+//	@Override
+//	public ListFieldSchema setMax(Integer max) {
+//		this.max = max;
+//		return this;
+//	}
+//
+//	@Override
+//	public Integer getMin() {
+//		return min;
+//	}
+//
+//	@Override
+//	public ListFieldSchema setMin(Integer min) {
+//		this.min = min;
+//		return this;
+//	}
 
 	@Override
 	public String getType() {

@@ -77,8 +77,8 @@ public class SchemaTest {
 		listFieldSchema.setLabel("label_7").setName("name_7").setRequired(true);
 		listFieldSchema.setAllowedSchemas(new String[] { "folder", "videos" });
 		listFieldSchema.setListType("node");
-		listFieldSchema.setMax(10);
-		listFieldSchema.setMin(3);
+//		listFieldSchema.setMax(10);
+//		listFieldSchema.setMin(3);
 		schema.addField(listFieldSchema);
 
 		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();

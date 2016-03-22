@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 
+/**
+ * See {@link MicroschemaContainer}
+ */
 public class MicroschemaContainerImpl
 		extends AbstractGraphFieldSchemaContainer<Microschema, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
 		implements MicroschemaContainer {

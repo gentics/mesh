@@ -539,8 +539,8 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setAllowedSchemas(new String[] { "content", "video" });
-		listFieldSchema.setMin(1);
-		listFieldSchema.setMax(10);
+//		listFieldSchema.setMin(1);
+//		listFieldSchema.setMax(10);
 		listFieldSchema.setLabel("List of nodes");
 		listFieldSchema.setName("Nodes");
 		listFieldSchema.setListType("node");

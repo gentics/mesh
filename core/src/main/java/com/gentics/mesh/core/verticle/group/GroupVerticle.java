@@ -52,7 +52,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
-
 			crudHandler.handleAddRoleToGroup(ac, groupUuid, roleUuid);
 		});
 
@@ -60,7 +59,6 @@ public class GroupVerticle extends AbstractCoreApiVerticle {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
-
 			crudHandler.handleRemoveRoleFromGroup(ac, groupUuid, roleUuid);
 		});
 	}

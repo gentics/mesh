@@ -11,9 +11,14 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Basic implementation of a changelog change. All change implementations should extend this class.
+ */
 public abstract class AbstractChange implements Change {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
+
+	private static final String MESH_ROOT_TYPE = "com.gentics.mesh.core.data.root.impl.MeshRootImpl";
 
 	private TransactionalGraph graph;
 
@@ -96,8 +101,7 @@ public abstract class AbstractChange implements Change {
 	 * @return
 	 */
 	protected Vertex getMeshRootVertex() {
-		Vertex meshRoot = graph.getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, "com.gentics.mesh.core.data.root.impl.MeshRootImpl")
-				.iterator().next();
+		Vertex meshRoot = graph.getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, MESH_ROOT_TYPE).iterator().next();
 		return meshRoot;
 	}
 

@@ -48,15 +48,7 @@ public final class JsonUtil {
 	public static boolean debugMode = false;
 
 	static {
-		initSchemaMapper();
 		initDefaultMapper();
-	}
-
-	/**
-	 * Initialize the schema mapper.
-	 */
-	private static void initSchemaMapper() {
-
 	}
 
 	/**

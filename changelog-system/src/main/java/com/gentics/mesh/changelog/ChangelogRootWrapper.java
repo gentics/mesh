@@ -22,6 +22,12 @@ public class ChangelogRootWrapper {
 		this.rootVertex = vertex;
 	}
 
+	/**
+	 * Check whether a change with the given UUID is already stored in the graph.
+	 * 
+	 * @param uuid
+	 * @return <tt>true</tt> if the change is already stored within the changelog root
+	 */
 	public boolean hasChange(String uuid) {
 		Objects.requireNonNull(uuid, "The uuid of the change must not be null");
 		for (Vertex vertex : rootVertex.getVertices(Direction.OUT, HAS_CHANGE)) {
@@ -36,7 +42,7 @@ public class ChangelogRootWrapper {
 	/**
 	 * Add the change to the list of executed changes.
 	 * 
-	 * @param abstractChange
+	 * @param change
 	 */
 	public void add(Change change) {
 		Vertex vertex = graph.addVertex(ChangeWrapper.class);

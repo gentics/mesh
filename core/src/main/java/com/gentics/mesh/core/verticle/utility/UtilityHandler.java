@@ -14,6 +14,11 @@ import rx.Observable;
 @Component
 public class UtilityHandler extends AbstractHandler {
 
+	/**
+	 * Handle a link resolve request.
+	 * 
+	 * @param rc
+	 */
 	public void handleResolveLinks(RoutingContext rc) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {

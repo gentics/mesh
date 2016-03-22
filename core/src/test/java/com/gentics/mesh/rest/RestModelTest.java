@@ -172,8 +172,8 @@ public class RestModelTest extends AbstractDBTest {
 		listFieldSchema.setName("list");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
-		listFieldSchema.setMin(5);
-		listFieldSchema.setMax(10);
+//		listFieldSchema.setMin(5);
+//		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 		// NodeField defaultNode = new NodeFieldImpl();
 		// defaultNode.setUuid(UUIDUtil.randomUUID());
@@ -235,8 +235,8 @@ public class RestModelTest extends AbstractDBTest {
 		listFieldSchema.setName("list field name");
 		listFieldSchema.setLabel("list field label");
 		listFieldSchema.setListType("node");
-		listFieldSchema.setMin(5);
-		listFieldSchema.setMax(10);
+//		listFieldSchema.setMin(5);
+//		listFieldSchema.setMax(10);
 		listFieldSchema.setAllowedSchemas(new String[] { "image", "gallery" });
 
 		for (FieldSchema fieldEntry : schema.getFields()) {

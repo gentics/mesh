@@ -37,7 +37,11 @@ public final class MavenUtilities {
 	/**
 	 * Returns the url to the latest maven artifact
 	 * 
+	 * @param metadata
+	 * @param classifier
+	 * @param extension
 	 * @return
+	 * @throws Exception
 	 */
 	public static URL getLatestMavenArtifactUrl(MavenMetadata metadata, String classifier, String extension) throws Exception {
 
@@ -64,7 +68,11 @@ public final class MavenUtilities {
 	}
 
 	/**
+	 * Return the maven metadata for the given maven coordinates.
 	 * 
+	 * @param groupId
+	 * @param artifactId
+	 * @param version
 	 * @return
 	 * @throws Exception
 	 */
@@ -157,84 +165,4 @@ public final class MavenUtilities {
 		}
 
 	}
-//
-//	/**
-//	 * Returns a list of MavenMetadata objects containing the latest builds of the given number of newest versions
-//	 * 
-//	 * @param groupId
-//	 * @param artifactId
-//	 * @param number
-//	 * @return list of MavenMetadata objects
-//	 */
-//	public static List<MavenMetadata> getLatestBuilds(String groupId, String artifactId, int number) throws Exception {
-//		try {
-//			URL sourceUrl = new URL(
-//					"http://" + INTERNAL_REPOSITORY_URL_SEGMENT + "/" + groupId.replace(".", "/") + "/" + artifactId + "/maven-metadata.xml");
-//
-//			URLConnection uc = sourceUrl.openConnection();
-//			InputStream ins = uc.getInputStream();
-//
-//			SAXBuilder builder = new SAXBuilder();
-//			Document doc = builder.build(ins);
-//			Element root = doc.getRootElement();
-//			String version = root.getChildText("version");
-//
-//			Map<String, VersionNumber> versionNumberMap = new HashMap<String, VersionNumber>();
-//			Element versioningNode = root.getChild("versioning");
-//
-//			if (versioningNode != null) {
-//				Element versionsNode = versioningNode.getChild("versions");
-//
-//				if (versionsNode != null) {
-//					List<Element> versionNodes = versionsNode.getChildren("version");
-//
-//					for (Element versionNode : versionNodes) {
-//						VersionNumber versionNumber = VersionNumber.parse(versionNode.getText());
-//
-//						if (versionNumber != null) {
-//							String majorMinor = versionNumber.getMajorMinor();
-//
-//							if (versionNumber.compareTo(versionNumberMap.get(majorMinor)) > 0) {
-//								versionNumberMap.put(majorMinor, versionNumber);
-//							}
-//						}
-//					}
-//				}
-//			}
-//			ins.close();
-//
-//			// sort the version numbers
-//			List<VersionNumber> versionNumbers = new ArrayList<VersionNumber>();
-//
-//			versionNumbers.addAll(versionNumberMap.values());
-//			Collections.sort(versionNumbers, Collections.reverseOrder());
-//
-//			List<MavenMetadata> latestBuilds = new ArrayList<MavenMetadata>(number);
-//
-//			for (VersionNumber versionNumber : versionNumbers.subList(0, Math.min(number, versionNumbers.size()))) {
-//				latestBuilds.add(versionNumber.getMavenMetadata(groupId, artifactId));
-//			}
-//			return latestBuilds;
-//		} catch (Exception e) {
-//			throw new Exception("Error while getting metadata info", e);
-//		}
-//	}
-
-//
-//		/**
-//		 * Get as maven metadata object
-//		 * 
-//		 * @param groupId
-//		 *            group id
-//		 * @param artifactId
-//		 *            artifact id
-//		 * @return maven metadata object
-//		 */
-//		public MavenMetadata getMavenMetadata(String groupId, String artifactId) {
-//			MavenMetadata metadata = new MavenMetadata(groupId, artifactId, fullVersion);
-//
-//			metadata.setSnapshot(snapshot);
-//			return metadata;
-//		}
-//	}
 }
