@@ -12,7 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<mesh.admin-ui.version>0.6.0</mesh.admin-ui.version>
+		<mesh.admin-ui.version>0.6.1</mesh.admin-ui.version>
 
 		<dockerHost>cetus.office</dockerHost>
 		<dockerHostProtocol>http</dockerHostProtocol>
@@ -22,7 +22,7 @@
 		<ferma.version>2.2.0-SNAPSHOT</ferma.version>
 		<spring.version>4.1.6.RELEASE</spring.version>
 		<elasticsearch.version>1.7.2</elasticsearch.version>
-		<orientdb.version>2.1.11</orientdb.version>
+		<orientdb.version>2.1.13</orientdb.version>
 
 		<surefire.forkcount>4</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>

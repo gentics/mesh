@@ -125,7 +125,9 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 			}
 			count++;
 		}
-		MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+		if (count > 0) {
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+		}
 		return count;
 	}
 
