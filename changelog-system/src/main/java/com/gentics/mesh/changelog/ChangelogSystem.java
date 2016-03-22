@@ -27,11 +27,10 @@ public class ChangelogSystem {
 	/**
 	 * Apply all listed changes.
 	 * 
+	 * @param list
 	 * @return Flag which indicates whether all changes were applied successfully
 	 */
-	public boolean applyChanges() {
-
-		List<Change> list = ChangesList.getList();
+	public boolean applyChanges(List<Change> list) {
 		for (Change change : list) {
 			// Execute each change in a new transaction
 			TransactionalGraph graph = db.rawTx();
@@ -66,8 +65,7 @@ public class ChangelogSystem {
 	/**
 	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
 	 */
-	public void markAllAsApplied() {
-		List<Change> list = ChangesList.getList();
+	public void markAllAsApplied(List<Change> list) {
 		TransactionalGraph graph = db.rawTx();
 		try {
 			for (Change change : list) {
@@ -78,5 +76,21 @@ public class ChangelogSystem {
 		} finally {
 			graph.shutdown();
 		}
+	}
+
+	/**
+	 * Apply all changes from the {@link ChangesList}.
+	 * 
+	 * @return
+	 */
+	public boolean applyChanges() {
+		return applyChanges(ChangesList.getList());
+	}
+
+	/**
+	 * Mark all changes from the {@link ChangesList} as applied.
+	 */
+	public void markAllAsApplied() {
+		markAllAsApplied(ChangesList.getList());
 	}
 }

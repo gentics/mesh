@@ -45,11 +45,15 @@ public class ChangelogRunner {
 		log.info("Starting changelog runner");
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
 			ctx.start();
+			try {
 
-			ChangelogSystem cls = new ChangelogSystem(getDatabase(options));
-			if (!cls.applyChanges()) {
-				log.error("The changelog could not be applied successfully. See log above.");
-				System.exit(10);
+				ChangelogSystem cls = new ChangelogSystem(getDatabase(options));
+				if (!cls.applyChanges()) {
+					log.error("The changelog could not be applied successfully. See log above.");
+					System.exit(10);
+				}
+			} catch (Exception e) {
+				log.error(e);
 			}
 		}
 		log.info("Terminating changelog runner");

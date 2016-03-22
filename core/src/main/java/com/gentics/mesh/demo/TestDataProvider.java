@@ -337,7 +337,6 @@ public class TestDataProvider {
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
-		//		addBlogPostSchema();
 	}
 
 	private void addBootstrapSchemas() {

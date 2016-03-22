@@ -1,8 +1,6 @@
 package com.gentics.mesh.changelog;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,6 +11,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -25,22 +24,24 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D;
 import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D3;
+import com.gentics.mesh.changelog.changes.Change_424FA7436B6541269E6CE90C8C3D812D_Failing;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
+import groovy.lang.ListWithDefault;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 @RunWith(value = Parameterized.class)
-public class TestChangelogRunner {
+public class ChangelogSystemTest {
 
 	File targetDir = new File("target/dump");
 
 	private String version;
 
-	public TestChangelogRunner(String version) {
+	public ChangelogSystemTest(String version) {
 		this.version = version;
 	}
 
@@ -109,13 +110,31 @@ public class TestChangelogRunner {
 			options.getStorageOptions().setDirectory("target/dump/graphdb");
 			Database db = ChangelogRunner.getDatabase(options);
 			ChangelogSystem cls = new ChangelogSystem(db);
-			assertTrue("All changes should have been applied", cls.applyChanges());
-			assertTrue("All changes should have been applied", cls.applyChanges());
-			assertTrue("All changes should have been applied", cls.applyChanges());
+			List<Change> testChanges = new ArrayList<>();
+			testChanges.add(new Change_424FA7436B6541269E6CE90C8C3D812D3());
+			testChanges.add(new Change_424FA7436B6541269E6CE90C8C3D812D());
+			assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
+			assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
+			assertTrue("All changes should have been applied", cls.applyChanges(testChanges));
 			Iterator<Vertex> it = db.rawTx().getVertices("name", "moped2").iterator();
+			assertTrue("The changelog was executed but the expected vertex which was created could not be found.", it.hasNext());
 			Vertex vertex = it.next();
 			assertNotNull("The node which was created using the changelog system should be found.", vertex);
 			assertFalse("The change should only be applied once but we found another moped vertex", it.hasNext());
+		}
+	}
+
+	@Test
+	public void testFailingChange() {
+		List<Change> listWithFailingChange = new ArrayList<>();
+		listWithFailingChange.add(new Change_424FA7436B6541269E6CE90C8C3D812D_Failing());
+		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
+			ctx.start();
+			MeshOptions options = new MeshOptions();
+			options.getStorageOptions().setDirectory("target/dump/graphdb");
+			Database db = ChangelogRunner.getDatabase(options);
+			ChangelogSystem cls = new ChangelogSystem(db);
+			assertFalse("The changelog should fail", cls.applyChanges(listWithFailingChange));
 		}
 	}
 }

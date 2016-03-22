@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
