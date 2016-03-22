@@ -360,6 +360,9 @@ public class BootstrapInitializer {
 					if (log.isInfoEnabled()) {
 						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
+					// Marking all changes as applied since this is an initial mesh setup
+					ChangelogSystem cls = new ChangelogSystem(db);
+					cls.markAllAsApplied();
 				} else {
 					isInitialSetup = false;
 					meshRoot = foundMeshRoot;
