@@ -257,6 +257,11 @@ public class BootstrapInitializer {
 		if (!cls.applyChanges()) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
+
+		if (isInitialSetup) {
+			// Marking all changes as applied since this is an initial mesh setup
+			cls.markAllAsApplied();
+		}
 	}
 
 	/**
@@ -360,9 +365,6 @@ public class BootstrapInitializer {
 					if (log.isInfoEnabled()) {
 						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
-					// Marking all changes as applied since this is an initial mesh setup
-					ChangelogSystem cls = new ChangelogSystem(db);
-					cls.markAllAsApplied();
 				} else {
 					isInitialSetup = false;
 					meshRoot = foundMeshRoot;
