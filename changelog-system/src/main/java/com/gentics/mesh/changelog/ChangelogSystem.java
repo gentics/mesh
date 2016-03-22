@@ -73,7 +73,7 @@ public class ChangelogSystem {
 			for (Change change : list) {
 				change.setGraph(graph);
 				change.markAsComplete();
-				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as complete.");
+				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
 		} finally {
 			graph.shutdown();

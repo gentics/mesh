@@ -33,8 +33,7 @@ public abstract class AbstractSchemaFieldChange extends AbstractSchemaChange<Fie
 	public void updateFromRest(SchemaChangeModel model) {
 		setCustomMigrationScript(model.getMigrationScript());
 		for (Map.Entry<String, Object> entry : model.getProperties().entrySet()) {
-			//TODO handle arrays
-			String value = String.valueOf(entry.getValue());
+			Object value = entry.getValue();
 			String key = entry.getKey();
 			setRestProperty(key, value);
 		}

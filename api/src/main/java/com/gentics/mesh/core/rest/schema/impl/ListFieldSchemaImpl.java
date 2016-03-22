@@ -50,27 +50,27 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 		return this;
 	}
 
-//	@Override
-//	public Integer getMax() {
-//		return max;
-//	}
-//
-//	@Override
-//	public ListFieldSchema setMax(Integer max) {
-//		this.max = max;
-//		return this;
-//	}
-//
-//	@Override
-//	public Integer getMin() {
-//		return min;
-//	}
-//
-//	@Override
-//	public ListFieldSchema setMin(Integer min) {
-//		this.min = min;
-//		return this;
-//	}
+	//	@Override
+	//	public Integer getMax() {
+	//		return max;
+	//	}
+	//
+	//	@Override
+	//	public ListFieldSchema setMax(Integer max) {
+	//		this.max = max;
+	//		return this;
+	//	}
+	//
+	//	@Override
+	//	public Integer getMin() {
+	//		return min;
+	//	}
+	//
+	//	@Override
+	//	public ListFieldSchema setMin(Integer min) {
+	//		this.min = min;
+	//		return this;
+	//	}
 
 	@Override
 	public String getType() {
@@ -118,8 +118,8 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
 		Object allowedSchemas = fieldProperties.get(SchemaChangeModel.ALLOW_KEY);
-		if( allowedSchemas!=null) {
-			setAllowedSchemas((String[])allowedSchemas);
+		if (allowedSchemas != null) {
+			setAllowedSchemas((String[]) allowedSchemas);
 		}
 	}
 
