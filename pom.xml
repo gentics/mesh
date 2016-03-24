@@ -12,7 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<mesh.admin-ui.version>0.6.1</mesh.admin-ui.version>
+		<mesh.admin-ui.version>0.6.2</mesh.admin-ui.version>
 
 		<dockerHost>cetus.office</dockerHost>
 		<dockerHostProtocol>http</dockerHostProtocol>
