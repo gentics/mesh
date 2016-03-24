@@ -49,7 +49,7 @@
 							<name>gentics/mesh</name>
 							<build>
 								<tags>
-									<tag>{docker.tag}</tag>
+									<tag>${docker.tag}</tag>
 									<tag>${project.version}</tag>
 								</tags>
 								<assembly>

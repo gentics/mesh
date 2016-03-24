@@ -146,7 +146,6 @@
 							<name>gentics/mesh-demo</name>
 							<build>
 								<tags>
-									<tag>beta</tag>
 									<tag>${docker.tag}</tag>
 									<tag>${project.version}</tag>
 								</tags>
