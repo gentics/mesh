@@ -1,10 +1,19 @@
 = Getting Started Guide
 
+== Quickstart
+
+----
+Java 8 is required to run Gentics Mesh
+----
+
+. Download Gentics Mesh from http://getmesh.io/download/ into an *empty* folder
+. Start the JAR-file by executing ```java -jar mesh-demo-X.X.X.jar```
+. Point your browser to http://localhost:8080/mesh-ui/ to reach the Mesh Admin UI
+
 == Startup
 
-You can start the ```mesh-beta.jar``` by opening a terminal and executing ```java -jar mesh-beta.jar```.
-
-Please note that Mesh requires Java 8 to be installed on your system.
+Run Gentics Mesh by executing ```java -jar mesh-demo-X.X.X.jar```. All neccessary configuration files and directories will
+be created and an AngularJS demo project is deployed automatically.
 
 Once the demo setup is completed you will be able to access the following urls
 
