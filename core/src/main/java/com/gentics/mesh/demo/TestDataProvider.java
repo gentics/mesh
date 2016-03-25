@@ -441,12 +441,12 @@ public class TestDataProvider {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
 
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestRelease());
+			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestRelease());
+			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 		}
@@ -479,7 +479,7 @@ public class TestDataProvider {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english,
-					project.getLatestRelease());
+					project.getLatestRelease(), userInfo.getUser());
 			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -488,7 +488,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease());
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " english title");
 			germanContainer.createString("displayName").setString(name + " german");

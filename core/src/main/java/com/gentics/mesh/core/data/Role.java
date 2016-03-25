@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 /**
  * Graph domain model interface for a role.
  */
-public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference> {
+public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex {
 
 	public static final String TYPE = "role";
 

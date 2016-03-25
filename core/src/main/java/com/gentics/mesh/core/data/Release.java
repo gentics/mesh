@@ -12,7 +12,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 /**
  * Interface for Release Vertex
  */
-public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference> {
+public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference>, UserTrackingVertex {
 	public static final String TYPE = "release";
 
 	/**

@@ -104,7 +104,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 		Language german = boot.languageRoot().findByLanguageTag("de");
 		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german,
-				node.getProject().getLatestRelease());
+				node.getProject().getLatestRelease(), user());
 
 		germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 		germanContainer.createString("name").setString("german node name");

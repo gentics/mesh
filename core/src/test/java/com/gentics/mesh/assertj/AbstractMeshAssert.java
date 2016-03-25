@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
@@ -22,12 +24,17 @@ public class AbstractMeshAssert<S extends AbstractMeshAssert<S, A>, A> extends A
 		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
 		assertNotNull("Creator field was not set in the rest response.", model.getCreator());
 		assertNotNull("Editor field was not set in the rest response.", model.getEditor());
-		assertNotNull("The editor of the graph node was not set.", node.getEditor());
-		assertEquals(node.getEditor().getUsername(), model.getEditor().getName());
-		assertEquals(node.getEditor().getUuid(), model.getEditor().getUuid());
-		assertEquals(node.getCreator().getUsername(), model.getCreator().getName());
-		assertEquals(node.getCreator().getUuid(), model.getCreator().getUuid());
+
+		if (node instanceof EditorTrackingVertex) {
+			EditorTrackingVertex editedNode = (EditorTrackingVertex)node;
+			assertNotNull("The editor of the graph node was not set.", editedNode.getEditor());
+			assertEquals(editedNode.getEditor().getUsername(), model.getEditor().getName());
+			assertEquals(editedNode.getEditor().getUuid(), model.getEditor().getUuid());
+		}
+		if (node instanceof CreatorTrackingVertex) {
+			CreatorTrackingVertex createdNode = (CreatorTrackingVertex)node;
+			assertEquals(createdNode.getCreator().getUsername(), model.getCreator().getName());
+			assertEquals(createdNode.getCreator().getUuid(), model.getCreator().getUuid());
+		}
 	}
-
-
 }

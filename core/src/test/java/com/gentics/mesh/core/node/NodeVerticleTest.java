@@ -935,7 +935,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 		Node node = parentNode.create(user(), version, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl,
-				node.getProject().getLatestRelease());
+				node.getProject().getLatestRelease(), user());
 		englishContainer.createString("name").setString("name");
 		englishContainer.createString("title").setString("title");
 		englishContainer.createString("displayName").setString("displayName");

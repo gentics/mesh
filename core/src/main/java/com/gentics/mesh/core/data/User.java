@@ -26,7 +26,7 @@ import rx.Observable;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference> {
+public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex {
 
 	public static final String TYPE = "user";
 

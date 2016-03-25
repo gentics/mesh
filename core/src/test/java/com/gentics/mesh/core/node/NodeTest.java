@@ -224,6 +224,12 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertNotNull(deserialized);
 
 		assertThat(deserialized).as("node response").hasVersion("0.1");
+
+		assertThat(deserialized.getCreator()).as("Creator").isNotNull();
+		assertThat(deserialized.getCreated()).as("Created").isNotEqualTo(0);
+		assertThat(deserialized.getEditor()).as("Editor").isNotNull();
+		assertThat(deserialized.getEdited()).as("Edited").isNotEqualTo(0);
+
 		// TODO assert for english fields
 	}
 
@@ -265,28 +271,25 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Node node = parentNode.create(user, schemaVersion, project());
 		long ts = System.currentTimeMillis();
 		node.setCreationTimestamp(ts);
-		node.setLastEditedTimestamp(ts);
-		Long editedTimestamp = node.getLastEditedTimestamp();
-		assertNotNull(editedTimestamp);
-		assertEquals(ts, editedTimestamp.longValue());
 		Long creationTimeStamp = node.getCreationTimestamp();
 		assertNotNull(creationTimeStamp);
 		assertEquals(ts, creationTimeStamp.longValue());
 		assertEquals(user, node.getCreator());
-		assertEquals(user, node.getEditor());
 		Language english = english();
 		Language german = german();
 
-		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease());
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user);
 		englishContainer.createString("content").setString("english content");
 		englishContainer.createString("name").setString("english.html");
 		assertNotNull(node.getUuid());
+		assertEquals(user, englishContainer.getEditor());
+		assertNotNull(englishContainer.getLastEditedTimestamp());
 
 		List<? extends GraphFieldContainer> allProperties = node.getGraphFieldContainers();
 		assertNotNull(allProperties);
 		assertEquals(1, allProperties.size());
 
-		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, node.getProject().getLatestRelease());
+		NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, node.getProject().getLatestRelease(), user);
 		germanContainer.createString("content").setString("german content");
 		assertEquals(2, node.getGraphFieldContainers().size());
 

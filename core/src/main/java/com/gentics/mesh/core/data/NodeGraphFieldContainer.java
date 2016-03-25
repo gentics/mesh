@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.error.Errors;
  * A node field container is a aggregation node that holds localized fields.
  *
  */
-public interface NodeGraphFieldContainer extends GraphFieldContainer {
+public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists

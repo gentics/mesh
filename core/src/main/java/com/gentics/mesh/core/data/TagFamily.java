@@ -15,7 +15,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
  * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are
  * bound to projects via the {@link TagFamilyRootImpl} class.
  */
-public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference> {
+public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex {
 
 	public static final String TYPE = "tagFamily";
 

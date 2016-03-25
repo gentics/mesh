@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
 
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -37,7 +38,7 @@ import rx.Observable;
  * vertices which contain the language specific data.
  * 
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node> {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex {
 
 	public static final String TYPE = "node";
 
@@ -106,9 +107,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * 
 	 * @param language
 	 * @param release release
+	 * @param user user
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release);
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user);
 
 	/**
 	 * Return a list of draft graph field containers for the node in the latest release

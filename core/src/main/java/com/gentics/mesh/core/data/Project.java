@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference> {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex {
 
 	public static final String TYPE = "project";
 

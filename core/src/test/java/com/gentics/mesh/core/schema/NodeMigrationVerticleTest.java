@@ -118,12 +118,12 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		Node parentNode = folder("2015");
 		Node firstNode = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english,
-				firstNode.getProject().getLatestRelease());
+				firstNode.getProject().getLatestRelease(), user);
 		firstEnglishContainer.createString(fieldName).setString("first content");
 
 		Node secondNode = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english,
-				secondNode.getProject().getLatestRelease());
+				secondNode.getProject().getLatestRelease(), user);
 		secondEnglishContainer.createString(fieldName).setString("second content");
 
 		DeliveryOptions options = new DeliveryOptions();
@@ -252,13 +252,13 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		MicronodeGraphField firstMicronodeField = firstNode
-				.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease())
+				.createGraphFieldContainer(english, firstNode.getProject().getLatestRelease(), user())
 				.createMicronode(micronodeFieldName, versionA);
 		firstMicronodeField.getMicronode().createString(fieldName).setString("first content");
 
 		Node secondNode = folder("news");
 		MicronodeGraphField secondMicronodeField = secondNode
-				.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease())
+				.createGraphFieldContainer(english, secondNode.getProject().getLatestRelease(), user())
 				.createMicronode(micronodeFieldName, versionA);
 		secondMicronodeField.getMicronode().createString(fieldName).setString("second content");
 

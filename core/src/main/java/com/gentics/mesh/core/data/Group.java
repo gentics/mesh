@@ -11,7 +11,7 @@ import com.gentics.mesh.util.InvalidArgumentException;
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference> {
+public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
 
 	public static final String TYPE = "group";
 

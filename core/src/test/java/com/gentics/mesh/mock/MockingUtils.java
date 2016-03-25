@@ -282,7 +282,6 @@ public final class MockingUtils {
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 
 		when(node.getCreator()).thenReturn(user);
-		when(node.getEditor()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
 		Schema schema = schemaContainer.getLatestVersion().getSchema();
 		when(node.getSchemaContainer().getLatestVersion().getSchema()).thenReturn(schema);
@@ -298,6 +297,8 @@ public final class MockingUtils {
 	public static NodeGraphFieldContainer mockContainer(Language language, User user) {
 		NodeGraphFieldContainer container = mock(NodeGraphFieldContainerImpl.class);
 		when(container.getLanguage()).thenReturn(language);
+
+		when(container.getEditor()).thenReturn(user);
 
 		// String field
 		StringGraphField stringField = mock(StringGraphFieldImpl.class);

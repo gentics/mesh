@@ -24,6 +24,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -171,10 +172,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	protected void addBasicReferences(Map<String, Object> map, MeshCoreVertex<?, ?> vertex) {
 		// TODO make sure field names match node response
 		map.put("uuid", vertex.getUuid());
-		addUser(map, "creator", vertex.getCreator());
-		addUser(map, "editor", vertex.getEditor());
-		map.put("edited", vertex.getLastEditedTimestamp());
-		map.put("created", vertex.getCreationTimestamp());
+		if (vertex instanceof UserTrackingVertex) {
+			UserTrackingVertex trackedVertex = (UserTrackingVertex)vertex;
+			addUser(map, "creator", trackedVertex.getCreator());
+			addUser(map, "editor", trackedVertex.getEditor());
+			map.put("edited", trackedVertex.getLastEditedTimestamp());
+			map.put("created", trackedVertex.getCreationTimestamp());
+		}
 	}
 
 	/**

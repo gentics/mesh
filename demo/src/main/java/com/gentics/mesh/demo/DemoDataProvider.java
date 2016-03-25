@@ -243,7 +243,7 @@ public class DemoDataProvider {
 				String tagName = tagArray.getString(e);
 				node.addTag(getTag(tagName));
 			}
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), getAdmin());
 			englishContainer.createString("name").setString(name);
 
 			JsonObject binNode = nodeJson.getJsonObject("bin");

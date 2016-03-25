@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
-import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -176,8 +175,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (baseNode == null) {
 			baseNode = getGraph().addFramedVertex(NodeImpl.class);
 			baseNode.setSchemaContainer(BootstrapInitializer.getBoot().schemaContainerRoot().findByName("folder").toBlocking().single());
-			baseNode.setCreator(creator);
-			baseNode.setEditor(creator);
 			baseNode.setProject(this);
 			setBaseNode(baseNode);
 			// Add the node to the aggregation nodes

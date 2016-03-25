@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -98,13 +100,19 @@ public class RestAssert {
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());
 		assertEquals("The uuids should not be different", node.getUuid(), model.getUuid());
 		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
-		assertNotNull("Creator field was not set in the rest response.", model.getCreator());
-		assertNotNull("Editor field was not set in the rest response.", model.getEditor());
-		assertNotNull("The editor of the graph node was not set.", node.getEditor());
-		assertEquals(node.getEditor().getUsername(), model.getEditor().getName());
-		assertEquals(node.getEditor().getUuid(), model.getEditor().getUuid());
-		assertEquals(node.getCreator().getUsername(), model.getCreator().getName());
-		assertEquals(node.getCreator().getUuid(), model.getCreator().getUuid());
+		if (node instanceof EditorTrackingVertex) {
+			assertNotNull("Editor field was not set in the rest response.", model.getEditor());
+			EditorTrackingVertex editedNode = (EditorTrackingVertex)node;
+			assertNotNull("The editor of the graph node was not set.", editedNode.getEditor());
+			assertEquals(editedNode.getEditor().getUsername(), model.getEditor().getName());
+			assertEquals(editedNode.getEditor().getUuid(), model.getEditor().getUuid());
+		}
+		if (node instanceof CreatorTrackingVertex) {
+			assertNotNull("Creator field was not set in the rest response.", model.getCreator());
+			CreatorTrackingVertex createdNode = (CreatorTrackingVertex)node;
+			assertEquals(createdNode.getCreator().getUsername(), model.getCreator().getName());
+			assertEquals(createdNode.getCreator().getUuid(), model.getCreator().getUuid());
+		}
 	}
 
 	public void assertRole(RoleCreateRequest request, RoleResponse restRole) {

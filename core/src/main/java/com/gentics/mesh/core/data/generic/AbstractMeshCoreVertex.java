@@ -1,17 +1,16 @@
 package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -31,34 +30,6 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		implements MeshCoreVertex<T, R> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
-
-	private static final String CREATION_TIMESTAMP_PROPERTY_KEY = "creation_timestamp";
-	private static final String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
-
-	@Override
-	public User getCreator() {
-		return out(HAS_CREATOR).has(UserImpl.class).nextOrDefault(UserImpl.class, null);
-	}
-
-	@Override
-	public void setCreator(User user) {
-		setLinkOut(user.getImpl(), HAS_CREATOR);
-	}
-
-	@Override
-	public Long getCreationTimestamp() {
-		return getProperty(CREATION_TIMESTAMP_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setCreationTimestamp(long timestamp) {
-		setProperty(CREATION_TIMESTAMP_PROPERTY_KEY, timestamp);
-	}
-
-	@Override
-	public User getEditor() {
-		return out(HAS_EDITOR).has(UserImpl.class).nextOrDefaultExplicit(UserImpl.class, null);
-	}
 
 	/**
 	 * Add role permissions to given rest model object.
@@ -97,22 +68,30 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		model.setUuid(getUuid());
 
-		User creator = getCreator();
-		if (creator != null) {
-			model.setCreator(creator.transformToReference());
-		} else {
-			log.error("The object has no creator. Omitting creator field");
-			// TODO throw error and log something
+		if (this instanceof EditorTrackingVertex) {
+			EditorTrackingVertex edited = (EditorTrackingVertex)this;
+
+			User editor = edited.getEditor();
+			if (editor != null) {
+				model.setEditor(editor.transformToReference());
+			} else {
+				// TODO throw error and log something
+			}
+			model.setEdited(edited.getLastEditedTimestamp() == null ? 0 : edited.getLastEditedTimestamp());
 		}
 
-		User editor = getEditor();
-		if (editor != null) {
-			model.setEditor(editor.transformToReference());
-		} else {
-			// TODO throw error and log something
+		if (this instanceof CreatorTrackingVertex) {
+			CreatorTrackingVertex created = (CreatorTrackingVertex)this;
+			User creator = created.getCreator();
+			if (creator != null) {
+				model.setCreator(creator.transformToReference());
+			} else {
+				log.error("The object has no creator. Omitting creator field");
+				// TODO throw error and log something
+			}
+			
+			model.setCreated(created.getCreationTimestamp() == null ? 0 : created.getCreationTimestamp());
 		}
-		model.setEdited(getLastEditedTimestamp() == null ? 0 : getLastEditedTimestamp());
-		model.setCreated(getCreationTimestamp() == null ? 0 : getCreationTimestamp());
 
 		if (ac instanceof NodeMigrationActionContextImpl) {
 			// when this is a node migration, do not set user permissions
@@ -127,35 +106,12 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public void setEditor(User user) {
-		setLinkOut(user.getImpl(), HAS_EDITOR);
-	}
-
-	@Override
 	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this, action);
 		addRelatedEntries(batch, action);
 		return batch;
-	}
-
-	@Override
-	public void setLastEditedTimestamp(long timestamp) {
-		setProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY, timestamp);
-	}
-
-	@Override
-	public Long getLastEditedTimestamp() {
-		return getProperty(LAST_EDIT_TIMESTAMP_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setCreated(User creator) {
-		setCreator(creator);
-		setCreationTimestamp(System.currentTimeMillis());
-		setEditor(creator);
-		setLastEditedTimestamp(System.currentTimeMillis());
 	}
 
 	/**

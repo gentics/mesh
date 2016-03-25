@@ -556,7 +556,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		for (int i = 0; i < numAdditionalNodes; i++) {
 			Node node = parentNode.create(user, schemaVersion, project);
 			MicronodeGraphField vcardField = node
-					.createGraphFieldContainer(english, node.getProject().getLatestRelease())
+					.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user)
 					.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 			vcardField.getMicronode().createString("firstName").setString("Mickey");
 			vcardField.getMicronode().createString("lastName").setString("Mouse");

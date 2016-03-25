@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -99,8 +98,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		node.setProject(project);
 		node.setCreator(creator);
 		node.setCreationTimestamp(System.currentTimeMillis());
-		node.setEditor(creator);
-		node.setLastEditedTimestamp(System.currentTimeMillis());
 
 		addNode(node);
 		return node;
@@ -160,7 +157,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						if (language == null) {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 						}
-						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release);
+						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, release, requestUser);
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 						SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.CREATE_ACTION, container);
 						return Tuple.tuple(batch, node);

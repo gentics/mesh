@@ -254,7 +254,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release) {
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
 		String languageTag = language.getLanguageTag();
@@ -273,6 +273,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// create the new container
 		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		container.setEditor(user);
+		container.setLastEditedTimestamp(System.currentTimeMillis());
 		container.setLanguage(language);
 		container.setSchemaContainerVersion(release.getVersion(getSchemaContainer()));
 		if (previous != null) {
@@ -367,7 +369,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaVersion, project);
 		node.setParentNode(this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
-		setCreated(creator);
+//		setCreated(creator);
 		return node;
 	}
 
@@ -470,6 +472,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				if (fieldContainer.getVersion() != null) {
 					restNode.setVersion(new VersionReference(fieldContainer.getUuid(), fieldContainer.getVersion().toString()));
 				}
+
+				// editor and edited
+				User editor = fieldContainer.getEditor();
+				if (editor != null) {
+					restNode.setEditor(editor.transformToReference());
+				} else {
+					// TODO throw error and log something
+				}
+				restNode.setEdited(fieldContainer.getLastEditedTimestamp() == null ? 0 : fieldContainer.getLastEditedTimestamp());
 
 				// Fields
 				for (FieldSchema fieldEntry : schema.getFields()) {
@@ -784,22 +795,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				/* TODO handle other fields, etc. */
 				setPublished(requestModel.isPublished());
-				setEditor(ac.getUser());
-				setLastEditedTimestamp(System.currentTimeMillis());
 
 				NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
 				if (container == null) {
 					SchemaContainerVersion latestSchemaVersion = getSchemaContainer().getLatestVersion();
 					Schema schema = latestSchemaVersion.getSchema();
 					// Create a new field container
-					container = createGraphFieldContainer(language, release);
+					container = createGraphFieldContainer(language, release, ac.getUser());
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				} else {
 					// TODO check for conflict
 					// when there already is a DRAFT version for the release, the request must contain a version reference, otherwise a conflict is detected
 
 					// create new field container as clone of the existing
-					container = createGraphFieldContainer(language, release);
+					container = createGraphFieldContainer(language, release, ac.getUser());
 
 					// Update the existing fields
 					SchemaContainerVersion latestSchemaVersion = container.getSchemaContainerVersion();
@@ -840,10 +849,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether there is a node in the target node that has the same name. We do this to prevent issues for the webroot api
 		return db.trx(() -> {
 			setParentNode(targetNode);
-			setEditor(ac.getUser());
-			setLastEditedTimestamp(System.currentTimeMillis());
-			targetNode.setEditor(ac.getUser());
-			targetNode.setLastEditedTimestamp(System.currentTimeMillis());
 			// update the webroot path info for every field container.
 			getGraphFieldContainers().stream().forEach(container -> container.updateWebrootPathInfo("node_conflicting_segmentfield_move"));
 			// TODO get release specific containers
