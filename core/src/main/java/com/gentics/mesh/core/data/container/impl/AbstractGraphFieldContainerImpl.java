@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
@@ -204,14 +203,26 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschema) {
-		// delete existing micronode
+		// copy existing micronode
 		MicronodeGraphField existing = getMicronode(key);
+		Micronode existingMicronode = null;
 		if (existing != null) {
-			existing.getMicronode().delete();
+			existingMicronode = existing.getMicronode();
 		}
 
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
 		micronode.setMicroschemaContainerVersion(microschema);
+		if (existingMicronode != null) {
+			micronode.clone(existingMicronode);
+
+			// remove the old field (edge)
+			existing.getImpl().remove();
+
+			// if the existing micronode was only used by this container, remove it
+			if (existingMicronode.getImpl().in(HAS_FIELD).count() == 0) {
+				existingMicronode.getImpl().remove();
+			}
+		}
 		MicronodeGraphField field = getGraph().addFramedEdge(this, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
@@ -315,7 +326,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	/**
-	 * Create new list of the given type.
+	 * Create new list of the given type. If the container already has a list of given type, it
+	 * will be "unattached" and removed, if this container was the only parent
 	 * 
 	 * @param classOfT
 	 *            Implementation/Type of list
@@ -324,9 +336,18 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @return
 	 */
 	private <T extends ListGraphField<?, ?, ?>> T createList(Class<T> classOfT, String fieldKey) {
+		T existing = getList(classOfT, fieldKey);
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
 		linkOut(list.getImpl(), HAS_LIST);
+
+		if (existing != null) {
+			unlinkOut(existing.getImpl(), HAS_LIST);
+			if (existing.getImpl().in(HAS_LIST).count() == 0) {
+				existing.getImpl().remove();
+			}
+		}
+
 		return list;
 	}
 
@@ -634,14 +655,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (nodeList.getItems().isEmpty()) {
 					if (graphNodeFieldList != null) {
-						graphNodeFieldList.removeField();
+						graphNodeFieldList.removeField(this);
 					}
 				} else {
-					if (graphNodeFieldList == null) {
-						graphNodeFieldList = createNodeList(key);
-					} else {
-						graphNodeFieldList.removeAll();
-					}
+					graphNodeFieldList = createNodeList(key);
 
 					// Add the listed items
 					AtomicInteger integer = new AtomicInteger();
@@ -657,14 +674,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (stringList.getItems().isEmpty()) {
 					if (graphStringList != null) {
-						graphStringList.removeField();
+						graphStringList.removeField(this);
 					}
 				} else {
-					if (graphStringList == null) {
-						graphStringList = createStringList(key);
-					} else {
-						graphStringList.removeAll();
-					}
+					graphStringList = createStringList(key);
 					for (String item : stringList.getItems()) {
 						graphStringList.createString(item);
 					}
@@ -677,14 +690,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (htmlList.getItems().isEmpty()) {
 					if (graphHtmlFieldList != null) {
-						graphHtmlFieldList.removeField();
+						graphHtmlFieldList.removeField(this);
 					}
 				} else {
-					if (graphHtmlFieldList == null) {
-						graphHtmlFieldList = createHTMLList(key);
-					} else {
-						graphHtmlFieldList.removeAll();
-					}
+					graphHtmlFieldList = createHTMLList(key);
 					for (String item : htmlList.getItems()) {
 						graphHtmlFieldList.createHTML(item);
 					}
@@ -696,14 +705,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (numberList.getItems().isEmpty()) {
 					if (graphNumberFieldList != null) {
-						graphNumberFieldList.removeField();
+						graphNumberFieldList.removeField(this);
 					}
 				} else {
-					if (graphNumberFieldList == null) {
-						graphNumberFieldList = createNumberList(key);
-					} else {
-						graphNumberFieldList.removeAll();
-					}
+					graphNumberFieldList = createNumberList(key);
 					for (Number item : numberList.getItems()) {
 						graphNumberFieldList.createNumber(item);
 					}
@@ -715,14 +720,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (booleanList.getItems().isEmpty()) {
 					if (graphBooleanFieldList != null) {
-						graphBooleanFieldList.removeField();
+						graphBooleanFieldList.removeField(this);
 					}
 				} else {
-					if (graphBooleanFieldList == null) {
-						graphBooleanFieldList = createBooleanList(key);
-					} else {
-						graphBooleanFieldList.removeAll();
-					}
+					graphBooleanFieldList = createBooleanList(key);
 					for (Boolean item : booleanList.getItems()) {
 						graphBooleanFieldList.createBoolean(item);
 					}
@@ -735,15 +736,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (dateList.getItems().isEmpty()) {
 					if (graphDateFieldList != null) {
-						graphDateFieldList.removeField();
+						graphDateFieldList.removeField(this);
 					}
 				} else {
 					// Create new list if no existing one could be found
-					if (graphDateFieldList == null) {
-						graphDateFieldList = createDateList(key);
-					} else {
-						graphDateFieldList.removeAll();
-					}
+					graphDateFieldList = createDateList(key);
 					for (Long item : dateList.getItems()) {
 						graphDateFieldList.createDate(item);
 					}
@@ -755,12 +752,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 				if (micronodeList.getItems().isEmpty()) {
 					if (micronodeGraphFieldList != null) {
-						micronodeGraphFieldList.removeField();
+						micronodeGraphFieldList.removeField(this);
 					}
 				} else {
-					if (micronodeGraphFieldList == null) {
-						micronodeGraphFieldList = createMicronodeFieldList(key);
-					}
+					micronodeGraphFieldList = createMicronodeFieldList(key);
 
 					//TODO instead this method should also return an observable 
 					micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
@@ -817,22 +812,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", key, microschemaContainer.getName());
 			}
 
-			// graphfield not set -> create one
-			if (micronodeGraphField == null) {
-				micronodeGraphField = createMicronode(key, microschemaContainerVersion);
-				micronode = micronodeGraphField.getMicronode();
-			} else {
-				// check whether uuid is equal
-				micronode = micronodeGraphField.getMicronode();
-				// TODO check whether micronode is null
-
-				MicroschemaContainerVersion existingContainerVersion = micronode.getMicroschemaContainerVersion();
-				if ((!isEmpty(micronodeRestField.getUuid()) && !equalsIgnoreCase(micronode.getUuid(), micronodeRestField.getUuid()))
-						|| !equalsIgnoreCase(microschemaContainerVersion.getUuid(), existingContainerVersion.getUuid())) {
-					micronodeGraphField = createMicronode(key, microschemaContainerVersion);
-					micronode = micronodeGraphField.getMicronode();
-				}
-			}
+			// create a new micronode field, that will be filled
+			micronodeGraphField = createMicronode(key, microschemaContainerVersion);
+			micronode = micronodeGraphField.getMicronode();
 
 			micronode.updateFieldsFromRest(ac, micronodeRestField.getFields(), micronode.getMicroschema());
 

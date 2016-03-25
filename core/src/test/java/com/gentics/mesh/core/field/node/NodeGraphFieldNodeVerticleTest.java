@@ -3,12 +3,14 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -50,20 +53,59 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		Node node = folder("news");
-		Node node2 = folder("deals");
+		Node node = folder("2015");
+		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			Node oldValue = getNodeValue(container, NODE_FIELD_NAME);
 
-		// Update the field to point to node
-		NodeResponse response = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(node.getUuid()));
-		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
-		assertEquals("We updated the node field in node 2015 but the response did not contain the expected node reference value", node.getUuid(),
-				field.getUuid());
+			Node newValue = targetNodes.get(i % 2);
 
-		// Update the field to point to node2
-		response = updateNode("nodeField", new NodeFieldImpl().setUuid(node2.getUuid()));
-		field = response.getFields().getNodeFieldExpanded("nodeField");
-		assertEquals("We updated the node field in node 2015 but the response did not contain the expected node2 reference value", node2.getUuid(),
-				field.getUuid());
+			// Update the field to point to new target
+			NodeResponse response = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
+			NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+			assertThat(field.getUuid()).as("New Value").isEqualTo(newValue.getUuid());
+			node.reload();
+			container.reload();
+
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getNodeValue(container, NODE_FIELD_NAME));
+		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		Node target = folder("news");
+		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetNull() {
+		Node target = folder("news");
+		NodeResponse firstResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(NODE_FIELD_NAME, new NodeFieldImpl());
+		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getNodeField(NODE_FIELD_NAME).getUuid()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	/**
+	 * Get the node value
+	 * @param container container
+	 * @param fieldName field name
+	 * @return node value (may be null)
+	 */
+	protected Node getNodeValue(NodeGraphFieldContainer container, String fieldName) {
+		NodeGraphField field = container.getNode(fieldName);
+		return field != null ? field.getNode() : null;
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.html;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -20,12 +22,13 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 
 public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
+	private static final String FIELD_NAME = "htmlField";
 
 	@Before
 	public void updateSchema() throws IOException {
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
-		htmlFieldSchema.setName("htmlField");
+		htmlFieldSchema.setName(FIELD_NAME);
 		htmlFieldSchema.setLabel("Some label");
 		schema.addField(htmlFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
@@ -35,7 +38,7 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Override
 	public void testCreateNodeWithNoField() {
 		NodeResponse response = createNode(null, (Field) null);
-		HtmlFieldImpl htmlField = response.getFields().getHtmlField("htmlField");
+		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 		assertNotNull(htmlField);
 		assertNull(htmlField.getHTML());
 	}
@@ -43,20 +46,62 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		NodeResponse response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html"));
-		HtmlFieldImpl field = response.getFields().getHtmlField("htmlField");
-		assertEquals("some<b>html", field.getHTML());
+		Node node = folder("2015");
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			String oldValue = getHtmlValue(container, FIELD_NAME);
 
-		response = updateNode("htmlField", new HtmlFieldImpl().setHTML("some<b>html2"));
-		field = response.getFields().getHtmlField("htmlField");
-		assertEquals("some<b>html2", field.getHTML());
+			String newValue = "some<b>html <i>" + i + "</i>";
+
+			NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));
+			HtmlFieldImpl field = response.getFields().getHtmlField(FIELD_NAME);
+			assertEquals(newValue, field.getHTML());
+			node.reload();
+			container.reload();
+
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
+		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetNull() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl());
+		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	/**
+	 * Get the html value
+	 * @param container container
+	 * @param fieldName field name
+	 * @return html value (may be null)
+	 */
+	protected String getHtmlValue(NodeGraphFieldContainer container, String fieldName) {
+		HtmlGraphField field = container.getHtml(fieldName);
+		return field != null ? field.getHTML() : null;
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
-		HtmlFieldImpl htmlField = response.getFields().getHtmlField("htmlField");
+		NodeResponse response = createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
+		HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 		assertEquals("Some<b>html", htmlField.getHTML());
 	}
 
@@ -65,10 +110,10 @@ public class HtmlGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		container.createHTML("htmlField").setHtml("some<b>html");
+		container.createHTML(FIELD_NAME).setHtml("some<b>html");
 
 		NodeResponse response = readNode(node);
-		HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField("htmlField");
+		HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
 		assertNotNull(deserializedHtmlField);
 		assertEquals("some<b>html", deserializedHtmlField.getHTML());
 

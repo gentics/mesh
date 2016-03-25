@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.number;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,12 +32,13 @@ import com.gentics.mesh.query.impl.NodeRequestParameter;
 import io.vertx.core.Future;
 
 public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
+	private static final String FIELD_NAME = "numberField";
 
 	@Before
 	public void updateSchema() throws IOException {
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
-		numberFieldSchema.setName("numberField");
+		numberFieldSchema.setName(FIELD_NAME);
 		// numberFieldSchema.setMin(10);
 		// numberFieldSchema.setMax(1000);
 		numberFieldSchema.setRequired(true);
@@ -47,15 +49,15 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode("numberField", (Field) null);
-		NumberFieldImpl field = response.getFields().getNumberField("numberField");
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
 		assertNotNull(field);
 		assertNull(field.getNumber());
 	}
 
 	@Test
 	public void testCreateNodeWithWrongFieldType() {
-		String fieldKey = "numberField";
+		String fieldKey = FIELD_NAME;
 		StringField field = new StringFieldImpl().setString("text");
 
 		Node node = folder("2015");
@@ -73,19 +75,61 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		NodeResponse response = updateNode("numberField", new NumberFieldImpl().setNumber(42));
-		NumberFieldImpl field = response.getFields().getNumberField("numberField");
-		assertEquals(42, field.getNumber());
-		response = updateNode("numberField", new NumberFieldImpl().setNumber(43));
-		field = response.getFields().getNumberField("numberField");
-		assertEquals(43, field.getNumber());
+		Node node = folder("2015");
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			Number oldValue = getNumberValue(container, FIELD_NAME);
+			Number newValue = Integer.valueOf(i + 42);
+
+			NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
+			NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
+			assertEquals(newValue, field.getNumber());
+			node.reload();
+			container.reload();
+
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getNumberValue(container, FIELD_NAME));
+		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetNull() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new NumberFieldImpl());
+		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME).getNumber()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	/**
+	 * Get the number value
+	 * @param container container
+	 * @param fieldName field name
+	 * @return number value (may be null)
+	 */
+	protected Number getNumberValue(NodeGraphFieldContainer container, String fieldName) {
+		NumberGraphField field = container.getNumber(fieldName);
+		return field != null ? field.getNumber() : null;
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		NodeResponse response = createNode("numberField", new NumberFieldImpl().setNumber(1.21));
-		NumberFieldImpl numberField = response.getFields().getNumberField("numberField");
+		NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.21));
+		NumberFieldImpl numberField = response.getFields().getNumberField(FIELD_NAME);
 		assertEquals(1.21, numberField.getNumber());
 	}
 
@@ -95,12 +139,12 @@ public class NumberGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVert
 		Node node = folder("2015");
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		NumberGraphField numberField = container.createNumber("numberField");
+		NumberGraphField numberField = container.createNumber(FIELD_NAME);
 		numberField.setNumber(100.9f);
 
 		NodeResponse response = readNode(node);
 
-		NumberFieldImpl deserializedNumberField = response.getFields().getNumberField("numberField");
+		NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(FIELD_NAME);
 		assertNotNull(deserializedNumberField);
 		assertEquals(100.9, deserializedNumberField.getNumber());
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.bool;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -12,6 +13,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -49,15 +51,63 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			Boolean oldValue = getBooleanValue(container, FIELD_NAME);
+
 			boolean flag = Math.random() > 0.5;
 			NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(flag, field.getValue());
+			node.reload();
+			container.reload();
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
+
+			container = node.getGraphFieldContainer("en");
+			oldValue = getBooleanValue(container, FIELD_NAME);
 			response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
 			field = response.getFields().getBooleanField(FIELD_NAME);
 			assertEquals(!flag, field.getValue());
+			node.reload();
+			container.reload();
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
 		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetNull() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl());
+		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME).getValue()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	/**
+	 * Get boolean value
+	 * @param container field container
+	 * @param fieldName field name
+	 * @return value
+	 */
+	protected Boolean getBooleanValue(NodeGraphFieldContainer container, String fieldName) {
+		BooleanGraphField field = container.getBoolean(fieldName);
+		return field != null ? field.getBoolean() : null;
 	}
 
 	@Test
@@ -76,5 +126,4 @@ public class BooleanGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVer
 		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 		assertTrue(field.getValue());
 	}
-
 }

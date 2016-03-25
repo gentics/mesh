@@ -21,9 +21,10 @@ public interface GraphField {
 	String getFieldKey();
 
 	/**
-	 * Remove this field from its container
+	 * Remove this field from the container
+	 * @param container container
 	 */
-	void removeField();
+	void removeField(GraphFieldContainer container);
 
 	/**
 	 * Clone this field into the given container.

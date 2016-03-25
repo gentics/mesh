@@ -50,7 +50,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		Micronode micronode = getMicronode();
 		remove();
 		if (micronode != null) {

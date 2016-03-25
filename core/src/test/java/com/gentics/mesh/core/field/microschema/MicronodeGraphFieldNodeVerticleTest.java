@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.microschema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -63,24 +65,82 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
+		Node node = folder("2015");
+
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("vcard"));
 		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
-		NodeResponse response = updateNode(FIELDNAME, field);
+		updateNode(FIELDNAME, field);
+		node.reload();
 
-		MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
-		String uuid = fieldResponse.getUuid();
-		assertEquals("Check micronode firstName", "Max", fieldResponse.getFields().getStringField("firstName").getString());
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			Micronode oldValue = getMicronodeValue(container, FIELDNAME);
 
-		field = new MicronodeResponse();
+			field = new MicronodeResponse();
+			field.setMicroschema(new MicroschemaReference().setName("vcard"));
+			String newLastName = "Moritz" + i;
+			field.getFields().put("lastName", new StringFieldImpl().setString(newLastName));
+			NodeResponse response = updateNode(FIELDNAME, field);
+
+			MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
+			assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName)
+					.hasStringField("address", null).hasStringField("postcode", null);
+
+			node.reload();
+			container.reload();
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			if (oldValue == null) {
+				assertThat(getMicronodeValue(container, FIELDNAME)).as("old value").isNull();
+			} else {
+				oldValue.reload();
+				assertThat(oldValue.getString("lastName").getString()).as("old lastName").isNotEqualTo(newLastName);
+				assertThat(getMicronodeValue(container, FIELDNAME)).as("old value").isEqualToComparingFieldByField(oldValue);
+				assertThat(fieldResponse.getUuid()).as("New uuid").isNotEqualTo(oldValue.getUuid());
+			}
+		}
+	}
+
+	@Test
+	@Override
+	public void testUpdateSameValue() {
+		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("vcard"));
-		field.getFields().put("firstName", new StringFieldImpl().setString("Moritz"));
-		response = updateNode(FIELDNAME, field);
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		NodeResponse firstResponse = updateNode(FIELDNAME, field);
+		String oldNumber = firstResponse.getVersion().getNumber();
 
-		fieldResponse = response.getFields().getMicronodeField(FIELDNAME);
-		assertEquals("Check micronode firstName", "Moritz", fieldResponse.getFields().getStringField("firstName").getString());
-		assertEquals("Check micronode uuid after update", uuid, fieldResponse.getUuid());
+		NodeResponse secondResponse = updateNode(FIELDNAME, field);
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+	}
+
+	@Test
+	@Override
+	public void testUpdateSetNull() {
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReference().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		NodeResponse firstResponse = updateNode(FIELDNAME, field);
+		String oldNumber = firstResponse.getVersion().getNumber();
+
+		NodeResponse secondResponse = updateNode(FIELDNAME, new MicronodeResponse());
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME)).as("Updated Field").isNotNull();
+		assertThat(secondResponse.getFields().getMicronodeField(FIELDNAME).getUuid()).as("Updated Field Value").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+	}
+
+	/**
+	 * Get the micronode value
+	 * @param container container
+	 * @param fieldName field name
+	 * @return micronode value or null
+	 */
+	protected Micronode getMicronodeValue(NodeGraphFieldContainer container, String fieldName) {
+		MicronodeGraphField field = container.getMicronode(fieldName);
+		return field != null ? field.getMicronode() : null;
 	}
 
 	@Test

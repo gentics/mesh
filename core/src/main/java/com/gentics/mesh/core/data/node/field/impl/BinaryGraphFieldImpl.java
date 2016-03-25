@@ -176,7 +176,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		remove();
 	}
 

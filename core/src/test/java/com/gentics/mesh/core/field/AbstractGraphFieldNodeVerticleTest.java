@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.field;
 
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -12,7 +10,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -23,7 +23,6 @@ import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.Future;
 
 public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVerticleTest {
 
@@ -41,11 +40,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse response = future.result();
-		return response;
+		return call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters));
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
@@ -58,9 +53,8 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
-		latchFor(future);
-		expectException(future, status, bodyMessageI18nKey, i18nParams);
+		call(() -> getClient().createNode(PROJECT_NAME, nodeCreateRequest,
+				new NodeRequestParameter().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);
 	}
 
 	/**
@@ -77,13 +71,11 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 
-		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
-				new NodeRequestParameter().setLanguages("en"));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull("The response could not be found in the result of the future.", future.result());
-		assertNotNull("The field was not included in the response.", future.result().getFields().hasField(fieldKey));
-		return future.result();
+		NodeResponse response = call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
+				new NodeRequestParameter().setLanguages("en")));
+		assertNotNull("The response could not be found in the result of the future.", response);
+		assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
+		return response;
 	}
 
 	protected void updateNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
@@ -93,10 +85,25 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 
-		Future<NodeResponse> future = getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
-				new NodeRequestParameter().setLanguages("en"));
-		latchFor(future);
-		expectException(future, status, bodyMessageI18nKey, i18nParams);
+		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest,
+				new NodeRequestParameter().setLanguages("en")), status, bodyMessageI18nKey, i18nParams);
+	}
+
+
+	/**
+	 * Get the values of the field
+	 * @param container container
+	 * @param classOfT field class
+	 * @param fieldKey field name
+	 * @return values or null
+	 */
+	protected <U, T extends ListGraphField<?, ?, U>> List<U> getListValues(NodeGraphFieldContainer container,
+			Class<T> classOfT, String fieldKey) {
+		T field = container.getList(classOfT, fieldKey);
+		if (field != null) {
+			field.reload();
+		}
+		return field != null ? field.getValues() : null;
 	}
 
 	/**
@@ -110,6 +117,16 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	 * Update a node with a currently filled field. Change the field and make sure the changes were applied correctly.
 	 */
 	abstract public void testUpdateNodeFieldWithField();
+
+	/**
+	 * Update a node with a currently filled field with the same value. No new version should be generated
+	 */
+	abstract public void testUpdateSameValue();
+
+	/**
+	 * Update a node with a currently filled field by setting null.
+	 */
+	abstract public void testUpdateSetNull();
 
 	/**
 	 * Create a new node and set field values. Make sure the node was correctly created and the field was populated with the correct data.

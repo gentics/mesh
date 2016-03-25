@@ -7,6 +7,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.node.AbstractBinaryVerticleTest;
@@ -78,23 +80,29 @@ public class BinaryGraphNodeVerticleTest extends AbstractBinaryVerticleTest {
 	}
 
 	@Test
-	public void testUploadTwiceToBinaryNode() throws IOException {
+	public void testUploadMultipleToBinaryNode() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
-		String fileName = "somefile.dat";
 
 		Node node = folder("news");
 		prepareSchema(node, "", "binary");
 
-		Future<GenericMessageResponse> future = updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName);
-		latchFor(future);
-		assertSuccess(future);
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			BinaryGraphField oldValue = container.getBinary("binary");
+			String fileName = "somefile" + i + ".dat";
 
-		future = updateBinaryField(node, "en", "binary", binaryLen, contentType, "updated.dat");
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals("The binary filename was not updated.", "updated.dat",
-				node.getGraphFieldContainer(english()).getBinary("binary").getFileName());
+			call(() -> updateBinaryField(node, "en", "binary", binaryLen, contentType, fileName));
+			node.reload();
+			container.reload();
+
+			assertEquals("The binary filename was not updated.", fileName,
+					node.getGraphFieldContainer(english()).getBinary("binary").getFileName());
+
+			NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
+			assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+			assertThat(container.getBinary("binary")).isEqualToComparingFieldByField(oldValue);
+		}
 	}
 
 	@Test

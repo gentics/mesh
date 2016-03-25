@@ -33,8 +33,12 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 	}
 
 	@Override
-	public void removeField() {
-		delete();
+	public void removeField(GraphFieldContainer container) {
+		container.getImpl().unlinkOut(getImpl(), HAS_LIST);
+
+		if (in(HAS_LIST).count() == 0) {
+			delete();
+		}
 	}
 
 	@Override

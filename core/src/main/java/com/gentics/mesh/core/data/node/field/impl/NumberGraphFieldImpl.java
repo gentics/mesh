@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Locale;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
@@ -25,7 +26,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		if (number == null) {
 			setFieldProperty("number", null);
 		} else {
-			setFieldProperty("number", number.toString());
+			setFieldProperty("number", NumberFormat.getInstance(Locale.ENGLISH).format(number));
 		}
 	}
 
@@ -37,7 +38,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		}
 
 		try {
-			return NumberFormat.getInstance().parse(n);
+			return NumberFormat.getInstance(Locale.ENGLISH).parse(n);
 		} catch (ParseException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
@@ -52,7 +53,7 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		setFieldProperty("number", null);
 		setFieldKey(null);
 	}

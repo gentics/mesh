@@ -230,7 +230,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
 
 		// remove all touched fields (if necessary, they will be readded later)
-		container.getFields(oldSchema).stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(GraphField::removeField);
+		container.getFields(oldSchema).stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
 
 		String nodeJson = JsonUtil.toJson(restModel);
 

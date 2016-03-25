@@ -37,7 +37,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		setFieldProperty("html", null);
 		setFieldKey(null);
 	}

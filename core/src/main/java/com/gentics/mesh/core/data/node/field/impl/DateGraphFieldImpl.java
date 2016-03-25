@@ -47,7 +47,7 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		setFieldProperty("date", null);
 		setFieldKey(null);
 	}

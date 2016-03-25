@@ -41,4 +41,12 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 * @return container
 	 */
 	NodeGraphFieldContainer getContainer();
+
+	/**
+	 * Make this micronode a clone of the given micronode.
+	 * Property Vertices are reused
+	 *
+	 * @param micronode micronode
+	 */
+	void clone(Micronode micronode);
 }

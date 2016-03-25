@@ -130,7 +130,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Project project = ac.getProject();
-		Release release = ac.getRelease();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getInstance();
@@ -153,6 +152,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				// Load the parent node in order to create the node
 				return project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM).map(parentNode -> {
 					return db.trx(() -> {
+						Release release = ac.getRelease();
 						Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project);
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						node.setPublished(requestModel.isPublished());

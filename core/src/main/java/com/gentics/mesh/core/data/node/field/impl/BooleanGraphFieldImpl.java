@@ -42,7 +42,7 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		setFieldProperty("boolean", null);
 		setFieldKey(null);
 	}

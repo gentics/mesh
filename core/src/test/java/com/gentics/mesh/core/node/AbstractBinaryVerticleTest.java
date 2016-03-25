@@ -64,7 +64,7 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 	}
 
 	protected Future<GenericMessageResponse> updateBinaryField(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
-			String fileName) throws IOException {
+			String fileName) {
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);

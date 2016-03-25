@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -112,6 +113,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public NodeGraphFieldContainer getContainer() {
+		// TODO this only returns ONE container, but with versioning, the micronode may have multiple containers
+
 		// first try to get the container in case for normal fields
 		NodeGraphFieldContainerImpl container = in(HAS_FIELD).has(NodeGraphFieldContainerImpl.class)
 				.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
@@ -158,6 +161,15 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags);
 		}
 
+	}
+
+	@Override
+	public void clone(Micronode micronode) {
+		List<GraphField> otherFields = micronode.getFields(micronode.getMicroschemaContainerVersion().getSchema());
+
+		for (GraphField graphField : otherFields) {
+			graphField.cloneTo(this);
+		}
 	}
 
 	@Override

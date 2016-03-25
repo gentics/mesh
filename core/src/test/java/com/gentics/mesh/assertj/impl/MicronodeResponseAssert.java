@@ -34,6 +34,7 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 						.isEqualTo(expected.getFields().getHtmlField(key).getHTML());
 				break;
 			case "binary":
+				break;
 			case "boolean":
 				assertThat(expected.getFields().getBooleanField(key)).isNotNull();
 				assertThat(actual.getFields().getBooleanField(key).getValue()).as("Field " + key)
@@ -76,6 +77,18 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 
 		}
 
+		return this;
+	}
+
+	/**
+	 * Assert that the MicronodeResponse contains the given string field
+	 * @param name field name
+	 * @param value field value
+	 * @return fluent API
+	 */
+	public MicronodeResponseAssert hasStringField(String name, String value) {
+		assertThat(actual.getFields().getStringField(name)).as("Field " + name).isNotNull();
+		assertThat(actual.getFields().getStringField(name).getString()).as("Field " + name + " value").isEqualTo(value);
 		return this;
 	}
 }

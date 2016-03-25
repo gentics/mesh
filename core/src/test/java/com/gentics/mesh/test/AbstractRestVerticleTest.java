@@ -323,14 +323,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull("The response could not be found in the result of the future.", future.result());
+		NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en")));
+		assertNotNull("The response could not be found in the result of the future.", response);
 		if (fieldKey != null) {
-			assertNotNull("The field was not included in the response.", future.result().getFields().hasField(fieldKey));
+			assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		}
-		return future.result();
+		return response;
 	}
 
 	protected NodeResponse readNode(String projectName, String uuid) {

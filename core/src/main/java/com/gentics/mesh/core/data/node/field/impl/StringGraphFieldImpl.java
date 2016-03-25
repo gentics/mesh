@@ -36,7 +36,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 	}
 
 	@Override
-	public void removeField() {
+	public void removeField(GraphFieldContainer container) {
 		setFieldProperty("string", null);
 		setFieldKey(null);
 	}
