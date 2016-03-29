@@ -85,6 +85,28 @@ traits:
           enum: ["off", "short", "medium", "full"]
           default: off
 
+  - fullversioned:
+      queryParameters:
+        version:
+          description: Requested version.
+          type: string
+          enum: ["published", "draft", "[major].[minor]"]
+          default: published
+
+  - versioned:
+      queryParameters:
+        version:
+          description: Requested version.
+          type: string
+          enum: ["published", "draft"]
+          default: published
+
+  - release:
+      queryParameters:
+        release:
+          description: Name of the Release that is requested. The default is the latest release of the project.
+          type: string
+
 #------------------------------------------------------------------------------
 # User Verticle
 #------------------------------------------------------------------------------
@@ -584,7 +606,7 @@ traits:
   displayName: Nodes
   /:
     get: 
-      is: [ localized, sortable, paged, expandable, include_role_perms ]
+      is: [ localized, sortable, paged, expandable, include_role_perms, release, versioned ]
       description: Load all nodes.
       responses:
         200:
@@ -593,7 +615,7 @@ traits:
               example: !include json/NodeListResponse.example.json
     post:
       description: Create a new node.
-      is: [ expandable, include_role_perms ]
+      is: [ expandable, include_role_perms, release ]
       body:
         application/json:
           example: !include json/NodeCreateRequest.example.json
@@ -609,7 +631,7 @@ traits:
         description: Uuid of a single node.
         type: string
     get:
-      is: [ expandable, include_role_perms, translatable ]
+      is: [ expandable, include_role_perms, translatable, release, fullversioned ]
       description: Retrieves the node with the given uuid.
       responses:
         200:
@@ -617,7 +639,7 @@ traits:
             application/json:
               example: !include json/NodeResponse.example.json
     put:
-      is: [ expandable, include_role_perms ]
+      is: [ expandable, include_role_perms, release ]
       description: Updates the node with the given uuid.
       body:
         application/json:
@@ -629,6 +651,7 @@ traits:
               example: !include json/NodeResponse.example.json
         423:
     delete:
+      is: [ release ]
       description: Deletes the node with the given uuid.
       responses:
         200:
@@ -637,7 +660,7 @@ traits:
               example: !include json/GenericMessageResponse.example.json
         423:
     /tags:
-      is: [ sortable, paged ]
+      is: [ sortable, paged, release ]
       get:
         description: Load the tags that tag the node.
         responses:
@@ -646,11 +669,13 @@ traits:
               application/json:
                 example: !include json/TagListResponse.example.json
     /tags/{tagUuuid}:
+      is: [ release ]
       put:
         description: Add the tag to the node.
       delete:
         description: Remove the tag from the node.
     /languages/{languageTag}:
+      is: [ release ]
       delete:
         description: Deletes the language from the given node.
         responses:
@@ -679,10 +704,10 @@ traits:
                     example: !include json/GenericMessageResponse.example.json
     /children:
       get:
-        is: [ localized, sortable, paged, expandable ]
+        is: [ localized, sortable, paged, expandable, release, versioned ]
         description: Load child nodes for the given node.
     /navigation:
-      is: [ localized, recursively ]
+      is: [ localized, recursively, release, versioned ]
       displayName: Navigation
       get:
         description: Return a nested navigation tree structure for the given node.
@@ -692,6 +717,7 @@ traits:
                     application/json:
                         example: !include json/NavigationResponse.example.json
     /moveTo/{targetNodeUuid}:
+      is: [ release ]
       uriParameters:
         targetNodeUuid:
           description: Uuid of a the target node. This node will become the new parent of the source node.

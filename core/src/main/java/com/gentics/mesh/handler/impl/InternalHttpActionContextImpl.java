@@ -13,13 +13,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.VersionNumber;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -52,11 +52,14 @@ import io.vertx.ext.web.RoutingContext;
 public class InternalHttpActionContextImpl extends HttpActionContextImpl implements InternalHttpActionContext {
 
 	private static final Logger log = LoggerFactory.getLogger(InternalHttpActionContextImpl.class);
+
 	private Project project;
 
 	private MeshAuthUser user;
 
 	private List<String> languageTags;
+
+	private String version;
 
 	public InternalHttpActionContextImpl(RoutingContext rc) {
 		super(rc);
@@ -98,6 +101,27 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 		}
 
 		return release;
+	}
+
+	@Override
+	public String getVersion() {
+		if (version == null) {
+			String versionParameter = getParameter(NodeRequestParameter.VERSION_QUERY_PARAM_KEY);
+			if (versionParameter != null) {
+				if ("draft".equalsIgnoreCase(versionParameter) || "published".equalsIgnoreCase(versionParameter)) {
+					version = versionParameter;
+				} else {
+					try {
+						version = new VersionNumber(versionParameter).toString();
+					} catch (IllegalArgumentException e) {
+						throw error(BAD_REQUEST, "error_illegal_version", versionParameter);
+					}
+				}
+			} else {
+				version = "published";
+			}
+		}
+		return version;
 	}
 
 	@Override

@@ -16,8 +16,8 @@ public class VersionReference extends AbstractResponse {
 
 	/**
 	 * Create an instance with uuid and number
-	 * @param uuid
-	 * @param number
+	 * @param uuid field container uuid
+	 * @param number version number
 	 */
 	public VersionReference(String uuid, String number) {
 		this();

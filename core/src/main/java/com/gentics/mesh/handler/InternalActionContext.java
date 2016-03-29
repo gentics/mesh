@@ -52,6 +52,14 @@ public interface InternalActionContext extends ActionContext {
 	Release getRelease();
 
 	/**
+	 * Return the requested version. If the requested version is neither "draft" nor "published" nor a valid version number, an
+	 * error will be raised.
+	 * If no specific version number was requested, this will return "published"
+	 * @return requested version number or "published"
+	 */
+	String getVersion();
+
+	/**
 	 * Return the mesh auth user.
 	 * 
 	 * @return

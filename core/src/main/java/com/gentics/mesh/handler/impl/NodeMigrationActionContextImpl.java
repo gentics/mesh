@@ -136,6 +136,12 @@ public class NodeMigrationActionContextImpl extends AbstractActionContext implem
 	}
 
 	@Override
+	public String getVersion() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshAuthUser getUser() {
 		return null;
 	}

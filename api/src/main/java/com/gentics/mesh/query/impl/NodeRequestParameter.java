@@ -17,11 +17,14 @@ public class NodeRequestParameter implements QueryParameterProvider {
 
 	public static final String RELEASE_QUERY_PARAM_KEY = "release";
 
+	public static final String VERSION_QUERY_PARAM_KEY = "version";
+
 	private String[] languages;
 	private String[] expandedFieldNames;
 	private Boolean expandAll;
 	private LinkType resolveLinks;
 	private String release;
+	private String version;
 
 	/**
 	 * Set the <code>lang</code> request parameter values.
@@ -77,6 +80,17 @@ public class NodeRequestParameter implements QueryParameterProvider {
 		return this;
 	}
 
+	/**
+	 * Set the version. This can be either "draft", "published" or a version number
+	 *
+	 * @param version version
+	 * @return fluent API
+	 */
+	public NodeRequestParameter setVersion(String version) {
+		this.version = version;
+		return this;
+	}
+
 	@Override
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
@@ -123,6 +137,16 @@ public class NodeRequestParameter implements QueryParameterProvider {
 			}
 			try {
 				query.append(RELEASE_QUERY_PARAM_KEY + "=" + URLEncoder.encode(release, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+			}
+		}
+
+		if (version != null) {
+			if (query.length() != 0) {
+				query.append("&");
+			}
+			try {
+				query.append(VERSION_QUERY_PARAM_KEY + "=" + URLEncoder.encode(version, "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
 			}
 		}
