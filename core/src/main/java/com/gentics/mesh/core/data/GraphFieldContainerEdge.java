@@ -99,5 +99,21 @@ public interface GraphFieldContainerEdge {
 
 			throw new IllegalArgumentException("Unknown edge type " + code);
 		}
+
+		/**
+		 * Get the type for the given version string.
+		 * Returns DRAFT for "draft", PUBLISHED for "published" and INITIAL for everything else
+		 * @param version version
+		 * @return edge type
+		 */
+		public static Type forVersion(String version) {
+			if ("draft".equals(version)) {
+				return Type.DRAFT;
+			} else if ("published".equals(version)) {
+				return Type.PUBLISHED;
+			} else {
+				return Type.INITIAL;
+			}
+		}
 	}
 }

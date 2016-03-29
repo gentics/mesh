@@ -332,10 +332,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	}
 
 	protected NodeResponse readNode(String projectName, String uuid) {
-		Future<NodeResponse> future = getClient().findNodeByUuid(projectName, uuid);
-		latchFor(future);
-		assertSuccess(future);
-		return future.result();
+		return call(() -> getClient().findNodeByUuid(projectName, uuid, new NodeRequestParameter().draft()));
 	}
 
 	protected void deleteNode(String projectName, String uuid) {

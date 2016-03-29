@@ -28,6 +28,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
@@ -122,6 +123,12 @@ public class InternalHttpActionContextImpl extends HttpActionContextImpl impleme
 			}
 		}
 		return version;
+	}
+
+	@Override
+	public InternalActionContext setVersion(String version) {
+		this.version = version;
+		return this;
 	}
 
 	@Override

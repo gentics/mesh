@@ -6,8 +6,10 @@ import com.gentics.mesh.graphdb.spi.Database;
  * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
  */
 public enum GraphPermission {
-	CREATE_PERM("HAS_CREATE_PERMISSION", "create"), READ_PERM("HAS_READ_PERMISSION", "read"), UPDATE_PERM("HAS_UPDATE_PERMISSION",
-			"update"), DELETE_PERM("HAS_DELETE_PERMISSION", "delete");
+	CREATE_PERM("HAS_CREATE_PERMISSION", "create"), READ_PERM("HAS_READ_PERMISSION",
+			"read"), UPDATE_PERM("HAS_UPDATE_PERMISSION", "update"), DELETE_PERM("HAS_DELETE_PERMISSION",
+					"delete"), READ_PUBLISHED_PERM("HAS_READ_PUBLISHED_PERMISSION",
+							"readpublished"), PUBLISH_PERM("HAS_PUBLISH_PERMISSION", "publish");
 
 	public static void checkIndices(Database database) {
 		for (String label : GraphPermission.labels()) {

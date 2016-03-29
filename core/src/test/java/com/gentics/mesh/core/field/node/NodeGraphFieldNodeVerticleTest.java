@@ -115,20 +115,16 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 
 		Node updatedNode = folder("2015");
 		// Load the node so that we can use it to prepare the update request
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
-		latchFor(future);
-		NodeResponse loadedNode = future.result();
+		NodeResponse loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeRequestParameter().draft()));
 
 		// Update the field to point to node
 		NodeResponse response = updateNode(NODE_FIELD_NAME, loadedNode);
 		NodeResponse field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
-		Future<NodeResponse> loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
-				new NodeRequestParameter().setLanguages("en"));
-		latchFor(loadedNodeFuture);
-		assertSuccess(loadedNodeFuture);
-		field = loadedNodeFuture.result().getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
+				new NodeRequestParameter().setLanguages("en").draft()));
+		field = loadedNode.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node.getUuid(), field.getUuid());
 
 		// Update the field to point to node2
@@ -136,10 +132,9 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		field = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertEquals(node2.getUuid(), field.getUuid());
 
-		loadedNodeFuture = getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeRequestParameter().setLanguages("en"));
-		latchFor(loadedNodeFuture);
-		assertSuccess(loadedNodeFuture);
-		field = loadedNodeFuture.result().getFields().getNodeFieldExpanded("nodeField");
+		loadedNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(),
+				new NodeRequestParameter().setLanguages("en").draft()));
+		field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
 		assertEquals(node2.getUuid(), field.getUuid());
 
 	}
@@ -206,12 +201,11 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		container.createNode(NODE_FIELD_NAME, newsNode);
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeRequestParameter().setExpandAll(true));
-		latchFor(future);
-		assertSuccess(future);
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setExpandAll(true).draft()));
 
 		// Check expanded node field
-		NodeResponse deserializedExpandedNodeField = future.result().getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
+		NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(NODE_FIELD_NAME);
 		assertNotNull("The ", deserializedExpandedNodeField);
 		NodeResponse expandedField = (NodeResponse) deserializedExpandedNodeField;
 		assertEquals(newsNode.getUuid(), expandedField.getUuid());
@@ -296,7 +290,7 @@ public class NodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" },
 				new String[] { "en", "de" })) {
 			Future<NodeResponse> resultFuture = getClient().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-					new NodeRequestParameter().setLanguages(requestedLangs).setExpandAll(true));
+					new NodeRequestParameter().setLanguages(requestedLangs).setExpandAll(true).draft());
 			latchFor(resultFuture);
 			assertSuccess(resultFuture);
 			NodeResponse response = resultFuture.result();

@@ -47,7 +47,7 @@ public interface InternalActionContext extends ActionContext {
 	 * This method will fail, if no project is set, or if the specified release does not exist for the project
 	 * When no release was specified (but a project was set), this will return the latest release of the project
 	 *
-	 * @return
+	 * @return release
 	 */
 	Release getRelease();
 
@@ -58,6 +58,13 @@ public interface InternalActionContext extends ActionContext {
 	 * @return requested version number or "published"
 	 */
 	String getVersion();
+
+	/**
+	 * Set the requested version, overriding the version requested in the wrapped RoutingContext
+	 * @param version requested version
+	 * @return fluent API
+	 */
+	InternalActionContext setVersion(String version);
 
 	/**
 	 * Return the mesh auth user.

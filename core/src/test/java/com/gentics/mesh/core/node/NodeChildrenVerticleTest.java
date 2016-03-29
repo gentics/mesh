@@ -100,10 +100,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Node node = folder("news");
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse restNode = future.result();
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().draft()));
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
@@ -122,10 +120,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		role().revokePermissions(folder("2015"), READ_PERM);
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse restNode = future.result();
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().draft()));
 		test.assertMeshNode(node, restNode);
 		assertTrue(restNode.isContainer());
 
@@ -142,10 +138,8 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid());
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse restNode = future.result();
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().draft()));
 
 		test.assertMeshNode(node, restNode);
 		assertFalse("The node should not be a container", restNode.isContainer());

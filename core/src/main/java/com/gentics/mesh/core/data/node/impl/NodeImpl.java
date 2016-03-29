@@ -114,7 +114,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<String> getPathSegment(InternalActionContext ac) {
-		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
+		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(),
+				ac.getRelease().getUuid(), ac.getVersion());
 		if (container != null) {
 			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
@@ -396,6 +397,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (container == null) {
 				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 			}
+			Release release = ac.getRelease();
 
 			restNode.setPublished(isPublished());
 
@@ -415,7 +417,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			obs.add(setRolePermissions(ac, restNode));
 
 			// Languages
-			restNode.setAvailableLanguages(getAvailableLanguageNames());
+			restNode.setAvailableLanguages(getAvailableLanguageNames(release, Type.forVersion(ac.getVersion())));
 
 			// Load the children information
 			for (Node child : getChildren()) {
@@ -442,7 +444,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				requestedLanguageTags = ac.getSelectedLanguageTags();
 			}
-			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags);
+			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), ac.getVersion());
 			if (fieldContainer == null) {
 				String langInfo = getLanguageInfo(requestedLanguageTags);
 				if (log.isDebugEnabled()) {
@@ -537,7 +539,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				// languagePaths
 				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers()) {
+				for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release,
+						Type.forVersion(ac.getVersion()))) {
 					Language currLanguage = currentFieldContainer.getLanguage();
 					languagePaths.put(currLanguage.getLanguageTag(),
 							linkReplacer.resolve(this, ac.getResolveLinksType(), currLanguage.getLanguageTag()).toBlocking().single());
@@ -653,12 +656,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags) {
+	public NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version) {
 		NodeGraphFieldContainer fieldContainer = null;
 
+		Type type = Type.forVersion(version);
+
 		for (String languageTag : languageTags) {
-			// TODO add release
-			fieldContainer = getGraphFieldContainer(languageTag, null, Type.DRAFT);
+			fieldContainer = getGraphFieldContainer(languageTag, releaseUuid, type);
+
+			if (fieldContainer != null && type == Type.INITIAL) {
+				while (fieldContainer != null && !version.equals(fieldContainer.getVersion().toString())) {
+					fieldContainer = fieldContainer.getNextVersion();
+				}
+			}
+
 			// We found a container for one of the languages
 			if (fieldContainer != null) {
 				break;
@@ -672,6 +683,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
 		for (GraphFieldContainer container : getGraphFieldContainers()) {
+			languageTags.add(container.getLanguage().getLanguageTag());
+		}
+		return languageTags;
+	}
+
+	@Override
+	public List<String> getAvailableLanguageNames(Release release, Type type) {
+		List<String> languageTags = new ArrayList<>();
+		for (GraphFieldContainer container : getGraphFieldContainers(release, type)) {
 			languageTags.add(container.getLanguage().getLanguageTag());
 		}
 		return languageTags;
@@ -750,7 +770,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public String getDisplayName(InternalActionContext ac) {
 		String displayFieldName = null;
 		try {
-			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags());
+			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(),
+					ac.getRelease().getUuid(), ac.getVersion());
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");

@@ -179,6 +179,6 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// within the schema.
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleUpdate(InternalActionContext.create(rc)));
+		route.handler(rc -> crudHandler.handleUpdate(InternalActionContext.create(rc).setVersion("draft")));
 	}
 }

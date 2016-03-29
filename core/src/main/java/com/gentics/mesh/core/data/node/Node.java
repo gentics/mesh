@@ -138,11 +138,19 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	PageImpl<? extends Tag> getTags(PagingParameter params) throws InvalidArgumentException;
 
 	/**
-	 * Return a list of language names.
+	 * Return a list of language names for draft versions in the latest release
 	 * 
 	 * @return
 	 */
 	List<String> getAvailableLanguageNames();
+
+	/**
+	 * Return a list of language names for versions of given type in the given release
+	 * @param release release
+	 * @param type container version type
+	 * @return
+	 */
+	List<String> getAvailableLanguageNames(Release release, Type type);
 
 	/**
 	 * Return the project of the node.
@@ -224,9 +232,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * there is no de version the en version will be selected and returned.
 	 * 
 	 * @param languageTags
+	 * @param releaseUuid release Uuid
+	 * @param version requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matched
 	 */
-	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags);
+	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version);
 
 	/**
 	 * Set the published flag.

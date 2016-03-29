@@ -40,6 +40,7 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
+		parameters.draft();
 		return call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters));
 	}
 

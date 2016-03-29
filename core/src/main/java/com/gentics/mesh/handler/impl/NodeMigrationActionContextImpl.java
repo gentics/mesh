@@ -142,6 +142,11 @@ public class NodeMigrationActionContextImpl extends AbstractActionContext implem
 	}
 
 	@Override
+	public InternalActionContext setVersion(String version) {
+		return this;
+	}
+
+	@Override
 	public MeshAuthUser getUser() {
 		return null;
 	}

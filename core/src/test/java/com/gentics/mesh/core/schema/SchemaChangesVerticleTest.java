@@ -39,6 +39,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.rest.MeshRestClient;
 import com.gentics.mesh.test.TestUtils;
 import com.gentics.mesh.util.FieldUtil;
@@ -194,10 +195,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.setVersion(schema.getVersion() + 1);
 
 		// 5. Read node and check additional field
-		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
-		latchFor(nodeFuture);
-		assertSuccess(nodeFuture);
-		NodeResponse response = nodeFuture.result();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
 		assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 		assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 				response.getFields().getNumberField("content").getClass());
@@ -207,10 +205,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
-		nodeFuture = getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest);
-		latchFor(nodeFuture);
-		assertSuccess(nodeFuture);
-		response = nodeFuture.result();
+		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 		assertNotNull(response);
 		assertNotNull(response.getFields().hasField("content"));
 		assertEquals(42.01, response.getFields().getNumberField("content").getNumber());
@@ -487,10 +482,8 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		schema.setVersion(schema.getVersion() + 1);
 
 		// Read node and check additional field
-		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
-		latchFor(nodeFuture);
-		assertSuccess(nodeFuture);
-		NodeResponse response = nodeFuture.result();
+		NodeResponse response = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
 		assertNotNull(response);
 
 		// Update the node and set the new field
@@ -498,19 +491,14 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeUpdateRequest.getFields().put("extraname", new StringFieldImpl().setString("sometext"));
-		nodeFuture = getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest);
-		latchFor(nodeFuture);
-		assertSuccess(nodeFuture);
-		response = nodeFuture.result();
+		response = call(() -> getClient().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 		assertNotNull(response);
 		assertNotNull(response.getFields().getStringField("extraname"));
 		assertEquals("sometext", response.getFields().getStringField("extraname").getString());
 
 		// Read node and check additional field
-		nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
-		latchFor(nodeFuture);
-		assertSuccess(nodeFuture);
-		response = nodeFuture.result();
+		response = call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
 		assertNotNull(response);
 		assertNotNull(response.getFields().hasField("extraname"));
 
@@ -540,10 +528,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		failingLatch(latch);
 
 		// Read node and check additional field
-		Future<NodeResponse> nodeFuture = getClient().findNodeByUuid(PROJECT_NAME, content.getUuid());
-		latchFor(nodeFuture);
-		assertSuccess(nodeFuture);
-		NodeResponse response = nodeFuture.result();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
 		assertNotNull(response);
 		assertNull(response.getFields().getStringField("content"));
 

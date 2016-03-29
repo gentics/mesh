@@ -29,10 +29,12 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.demo.TestDataProvider;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.RestAssert;
 
 import io.vertx.core.MultiMap;
@@ -247,6 +249,8 @@ public abstract class AbstractDBTest {
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
+		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
+		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 
 		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 		when(rc.data()).thenReturn(map);
@@ -258,6 +262,7 @@ public abstract class AbstractDBTest {
 		JsonObject principal = new JsonObject();
 		principal.put("uuid", user.getUuid());
 		when(rc.user()).thenReturn(requestUser);
+		when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project().getName());
 		return rc;
 
 	}

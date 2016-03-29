@@ -340,14 +340,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setParentNodeUuid(folder("news").getUuid());
 
 		NodeRequestParameter parameters = new NodeRequestParameter();
-		parameters.setLanguages("de");
+		parameters.setLanguages("de").draft();
 
 		assertThat(searchProvider).recordedStoreEvents(0);
-		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request, parameters);
-		latchFor(future);
-		assertSuccess(future);
+		NodeResponse restNode = call(() -> getClient().createNode(PROJECT_NAME, request, parameters));
 		assertThat(searchProvider).recordedStoreEvents(1);
-		NodeResponse restNode = future.result();
 		test.assertMeshNode(request, restNode);
 
 		Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid()).toBlocking().single();
@@ -355,10 +352,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertMeshNode(request, node);
 
 		// Load the node again
-		Future<NodeResponse> future2 = getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters);
-		latchFor(future2);
-		assertSuccess(future2);
-		restNode2 = future2.result();
+		restNode2 = call(() -> getClient().findNodeByUuid(PROJECT_NAME, restNode.getUuid(), parameters));
 
 		// Delete the node
 		Future<GenericMessageResponse> deleteFut = getClient().deleteNode(PROJECT_NAME, restNode2.getUuid());
@@ -630,7 +624,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 							fail(uh.cause().getMessage());
 						} else {
 							log.info("Updated {" + uh.result().getUuid() + "}");
-							Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME, uh.result().getUuid());
+							Future<NodeResponse> readFuture = getClient().findNodeByUuid(PROJECT_NAME,
+									uh.result().getUuid(), new NodeRequestParameter().draft());
 							readFuture.setHandler(rf -> {
 								if (rh.failed()) {
 									fail(rh.cause().getMessage());
@@ -780,7 +775,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking findNodeByUuid REST call");
-			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
+			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new NodeRequestParameter().draft()));
 		}
 		for (Future<NodeResponse> future : set) {
 			latchFor(future);
@@ -796,7 +791,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Set<Future<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			log.debug("Invoking findNodeByUuid REST call");
-			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid()));
+			set.add(getClient().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(),
+					new NodeRequestParameter().draft()));
 		}
 		for (Future<NodeResponse> future : set) {
 			latchFor(future);
@@ -811,11 +807,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull(future.result().getRolePerms());
-		assertEquals(4, future.result().getRolePerms().length);
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new RolePermissionParameter().setRoleUuid(role().getUuid()),
+				new NodeRequestParameter().draft()));
+		assertNotNull(response.getRolePerms());
+		assertEquals(4, response.getRolePerms().length);
 	}
 
 	@Test
@@ -825,16 +821,160 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(node);
 		assertNotNull(node.getUuid());
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
-		test.assertMeshNode(folder("2015"), future.result());
-		NodeResponse response = future.result();
-		//		assertEquals("name", response.getDisplayField());
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+		test.assertMeshNode(folder("2015"), response);
+
 		assertNotNull(response.getParentNode());
 		assertEquals(folder("2015").getParentNode().getUuid(), response.getParentNode().getUuid());
 		assertEquals("News", response.getParentNode().getDisplayName());
 		assertEquals("en", response.getLanguage());
+	}
+
+	@Test
+	public void testReadVersionByNumber() {
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+		assertThat(response).hasVersion("0.1").hasLanguage("en").hasStringField("name", "2015");
+
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		updateRequest.setLanguage("en");
+		// create version 0.2
+		updateRequest.getFields().put("name", FieldUtil.createStringField("one"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+		// create version 0.3
+		updateRequest.getFields().put("name", FieldUtil.createStringField("two"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+		// create version 0.4
+		updateRequest.getFields().put("name", FieldUtil.createStringField("three"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+
+		updateRequest.setLanguage("de");
+		// create german version 0.1
+		updateRequest.getFields().put("name", FieldUtil.createStringField("eins"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+		// create german version 0.2
+		updateRequest.getFields().put("name", FieldUtil.createStringField("zwei"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+		// create german version 0.3
+		updateRequest.getFields().put("name", FieldUtil.createStringField("drei"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest));
+
+		// test english versions
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft())))
+				.as("Draft").hasVersion("0.4").hasLanguage("en").hasStringField("name", "three");
+		assertThat(call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.1"))))
+						.as("Version 0.1").hasVersion("0.1").hasLanguage("en").hasStringField("name", "2015");
+		assertThat(call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.2"))))
+						.as("Version 0.2").hasVersion("0.2").hasLanguage("en").hasStringField("name", "one");
+		assertThat(call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.3"))))
+						.as("Version 0.3").hasVersion("0.3").hasLanguage("en").hasStringField("name", "two");
+		assertThat(call(
+				() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("0.4"))))
+						.as("Version 0.4").hasVersion("0.4").hasLanguage("en").hasStringField("name", "three");
+
+		// test german versions
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setLanguages("de").draft()))).as("German draft").hasVersion("0.3")
+						.hasLanguage("de").hasStringField("name", "drei");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setLanguages("de").setVersion("0.1")))).as("German version 0.1")
+						.hasVersion("0.1").hasLanguage("de").hasStringField("name", "eins");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setLanguages("de").setVersion("0.2")))).as("German version 0.2")
+						.hasVersion("0.2").hasLanguage("de").hasStringField("name", "zwei");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setLanguages("de").setVersion("0.3")))).as("German version 0.3")
+						.hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
+	}
+
+	@Test
+	public void testReadBogusVersion() {
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("bogus")),
+				BAD_REQUEST, "error_illegal_version", "bogus");
+	}
+
+	@Test
+	public void testReadInexistentVersion() {
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+
+		// TODO
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("47.11")),
+				NOT_FOUND, "error_illegal_version", "bogus");
+	}
+
+	@Test
+	public void testReadPublishedVersion() {
+		// TODO
+	}
+
+	@Test
+	public void testReadNodeForRelease() {
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		Project project = project();
+		Release initialRelease = project.getReleaseRoot().getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		updateRequest.setLanguage("en");
+		updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new release"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest,
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(initialRelease.getName()).draft()))).as("Initial Release Version")
+						.hasVersion("0.1").hasStringField("name", "2015");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(newRelease.getName()).draft()))).as("New Release Version")
+						.hasVersion("0.1").hasStringField("name", "2015 in new release");
+	}
+
+	@Test
+	public void testReadNodeVersionForRelease() {
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		Project project = project();
+		Release initialRelease = project.getReleaseRoot().getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		updateRequest.setLanguage("en");
+
+		// create version 0.1 in new release
+		updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new release"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest,
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+
+		// create version 0.2 in initial release
+		updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 initial release"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest,
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+
+		// create version 0.2 in new release
+		updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new release"));
+		call(() -> getClient().updateNode(PROJECT_NAME, uuid, updateRequest,
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(initialRelease.getName()).setVersion("0.1")))).as("Initial Release Version")
+						.hasVersion("0.1").hasStringField("name", "2015");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(newRelease.getName()).setVersion("0.1")))).as("New Release Version")
+						.hasVersion("0.1").hasStringField("name", "2015 v0.1 new release");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(initialRelease.getName()).setVersion("0.2")))).as("Initial Release Version")
+						.hasVersion("0.2").hasStringField("name", "2015 v0.2 initial release");
+		assertThat(call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid,
+				new NodeRequestParameter().setRelease(newRelease.getName()).setVersion("0.2")))).as("New Release Version")
+						.hasVersion("0.2").hasStringField("name", "2015 v0.2 new release");
 	}
 
 	/**
@@ -849,11 +989,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		ServerSchemaStorage.getInstance().clear();
 
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse response = future.result();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
 		assertEquals("/api/v1/dummy/webroot/error/404", response.getPath());
 		assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/error/404");
 		assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/error/404");
@@ -862,11 +999,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadByUUIDWithLinkPaths() {
 		Node node = folder("news");
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse response = future.result();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().draft().setResolveLinks(LinkType.FULL)));
 		assertThat(response.getAvailableLanguages()).containsExactly("de", "en");
 		assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/News");
 		assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/Neuigkeiten");
@@ -875,11 +1009,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadByUUIDBreadcrumb() {
 		Node node = content("news_2014");
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse response = future.result();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
 		assertTrue(response.getBreadcrumb().get(0).getUuid().equals(folder("2014").getUuid()));
 		assertTrue(response.getBreadcrumb().get(0).getDisplayName().equals("2014"));
 		assertTrue(response.getBreadcrumb().get(1).getUuid().equals(folder("news").getUuid()));
@@ -895,11 +1026,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Request the node with various language parameter values. Fallback to "de"
 		NodeRequestParameter parameters = new NodeRequestParameter();
-		parameters.setLanguages("dv,nl,de,en");
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse restNode = future.result();
+		parameters.setLanguages("dv,nl,de,en").draft();
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters));
 		test.assertMeshNode(folder("products"), restNode);
 
 		// Ensure "de" version was returned
@@ -915,11 +1043,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid = node.getUuid();
 
 		NodeRequestParameter parameters = new NodeRequestParameter();
-		parameters.setLanguages("de");
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
-		latchFor(future);
-		assertSuccess(future);
-		NodeResponse restNode = future.result();
+		parameters.setLanguages("de").draft();
+		NodeResponse restNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters));
 		test.assertMeshNode(folder("products"), restNode);
 
 		StringField field = restNode.getFields().getStringField("name");
@@ -945,13 +1070,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		// Request the node in english en
 		NodeRequestParameter parameters = new NodeRequestParameter();
-		parameters.setLanguages("en");
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters);
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result().getLanguage()).as("Node language").isNull();
-		assertThat(future.result().getAvailableLanguages()).as("Available languages").containsOnly("nl");
-		assertThat(future.result().getFields()).as("Node Fields").isEmpty();
+		parameters.setLanguages("en").draft();
+		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters));
+		assertThat(response.getLanguage()).as("Node language").isNull();
+		assertThat(response.getAvailableLanguages()).as("Available languages").containsOnly("nl");
+		assertThat(response.getFields()).as("Node Fields").isEmpty();
 	}
 
 	@Test
@@ -963,7 +1086,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull(node.getUuid());
 
 		NodeRequestParameter parameters = new NodeRequestParameter();
-		parameters.setLanguages("blabla", "edgsdg");
+		parameters.setLanguages("blabla", "edgsdg").draft();
 
 		assertThat(searchProvider).recordedStoreEvents(0);
 		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, parameters);
@@ -979,7 +1102,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 		role().revokePermissions(node, READ_PERM);
-		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid);
+		Future<NodeResponse> future = getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().draft());
 		latchFor(future);
 		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 	}

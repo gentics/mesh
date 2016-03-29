@@ -53,7 +53,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		Node node = content();
-		InternalActionContext ac = getMockedInternalActionContext("");
+		InternalActionContext ac = getMockedInternalActionContext("?version=draft");
 		NodeReference reference = node.transformToReference(ac).toBlocking().first();
 		assertNotNull(reference);
 		assertEquals(node.getUuid(), reference.getUuid());
@@ -114,7 +114,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testGetSegmentPath() {
 		Node newsNode = content("news overview");
-		RoutingContext rc = getMockedRoutingContext("");
+		RoutingContext rc = getMockedRoutingContext("?version=draft");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		assertNotNull(newsNode.getPathSegment(ac));
 	}
@@ -122,7 +122,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	public void testGetFullSegmentPath() {
 		Node newsNode = content("news overview");
-		RoutingContext rc = getMockedRoutingContext("");
+		RoutingContext rc = getMockedRoutingContext("?version=draft");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		System.out.println(newsNode.getPath(ac));
 	}
@@ -167,7 +167,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testMeshNodeFields() throws IOException {
 		Node newsNode = content("news overview");
 		Language german = german();
-		RoutingContext rc = getMockedRoutingContext("?lang=de,en");
+		RoutingContext rc = getMockedRoutingContext("lang=de,en&version=draft");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		NodeGraphFieldContainer germanFields = newsNode.getGraphFieldContainer(german);
 		assertEquals(germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField()).getString(),
@@ -212,7 +212,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		RoutingContext rc = getMockedRoutingContext("lang=en");
+		RoutingContext rc = getMockedRoutingContext("lang=en&version=draft");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		Node newsNode = content("concorde");
 

@@ -91,6 +91,14 @@ public class NodeRequestParameter implements QueryParameterProvider {
 		return this;
 	}
 
+	/**
+	 * Request the draft version.
+	 * @return fluent API
+	 */
+	public NodeRequestParameter draft() {
+		return setVersion("draft");
+	}
+
 	@Override
 	public String getQueryParameters() {
 		StringBuilder query = new StringBuilder();
