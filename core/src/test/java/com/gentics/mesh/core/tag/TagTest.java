@@ -155,13 +155,12 @@ public class TagTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
 
-		PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingParameter(1, 10));
+		PageImpl<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameter(1, 10));
 		assertEquals(12, tagPage.getTotalElements());
 		assertEquals(10, tagPage.getSize());
 
-		tagPage = meshRoot().getTagRoot().findAll(requestUser, new PagingParameter(1, 14));
+		tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParameter(1, 14));
 		assertEquals(tags().size(), tagPage.getTotalElements());
 		assertEquals(12, tagPage.getSize());
 	}
@@ -176,14 +175,16 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertNotNull(noPermTag.getUuid());
 		assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
 
-		PageImpl<? extends Tag> projectTagpage = project().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
+		PageImpl<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(""),
+				new PagingParameter(1, 20));
 		assertPage(projectTagpage, tags().size());
 
-		PageImpl<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
+		PageImpl<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(""),
+				new PagingParameter(1, 20));
 		assertPage(globalTagPage, tags().size());
 
 		role().grantPermissions(noPermTag, READ_PERM);
-		globalTagPage = meshRoot().getTagRoot().findAll(getRequestUser(), new PagingParameter(1, 20));
+		globalTagPage = meshRoot().getTagRoot().findAll(null, new PagingParameter(1, 20));
 		assertPage(globalTagPage, tags().size() + 1);
 	}
 

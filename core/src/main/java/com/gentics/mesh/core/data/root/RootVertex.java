@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.root;
 import java.util.List;
 import java.util.Stack;
 
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -46,16 +45,15 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 	/**
 	 * Find the visible elements and return a paged result.
-	 * 
-	 * @param requestUser
-	 *            User that is used to check read permissions against.
+	 * @param ac action context
 	 * @param pagingInfo
 	 *            Paging information object that contains page options.
+	 * 
 	 * @return
 	 * @throws InvalidArgumentException
 	 *             if the paging options are malformed.
 	 */
-	PageImpl<? extends T> findAll(MeshAuthUser requestUser, PagingParameter pagingInfo) throws InvalidArgumentException;
+	PageImpl<? extends T> findAll(InternalActionContext ac, PagingParameter pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Resolve the given stack to the vertex.

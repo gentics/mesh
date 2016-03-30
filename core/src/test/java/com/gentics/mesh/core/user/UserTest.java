@@ -123,13 +123,12 @@ public class UserTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
 
-		PageImpl<? extends User> page = boot.userRoot().findAll(requestUser, new PagingParameter(1, 6));
+		PageImpl<? extends User> page = boot.userRoot().findAll(ac, new PagingParameter(1, 6));
 		assertEquals(users().size(), page.getTotalElements());
 		assertEquals(3, page.getSize());
 
-		page = boot.userRoot().findAll(requestUser, new PagingParameter(1, 15));
+		page = boot.userRoot().findAll(ac, new PagingParameter(1, 15));
 		assertEquals(users().size(), page.getTotalElements());
 		assertEquals(users().size(), page.getSize());
 	}
@@ -137,7 +136,8 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		PageImpl<? extends User> page = boot.userRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
+		PageImpl<? extends User> page = boot.userRoot().findAll(getMockedInternalActionContext(""),
+				new PagingParameter(1, 25));
 		assertNotNull(page);
 		assertEquals(users().size(), page.getTotalElements());
 	}

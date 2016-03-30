@@ -52,7 +52,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-		root.findAll(getRequestUser(), new PagingParameter(1, 10));
+		root.findAll(getMockedInternalActionContext(""), new PagingParameter(1, 10));
 	}
 
 	@Test

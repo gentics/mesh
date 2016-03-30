@@ -145,20 +145,14 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		List<String> languageTags = new ArrayList<>();
-		languageTags.add("de");
-
-		RoutingContext rc = getMockedRoutingContext("");
+		RoutingContext rc = getMockedRoutingContext("version=draft");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
-		PageImpl<? extends Node> page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingParameter(1, 10));
+		PageImpl<? extends Node> page = boot.nodeRoot().findAll(ac, new PagingParameter(1, 10));
 
-		// There are nodes that are only available in english
 		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(10, page.getSize());
 
-		languageTags.add("en");
-		page = boot.nodeRoot().findAll(requestUser, languageTags, new PagingParameter(1, 15));
+		page = boot.nodeRoot().findAll(ac, new PagingParameter(1, 15));
 		assertEquals(getNodeCount(), page.getTotalElements());
 		assertEquals(15, page.getSize());
 	}

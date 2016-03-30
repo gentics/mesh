@@ -91,7 +91,8 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		PageImpl<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
+		PageImpl<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot()
+				.findAll(getMockedInternalActionContext(""), new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

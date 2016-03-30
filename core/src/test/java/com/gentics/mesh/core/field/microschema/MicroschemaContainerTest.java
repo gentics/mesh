@@ -54,12 +54,11 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	public void testFindAll() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
 
 		int expectedMicroschemaContainers = microschemaContainers().size();
 
 		for (int i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-			PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(requestUser, new PagingParameter(1, i));
+			PageImpl<? extends MicroschemaContainer> page = boot.microschemaContainerRoot().findAll(ac, new PagingParameter(1, i));
 
 			assertEquals(microschemaContainers().size(), page.getTotalElements());
 			assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());

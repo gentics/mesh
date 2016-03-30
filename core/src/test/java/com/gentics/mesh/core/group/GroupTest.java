@@ -62,13 +62,12 @@ public class GroupTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
-		PageImpl<? extends Group> page = boot.groupRoot().findAll(requestUser, new PagingParameter(1, 19));
+		PageImpl<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParameter(1, 19));
 
 		assertEquals(groups().size(), page.getTotalElements());
 		assertEquals(groups().size(), page.getSize());
 
-		page = boot.groupRoot().findAll(requestUser, new PagingParameter(1, 3));
+		page = boot.groupRoot().findAll(ac, new PagingParameter(1, 3));
 		assertEquals(groups().size(), page.getTotalElements());
 		assertEquals(3, page.getSize());
 	}

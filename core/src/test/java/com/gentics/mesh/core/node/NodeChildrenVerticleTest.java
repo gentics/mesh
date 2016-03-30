@@ -18,15 +18,19 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
+import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.Future;
 
@@ -54,44 +58,33 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		String parentNodeUuid;
 		Node baseNode = project().getBaseNode();
 		parentNodeUuid = baseNode.getUuid();
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid);
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(3, future.result().getData().size());
+		NodeListResponse nodeList = call(
+				() -> getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid, new NodeRequestParameter().draft()));
+		assertEquals(3, nodeList.getData().size());
 
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		NodeCreateRequest create1 = new NodeCreateRequest();
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("folder");
-		nodeCreateRequest.setSchema(schemaReference);
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
-		Future<NodeResponse> nodeCreateFuture = getClient().createNode(PROJECT_NAME, nodeCreateRequest);
-		latchFor(nodeCreateFuture);
-		assertSuccess(nodeCreateFuture);
+		create1.setSchema(schemaReference);
+		create1.setLanguage("en");
+		create1.setParentNodeUuid(parentNodeUuid);
+		NodeResponse createdNode = call(() -> getClient().createNode(PROJECT_NAME, create1));
 
-		String uuid = nodeCreateFuture.result().getUuid();
-		future = getClient().findNodeChildren(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		String uuid = createdNode.getUuid();
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+		assertEquals(0, nodeList.getData().size());
 
-		nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setSchema(schemaReference);
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setParentNodeUuid(uuid);
-		nodeCreateFuture = getClient().createNode(PROJECT_NAME, nodeCreateRequest);
-		latchFor(nodeCreateFuture);
-		assertSuccess(nodeCreateFuture);
+		NodeCreateRequest create2 = new NodeCreateRequest();
+		create2.setSchema(schemaReference);
+		create2.setLanguage("en");
+		create2.setParentNodeUuid(uuid);
+		createdNode = call(() -> getClient().createNode(PROJECT_NAME, create2));
 
-		future = getClient().findNodeChildren(PROJECT_NAME, uuid);
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals("The subnode did not contain the created node", 1, future.result().getData().size());
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, uuid, new NodeRequestParameter().draft()));
+		assertEquals("The subnode did not contain the created node", 1, nodeList.getData().size());
 
-		future = getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid);
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals("The basenode should still contain four nodes.", 4, future.result().getData().size());
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, parentNodeUuid, new NodeRequestParameter().draft()));
+		assertEquals("The basenode should still contain four nodes.", 4, nodeList.getData().size());
 
 	}
 
@@ -154,12 +147,9 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 		int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
-				new NodeRequestParameter());
-		latchFor(future);
-		assertSuccess(future);
+		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
+				new NodeRequestParameter().draft()));
 
-		NodeListResponse nodeList = future.result();
 		assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 		assertEquals(expectedItemsInPage, nodeList.getData().size());
 	}
@@ -172,12 +162,9 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 		Node nodeWithNoPerm = folder("2015");
 		role().revokePermissions(nodeWithNoPerm, READ_PERM);
 
-		Future<NodeListResponse> future = getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter().setPerPage(20000),
-				new NodeRequestParameter());
-		latchFor(future);
-		assertSuccess(future);
+		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter().setPerPage(20000),
+				new NodeRequestParameter().draft()));
 
-		NodeListResponse nodeList = future.result();
 		assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
 		assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
 		assertEquals(2, nodeList.getData().size());
@@ -198,4 +185,45 @@ public class NodeChildrenVerticleTest extends AbstractRestVerticleTest {
 
 	}
 
+	@Test
+	public void testReadReleaseChildren() {
+		Node node = folder("news");
+		Node firstChild = node.getChildren().get(0);
+		int childrenSize = node.getChildren().size();
+		int expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
+
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		NodeListResponse nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
+				new NodeRequestParameter().setRelease(initialRelease.getName()).draft()));
+		assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
+		assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
+
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
+				new NodeRequestParameter().setRelease(newRelease.getName()).draft()));
+		assertEquals("Total children in initial release", 0, nodeList.getMetainfo().getTotalCount());
+		assertEquals("Returned children in initial release", 0, nodeList.getData().size());
+
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("name", FieldUtil.createStringField("new"));
+		call(() -> getClient().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
+
+		nodeList = call(() -> getClient().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParameter(),
+				new NodeRequestParameter().setRelease(newRelease.getName()).draft()));
+		assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
+		assertEquals("Returned children in new release", 1, nodeList.getData().size());
+	}
+
+	@Test
+	public void testReadPublishedChildren() {
+		// TODO
+	}
+
+	@Test
+	public void testReadReleasePublishedChildren() {
+		// TODO
+	}
 }

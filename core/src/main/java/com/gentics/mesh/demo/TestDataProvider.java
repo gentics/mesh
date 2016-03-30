@@ -586,8 +586,7 @@ public class TestDataProvider {
 	}
 
 	public int getNodeCount() {
-		// +1 basenode (1 project)
-		return folders.size() + contents.size() + 1;
+		return folders.size() + contents.size();
 	}
 
 	public Map<String, TagFamily> getTagFamilies() {

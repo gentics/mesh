@@ -2,7 +2,11 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -23,6 +27,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -85,6 +91,36 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		VertexTraversal<?, ?, ?> countTraversal = requestUser.getImpl().getPermTraversal(READ_PERM).has(NodeImpl.class);
 		PageImpl<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, NodeImpl.class);
 		return nodePage;
+	}
+
+	@Override
+	public PageImpl<? extends Node> findAll(InternalActionContext ac, PagingParameter pagingInfo)
+			throws InvalidArgumentException {
+		MeshAuthUser requestUser = ac.getUser();
+		Release release = ac.getRelease();
+		Type type = Type.forVersion(ac.getVersion());
+		String permLabel = type == Type.PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
+
+		VertexTraversal<?, ?, ?> traversal = getAllTraversal(requestUser, release, type, permLabel);
+		VertexTraversal<?, ?, ?> countTraversal = getAllTraversal(requestUser, release, type, permLabel);
+		PageImpl<? extends Node> items = TraversalHelper.getPagedResult(traversal, countTraversal, pagingInfo, getPersistanceClass());
+		return items;
+	}
+
+	/**
+	 * Get the vertex traversal that finds all nodes visible to the user
+	 * @param requestUser user
+	 * @param release release
+	 * @param type type
+	 * @param permLabel permission label
+	 * @return vertex traversal
+	 */
+	protected VertexTraversal<?, ?, ?> getAllTraversal(MeshAuthUser requestUser, Release release, Type type,
+			String permLabel) {
+		return out(getRootLabel()).has(getPersistanceClass()).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back().mark().outE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).outV().back();
 	}
 
 	@Override

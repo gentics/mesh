@@ -83,7 +83,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		PageImpl<? extends Project> page = meshRoot().getProjectRoot().findAll(getRequestUser(), new PagingParameter(1, 25));
+		PageImpl<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(""), new PagingParameter(1, 25));
 		assertNotNull(page);
 	}
 

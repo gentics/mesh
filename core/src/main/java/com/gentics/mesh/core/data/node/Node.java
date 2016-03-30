@@ -178,9 +178,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param requestUser
 	 *            user
+	 * @param releaseUuid release Uuid
+	 * @param type edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser);
+	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, Type type);
 
 	/**
 	 * Returns the parent node of this node.
@@ -211,11 +213,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param requestUser
 	 * @param languageTags
+	 * @param releaseUuid release Uuid
+	 * @param type edge type
 	 * @param pagingParameter
 	 * @return
 	 * @throws InvalidArgumentException
 	 */
-	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, PagingParameter pagingParameter)
+	PageImpl<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, Type type, PagingParameter pagingParameter)
 			throws InvalidArgumentException;
 
 	/**

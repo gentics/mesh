@@ -436,11 +436,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	 */
 	@Test
 	public void testReadNodesDefaultPaging() throws Exception {
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME);
-		latchFor(future);
-		assertSuccess(future);
+		NodeListResponse restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new NodeRequestParameter().draft()));
 
-		NodeListResponse restResponse = future.result();
 		assertNotNull(restResponse);
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
@@ -459,14 +456,13 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		String firstUuid = null;
 		for (int i = 0; i < 10; i++) {
-			Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 100));
-			latchFor(future);
-			assertSuccess(future);
+			NodeListResponse response = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 100),
+					new NodeRequestParameter().draft()));
 			if (firstUuid == null) {
-				firstUuid = future.result().getData().get(0).getUuid();
+				firstUuid =response.getData().get(0).getUuid();
 			}
 			assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid,
-					future.result().getData().get(0).getUuid());
+					response.getData().get(0).getUuid());
 		}
 
 	}
@@ -483,16 +479,15 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		int nNodes = 20;
 		for (int i = 0; i < nNodes; i++) {
 			Node node = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+			node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			assertNotNull(node);
 			role().grantPermissions(node, READ_PERM);
 		}
 
 		assertNotNull(noPermNode.getUuid());
 		int perPage = 11;
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(3, perPage));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse restResponse = future.result();
+		NodeListResponse restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(3, perPage),
+				new NodeRequestParameter().draft()));
 		assertEquals(perPage, restResponse.getData().size());
 
 		// Extra Nodes + permitted nodes
@@ -506,7 +501,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		List<NodeResponse> allNodes = new ArrayList<>();
 		for (int page = 1; page <= totalPages; page++) {
-			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(page, perPage));
+			Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME,
+					new PagingParameter(page, perPage), new NodeRequestParameter().draft());
 			latchFor(pageFuture);
 			assertSuccess(pageFuture);
 			restResponse = pageFuture.result();
@@ -531,10 +527,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(pageFuture);
 		expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-		pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(4242, 25));
-		latchFor(pageFuture);
-		assertSuccess(pageFuture);
-		NodeListResponse list = pageFuture.result();
+		NodeListResponse list = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(4242, 25),
+				new NodeRequestParameter().draft()));
 		assertEquals(4242, list.getMetainfo().getCurrentPage());
 		assertEquals(0, list.getData().size());
 		assertEquals(25, list.getMetainfo().getPerPage());
@@ -545,20 +539,17 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadMultipleOnlyMetadata() {
-		Future<NodeListResponse> pageFuture = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 0));
-		latchFor(pageFuture);
-		assertSuccess(pageFuture);
-		assertEquals(0, pageFuture.result().getData().size());
+		NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 0),
+				new NodeRequestParameter().draft()));
+		assertEquals(0, listResponse.getData().size());
 	}
 
 	@Test
 	public void testReadNodesWithoutPermissions() throws Exception {
 
 		// TODO add node that has no perms and check the response
-		Future<NodeListResponse> future = getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 10));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse restResponse = future.result();
+		NodeListResponse restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 10),
+				new NodeRequestParameter().draft()));
 
 		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
@@ -566,6 +557,43 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertEquals(2, restResponse.getMetainfo().getPageCount());
 		assertEquals(10, restResponse.getMetainfo().getPerPage());
 		assertEquals(getNodeCount(), restResponse.getMetainfo().getTotalCount());
+	}
+
+	@Test
+	public void testReadNodesForRelease() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		NodeListResponse restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000),
+				new NodeRequestParameter().draft()));
+		assertThat(restResponse.getData()).as("Node List for latest release").isEmpty();
+
+		restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000),
+				new NodeRequestParameter().setRelease(initialRelease.getName()).draft()));
+		assertThat(restResponse.getData()).as("Node List for initial release").hasSize(getNodeCount());
+
+		// update a single node in the new release
+		Node node = folder("2015");
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("name", FieldUtil.createStringField("2015 new release"));
+		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
+
+		// check whether there is one node in the new release now
+		restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000),
+				new NodeRequestParameter().draft()));
+		assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
+
+		restResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000),
+				new NodeRequestParameter().draft().setRelease(newRelease.getName())));
+		assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
+
+	}
+
+	@Test
+	public void testReadPublishedNodes() {
+		// TODO
 	}
 
 	@Test

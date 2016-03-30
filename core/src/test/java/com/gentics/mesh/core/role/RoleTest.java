@@ -240,12 +240,11 @@ public class RoleTest extends AbstractBasicObjectTest {
 	public void testFindAllVisible() throws InvalidArgumentException {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		MeshAuthUser requestUser = ac.getUser();
-		PageImpl<? extends Role> page = boot.roleRoot().findAll(requestUser, new PagingParameter(1, 5));
+		PageImpl<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParameter(1, 5));
 		assertEquals(roles().size(), page.getTotalElements());
 		assertEquals(4, page.getSize());
 
-		page = boot.roleRoot().findAll(requestUser, new PagingParameter(1, 15));
+		page = boot.roleRoot().findAll(ac, new PagingParameter(1, 15));
 		assertEquals(roles().size(), page.getTotalElements());
 		assertEquals(4, page.getSize());
 	}

@@ -190,9 +190,8 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			RootVertex<T> root = handler.call();
 
 			PagingParameter pagingInfo = ac.getPagingParameter();
-			MeshAuthUser requestUser = ac.getUser();
 
-			PageImpl<? extends T> page = root.findAll(requestUser, pagingInfo);
+			PageImpl<? extends T> page = root.findAll(ac, pagingInfo);
 			return page.transformToRest(ac);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);

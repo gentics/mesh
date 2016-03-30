@@ -51,7 +51,7 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 		Release releaseTwo = releaseRoot.create("Two", user());
 		Release releaseThree = releaseRoot.create("Three", user());
 
-		PageImpl<? extends Release> page = releaseRoot.findAll(getRequestUser(), new PagingParameter(1, 25));
+		PageImpl<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(""), new PagingParameter(1, 25));
 		assertThat(page).isNotNull();
 		ArrayList<Release> arrayList = new ArrayList<Release>();
 		page.iterator().forEachRemaining(r -> arrayList.add(r));
