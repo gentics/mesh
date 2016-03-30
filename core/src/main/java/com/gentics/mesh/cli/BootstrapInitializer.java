@@ -252,7 +252,7 @@ public class BootstrapInitializer {
 	/**
 	 * Invoke the changelog system to execute database changes.
 	 */
-	private void invokeChangelog() {
+	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
 		if (!cls.applyChanges()) {

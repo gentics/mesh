@@ -63,7 +63,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				}
 				Observable<? extends Node> obs = node.deleteLanguageContainer(ac, language);
 				return obs.map(updatedNode -> {
-					return message(ac, "node_deleted_language", updatedNode.getUuid(), languageTag);
+					return message(ac, "node_deleted_language", uuid, languageTag);
 				});
 
 			});

@@ -142,7 +142,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// Add display field value
 			Map<String, String> displayFieldMap = new HashMap<>();
 			displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-			//			displayFieldMap.put("value", container.getDisplayFieldValue(container.getSchemaContainerVersion().getSchema()));
+			displayFieldMap.put("value", container.getDisplayFieldValue());
 			map.put("displayField", displayFieldMap);
 			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
 					composeDocumentId(node, language), map));

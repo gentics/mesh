@@ -32,6 +32,7 @@ public class DemoDumpGenerator {
 			boot.initSearchIndex();
 			boot.initMandatoryData();
 			boot.initPermissions();
+			boot.invokeChangelog();
 
 			// Setup demo data
 			DemoDataProvider provider = ctx.getBean("demoDataProvider", DemoDataProvider.class);

@@ -82,6 +82,11 @@
 * Enhancement: The mesh ui was updated.
 ----
 
+=== 0.6.5 - 
+
+* Fix: The displayField value was missing within the node search document. The value was added.
+* Fix: The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
+
 === Upcoming changes
 
 [source]
