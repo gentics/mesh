@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.path.Path;
@@ -279,6 +280,48 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	Observable<NavigationResponse> transformToNavigation(InternalActionContext ac);
+
+	/**
+	 * Transform the node into a publish status response rest model.
+	 *
+	 * @param ac
+	 * @return
+	 */
+	Observable<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac);
+
+	/**
+	 * Publish the node (all languages)
+	 *
+	 * @param ac
+	 * @return
+	 */
+	Observable<Void> publish(InternalActionContext ac);
+
+	/**
+	 * Take the node offline (all languages)
+	 *
+	 * @param ac
+	 * @return
+	 */
+	Observable<Void> takeOffline(InternalActionContext ac);
+
+	/**
+	 * Publish a language of the node
+	 *
+	 * @param ac
+	 * @param languageTag
+	 * @return
+	 */
+	Observable<Void> publish(InternalActionContext ac, String languageTag);
+
+	/**
+	 * Take a language of the node offline
+	 *
+	 * @param ac
+	 * @param languageTag
+	 * @return
+	 */
+	Observable<Void> takeOffline(InternalActionContext ac, String languageTag);
 
 	/**
 	 * Delete the language container for the given language.

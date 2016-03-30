@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_IMPLEMENTED;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -68,6 +69,8 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -660,6 +663,54 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
 		return Observable.just(nodeReference);
+	}
+
+	@Override
+	public Observable<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac) {
+		Release release = ac.getRelease();
+		PublishStatusResponse publishStatus = new PublishStatusResponse();
+		Map<String, PublishStatusModel> languages = new HashMap<>();
+		publishStatus.setAvailableLanguages(languages);
+
+		getGraphFieldContainers(release, Type.PUBLISHED).stream().forEach(c -> {
+			PublishStatusModel status = new PublishStatusModel().setPublished(true)
+					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()))
+					.setPublisher(c.getEditor().transformToReference()).setPublishTime(c.getLastEditedTimestamp());
+			languages.put(c.getLanguage().getLanguageTag(), status);
+		});
+
+		getGraphFieldContainers(release, Type.DRAFT).stream()
+				.filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag())).forEach(c -> {
+					PublishStatusModel status = new PublishStatusModel().setPublished(false)
+							.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()));
+					languages.put(c.getLanguage().getLanguageTag(), status);
+				});
+
+		return Observable.just(publishStatus);
+	}
+
+	@Override
+	public Observable<Void> publish(InternalActionContext ac) {
+		// TODO
+		throw error(NOT_IMPLEMENTED, "");
+	}
+
+	@Override
+	public Observable<Void> takeOffline(InternalActionContext ac) {
+		// TODO
+		throw error(NOT_IMPLEMENTED, "");
+	}
+
+	@Override
+	public Observable<Void> publish(InternalActionContext ac, String languageTag) {
+		// TODO
+		throw error(NOT_IMPLEMENTED, "");
+	}
+
+	@Override
+	public Observable<Void> takeOffline(InternalActionContext ac, String languageTag) {
+		// TODO
+		throw error(NOT_IMPLEMENTED, "");
 	}
 
 	@Override

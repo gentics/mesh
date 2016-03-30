@@ -52,7 +52,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		addFieldHandlers();
 		addLanguageHandlers();
 		addNavigationHandlers();
-
+		addPublishHandlers();
 	}
 
 	private void addNavigationHandlers() {
@@ -180,5 +180,23 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		route.handler(rc -> crudHandler.handleUpdate(InternalActionContext.create(rc).setVersion("draft")));
+	}
+
+	private void addPublishHandlers() {
+		Route getRoute = route("/:uuid/published").method(GET).produces(APPLICATION_JSON);
+		getRoute.handler(rc -> crudHandler.handleGetPublishStatus(InternalActionContext.create(rc)));
+
+		Route putRoute = route("/:uuid/published").method(PUT).produces(APPLICATION_JSON);
+		putRoute.handler(rc -> crudHandler.handlePublish(InternalActionContext.create(rc)));
+
+		Route deleteRoute = route("/:uuid/published").method(DELETE).produces(APPLICATION_JSON);
+		deleteRoute.handler(rc -> crudHandler.handleTakeOffline(InternalActionContext.create(rc)));
+
+		Route putLanguageRoute = route("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
+		putLanguageRoute.handler(rc -> crudHandler.handlePublish(InternalActionContext.create(rc), rc.get("languageTag")));
+
+		Route deleteLanguageRoute = route("/:uuid/languages/:languageTag/published").method(DELETE).produces(APPLICATION_JSON);
+		deleteLanguageRoute.handler(rc -> crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.get("languageTag")));
+
 	}
 }

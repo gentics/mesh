@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
 
@@ -146,4 +147,36 @@ public interface NodeClientMethods {
 	 */
 	Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
+	/**
+	 * Get the publish status of a node+
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param parameters
+	 * @return
+	 */
+	Future<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters);
+
+	/**
+	 * Publish a node
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param parameters
+	 * @return
+	 */
+	Future<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters);
+
+	/**
+	 * Take a node offline
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param parameters
+	 * @return
+	 */
+	Future<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters);
 }

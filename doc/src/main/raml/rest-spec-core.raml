@@ -659,6 +659,29 @@ traits:
             application/json:
               example: !include json/GenericMessageResponse.example.json
         423:
+    /published:
+      is: [ release ]
+      get:
+        description: Get the publish status of the node
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/PublishStatusResponse.example.json
+      put:
+        description: Publish all languages of the node
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/PublishStatusResponse.example.json
+      delete:
+        description: Take all languages of the node offline
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include json/PublishStatusResponse.example.json
     /tags:
       is: [ sortable, paged, release ]
       get:
@@ -683,6 +706,22 @@ traits:
             body:
               application/json:
                 example: !include json/GenericMessageResponse.example.json 
+      /published:
+        is: [ release ]
+        put:
+          description: Publish the language of the node
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include json/PublishStatusResponse.example.json
+        delete:
+          description: Take the language of the node offline
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include json/PublishStatusResponse.example.json
       /fields/{fieldname}:
         get:
           is: [ imagehandler ]

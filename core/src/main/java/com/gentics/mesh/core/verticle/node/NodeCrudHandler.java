@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -15,10 +16,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -175,6 +176,80 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
+	}
+
+	/**
+	 * Handle getting the publish status for the requested node
+	 * @param ac
+	 */
+	public void handleGetPublishStatus(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+				return node.transformToPublishStatus(ac);
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
+	 * Handle publishing a node
+	 * @param ac
+	 */
+	public void handlePublish(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+				return node.publish(ac).flatMap(v -> {
+					node.reload();
+					return node.transformToPublishStatus(ac);
+				});
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
+	 * Handle taking a node offline
+	 * @param ac
+	 */
+	public void handleTakeOffline(InternalActionContext ac) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+				return node.takeOffline(ac).flatMap(v -> {
+					node.reload();
+					return node.transformToPublishStatus(ac);
+				});
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
+	 * Handle publishing a language of the node
+	 * @param ac
+	 * @param languageTag
+	 */
+	public void handlePublish(InternalActionContext ac, String languageTag) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+				return node.publish(ac, languageTag).flatMap(v -> {
+					node.reload();
+					return node.transformToPublishStatus(ac);
+				});
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
+	 * Handle taking a language of the node offline
+	 * @param ac
+	 * @param languageTag
+	 */
+	public void handleTakeOffline(InternalActionContext ac, String languageTag) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+				return node.takeOffline(ac, languageTag).flatMap(v -> {
+					node.reload();
+					return node.transformToPublishStatus(ac);
+				});
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	protected void readElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<?>> handler) {

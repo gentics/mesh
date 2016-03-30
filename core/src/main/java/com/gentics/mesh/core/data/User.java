@@ -194,6 +194,23 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	void addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	/**
+	 * This method adds additional permissions to the target node. The roles are
+	 * selected like in method
+	 * {@link #addCRUDPermissionOnRole(MeshVertex, GraphPermission, MeshVertex)}
+	 * .
+	 * 
+	 * @param sourceNode
+	 *            Node that will be checked
+	 * @param permission
+	 *            checked permission
+	 * @param targetNode
+	 *            target node
+	 * @param toGrant
+	 *            permissions to grant
+	 */
+	void addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission...toGrant);
+
+	/**
 	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
 	 * 
 	 * @param sourceNode

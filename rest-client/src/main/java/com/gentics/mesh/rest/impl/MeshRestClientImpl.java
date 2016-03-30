@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -425,6 +426,33 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return handleRequest(DELETE, "/" + projectName + "/nodes/" + nodeUuid + "/tags/" + tagUuid + getQuery(parameters), NodeResponse.class);
+	}
+
+	@Override
+	public Future<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return handleRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/published" + getQuery(parameters),
+				PublishStatusResponse.class);
+	}
+
+	@Override
+	public Future<PublishStatusResponse> publishNode(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return handleRequest(PUT, "/" + projectName + "/nodes/" + nodeUuid + "/published" + getQuery(parameters),
+				PublishStatusResponse.class);
+	}
+
+	@Override
+	public Future<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		return handleRequest(DELETE, "/" + projectName + "/nodes/" + nodeUuid + "/published" + getQuery(parameters),
+				PublishStatusResponse.class);
 	}
 
 	@Override

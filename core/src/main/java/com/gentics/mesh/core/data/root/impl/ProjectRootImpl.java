@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -159,6 +161,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project);
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getBaseNode());
+				requestUser.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
 				// TODO add microschema root crud perms

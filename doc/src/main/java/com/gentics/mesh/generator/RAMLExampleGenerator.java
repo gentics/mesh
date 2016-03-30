@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -43,6 +44,9 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -775,6 +779,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getNodeListResponse());
 		write(getNodeUpdateRequest());
 		write(getNavigationResponse());
+		write(getPublishStatusResponse());
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {
@@ -882,6 +887,24 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		user.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
 		user.setPermissions("READ", "UPDATE", "DELETE", "CREATE");
 		return user;
+	}
+
+	private PublishStatusResponse getPublishStatusResponse() {
+		PublishStatusResponse response = new PublishStatusResponse();
+		Map<String, PublishStatusModel> languages = new HashMap<>();
+		languages.put("en", getPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0")));
+		languages.put("de", getPublishStatusModel(false, null, null, getVersionReference("0.4")));
+		languages.put("fr", getPublishStatusModel(false, null, null, getVersionReference("5.2")));
+		response.setAvailableLanguages(languages);
+		return response;
+	}
+
+	private PublishStatusModel getPublishStatusModel(boolean published, UserReference publisher, Long publishTime, VersionReference version) {
+		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishTime(publishTime).setVersion(version);
+	}
+
+	private VersionReference getVersionReference(String number) {
+		return new VersionReference(randomUUID(), number);
 	}
 
 	private void write(Object object) throws JsonGenerationException, JsonMappingException, IOException {
