@@ -53,11 +53,13 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
@@ -91,6 +93,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Autowired
 	private EventbusVerticle eventbusVerticle;
 
+	@Autowired
+	private TagFamilyVerticle tagFamilyVerticle;
+
 	@Override
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -108,6 +113,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		list.add(adminVerticle);
 		list.add(nodeVerticle);
 		list.add(eventbusVerticle);
+		list.add(tagFamilyVerticle);
 		return list;
 	}
 
@@ -639,6 +645,38 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		NodeListResponse response = future.result();
 		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
+	}
+
+	/**
+	 * Tests if all tags are in the node response when searching for a node.
+	 * 
+	 * @throws JSONException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testTagCount() throws JSONException, InterruptedException {
+		fullIndex();
+		Node node = content("concorde");
+		int previousTagCount = node.getTags().size();
+		//Create tags:
+		int tagCount = 20;
+		for (int i = 0; i < tagCount; i++) {
+			TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
+			//Add tags to node:
+			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+		}
+
+		Future<NodeListResponse> search = getClient().searchNodes(getSimpleQuery("Concorde"));
+		latchFor(search);
+		NodeListResponse response = search.result();
+		assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
+
+		//assert tag count
+		int nColorTags = response.getData().get(0).getTags().get("colors").getItems().size();
+		int nBasicTags = response.getData().get(0).getTags().get("basic").getItems().size();
+		assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
 	}
 
 	private void addNumberSpeedField(int number) {
