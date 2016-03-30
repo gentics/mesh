@@ -255,13 +255,13 @@ public class BootstrapInitializer {
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
 		ChangelogSystem cls = new ChangelogSystem(db);
-		if (!cls.applyChanges()) {
-			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
-		}
-
 		if (isInitialSetup) {
 			// Marking all changes as applied since this is an initial mesh setup
 			cls.markAllAsApplied();
+		} else {
+			if (!cls.applyChanges()) {
+				throw new RuntimeException("The changelog could not be applied successfully. See log above.");
+			}
 		}
 	}
 
