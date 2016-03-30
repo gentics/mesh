@@ -160,7 +160,10 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		// 1. Create microschema noderef with nodefield
 		Microschema nodeMicroschema = new MicroschemaModel();
 		nodeMicroschema.setName("noderef");
-		nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield"));
+		for (int i = 0; i < 10; i++) {
+			nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
+		}
+
 		microschemaContainers().put("noderef", boot.microschemaContainerRoot().create(nodeMicroschema, getRequestUser()));
 
 		// 2. Update the folder schema and add a micronode field
@@ -175,7 +178,9 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 		// 3. Update the node 
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReference().setName("noderef"));
-		field.getFields().put("nodefield", FieldUtil.createNodeField(node.getUuid()));
+		for (int i = 0; i < 10; i++) {
+			field.getFields().put("nodefield_" + i, FieldUtil.createNodeField(node.getUuid()));
+		}
 		NodeResponse response = updateNode("noderef", field, true);
 		assertThat(response.getFields().getMicronodeField("noderef")).matches(field, nodeMicroschema);
 
