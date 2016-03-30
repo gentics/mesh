@@ -110,7 +110,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 					Node node = container.getParentNode();
 					NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 					ac.setLanguageTags(Arrays.asList(languageTag));
-					NodeResponse restModel = node.transformToRestSync(ac, languageTag).toBlocking().last();
+					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
 
 					Schema oldSchema = fromVersion.getSchema();
 					Schema newSchema = toVersion.getSchema();
@@ -193,7 +193,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 					}
 					ac.setLanguageTags(Arrays.asList(container.getLanguage().getLanguageTag()));
 
-					MicronodeResponse restModel = micronode.transformToRestSync(ac).toBlocking().last();
+					MicronodeResponse restModel = micronode.transformToRestSync(ac, 0).toBlocking().last();
 					Microschema oldSchema = fromVersion.getSchema();
 					Microschema newSchema = toVersion.getSchema();
 

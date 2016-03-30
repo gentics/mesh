@@ -45,7 +45,7 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	}
 
 	@Override
-	public Observable<DateFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<DateFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		DateFieldListImpl restModel = new DateFieldListImpl();
 		for (DateGraphField item : getList()) {
 			restModel.add(item.getDate());

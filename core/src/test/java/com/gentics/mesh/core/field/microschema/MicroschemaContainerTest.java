@@ -134,7 +134,8 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	public void testVersionSync() {
 		assertNotNull(microschemaContainer("vcard"));
-		assertEquals("The microschema container and schema rest model version must always be in sync", microschemaContainer("vcard").getLatestVersion().getVersion(),
+		assertEquals("The microschema container and schema rest model version must always be in sync",
+				microschemaContainer("vcard").getLatestVersion().getVersion(),
 				microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
 
 	}
@@ -200,7 +201,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MicroschemaContainer vcard = microschemaContainer("vcard");
-		Microschema schema = vcard.transformToRest(ac, "en").toBlocking().single();
+		Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().single();
 		assertEquals(vcard.getUuid(), schema.getUuid());
 	}
 

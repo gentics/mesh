@@ -22,7 +22,10 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 	 * 
 	 * @param ac
 	 * @param fieldKey
-	 * @param languageTags language tags
+	 * @param languageTags
+	 *            language tags
+	 * @param level
+	 *            Level of transformation
 	 */
-	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags);
+	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 }

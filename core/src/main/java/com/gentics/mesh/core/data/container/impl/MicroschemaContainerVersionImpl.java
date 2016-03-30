@@ -84,7 +84,7 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Observable<Microschema> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<Microschema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
 			Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);

@@ -272,7 +272,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = role();
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		RoleResponse restModel = role.transformToRest(ac).toBlocking().single();
+		RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().single();
 
 		assertNotNull(restModel);
 		assertEquals(role.getName(), restModel.getName());

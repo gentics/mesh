@@ -148,6 +148,40 @@ public class MicronodeGraphFieldNodeVerticleTest extends AbstractGraphFieldNodeV
 	}
 
 	/**
+	 * Test reading a node which has a micronode field which has a node field that reference the node we are currently reading.
+	 * 
+	 * We expect that resolving still works even if the expandAll flag is set.
+	 */
+	@Test
+	public void testExpandAllCyclicMicronodeWithNodeReference() {
+
+		Node node = folder("2015");
+
+		// 1. Create microschema noderef with nodefield
+		Microschema nodeMicroschema = new MicroschemaModel();
+		nodeMicroschema.setName("noderef");
+		nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield"));
+		microschemaContainers().put("noderef", boot.microschemaContainerRoot().create(nodeMicroschema, getRequestUser()));
+
+		// 2. Update the folder schema and add a micronode field
+		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
+		microschemaFieldSchema.setName("noderef");
+		microschemaFieldSchema.setLabel("Micronode field");
+		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "noderef" });
+		schema.addField(microschemaFieldSchema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
+
+		// 3. Update the node 
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReference().setName("noderef"));
+		field.getFields().put("nodefield", FieldUtil.createNodeField(node.getUuid()));
+		NodeResponse response = updateNode("noderef", field, true);
+		assertThat(response.getFields().getMicronodeField("noderef")).matches(field, nodeMicroschema);
+
+	}
+
+	/**
 	 * Test updating a node with a micronode containing all possible field types
 	 * 
 	 * @throws IOException

@@ -33,16 +33,16 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		Micronode micronode = getMicronode();
 		if (micronode == null) {
 			// TODO is this correct?
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		} else {
 			if (languageTags != null) {
-				return micronode.transformToRestSync(ac, languageTags.toArray(new String[languageTags.size()]));
+				return micronode.transformToRestSync(ac, level, languageTags.toArray(new String[languageTags.size()]));
 			} else {
-				return micronode.transformToRestSync(ac);
+				return micronode.transformToRestSync(ac, level);
 			}
 		}
 	}

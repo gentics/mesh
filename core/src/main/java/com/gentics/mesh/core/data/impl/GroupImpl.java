@@ -144,7 +144,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<GroupResponse>> obs = new HashSet<>();
 
 		GroupResponse restGroup = new GroupResponse();

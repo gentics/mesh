@@ -45,7 +45,7 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 	}
 
 	@Override
-	public Observable<HtmlFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<HtmlFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		HtmlFieldListImpl restModel = new HtmlFieldListImpl();
 		for (HtmlGraphField item : getList()) {
 			restModel.add(item.getHTML());

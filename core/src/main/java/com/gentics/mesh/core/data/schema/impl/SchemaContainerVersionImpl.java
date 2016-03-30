@@ -73,7 +73,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Observable<Schema> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<Schema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
 			Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);

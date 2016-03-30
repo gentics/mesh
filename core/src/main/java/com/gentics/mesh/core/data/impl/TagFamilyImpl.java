@@ -194,7 +194,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Observable<TagFamilyResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<TagFamilyResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<TagFamilyResponse>> obs = new HashSet<>();
 
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();

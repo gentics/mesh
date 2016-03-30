@@ -20,7 +20,7 @@ public abstract class AbstractAuthRestHandler extends AbstractHandler implements
 		db.asyncNoTrxExperimental(() -> {
 			//TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
-			return requestUser.transformToRest(ac);
+			return requestUser.transformToRest(ac, 0);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 

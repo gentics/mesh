@@ -147,7 +147,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
 		ProjectResponse restProject = new ProjectResponse();

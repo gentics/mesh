@@ -102,7 +102,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<TagResponse>> obs = new HashSet<>();
 
 		TagResponse restTag = new TagResponse();

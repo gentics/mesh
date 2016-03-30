@@ -178,7 +178,7 @@ public class SearchRestHandler {
 							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
 								// Transform node and add it to the list of nodes
-								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, objectAndLanguageTag.v2()));
+								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
 							}
 							n++;
 						}

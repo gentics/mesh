@@ -39,7 +39,7 @@ public class TagCrudHandler extends AbstractHandler {
 			return getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM).flatMap(tag -> {
 				try {
 					PageImpl<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-					return page.transformToRest(ac);
+					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					return Observable.error(e);
 				}
@@ -74,7 +74,7 @@ public class TagCrudHandler extends AbstractHandler {
 			return getTagFamily(ac, tagFamilyUuid).create(ac).flatMap(tag -> {
 				return db.noTrx(() -> {
 					// created.reload();
-					return tag.transformToRest(ac);
+					return tag.transformToRest(ac, 0);
 				});
 			});
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);

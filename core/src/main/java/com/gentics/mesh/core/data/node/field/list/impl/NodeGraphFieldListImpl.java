@@ -42,18 +42,18 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<NodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
 		boolean expandField = ac.getExpandedFieldnames().contains(fieldKey) || ac.getExpandAllFlag();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
-		if (expandField) {
+		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 
 			List<Observable<NodeResponse>> futures = new ArrayList<>();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				futures.add(item.getNode().transformToRestSync(ac, lTagsArray));
+				futures.add(item.getNode().transformToRestSync(ac, level, lTagsArray));
 			}
 
 			return RxUtil.concatList(futures).collect(() -> {
@@ -71,8 +71,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(item.getNode().getUuid());
 
 				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-					listItem.setUrl(WebRootLinkReplacer.getInstance()
-							.resolve(item.getNode(), ac.getResolveLinksType(), lTagsArray).toBlocking().first());
+					listItem.setUrl(
+							WebRootLinkReplacer.getInstance().resolve(item.getNode(), ac.getResolveLinksType(), lTagsArray).toBlocking().first());
 				}
 
 				restModel.add(listItem);

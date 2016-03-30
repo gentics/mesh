@@ -76,7 +76,7 @@ public class WebRootHandler {
 							return null;
 						}
 					} else {
-						return node.transformToRest(ac, lastSegment.getLanguageTag());
+						return node.transformToRest(ac, 0, lastSegment.getLanguageTag());
 					}
 
 				} else {

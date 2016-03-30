@@ -215,7 +215,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		Node newsNode = content("concorde");
 
-		NodeResponse response = newsNode.transformToRest(ac).toBlocking().first();
+		NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().first();
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 

@@ -86,15 +86,15 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Observable<R> transformToRest(InternalActionContext ac, String... languageTags) {
+	public Observable<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version 
-		return getLatestVersion().transformToRest(ac, languageTags);
+		return getLatestVersion().transformToRest(ac, level, languageTags);
 	}
 
 	@Override
-	public Observable<R> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<R> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version
-		return getLatestVersion().transformToRestSync(ac, languageTags);
+		return getLatestVersion().transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override

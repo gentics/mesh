@@ -41,7 +41,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Observable<MicronodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<MicronodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		MicronodeResponse restMicronode = new MicronodeResponse();
 		MicroschemaContainerVersion microschemaContainer = getMicroschemaContainerVersion();
@@ -69,7 +69,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		// Fields
 		for (FieldSchema fieldEntry : microschema.getFields()) {
-			Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags)
+			Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level)
 					.map(restField -> {
 				if (fieldEntry.isRequired() && restField == null) {
 					/* TODO i18n */
@@ -138,7 +138,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			java.util.List<String> languageTags) {
+			java.util.List<String> languageTags, int level) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -152,10 +152,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			case MicronodeGraphFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
-				return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags);
+				return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags, level);
 			}
 		default:
-			return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags);
+			return super.getRestFieldFromGraph(ac, fieldKey, fieldSchema, languageTags, level);
 		}
 
 	}

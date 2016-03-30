@@ -23,7 +23,8 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	 * @param ac
 	 * @param fieldKey
 	 * @param languageTags list of language tags
+	 * @param level Level of transformation
 	 */
-	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags);
+	Observable<? extends Field> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

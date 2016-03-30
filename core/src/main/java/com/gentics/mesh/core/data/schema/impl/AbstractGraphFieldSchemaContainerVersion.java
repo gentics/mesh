@@ -298,7 +298,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		try {
 			SchemaChangesListModel list = new SchemaChangesListModel();
 			fieldContainerModel.validate();
-			list.getChanges().addAll(comparator.diff(transformToRest(ac, null).toBlocking().single(), fieldContainerModel));
+			list.getChanges().addAll(comparator.diff(transformToRest(ac, 0, null).toBlocking().single(), fieldContainerModel));
 			return Observable.just(list);
 		} catch (Exception e) {
 			return Observable.error(e);

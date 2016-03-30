@@ -181,7 +181,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = tagFamily("colors");
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		TagFamilyResponse response = tagFamily.transformToRest(ac).toBlocking().single();
+		TagFamilyResponse response = tagFamily.transformToRest(ac, 0).toBlocking().single();
 		assertNotNull(response);
 		assertEquals(tagFamily.getName(), response.getName());
 		assertEquals(tagFamily.getUuid(), response.getUuid());

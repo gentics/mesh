@@ -86,6 +86,7 @@
 
 * Fix: The displayField value was missing within the node search document. The value was added.
 * Fix: The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
+* Fix: An edge case that could cause multiple stack overflow exception was fixed. 
 
 === Upcoming changes
 

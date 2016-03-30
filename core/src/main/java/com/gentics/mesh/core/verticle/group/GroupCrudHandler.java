@@ -46,7 +46,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Observable<RestModel> obs = obsGroup.flatMap(group -> {
 				try {
 					PageImpl<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
-					return rolePage.transformToRest(ac);
+					return rolePage.transformToRest(ac, 0);
 				} catch (Exception e) {
 					return Observable.error(e);
 				}
@@ -79,7 +79,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				SearchQueueBatch batch = tuple.v1();
 				Group updatedGroup = tuple.v2();
 				return batch.process().flatMap(done -> {
-					return updatedGroup.transformToRest(ac);
+					return updatedGroup.transformToRest(ac, 0);
 				});
 			});
 
@@ -109,7 +109,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				Group updatedGroup = tuple.v2();
 
 				return batch.process().map(done -> {
-					return updatedGroup.transformToRest(ac);
+					return updatedGroup.transformToRest(ac, 0);
 				}).flatMap(x -> x).toBlocking().first();
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -132,7 +132,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			return obsGroup.flatMap(group -> {
 				try {
 					PageImpl<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-					return userPage.transformToRest(ac);
+					return userPage.transformToRest(ac, 0);
 				} catch (Exception e) {
 					return Observable.error(e);
 				}
@@ -165,7 +165,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				});
 				SearchQueueBatch batch = tuple.v1();
 				Group updatedGroup = tuple.v2();
-				return batch.process().flatMap(i -> updatedGroup.transformToRest(ac));
+				return batch.process().flatMap(i -> updatedGroup.transformToRest(ac, 0));
 			});
 			return obs.flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -186,7 +186,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 					return Tuple.tuple(batch, group);
 				});
 				// BUG Add SQB processing
-				return tuple.v2().transformToRest(ac);
+				return tuple.v2().transformToRest(ac, 0);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

@@ -325,7 +325,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<UserResponse>> obs = new HashSet<>();
 		UserResponse restUser = new UserResponse();
 
@@ -336,7 +336,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		restUser.setEnabled(isEnabled());
 
 		// Users's node reference
-		obs.add(setNodeReference(ac, restUser));
+		obs.add(setNodeReference(ac, restUser, level));
 
 		// User's groups
 		obs.add(setGroups(ac, restUser));
@@ -367,14 +367,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 * @return
 	 */
-	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser) {
+	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
 		Node node = getReferencedNode();
 		if (node == null) {
 			return Observable.empty();
 		} else {
 			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
 			if (expandReference) {
-				return node.transformToRest(ac).map(transformedNode -> {
+				return node.transformToRest(ac, level).map(transformedNode -> {
 					restUser.setNodeReference(transformedNode);
 					return restUser;
 				});

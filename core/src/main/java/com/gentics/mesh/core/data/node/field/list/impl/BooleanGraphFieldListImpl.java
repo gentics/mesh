@@ -45,7 +45,7 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	}
 
 	@Override
-	public Observable<BooleanFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<BooleanFieldListImpl> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		BooleanFieldListImpl restModel = new BooleanFieldListImpl();
 		for (BooleanGraphField item : getList()) {
 			restModel.add(item.getBoolean());

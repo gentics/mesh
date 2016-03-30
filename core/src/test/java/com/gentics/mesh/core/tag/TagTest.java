@@ -273,7 +273,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		int nTransformations = 100;
 		for (int i = 0; i < nTransformations; i++) {
 			long start = System.currentTimeMillis();
-			TagResponse response = tag.transformToRest(ac).toBlocking().first();
+			TagResponse response = tag.transformToRest(ac, 0).toBlocking().first();
 
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;

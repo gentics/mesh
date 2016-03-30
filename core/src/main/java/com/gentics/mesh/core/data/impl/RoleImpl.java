@@ -114,7 +114,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<RoleResponse>> obs = new HashSet<>();
 
 		RoleResponse restRole = new RoleResponse();

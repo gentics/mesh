@@ -1,6 +1,0 @@
-= Mesh Changelog 
-
-== 
-
-* The user search document email field was renamed to `emailaddress`
-* JWT Auth was added

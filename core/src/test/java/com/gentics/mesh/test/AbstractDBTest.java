@@ -220,7 +220,7 @@ public abstract class AbstractDBTest {
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		return JsonUtil.toJson(node.transformToRest(ac).toBlocking().single());
+		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().single());
 	}
 
 	protected InternalActionContext getMockedVoidInternalActionContext(String query) {

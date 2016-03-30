@@ -47,13 +47,13 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
 		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		for (MicronodeGraphField item : getList()) {
-			obs.add(item.getMicronode().transformToRestSync(ac));
+			obs.add(item.getMicronode().transformToRestSync(ac, level));
 		}
 
 		return RxUtil.concatList(obs).collect(() -> {

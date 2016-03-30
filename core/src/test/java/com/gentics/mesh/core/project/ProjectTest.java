@@ -117,7 +117,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = project();
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		ProjectResponse response = project.transformToRest(ac).toBlocking().first();
+		ProjectResponse response = project.transformToRest(ac, 0).toBlocking().first();
 
 		assertEquals(project.getName(), response.getName());
 		assertEquals(project.getUuid(), response.getUuid());

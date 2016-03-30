@@ -118,7 +118,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(), ac.getPagingParameter());
-					return page.transformToRest(ac);
+					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
 				}
@@ -132,7 +132,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Tag> tagPage = node.getTags(ac.getPagingParameter());
-					return tagPage.transformToRest(ac);
+					return tagPage.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
@@ -159,7 +159,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 				SearchQueueBatch batch = tuple.v1();
 				Node updatedNode = tuple.v2();
-				return batch.process().flatMap(i -> updatedNode.transformToRest(ac));
+				return batch.process().flatMap(i -> updatedNode.transformToRest(ac, 0));
 
 			});
 			return obs.flatMap(x -> x);
@@ -197,7 +197,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueueBatch batch = tuple.v1();
 				Node updatedNode = tuple.v2();
 
-				return batch.process(ac).flatMap(i -> updatedNode.transformToRest(ac));
+				return batch.process(ac).flatMap(i -> updatedNode.transformToRest(ac, 0));
 
 			});
 			return obs.flatMap(x -> x);

@@ -288,8 +288,9 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param fieldSchema
 	 * @param languageTags
 	 *            language tags
+	 * @param level
 	 */
-	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.

@@ -57,8 +57,10 @@ public interface Page {
 	 * Transform the page into a list response.
 	 * 
 	 * @param ac
+	 * @param level
+	 *            Level of transformation
 	 */
-	Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac);
+	Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level);
 
 	/**
 	 * Set the paging parameters into the given list response by examining the given page.

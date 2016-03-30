@@ -45,7 +45,7 @@ public final class HandlerUtilities {
 				// Transform the vertex using a fresh transaction in order to start with a clean cache
 				return db.noTrx(() -> {
 					// created.reload();
-					return created.transformToRest(ac);
+					return created.transformToRest(ac, 0);
 				});
 			});
 		}).subscribe(model -> ac.respond(model, CREATED), ac::fail);
@@ -123,7 +123,7 @@ public final class HandlerUtilities {
 					// Transform the vertex using a fresh transaction in order to start with a clean cache
 					return db.noTrx(() -> {
 						updatedElement.reload();
-						return updatedElement.transformToRest(ac);
+						return updatedElement.transformToRest(ac, 0);
 					});
 				});
 			});
@@ -146,7 +146,7 @@ public final class HandlerUtilities {
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
 			return root.loadObjectByUuid(ac, uuid, READ_PERM).flatMap(node -> {
-				return node.transformToRest(ac);
+				return node.transformToRest(ac, 0);
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
@@ -168,7 +168,7 @@ public final class HandlerUtilities {
 			MeshAuthUser requestUser = ac.getUser();
 
 			PageImpl<? extends T> page = root.findAll(requestUser, pagingInfo);
-			return page.transformToRest(ac);
+			return page.transformToRest(ac, 0);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

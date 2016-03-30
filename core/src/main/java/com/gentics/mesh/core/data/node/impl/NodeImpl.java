@@ -306,7 +306,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		// Increment level for each node transformation to avoid stackoverflow situations
+		level = level + 1;
 		try {
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
@@ -390,7 +392,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 					Observable<NodeResponse> obsFields = fieldContainer
-							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags).map(restField -> {
+							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
 								if (fieldEntry.isRequired() && restField == null) {
 									// TODO i18n
 									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
@@ -519,7 +521,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<? extends Node> nodes = node.getChildren(ac.getUser());
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
-		obsResponses.add(node.transformToRest(ac).map(response -> {
+		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
 			// Set current element data
 			currentElement.setUuid(response.getUuid());
 			currentElement.setNode(response);

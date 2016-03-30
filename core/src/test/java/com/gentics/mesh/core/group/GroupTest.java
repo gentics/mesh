@@ -114,7 +114,7 @@ public class GroupTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 
-		GroupResponse response = group().transformToRest(ac).toBlocking().first();
+		GroupResponse response = group().transformToRest(ac, 0).toBlocking().first();
 
 		assertNotNull(response);
 		assertEquals(group().getUuid(), response.getUuid());

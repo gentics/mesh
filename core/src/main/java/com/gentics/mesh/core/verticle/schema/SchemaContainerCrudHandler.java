@@ -90,7 +90,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
 					return schema;
 				});
-				return addedSchema.transformToRest(ac);
+				return addedSchema.transformToRest(ac, 0);
 			}).flatMap(x -> x);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -111,7 +111,7 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					project.getSchemaContainerRoot().removeSchemaContainer(schema);
 					return schema;
 				});
-				return removedSchema.transformToRest(ac);
+				return removedSchema.transformToRest(ac, 0);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}

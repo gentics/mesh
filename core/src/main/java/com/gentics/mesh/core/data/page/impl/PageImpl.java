@@ -71,11 +71,11 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	}
 
 	@Override
-	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac) {
+	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
 
 		List<Observable<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
-			obs.add(element.transformToRest(ac));
+			obs.add(element.transformToRest(ac, level));
 		}
 		ListResponse<RestModel> listResponse = new ListResponse<>();
 		if (obs.size() == 0) {

@@ -280,7 +280,7 @@ public class UserTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 
-		UserResponse restUser = user().transformToRest(ac).toBlocking().single();
+		UserResponse restUser = user().transformToRest(ac, 0).toBlocking().single();
 
 		assertNotNull(restUser);
 		assertEquals(user().getUsername(), restUser.getUsername());
