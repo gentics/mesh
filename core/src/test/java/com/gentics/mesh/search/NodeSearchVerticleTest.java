@@ -586,7 +586,6 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Test
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
 		Node concorde = content("concorde");
-		concorde.setUuid("blubi");
 		fullIndex();
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());

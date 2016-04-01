@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.node.Node;
 
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -102,12 +101,7 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
-		return Observable.just(null);
-	}
-
-	@Override
 	public Observable<Integer> deleteDocumentsViaQuery(String index, String query) {
-		return Observable.just(null);
+		return Observable.just(0);
 	}
 }

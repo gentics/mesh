@@ -30,7 +30,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
-import groovy.lang.ListWithDefault;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 

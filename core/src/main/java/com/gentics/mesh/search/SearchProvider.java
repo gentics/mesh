@@ -118,8 +118,10 @@ public interface SearchProvider {
 	 * Delete all documents which were found using the query.
 	 * 
 	 * @param index
+	 *            Index to be searched for documents
 	 * @param query
-	 * @return
+	 *            Search query
+	 * @return Observable which emits the amount of deleted documents
 	 */
 	Observable<Integer> deleteDocumentsViaQuery(String index, String query);
 
@@ -127,9 +129,13 @@ public interface SearchProvider {
 	 * Delete all documents which were found using the query.
 	 * 
 	 * @param index
+	 *            Index to be searched for documents
 	 * @param query
-	 * @return
+	 *            Search query
+	 * @return Observable which emits the amount of deleted nodes
 	 */
-	Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query);
+	default Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
+		return deleteDocumentsViaQuery(index, query.toString());
+	}
 
 }

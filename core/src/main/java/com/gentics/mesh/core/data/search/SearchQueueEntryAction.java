@@ -5,7 +5,6 @@ package com.gentics.mesh.core.data.search;
  */
 public enum SearchQueueEntryAction {
 	DELETE_ACTION("delete"),
-	// TODO replace with store
 	REINDEX_ALL("reindex_all"), 
 	STORE_ACTION("store");
 

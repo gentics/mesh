@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -36,6 +35,7 @@ import org.elasticsearch.search.SearchHit;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -316,11 +316,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
-		return deleteDocumentsViaQuery(index, query.toString());
-	}
-
-	@Override
 	public Observable<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
 		ObservableFuture<Integer> observable = RxHelper.observableFuture();
 		Client client = getNode().client();
@@ -331,6 +326,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		builder.execute().addListener(new ActionListener<SearchResponse>() {
 			@Override
 			public void onResponse(SearchResponse response) {
+				// Invoke the deletion for each found document
 				for (SearchHit hit : response.getHits()) {
 					obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
 				}
@@ -343,6 +339,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 		});
 
-		return observable.delaySubscription(() -> Observable.merge(obs).ignoreElements());
+		// Wait for obs to complete first. After that let `observable` complete and return the result.
+		return observable.compose(RxUtil.delay(Observable.merge(obs)));
 	}
 }

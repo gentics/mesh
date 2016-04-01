@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -125,7 +126,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return getRootVertex().findByUuid(nodeUuid).flatMap(element -> {
 			return db.noTrx(() -> {
 				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_index_type_not_found", uuid, indexType);
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
 				} else {
 					return store(element, indexType, languageTagValue);
 				}
@@ -134,21 +135,21 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> store(Node object, String type) {
-		throw new NotImplementedException("Use store(node, type, languageTag) instead");
+	public Observable<Void> store(Node node, String documentType) {
+		return store(node, documentType, null);
 	}
 
 	/**
 	 * 
 	 * @param node
 	 *            Node element to be updated/stored
-	 * @param type
-	 *            Index type which is schema version specific
+	 * @param documentType
+	 *            Document type which is schema version specific
 	 * @param languageTag
 	 *            Language tag to be stored
 	 * @return
 	 */
-	public Observable<Void> store(Node node, String type, String languageTag) {
+	public Observable<Void> store(Node node, String documentType, String languageTag) {
 		Set<Observable<Void>> obs = new HashSet<>();
 
 		// Store all containers if no language was specified
@@ -157,14 +158,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				obs.add(storeContainer(container));
 			}
 		} else {
+
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
+			if (container == null) {
+				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
+						+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
+			}
 			// 1. Sanitize the search index for nodes.
-			// We'll invoke a document deletion using a query which only matches documents 
-			// that match the currently selected graph field container. This will ensure that 
-			// only one version of the node document remains in the search index. We want to 
-			// ensure that only the currently active version of the document remains.
-			// A node migration requires old node documents to be removed from the index. 
-			// Those document are stored within a schema container version specific index type. 
-			// We need to ensure that those document are purged from the index.
+			// We'll need to delete all documents which match the given query:
+			// * match node documents with same UUID
+			// * match node documents with same language
+			// * exclude all documents which have the same document type in order to avoid deletion 
+			//   of the document which will be updated later on
+			// 
+			// This will ensure that only one version of the node document remains in the search index. 
+			// 
+			// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.  
+			// Those documents are stored within a schema container version specific index type. 
+			// We need to ensure that those documents are purged from the index.
 			JSONObject query = new JSONObject();
 			try {
 				JSONObject queryObject = new JSONObject();
@@ -180,27 +191,34 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 				JSONObject boolFilter = new JSONObject();
 				boolFilter.put("must", mustArray);
+
+				// Only limit the deletion if a container could be found. Otherwise delete all the documents in oder to sanitize the index
+				if (container != null) {
+					// Don't delete the document which is specific to the language container (via the document type)
+					JSONObject mustNotTerm = new JSONObject().put("term",
+							new JSONObject().put("_type", getDocumentType(container.getSchemaContainerVersion())));
+					boolFilter.put("must_not", mustNotTerm);
+				}
 				queryObject.put("bool", boolFilter);
 				query.put("query", queryObject);
 			} catch (Exception e) {
 				log.error("Error while building deletion query", e);
+				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
 			}
-			obs.add(searchProvider.deleteDocumentsViaQuery(getIndex(), query).flatMap(result -> {
+			obs.add(searchProvider.deleteDocumentsViaQuery(getIndex(), query).flatMap(nDocumentsDeleted -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Deleted {" + result + "} documents from index {" + getIndex() + "}");
+					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + getIndex() + "}");
 				}
-				// 2. Try to store the updated document
-				return db.noTrx(() -> {
-					NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
-					if (container == null) {
-						log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
-								+ "}. I'll can't store a search index document. This may be normal i cases if mesh is handling an outdated search queue batch entry.");
-						//TODO delete the remaining document to ensure consistency?
-						return Observable.just(null);
-					} else {
+				// Don't store the container if it is null.
+				if (container == null) {
+					return Observable.just(null);
+				} else {
+					// 2. Try to store the updated document
+					// 2. Try to store the updated document
+					return db.noTrx(() -> {
 						return storeContainer(container);
-					}
-				});
+					});
+				}
 			}));
 		}
 		return Observable.merge(obs).doOnCompleted(() -> {

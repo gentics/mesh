@@ -66,7 +66,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Return the index type.
+	 * Return the document type.
 	 * 
 	 * @return
 	 */
@@ -98,11 +98,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * Store the given object within the search index.
 	 * 
 	 * @param object
-	 * @param type
+	 * @param documentType
 	 * @return
 	 */
-	public Observable<Void> store(T object, String type) {
-		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
+	public Observable<Void> store(T object, String documentType) {
+		return searchProvider.storeDocument(getIndex(), documentType, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -111,9 +111,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String type) {
+	public Observable<Void> delete(String uuid, String documentType) {
 		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(getIndex(), type, uuid);
+		return searchProvider.deleteDocument(getIndex(), documentType, uuid);
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return getRootVertex().findByUuid(uuid).flatMap(element -> {
 			return db.noTrx(() -> {
 				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_index_type_not_found", uuid, indexType);
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
 				} else {
 					return store(element, indexType);
 				}
