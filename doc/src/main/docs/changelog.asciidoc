@@ -89,6 +89,7 @@
 * Fix: An edge case that could cause multiple stack overflow exception was fixed.
 * Enhancement: A Cache-Control: no-cache header has been set to mesh responses.
 * Enhancement: The mesh-ui was updated.
+* Fix: Various search index related bugs have been fixed.
 
 === Upcoming changes
 

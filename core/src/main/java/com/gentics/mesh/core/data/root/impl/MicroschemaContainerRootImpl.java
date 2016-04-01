@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
 import java.io.IOException;
 
@@ -88,7 +89,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 					requestUser.reload();
 					MicroschemaContainer container = create(microschema, requestUser);
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
-					SearchQueueBatch batch = container.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+					SearchQueueBatch batch = container.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, container);
 				});
 

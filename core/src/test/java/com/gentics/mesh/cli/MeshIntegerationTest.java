@@ -2,25 +2,30 @@ package com.gentics.mesh.cli;
 
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
-import com.gentics.mesh.test.SpringTestConfiguration;
 
 public class MeshIntegerationTest extends AbstractIntegrationTest {
 
-	@Ignore("Disabled due to instability")
+	@Before
+	public void cleanup() throws IOException {
+		new File("mesh.json").delete();
+		FileUtils.deleteDirectory(new File("data"));
+	}
+
 	@Test
 	public void testStartup() throws Exception {
 
-		SpringTestConfiguration.ignored = true;
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 6;
-
 		final CountDownLatch latch = new CountDownLatch(2);
 		final Mesh mesh = Mesh.mesh();
 		mesh.getVertx().eventBus().consumer(Mesh.STARTUP_EVENT_ADDRESS, mh -> {
@@ -34,8 +39,8 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 			try {
 				mesh.run();
 			} catch (Exception e) {
-				fail("Error while starting instance: " + e.getMessage());
 				e.printStackTrace();
+				fail("Error while starting instance: " + e.getMessage());
 			}
 		}).start();
 		if (!latch.await(timeout, TimeUnit.SECONDS)) {

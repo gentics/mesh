@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -159,7 +160,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						}
 						NodeGraphFieldContainer container = node.createGraphFieldContainer(language, schemaContainer.getLatestVersion());
 						container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
-						SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+						SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 						return Tuple.tuple(batch, node);
 					});
 				});

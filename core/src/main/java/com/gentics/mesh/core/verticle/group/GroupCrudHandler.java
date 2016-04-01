@@ -2,7 +2,7 @@ package com.gentics.mesh.core.verticle.group;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import org.elasticsearch.common.collect.Tuple;
@@ -72,7 +72,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsRole, (group, role) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.addRole(role);
 					return Tuple.tuple(batch, group);
 				});
@@ -100,7 +100,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			return Observable.zip(obsGroup, obsRole, (group, role) -> {
 
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					group.removeRole(role);
 					return Tuple.tuple(batch, group);
 				});
@@ -160,7 +160,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Observable<Observable<GroupResponse>> obs = Observable.zip(obsGroup, obsUser, (group, user) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
 					group.addUser(user);
-					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, group);
 				});
 				SearchQueueBatch batch = tuple.v1();
@@ -180,8 +180,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Observable<User> obsUser = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			return Observable.zip(obsUser, obsGroup, (user, group) -> {
 				Tuple<SearchQueueBatch, Group> tuple = db.trx(() -> {
-					SearchQueueBatch batch = group.createIndexBatch(UPDATE_ACTION);
-					batch.addEntry(user, UPDATE_ACTION);
+					SearchQueueBatch batch = group.createIndexBatch(STORE_ACTION);
+					batch.addEntry(user, STORE_ACTION);
 					group.removeUser(user);
 					return Tuple.tuple(batch, group);
 				});

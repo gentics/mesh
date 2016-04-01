@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import java.util.Map;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.node.Node;
 
 import rx.Observable;
@@ -112,5 +113,23 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Observable<Void> deleteIndex(String indexName);
+
+	/**
+	 * Delete all documents which were found using the query.
+	 * 
+	 * @param index
+	 * @param query
+	 * @return
+	 */
+	Observable<Integer> deleteDocumentsViaQuery(String index, String query);
+
+	/**
+	 * Delete all documents which were found using the query.
+	 * 
+	 * @param index
+	 * @param query
+	 * @return
+	 */
+	Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query);
 
 }

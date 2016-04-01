@@ -118,6 +118,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
-		batch.addEntry(getParentNode().getUuid(), getParentNode().getType(), action, indexType);
+		batch.addEntry(getParentNode().getUuid() + "-" + getLanguage().getLanguageTag(), getParentNode().getType(), action, indexType);
 	}
 }

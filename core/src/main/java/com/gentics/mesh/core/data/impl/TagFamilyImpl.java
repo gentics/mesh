@@ -5,9 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -182,7 +181,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				BootstrapInitializer.getBoot().meshRoot().getTagRoot().addTag(newTag);
 				getTagRoot().addTag(newTag);
 
-				SearchQueueBatch batch = newTag.createIndexBatch(CREATE_ACTION);
+				SearchQueueBatch batch = newTag.createIndexBatch(STORE_ACTION);
 				return Tuple.tuple(batch, newTag);
 			});
 
@@ -243,7 +242,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 				}
 				SearchQueueBatch batch = db.trx(() -> {
 					this.setName(newName);
-					return createIndexBatch(UPDATE_ACTION);
+					return createIndexBatch(STORE_ACTION);
 				});
 
 				batch.process().toBlocking().first();
@@ -276,7 +275,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			}
 		} else {
 			for (Tag tag : getTagRoot().findAll()) {
-				batch.addEntry(tag, UPDATE_ACTION);
+				batch.addEntry(tag, STORE_ACTION);
 			}
 		}
 	}

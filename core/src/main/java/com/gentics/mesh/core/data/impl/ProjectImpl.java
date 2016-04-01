@@ -7,7 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.HashSet;
@@ -217,7 +217,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			return createIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> this);
 	}
 
@@ -245,7 +245,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		} else {
 			for (Node node : getNodeRoot().findAll()) {
-				batch.addEntry(node, UPDATE_ACTION);
+				batch.addEntry(node, STORE_ACTION);
 			}
 		}
 	}

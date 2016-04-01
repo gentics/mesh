@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.AbstractEnvironment;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -43,6 +44,7 @@ public class MeshImpl implements Mesh {
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "full");
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 

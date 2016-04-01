@@ -1,7 +1,9 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +15,8 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
@@ -110,44 +114,95 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> store(Node node, String type) {
+	public Observable<Void> store(String uuid, String indexType) {
+		String nodeUuid = uuid;
+		String languageTag = null;
+		if (uuid.indexOf("-") > 0) {
+			nodeUuid = uuid.split("-")[0];
+			languageTag = uuid.split("-")[1];
+		}
+		final String languageTagValue = languageTag;
+		return getRootVertex().findByUuid(nodeUuid).flatMap(element -> {
+			return db.noTrx(() -> {
+				if (element == null) {
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_index_type_not_found", uuid, indexType);
+				} else {
+					return store(element, indexType, languageTagValue);
+				}
+			});
+		});
+	}
 
-		Map<String, Object> map = new HashMap<>();
-		addBasicReferences(map, node);
-		addProject(map, node.getProject());
-		addTags(map, node.getTags());
+	@Override
+	public Observable<Void> store(Node object, String type) {
+		throw new NotImplementedException("Use store(node, type, languageTag) instead");
+	}
 
+	/**
+	 * 
+	 * @param node
+	 *            Node element to be updated/stored
+	 * @param type
+	 *            Index type which is schema version specific
+	 * @param languageTag
+	 *            Language tag to be stored
+	 * @return
+	 */
+	public Observable<Void> store(Node node, String type, String languageTag) {
 		Set<Observable<Void>> obs = new HashSet<>();
 
-		// The basenode has no parent.
-		if (node.getParentNode() != null) {
-			addParentNodeInfo(map, node.getParentNode());
-		}
-		map.put("published", node.isPublished());
-		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-
-			removeFieldEntries(map);
-			map.remove("language");
-			String language = container.getLanguage().getLanguageTag();
-			map.put("language", language);
-			addSchema(map, container.getSchemaContainerVersion());
-
-			addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
-			if (log.isTraceEnabled()) {
-				String json = JsonUtil.toJson(map);
-				log.trace("Search index json:");
-				log.trace(json);
+		// Store all containers if no language was specified
+		if (languageTag == null) {
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+				obs.add(storeContainer(container));
 			}
+		} else {
+			// 1. Sanitize the search index for nodes.
+			// We'll invoke a document deletion using a query which only matches documents 
+			// that match the currently selected graph field container. This will ensure that 
+			// only one version of the node document remains in the search index. We want to 
+			// ensure that only the currently active version of the document remains.
+			// A node migration requires old node documents to be removed from the index. 
+			// Those document are stored within a schema container version specific index type. 
+			// We need to ensure that those document are purged from the index.
+			JSONObject query = new JSONObject();
+			try {
+				JSONObject queryObject = new JSONObject();
 
-			// Add display field value
-			Map<String, String> displayFieldMap = new HashMap<>();
-			displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-			displayFieldMap.put("value", container.getDisplayFieldValue());
-			map.put("displayField", displayFieldMap);
-			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
-					composeDocumentId(node, language), map));
+				// Only handle selected language
+				JSONObject langTerm = new JSONObject().put("term", new JSONObject().put("language", languageTag));
+				// Only handle nodes with the same uuid
+				JSONObject uuidTerm = new JSONObject().put("term", new JSONObject().put("uuid", node.getUuid()));
+
+				JSONArray mustArray = new JSONArray();
+				mustArray.put(uuidTerm);
+				mustArray.put(langTerm);
+
+				JSONObject boolFilter = new JSONObject();
+				boolFilter.put("must", mustArray);
+				queryObject.put("bool", boolFilter);
+				query.put("query", queryObject);
+			} catch (Exception e) {
+				log.error("Error while building deletion query", e);
+			}
+			obs.add(searchProvider.deleteDocumentsViaQuery(getIndex(), query).flatMap(result -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted {" + result + "} documents from index {" + getIndex() + "}");
+				}
+				// 2. Try to store the updated document
+				return db.noTrx(() -> {
+					NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
+					if (container == null) {
+						log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
+								+ "}. I'll can't store a search index document. This may be normal i cases if mesh is handling an outdated search queue batch entry.");
+						//TODO delete the remaining document to ensure consistency?
+						return Observable.just(null);
+					} else {
+						return storeContainer(container);
+					}
+				});
+			}));
 		}
-
 		return Observable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
@@ -157,40 +212,46 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
-	@Override
-	public Observable<Void> update(Node node) {
+	/**
+	 * Generate a flat property map from the given container and store the map within the search index.
+	 * 
+	 * @param container
+	 * @return
+	 */
+	public Observable<Void> storeContainer(NodeGraphFieldContainer container) {
 
+		Node node = container.getParentNode();
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
-
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
-		Set<Observable<Void>> obs = new HashSet<>();
-		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+		// The basenode has no parent.
+		if (node.getParentNode() != null) {
+			addParentNodeInfo(map, node.getParentNode());
+		}
+		map.put("published", node.isPublished());
 
-			removeFieldEntries(map);
-			map.remove("language");
-			String language = container.getLanguage().getLanguageTag();
-			map.put("language", language);
-			addSchema(map, container.getSchemaContainerVersion());
-			addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
-			if (log.isDebugEnabled()) {
-				String json = JsonUtil.toJson(map);
-				log.debug(json);
-			}
+		map.remove("language");
+		String language = container.getLanguage().getLanguageTag();
+		map.put("language", language);
+		addSchema(map, container.getSchemaContainerVersion());
 
-			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
-					composeDocumentId(node, language), map));
-
+		addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
+		if (log.isTraceEnabled()) {
+			String json = JsonUtil.toJson(map);
+			log.trace("Search index json:");
+			log.trace(json);
 		}
 
-		return Observable.merge(obs).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Updated node in index.");
-			}
-			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-		});
+		// Add display field value
+		Map<String, String> displayFieldMap = new HashMap<>();
+		displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
+		displayFieldMap.put("value", container.getDisplayFieldValue());
+		map.put("displayField", displayFieldMap);
+		return searchProvider.storeDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
+				composeDocumentId(container.getParentNode(), language), map);
+
 	}
 
 	/**

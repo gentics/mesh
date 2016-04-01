@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -173,7 +174,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 								container.updateWebrootPathInfo("node_conflicting_segmentfield_upload");
 							}
 
-							SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
 
@@ -329,7 +330,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
-							SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
 

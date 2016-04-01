@@ -488,7 +488,7 @@ public class TestDataProvider {
 		if (germanContent != null) {
 			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, schema.getLatestVersion());
 			germanContainer.createString("name").setString(name + " german");
-			germanContainer.createString("title").setString(name + " english title");
+			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("filename").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);

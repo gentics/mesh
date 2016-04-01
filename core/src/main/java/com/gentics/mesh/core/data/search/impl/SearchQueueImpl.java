@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BATCH;
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -79,28 +79,28 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	public void addFullIndex() {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
 		for (Node node : boot.nodeRoot().findAll()) {
-			node.createIndexBatch(CREATE_ACTION);
+			node.createIndexBatch(STORE_ACTION);
 		}
 		for (Project project : boot.projectRoot().findAll()) {
-			project.createIndexBatch(CREATE_ACTION);
+			project.createIndexBatch(STORE_ACTION);
 		}
 		for (User user : boot.userRoot().findAll()) {
-			user.createIndexBatch(CREATE_ACTION);
+			user.createIndexBatch(STORE_ACTION);
 		}
 		for (Role role : boot.roleRoot().findAll()) {
-			role.createIndexBatch(CREATE_ACTION);
+			role.createIndexBatch(STORE_ACTION);
 		}
 		for (Group group : boot.groupRoot().findAll()) {
-			group.createIndexBatch(CREATE_ACTION);
+			group.createIndexBatch(STORE_ACTION);
 		}
 		for (Tag tag : boot.tagRoot().findAll()) {
-			tag.createIndexBatch(CREATE_ACTION);
+			tag.createIndexBatch(STORE_ACTION);
 		}
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
-			tagFamily.createIndexBatch(CREATE_ACTION);
+			tagFamily.createIndexBatch(STORE_ACTION);
 		}
 		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-			schema.createIndexBatch(CREATE_ACTION);
+			schema.createIndexBatch(STORE_ACTION);
 		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {

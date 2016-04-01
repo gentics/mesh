@@ -5,9 +5,12 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -17,6 +20,9 @@ import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
@@ -25,6 +31,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
@@ -306,5 +313,36 @@ public class ElasticSearchProvider implements SearchProvider {
 				});
 
 		return fut;
+	}
+
+	@Override
+	public Observable<Integer> deleteDocumentsViaQuery(String index, JSONObject query) {
+		return deleteDocumentsViaQuery(index, query.toString());
+	}
+
+	@Override
+	public Observable<Integer> deleteDocumentsViaQuery(String index, String searchQuery) {
+		ObservableFuture<Integer> observable = RxHelper.observableFuture();
+		Client client = getNode().client();
+		SearchRequestBuilder builder = client.prepareSearch(index).setSource(searchQuery);
+
+		Set<Observable<Void>> obs = new HashSet<>();
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.execute().addListener(new ActionListener<SearchResponse>() {
+			@Override
+			public void onResponse(SearchResponse response) {
+				for (SearchHit hit : response.getHits()) {
+					obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
+				}
+				observable.toHandler().handle(Future.succeededFuture(obs.size()));
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				observable.toHandler().handle(Future.failedFuture(e));
+			}
+		});
+
+		return observable.delaySubscription(() -> Observable.merge(obs).ignoreElements());
 	}
 }

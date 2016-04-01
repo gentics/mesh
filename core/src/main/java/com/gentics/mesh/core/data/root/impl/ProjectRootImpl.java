@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -163,7 +164,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				// TODO add microschema root crud perms
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
-				SearchQueueBatch batch = project.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+				SearchQueueBatch batch = project.createIndexBatch(STORE_ACTION);
 				return Tuple.tuple(batch, project);
 			});
 

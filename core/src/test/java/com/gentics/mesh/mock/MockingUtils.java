@@ -287,7 +287,8 @@ public final class MockingUtils {
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
-
+		when(container.getParentNode()).thenReturn(node);
+		when(node.getGraphFieldContainer(language)).thenReturn(container);
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
 		return node;
 	}
@@ -367,10 +368,10 @@ public final class MockingUtils {
 		// TODO currently, this mock is only used for the search document example, where we want to omit
 		// fields of type "list of micronodes". We should better add an argument to the method to specify,
 		// which types of fields should be added
-//		// Micronode List Field
-//		MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
-//		Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField, micronodeField));
-//		when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
+		//		// Micronode List Field
+		//		MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
+		//		Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField, micronodeField));
+		//		when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
 
 		//TODO add select fields
 

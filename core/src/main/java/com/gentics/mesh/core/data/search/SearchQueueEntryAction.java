@@ -4,8 +4,10 @@ package com.gentics.mesh.core.data.search;
  * A search queue entry action defines how the index search should be modified.
  */
 public enum SearchQueueEntryAction {
-
-	CREATE_ACTION("create"), DELETE_ACTION("delete"), UPDATE_ACTION("update"), REINDEX_ALL("reindex_all");
+	DELETE_ACTION("delete"),
+	// TODO replace with store
+	REINDEX_ALL("reindex_all"), 
+	STORE_ACTION("store");
 
 	private String name;
 

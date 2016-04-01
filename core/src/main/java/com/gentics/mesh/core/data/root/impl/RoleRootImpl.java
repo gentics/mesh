@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -21,7 +19,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -101,7 +98,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			requestUser.reload();
 			Role role = create(requestModel.getName(), requestUser);
 			requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
-			SearchQueueBatch batch = role.createIndexBatch(SearchQueueEntryAction.CREATE_ACTION);
+			SearchQueueBatch batch = role.createIndexBatch(STORE_ACTION);
 			return Tuple.tuple(batch, role);
 		});
 

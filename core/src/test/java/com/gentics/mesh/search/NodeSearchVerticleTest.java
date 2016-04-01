@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -41,7 +42,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -255,7 +255,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			batch = searchQueue.createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 			tx.success();
 		}
 		try (Trx tx = db.trx()) {
@@ -290,8 +290,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 			// Create the update entry in the search queue
 			batch = boot.meshRoot().getSearchQueue().createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION, Node.TYPE + "-en");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION, Node.TYPE + "-de");
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION, Node.TYPE + "-en");
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION, Node.TYPE + "-de");
 			tx.success();
 		}
 
@@ -585,11 +585,18 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
+		Node concorde = content("concorde");
+		concorde.setUuid("blubi");
 		fullIndex();
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
-		Node concorde = content("concorde");
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()),
+				new PagingParameter().setPage(1).setPerPage(10), new NodeRequestParameter().setLanguages("en", "de"));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("We expect to find the two language versions.", 2, future.result().getData().size());
+
 		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 		Schema schema = schemaVersion.getSchema();
@@ -606,13 +613,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Wait for migration to complete
 		failingLatch(latch);
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()),
-				new PagingParameter().setPage(1).setPerPage(10));
+		future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()), new PagingParameter().setPage(1).setPerPage(10),
+				new NodeRequestParameter().setLanguages("en", "de"));
 		latchFor(future);
 		assertSuccess(future);
 
-		NodeListResponse response = future.result();
-		assertEquals("We only expect to find the two language versions.", 2, response.getData().size());
+		assertEquals("We only expect to find the two language versions.", 2, future.result().getData().size());
 	}
 
 	@Test

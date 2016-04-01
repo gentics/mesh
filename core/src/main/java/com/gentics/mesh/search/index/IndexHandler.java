@@ -67,16 +67,6 @@ public interface IndexHandler {
 	Observable<Void> store(String uuid, String indexType);
 
 	/**
-	 * Update the search index document by loading the graph element for the given uuid and type and transforming it to a source map which will be used to
-	 * update the matching search index document.
-	 * 
-	 * @param uuid
-	 * @param type
-	 * @return
-	 */
-	Observable<Void> update(String uuid, String type);
-
-	/**
 	 * Reindex all documents for the type which the handler is capable of.
 	 * 
 	 * @return

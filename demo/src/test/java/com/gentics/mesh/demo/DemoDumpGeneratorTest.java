@@ -4,66 +4,62 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
-import org.junit.Before;
+import java.io.IOException;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.NoTrx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.SpringTestConfiguration;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.NodeIndexHandler;
 
-@ContextConfiguration(classes = { SpringTestConfiguration.class })
+@ContextConfiguration(classes = { DemoDumpConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class DemoSetupTest {
+public class DemoDumpGeneratorTest {
+
+	static {
+		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dump");
+	}
 
 	@Autowired
-	protected BootstrapInitializer boot;
+	private BootstrapInitializer boot;
 
 	@Autowired
 	private DemoDataProvider dataProvider;
 
 	@Autowired
-	protected DatabaseService databaseService;
+	private SearchProvider searchProvider;
 
 	@Autowired
-	protected Database db;
+	private Database db;
 
-	protected NoTrx tx;
+	private static DemoDumpGenerator generator = new DemoDumpGenerator();
 
-	@Before
-	public void setup() throws Exception {
-		boot.initMandatoryData();
-		boot.initPermissions();
-		dataProvider.setup();
-		tx = db.noTrx();
-	}
-
-	@After
-	public void cleanup() {
-		tx.close();
-		BootstrapInitializer.clearReferences();
-		Database db = databaseService.getDatabase();
-		db.clear();
-		DatabaseHelper helper = new DatabaseHelper(db);
-		helper.init();
+	@BeforeClass
+	public static void cleanupFolders() throws IOException {
+		generator.cleanup();
 	}
 
 	@Test
 	public void testSetup() throws Exception {
+		generator.invokeDump(boot, dataProvider);
+		NoTrx tx = db.noTrx();
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().single().getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
-		assertNotNull(user);
+		assertNotNull("The webclient user should have been created but could not be found.", user);
 		assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
 		Group group = user.getGroups().get(0);
 		Role role = group.getRoles().get(0);
@@ -73,5 +69,17 @@ public class DemoSetupTest {
 		assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
 		assertTrue("The webclient user has no read permission on the user root node..",
 				user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
+
+		assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
+		for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+				String languageTag = container.getLanguage().getLanguageTag();
+				assertNotNull("The search document for node {" + node.getUuid() + "} container {" + languageTag + "} could not be found",
+						searchProvider.getDocument(Node.TYPE, NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion()),
+								NodeIndexHandler.composeDocumentId(node, languageTag)).toBlocking().single());
+			}
+		}
+		tx.close();
+
 	}
 }

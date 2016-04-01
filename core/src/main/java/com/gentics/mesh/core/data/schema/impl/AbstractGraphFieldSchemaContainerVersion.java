@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -244,7 +244,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			getSchemaContainer().setLatestVersion(nextVersion);
 
 			// Update the search index
-			return createIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> {
 			return db.noTrx(() -> {
 				// Make sure to unlink the old schema container from the container root and assign the new version to the root.

@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
@@ -93,29 +93,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @return
 	 */
 	abstract protected Map<String, Object> transformToDocumentMap(T object);
-
-	/**
-	 * Update the search index document which is represented by the given object.
-	 * 
-	 * @param object
-	 * @return
-	 */
-	public Observable<Void> update(T object) {
-		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
-	}
-
-	@Override
-	public Observable<Void> update(String uuid, String type) {
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		getRootVertex().findByUuid(uuid).map(element -> {
-			if (element == null) {
-				return Observable.error(new Exception("Element {" + uuid + "} for index type {" + type + "} could not be found within graph."));
-			} else {
-				return update(element);
-			}
-		});
-		return fut;
-	}
 
 	/**
 	 * Store the given object within the search index.
@@ -247,12 +224,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		}
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
-		case CREATE_ACTION:
-			return store(uuid, indexType);
 		case DELETE_ACTION:
 			return delete(uuid, indexType);
-		case UPDATE_ACTION:
-			// update(uuid, handler);
+		case STORE_ACTION:
 			return store(uuid, indexType);
 		case REINDEX_ALL:
 			return reindexAll();
@@ -266,7 +240,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		log.info("Handling full reindex entry");
 		for (T element : getRootVertex().findAll()) {
 			log.info("Invoking reindex for {" + getType() + "/" + element.getUuid() + "}");
-			SearchQueueBatch batch = element.createIndexBatch(UPDATE_ACTION);
+			SearchQueueBatch batch = element.createIndexBatch(STORE_ACTION);
 			for (SearchQueueEntry entry : batch.getEntries()) {
 				entry.process().toBlocking().lastOrDefault(null);
 			}

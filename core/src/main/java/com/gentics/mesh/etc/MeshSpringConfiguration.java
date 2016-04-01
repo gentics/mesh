@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -51,6 +52,7 @@ import io.vertx.ext.web.sstore.SessionStore;
  */
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
+@Profile({ "test", "full", "dump" })
 public class MeshSpringConfiguration {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshSpringConfiguration.class);

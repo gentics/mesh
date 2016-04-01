@@ -10,7 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
@@ -518,7 +518,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						setReferencedNode(node);
 					}
 				}
-				return createIndexBatch(UPDATE_ACTION);
+				return createIndexBatch(STORE_ACTION);
 			}).process().map(i -> this);
 
 		} catch (IOException e) {

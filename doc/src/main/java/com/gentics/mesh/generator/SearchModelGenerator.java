@@ -25,6 +25,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.AbstractEnvironment;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.data.Group;
@@ -58,6 +59,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 	private DummySearchProvider provider;
 
 	private AnnotationConfigApplicationContext ctx;
+
+	static {
+		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "nodb");
+	}
 
 	public static void main(String[] args) throws Exception {
 		new SearchModelGenerator().start();
@@ -109,7 +114,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = ctx.getBean(NodeIndexHandler.class);
-		nodeIndexHandler.store(node, "node").toBlocking().last();
+		nodeIndexHandler.storeContainer(node.getGraphFieldContainer(language));
 		writeStoreEvent("node.search");
 
 	}

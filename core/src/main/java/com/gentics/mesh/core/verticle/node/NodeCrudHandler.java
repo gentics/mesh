@@ -3,7 +3,7 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -153,7 +153,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					node.addTag(tag);
-					SearchQueueBatch batch = node.createIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, node);
 				});
 
@@ -189,7 +189,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
-					SearchQueueBatch batch = node.createIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					node.removeTag(tag);
 					return Tuple.tuple(batch, node);
 				});

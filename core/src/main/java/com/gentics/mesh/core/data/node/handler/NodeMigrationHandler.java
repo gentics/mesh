@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.handler;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,15 +122,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					// Invoke the migration
 					migrate(ac, container, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-					// Add a new delete action entry while the contains still references the old schema version. 
-					// This way the old document will be removed from the search index.
-					container.addIndexBatchEntry(batch, SearchQueueEntryAction.DELETE_ACTION);
-
 					// Update the schema reference to the new version
 					container.setSchemaContainerVersion(toVersion);
-
-					// Lastly add a search queue entry for the updated container
-					container.addIndexBatchEntry(batch, SearchQueueEntryAction.UPDATE_ACTION);
+					container.addIndexBatchEntry(batch, STORE_ACTION);
 					return null;
 				} catch (Exception e1) {
 					return e1;

@@ -17,6 +17,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.gentics.mesh.search.index.IndexHandler;
@@ -27,6 +28,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @ContextConfiguration(classes = { SpringElasticSearchTestConfiguration.class })
+@ActiveProfiles("test-search")
 public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTest {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchVerticleTest.class);
