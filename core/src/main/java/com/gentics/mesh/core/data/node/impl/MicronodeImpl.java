@@ -6,10 +6,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
@@ -27,6 +31,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.InternalActionContext;
 
@@ -195,4 +200,21 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	}
 
+	@Override
+	public void validate() {
+		Microschema microschema = getMicroschemaContainerVersion().getSchema();
+		Map<String, GraphField> fieldsMap = getFields(microschema).stream()
+				.collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+
+		microschema.getFields().stream().forEach(fieldSchema -> {
+			GraphField field = fieldsMap.get(fieldSchema.getName());
+			if (fieldSchema.isRequired() && field == null) {
+				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(),
+						microschema.getName());
+			}
+			if (field != null) {
+				field.validate();
+			}
+		});
+	}
 }

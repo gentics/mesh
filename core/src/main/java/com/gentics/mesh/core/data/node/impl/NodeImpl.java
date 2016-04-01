@@ -14,7 +14,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_IMPLEMENTED;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -131,11 +131,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPathSegment(String... languageTag) {
+	public Observable<String> getPathSegment(String releaseUuid, Type type, String... languageTag) {
 		NodeGraphFieldContainer container = null;
 		for (String tag : languageTag) {
-			// TODO add release
-			if ((container = getGraphFieldContainer(tag, null, Type.DRAFT)) != null) {
+			if ((container = getGraphFieldContainer(tag, releaseUuid, type)) != null) {
 				break;
 			}
 		}
@@ -159,10 +158,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<String> getPath(String... languageTag) throws UnsupportedEncodingException {
+	public Observable<String> getPath(String releaseUuid, Type type, String... languageTag) throws UnsupportedEncodingException {
 		List<Observable<String>> segments = new ArrayList<>();
 
-		segments.add(getPathSegment(languageTag));
+		segments.add(getPathSegment(releaseUuid, type, languageTag));
 		Node current = this;
 
 		// for the path segments of the container, we add all (additional)
@@ -184,7 +183,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				break;
 			}
 			// for the path segments of the container, we allow ANY language (of the project)
-			segments.add(current.getPathSegment(projectLanguages));
+			segments.add(current.getPathSegment(releaseUuid, type, projectLanguages));
 		}
 
 		Collections.reverse(segments);
@@ -266,12 +265,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		// check whether there is a current draft version
-		EdgeTraversal<?, ?, ?> draftEdgeTraversal = outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode());
-		if (draftEdgeTraversal.hasNext()) {
-			draftEdge = draftEdgeTraversal.next();
+		draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.DRAFT);
+		if (draftEdge != null) {
 			previous = draftEdge.inV().has(NodeGraphFieldContainerImpl.class)
 					.nextOrDefault(NodeGraphFieldContainerImpl.class, null);
 		}
@@ -306,18 +301,47 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		edge.setType(Type.DRAFT);
 
 		// if there is no initial edge, create one
-		EdgeTraversal<?, ?, ?> initialEdgeTraversal = outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.INITIAL.getCode());
-		if (!initialEdgeTraversal.hasNext()) {
-			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(), GraphFieldContainerEdgeImpl.class);
+		if (getGraphFieldContainerEdge(languageTag, releaseUuid, Type.INITIAL) == null) {
+			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
+					GraphFieldContainerEdgeImpl.class);
 			initialEdge.setLanguageTag(languageTag);
 			initialEdge.setReleaseUuid(releaseUuid);
 			initialEdge.setType(Type.INITIAL);
 		}
 
 		return container;
+	}
+
+	/**
+	 * Get an existing edge
+	 * @param languageTag language tag
+	 * @param releaseUuid release uuid
+	 * @param type edge type
+	 * @return existing edge or null
+	 */
+	protected EdgeFrame getGraphFieldContainerEdge(String languageTag, String releaseUuid, Type type) {
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		if (edgeTraversal.hasNext()) {
+			return edgeTraversal.next();
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Get all graph field
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
+	protected List<? extends EdgeFrame> getGraphFieldContainerEdges(String releaseUuid, Type type) {
+		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		return edgeTraversal.toList();
 	}
 
 	@Override
@@ -450,6 +474,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(), ac.getVersion());
 			if (fieldContainer == null) {
+				// if a published version was requested, we check whether any published language variant exists for the node, if not, response with NOT_FOUND
+				if (Type.forVersion(ac.getVersion()) == Type.PUBLISHED
+						&& getGraphFieldContainers(release, Type.PUBLISHED).isEmpty()) {
+					throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
+				}
+
+				// if a specific version was requested, that does not exist, we also return NOT_FOUND
+				if (Type.forVersion(ac.getVersion()) == Type.INITIAL) {
+					throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersion());
+				}
+
 				String langInfo = getLanguageInfo(requestedLanguageTags);
 				if (log.isDebugEnabled()) {
 					log.debug("The fields for node {" + getUuid() + "} can't be populated since the node has no matching language for the languages {"
@@ -691,26 +726,130 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<Void> publish(InternalActionContext ac) {
-		// TODO
-		throw error(NOT_IMPLEMENTED, "");
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Release release = ac.getRelease();
+		String releaseUuid = release.getUuid();
+
+		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(release, Type.DRAFT)
+				.stream().filter(c -> !c.isPublished(releaseUuid)).collect(Collectors.toList());
+
+		// TODO check whether all required fields are filled
+
+		return db.trx(() -> {
+			// publish all unpublished containers
+			unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
+
+			// reindex
+			// TODO
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			return batch;
+		}).process().map(i -> {
+			return null;
+		});
 	}
 
 	@Override
 	public Observable<Void> takeOffline(InternalActionContext ac) {
-		// TODO
-		throw error(NOT_IMPLEMENTED, "");
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Release release = ac.getRelease();
+		String releaseUuid = release.getUuid();
+
+		return db.trx(() -> {
+			getGraphFieldContainerEdges(releaseUuid, Type.PUBLISHED).stream().forEach(EdgeFrame::remove);
+
+			// reindex
+			// TODO
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+			return batch;
+		}).process().map(i -> {
+			return null;
+		});
 	}
 
 	@Override
 	public Observable<Void> publish(InternalActionContext ac, String languageTag) {
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Release release = ac.getRelease();
+		String releaseUuid = release.getUuid();
+
+		// get the draft version of the given language
+		NodeGraphFieldContainer draftVersion = getGraphFieldContainer(languageTag, releaseUuid, Type.DRAFT);
+
+		// if not existent -> NOT_FOUND
+		if (draftVersion == null) {
+			throw error(NOT_FOUND, "error_language_not_found", languageTag);
+		}
+
+		// if published -> done
+		if (draftVersion.isPublished(releaseUuid)) {
+			return Observable.just(null);
+		}
+
+		// check whether all required fields are filled, if not -> unable to publish
 		// TODO
-		throw error(NOT_IMPLEMENTED, "");
+
+		return db.trx(() -> {
+			publish(draftVersion.getLanguage(), release, ac.getUser());
+
+			// reindex
+			// TODO
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			return batch;
+		}).process().map(i -> {
+			return null;
+		});
 	}
 
 	@Override
 	public Observable<Void> takeOffline(InternalActionContext ac, String languageTag) {
-		// TODO
-		throw error(NOT_IMPLEMENTED, "");
+		Database db = MeshSpringConfiguration.getInstance().database();
+		Release release = ac.getRelease();
+		String releaseUuid = release.getUuid();
+
+		return db.trx(() -> {
+			EdgeFrame publishedEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED);
+
+			if (publishedEdge == null) {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			} else {
+				publishedEdge.remove();
+			}
+
+			// reindex
+			// TODO
+			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+			return batch;
+		}).process().map(i -> {
+			return null;
+		});
+	}
+
+	/**
+	 * Create a new published version of the given language in the release
+	 * @param language language
+	 * @param release release
+	 * @param user user
+	 */
+	protected void publish(Language language, Release release, User user) {
+		String languageTag = language.getLanguageTag();
+		String releaseUuid = release.getUuid();
+
+		// create published version
+		NodeGraphFieldContainer newVersion = createGraphFieldContainer(language, release, user);
+		newVersion.setVersion(newVersion.getVersion().nextPublished());
+
+		// remove an existing published edge
+		EdgeFrame currentPublished = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED);
+		if (currentPublished != null) {
+			currentPublished.remove();
+		}
+
+		// create new published edge
+		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, newVersion.getImpl(),
+				GraphFieldContainerEdgeImpl.class);
+		edge.setLanguageTag(languageTag);
+		edge.setReleaseUuid(releaseUuid);
+		edge.setType(Type.PUBLISHED);
 	}
 
 	@Override
@@ -956,7 +1095,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			setParentNode(targetNode);
 			// update the webroot path info for every field container.
 			getGraphFieldContainers().stream()
-					.forEach(container -> container.updateWebrootPathInfo("node_conflicting_segmentfield_move"));
+					.forEach(container -> container.updateWebrootPathInfo(null, "node_conflicting_segmentfield_move"));
 			// TODO get release specific containers
 			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
 			return batch;

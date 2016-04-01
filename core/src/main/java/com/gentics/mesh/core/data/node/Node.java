@@ -367,21 +367,25 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
-	 * 
+	 * @param releaseUuid release Uuid
+	 * @param type edge type
 	 * @param languageTag
+	 * 
 	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
-	Observable<String> getPath(String... languageTag) throws UnsupportedEncodingException;
+	Observable<String> getPath(String releaseUuid, Type type, String... languageTag) throws UnsupportedEncodingException;
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
 	 * of the node.
-	 *
+	 * @param releaseUuid release Uuid
+	 * @param type edge type
 	 * @param languageTag
+	 *
 	 * @return
 	 */
-	Observable<String> getPathSegment(String... languageTag);
+	Observable<String> getPathSegment(String releaseUuid, Type type, String... languageTag);
 
 	/**
 	 * Delete the node and ignore any checks.

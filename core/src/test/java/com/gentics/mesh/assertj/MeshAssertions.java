@@ -14,6 +14,8 @@ import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeGraphFieldContainerAssert;
 import com.gentics.mesh.assertj.impl.NodeResponseAssert;
 import com.gentics.mesh.assertj.impl.ProjectResponseAssert;
+import com.gentics.mesh.assertj.impl.PublishStatusModelAssert;
+import com.gentics.mesh.assertj.impl.PublishStatusResponseAssert;
 import com.gentics.mesh.assertj.impl.ReleaseAssert;
 import com.gentics.mesh.assertj.impl.ReleaseResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
@@ -27,7 +29,6 @@ import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -38,6 +39,8 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -148,5 +151,13 @@ public class MeshAssertions extends Assertions {
 
 	public static FieldMapAssert assertThat(FieldMap actual) {
 		return new FieldMapAssert(actual);
+	}
+
+	public static PublishStatusResponseAssert assertThat(PublishStatusResponse actual) {
+		return new PublishStatusResponseAssert(actual);
+	}
+
+	public static PublishStatusModelAssert assertThat(PublishStatusModel actual) {
+		return new PublishStatusModelAssert(actual);
 	}
 }

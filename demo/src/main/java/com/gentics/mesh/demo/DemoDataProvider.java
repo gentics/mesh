@@ -2,7 +2,9 @@ package com.gentics.mesh.demo;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 
 import java.io.File;
@@ -297,7 +299,8 @@ public class DemoDataProvider {
 					}
 				}
 			}
-			englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
+			englishContainer.updateWebrootPathInfo(project.getLatestRelease().getUuid(),
+					"node_conflicting_segmentfield_update");
 			nodes.put(name, node);
 		}
 
@@ -397,7 +400,7 @@ public class DemoDataProvider {
 						log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId()
 								+ "}");
 					}
-					role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM);
+					role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 				}
 				log.info("Added BasicPermissions to nodes for role {" + role.getName() + "}");
 			}

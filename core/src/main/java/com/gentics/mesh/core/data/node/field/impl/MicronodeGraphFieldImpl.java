@@ -66,4 +66,9 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		field.setFieldKey(getFieldKey());
 		return field;
 	}
+
+	@Override
+	public void validate() {
+		getMicronode().validate();
+	}
 }

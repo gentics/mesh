@@ -170,6 +170,18 @@ public interface NodeClientMethods {
 			QueryParameterProvider... parameters);
 
 	/**
+	 * Publish a node language
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param languageTag
+	 * @param parameters
+	 * @return
+	 */
+	Future<PublishStatusResponse> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
+			QueryParameterProvider... parameters);
+
+	/**
 	 * Take a node offline
 	 *
 	 * @param projectName
@@ -179,4 +191,17 @@ public interface NodeClientMethods {
 	 */
 	Future<PublishStatusResponse> takeNodeOffline(String projectName, String nodeUuid,
 			QueryParameterProvider... parameters);
+
+	/**
+	 * Take a node offline
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param languageTag
+	 * @param parameters
+	 * @return
+	 */
+	Future<PublishStatusResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
+			QueryParameterProvider... parameters);
+
 }

@@ -167,11 +167,11 @@ public class WebRootLinkReplacer {
 			}
 			switch (type) {
 			case SHORT:
-				return node.getPath(languageTag).onErrorReturn(e -> "/error/404");
+				return node.getPath(null, null, languageTag).onErrorReturn(e -> "/error/404");
 			case MEDIUM:
-				return node.getPath(languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
+				return node.getPath(null, null, languageTag).onErrorReturn(e -> "/error/404").map(path -> "/" + node.getProject().getName() + path);
 			case FULL:
-				return node.getPath(languageTag).onErrorReturn(e -> "/error/404")
+				return node.getPath(null, null, languageTag).onErrorReturn(e -> "/error/404")
 						.map(path -> RouterStorage.DEFAULT_API_MOUNTPOINT + "/" + node.getProject().getName() + "/webroot" + path);
 			default:
 				return Observable.error(new Exception("Cannot render link with type " + type));

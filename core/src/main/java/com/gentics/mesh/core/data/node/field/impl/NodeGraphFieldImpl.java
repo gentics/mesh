@@ -65,4 +65,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		field.setFieldKey(getFieldKey());
 		return field;
 	}
+
+	@Override
+	public void validate() {
+	}
 }

@@ -456,6 +456,26 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
+	public Future<PublishStatusResponse> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(languageTag, "languageTag must not be null");
+		return handleRequest(PUT, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published"
+				+ getQuery(parameters), PublishStatusResponse.class);
+	}
+
+	@Override
+	public Future<PublishStatusResponse> takeNodeLanguageOffline(String projectName, String nodeUuid,
+			String languageTag, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(languageTag, "languageTag must not be null");
+		return handleRequest(DELETE, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag
+				+ "/published" + getQuery(parameters), PublishStatusResponse.class);
+	}
+
+	@Override
 	public Future<UserListResponse> findUsersOfGroup(String groupUuid, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(groupUuid, "groupUuid must not be null");
 		return handleRequest(GET, "/groups/" + groupUuid + "/users" + getQuery(parameters), UserListResponse.class);

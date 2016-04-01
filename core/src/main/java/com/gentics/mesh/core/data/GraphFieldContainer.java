@@ -317,4 +317,10 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @return
 	 */
 	<T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey);
+
+	/**
+	 * Validate consistency of this container.
+	 * This will check whether all mandatory fields have been filled
+	 */
+	void validate();
 }

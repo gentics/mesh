@@ -187,4 +187,8 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 		return container.getBinary(getFieldKey());
 	}
+
+	@Override
+	public void validate() {
+	}
 }

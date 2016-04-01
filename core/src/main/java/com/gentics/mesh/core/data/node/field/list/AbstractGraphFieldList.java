@@ -29,4 +29,8 @@ public abstract class AbstractGraphFieldList<T extends ListableGraphField, RM ex
 
 	}
 
+	@Override
+	public void validate() {
+		getList().stream().forEach(GraphField::validate);
+	}
 }

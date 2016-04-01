@@ -198,8 +198,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
 				return node.publish(ac).flatMap(v -> {
-					node.reload();
-					return node.transformToPublishStatus(ac);
+					return db.noTrx(() -> {
+						node.reload();
+						return node.transformToPublishStatus(ac);
+					});
 				});
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -213,8 +215,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac).flatMap(v -> {
-					node.reload();
-					return node.transformToPublishStatus(ac);
+					return db.noTrx(() -> {
+						node.reload();
+						return node.transformToPublishStatus(ac);
+					});
 				});
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -229,8 +233,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
 				return node.publish(ac, languageTag).flatMap(v -> {
-					node.reload();
-					return node.transformToPublishStatus(ac);
+					return db.noTrx(() -> {
+						node.reload();
+						return node.transformToPublishStatus(ac);
+					});
 				});
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
@@ -245,8 +251,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac, languageTag).flatMap(v -> {
-					node.reload();
-					return node.transformToPublishStatus(ac);
+					return db.noTrx(() -> {
+						node.reload();
+						return node.transformToPublishStatus(ac);
+					});
 				});
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);

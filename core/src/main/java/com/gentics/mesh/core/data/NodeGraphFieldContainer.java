@@ -33,11 +33,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Update the property webroot path info. This will also check for
 	 * uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found
-	 *
+	 * @param releaseUuid release Uuid
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	void updateWebrootPathInfo(String conflictI18n);
+	void updateWebrootPathInfo(String releaseUuid, String conflictI18n);
 
 	/**
 	 * Get the Version Number or null if no version set
@@ -90,4 +90,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param container container
 	 */
 	void clone(NodeGraphFieldContainer container);
+
+	/**
+	 * Check whether this field container is the published version for the given release
+	 * @param releaseUuid release Uuid
+	 * @return true if it is published, false if not
+	 */
+	boolean isPublished(String releaseUuid);
 }

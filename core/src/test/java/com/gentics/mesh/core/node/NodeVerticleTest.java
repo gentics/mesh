@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -54,6 +56,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -593,7 +596,48 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadPublishedNodes() {
-		// TODO
+		NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+		assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
+
+		List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
+		nodes.stream().forEach(node -> call(() -> getClient().publishNode(PROJECT_NAME, node.getUuid())));
+
+		List<NodeResponse> publishedNodes = nodes.stream()
+				.map(node -> call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid())))
+				.collect(Collectors.toList());
+		assertThat(publishedNodes).hasSize(nodes.size());
+
+		listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+		assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
+				.containsOnlyElementsOf(publishedNodes);
+	}
+
+	@Test
+	public void testReadPublishedNodesNoPermission() {
+		NodeListResponse listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+		assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
+
+		List<Node> nodes = new ArrayList<>(
+				Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
+		nodes.stream().forEach(node -> call(() -> getClient().publishNode(PROJECT_NAME, node.getUuid())));
+
+		// revoke permission on one folder after the other
+		while (!nodes.isEmpty()) {
+			Node folder = nodes.remove(0);
+			db.trx(() -> {
+				role().revokePermissions(folder, READ_PUBLISHED_PERM);
+				return null;
+			});
+
+			List<NodeResponse> publishedNodes = nodes.stream()
+					.map(node -> call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid())))
+					.collect(Collectors.toList());
+			assertThat(publishedNodes).hasSize(nodes.size());
+
+			listResponse = call(() -> getClient().findNodes(PROJECT_NAME, new PagingParameter(1, 1000)));
+			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
+					.containsOnlyElementsOf(publishedNodes);
+		}
 	}
 
 	@Test
@@ -839,7 +883,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 				new RolePermissionParameter().setRoleUuid(role().getUuid()),
 				new NodeRequestParameter().draft()));
 		assertNotNull(response.getRolePerms());
-		assertEquals(4, response.getRolePerms().length);
+		assertEquals(6, response.getRolePerms().length);
 	}
 
 	@Test
@@ -933,14 +977,20 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 
-		// TODO
 		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid, new NodeRequestParameter().setVersion("47.11")),
-				NOT_FOUND, "error_illegal_version", "bogus");
+				NOT_FOUND, "object_not_found_for_version", "47.11");
 	}
 
 	@Test
 	public void testReadPublishedVersion() {
-		// TODO
+		Node node = folder("2015");
+		String uuid = node.getUuid();
+		call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
+
+		call(() -> getClient().publishNode(PROJECT_NAME, uuid));
+
+		NodeResponse nodeResponse = call(() -> getClient().findNodeByUuid(PROJECT_NAME, uuid));
+		assertThat(nodeResponse).as("Published node").hasLanguage("en").hasVersion("1.0");
 	}
 
 	@Test
@@ -1543,5 +1593,340 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		Future<GenericMessageResponse> moveFuture = getClient().moveNode(PROJECT_NAME, uuid, otherParent.getUuid());
 		latchFor(moveFuture);
 		expectException(moveFuture, CONFLICT, "node_conflicting_segmentfield_move", "filename", conflictingName);
+	}
+
+	// Publish Tests
+
+	@Test
+	public void testGetPublishStatus() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+		PublishStatusResponse publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid));
+
+		assertThat(publishStatus).as("Publish status").isNotNull().isNotPublished("en").hasVersion("en", "0.1");
+
+		// publish the node
+		call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
+
+		publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid));
+		assertThat(publishStatus).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
+	}
+
+	@Test
+	public void testGetPublishStatusForRelease() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("de");
+		update.getFields().put("name", FieldUtil.createStringField("2015"));
+		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+		call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
+
+		PublishStatusResponse publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+		assertThat(publishStatus).as("Initial release publish status").isNotNull().isNotPublished("en")
+				.hasVersion("en", "0.1").doesNotContain("de");
+
+		publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+		assertThat(publishStatus).as("New release publish status").isNotNull().isPublished("de").hasVersion("de", "1.0")
+				.doesNotContain("en");
+
+		publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+				new NodeRequestParameter()));
+		assertThat(publishStatus).as("New release publish status").isNotNull().isPublished("de").hasVersion("de", "1.0")
+				.doesNotContain("en");
+	}
+
+	@Test
+	public void testGetPublishStatusNoPermission() {
+		Node node = folder("news");
+		String nodeUuid = node.getUuid();
+		role().revokePermissions(node, READ_PERM);
+
+		call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+	}
+
+	@Test
+	public void testGetPublishStatusBogusUuid() {
+		String bogusUuid = "bogus";
+		call(() -> getClient().getNodePublishStatus(PROJECT_NAME, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
+	}
+
+	@Test
+	public void testPublishNode() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+		PublishStatusResponse statusResponse = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
+		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
+	}
+
+	@Test
+	public void testPublishNodeForRelease() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		project.getReleaseRoot().create("newrelease", user());
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("de");
+		update.getFields().put("name", FieldUtil.createStringField("2015"));
+		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+
+		// publish for the initial release
+		PublishStatusResponse publishStatus = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid,
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+		assertThat(publishStatus).as("Initial publish status").isPublished("en").hasVersion("en", "1.0")
+				.doesNotContain("de");
+	}
+
+	@Test
+	public void testPublishNodeNoPermission() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+		role().revokePermissions(node, PUBLISH_PERM);
+
+		call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+	}
+
+	@Test
+	public void testPublishNodeBogusUuid() {
+		String bogusUuid = "bogus";
+		call(() -> getClient().publishNode(PROJECT_NAME, bogusUuid), NOT_FOUND, "object_not_found_for_uuid", bogusUuid);
+	}
+
+	@Test
+	public void testRepublishUnchanged() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+		PublishStatusResponse statusResponse = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
+		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
+
+		statusResponse = call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid));
+		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
+	}
+
+	@Test
+	public void testPublishLanguage() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("de");
+		update.getFields().put("name", FieldUtil.createStringField("2015"));
+		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
+
+		PublishStatusResponse publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+		assertThat(publishStatus).as("Publish status").isPublished("de").hasVersion("de", "1.0").isNotPublished("en")
+				.hasVersion("en", "0.1");
+	}
+
+	@Test
+	public void testPublishEmptyLanguage() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+		call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found",
+				"de");
+	}
+
+	@Test
+	public void testPublishLanguageForRelease() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("de");
+		update.getFields().put("name", FieldUtil.createStringField("2015 de"));
+		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update,
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+
+		update.getFields().put("name", FieldUtil.createStringField("2015 new de"));
+		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update,
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+		update.setLanguage("en");
+		update.getFields().put("name", FieldUtil.createStringField("2015 new en"));
+		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update,
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+
+		PublishStatusResponse publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de",
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+		assertThat(publishStatus).as("Initial Release Publish Status").isPublished("de").isNotPublished("en");
+		publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid));
+		assertThat(publishStatus).as("Initial Release Publish Status").isNotPublished("de").isNotPublished("en");
+	}
+
+	@Test
+	public void testPublishLanguageNoPermission() {
+		Node node = folder("2015");
+		String nodeUuid = node.getUuid();
+		role().revokePermissions(node, PUBLISH_PERM);
+
+		call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm",
+				nodeUuid);
+	}
+
+	@Test
+	public void testPublishInOfflineContainer() {
+		// TODO prevent?
+	}
+
+	// Take Offline Tests
+
+	@Test
+	public void testTakeNodeOffline() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en")
+				.isPublished("de");
+
+		assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid)))
+				.as("Publish Status after take offline").isNotPublished("en").isNotPublished("de");
+	}
+
+	@Test
+	public void testTakeNodeLanguageOffline() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en")
+				.isPublished("de");
+
+		assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en")))
+				.as("Status after taken en offline").isNotPublished("en").isPublished("de");
+		assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de")))
+				.as("Status after taken en offline").isNotPublished("en").isNotPublished("de");
+	}
+
+	@Test
+	public void testTakeNodeOfflineNoPermission() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en")
+				.isPublished("de");
+
+		db.trx(() -> {
+			role().revokePermissions(node, PUBLISH_PERM);
+			return null;
+		});
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
+	}
+
+	@Test
+	public void testTakeNodeLanguageOfflineNoPermission() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		assertThat(call(() -> getClient().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en")
+				.isPublished("de");
+
+		db.trx(() -> {
+			role().revokePermissions(node, PUBLISH_PERM);
+			return null;
+		});
+		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm",
+				nodeUuid);
+	}
+
+	@Test
+	public void testTakeOfflineNodeOffline() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		assertThat(call(() -> getClient().takeNodeOffline(PROJECT_NAME, nodeUuid))).as("Publish Status")
+				.isNotPublished("en").isNotPublished("de");
+	}
+
+	@Test
+	public void testTakeOfflineNodeLanguageOffline() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		assertThat(call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en")))
+				.as("Initial publish status").isPublished("en").isNotPublished("de");
+
+		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND,
+				"error_language_not_found", "de");
+	}
+
+	@Test
+	public void testTakeOfflineBogusUuid() {
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+	}
+
+	@Test
+	public void testTakeOfflineEmptyLanguage() {
+		Node node = folder("products");
+		String nodeUuid = node.getUuid();
+
+		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND,
+				"error_language_not_found", "fr");
+	}
+
+	@Test
+	public void testTakeOfflineWithOnlineChild() {
+		Node news = folder("news");
+		Node news2015 = folder("2015");
+
+		call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid()));
+		call(() -> getClient().publishNode(PROJECT_NAME, news2015.getUuid()));
+
+		// TODO
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, news.getUuid()), CONFLICT, "", "");
+	}
+
+	@Test
+	public void testTakeOfflineLastLanguageWithOnlineChild() {
+		Node news = folder("news");
+		Node news2015 = folder("2015");
+
+		call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid()));
+		call(() -> getClient().publishNode(PROJECT_NAME, news2015.getUuid()));
+
+		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, news.getUuid(), "de"));
+
+		// TODO
+		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, news.getUuid(), "en"), CONFLICT, "", "");
+	}
+
+	@Test
+	public void testTakeOfflineForRelease() {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		Node news = folder("news");
+
+		// save the folder in new release
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("name", FieldUtil.createStringField("News"));
+		call(() -> getClient().updateNode(PROJECT_NAME, news.getUuid(), update, new NodeRequestParameter().setRelease(newRelease.getName())));
+
+		// publish in initial and new release
+		call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(),
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+		call(() -> getClient().publishNode(PROJECT_NAME, news.getUuid(),
+				new NodeRequestParameter().setRelease(newRelease.getName())));
+
+		// take offline in initial release
+		call(() -> getClient().takeNodeOffline(PROJECT_NAME, news.getUuid(),
+				new NodeRequestParameter().setRelease(initialRelease.getName())));
+
+		// check publish status
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
+				new NodeRequestParameter().setRelease(initialRelease.getName())))).as("Initial release publish status")
+						.isNotPublished("en").isNotPublished("de");
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
+				new NodeRequestParameter().setRelease(newRelease.getName())))).as("New release publish status")
+						.isPublished("en").doesNotContain("de");
 	}
 }

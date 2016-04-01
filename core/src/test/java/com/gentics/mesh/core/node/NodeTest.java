@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -85,13 +86,15 @@ public class NodeTest extends AbstractBasicObjectTest {
 	public void testGetPath() throws Exception {
 		Node newsNode = content("news overview");
 		CountDownLatch latch = new CountDownLatch(2);
-		Observable<String> path = newsNode.getPath(english().getLanguageTag());
+		Observable<String> path = newsNode.getPath(project().getLatestRelease().getUuid(), Type.DRAFT,
+				english().getLanguageTag());
 		path.subscribe(s -> {
 			assertEquals("/News/News+Overview.en.html", s);
 			latch.countDown();
 		});
 
-		Observable<String> pathSegementFieldValue = newsNode.getPathSegment(english().getLanguageTag());
+		Observable<String> pathSegementFieldValue = newsNode.getPathSegment(project().getLatestRelease().getUuid(),
+				Type.DRAFT, english().getLanguageTag());
 		pathSegementFieldValue.subscribe(s -> {
 			assertEquals("News Overview.en.html", s);
 			latch.countDown();

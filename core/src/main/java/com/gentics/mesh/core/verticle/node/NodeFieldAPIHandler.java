@@ -22,6 +22,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
@@ -92,6 +93,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
+			Release release = ac.getRelease();
 			String languageTag = ac.getParameter("languageTag");
 			String fieldName = ac.getParameter("fieldName");
 			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
@@ -162,7 +164,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 							// if the binary field is the segment field, we need to update the webroot info in the node
 							if (binaryField.getFieldKey().equals(container.getSchemaContainerVersion().getSchema().getSegmentField())) {
-								container.updateWebrootPathInfo("node_conflicting_segmentfield_upload");
+								container.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 							}
 
 							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);

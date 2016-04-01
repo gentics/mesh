@@ -69,4 +69,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	 */
 	abstract public Observable<T> transformToRest(ActionContext ac);
 
+	@Override
+	public void validate() {
+	}
 }

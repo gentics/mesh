@@ -34,4 +34,10 @@ public interface GraphField {
 	 * @return cloned field
 	 */
 	GraphField cloneTo(GraphFieldContainer container);
+
+	/**
+	 * Validate consistency of this field. If the field contains micronodes,
+	 * this will check, whether all mandatory fields have been filled
+	 */
+	void validate();
 }

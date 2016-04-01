@@ -142,7 +142,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// handler
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc)));
+		route.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc).setVersion("draft")));
 	}
 
 	// TODO filter by project name
@@ -193,10 +193,16 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 		deleteRoute.handler(rc -> crudHandler.handleTakeOffline(InternalActionContext.create(rc)));
 
 		Route putLanguageRoute = route("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
-		putLanguageRoute.handler(rc -> crudHandler.handlePublish(InternalActionContext.create(rc), rc.get("languageTag")));
+		putLanguageRoute.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			crudHandler.handlePublish(ac, ac.getParameter("languageTag"));
+		});
 
 		Route deleteLanguageRoute = route("/:uuid/languages/:languageTag/published").method(DELETE).produces(APPLICATION_JSON);
-		deleteLanguageRoute.handler(rc -> crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.get("languageTag")));
+		deleteLanguageRoute.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			crudHandler.handleTakeOffline(ac, ac.getParameter("languageTag"));
+		});
 
 	}
 }
