@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.query.QueryParameterProvider;
@@ -148,7 +149,7 @@ public interface NodeClientMethods {
 	Future<TagListResponse> findTagsForNode(String projectName, String nodeUuid, QueryParameterProvider... parameters);
 
 	/**
-	 * Get the publish status of a node+
+	 * Get the publish status of a node
 	 *
 	 * @param projectName
 	 * @param nodeUuid
@@ -156,6 +157,18 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	Future<PublishStatusResponse> getNodePublishStatus(String projectName, String nodeUuid,
+			QueryParameterProvider... parameters);
+
+	/**
+	 * Get the publish status of a node language
+	 *
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param languageTag
+	 * @param parameters
+	 * @return
+	 */
+	Future<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
 			QueryParameterProvider... parameters);
 
 	/**
@@ -178,7 +191,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusResponse> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
+	Future<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
 			QueryParameterProvider... parameters);
 
 	/**
@@ -201,7 +214,7 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	Future<PublishStatusResponse> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
+	Future<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid, String languageTag,
 			QueryParameterProvider... parameters);
 
 }

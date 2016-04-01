@@ -225,6 +225,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	/**
+	 * Handle getting the publish status for the requested language of the node
+	 * @param ac
+	 */
+	public void handleGetPublishStatus(InternalActionContext ac, String languageTag) {
+		db.asyncNoTrxExperimental(() -> {
+			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+				return node.transformToPublishStatus(ac, languageTag);
+			}).flatMap(x -> x);
+		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	}
+
+	/**
 	 * Handle publishing a language of the node
 	 * @param ac
 	 * @param languageTag
@@ -235,7 +247,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return node.publish(ac, languageTag).flatMap(v -> {
 					return db.noTrx(() -> {
 						node.reload();
-						return node.transformToPublishStatus(ac);
+						return node.transformToPublishStatus(ac, languageTag);
 					});
 				});
 			}).flatMap(x -> x);
@@ -253,7 +265,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				return node.takeOffline(ac, languageTag).flatMap(v -> {
 					return db.noTrx(() -> {
 						node.reload();
-						return node.transformToPublishStatus(ac);
+						return node.transformToPublishStatus(ac, languageTag);
 					});
 				});
 			}).flatMap(x -> x);

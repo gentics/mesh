@@ -56,6 +56,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -1658,6 +1659,24 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	}
 
 	@Test
+	public void testGetPublishStatusForLanguage() {
+		Node node = folder("products");
+		call(() -> getClient().publishNodeLanguage(PROJECT_NAME, node.getUuid(), "en"));
+
+		assertThat(call(() -> getClient().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "de")))
+				.as("German publish status").isNotPublished();
+		assertThat(call(() -> getClient().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "en")))
+				.as("English publish status").isPublished();
+	}
+
+	@Test
+	public void testGetPublishStatusForEmptyLanguage() {
+		Node node = folder("products");
+		call(() -> getClient().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND,
+				"error_language_not_found", "fr");
+	}
+
+	@Test
 	public void testPublishNode() {
 		Node node = folder("2015");
 		String nodeUuid = node.getUuid();
@@ -1721,9 +1740,11 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		update.getFields().put("name", FieldUtil.createStringField("2015"));
 		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update));
 
-		PublishStatusResponse publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
-		assertThat(publishStatus).as("Publish status").isPublished("de").hasVersion("de", "1.0").isNotPublished("en")
-				.hasVersion("en", "0.1");
+		PublishStatusModel publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+		assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
+
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status")
+				.isPublished("de").hasVersion("de", "1.0").isNotPublished("en").hasVersion("en", "0.1");
 	}
 
 	@Test
@@ -1756,11 +1777,16 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		call(() -> getClient().updateNode(PROJECT_NAME, nodeUuid, update,
 				new NodeRequestParameter().setRelease(newRelease.getName())));
 
-		PublishStatusResponse publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de",
+		PublishStatusModel publishStatus = call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de",
 				new NodeRequestParameter().setRelease(initialRelease.getName())));
-		assertThat(publishStatus).as("Initial Release Publish Status").isPublished("de").isNotPublished("en");
-		publishStatus = call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid));
-		assertThat(publishStatus).as("Initial Release Publish Status").isNotPublished("de").isNotPublished("en");
+		assertThat(publishStatus).isPublished();
+
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+				new NodeRequestParameter().setRelease(initialRelease.getName())))).as("Initial Release Publish Status")
+						.isPublished("de").isNotPublished("en");
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+				new NodeRequestParameter().setRelease(newRelease.getName())))).as("New Release Publish Status")
+						.isNotPublished("de").isNotPublished("en");
 	}
 
 	@Test
@@ -1801,9 +1827,13 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 				.isPublished("de");
 
 		assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en")))
-				.as("Status after taken en offline").isNotPublished("en").isPublished("de");
+				.as("Status after taken en offline").isNotPublished();
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status")
+				.isNotPublished("en").isPublished("de");
 		assertThat(call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de")))
-				.as("Status after taken en offline").isNotPublished("en").isNotPublished("de");
+				.as("Status after taken en offline").isNotPublished();
+		assertThat(call(() -> getClient().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status")
+				.isNotPublished("en").isNotPublished("de");
 	}
 
 	@Test
@@ -1852,7 +1882,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		String nodeUuid = node.getUuid();
 
 		assertThat(call(() -> getClient().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en")))
-				.as("Initial publish status").isPublished("en").isNotPublished("de");
+				.as("Initial publish status").isPublished();
 
 		call(() -> getClient().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND,
 				"error_language_not_found", "de");

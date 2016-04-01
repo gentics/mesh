@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.handler.InternalActionContext;
@@ -304,6 +305,15 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	Observable<Void> takeOffline(InternalActionContext ac);
+
+	/**
+	 * Transform the node language into a publish status response rest model.
+	 *
+	 * @param ac
+	 * @param languageTag
+	 * @return
+	 */
+	Observable<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag);
 
 	/**
 	 * Publish a language of the node

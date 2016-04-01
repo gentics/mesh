@@ -780,6 +780,7 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		write(getNodeUpdateRequest());
 		write(getNavigationResponse());
 		write(getPublishStatusResponse());
+		write(getPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0")));
 	}
 
 	private void groupJson() throws JsonGenerationException, JsonMappingException, IOException {

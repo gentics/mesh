@@ -708,20 +708,27 @@ traits:
                 example: !include json/GenericMessageResponse.example.json 
       /published:
         is: [ release ]
+        get:
+          description: Get the publish status of the language of the node
+          responses:
+            200:
+              body:
+                application/json:
+                  example: !include json/PublishStatusModel.example.json
         put:
           description: Publish the language of the node
           responses:
             200:
               body:
                 application/json:
-                  example: !include json/PublishStatusResponse.example.json
+                  example: !include json/PublishStatusModel.example.json
         delete:
           description: Take the language of the node offline
           responses:
             200:
               body:
                 application/json:
-                  example: !include json/PublishStatusResponse.example.json
+                  example: !include json/PublishStatusModel.example.json
       /fields/{fieldname}:
         get:
           is: [ imagehandler ]

@@ -767,6 +767,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public Observable<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag) {
+		Release release = ac.getRelease();
+
+		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), Type.PUBLISHED);
+		if (container != null) {
+			return Observable.just(new PublishStatusModel().setPublished(true)
+					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
+					.setPublisher(container.getEditor().transformToReference()).setPublishTime(container.getLastEditedTimestamp()));
+		} else {
+			container = getGraphFieldContainer(languageTag, release.getUuid(), Type.DRAFT);
+			if (container != null) {
+				return Observable.just(new PublishStatusModel().setPublished(false)
+						.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString())));
+			} else {
+				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+		}
+	}
+
+	@Override
 	public Observable<Void> publish(InternalActionContext ac, String languageTag) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		Release release = ac.getRelease();

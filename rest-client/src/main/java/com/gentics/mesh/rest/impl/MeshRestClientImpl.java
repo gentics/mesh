@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
@@ -456,23 +457,33 @@ public class MeshRestClientImpl extends AbstractMeshRestClient {
 	}
 
 	@Override
-	public Future<PublishStatusResponse> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
+	public Future<PublishStatusModel> getNodeLanguagePublishStatus(String projectName, String nodeUuid, String languageTag,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(languageTag, "languageTag must not be null");
+		return handleRequest(GET, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published"
+				+ getQuery(parameters), PublishStatusModel.class);
+	}
+
+	@Override
+	public Future<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
 			QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
 		return handleRequest(PUT, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published"
-				+ getQuery(parameters), PublishStatusResponse.class);
+				+ getQuery(parameters), PublishStatusModel.class);
 	}
 
 	@Override
-	public Future<PublishStatusResponse> takeNodeLanguageOffline(String projectName, String nodeUuid,
+	public Future<PublishStatusModel> takeNodeLanguageOffline(String projectName, String nodeUuid,
 			String languageTag, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
 		return handleRequest(DELETE, "/" + projectName + "/nodes/" + nodeUuid + "/languages/" + languageTag
-				+ "/published" + getQuery(parameters), PublishStatusResponse.class);
+				+ "/published" + getQuery(parameters), PublishStatusModel.class);
 	}
 
 	@Override
