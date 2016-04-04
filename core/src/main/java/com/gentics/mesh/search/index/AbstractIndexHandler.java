@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
@@ -24,9 +25,10 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
@@ -65,7 +67,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Return the index type.
+	 * Return the document type.
 	 * 
 	 * @return
 	 */
@@ -94,39 +96,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	abstract protected Map<String, Object> transformToDocumentMap(T object);
 
 	/**
-	 * Update the search index document which is represented by the given object.
-	 * 
-	 * @param object
-	 * @param entry
-	 * @return
-	 */
-	public Observable<Void> update(T object, SearchQueueEntry entry) {
-		return searchProvider.updateDocument(getIndex(), getType(), object.getUuid(), transformToDocumentMap(object));
-	}
-
-	@Override
-	public Observable<Void> update(String uuid, String type, SearchQueueEntry entry) {
-		ObservableFuture<Void> fut = RxHelper.observableFuture();
-		getRootVertex().findByUuid(uuid).map(element -> {
-			if (element == null) {
-				return Observable.error(new Exception("Element {" + uuid + "} for index type {" + type + "} could not be found within graph."));
-			} else {
-				return update(element, entry);
-			}
-		});
-		return fut;
-	}
-
-	/**
 	 * Store the given object within the search index.
 	 * 
 	 * @param object
-	 * @param type
-	 * @param entry
+	 * @param documentType
 	 * @return
 	 */
-	public Observable<Void> store(T object, String type, SearchQueueEntry entry) {
-		return searchProvider.storeDocument(getIndex(), type, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
+	public Observable<Void> store(T object, String documentType) {
+		return searchProvider.storeDocument(getIndex(), documentType, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -135,19 +112,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String type, SearchQueueEntry entry) {
+	public Observable<Void> delete(String uuid, String documentType) {
 		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(getIndex(), type, uuid);
+		return searchProvider.deleteDocument(getIndex(), documentType, uuid);
 	}
 
 	@Override
-	public Observable<Void> store(String uuid, String indexType, SearchQueueEntry entry) {
+	public Observable<Void> store(String uuid, String indexType) {
 		return getRootVertex().findByUuid(uuid).flatMap(element -> {
 			return db.noTrx(() -> {
 				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_index_type_not_found", uuid, indexType);
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
 				} else {
-					return store(element, indexType, entry);
+					return store(element, indexType);
 				}
 			});
 		});
@@ -239,11 +216,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> handleAction(SearchQueueEntry entry) {
-		String uuid = entry.getElementUuid();
-		String actionName = entry.getElementActionName();
-		String indexType = entry.getElementIndexType();
-
+	public Observable<Void> handleAction(String uuid, String actionName, String indexType) {
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);
@@ -255,16 +228,29 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		}
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
-		case CREATE_ACTION:
-			return store(uuid, indexType, entry);
 		case DELETE_ACTION:
-			return delete(uuid, indexType, entry);
-		case UPDATE_ACTION:
-			// update(uuid, handler);
-			return store(uuid, indexType, entry);
+			return delete(uuid, indexType);
+		case STORE_ACTION:
+			return store(uuid, indexType);
+		case REINDEX_ALL:
+			return reindexAll();
 		default:
 			return Observable.error(new Exception("Action type {" + action + "} is unknown."));
 		}
+	}
+
+	@Override
+	public Observable<Void> reindexAll() {
+		log.info("Handling full reindex entry");
+		for (T element : getRootVertex().findAll()) {
+			log.info("Invoking reindex for {" + getType() + "/" + element.getUuid() + "}");
+			SearchQueueBatch batch = element.createIndexBatch(STORE_ACTION);
+			for (SearchQueueEntry entry : batch.getEntries()) {
+				entry.process().toBlocking().lastOrDefault(null);
+			}
+			batch.delete();
+		}
+		return Observable.just(null);
 	}
 
 	/**
@@ -322,5 +308,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Observable<Void> clearIndex() {
 		return searchProvider.clearIndex(getIndex());
+	}
+
+	public Observable<Void> handleAction(SearchQueueEntry entry) {
+		return handleAction(entry.getElementUuid(), entry.getElementActionName(), entry.getElementIndexType());
 	}
 }

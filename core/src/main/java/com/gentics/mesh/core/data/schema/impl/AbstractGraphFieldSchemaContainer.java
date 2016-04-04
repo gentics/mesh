@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -16,8 +17,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.handler.InternalActionContext;
-
 import rx.Observable;
 
 /**
@@ -87,15 +86,15 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public Observable<R> transformToRest(InternalActionContext ac, String... languageTags) {
+	public Observable<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version 
-		return getLatestVersion().transformToRest(ac, languageTags);
+		return getLatestVersion().transformToRest(ac, level, languageTags);
 	}
 
 	@Override
-	public Observable<R> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<R> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Delegate transform call to latest version
-		return getLatestVersion().transformToRestSync(ac, languageTags);
+		return getLatestVersion().transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
@@ -111,7 +110,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public void delete() {
 		// TODO should all references be updated to a new fallback schema?
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 		//TODO delete versions and nodes as well
 	}

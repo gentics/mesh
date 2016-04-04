@@ -3,6 +3,7 @@ package com.gentics.mesh.util;
 import java.util.List;
 
 import rx.Observable;
+import rx.Observable.Transformer;
 import rx.functions.Func2;
 
 public final class RxUtil {
@@ -33,5 +34,16 @@ public final class RxUtil {
 		return Observable.zip(o1, o2, zipFunction).flatMap(x -> x);
 	}
 
+	/**
+	 * Wait for the given observable to complete before emitting any items from the source observable.
+	 * 
+	 * @param o1
+	 * @return
+	 */
+	public static <T> Transformer<T, T> delay(Observable<?> o1) {
+		return source -> {
+			return source.delaySubscription(() -> o1.ignoreElements());
+		};
+	}
 
 }

@@ -1,28 +1,21 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
-
 import java.io.IOException;
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.RestModelHelper;
 
 import rx.Observable;
@@ -69,7 +62,7 @@ public class SchemaContainerVersionImpl extends
 		Schema schema = ServerSchemaStorage.getInstance().getSchema(getName(), getVersion());
 		if (schema == null) {
 			try {
-				schema = JsonUtil.readSchema(getJson(), SchemaModel.class);
+				schema = JsonUtil.readValue(getJson(), SchemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -80,10 +73,10 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Observable<Schema> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<Schema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		try {
 			// Load the schema and add/overwrite some properties 
-			Schema restSchema = JsonUtil.readSchema(getJson(), SchemaModel.class);
+			Schema restSchema = JsonUtil.readValue(getJson(), SchemaModel.class);
 			restSchema.setUuid(getSchemaContainer().getUuid());
 
 			// TODO Get list of projects to which the schema was assigned
@@ -107,7 +100,7 @@ public class SchemaContainerVersionImpl extends
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), restSchema);
 
-			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, this));
+			restSchema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
 
 			return Observable.just(restSchema);
 		} catch (IOException e) {
@@ -122,38 +115,6 @@ public class SchemaContainerVersionImpl extends
 		String json = JsonUtil.toJson(schema);
 		setJson(json);
 		setProperty(VERSION_PROPERTY_KEY, schema.getVersion());
-	}
-
-	@Override
-	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
-		if (action == DELETE_ACTION) {
-			// TODO Delete handling is not yet supported for schemas
-		} else {
-			String previousDocumentType = null;
-
-			// TODO uncomment this code (in replacement for the following lines), as soon as getting previous schema containers is implemented
-			//			SchemaContainer previousSchemaContainer = getPreviousVersion();
-			//			if (previousSchemaContainer != null) {
-			//				previousDocumentType = NodeIndexHandler.getDocumentType(previousSchemaContainer.getSchema());
-			//			}
-			int previousVersion = getVersion() - 1;
-			if (previousVersion > 0) {
-				previousDocumentType = getName() + "-" + previousVersion;
-			}
-
-			for (NodeGraphFieldContainer container : getFieldContainers()) {
-				Node node = container.getParentNode();
-				batch.addEntry(node, UPDATE_ACTION);
-
-				if (previousDocumentType != null) {
-					List<String> languageNames = node.getAvailableLanguageNames();
-					for (String languageTag : languageNames) {
-						batch.addEntry(NodeIndexHandler.composeDocumentId(node, languageTag), node.getType(), DELETE_ACTION, previousDocumentType);
-					}
-				}
-			}
-
-		}
 	}
 
 	@Override

@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -178,7 +178,7 @@ public class SearchRestHandler {
 							// Only transform elements that we want to list in our resultset
 							if (n >= low && n <= upper) {
 								// Transform node and add it to the list of nodes
-								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, objectAndLanguageTag.v2()));
+								transformedElements.add(objectAndLanguageTag.v1().transformToRest(ac, 0, objectAndLanguageTag.v2()));
 							}
 							n++;
 						}
@@ -216,7 +216,7 @@ public class SearchRestHandler {
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Search query failed", e);
-				ac.fail(BAD_REQUEST, "search_error_query");
+				throw error(BAD_REQUEST, "search_error_query");
 			}
 		});
 

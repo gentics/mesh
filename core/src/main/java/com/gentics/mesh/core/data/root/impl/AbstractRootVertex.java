@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -12,8 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.lang3.StringUtils;
-
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -25,7 +23,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -67,7 +64,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public Observable<T> findByUuid(String uuid) {
-		return Observable.just(out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null));
+		return Observable.just(findByUuidSync(uuid));
+	}
+	
+	@Override
+	public T findByUuidSync(String uuid) {
+		return out(getRootLabel()).has(getPersistanceClass()).has("uuid", uuid).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override
@@ -142,16 +144,6 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			return result;
 		});
 
-	}
-
-	@Override
-	public Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm) {
-		String uuid = ac.getParameter(uuidParameterName);
-		if (StringUtils.isEmpty(uuid)) {
-			throw error(BAD_REQUEST, "error_request_parameter_missing", uuidParameterName);
-		} else {
-			return loadObjectByUuid(ac, uuid, perm);
-		}
 	}
 
 }

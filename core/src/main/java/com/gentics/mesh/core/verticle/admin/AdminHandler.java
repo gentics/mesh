@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.ext.web.RoutingContext;

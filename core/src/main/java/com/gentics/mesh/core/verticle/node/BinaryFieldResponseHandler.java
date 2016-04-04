@@ -6,9 +6,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import java.io.File;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;

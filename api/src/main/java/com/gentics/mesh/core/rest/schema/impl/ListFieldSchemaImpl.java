@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
@@ -49,27 +50,27 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 		return this;
 	}
 
-	@Override
-	public Integer getMax() {
-		return max;
-	}
-
-	@Override
-	public ListFieldSchema setMax(Integer max) {
-		this.max = max;
-		return this;
-	}
-
-	@Override
-	public Integer getMin() {
-		return min;
-	}
-
-	@Override
-	public ListFieldSchema setMin(Integer min) {
-		this.min = min;
-		return this;
-	}
+	//	@Override
+	//	public Integer getMax() {
+	//		return max;
+	//	}
+	//
+	//	@Override
+	//	public ListFieldSchema setMax(Integer max) {
+	//		this.max = max;
+	//		return this;
+	//	}
+	//
+	//	@Override
+	//	public Integer getMin() {
+	//		return min;
+	//	}
+	//
+	//	@Override
+	//	public ListFieldSchema setMin(Integer min) {
+	//		this.min = min;
+	//		return this;
+	//	}
 
 	@Override
 	public String getType() {
@@ -111,6 +112,15 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 			return createTypeChange(fieldSchema);
 		}
 		return Optional.empty();
+	}
+
+	@Override
+	public void apply(Map<String, Object> fieldProperties) {
+		super.apply(fieldProperties);
+		Object allowedSchemas = fieldProperties.get(SchemaChangeModel.ALLOW_KEY);
+		if (allowedSchemas != null) {
+			setAllowedSchemas((String[]) allowedSchemas);
+		}
 	}
 
 	@Override

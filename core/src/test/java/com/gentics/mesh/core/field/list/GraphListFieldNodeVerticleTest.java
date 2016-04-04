@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.field.list;
 
+import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -37,6 +39,8 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+
+import io.vertx.core.Future;
 
 public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
 	private static final String FIELD_NAME = "listField";
@@ -101,6 +105,51 @@ public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVertic
 		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
 		assertNotNull(listFromResponse);
 		assertEquals(0, listFromResponse.getItems().size());
+	}
+
+	@Test
+	public void testBogusNodeList() throws IOException {
+		setSchema("node");
+
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		listField.add(new NodeFieldListItemImpl("bogus"));
+
+		Future<NodeResponse> future = createNodeAsync("listField", listField);
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "node_list_item_not_found", "bogus");
+	}
+
+	@Test
+	public void testValidNodeList() throws IOException {
+		setSchema("node");
+
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		listField.add(new NodeFieldListItemImpl(content().getUuid()));
+		listField.add(new NodeFieldListItemImpl(folder("news").getUuid()));
+
+		NodeResponse response = createNode("listField", listField);
+
+		NodeFieldList listFromResponse = response.getFields().getNodeFieldList("listField");
+		assertEquals(2, listFromResponse.getItems().size());
+		assertEquals(content().getUuid(), listFromResponse.getItems().get(0).getUuid());
+		assertEquals(folder("news").getUuid(), listFromResponse.getItems().get(1).getUuid());
+
+	}
+
+	@Test
+	public void testNullNodeList() throws IOException {
+		setSchema("node");
+		NodeResponse response = createNode("listField", (Field) null);
+		//TODO see CL-359
+	}
+
+	@Test
+	public void testNullNodeList2() throws IOException {
+		setSchema("node");
+
+		NodeFieldListImpl listField = new NodeFieldListImpl();
+		listField.add(new NodeFieldListItemImpl(null));
+
 	}
 
 	@Test

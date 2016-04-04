@@ -9,7 +9,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
@@ -79,16 +81,13 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
-import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.TraversalHelper;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -417,7 +416,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<NodeResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		// Increment level for each node transformation to avoid stackoverflow situations
+		level = level + 1;
 		try {
 			Set<Observable<NodeResponse>> obs = new HashSet<>();
 			NodeResponse restNode = new NodeResponse();
@@ -527,7 +528,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				for (FieldSchema fieldEntry : schema.getFields()) {
 					//					boolean expandField = fieldsToExpand.contains(fieldEntry.getName()) || ac.getExpandAllFlag();
 					Observable<NodeResponse> obsFields = fieldContainer
-							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags).map(restField -> {
+							.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level).map(restField -> {
 								if (fieldEntry.isRequired() && restField == null) {
 									// TODO i18n
 									throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
@@ -662,7 +663,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, type);
 		List<Observable<NavigationResponse>> obsResponses = new ArrayList<>();
 
-		obsResponses.add(node.transformToRest(ac).map(response -> {
+		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
 			// Set current element data
 			currentElement.setUuid(response.getUuid());
 			currentElement.setNode(response);
@@ -741,7 +742,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// reindex
 			// TODO
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
 			return batch;
 		}).process().map(i -> {
 			return null;
@@ -759,7 +760,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// reindex
 			// TODO
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+			SearchQueueBatch batch = createIndexBatch(DELETE_ACTION);
 			return batch;
 		}).process().map(i -> {
 			return null;
@@ -813,7 +814,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// reindex
 			// TODO
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
 			return batch;
 		}).process().map(i -> {
 			return null;
@@ -837,7 +838,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// reindex
 			// TODO
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION);
+			SearchQueueBatch batch = createIndexBatch(DELETE_ACTION);
 			return batch;
 		}).process().map(i -> {
 			return null;
@@ -1076,7 +1077,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					Schema schema = latestSchemaVersion.getSchema();
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				}
-				return addIndexBatch(UPDATE_ACTION, container);
+				// TODO Only store container
+				return createIndexBatch(STORE_ACTION);
 			}).process().map(i -> this);
 
 		} catch (IOException e1) {
@@ -1114,10 +1116,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return db.trx(() -> {
 			setParentNode(targetNode);
 			// update the webroot path info for every field container.
-			getGraphFieldContainers().stream()
-					.forEach(container -> container.updateWebrootPathInfo(null, "node_conflicting_segmentfield_move"));
-			// TODO get release specific containers
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+			getGraphFieldContainers().stream().forEach(container -> container.updateWebrootPathInfo(null, "node_conflicting_segmentfield_move"));
+			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
 			return batch;
 		}).process().map(i -> {
 			return null;
@@ -1132,28 +1132,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (container == null) {
 				throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
 			}
-			// Create batch the batch first since we can't delete the container
-			// and access it later in batch creation
-			SearchQueueBatch batch = addIndexBatch(SearchQueueEntryAction.DELETE_ACTION, container);
+			// Create the batch first since we can't delete the container and access it later in batch creation
+			SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+			SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+			container.addIndexBatchEntry(batch, DELETE_ACTION);
 			container.delete();
 			return batch;
 		}).process().map(i -> this);
-	}
-
-	@Override
-	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, NodeGraphFieldContainer... containers) {
-		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
-		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		for (NodeGraphFieldContainer container : containers) {
-			String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion().getSchema());
-			batch.addEntry(getUuid(), getType(), action, indexType,
-					Arrays.asList(Tuple.tuple(NodeIndexHandler.FIELD_CONTAINER_UUID_NAME,
-							container.getUuid()),
-					Tuple.tuple(NodeIndexHandler.DOCUMENT_ID_NAME,
-							NodeIndexHandler.composeDocumentId(this, container.getLanguage().getLanguageTag()))));
-		}
-		addRelatedEntries(batch, action);
-		return batch;
 	}
 
 	@Override
@@ -1162,18 +1147,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		// TODO is this a bug? should we not add the document id (uuid+lang) to
-		// the entry?
 		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			String indexType = NodeIndexHandler.getDocumentType(container.getSchemaContainerVersion().getSchema());
-			batch.addEntry(getUuid(), getType(), action, indexType,
-					Arrays.asList(Tuple.tuple(NodeIndexHandler.FIELD_CONTAINER_UUID_NAME,
-							container.getUuid()),
-					Tuple.tuple(NodeIndexHandler.DOCUMENT_ID_NAME,
-							NodeIndexHandler.composeDocumentId(this, container.getLanguage().getLanguageTag()))));
+			container.addIndexBatchEntry(batch, action);
 		}
 		addRelatedEntries(batch, action);
 		return batch;

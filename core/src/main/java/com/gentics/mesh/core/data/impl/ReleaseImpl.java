@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.InvalidArgumentException;
 
 import rx.Observable;
@@ -82,7 +82,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Observable<ReleaseResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<ReleaseResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<ReleaseResponse>> obsParts = new HashSet<>();
 
 		ReleaseResponse restRelease = new ReleaseResponse();

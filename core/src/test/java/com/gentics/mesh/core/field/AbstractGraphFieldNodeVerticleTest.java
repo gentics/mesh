@@ -44,7 +44,8 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 		return call(() -> getClient().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters));
 	}
 
-	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
+			String... i18nParams) {
 		Node node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
@@ -66,6 +67,18 @@ public abstract class AbstractGraphFieldNodeVerticleTest extends AbstractRestVer
 	 * @return
 	 */
 	protected NodeResponse updateNode(String fieldKey, Field field) {
+		return updateNode(fieldKey, field, false);
+	}
+
+	/**
+	 * Update the test node using the provided field field and field key as update data.
+	 * 
+	 * @param fieldKey
+	 * @param field
+	 * @param expandAll
+	 * @return
+	 */
+	protected NodeResponse updateNode(String fieldKey, Field field, boolean expandAll) {
 		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));

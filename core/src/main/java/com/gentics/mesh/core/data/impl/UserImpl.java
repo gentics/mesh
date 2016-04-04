@@ -10,7 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NOD
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.etc.MeshSpringConfiguration.getInstance;
@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
@@ -47,7 +48,6 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
@@ -325,7 +325,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<UserResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<UserResponse>> obs = new HashSet<>();
 		UserResponse restUser = new UserResponse();
 
@@ -336,7 +336,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		restUser.setEnabled(isEnabled());
 
 		// Users's node reference
-		obs.add(setNodeReference(ac, restUser));
+		obs.add(setNodeReference(ac, restUser, level));
 
 		// User's groups
 		obs.add(setGroups(ac, restUser));
@@ -367,14 +367,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 * @return
 	 */
-	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser) {
+	private Observable<UserResponse> setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
 		Node node = getReferencedNode();
 		if (node == null) {
 			return Observable.empty();
 		} else {
 			boolean expandReference = ac.getExpandedFieldnames().contains("nodeReference") || ac.getExpandAllFlag();
 			if (expandReference) {
-				return node.transformToRest(ac).map(transformedNode -> {
+				return node.transformToRest(ac, level).map(transformedNode -> {
 					restUser.setNodeReference(transformedNode);
 					return restUser;
 				});
@@ -455,7 +455,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
 
@@ -523,7 +523,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 						setReferencedNode(node);
 					}
 				}
-				return addIndexBatch(UPDATE_ACTION);
+				return createIndexBatch(STORE_ACTION);
 			}).process().map(i -> this);
 
 		} catch (IOException e) {

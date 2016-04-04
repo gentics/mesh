@@ -12,6 +12,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.lambdazen.bitsy.BitsyGraph;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
@@ -47,10 +48,14 @@ public class BitsyDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public TransactionalGraph rawTx() {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public void start() throws Exception {
 		BitsyGraph myGraph = new BitsyGraph(null);
 		throw new NotImplementedException();
-
 	}
 
 	@Override

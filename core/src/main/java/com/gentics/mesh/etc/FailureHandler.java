@@ -5,11 +5,11 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import java.util.MissingResourceException;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.handler.HttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -70,7 +70,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 			if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 				rc.response().setStatusCode(400);
-				String msg = I18NUtil.get(HttpActionContext.create(rc), "error_parse_request_json_error");
+				String msg = I18NUtil.get(InternalActionContext.create(rc), "error_parse_request_json_error");
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg, failure.getMessage())));
 			} else if (failure != null && failure instanceof HttpStatusCodeErrorException) {
 				HttpStatusCodeErrorException httpStatusError = (HttpStatusCodeErrorException) failure;
@@ -78,7 +78,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 				String i18nMsg = httpStatusError.getMessage();
 				try {
-					i18nMsg = I18NUtil.get(HttpActionContext.create(rc), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
+					i18nMsg = I18NUtil.get(InternalActionContext.create(rc), httpStatusError.getMessage(), httpStatusError.getI18nParameters());
 				} catch (MissingResourceException e) {
 					log.error("Did not find i18n message for key {" + httpStatusError.getMessage() + "}", e);
 				}
@@ -90,7 +90,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().setStatusCode(code);
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(failure.getMessage())));
 			} else {
-				String msg = I18NUtil.get(HttpActionContext.create(rc), "error_internal");
+				String msg = I18NUtil.get(InternalActionContext.create(rc), "error_internal");
 				rc.response().setStatusCode(500);
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
 			}

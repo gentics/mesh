@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -17,6 +17,7 @@ import org.elasticsearch.common.collect.Tuple;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -26,12 +27,11 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.graphdb.spi.TrxHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Observable;
@@ -45,22 +45,31 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "node_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "node_deleted");
 	}
 
-	public void handleDeleteLanguage(InternalActionContext ac) {
+	/**
+	 * Delete a specific language from the node. Only the affected language fields will be removed.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Node to be updated
+	 * @param languageTag
+	 *            Language tag of the language which should be deleted.
+	 */
+	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", DELETE_PERM).flatMap(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
 				//TODO Don't we need a trx here?!
-				String languageTag = ac.getParameter("languageTag");
+
 				Language language = MeshRoot.getInstance().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 				Observable<? extends Node> obs = node.deleteLanguageContainer(ac, language);
 				return obs.map(updatedNode -> {
-					return message(ac, "node_deleted_language", updatedNode.getUuid(), languageTag);
+					return message(ac, "node_deleted_language", uuid, languageTag);
 				});
 
 			});
@@ -68,15 +77,25 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handleMove(InternalActionContext ac) {
+	/**
+	 * Move a node to another parent node.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Node to be moved
+	 * @param toUuid
+	 *            Target node of the node
+	 */
+	public void handleMove(InternalActionContext ac, String uuid, String toUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(toUuid, "toUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			// Load the node that should be moved
-			String uuid = ac.getParameter("uuid");
-			String toUuid = ac.getParameter("toUuid");
 
-			Observable<Node> obsSourceNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
-			Observable<Node> obsTargetNode = project.getNodeRoot().loadObject(ac, "toUuid", UPDATE_PERM);
+			Observable<Node> obsSourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Observable<Node> obsTargetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			return Observable.zip(obsSourceNode, obsTargetNode, (sourceNode, targetNode) -> {
 				// TODO Update SQB
@@ -90,21 +109,23 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handleNavigation(InternalActionContext ac) {
+	public void handleNavigation(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToNavigation(ac);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleReadChildren(InternalActionContext ac) {
+	public void handleReadChildren(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(),
 							ac.getRelease().getUuid(), Type.forVersion(ac.getVersion()), ac.getPagingParameter());
-					return page.transformToRest(ac);
+					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");
 				}
@@ -112,12 +133,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void readTags(InternalActionContext ac) {
+	public void readTags(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Tag> tagPage = node.getTags(ac.getPagingParameter());
-					return tagPage.transformToRest(ac);
+					return tagPage.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
@@ -125,24 +147,26 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleAddTag(InternalActionContext ac) {
+	public void handleAddTag(InternalActionContext ac, String uuid, String tagUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(tagUuid, "tagUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
-			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
+			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					node.addTag(tag);
-					// TODO get release specific containers
-					SearchQueueBatch batch = node.addIndexBatch(UPDATE_ACTION);
+					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					return Tuple.tuple(batch, node);
 				});
 
 				SearchQueueBatch batch = tuple.v1();
 				Node updatedNode = tuple.v2();
-				return batch.process().flatMap(i -> updatedNode.transformToRest(ac));
+				return batch.process().flatMap(i -> updatedNode.transformToRest(ac, 0));
 
 			});
 			return obs.flatMap(x -> x);
@@ -151,17 +175,29 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
-	public void handleRemoveTag(InternalActionContext ac) {
+	/**
+	 * Remove the specified tag from the node.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the node from which the tag should be removed
+	 * @param tagUuid
+	 *            Uuid of the tag which should be removed from the tag
+	 */
+	public void handleRemoveTag(InternalActionContext ac, String uuid, String tagUuid) {
+		validateParameter(uuid, "uuid");
+		validateParameter(tagUuid, "tagUuid");
+
 		db.asyncNoTrxExperimental(() -> {
 
 			Project project = ac.getProject();
-			Observable<Node> obsNode = project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM);
-			Observable<Tag> obsTag = project.getTagRoot().loadObject(ac, "tagUuid", READ_PERM);
+			Observable<Node> obsNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Observable<Tag> obsTag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			Observable<Observable<NodeResponse>> obs = Observable.zip(obsNode, obsTag, (node, tag) -> {
 				Tuple<SearchQueueBatch, Node> tuple = db.trx(() -> {
 					// TODO get release specific containers
-					SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+					SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 					node.removeTag(tag);
 					return Tuple.tuple(batch, node);
 				});
@@ -169,7 +205,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				SearchQueueBatch batch = tuple.v1();
 				Node updatedNode = tuple.v2();
 
-				return batch.process(ac).flatMap(i -> updatedNode.transformToRest(ac));
+				return batch.process(ac).flatMap(i -> updatedNode.transformToRest(ac, 0));
 
 			});
 			return obs.flatMap(x -> x);
@@ -179,24 +215,29 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	/**
-	 * Handle getting the publish status for the requested node
+	 * Handle getting the publish status for the requested node.
+	 * 
 	 * @param ac
+	 * @param uuid Uuid of the node which will be queried
 	 */
-	public void handleGetPublishStatus(InternalActionContext ac) {
+	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	/**
-	 * Handle publishing a node
+	 * Handle publishing a node.
+	 * 
 	 * @param ac
+	 * @param uuid UUid of the node which should be published
 	 */
-	public void handlePublish(InternalActionContext ac) {
+	public void handlePublish(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.publish(ac).flatMap(v -> {
 					return db.noTrx(() -> {
 						node.reload();
@@ -208,12 +249,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	/**
-	 * Handle taking a node offline
+	 * Handle taking a node offline.
+	 * 
 	 * @param ac
+	 * @param uuid Uuid of node which should be taken offline
 	 */
-	public void handleTakeOffline(InternalActionContext ac) {
+	public void handleTakeOffline(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac).flatMap(v -> {
 					return db.noTrx(() -> {
 						node.reload();
@@ -225,25 +269,30 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	/**
-	 * Handle getting the publish status for the requested language of the node
+	 * Handle getting the publish status for the requested language of the node.
+	 * 
 	 * @param ac
+	 * @param uuid
+	 * @param languageTag
 	 */
-	public void handleGetPublishStatus(InternalActionContext ac, String languageTag) {
+	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac, languageTag);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	/**
-	 * Handle publishing a language of the node
+	 * Handle publishing a language of the node.
+	 * 
 	 * @param ac
+	 * @param uuid
 	 * @param languageTag
 	 */
-	public void handlePublish(InternalActionContext ac, String languageTag) {
+	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.publish(ac, languageTag).flatMap(v -> {
 					return db.noTrx(() -> {
 						node.reload();
@@ -255,13 +304,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	/**
-	 * Handle taking a language of the node offline
+	 * Handle taking a language of the node offline.
+	 * 
 	 * @param ac
 	 * @param languageTag
 	 */
-	public void handleTakeOffline(InternalActionContext ac, String languageTag) {
+	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		db.asyncNoTrxExperimental(() -> {
-			return getRootVertex(ac).loadObject(ac, "uuid", PUBLISH_PERM).map(node -> {
+			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac, languageTag).flatMap(v -> {
 					return db.noTrx(() -> {
 						node.reload();
@@ -272,12 +322,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	protected void readElement(InternalActionContext ac, String uuidParameterName, TrxHandler<RootVertex<?>> handler) {
+	protected void readElement(InternalActionContext ac, String uuid, TrxHandler<RootVertex<?>> handler) {
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
 			GraphPermission requiredPermission = "published".equals(ac.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			return root.loadObject(ac, uuidParameterName, requiredPermission).flatMap(node -> {
-				return node.transformToRest(ac);
+			return root.loadObjectByUuid(ac, uuid, requiredPermission).flatMap(node -> {
+				return node.transformToRest(ac, 0);
 			});
 
 		}).subscribe(model -> {

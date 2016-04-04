@@ -39,6 +39,7 @@ import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
@@ -90,6 +91,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public TransactionalGraph rawTx() {
+		return factory.getTx();
+	}
+
+	@Override
 	public void start() throws Exception {
 		Orient.instance().startup();
 		if (options == null || options.getDirectory() == null) {
@@ -121,8 +127,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	private void startOrientServer() throws Exception {
+		String orientdbHome = new File("").getAbsolutePath();
+		System.setProperty("ORIENTDB_HOME", orientdbHome);
 		OServer server = OServerMain.create();
-
 		log.info("Extracting OrientDB Studio");
 		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.1.zip");
 		File pluginDirectory = new File("orient-plugins");

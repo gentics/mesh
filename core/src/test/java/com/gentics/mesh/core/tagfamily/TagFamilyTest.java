@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -181,7 +181,7 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		TagFamily tagFamily = tagFamily("colors");
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		TagFamilyResponse response = tagFamily.transformToRest(ac).toBlocking().single();
+		TagFamilyResponse response = tagFamily.transformToRest(ac, 0).toBlocking().single();
 		assertNotNull(response);
 		assertEquals(tagFamily.getName(), response.getName());
 		assertEquals(tagFamily.getUuid(), response.getUuid());

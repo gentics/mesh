@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.HashSet;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -114,7 +114,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<RoleResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<RoleResponse>> obs = new HashSet<>();
 
 		RoleResponse restRole = new RoleResponse();
@@ -144,7 +144,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void delete() {
 		// TODO don't allow deletion of admin role
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getVertex().remove();
 	}
 
@@ -163,7 +163,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 			return db.trx(() -> {
 				setName(requestModel.getName());
-				return addIndexBatch(UPDATE_ACTION);
+				return createIndexBatch(STORE_ACTION);
 			}).process().map(b -> this);
 		}
 		// No update required
@@ -173,7 +173,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (Group group : getGroups()) {
-			batch.addEntry(group, SearchQueueEntryAction.UPDATE_ACTION);
+			batch.addEntry(group, STORE_ACTION);
 		}
 	}
 

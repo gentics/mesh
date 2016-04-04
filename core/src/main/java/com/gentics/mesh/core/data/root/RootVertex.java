@@ -3,12 +3,14 @@ package com.gentics.mesh.core.data.root;
 import java.util.List;
 import java.util.Stack;
 
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 
@@ -35,13 +37,22 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Observable<T> findByName(String name);
 
 	/**
-	 * Find the element with the given uuid and call the result handler.
+	 * Find the element with the given uuid.
 	 * 
 	 * @param uuid
-	 *            Uuid of the element to be located.
-	 * @return this root vertex - fluent API
+	 *            Uuid of the element to be located
+	 * @return Observable which may emit the located element
 	 */
 	Observable<T> findByUuid(String uuid);
+
+	/**
+	 * Find the element with the given uuid.
+	 * 
+	 * @param uuid
+	 *            Uuid of the element to be located
+	 * @return
+	 */
+	T findByUuidSync(String uuid);
 
 	/**
 	 * Find the visible elements and return a paged result.
@@ -81,16 +92,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Permission that must be granted in order to load the object
 	 */
 	Observable<T> loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
-
-	/**
-	 * Load object by extracting the uuid from the given uuid parameter name using the action context.
-	 * 
-	 * @param ac
-	 * @param uuidParameterName
-	 * @param perm
-	 * @return
-	 */
-	Observable<T> loadObject(InternalActionContext ac, String uuidParameterName, GraphPermission perm);
 
 	/**
 	 * Add the given item to the this root vertex.

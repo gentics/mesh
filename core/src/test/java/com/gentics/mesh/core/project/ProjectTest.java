@@ -14,6 +14,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -117,7 +117,7 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = project();
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		ProjectResponse response = project.transformToRest(ac).toBlocking().first();
+		ProjectResponse response = project.transformToRest(ac, 0).toBlocking().first();
 
 		assertEquals(project.getName(), response.getName());
 		assertEquals(project.getUuid(), response.getUuid());

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.search;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 import com.gentics.mesh.etc.MeshSearchQueueProcessor;
@@ -105,9 +105,9 @@ public class SearchVerticleTest extends AbstractSearchVerticleTest {
 	public void testAsyncSearchQueueUpdates() throws Exception {
 		Node node = folder("2015");
 		String uuid = node.getUuid();
-		String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion().getSchema());
+		String indexType = NodeIndexHandler.getDocumentType(node.getSchemaContainer().getLatestVersion());
 		for (int i = 0; i < 10; i++) {
-			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+			meshRoot().getSearchQueue().createBatch("" + i).addEntry(uuid, Node.TYPE, STORE_ACTION);
 		}
 		String documentId = nodeIndexHandler.composeDocumentId(node, "en");
 		searchProvider.deleteDocument(Node.TYPE, indexType, documentId).toBlocking().single();

@@ -100,4 +100,8 @@ public class DummySearchProvider implements SearchProvider {
 		return Observable.just(null);
 	}
 
+	@Override
+	public Observable<Integer> deleteDocumentsViaQuery(String index, String query) {
+		return Observable.just(0);
+	}
 }

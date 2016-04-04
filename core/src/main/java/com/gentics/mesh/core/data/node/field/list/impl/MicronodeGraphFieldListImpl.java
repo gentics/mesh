@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
@@ -24,7 +25,6 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
@@ -45,13 +45,13 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags) {
+	public Observable<MicronodeFieldList> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		MicronodeFieldList restModel = new MicronodeFieldListImpl();
 
 		List<Observable<MicronodeResponse>> obs = new ArrayList<>();
 		for (MicronodeGraphField item : getList()) {
-			obs.add(item.getMicronode().transformToRestSync(ac));
+			obs.add(item.getMicronode().transformToRestSync(ac, level));
 		}
 
 		return RxUtil.concatList(obs).collect(() -> {

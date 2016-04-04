@@ -9,14 +9,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
+		<version>0.6.5-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<dockerHost>cetus.office</dockerHost>
-		<dockerHostProtocol>http</dockerHostProtocol>
 	</properties>
 
 	<dependencies>
@@ -81,6 +79,21 @@
 							</arguments>
 						</configuration>
 					</execution>
+					<execution>
+						<id>generate-demo-dump</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-classes</phase>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath />
+								<argument>com.gentics.mesh.demo.DemoDumpGenerator</argument>
+							</arguments>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -103,22 +116,37 @@
 							<finalName>mesh-demo</finalName>
 						</configuration>
 					</execution>
+					<execution>
+						<id>dist-dump-package</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<attach>true</attach>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/dump-zip.xml</descriptor>
+							</descriptors>
+							<outputDirectory>${project.basedir}/target/classes</outputDirectory>
+							<finalName>mesh</finalName>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.14.2</version>
 				<configuration>
 					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
+					<skip>${docker.skip}</skip>
 					<images>
 						<image>
 							<name>gentics/mesh-demo</name>
 							<build>
 								<tags>
-									<tag>beta</tag>
-									<tag>latest</tag>
+									<tag>${docker.tag}</tag>
 									<tag>${project.version}</tag>
 								</tags>
 								<assembly>

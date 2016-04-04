@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -16,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.Observable;
@@ -33,17 +34,19 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> boot.schemaContainerRoot(), "uuid", "schema_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		HandlerUtilities.deleteElement(ac, () -> boot.schemaContainerRoot(), uuid, "schema_deleted");
 	}
 
 	@Override
-	public void handleUpdate(InternalActionContext ac) {
+	public void handleUpdate(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
-			return root.loadObject(ac, "uuid", UPDATE_PERM).flatMap(element -> {
+			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				try {
-					Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+					Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
 					model.getChanges().addAll(SchemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					String schemaName = element.getName();
@@ -61,23 +64,25 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleDiff(InternalActionContext ac) {
+	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
-			Schema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), SchemaModel.class);
+			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 			return obsSchema.flatMap(schema -> schema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
 	public void handleReadProjectList(InternalActionContext ac) {
-		readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
+		HandlerUtilities.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
 	}
 
-	public void handleAddProjectToSchema(InternalActionContext ac) {
-		db.asyncNoTrxExperimental(() -> {
+	public void handleAddProjectToSchema(InternalActionContext ac, String schemaUuid, String projectUuid) {
+		validateParameter(schemaUuid, "schemaUuid");
+		validateParameter(projectUuid, "projectUuid");
 
-			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "schemaUuid", READ_PERM);
-			Observable<Project> obsProject = boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM);
+		db.asyncNoTrxExperimental(() -> {
+			Observable<SchemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			Observable<Project> obsProject = boot.projectRoot().loadObjectByUuid(ac, projectUuid, UPDATE_PERM);
 
 			return Observable.zip(obsProject, obsSchema, (project, schema) -> {
 				SchemaContainer addedSchema = db.trx(() -> {
@@ -85,25 +90,28 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
 					return schema;
 				});
-				return addedSchema.transformToRest(ac);
+				return addedSchema.transformToRest(ac, 0);
 			}).flatMap(x -> x);
 
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 
 	}
 
-	public void handleRemoveProjectFromSchema(InternalActionContext ac) {
+	public void handleRemoveProjectFromSchema(InternalActionContext ac, String projectUuid, String schemaUuid) {
+		validateParameter(projectUuid, "projectUuid");
+		validateParameter(schemaUuid, "schemaUuid");
+
 		db.asyncNoTrxExperimental(() -> {
-			Observable<Project> obsProject = boot.projectRoot().loadObject(ac, "projectUuid", UPDATE_PERM);
+			Observable<Project> obsProject = boot.projectRoot().loadObjectByUuid(ac, projectUuid, UPDATE_PERM);
 			// TODO check whether schema is assigned to project
-			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObject(ac, "schemaUuid", READ_PERM);
+			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
 
 			return Observable.zip(obsProject, obsSchema, (project, schema) -> {
 				SchemaContainer removedSchema = db.trx(() -> {
 					project.getSchemaContainerRoot().removeSchemaContainer(schema);
 					return schema;
 				});
-				return removedSchema.transformToRest(ac);
+				return removedSchema.transformToRest(ac, 0);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
@@ -113,9 +121,11 @@ public class SchemaContainerCrudHandler extends AbstractCrudHandler<SchemaContai
 
 	}
 
-	public void handleApplySchemaChanges(InternalActionContext ac) {
+	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
+		validateParameter(schemaUuid, "schemaUuid");
+
 		db.asyncNoTrxExperimental(() -> {
-			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);
+			Observable<SchemaContainer> obsSchema = boot.schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});

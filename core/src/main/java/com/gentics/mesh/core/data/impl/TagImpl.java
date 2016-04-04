@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -38,7 +39,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -102,7 +102,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<TagResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<TagResponse>> obs = new HashSet<>();
 
 		TagResponse restTag = new TagResponse();
@@ -151,7 +151,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getVertex().remove();
 	}
 
@@ -189,7 +189,7 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 				setLastEditedTimestamp(System.currentTimeMillis());
 				setName(requestModel.getFields().getName());
 			}
-			return addIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> this);
 
 	}
@@ -197,9 +197,9 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (Node node : getNodes()) {
-			batch.addEntry(node, UPDATE_ACTION);
+			batch.addEntry(node, STORE_ACTION);
 		}
-		batch.addEntry(getTagFamily(), UPDATE_ACTION);
+		batch.addEntry(getTagFamily(), STORE_ACTION);
 	}
 
 	@Override

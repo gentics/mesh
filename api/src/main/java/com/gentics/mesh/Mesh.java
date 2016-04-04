@@ -75,7 +75,7 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Start mesh.
+	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread.
 	 * 
 	 * @throws Exception
 	 */

@@ -76,8 +76,8 @@ public class SchemaTest {
 		listFieldSchema.setLabel("label_7").setName("name_7").setRequired(true);
 		listFieldSchema.setAllowedSchemas(new String[] { "folder", "videos" });
 		listFieldSchema.setListType("node");
-		listFieldSchema.setMax(10);
-		listFieldSchema.setMin(3);
+//		listFieldSchema.setMax(10);
+//		listFieldSchema.setMin(3);
 		schema.addField(listFieldSchema);
 
 		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
@@ -98,7 +98,7 @@ public class SchemaTest {
 		String json = JsonUtil.toJson(schema);
 		System.out.println(json);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readSchema(json, SchemaModel.class);
+		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModel.class);
 		assertEquals(schema.getFields().size(), deserializedSchema.getFields().size());
 		assertNotNull(deserializedSchema);
 	}

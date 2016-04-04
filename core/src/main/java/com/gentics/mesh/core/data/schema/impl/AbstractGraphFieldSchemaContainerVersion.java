@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -14,6 +14,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
@@ -31,7 +32,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -244,7 +244,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			getSchemaContainer().setLatestVersion(nextVersion);
 
 			// Update the search index
-			return addIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> {
 			return db.noTrx(() -> {
 				// Make sure to unlink the old schema container from the container root and assign the new version to the root.
@@ -265,7 +265,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	 * Overwrite default implementation since we need to add the parent container of all versions to the index and not the current version.
 	 */
 	@Override
-	public SearchQueueBatch addIndexBatch(SearchQueueEntryAction action) {
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
 		batch.addEntry(this.getSchemaContainer(), action);
@@ -298,7 +298,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		try {
 			SchemaChangesListModel list = new SchemaChangesListModel();
 			fieldContainerModel.validate();
-			list.getChanges().addAll(comparator.diff(transformToRest(ac, null).toBlocking().single(), fieldContainerModel));
+			list.getChanges().addAll(comparator.diff(transformToRest(ac, 0, null).toBlocking().single(), fieldContainerModel));
 			return Observable.just(list);
 		} catch (Exception e) {
 			return Observable.error(e);

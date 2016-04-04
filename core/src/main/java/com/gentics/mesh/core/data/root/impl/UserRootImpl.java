@@ -3,8 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -17,6 +16,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
@@ -156,12 +155,12 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					user.setPasswordHash(MeshSpringConfiguration.getInstance().passwordEncoder().encode(requestModel.getPassword()));
 					requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 					NodeReference reference = requestModel.getNodeReference();
-					SearchQueueBatch batch = user.addIndexBatch(CREATE_ACTION);
+					SearchQueueBatch batch = user.createIndexBatch(STORE_ACTION);
 
 					if (!isEmpty(groupUuid)) {
 						Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM).toBlocking().first();
 						parentGroup.addUser(user);
-						batch.addEntry(parentGroup, UPDATE_ACTION);
+						batch.addEntry(parentGroup, STORE_ACTION);
 						requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
 					}
 

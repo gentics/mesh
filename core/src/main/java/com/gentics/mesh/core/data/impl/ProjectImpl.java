@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
 import java.util.HashSet;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -47,8 +48,6 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -152,7 +151,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<ProjectResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<ProjectResponse>> obsParts = new HashSet<>();
 
 		ProjectResponse restProject = new ProjectResponse();
@@ -220,7 +219,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp(System.currentTimeMillis());
-			return addIndexBatch(UPDATE_ACTION);
+			return createIndexBatch(STORE_ACTION);
 		}).process().map(i -> this);
 	}
 
@@ -248,7 +247,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		} else {
 			for (Node node : getNodeRoot().findAll()) {
-				batch.addEntry(node, UPDATE_ACTION);
+				batch.addEntry(node, STORE_ACTION);
 			}
 		}
 	}

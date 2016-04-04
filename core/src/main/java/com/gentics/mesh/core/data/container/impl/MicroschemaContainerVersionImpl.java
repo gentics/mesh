@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 import java.io.IOException;
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -16,7 +17,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.RestModelHelper;
 
@@ -65,7 +65,7 @@ public class MicroschemaContainerVersionImpl
 		Microschema microschema = ServerSchemaStorage.getInstance().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			try {
-				microschema = JsonUtil.readSchema(getJson(), MicroschemaModel.class);
+				microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -84,15 +84,15 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Observable<Microschema> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<Microschema> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		try {
 			// Load the microschema and add/overwrite some properties 
-			Microschema microschema = JsonUtil.readSchema(getJson(), MicroschemaModel.class);
+			Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
 			microschema.setUuid(getSchemaContainer().getUuid());
 
 			// Role permissions
 			RestModelHelper.setRolePermissions(ac, getSchemaContainer(), microschema);
-			microschema.setPermissions(ac.getUser().getPermissionNames(ac, this));
+			microschema.setPermissions(ac.getUser().getPermissionNames(ac, getSchemaContainer()));
 
 			return Observable.just(microschema);
 		} catch (IOException e) {

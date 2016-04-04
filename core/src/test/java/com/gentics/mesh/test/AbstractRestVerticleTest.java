@@ -306,14 +306,7 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		return future.result();
 	}
 
-	/**
-	 * Create a new folder node by sending a create request which will include the specified field.
-	 * 
-	 * @param fieldKey
-	 * @param field
-	 * @return
-	 */
-	protected NodeResponse createNode(String fieldKey, Field field) {
+	protected Future<NodeResponse> createNodeAsync(String fieldKey, Field field) {
 		Node parentNode = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
@@ -322,8 +315,11 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
+		return getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en"));
+	}
 
-		NodeResponse response = call(() -> getClient().createNode(PROJECT_NAME, nodeCreateRequest, new NodeRequestParameter().setLanguages("en")));
+	protected NodeResponse createNode(String fieldKey, Field field) {
+		NodeResponse response = call(() -> createNodeAsync(fieldKey, field));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		if (fieldKey != null) {
 			assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));

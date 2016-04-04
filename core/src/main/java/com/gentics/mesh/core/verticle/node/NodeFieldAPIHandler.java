@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -19,13 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -34,7 +35,6 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.ImageManipulationParameter;
 import com.gentics.mesh.util.FileUtils;
@@ -56,13 +56,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	@Autowired
 	private ImageManipulator imageManipulator;
 
-	public void handleReadField(RoutingContext rc) {
+	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			String languageTag = ac.getParameter("languageTag");
-			String fieldName = ac.getParameter("fieldName");
-			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -88,15 +86,25 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		} , ac::fail);
 	}
 
-	public void handleCreateField(RoutingContext rc) {
-
-		InternalActionContext ac = InternalActionContext.create(rc);
+	/**
+	 * Handle a request to create a new field.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the node which should be updated
+	 * @param languageTag
+	 *            Language tag of the node language which should be modified
+	 * @param fieldName
+	 *            Name of the field which should be created
+	 */
+	public void handleCreateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(languageTag, "languageTag");
+		validateParameter(fieldName, "fieldName");
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
-			String languageTag = ac.getParameter("languageTag");
-			String fieldName = ac.getParameter("fieldName");
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
@@ -127,7 +135,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 				MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 				try {
-					Set<FileUpload> fileUploads = rc.fileUploads();
+					Set<FileUpload> fileUploads = ac.getFileUploads();
 					if (fileUploads.isEmpty()) {
 						throw error(BAD_REQUEST, "node_error_no_binarydata_found");
 					}
@@ -167,7 +175,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 								container.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 							}
 
-							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
 
@@ -187,60 +195,67 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 
 	}
 
-	public void handleUpdateField(RoutingContext rc) {
-		handleCreateField(rc);
-		//		db.asyncNoTrxExperimental(() -> {
-		//			Project project = ac.getProject();
-		//			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
-		//				// TODO Update SQB
-		//				return new GenericMessageResponse("Not yet implemented");
-		//			});
-		//		}).subscribe(model -> ac.respond(model, OK), ac::fail);
+	/**
+	 * Update a specific node field.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Node uuid
+	 * @param languageTag
+	 *            Language which should be handled
+	 * @param fieldName
+	 *            Field which should be updated
+	 */
+	public void handleUpdateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		handleCreateField(ac, uuid, languageTag, fieldName);
 	}
 
-	public void handleRemoveField(InternalActionContext ac) {
+	public void handleRemoveField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(languageTag, "languageTag");
+		validateParameter(fieldName, "fieldName");
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleRemoveFieldItem(InternalActionContext ac) {
+	public void handleRemoveFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleUpdateFieldItem(InternalActionContext ac) {
+	public void handleUpdateFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleReadFieldItem(InternalActionContext ac) {
+	public void handleReadFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return new GenericMessageResponse("Not yet implemented");
 			});
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleMoveFieldItem(InternalActionContext ac) {
+	public void handleMoveFieldItem(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				return new GenericMessageResponse("Not yet implemented");
 			});
@@ -253,13 +268,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param rc
 	 *            routing context
 	 */
-	public void handleTransformImage(RoutingContext rc) {
+	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			String languageTag = ac.getParameter("languageTag");
-			String fieldName = ac.getParameter("fieldName");
-			return project.getNodeRoot().loadObject(ac, "uuid", UPDATE_PERM).map(node -> {
+			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
@@ -318,7 +331,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 							// node.setBinaryImageDPI(dpi);
 							// node.setBinaryImageHeight(heigth);
 							// node.setBinaryImageWidth(width);
-							SearchQueueBatch batch = node.addIndexBatch(SearchQueueEntryAction.UPDATE_ACTION);
+							SearchQueueBatch batch = node.createIndexBatch(STORE_ACTION);
 							return Tuple.tuple(batch, node.getUuid());
 						});
 

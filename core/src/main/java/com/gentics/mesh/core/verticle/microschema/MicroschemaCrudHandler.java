@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -15,7 +16,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
 import rx.Observable;
@@ -32,13 +33,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	@Override
-	public void handleUpdate(InternalActionContext ac) {
+	public void handleUpdate(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
-			return root.loadObject(ac, "uuid", UPDATE_PERM).flatMap(element -> {
+			return root.loadObjectByUuid(ac, uuid, UPDATE_PERM).flatMap(element -> {
 				try {
-					Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
+					Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 					SchemaChangesListModel model = new SchemaChangesListModel();
 					model.getChanges().addAll(MicroschemaComparator.getIntance().diff(element.getLatestVersion().getSchema(), requestModel));
 					if (model.getChanges().isEmpty()) {
@@ -57,31 +59,33 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "microschema_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "microschema_deleted");
 	}
 
 	/**
 	 * Compare the latest schema version with the given schema model.
 	 * 
+	 * @param uuid
+	 *            Schema uuid
 	 * @param ac
 	 */
-	public void handleDiff(InternalActionContext ac) {
+	public void handleDiff(InternalActionContext ac, String uuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObject(ac, "uuid", READ_PERM);
-			Microschema requestModel = JsonUtil.readSchema(ac.getBodyAsString(), MicroschemaModel.class);
+			Observable<MicroschemaContainer> obsSchema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 			return obsSchema.flatMap(microschema -> microschema.getLatestVersion().diff(ac, comparator, requestModel));
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
-	public void handleGetSchemaChanges(InternalActionContext ac) {
+	public void handleGetSchemaChanges(InternalActionContext ac, String schemaUuid) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void handleApplySchemaChanges(InternalActionContext ac) {
+	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		db.asyncNoTrxExperimental(() -> {
-			Observable<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObject(ac, "schemaUuid", UPDATE_PERM);
+			Observable<MicroschemaContainer> obsSchema = boot.microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			return obsSchema.flatMap(schema -> {
 				return schema.getLatestVersion().applyChanges(ac);
 			});

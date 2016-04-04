@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
+		<version>0.6.5-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -42,14 +42,14 @@
 				<artifactId>docker-maven-plugin</artifactId>
 				<version>0.14.2</version>
 				<configuration>
+					<skip>${docker.skip}</skip>
 					<dockerHost>${dockerHostProtocol}://${dockerHost}:2375</dockerHost>
 					<images>
 						<image>
 							<name>gentics/mesh</name>
 							<build>
 								<tags>
-									<tag>beta</tag>
-									<tag>latest</tag>
+									<tag>${docker.tag}</tag>
 									<tag>${project.version}</tag>
 								</tags>
 								<assembly>

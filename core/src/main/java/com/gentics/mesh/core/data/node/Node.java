@@ -6,6 +6,7 @@ import java.util.Stack;
 
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -24,7 +25,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -43,6 +43,7 @@ import rx.Observable;
 public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex {
 
 	public static final String TYPE = "node";
+	public static final int MAX_TRANSFORMATION_LEVEL = 2;
 
 	/**
 	 * Add the given tag to the list of tags for this node.
@@ -427,12 +428,4 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	void setSchemaContainer(SchemaContainer container);
 
-	/**
-	 * Add a search queue batch which contains information about the affected node language.
-	 * 
-	 * @param action
-	 * @param containers
-	 * @return
-	 */
-	SearchQueueBatch addIndexBatch(SearchQueueEntryAction action, NodeGraphFieldContainer...containers);
 }

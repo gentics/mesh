@@ -11,10 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -91,7 +93,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -353,7 +354,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			List<String> languageTags) {
+			List<String> languageTags, int level) {
 
 		// db.asyncNoTrx(noTrx -> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -411,7 +412,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			if (graphNodeField == null) {
 				return Observable.just(new NodeFieldImpl());
 			} else {
-				return graphNodeField.transformToRest(ac, fieldKey, languageTags);
+				return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 			}
 		case HTML:
 			HtmlGraphField graphHtmlField = getHtml(fieldKey);
@@ -440,49 +441,49 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				if (nodeFieldList == null) {
 					return Observable.just(new NodeFieldListImpl());
 				} else {
-					return nodeFieldList.transformToRest(ac, fieldKey, languageTags);
+					return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			case NumberGraphFieldList.TYPE:
 				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
 				if (numberFieldList == null) {
 					return Observable.just(new NumberFieldListImpl());
 				} else {
-					return numberFieldList.transformToRest(ac, fieldKey, languageTags);
+					return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			case BooleanGraphFieldList.TYPE:
 				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
 				if (booleanFieldList == null) {
 					return Observable.just(new BooleanFieldListImpl());
 				} else {
-					return booleanFieldList.transformToRest(ac, fieldKey, languageTags);
+					return booleanFieldList.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			case HtmlGraphFieldList.TYPE:
 				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
 				if (htmlFieldList == null) {
 					return Observable.just(new HtmlFieldListImpl());
 				} else {
-					return htmlFieldList.transformToRest(ac, fieldKey, languageTags);
+					return htmlFieldList.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			case MicronodeGraphFieldList.TYPE:
 				MicronodeGraphFieldList graphMicroschemaField = getMicronodeList(fieldKey);
 				if (graphMicroschemaField == null) {
 					return Observable.just(new MicronodeFieldListImpl());
 				} else {
-					return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags);
+					return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			case StringGraphFieldList.TYPE:
 				StringGraphFieldList stringFieldList = getStringList(fieldKey);
 				if (stringFieldList == null) {
 					return Observable.just(new StringFieldListImpl());
 				} else {
-					return stringFieldList.transformToRest(ac, fieldKey, languageTags);
+					return stringFieldList.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			case DateGraphFieldList.TYPE:
 				DateGraphFieldList dateFieldList = getDateList(fieldKey);
 				if (dateFieldList == null) {
 					return Observable.just(new DateFieldListImpl());
 				} else {
-					return dateFieldList.transformToRest(ac, fieldKey, languageTags);
+					return dateFieldList.transformToRest(ac, fieldKey, languageTags, level);
 				}
 			}
 			// String listType = listFielSchema.getListType();
@@ -492,7 +493,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			if (micronodeGraphField == null) {
 				return Observable.just(new NullMicronodeResponse());
 			} else {
-				return micronodeGraphField.transformToRest(ac, fieldKey, languageTags);
+				return micronodeGraphField.transformToRest(ac, fieldKey, languageTags, level);
 			}
 		}
 
@@ -664,6 +665,9 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 					AtomicInteger integer = new AtomicInteger();
 					for (NodeFieldListItem item : nodeList.getItems()) {
 						Node node = boot.nodeRoot().findByUuid(item.getUuid()).toBlocking().first();
+						if (node == null) {
+							throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
+						}
 						graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
 					}
 				}
@@ -807,8 +811,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			MicronodeGraphField micronodeGraphField = getMicronode(key);
 
 			// check whether microschema is allowed
-			if (microschemaFieldSchema.getAllowedMicroSchemas() == null
-					|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
+			if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas()) || !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
 				throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", key, microschemaContainer.getName());
 			}
 

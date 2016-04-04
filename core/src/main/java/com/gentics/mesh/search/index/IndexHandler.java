@@ -1,7 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import com.gentics.mesh.core.data.search.SearchQueueEntry;
-
 import rx.Observable;
 
 /**
@@ -40,40 +38,38 @@ public interface IndexHandler {
 
 	/**
 	 * Handle a search index action. An action will modify the search index (delete, update, create)
-	 *
-	 * @param entry search queue entry
-	 */
-	Observable<Void> handleAction(SearchQueueEntry entry);
-
-	/**
-	 * Delete the document with the given uuid and type from the search index.
 	 * 
 	 * @param uuid
-	 * @param type
-	 * @param entry
+	 *            Uuid of the document that should be handled
+	 * @param actionName
+	 *            Type of the action (delete, update, create)
+	 * @param indexType
+	 *            Type of the index
+	 */
+	Observable<Void> handleAction(String uuid, String actionName, String indexType);
+
+	/**
+	 * Delete the document with the given uuid and document type from the search index.
+	 * 
+	 * @param uuid
+	 * @param documentType
 	 * @return
 	 */
-	Observable<Void> delete(String uuid, String type, SearchQueueEntry entry);
+	Observable<Void> delete(String uuid, String documentType);
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 * 
 	 * @param uuid
-	 * @param indexType
-	 * @param entry
+	 * @param documentType
 	 * @return
 	 */
-	Observable<Void> store(String uuid, String indexType, SearchQueueEntry entry);
+	Observable<Void> store(String uuid, String documentType);
 
 	/**
-	 * Update the search index document by loading the graph element for the given uuid and type and transforming it to a source map which will be used to
-	 * update the matching search index document.
+	 * Reindex all documents for the type which the handler is capable of.
 	 * 
-	 * @param uuid
-	 * @param type
-	 * @param entry
 	 * @return
 	 */
-	Observable<Void> update(String uuid, String type, SearchQueueEntry entry);
-
+	Observable<Void> reindexAll();
 }

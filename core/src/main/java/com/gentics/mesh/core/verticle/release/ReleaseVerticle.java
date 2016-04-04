@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -46,7 +46,8 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 	private void addReadHandler() {
 		route("/:uuid/schemas").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc));
+			String uuid = rc.request().getParam("uuid");
+			crudHandler.handleGetSchemaVersions(InternalActionContext.create(rc), uuid);
 		});
 
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
@@ -54,7 +55,7 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc));
+				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
 			}
 		});
 
@@ -65,10 +66,12 @@ public class ReleaseVerticle extends AbstractProjectRestVerticle {
 
 	private void addUpdateHandler() {
 		route("/:uuid/schemas").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc));
+			String uuid = rc.request().params().get("uuid");
+			crudHandler.handleAssignSchemaVersion(InternalActionContext.create(rc), uuid);
 		});
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			String uuid = rc.request().params().get("uuid");
+			crudHandler.handleUpdate(InternalActionContext.create(rc), uuid);
 		});
 	}
 }

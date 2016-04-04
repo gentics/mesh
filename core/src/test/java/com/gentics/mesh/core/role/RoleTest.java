@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
 import com.gentics.mesh.util.InvalidArgumentException;
@@ -271,7 +271,7 @@ public class RoleTest extends AbstractBasicObjectTest {
 		Role role = role();
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		RoleResponse restModel = role.transformToRest(ac).toBlocking().single();
+		RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().single();
 
 		assertNotNull(restModel);
 		assertEquals(role.getName(), restModel.getName());

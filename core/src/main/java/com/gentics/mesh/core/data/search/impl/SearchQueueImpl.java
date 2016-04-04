@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.search.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BATCH;
 import static com.gentics.mesh.core.data.search.SearchQueueBatch.BATCH_ID_PROPERTY_KEY;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -79,38 +78,36 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 	@Override
 	public void addFullIndex() {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-		SearchQueueBatch batch = searchQueue.createBatch(UUIDUtil.randomUUID());
 		for (Node node : boot.nodeRoot().findAll()) {
-			batch.addEntry(node, CREATE_ACTION);
+			node.createIndexBatch(STORE_ACTION);
 		}
 		for (Project project : boot.projectRoot().findAll()) {
-			batch.addEntry(project, CREATE_ACTION);
+			project.createIndexBatch(STORE_ACTION);
 		}
 		for (User user : boot.userRoot().findAll()) {
-			batch.addEntry(user, CREATE_ACTION);
+			user.createIndexBatch(STORE_ACTION);
 		}
 		for (Role role : boot.roleRoot().findAll()) {
-			batch.addEntry(role, CREATE_ACTION);
+			role.createIndexBatch(STORE_ACTION);
 		}
 		for (Group group : boot.groupRoot().findAll()) {
-			batch.addEntry(group, CREATE_ACTION);
+			group.createIndexBatch(STORE_ACTION);
 		}
 		for (Tag tag : boot.tagRoot().findAll()) {
-			batch.addEntry(tag, CREATE_ACTION);
+			tag.createIndexBatch(STORE_ACTION);
 		}
 		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
-			batch.addEntry(tagFamily, CREATE_ACTION);
+			tagFamily.createIndexBatch(STORE_ACTION);
 		}
 		for (SchemaContainer schema : boot.schemaContainerRoot().findAll()) {
-			batch.addEntry(schema, CREATE_ACTION);
+			schema.createIndexBatch(STORE_ACTION);
 		}
 		// TODO add support for microschemas
 		// for (Microschema microschema : boot.microschemaContainerRoot().findAll()) {
 		// searchQueue.put(microschema, CREATE_ACTION);
 		// }
 		if (log.isDebugEnabled()) {
-			log.debug("Search Queue size:" + searchQueue.getSize());
+			log.debug("Search Queue size:" + getSize());
 		}
 
 	}
@@ -120,14 +117,17 @@ public class SearchQueueImpl extends MeshVertexImpl implements SearchQueue {
 		SearchQueueBatch batch;
 		long count = 0;
 		while ((batch = take()) != null) {
-			batch.process().toBlocking().last();
-
+			if (batch.getEntries().size() > 0) {
+				batch.process().toBlocking().lastOrDefault(null);
+			}
 			if (log.isDebugEnabled()) {
 				log.debug("Proccessed batch.");
 			}
 			count++;
 		}
-		MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+		if (count > 0) {
+			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
+		}
 		return count;
 	}
 

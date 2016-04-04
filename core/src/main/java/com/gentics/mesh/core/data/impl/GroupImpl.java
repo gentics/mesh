@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.UPDATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
@@ -144,7 +144,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, String... languageTags) {
+	public Observable<GroupResponse> transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		Set<Observable<GroupResponse>> obs = new HashSet<>();
 
 		GroupResponse restGroup = new GroupResponse();
@@ -183,7 +183,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void delete() {
 		// TODO don't allow deletion of the admin group
-		addIndexBatch(DELETE_ACTION);
+		createIndexBatch(DELETE_ACTION);
 		getElement().remove();
 	}
 
@@ -206,7 +206,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 				return db.trx(() -> {
 					setName(requestModel.getName());
-					return addIndexBatch(UPDATE_ACTION);
+					return createIndexBatch(STORE_ACTION);
 				}).process().map(i -> this);
 
 			} else {
@@ -234,7 +234,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (User user : getUsers()) {
-			batch.addEntry(user, UPDATE_ACTION);
+			batch.addEntry(user, STORE_ACTION);
 		}
 	}
 

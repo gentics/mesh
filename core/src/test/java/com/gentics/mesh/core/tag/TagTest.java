@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -275,7 +275,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		int nTransformations = 100;
 		for (int i = 0; i < nTransformations; i++) {
 			long start = System.currentTimeMillis();
-			TagResponse response = tag.transformToRest(ac).toBlocking().first();
+			TagResponse response = tag.transformToRest(ac, 0).toBlocking().first();
 
 			assertNotNull(response);
 			long dur = System.currentTimeMillis() - start;

@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -133,7 +133,8 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	public void testVersionSync() {
 		assertNotNull(microschemaContainer("vcard"));
-		assertEquals("The microschema container and schema rest model version must always be in sync", microschemaContainer("vcard").getLatestVersion().getVersion(),
+		assertEquals("The microschema container and schema rest model version must always be in sync",
+				microschemaContainer("vcard").getLatestVersion().getVersion(),
 				microschemaContainer("vcard").getLatestVersion().getSchema().getVersion());
 
 	}
@@ -199,7 +200,7 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 		MicroschemaContainer vcard = microschemaContainer("vcard");
-		Microschema schema = vcard.transformToRest(ac, "en").toBlocking().single();
+		Microschema schema = vcard.transformToRest(ac, 0, "en").toBlocking().single();
 		assertEquals(vcard.getUuid(), schema.getUuid());
 	}
 

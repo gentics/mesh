@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -44,14 +44,6 @@ import rx.Observable;
 public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
-
-	/**
-	 * Static field which indicates the current database version. When incremented a migration of the database will be invoked using the current
-	 * {@link DatabaseHelper#migrate()} method.
-	 */
-	public static final String DATABASE_VERSION = "1.1";
-
-	private static final String DATABASE_VERSION_PROPERTY_KEY = "databaseVersion";
 
 	private static MeshRoot instance;
 
@@ -80,16 +72,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(MeshRootImpl.class);
-	}
-
-	@Override
-	public String getDatabaseVersion() {
-		return getProperty(DATABASE_VERSION_PROPERTY_KEY);
-	}
-
-	@Override
-	public void setDatabaseVersion(String version) {
-		setProperty(DATABASE_VERSION_PROPERTY_KEY, version);
 	}
 
 	@Override

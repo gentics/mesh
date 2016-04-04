@@ -208,6 +208,7 @@ public final class MockingUtils {
 		SchemaContainerVersion latestVersion = mock(SchemaContainerVersionImpl.class);
 		when(latestVersion.getSchemaContainer()).thenReturn(container);
 		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
+		when(latestVersion.getName()).thenReturn(name);
 		when(container.getLatestVersion()).thenReturn(latestVersion);
 		when(container.getCreator()).thenReturn(user);
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
@@ -280,17 +281,14 @@ public final class MockingUtils {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
-
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
-		Schema schema = schemaContainer.getLatestVersion().getSchema();
-		when(node.getSchemaContainer().getLatestVersion().getSchema()).thenReturn(schema);
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
-//		when(container.getDisplayFieldValue(schema)).thenCallRealMethod();
+		when(container.getParentNode()).thenReturn(node);
+		when(node.getGraphFieldContainer(language)).thenReturn(container);
 		Mockito.<List<? extends NodeGraphFieldContainer>> when(node.getGraphFieldContainers()).thenReturn(Arrays.asList(container));
-
 		return node;
 	}
 
@@ -371,10 +369,10 @@ public final class MockingUtils {
 		// TODO currently, this mock is only used for the search document example, where we want to omit
 		// fields of type "list of micronodes". We should better add an argument to the method to specify,
 		// which types of fields should be added
-//		// Micronode List Field
-//		MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
-//		Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField, micronodeField));
-//		when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
+		//		// Micronode List Field
+		//		MicronodeGraphFieldList micronodeListField = mock(MicronodeGraphFieldListImpl.class);
+		//		Mockito.<List<? extends MicronodeGraphField>> when(micronodeListField.getList()).thenReturn(Arrays.asList(micronodeField, micronodeField, micronodeField));
+		//		when(container.getMicronodeList("micronodeList")).thenReturn(micronodeListField);
 
 		//TODO add select fields
 

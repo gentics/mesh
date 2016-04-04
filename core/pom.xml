@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.6.1-SNAPSHOT</version>
+		<version>0.6.5-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -81,6 +81,11 @@
 			<artifactId>${mesh.image.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-changelog-system</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -133,14 +138,6 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-dropwizard-metrics</artifactId>
 			<version>${vertx.version}</version>
-		</dependency>
-
-
-		<!-- UUID Support -->
-		<dependency>
-			<groupId>com.fasterxml.uuid</groupId>
-			<artifactId>java-uuid-generator</artifactId>
-			<version>3.1.4</version>
 		</dependency>
 
 		<!-- Bcrypt -->

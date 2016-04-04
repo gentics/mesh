@@ -9,12 +9,21 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 
 import java.io.File;
 import java.io.FileOutputStream;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
@@ -23,31 +32,41 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.group.GroupCreateRequest;
+import com.gentics.mesh.core.rest.group.GroupListResponse;
+import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+import com.gentics.mesh.rest.MeshLocalClientImpl;
+import com.gentics.mesh.util.FieldUtil;
 
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -58,7 +77,7 @@ public class DemoDataProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(DemoDataProvider.class);
 
-	public static final String PROJECT_NAME = "dummy";
+	public static final String PROJECT_NAME = "demo";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
@@ -66,75 +85,67 @@ public class DemoDataProvider {
 	private Database db;
 
 	@Autowired
-	private BootstrapInitializer boot;
-
-	@Autowired
 	protected MeshSpringConfiguration springConfig;
 
 	@Autowired
-	private BootstrapInitializer bootstrapInitializer;
+	private MeshLocalClientImpl client;
 
-	private Language english;
-
-	private Language german;
-
-	private MeshRoot root;
-
-	private Map<String, Project> projects = new HashMap<>();
-	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
-	private Map<String, TagFamily> tagFamilies = new HashMap<>();
-	private Map<String, Node> nodes = new HashMap<>();
-	private Map<String, Tag> tags = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
-	private Map<String, Role> roles = new HashMap<>();
-	private Map<String, Group> groups = new HashMap<>();
+	private Map<String, ProjectResponse> projects = new HashMap<>();
+	private Map<String, Schema> schemas = new HashMap<>();
+	private Map<String, TagFamilyResponse> tagFamilies = new HashMap<>();
+	private Map<String, NodeResponse> nodes = new HashMap<>();
+	private Map<String, TagResponse> tags = new HashMap<>();
+	private Map<String, UserResponse> users = new HashMap<>();
+	private Map<String, RoleResponse> roles = new HashMap<>();
+	private Map<String, GroupResponse> groups = new HashMap<>();
 
 	private DemoDataProvider() {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		long start = System.currentTimeMillis();
-
-		db.noTrx(() -> {
-			bootstrapInitializer.initMandatoryData();
-
-			root = boot.meshRoot();
-			english = boot.languageRoot().findByLanguageTag("en");
-			german = boot.languageRoot().findByLanguageTag("de");
-
-			addBootstrappedData();
-
-			addRoles();
-			addGroups();
-			addUsers();
-
-			addProjects();
-			addTagFamilies();
-			addTags();
-
-			addSchemaContainers();
-			addNodes();
-			return null;
+		MeshAuthUser user = db.noTrx(() -> {
+			return MeshRoot.getInstance().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
-		updatePermissions();
-		invokeFullIndex();
-		long duration = System.currentTimeMillis() - start;
+		client.setUser(user);
+
+		addBootstrappedData();
+
+		addRoles();
+		addGroups();
+		addUsers();
+
+		addProjects();
+		addTagFamilies();
+		addTags();
+
+		addSchemaContainers();
+		addNodes();
+		addWebclientPermissions();
+		// updatePermissions();
+		// invokeFullIndex();
+		log.info("Demo data setup completed");
 	}
 
-	private void invokeFullIndex() throws InterruptedException {
-		db.noTrx(() -> {
-			boot.meshRoot().getSearchQueue().addFullIndex();
-			boot.meshRoot().getSearchQueue().processAll();
-			return null;
-		});
+	private void addWebclientPermissions() throws InterruptedException {
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add("read");
+		request.getPermissions().add("update");
+		Future<GenericMessageResponse> future = client.updateRolePermissions(getRole("Client Role").getUuid(),
+				"projects/" + getProject("demo").getUuid(), request);
+		latchFor(future);
+
+		future = client.updateRolePermissions(getRole("Client Role").getUuid(), "users/" + users.get("webclient").getUuid(), request);
+		latchFor(future);
 	}
 
 	/**
 	 * Load users JSON file and create users.
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	private void addUsers() throws IOException {
+	private void addUsers() throws IOException, InterruptedException {
 		JsonObject usersJson = loadJson("users");
 		JsonArray dataArray = usersJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
@@ -146,16 +157,20 @@ public class DemoDataProvider {
 			String password = userJson.getString("password");
 
 			log.info("Creating user {" + username + "}");
-			User user = root.getUserRoot().create(username, null);
-			user.setPassword(password);
-			user.setFirstname(firstname);
-			user.setLastname(lastname);
-			user.setEmailAddress(email);
-			users.put(username, user);
+
+			UserCreateRequest request = new UserCreateRequest();
+			request.setUsername(username);
+			request.setEmailAddress(email);
+			request.setFirstname(firstname);
+			request.setLastname(lastname);
+			request.setPassword(password);
+			Future<UserResponse> future = client.createUser(request);
+			latchFor(future);
+			users.put(username, future.result());
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
-				user.addGroup(getGroup(groupArray.getString(e)));
+				client.addUserToGroup(groups.get(groupArray.getString(e)).getUuid(), future.result().getUuid());
 			}
 		}
 
@@ -164,9 +179,11 @@ public class DemoDataProvider {
 	/**
 	 * Add groups from JSON file to graph.
 	 * 
+	 * @throws InterruptedException
 	 * @throws IOException
+	 * @throws Throwable
 	 */
-	private void addGroups() throws IOException {
+	private void addGroups() throws InterruptedException, IOException {
 		JsonObject groupsJson = loadJson("groups");
 		JsonArray dataArray = groupsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
@@ -174,13 +191,32 @@ public class DemoDataProvider {
 			String name = groupJson.getString("name");
 
 			log.info("Creating group {" + name + "}");
-			Group group = root.getGroupRoot().create(name, getAdmin());
+			GroupCreateRequest groupCreateRequest = new GroupCreateRequest();
+			groupCreateRequest.setName(name);
+			Future<GroupResponse> groupResponseFuture = client.createGroup(groupCreateRequest);
+			latchFor(groupResponseFuture);
+			GroupResponse group = groupResponseFuture.result();
+			groups.put(name, group);
 
 			JsonArray rolesNode = groupJson.getJsonArray("roles");
 			for (int e = 0; e < rolesNode.size(); e++) {
-				group.addRole(getRole(rolesNode.getString(e)));
+				Future<GroupResponse> future = client.addRoleToGroup(group.getUuid(), getRole(rolesNode.getString(e)).getUuid());
+				latchFor(future);
 			}
-			groups.put(name, group);
+		}
+	}
+
+	private void latchFor(Future<?> future) throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(1);
+		future.setHandler(rh -> {
+			latch.countDown();
+		});
+		if (!latch.await(20, TimeUnit.SECONDS)) {
+			throw new RuntimeException("Timeout reached");
+		}
+
+		if (future.failed()) {
+			throw new RuntimeException(future.cause());
 		}
 	}
 
@@ -188,8 +224,9 @@ public class DemoDataProvider {
 	 * Load roles JSON file and add those roles to the graph.
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	private void addRoles() throws IOException {
+	private void addRoles() throws IOException, InterruptedException {
 		JsonObject rolesJson = loadJson("roles");
 		JsonArray dataArray = rolesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
@@ -197,26 +234,44 @@ public class DemoDataProvider {
 			String name = roleJson.getString("name");
 
 			log.info("Creating role {" + name + "}");
-			Role role = root.getRoleRoot().create(name, getAdmin());
-			role.grantPermissions(role, READ_PERM);
-			roles.put(name, role);
+			RoleCreateRequest request = new RoleCreateRequest();
+			request.setName(name);
+			Future<RoleResponse> roleFuture = client.createRole(request);
+			latchFor(roleFuture);
+
+			roles.put(name, roleFuture.result());
 		}
 	}
 
 	/**
-	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
+	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (e.g.: admin groups, roles, users)
+	 * 
+	 * @throws InterruptedException
 	 */
-	private void addBootstrappedData() {
-		english = root.getLanguageRoot().findByLanguageTag("en");
-		german = root.getLanguageRoot().findByLanguageTag("de");
-		for (Group group : root.getGroupRoot().findAll()) {
+	private void addBootstrappedData() throws InterruptedException {
+
+		Future<GroupListResponse> groupsFuture = client.findGroups();
+		latchFor(groupsFuture);
+		for (GroupResponse group : groupsFuture.result().getData()) {
 			groups.put(group.getName(), group);
 		}
-		for (User user : root.getUserRoot().findAll()) {
+
+		Future<UserListResponse> usersFuture = client.findUsers();
+		latchFor(usersFuture);
+		for (UserResponse user : usersFuture.result().getData()) {
 			users.put(user.getUsername(), user);
 		}
-		for (Role role : root.getRoleRoot().findAll()) {
+
+		Future<RoleListResponse> rolesFuture = client.findRoles();
+		latchFor(rolesFuture);
+		for (RoleResponse role : rolesFuture.result().getData()) {
 			roles.put(role.getName(), role);
+		}
+
+		Future<SchemaListResponse> schemasFuture = client.findSchemas();
+		latchFor(schemasFuture);
+		for (Schema schema : schemasFuture.result().getData()) {
+			schemas.put(schema.getName(), schema);
 		}
 	}
 
@@ -224,84 +279,83 @@ public class DemoDataProvider {
 	 * Load nodes JSON file and add those nodes to the graph.
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	private void addNodes() throws IOException {
+	private void addNodes() throws IOException, InterruptedException {
 		JsonObject nodesJson = loadJson("nodes");
 		JsonArray dataArray = nodesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject nodeJson = dataArray.getJsonObject(i);
-			Project project = getProject(nodeJson.getString("project"));
+			ProjectResponse project = getProject(nodeJson.getString("project"));
 			String schemaName = nodeJson.getString("schema");
 			String name = nodeJson.getString("name");
 			String parentNodeName = nodeJson.getString("parent");
-			SchemaContainer schema = getSchemaContainer(schemaName);
-			Node parentNode = getNode(parentNodeName);
+			Schema schema = getSchemaModel(schemaName);
+			NodeResponse parentNode = getNode(parentNodeName);
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
-			Node node = parentNode.create(getAdmin(), schema.getLatestVersion(), project);
-
-			JsonArray tagArray = nodeJson.getJsonArray("tags");
-			for (int e = 0; e < tagArray.size(); e++) {
-				String tagName = tagArray.getString(e);
-				node.addTag(getTag(tagName));
-			}
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), getAdmin());
-			englishContainer.createString("name").setString(name);
-
-			JsonObject binNode = nodeJson.getJsonObject("bin");
-			if (binNode != null) {
-				String path = binNode.getString("path");
-				int height = binNode.getInteger("height");
-				int width = binNode.getInteger("width");
-				String sha512sum = binNode.getString("sha512sum");
-				String filenName = binNode.getString("filename");
-				String contentType = binNode.getString("contentType");
-				InputStream ins = getClass().getResourceAsStream("/data/" + path);
-				if (ins == null) {
-					throw new NullPointerException("Could not find binary file within path {" + path + "}");
-				}
-
-				BinaryGraphField binaryField = englishContainer.createBinary("image");
-
-				File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), binaryField.getSegmentedPath());
-				folder.mkdirs();
-				File outputFile = new File(folder, binaryField.getUuid() + ".bin");
-				if (!outputFile.exists()) {
-					IOUtils.copy(ins, new FileOutputStream(outputFile));
-				}
-				binaryField.setImageWidth(width);
-				binaryField.setImageHeight(height);
-				binaryField.setMimeType(contentType);
-				binaryField.setImageDPI(300);
-				binaryField.setFileName(filenName);
-				binaryField.setSHA512Sum(sha512sum);
-				binaryField.setFileSize(outputFile.length());
-			}
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
+			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
 
 			JsonObject fieldsObject = nodeJson.getJsonObject("fields");
 			if (fieldsObject != null) {
 				for (String fieldName : fieldsObject.fieldNames()) {
 					Object obj = fieldsObject.getValue(fieldName);
 					if ("vehicleImage".equals(fieldName)) {
-						englishContainer.createNode(fieldName, getNode((String) obj));
+						nodeCreateRequest.getFields().put(fieldName, FieldUtil.createNodeField(getNode((String) obj).getUuid()));
 						continue;
 					}
 					if ("description".equals(fieldName)) {
-						englishContainer.createHTML(fieldName).setHtml(String.valueOf(obj));
+						nodeCreateRequest.getFields().put(fieldName, FieldUtil.createHtmlField(String.valueOf(obj)));
 						continue;
 					}
 					if (obj instanceof Integer || obj instanceof Float || obj instanceof Double) {
-						englishContainer.createNumber(fieldName).setNumber(com.gentics.mesh.util.NumberUtils.createNumber(obj.toString()));
+						nodeCreateRequest.getFields().put(fieldName,
+								FieldUtil.createNumberField(com.gentics.mesh.util.NumberUtils.createNumber(obj.toString())));
 					} else if (obj instanceof String) {
-						englishContainer.createString(fieldName).setString((String) obj);
+						nodeCreateRequest.getFields().put(fieldName, FieldUtil.createStringField((String) obj));
 					} else {
 						throw new RuntimeException("Demo data type {" + obj.getClass().getName() + "} for field {" + fieldName + "} is unknown.");
 					}
 				}
 			}
-			englishContainer.updateWebrootPathInfo(project.getLatestRelease().getUuid(),
-					"node_conflicting_segmentfield_update");
-			nodes.put(name, node);
+			// englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
+
+			Future<NodeResponse> nodeCreateFuture = client.createNode(project.getName(), nodeCreateRequest);
+			latchFor(nodeCreateFuture);
+			NodeResponse createdNode = nodeCreateFuture.result();
+
+			// Upload binary data
+			JsonObject binNode = nodeJson.getJsonObject("bin");
+			if (binNode != null) {
+				String path = binNode.getString("path");
+				String filenName = binNode.getString("filename");
+				String contentType = binNode.getString("contentType");
+				InputStream ins = getClass().getResourceAsStream("/data/" + path);
+				if (ins == null) {
+					throw new NullPointerException("Could not find binary file within path {" + path + "}");
+				}
+				byte[] bytes = IOUtils.toByteArray(ins);
+				Buffer fileData = Buffer.buffer(bytes);
+
+				Future<GenericMessageResponse> binaryUpdateFuture = client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image",
+						fileData, filenName, contentType);
+				latchFor(binaryUpdateFuture);
+
+			}
+
+			// Add tags to node
+			JsonArray tagArray = nodeJson.getJsonArray("tags");
+			for (int e = 0; e < tagArray.size(); e++) {
+				String tagName = tagArray.getString(e);
+				Future<NodeResponse> tagAddedFuture = client.addTagToNode(PROJECT_NAME, createdNode.getUuid(), getTag(tagName).getUuid());
+				latchFor(tagAddedFuture);
+			}
+
+			nodes.put(name, createdNode);
 		}
 
 	}
@@ -310,8 +364,9 @@ public class DemoDataProvider {
 	 * Load tags JSON and add those tags to the graph.
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	private void addTags() throws IOException {
+	private void addTags() throws IOException, InterruptedException {
 		JsonObject tagsJson = loadJson("tags");
 		JsonArray dataArray = tagsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
@@ -320,10 +375,13 @@ public class DemoDataProvider {
 			String tagFamilyName = tagJson.getString("tagFamily");
 
 			log.info("Creating tag {" + name + "} to family {" + tagFamilyName + "}");
-			TagFamily tagFamily = getTagFamily(tagFamilyName);
+			TagFamilyResponse tagFamily = getTagFamily(tagFamilyName);
 			// TODO determine project of tag family automatically or use json field to assign it
-			Tag tag = tagFamily.create(name, getProject("demo"), getAdmin());
-			tags.put(name, tag);
+			TagCreateRequest createRequest = new TagCreateRequest();
+			createRequest.getFields().setName(name);
+			Future<TagResponse> tagFuture = client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest);
+			latchFor(tagFuture);
+			tags.put(name, tagFuture.result());
 		}
 	}
 
@@ -331,8 +389,9 @@ public class DemoDataProvider {
 	 * Load project JSON file and add those projects to the graph.
 	 * 
 	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	private void addProjects() throws IOException {
+	private void addProjects() throws IOException, InterruptedException {
 		JsonObject projectsJson = loadJson("projects");
 		JsonArray dataArray = projectsJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
@@ -340,16 +399,26 @@ public class DemoDataProvider {
 			String name = projectJson.getString("name");
 
 			log.info("Creating project {" + name + "}");
-			Project project = root.getProjectRoot().create(name, getAdmin());
-			project.addLanguage(getEnglish());
-			project.addLanguage(getGerman());
-			Node baseNode = project.getBaseNode();
-			nodes.put(name + ".basenode", baseNode);
-			projects.put(name, project);
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(name);
+			Future<ProjectResponse> projectFuture = client.createProject(request);
+			latchFor(projectFuture);
+
+			// TODO impl. once endpoint exists
+			// client.assignLanguageToProject(projectFuture.result().getUuid(), getEnglish().getUuid());
+			// client.assignLanguageToProject(projectFuture.result().getUuid(), getGerman().getUuid());
+			ProjectResponse project = projectFuture.result();
+
+			// Load the project basenode
+			Future<NodeResponse> nodeFuture = client.findNodeByUuid(PROJECT_NAME, project.getRootNodeUuid());
+			latchFor(nodeFuture);
+
+			nodes.put(name + ".basenode", nodeFuture.result());
+			projects.put(name, projectFuture.result());
 		}
 	}
 
-	private void addTagFamilies() throws IOException {
+	private void addTagFamilies() throws IOException, InterruptedException {
 		JsonObject tagfamilyJson = loadJson("tagfamilies");
 		JsonArray dataArray = tagfamilyJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
@@ -358,55 +427,45 @@ public class DemoDataProvider {
 			String projectName = tagFamilyJson.getString("project");
 
 			log.info("Creating tagfamily {" + name + "} for project {" + projectName + "}");
-			TagFamily tagFamily = getProject(projectName).getTagFamilyRoot().create(name, getAdmin());
-			tagFamily.setDescription("Description for basic tag family");
-			tagFamilies.put(name, tagFamily);
+			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+			request.setName(name);
+			// request.setDescription("Description for basic tag family");
+			Future<TagFamilyResponse> future = client.createTagFamily(PROJECT_NAME, request);
+			latchFor(future);
+			tagFamilies.put(name, future.result());
 		}
 	}
 
-	private void addSchemaContainers() throws MeshSchemaException, IOException {
+	private void addSchemaContainers() throws MeshSchemaException, IOException, InterruptedException {
 
 		JsonObject schemasJson = loadJson("schemas");
 		JsonArray dataArray = schemasJson.getJsonArray("data");
+		// Create new schemas
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject schemaJson = dataArray.getJsonObject(i);
 			String schemaName = schemaJson.getString("name");
-			SchemaContainer container = boot.schemaContainerRoot().findByName(schemaName).toBlocking().single();
-			if (container == null) {
-				StringWriter writer = new StringWriter();
-				InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
+			StringWriter writer = new StringWriter();
+			InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
+			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
-				Schema schema = JsonUtil.readSchema(writer.toString(), SchemaModel.class);
-				container = boot.schemaContainerRoot().create(schema, getAdmin());
+				Schema schema = JsonUtil.readValue(writer.toString(), SchemaModel.class);
+				Future<Schema> future = client.createSchema(schema);
+				latchFor(future);
+				Schema schemaResponse = future.result();
+				schemas.put(schemaName, schemaResponse);
 			}
-			schemaContainers.put(schemaName, container);
 
+			// Assign all schemas to all projects
 			JsonArray projectsArray = schemaJson.getJsonArray("projects");
 			for (int e = 0; e < projectsArray.size(); e++) {
 				String projectName = projectsArray.getString(e);
-				Project project = getProject((String) projectName);
-				project.getSchemaContainerRoot().addSchemaContainer(container);
+				ProjectResponse project = getProject(projectName);
+				for (Schema schema : schemas.values()) {
+					Future<Schema> updateFuture = client.addSchemaToProject(schema.getUuid(), project.getUuid());
+					latchFor(updateFuture);
+				}
 			}
 		}
-	}
-
-	private void updatePermissions() {
-		db.noTrx(() -> {
-			for (Role role : roles.values()) {
-				for (Vertex vertex : Database.getThreadLocalGraph().getVertices()) {
-					WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-					MeshVertex meshVertex = Database.getThreadLocalGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-					if (log.isTraceEnabled()) {
-						log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId()
-								+ "}");
-					}
-					role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
-				}
-				log.info("Added BasicPermissions to nodes for role {" + role.getName() + "}");
-			}
-			return null;
-		});
-
 	}
 
 	private JsonObject loadJson(String name) throws IOException {
@@ -415,64 +474,38 @@ public class DemoDataProvider {
 		return new JsonObject(writer.toString());
 	}
 
-	private Language getEnglish() {
-		return english;
-	}
-
-	private Language getGerman() {
-		return german;
-	}
-
-	private TagFamily getTagFamily(String name) {
-		TagFamily tagfamily = tagFamilies.get(name);
+	private TagFamilyResponse getTagFamily(String name) {
+		TagFamilyResponse tagfamily = tagFamilies.get(name);
 		Objects.requireNonNull(tagfamily, "Tagfamily with name {" + name + "} could not be found.");
 		return tagfamily;
 	}
 
-	private Tag getTag(String name) {
-		Tag tag = tags.get(name);
+	private TagResponse getTag(String name) {
+		TagResponse tag = tags.get(name);
 		Objects.requireNonNull(tag, "Tag with name {" + name + "} could not be found.");
 		return tag;
 	}
 
-	private SchemaContainer getSchemaContainer(String name) {
-		SchemaContainer container = schemaContainers.get(name);
-		Objects.requireNonNull(container, "Schema container with name {" + name + "} could not be found.");
-		return container;
+	private Schema getSchemaModel(String name) {
+		Schema model = schemas.get(name);
+		Objects.requireNonNull(model, "Schema container with name {" + name + "} could not be found.");
+		return model;
 	}
 
-	private Project getProject(String name) {
-		Project project = projects.get(name);
+	private ProjectResponse getProject(String name) {
+		ProjectResponse project = projects.get(name);
 		Objects.requireNonNull(project, "Project {" + name + "} could not be found.");
 		return project;
 	}
 
-	private User getAdmin() {
-		User admin = getUser("admin");
-		Objects.requireNonNull(admin, "Admin user could not be found.");
-		return admin;
-	}
-
-	private Role getRole(String name) {
-		Role role = roles.get(name);
+	private RoleResponse getRole(String name) {
+		RoleResponse role = roles.get(name);
 		Objects.requireNonNull(role, "Role with name {" + name + "} could not be found.");
 		return role;
 	}
 
-	private Group getGroup(String name) {
-		Group group = groups.get(name);
-		Objects.requireNonNull(group, "Group for name {" + name + "} could not be found.");
-		return group;
-	}
-
-	private User getUser(String name) {
-		User user = users.get(name);
-		Objects.requireNonNull(user, "User for name {" + name + "} could not be found.");
-		return user;
-	}
-
-	private Node getNode(String name) {
-		Node node = nodes.get(name);
+	private NodeResponse getNode(String name) {
+		NodeResponse node = nodes.get(name);
 		Objects.requireNonNull(node, "Node with name {" + name + "} could not be found.");
 		return node;
 	}

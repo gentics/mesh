@@ -5,8 +5,10 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -15,7 +17,8 @@ import com.gentics.mesh.test.TestUtils;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
-public class SpringNoDBConfiguration {
+@Profile("nodb")
+public class SpringNoDBConfiguration extends MeshSpringConfiguration {
 
 	@Bean
 	public DummySearchProvider dummySearchProvider() {

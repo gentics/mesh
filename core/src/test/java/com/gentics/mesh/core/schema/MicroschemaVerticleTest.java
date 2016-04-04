@@ -125,6 +125,7 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertSuccess(future);
 		assertThat(searchProvider).recordedStoreEvents(1);
 		Microschema microschemaResponse = future.result();
+		assertThat(microschemaResponse.getPermissions()).isNotEmpty().contains("read", "create", "delete", "update");
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
 	}
 
@@ -145,7 +146,8 @@ public class MicroschemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		Microschema microschemaResponse = future.result();
-		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name", "description");
+		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
+				"description");
 	}
 
 	@Test

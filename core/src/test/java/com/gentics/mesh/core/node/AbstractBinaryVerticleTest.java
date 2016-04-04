@@ -68,7 +68,6 @@ public abstract class AbstractBinaryVerticleTest extends AbstractRestVerticleTes
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-
 		return getClient().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldKey, buffer, fileName, contentType);
 	}
 

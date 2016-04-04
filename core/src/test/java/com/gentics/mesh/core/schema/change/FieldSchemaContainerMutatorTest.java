@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -109,6 +110,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 
 		ListFieldSchema listField = new ListFieldSchemaImpl();
 		listField.setName("listField");
+		listField.setListType("micronode");
 		listField.setRequired(true);
 		schema.addField(listField);
 
@@ -162,6 +164,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		UpdateFieldChange listFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 		listFieldUpdate.setFieldName("listField");
 		listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+		listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });
 		micronodeFieldUpdate.setNextChange(listFieldUpdate);
 
 		// 3. Apply the changes
@@ -211,6 +214,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractEmptyDBTest {
 		// List
 		ListFieldSchema listFieldSchema = updatedSchema.getField("listField", ListFieldSchemaImpl.class);
 		assertFalse("The required flag should now be set to false.", listFieldSchema.isRequired());
+		assertNotNull(listFieldSchema.getAllowedSchemas());
+		assertThat(listFieldSchema.getAllowedSchemas()).contains("A1", "B1", "C1");
 
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,7 +28,7 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 		SearchQueueBatch batch = searchQueue.createBatch("0");
 		int i = 0;
 		for (Node node : boot.nodeRoot().findAll()) {
-			batch.addEntry(node.getUuid(), Node.TYPE, CREATE_ACTION);
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 			i++;
 		}
 		long size = searchQueue.getSize();
@@ -57,7 +57,7 @@ public class SearchQueueTest extends AbstractBasicDBTest {
 		SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 		SearchQueueBatch batch = searchQueue.createBatch("0");
 		for (Node node : boot.nodeRoot().findAll()) {
-			batch.addEntry(node.getUuid(), Node.TYPE, CREATE_ACTION);
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 		}
 
 		long size = searchQueue.getSize();

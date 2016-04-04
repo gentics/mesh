@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data.node.field.list;
 
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicroschemaListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
@@ -65,7 +65,8 @@ public interface ListGraphField<T extends ListableGraphField, RM extends Field, 
 	 * @param ac
 	 * @param fieldKey
 	 * @param languageTags list of language tags
+	 * @param level Level of transformation
 	 */
-	Observable<RM> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags);
+	Observable<RM> transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level);
 
 }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -194,6 +195,7 @@ public class BootstrapInitializer {
 	 * Use the hazelcast cluster manager to join the cluster of mesh instances.
 	 */
 	private void joinCluster() {
+		log.info("Joining cluster...");
 		HazelcastClusterManager manager = new HazelcastClusterManager();
 		manager.setVertx(Mesh.vertx());
 		manager.join(rh -> {
@@ -215,9 +217,12 @@ public class BootstrapInitializer {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}
-		initSearchIndex();
 		initMandatoryData();
 		initPermissions();
+		invokeChangelog();
+		initSearchIndex();
+		invokeSearchQueueProcessing();
+
 		loadConfiguredVerticles();
 		if (verticleLoader != null) {
 			verticleLoader.apply(Mesh.vertx());
@@ -231,7 +236,40 @@ public class BootstrapInitializer {
 
 	}
 
-	private void initSearchIndex() {
+	/**
+	 * Process remaining search queue batches.
+	 * 
+	 * @throws InterruptedException
+	 */
+	private void invokeSearchQueueProcessing() throws InterruptedException {
+		db.trx(() -> {
+			log.info("Starting search queue processing of remaining entries...");
+			long processed = meshRoot().getSearchQueue().processAll();
+			log.info("Processed {" + processed + "} elements.");
+			return null;
+		});
+	}
+
+	/**
+	 * Invoke the changelog system to execute database changes.
+	 */
+	public void invokeChangelog() {
+		log.info("Invoking database changelog check...");
+		ChangelogSystem cls = new ChangelogSystem(db);
+		if (isInitialSetup) {
+			// Marking all changes as applied since this is an initial mesh setup
+			cls.markAllAsApplied();
+		} else {
+			if (!cls.applyChanges()) {
+				throw new RuntimeException("The changelog could not be applied successfully. See log above.");
+			}
+		}
+	}
+
+	/**
+	 * Initialize the search queue handlers.
+	 */
+	public void initSearchIndex() {
 		for (IndexHandler handler : searchHandlerRegistry.getHandlers()) {
 			handler.init().toBlocking().single();
 		}
@@ -326,7 +364,6 @@ public class BootstrapInitializer {
 				if (foundMeshRoot == null) {
 
 					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
-					meshRoot.setDatabaseVersion(MeshRootImpl.DATABASE_VERSION);
 					if (log.isInfoEnabled()) {
 						log.info("Created mesh root {" + meshRoot.getUuid() + "}");
 					}

@@ -8,10 +8,12 @@ import java.util.Map;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -32,7 +34,6 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.RestAssert;
@@ -47,6 +48,7 @@ import io.vertx.ext.web.Session;
 
 @ContextConfiguration(classes = { SpringTestConfiguration.class })
 @RunWith(SpringJUnit4ClassRunner.class)
+@ActiveProfiles("test")
 public abstract class AbstractDBTest {
 
 	@Autowired
@@ -222,7 +224,7 @@ public abstract class AbstractDBTest {
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = getMockedRoutingContext("lang=en");
 		InternalActionContext ac = InternalActionContext.create(rc);
-		return JsonUtil.toJson(node.transformToRest(ac).toBlocking().single());
+		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().single());
 	}
 
 	protected InternalActionContext getMockedVoidInternalActionContext(String query) {
@@ -251,7 +253,6 @@ public abstract class AbstractDBTest {
 		when(request.query()).thenReturn(query);
 		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
-
 		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 		when(rc.data()).thenReturn(map);
 		MultiMap headerMap = mock(MultiMap.class);

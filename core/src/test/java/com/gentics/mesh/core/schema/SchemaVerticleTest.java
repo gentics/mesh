@@ -68,6 +68,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertThat(searchProvider).recordedStoreEvents(1);
 		Schema restSchema = future.result();
 		assertThat(schema).matches(restSchema);
+		assertThat(restSchema.getPermissions()).isNotEmpty().contains("create","read", "update","delete");
 
 		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid()).toBlocking().first();
 		assertNotNull(schemaContainer);

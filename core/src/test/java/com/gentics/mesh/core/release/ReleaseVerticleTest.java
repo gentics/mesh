@@ -22,6 +22,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -39,7 +40,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.project.ProjectVerticle;
 import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.query.impl.RolePermissionParameter;
 import com.gentics.mesh.test.AbstractBasicCrudVerticleTest;
 
@@ -319,10 +319,10 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ListResponse<ReleaseResponse> responseList = future.result();
 		assertThat(responseList).isNotNull();
 		assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
-				initialRelease.transformToRestSync(ac).toBlocking().single(),
-				firstRelease.transformToRestSync(ac).toBlocking().single(),
-				secondRelease.transformToRestSync(ac).toBlocking().single(),
-				thirdRelease.transformToRestSync(ac).toBlocking().single());
+				initialRelease.transformToRestSync(ac, 0).toBlocking().single(),
+				firstRelease.transformToRestSync(ac, 0).toBlocking().single(),
+				secondRelease.transformToRestSync(ac, 0).toBlocking().single(),
+				thirdRelease.transformToRestSync(ac, 0).toBlocking().single());
 	}
 
 	@Test
@@ -346,8 +346,8 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ListResponse<ReleaseResponse> responseList = future.result();
 		assertThat(responseList).isNotNull();
 		assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
-				initialRelease.transformToRestSync(ac).toBlocking().single(),
-				secondRelease.transformToRestSync(ac).toBlocking().single());
+				initialRelease.transformToRestSync(ac, 0).toBlocking().single(),
+				secondRelease.transformToRestSync(ac, 0).toBlocking().single());
 	}
 
 	@Test

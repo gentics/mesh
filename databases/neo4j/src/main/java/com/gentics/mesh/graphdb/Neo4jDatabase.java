@@ -16,6 +16,7 @@ import com.gentics.mesh.graphdb.spi.TrxHandler;
 import com.syncleus.ferma.DelegatingFramedGraph;
 import com.syncleus.ferma.DelegatingFramedTransactionalGraph;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 
@@ -40,6 +41,12 @@ public class Neo4jDatabase extends AbstractDatabase {
 		neo4jBlueprintGraph.getVertices().forEach(v -> {
 			v.remove();
 		});
+	}
+	
+	
+	@Override
+	public TransactionalGraph rawTx() {
+		return neo4jBlueprintGraph;
 	}
 
 	@Override

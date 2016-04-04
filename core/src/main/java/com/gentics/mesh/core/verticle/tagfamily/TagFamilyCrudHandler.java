@@ -2,11 +2,12 @@ package com.gentics.mesh.core.verticle.tagfamily;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 @Component
 public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily, TagFamilyResponse> {
@@ -17,8 +18,8 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily, TagFami
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "tagfamily_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "tagfamily_deleted");
 	}
 
 }

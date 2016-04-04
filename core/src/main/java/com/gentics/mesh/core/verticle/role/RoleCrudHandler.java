@@ -15,9 +15,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -44,21 +44,22 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "role_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "role_deleted");
 	}
 
-	public void handlePermissionRead(InternalActionContext ac) {
-		db.asyncNoTrxExperimental(() -> {
-			String roleUuid = ac.getParameter("param0");
-			String pathToElement = ac.getParameter("param1");
-			if (StringUtils.isEmpty(roleUuid)) {
-				throw error(BAD_REQUEST, "error_uuid_must_be_specified");
-			}
+	public void handlePermissionRead(InternalActionContext ac, String roleUuid, String pathToElement) {
+		if (isEmpty(roleUuid)) {
+			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
+		}
+		if (isEmpty(pathToElement)) {
+			throw error(BAD_REQUEST, "role_permission_path_missing");
+		}
 
-			if (StringUtils.isEmpty(pathToElement)) {
-				throw error(BAD_REQUEST, "role_permission_path_missing");
-			}
+		db.asyncNoTrxExperimental(() -> {
+
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -83,10 +84,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	}
 
-	public void handlePermissionUpdate(InternalActionContext ac) {
+	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
 		db.asyncNoTrxExperimental(() -> {
-			String roleUuid = ac.getParameter("param0");
-			String pathToElement = ac.getParameter("param1");
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}

@@ -109,7 +109,8 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	 * @return
 	 */
 	public AbstractIndexHandler<?> getIndexHandler(String type) {
-		// TODO i think it would be better to register handlers at one point and just use an abstract implementation to access the correct handler.
+		// TODO i think it would be better to register handlers at one point and just use an 
+		// abstract implementation to access the correct handler.
 		switch (type) {
 		case Node.TYPE:
 			return NodeIndexHandler.getInstance();

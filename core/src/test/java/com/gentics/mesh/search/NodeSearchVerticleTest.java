@@ -1,7 +1,9 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
@@ -16,10 +18,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,7 +42,8 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -48,13 +53,22 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.verticle.admin.AdminVerticle;
+import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
+import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.test.TestUtils;
+import com.gentics.mesh.util.FieldUtil;
 
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.rx.java.ObservableFuture;
 import io.vertx.rx.java.RxHelper;
@@ -67,11 +81,39 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
 
+	@Autowired
+	private SchemaVerticle schemaVerticle;
+
+	@Autowired
+	private NodeMigrationVerticle nodeMigrationVerticle;
+
+	@Autowired
+	private AdminVerticle adminVerticle;
+
+	@Autowired
+	private EventbusVerticle eventbusVerticle;
+
+	@Autowired
+	private TagFamilyVerticle tagFamilyVerticle;
+
+	@Override
+	@Before
+	public void setupVerticleTest() throws Exception {
+		super.setupVerticleTest();
+		DeploymentOptions options = new DeploymentOptions();
+		options.setWorker(true);
+		vertx.deployVerticle(nodeMigrationVerticle, options);
+	}
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
+		list.add(schemaVerticle);
+		list.add(adminVerticle);
 		list.add(nodeVerticle);
+		list.add(eventbusVerticle);
+		list.add(tagFamilyVerticle);
 		return list;
 	}
 
@@ -213,7 +255,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		try (Trx tx = db.trx()) {
 			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
 			batch = searchQueue.createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.CREATE_ACTION);
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
 			tx.success();
 		}
 		try (Trx tx = db.trx()) {
@@ -248,8 +290,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 			// Create the update entry in the search queue
 			batch = boot.meshRoot().getSearchQueue().createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION, Node.TYPE + "-en");
-			batch.addEntry(node.getUuid(), Node.TYPE, SearchQueueEntryAction.UPDATE_ACTION, Node.TYPE + "-de");
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION, Node.TYPE + "-en");
+			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION, Node.TYPE + "-de");
 			tx.success();
 		}
 
@@ -542,13 +584,50 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	}
 
 	@Test
+	public void testSchemaMigrationNodeSearchTest() throws Exception {
+		Node concorde = content("concorde");
+		fullIndex();
+
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+
+		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()),
+				new PagingParameter().setPage(1).setPerPage(10), new NodeRequestParameter().setLanguages("en", "de"));
+		latchFor(future);
+		assertSuccess(future);
+		assertEquals("We expect to find the two language versions.", 2, future.result().getData().size());
+
+		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
+
+		Schema schema = schemaVersion.getSchema();
+		schema.addField(FieldUtil.createStringFieldSchema("extraField"));
+
+		// Clear the schema storage in order to purge the reference from the storage which we would otherwise modify.
+		ServerSchemaStorage.getInstance().clear();
+
+		Future<GenericMessageResponse> migrationFuture = getClient().updateSchema(concorde.getSchemaContainer().getUuid(), schema);
+		latchFor(migrationFuture);
+		assertSuccess(migrationFuture);
+		expectResponseMessage(migrationFuture, "migration_invoked", "content");
+
+		// Wait for migration to complete
+		failingLatch(latch);
+
+		future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()), new PagingParameter().setPage(1).setPerPage(10),
+				new NodeRequestParameter().setLanguages("en", "de"));
+		latchFor(future);
+		assertSuccess(future);
+
+		assertEquals("We only expect to find the two language versions.", 2, future.result().getData().size());
+	}
+
+	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		int numAdditionalNodes = 99;
 		addMicronodeField();
 		User user = user();
 		Language english = english();
 		Node concorde = content("concorde");
-		
+
 		Project project = concorde.getProject();
 		Node parentNode = concorde.getParentNode();
 		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
@@ -574,6 +653,38 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
 	}
 
+	/**
+	 * Tests if all tags are in the node response when searching for a node.
+	 * 
+	 * @throws JSONException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testTagCount() throws JSONException, InterruptedException {
+		fullIndex();
+		Node node = content("concorde");
+		int previousTagCount = node.getTags().size();
+		//Create tags:
+		int tagCount = 20;
+		for (int i = 0; i < tagCount; i++) {
+			TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
+			//Add tags to node:
+			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid());
+			latchFor(future);
+			assertSuccess(future);
+		}
+
+		Future<NodeListResponse> search = getClient().searchNodes(getSimpleQuery("Concorde"));
+		latchFor(search);
+		NodeListResponse response = search.result();
+		assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
+
+		//assert tag count
+		int nColorTags = response.getData().get(0).getTags().get("colors").getItems().size();
+		int nBasicTags = response.getData().get(0).getTags().get("basic").getItems().size();
+		assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
+	}
+
 	private void addNumberSpeedField(int number) {
 		Node node = content("concorde");
 
@@ -596,7 +707,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
+		MicronodeGraphField vcardField = node.getGraphFieldContainer(english()).createMicronode("vcard",
+				microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
 	}
@@ -616,7 +728,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(schema), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, schema.getName() + "-" + schema.getVersion(), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

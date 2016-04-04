@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractCoreApiVerticle;
-import com.gentics.mesh.handler.InternalActionContext;
 
 @Component
 @Scope("singleton")
@@ -40,29 +40,41 @@ public class RoleVerticle extends AbstractCoreApiVerticle {
 	private void addPermissionHandler() {
 		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON)
 				.handler(rc -> {
-					crudHandler.handlePermissionUpdate(InternalActionContext.create(rc));
+					InternalActionContext ac = InternalActionContext.create(rc);
+					String roleUuid = ac.getParameter("param0");
+					String pathToElement = ac.getParameter("param1");
+					crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
 				});
 
 		localRouter.routeWithRegex("\\/([^\\/]*)\\/permissions\\/(.*)").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handlePermissionRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String roleUuid = ac.getParameter("param0");
+			String pathToElement = ac.getParameter("param1");
+			crudHandler.handlePermissionRead(ac, roleUuid, pathToElement);
 		});
 	}
 
 	private void addDeleteHandler() {
 		route("/:uuid").method(DELETE).handler(rc -> {
-			crudHandler.handleDelete(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 
 	private void addUpdateHandler() {
 		route("/:uuid").method(PUT).consumes(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleUpdate(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleUpdate(ac, uuid);
 		});
 	}
 
 	private void addReadHandler() {
 		route("/:uuid").method(GET).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleRead(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleRead(ac, uuid);
 		});
 
 		/*

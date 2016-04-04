@@ -66,6 +66,5 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
 		}
 	}
-	
 
 }

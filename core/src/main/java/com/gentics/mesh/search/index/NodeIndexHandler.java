@@ -1,7 +1,9 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +15,8 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
@@ -43,6 +47,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -86,12 +91,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	/**
 	 * Get the document type for documents stored for the given schema
 	 * 
-	 * @param schema
-	 *            schema
+	 * @param schemaVersion
+	 *            Schema container version
 	 * @return document type
 	 */
-	public static String getDocumentType(Schema schema) {
-		return new StringBuilder(schema.getName()).append("-").append(schema.getVersion()).toString();
+	public static String getDocumentType(SchemaContainerVersion schemaVersion) {
+		return new StringBuilder(schemaVersion.getName()).append("-").append(schemaVersion.getVersion()).toString();
 	}
 
 	@Override
@@ -115,50 +120,112 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String type, SearchQueueEntry entry) {
-		return searchProvider.deleteDocument(getIndex(), type, entry.getCustomProperty(DOCUMENT_ID_NAME));
+	public Observable<Void> store(String uuid, String indexType) {
+		String nodeUuid = uuid;
+		String languageTag = null;
+		if (uuid.indexOf("-") > 0) {
+			nodeUuid = uuid.split("-")[0];
+			languageTag = uuid.split("-")[1];
+		}
+		final String languageTagValue = languageTag;
+		return getRootVertex().findByUuid(nodeUuid).flatMap(element -> {
+			return db.noTrx(() -> {
+				if (element == null) {
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
+				} else {
+					return store(element, indexType, languageTagValue);
+				}
+			});
+		});
 	}
 
 	@Override
-	public Observable<Void> store(Node node, String type, SearchQueueEntry entry) {
-		// TODO filter the correct container
+	public Observable<Void> store(Node node, String documentType) {
+		return store(node, documentType, null);
+	}
 
-		Map<String, Object> map = new HashMap<>();
-		addBasicReferences(map, node);
-		addProject(map, node.getProject());
-		addTags(map, node.getTags());
-
+	/**
+	 * 
+	 * @param node
+	 *            Node element to be updated/stored
+	 * @param documentType
+	 *            Document type which is schema version specific
+	 * @param languageTag
+	 *            Language tag to be stored
+	 * @return
+	 */
+	public Observable<Void> store(Node node, String documentType, String languageTag) {
 		Set<Observable<Void>> obs = new HashSet<>();
 
-		// The basenode has no parent.
-		if (node.getParentNode() != null) {
-			addParentNodeInfo(map, node.getParentNode());
-		}
-		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-
-			removeFieldEntries(map);
-			map.remove("language");
-			String language = container.getLanguage().getLanguageTag();
-			map.put("language", language);
-			addSchema(map, container.getSchemaContainerVersion());
-
-			addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
-			if (log.isTraceEnabled()) {
-				String json = JsonUtil.toJson(map);
-				log.trace("Search index json:");
-				log.trace(json);
+		// Store all containers if no language was specified
+		if (languageTag == null) {
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+				obs.add(storeContainer(container));
 			}
+		} else {
 
-			// Add display field value
-			Map<String, String> displayFieldMap = new HashMap<>();
-			displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-			//			displayFieldMap.put("value", container.getDisplayFieldValue(container.getSchemaContainerVersion().getSchema()));
-			map.put("displayField", displayFieldMap);
-			obs.add(searchProvider.storeDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
+			if (container == null) {
+				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
+						+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
+			}
+			// 1. Sanitize the search index for nodes.
+			// We'll need to delete all documents which match the given query:
+			// * match node documents with same UUID
+			// * match node documents with same language
+			// * exclude all documents which have the same document type in order to avoid deletion 
+			//   of the document which will be updated later on
+			// 
+			// This will ensure that only one version of the node document remains in the search index. 
+			// 
+			// A node migration for example requires old node documents to be removed from the index since the migration itself may create new node versions.  
+			// Those documents are stored within a schema container version specific index type. 
+			// We need to ensure that those documents are purged from the index.
+			JSONObject query = new JSONObject();
+			try {
+				JSONObject queryObject = new JSONObject();
+
+				// Only handle selected language
+				JSONObject langTerm = new JSONObject().put("term", new JSONObject().put("language", languageTag));
+				// Only handle nodes with the same uuid
+				JSONObject uuidTerm = new JSONObject().put("term", new JSONObject().put("uuid", node.getUuid()));
+
+				JSONArray mustArray = new JSONArray();
+				mustArray.put(uuidTerm);
+				mustArray.put(langTerm);
+
+				JSONObject boolFilter = new JSONObject();
+				boolFilter.put("must", mustArray);
+
+				// Only limit the deletion if a container could be found. Otherwise delete all the documents in oder to sanitize the index
+				if (container != null) {
+					// Don't delete the document which is specific to the language container (via the document type)
+					JSONObject mustNotTerm = new JSONObject().put("term",
+							new JSONObject().put("_type", getDocumentType(container.getSchemaContainerVersion())));
+					boolFilter.put("must_not", mustNotTerm);
+				}
+				queryObject.put("bool", boolFilter);
+				query.put("query", queryObject);
+			} catch (Exception e) {
+				log.error("Error while building deletion query", e);
+				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
+			}
+			obs.add(searchProvider.deleteDocumentsViaQuery(getIndex(), query).flatMap(nDocumentsDeleted -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + getIndex() + "}");
+				}
+				// Don't store the container if it is null.
+				if (container == null) {
+					return Observable.just(null);
+				} else {
+					// 2. Try to store the updated document
+					// 2. Try to store the updated document
+					return db.noTrx(() -> {
+						return storeContainer(container);
+					});
+				}
+			}));
 		}
-
-		// add a dummy entry (so we have at least one entry)
-		obs.add(Observable.just(null));
 		return Observable.merge(obs).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored node in index.");
@@ -168,42 +235,46 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
-	@Override
-	public Observable<Void> update(Node node, SearchQueueEntry entry) {
-		// TODO filter the correct container
+	/**
+	 * Generate a flat property map from the given container and store the map within the search index.
+	 * 
+	 * @param container
+	 * @return
+	 */
+	public Observable<Void> storeContainer(NodeGraphFieldContainer container) {
 
+		Node node = container.getParentNode();
 		Map<String, Object> map = new HashMap<>();
 		addBasicReferences(map, node);
-
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
 
-		Set<Observable<Void>> obs = new HashSet<>();
-		for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+		// The basenode has no parent.
+		if (node.getParentNode() != null) {
+			addParentNodeInfo(map, node.getParentNode());
+		}
+		map.put("published", node.isPublished());
 
-			removeFieldEntries(map);
-			map.remove("language");
-			String language = container.getLanguage().getLanguageTag();
-			map.put("language", language);
-			addSchema(map, container.getSchemaContainerVersion());
-			addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
-			if (log.isDebugEnabled()) {
-				String json = JsonUtil.toJson(map);
-				log.debug(json);
-			}
+		map.remove("language");
+		String language = container.getLanguage().getLanguageTag();
+		map.put("language", language);
+		addSchema(map, container.getSchemaContainerVersion());
 
-			obs.add(searchProvider.updateDocument(getIndex(), getDocumentType(node, language), composeDocumentId(node, language), map));
-
+		addFields(map, container, container.getSchemaContainerVersion().getSchema().getFields());
+		if (log.isTraceEnabled()) {
+			String json = JsonUtil.toJson(map);
+			log.trace("Search index json:");
+			log.trace(json);
 		}
 
-		// add a dummy entry (so we have at least one entry)
-		obs.add(Observable.just(null));
-		return Observable.merge(obs).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Updated node in index.");
-			}
-			MeshSpringConfiguration.getInstance().searchProvider().refreshIndex();
-		});
+		// Add display field value
+		Map<String, String> displayFieldMap = new HashMap<>();
+		displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
+		displayFieldMap.put("value", container.getDisplayFieldValue());
+		map.put("displayField", displayFieldMap);
+		return searchProvider.storeDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
+				composeDocumentId(container.getParentNode(), language), map);
+
 	}
 
 	/**
@@ -444,20 +515,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		StringBuilder id = new StringBuilder(node.getUuid());
 		id.append("-").append(language);
 		return id.toString();
-	}
-
-	/**
-	 * Compose the document type for the index document
-	 * 
-	 * @param node
-	 *            node
-	 * @param language
-	 *            language
-	 * @return
-	 */
-	private String getDocumentType(Node node, String language) {
-		//TODO FIXME MIGRATE: How to add this reference info? The schema is now linked to the node. Should we add another reference: (n:Node)->(sSchemaContainer) ?
-		return getDocumentType(node.getSchemaContainer().getLatestVersion().getSchema());
 	}
 
 	/**

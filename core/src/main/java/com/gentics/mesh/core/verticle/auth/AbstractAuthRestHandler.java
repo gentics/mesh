@@ -2,10 +2,10 @@ package com.gentics.mesh.core.verticle.auth;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.handler.InternalHttpActionContext;
 import com.gentics.mesh.json.JsonUtil;
 
 public abstract class AbstractAuthRestHandler extends AbstractHandler implements AuthenticationRestHandler {
@@ -16,11 +16,11 @@ public abstract class AbstractAuthRestHandler extends AbstractHandler implements
 	 * @param ac
 	 */
 	@Override
-	public void handleMe(InternalHttpActionContext ac) {
+	public void handleMe(InternalActionContext ac) {
 		db.asyncNoTrxExperimental(() -> {
 			//TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
-			return requestUser.transformToRest(ac);
+			return requestUser.transformToRest(ac, 0);
 		}).subscribe(model -> ac.respond(model, OK), ac::fail);
 	}
 
@@ -30,7 +30,7 @@ public abstract class AbstractAuthRestHandler extends AbstractHandler implements
 	 * @param ac
 	 */
 	@Override
-	public void handleLogout(InternalHttpActionContext ac) {
+	public void handleLogout(InternalActionContext ac) {
 		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");
 		ac.send(JsonUtil.toJson(message), OK);

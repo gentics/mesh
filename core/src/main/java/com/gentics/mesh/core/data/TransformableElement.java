@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 
@@ -21,13 +21,15 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * 
 	 * @param ac
 	 *            Context of the calling action
+	 * @param level
+	 *            Level of transformation
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 */
-	default Observable<T> transformToRest(InternalActionContext ac, String... languageTags) {
+	default Observable<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		return db.asyncNoTrxExperimental(() -> {
-			return transformToRestSync(ac, languageTags);
+			return transformToRestSync(ac, level, languageTags);
 		});
 	}
 
@@ -36,9 +38,11 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 *
 	 * @param ac
 	 *            Context of the calling action
+	 * @param level
+	 *            Level of transformation
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 * @return
 	 */
-	Observable<T> transformToRestSync(InternalActionContext ac, String... languageTags);
+	Observable<T> transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 }

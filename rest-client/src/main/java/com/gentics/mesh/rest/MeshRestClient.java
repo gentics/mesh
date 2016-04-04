@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest;
 
 import com.gentics.mesh.etc.config.AuthenticationOptions.AuthenticationMethod;
-import com.gentics.mesh.rest.impl.MeshRestClientImpl;
+import com.gentics.mesh.rest.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.method.AdminClientMethods;
 import com.gentics.mesh.rest.method.AuthClientMethods;
 import com.gentics.mesh.rest.method.EventbusClientMethods;
@@ -45,7 +45,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	static MeshRestClient create(String host, int port, Vertx vertx, AuthenticationMethod authenticationMethod) {
-		return new MeshRestClientImpl(host, port, vertx, authenticationMethod);
+		return new MeshRestHttpClientImpl(host, port, vertx, authenticationMethod);
 	}
 
 	/**
@@ -58,7 +58,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	static MeshRestClient create(String host, Vertx vertx) {
-		return new MeshRestClientImpl(host, vertx);
+		return new MeshRestHttpClientImpl(host, vertx);
 	}
 
 	/**

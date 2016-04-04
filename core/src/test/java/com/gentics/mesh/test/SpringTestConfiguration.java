@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -18,9 +19,8 @@ import com.gentics.mesh.util.UUIDUtil;
 
 @Configuration
 @ComponentScan(basePackages = { "com.gentics.mesh" })
+@Profile("test")
 public class SpringTestConfiguration {
-
-	public static boolean ignored = false;
 
 	@Bean
 	public DummySearchProvider dummySearchProvider() {
@@ -35,9 +35,6 @@ public class SpringTestConfiguration {
 
 	@PostConstruct
 	public void setup() {
-		if (ignored) {
-			return;
-		}
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 

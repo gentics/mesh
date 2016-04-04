@@ -339,7 +339,6 @@ public class TestDataProvider {
 
 	private void addSchemaContainers() throws MeshSchemaException {
 		addBootstrapSchemas();
-		//		addBlogPostSchema();
 	}
 
 	private void addBootstrapSchemas() {
@@ -492,7 +491,7 @@ public class TestDataProvider {
 		if (germanContent != null) {
 			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
 			germanContainer.createString("name").setString(name + " german");
-			germanContainer.createString("title").setString(name + " english title");
+			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
 			germanContainer.createString("filename").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);

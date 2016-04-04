@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.Errors;
 
 /**
@@ -30,8 +32,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	Node getParentNode();
 
 	/**
-	 * Update the property webroot path info. This will also check for
-	 * uniqueness conflicts of the webroot path and will throw a
+	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found
 	 * @param releaseUuid release Uuid
 	 * @param conflictI18n
@@ -97,4 +98,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return true if it is published, false if not
 	 */
 	boolean isPublished(String releaseUuid);
+
+	/**
+	 * Add a search queue batch entry to the given batch for the given action.
+	 * 
+	 * @param batch
+	 * @param action
+	 */
+	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action);
+
 }

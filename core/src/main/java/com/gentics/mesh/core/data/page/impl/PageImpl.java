@@ -3,12 +3,14 @@ package com.gentics.mesh.core.data.page.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.handler.InternalActionContext;
+
 import rx.Observable;
 
 /**
@@ -69,11 +71,11 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	}
 
 	@Override
-	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac) {
+	public Observable<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
 
 		List<Observable<? extends RestModel>> obs = new ArrayList<>();
 		for (T element : wrappedList) {
-			obs.add(element.transformToRest(ac));
+			obs.add(element.transformToRest(ac, level));
 		}
 		ListResponse<RestModel> listResponse = new ListResponse<>();
 		if (obs.size() == 0) {

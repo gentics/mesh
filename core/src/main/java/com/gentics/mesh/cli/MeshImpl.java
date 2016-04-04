@@ -6,11 +6,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.jacpfx.vertx.spring.SpringVerticleFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.env.AbstractEnvironment;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -37,10 +39,12 @@ public class MeshImpl implements Mesh {
 
 	private MeshOptions options;
 	private Vertx vertx;
+	private CountDownLatch latch = new CountDownLatch(1);
 
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "full");
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 
@@ -88,9 +92,7 @@ public class MeshImpl implements Mesh {
 			ctx.start();
 			initalizer.init(options, verticleLoader);
 			ctx.registerShutdownHook();
-
 			dontExit();
-
 		}
 	}
 
@@ -188,15 +190,8 @@ public class MeshImpl implements Mesh {
 		});
 	}
 
-	private void dontExit() {
-		while (true) {
-			// TODO use unsafe park instead
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+	private void dontExit() throws InterruptedException {
+		latch.await();
 	}
 
 	private void printProductInformation() {
@@ -264,6 +259,7 @@ public class MeshImpl implements Mesh {
 		MeshSpringConfiguration.getInstance().searchProvider().stop();
 		getVertx().close();
 		MeshFactoryImpl.clear();
+		latch.countDown();
 	}
 
 }

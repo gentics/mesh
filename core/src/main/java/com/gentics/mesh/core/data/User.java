@@ -3,11 +3,11 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import rx.Observable;
 

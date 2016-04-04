@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -17,7 +18,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
-import com.gentics.mesh.handler.InternalActionContext;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -34,25 +35,29 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	@Override
-	public void handleDelete(InternalActionContext ac) {
-		deleteElement(ac, () -> getRootVertex(ac), "uuid", "user_deleted");
+	public void handleDelete(InternalActionContext ac, String uuid) {
+		HandlerUtilities.deleteElement(ac, () -> getRootVertex(ac), uuid, "user_deleted");
 	}
 
-	public void handlePermissionRead(InternalActionContext ac) {
+	/**
+	 * Handle a permission read request.
+	 * 
+	 * @param ac
+	 * @param userUuid
+	 * @param pathToElement
+	 */
+	public void handlePermissionRead(InternalActionContext ac, String userUuid, String pathToElement) {
+		if (StringUtils.isEmpty(userUuid)) {
+			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
+		}
+
+		if (StringUtils.isEmpty(pathToElement)) {
+			throw error(BAD_REQUEST, "user_permission_path_missing");
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Handling permission request for element on path {" + pathToElement + "}");
+		}
 		db.asyncNoTrxExperimental(() -> {
-			String userUuid = ac.getParameter("param0");
-			String pathToElement = ac.getParameter("param1");
-			if (StringUtils.isEmpty(userUuid)) {
-				throw error(BAD_REQUEST, "error_uuid_must_be_specified");
-			}
-
-			if (StringUtils.isEmpty(pathToElement)) {
-				throw error(BAD_REQUEST, "user_permission_path_missing");
-			}
-
-			if (log.isDebugEnabled()) {
-				log.debug("Handling permission request for element on path {" + pathToElement + "}");
-			}
 
 			return db.noTrx(() -> {
 				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions

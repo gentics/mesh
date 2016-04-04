@@ -19,6 +19,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -35,7 +36,6 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.Trx;
-import com.gentics.mesh.handler.InternalActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.query.impl.PagingParameter;
 import com.gentics.mesh.test.AbstractBasicObjectTest;
@@ -47,9 +47,6 @@ import rx.Observable;
 
 public class NodeTest extends AbstractBasicObjectTest {
 
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
-
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
@@ -59,28 +56,6 @@ public class NodeTest extends AbstractBasicObjectTest {
 		assertNotNull(reference);
 		assertEquals(node.getUuid(), reference.getUuid());
 	}
-
-	//	/**
-	//	 * Test linking two contents
-	//	 */
-	//	@Test
-	//	public void testPageLinks() {
-	//		Node folder = folder("2015");
-	//		Node node = folder.create(user(), getSchemaContainer(), project());
-	//		Node node2 = folder.create(user(), getSchemaContainer(), project());
-	//
-	//		NodeGraphFieldContainer englishContainer = node2.getOrCreateGraphFieldContainer(english());
-	//		englishContainer.createString("content").setString("english content");
-	//		englishContainer.createString("name").setString("english.html");
-	//
-	//		NodeGraphFieldContainer englishContainer2 = node.getOrCreateGraphFieldContainer(german());
-	//		englishContainer2.createString("content").setString("english2 content");
-	//		englishContainer2.createString("name").setString("english2.html");
-	//		node.createLink(node2);
-	//
-	//		// TODO verify that link relation has been created
-	//		// TODO render content and resolve links
-	//	}
 
 	@Test
 	public void testGetPath() throws Exception {
@@ -213,7 +188,7 @@ public class NodeTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 		Node newsNode = content("concorde");
 
-		NodeResponse response = newsNode.transformToRest(ac).toBlocking().first();
+		NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().first();
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);
 

@@ -151,10 +151,10 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		latchFor(future);
 		assertSuccess(future);
 
-		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("emailadress", "*"));
+		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleWildCardQuery("emailaddress", "*"));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
 	}
 
 	@Test
@@ -167,7 +167,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
 
 	}
 
@@ -189,7 +189,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Future<UserListResponse> searchFuture = getClient().searchUsers(getSimpleTermQuery("groups.name", groupName.toLowerCase()));
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		assertEquals("We expected to see one result.", 1, searchFuture.result().getData().size());
 
 	}
 
@@ -208,7 +208,7 @@ public class UserSearchVerticleTest extends AbstractSearchVerticleTest implement
 		latchFor(future);
 		assertSuccess(future);
 
-		// 3. Assign the previously created user to the group 
+		// 3. Assign the previously created user to the group
 		Future<GroupResponse> futureAdd = getClient().addUserToGroup(group.getUuid(), future.result().getUuid());
 		latchFor(futureAdd);
 		assertSuccess(futureAdd);

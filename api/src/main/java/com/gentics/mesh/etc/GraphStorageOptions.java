@@ -5,13 +5,13 @@ import java.io.File;
 import com.google.gson.JsonObject;
 
 /**
- * Underlying graph database storage configuration
+ * Underlying graph database storage configuration.
  */
 public class GraphStorageOptions {
 
-	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "mesh-graphdb";
-	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "mesh-backup";
-	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "mesh-export";
+	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";
+	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
+	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
 
 	private String directory = DEFAULT_DIRECTORY;
 	private String backupDirectory = DEFAULT_BACKUP_DIRECTORY;

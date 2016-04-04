@@ -7,7 +7,7 @@ import java.util.MissingResourceException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.handler.impl.AbstractActionContext;
+import com.gentics.mesh.context.AbstractActionContext;
 import com.gentics.mesh.test.AbstractDBTest;
 
 public class I18NTest extends AbstractDBTest {

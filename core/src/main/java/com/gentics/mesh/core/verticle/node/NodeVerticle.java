@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractProjectRestVerticle;
-import com.gentics.mesh.handler.InternalActionContext;
 
 import io.vertx.ext.web.Route;
 
@@ -56,54 +56,93 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	}
 
 	private void addNavigationHandlers() {
-		route("/:uuid/navigation").method(GET).produces(APPLICATION_JSON)
-				.handler(rc -> crudHandler.handleNavigation(InternalActionContext.create(rc)));
+		route("/:uuid/navigation").method(GET).produces(APPLICATION_JSON).handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleNavigation(ac, uuid);
+		});
 	}
 
 	private void addLanguageHandlers() {
 		route("/:uuid/languages/:languageTag").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			crudHandler.handleDeleteLanguage(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			String languageTag = ac.getParameter("languageTag");
+			crudHandler.handleDeleteLanguage(ac, uuid, languageTag);
 		});
-
 	}
 
 	private void addFieldHandlers() {
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			fieldAPIHandler.handleCreateField(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = InternalActionContext.create(rc);
+			fieldAPIHandler.handleCreateField(ac, uuid, languageTag, fieldName);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(GET).handler(rc -> {
-			fieldAPIHandler.handleReadField(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			fieldAPIHandler.handleReadField(rc, uuid, languageTag, fieldName);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(PUT).produces(APPLICATION_JSON).handler(rc -> {
-			fieldAPIHandler.handleUpdateField(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = InternalActionContext.create(rc);
+			fieldAPIHandler.handleUpdateField(ac, uuid, languageTag, fieldName);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			fieldAPIHandler.handleRemoveField(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			String languageTag = ac.getParameter("languageTag");
+			String fieldName = ac.getParameter("fieldName");
+			fieldAPIHandler.handleRemoveField(ac, uuid, languageTag, fieldName);
 		});
 
 		// Image Transformation
 		route("/:uuid/languages/:languageTag/fields/:fieldName/transform").method(POST).produces(APPLICATION_JSON).handler(rc -> {
-			fieldAPIHandler.handleTransformImage(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			fieldAPIHandler.handleTransformImage(rc, uuid, languageTag, fieldName);
 		});
 
 		// List methods
 		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(DELETE).produces(APPLICATION_JSON).handler(rc -> {
-			fieldAPIHandler.handleRemoveFieldItem(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			fieldAPIHandler.handleRemoveFieldItem(ac, uuid);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(GET).handler(rc -> {
-			fieldAPIHandler.handleReadFieldItem(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			fieldAPIHandler.handleReadFieldItem(ac, uuid);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex").method(PUT).handler(rc -> {
-			fieldAPIHandler.handleUpdateFieldItem(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			fieldAPIHandler.handleUpdateFieldItem(ac, uuid);
 		});
 
 		route("/:uuid/languages/:languageTag/fields/:fieldName/:itemIndex/move/:newItemIndex").method(POST).handler(rc -> {
-			fieldAPIHandler.handleMoveFieldItem(InternalActionContext.create(rc));
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = rc.request().getParam("uuid");
+			String languageTag = rc.request().getParam("languageTag");
+			String fieldName = rc.request().getParam("fieldName");
+			fieldAPIHandler.handleMoveFieldItem(ac, uuid);
 		});
 
 		// TODO copy?
@@ -115,26 +154,50 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 	private void addMoveHandler() {
 		Route route = route("/:uuid/moveTo/:toUuid").method(PUT).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleMove(InternalActionContext.create(rc)));
+		route.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			String toUuid = ac.getParameter("toUuid");
+			crudHandler.handleMove(ac, uuid, toUuid);
+		});
 
 	}
 
 	private void addChildrenHandler() {
 		Route getRoute = route("/:uuid/children").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> crudHandler.handleReadChildren(InternalActionContext.create(rc)));
+
+		getRoute.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleReadChildren(ac, uuid);
+		});
 	}
 
 	// TODO filtering, sorting
 	private void addTagsHandler() {
 		Route getRoute = route("/:uuid/tags").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> crudHandler.readTags(InternalActionContext.create(rc)));
+		getRoute.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.readTags(ac, uuid);
+		});
 
 		Route postRoute = route("/:uuid/tags/:tagUuid").method(PUT).produces(APPLICATION_JSON);
-		postRoute.handler(rc -> crudHandler.handleAddTag(InternalActionContext.create(rc)));
+		postRoute.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			String tagUuid = ac.getParameter("tagUuid");
+			crudHandler.handleAddTag(ac, uuid, tagUuid);
+		});
 
 		// TODO fix error handling. This does not fail when tagUuid could not be found
 		Route deleteRoute = route("/:uuid/tags/:tagUuid").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> crudHandler.handleRemoveTag(InternalActionContext.create(rc)));
+		deleteRoute.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			String tagUuid = ac.getParameter("tagUuid");
+			crudHandler.handleRemoveTag(ac, uuid, tagUuid);
+		});
 
 	}
 
@@ -142,7 +205,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// handler
 	private void addCreateHandler() {
 		Route route = route("/").method(POST).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleCreate(InternalActionContext.create(rc).setVersion("draft")));
+		route.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			ac.setVersion("draft");
+			crudHandler.handleCreate(ac);
+		});
 	}
 
 	// TODO filter by project name
@@ -156,7 +223,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
-				crudHandler.handleRead(InternalActionContext.create(rc));
+				crudHandler.handleRead(InternalActionContext.create(rc), uuid);
 			}
 		});
 
@@ -168,7 +235,11 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// TODO filter project name
 	private void addDeleteHandler() {
 		Route route = route("/:uuid").method(DELETE).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleDelete(InternalActionContext.create(rc)));
+		route.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			crudHandler.handleDelete(ac, uuid);
+		});
 	}
 
 	// TODO filter by project name
@@ -179,18 +250,31 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 	// within the schema.
 	private void addUpdateHandler() {
 		Route route = route("/:uuid").method(PUT).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
-		route.handler(rc -> crudHandler.handleUpdate(InternalActionContext.create(rc).setVersion("draft")));
+
+		route.handler(rc -> {
+			InternalActionContext ac = InternalActionContext.create(rc);
+			String uuid = ac.getParameter("uuid");
+			ac.setVersion("draft");
+			crudHandler.handleUpdate(ac, uuid);
+		});
 	}
 
 	private void addPublishHandlers() {
 		Route getRoute = route("/:uuid/published").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> crudHandler.handleGetPublishStatus(InternalActionContext.create(rc)));
+		getRoute.handler(rc -> {
+			String uuid = rc.request().getParam("uuid");
+			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), uuid);
+		});
 
 		Route putRoute = route("/:uuid/published").method(PUT).produces(APPLICATION_JSON);
-		putRoute.handler(rc -> crudHandler.handlePublish(InternalActionContext.create(rc)));
+		putRoute.handler(rc -> {
+			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"));
+		});
 
 		Route deleteRoute = route("/:uuid/published").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> crudHandler.handleTakeOffline(InternalActionContext.create(rc)));
+		deleteRoute.handler(rc -> {
+			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("uuid"));
+		});
 
 		Route getLanguageRoute = route("/:uuid/languages/:languageTag/published").method(GET).produces(APPLICATION_JSON);
 		getLanguageRoute.handler(rc -> {
@@ -209,6 +293,7 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 			InternalActionContext ac = InternalActionContext.create(rc);
 			crudHandler.handleTakeOffline(ac, ac.getParameter("languageTag"));
 		});
+
 
 	}
 }
