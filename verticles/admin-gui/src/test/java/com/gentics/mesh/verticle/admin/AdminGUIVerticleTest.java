@@ -4,6 +4,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -11,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Ignore;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,13 +34,17 @@ public class AdminGUIVerticleTest extends AbstractRestVerticleTest {
 		return list;
 	}
 
+	@BeforeClass
+	public static void cleanupConfig() {
+		new File(AdminGUIVerticle.CONF_FILE).delete();
+	}
+
 	@Test
-	@Ignore("Currently is no need to render the config file anymore")
 	public void testAdminConfigRendering() throws InterruptedException, ExecutionException, TimeoutException {
 
 		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(GET, "/mesh-ui/meshConfig.js", rh -> {
+		HttpClientRequest request = client.request(GET, "/mesh-ui/mesh-ui-config.js", rh -> {
 			rh.bodyHandler(bh -> {
 				future.complete(bh.toString());
 			});
