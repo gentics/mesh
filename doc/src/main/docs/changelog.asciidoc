@@ -82,7 +82,7 @@
 * Enhancement: The mesh ui was updated.
 ----
 
-=== 0.6.5 - 31.03.2016 
+=== 0.6.5 -  
 
 * Fix: The displayField value was missing within the node search document. The value was added.
 * Fix: The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
@@ -90,6 +90,7 @@
 * Enhancement: A Cache-Control: no-cache header has been set to mesh responses.
 * Enhancement: The mesh-ui was updated.
 * Fix: Various search index related bugs have been fixed.
+* Enhancement: The mesh-ui configuration file was renamed to mesh-ui.config.js 
 
 === Upcoming changes
 

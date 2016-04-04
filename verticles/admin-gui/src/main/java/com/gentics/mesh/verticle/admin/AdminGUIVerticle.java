@@ -1,9 +1,17 @@
 package com.gentics.mesh.verticle.admin;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.vertx.core.http.HttpMethod.GET;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.jacpfx.vertx.spring.SpringVerticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +19,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractWebVerticle;
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+import com.github.jknack.handlebars.context.MapValueResolver;
 
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -22,6 +34,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminGUIVerticle.class);
 
+	public static final String CONF_FILE = "mesh-ui-config.js";
 	//TODO handle NPEs
 	private static String meshAdminUiVersion = readBuildProperties().getProperty("mesh.admin-ui.version");
 
@@ -61,18 +74,45 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 		route("/*").method(GET).handler(StaticHandler.create("META-INF/resources/webjars/mesh-ui/" + meshAdminUiVersion).setIndexPage("index.html"));
 	}
 
-	/*
-	 * private void addMeshConfigHandler() { TemplateHandler javaScriptTemplateHandler = TemplateHandler.create(HandlebarsTemplateEngine.create(),
-	 * "meshui-templates/config", "application/javascript"); final String configFilePath = "/meshConfig.js"; int httpPort = config().getInteger("port");
-	 * route(configFilePath).method(GET).handler(rc -> { rc.put("mesh_http_port", httpPort); rc.next(); });
-	 * 
-	 * route(configFilePath).method(GET).handler(javaScriptTemplateHandler); }
-	 */
+	private void addMeshConfigHandler() {
+		route("/" + CONF_FILE).method(GET).handler(rc -> {
+			rc.response().putHeader("Content-Type", "application/javascript");
+			rc.response().sendFile(CONF_FILE);
+		});
+	}
+
 	@Override
 	public void registerEndPoints() throws Exception {
+		addMeshConfigHandler();
 		addRedirectionHandler();
-		//addMeshConfigHandler();
+		saveMeshUiConfig();
 		addMeshUiStaticHandler();
+	}
+
+	private void saveMeshUiConfig() {
+		File outputFile = new File(CONF_FILE);
+		if (!outputFile.exists()) {
+			InputStream ins = getClass().getResourceAsStream("/meshui-templates/mesh-ui-config.hbs");
+			if (ins == null) {
+				throw error(INTERNAL_SERVER_ERROR, "Could not find mesh ui config template");
+			}
+			try {
+				Handlebars handlebars = new Handlebars();
+				Template template = handlebars.compileInline(IOUtils.toString(ins));
+
+				Map<String, Object> model = new HashMap<>();
+				int httpPort = config().getInteger("port");
+				model.put("mesh_http_port", httpPort);
+
+				// Prepare render context
+				Context context = Context.newBuilder(model).resolver(MapValueResolver.INSTANCE).build();
+				FileWriter writer = new FileWriter(outputFile);
+				template.apply(context, writer);
+				writer.close();
+			} catch (Exception e) {
+				log.error("Could not save configuration file {" + CONF_FILE + "}");
+			}
+		}
 	}
 
 	@Override
