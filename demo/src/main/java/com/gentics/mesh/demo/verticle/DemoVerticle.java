@@ -56,8 +56,7 @@ public class DemoVerticle extends AbstractWebVerticle {
 				try {
 					demoDataProvider.setup();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error("Error while generating demo data.", e);
 				}
 			} , rh -> {
 				System.out.println("Done");
@@ -83,7 +82,7 @@ public class DemoVerticle extends AbstractWebVerticle {
 		log.warn("- Demo setup complete          -");
 		log.warn("--------------------------------");
 		log.warn("- http://localhost:8080/demo   -");
-		log.warn("- Login: editor/editor         -");
+		log.warn("- Login: webclient/webclient   -");
 		log.warn("--------------------------------");
 	}
 
