@@ -34,6 +34,7 @@ import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.RestAssert;
 
 import io.vertx.core.MultiMap;
@@ -249,7 +250,9 @@ public abstract class AbstractDBTest {
 		Session session = mock(Session.class);
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn(query);
-
+		when(request.query()).thenReturn(query);
+		Map<String, String> paramMap = HttpQueryUtils.splitQuery(query);
+		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 		when(rc.data()).thenReturn(map);
 		MultiMap headerMap = mock(MultiMap.class);
