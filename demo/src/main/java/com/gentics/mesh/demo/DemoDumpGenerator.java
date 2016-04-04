@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.search.SearchProvider;
 
 public class DemoDumpGenerator {
 
@@ -31,7 +32,8 @@ public class DemoDumpGenerator {
 			// Initialize mesh
 			BootstrapInitializer boot = ctx.getBean(BootstrapInitializer.class);
 			DemoDataProvider provider = ctx.getBean("demoDataProvider", DemoDataProvider.class);
-			invokeDump(boot, provider);
+			SearchProvider searchProvider = ctx.getBean("searchProvider", SearchProvider.class);
+			invokeDump(boot, provider, searchProvider);
 			System.exit(0);
 		}
 
@@ -61,7 +63,7 @@ public class DemoDumpGenerator {
 	 * @throws MeshSchemaException
 	 * @throws InterruptedException
 	 */
-	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
+	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider, SearchProvider searchProvider)
 			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		boot.initSearchIndex();
 		boot.initMandatoryData();
@@ -70,6 +72,7 @@ public class DemoDumpGenerator {
 
 		// Setup demo data
 		provider.setup();
+		searchProvider.getNode().close();
 	}
 
 }
