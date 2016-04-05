@@ -12,6 +12,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -27,8 +28,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -68,7 +71,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertThat(searchProvider).recordedStoreEvents(1);
 		Schema restSchema = future.result();
 		assertThat(schema).matches(restSchema);
-		assertThat(restSchema.getPermissions()).isNotEmpty().contains("create","read", "update","delete");
+		assertThat(restSchema.getPermissions()).isNotEmpty().contains("create", "read", "update", "delete");
 
 		SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(restSchema.getUuid()).toBlocking().first();
 		assertNotNull(schemaContainer);
@@ -289,16 +292,34 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
+		assertThat(schema.getNodeGraphFieldContainers()).isNotEmpty();
 
 		String name = schema.getUuid() + "/" + schema.getName();
 		String uuid = schema.getUuid();
 		Future<GenericMessageResponse> future = getClient().deleteSchema(schema.getUuid());
 		latchFor(future);
+
+		expectException(future, BAD_REQUEST, "schema_delete_still_in_use", uuid);
+
+		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
+		assertNotNull("The schema should not have been deleted.", reloaded);
+
+		// Validate and delete all remaining nodes that use the schema
+		assertThat(reloaded.getNodeGraphFieldContainers()).isNotEmpty();
+		SearchQueueBatch batch = createBatch();
+		for (Node node : reloaded.getNodeGraphFieldContainers()) {
+			node.delete(batch);
+		}
+
+		future = getClient().deleteSchema(schema.getUuid());
+		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "schema_deleted", name);
 
-		SchemaContainer reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
+		boot.schemaContainerRoot().reload();
+		reloaded = boot.schemaContainerRoot().findByUuid(uuid).toBlocking().single();
 		assertNull("The schema should have been deleted.", reloaded);
+
 	}
 
 	@Test
