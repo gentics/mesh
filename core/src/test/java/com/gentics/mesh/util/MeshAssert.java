@@ -1,5 +1,8 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -8,13 +11,17 @@ import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.TestUtils;
+import com.google.common.collect.Multiset.Entry;
 
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
@@ -82,11 +89,49 @@ public final class MeshAssert {
 		}
 	}
 
-	public static void assertDeleted(Map<String, ElementEntry> uuidToBeDeleted) {
-		for (String key : uuidToBeDeleted.keySet()) {
-			ElementEntry entry = uuidToBeDeleted.get(key);
-			assertFalse("The element {" + key + "} vertex for uuid: {" + entry.getUuid() + "}",
-					Database.getThreadLocalGraph().v().has("uuid", entry.getUuid()).hasNext());
+	/**
+	 * Validate the list of affected elements by checking whether they were removed or not and also check whether the provided search queue batch contains the
+	 * expected entries.
+	 * 
+	 * @param affectedElements
+	 * @param batch
+	 */
+	public static void assertAffectedElements(Map<String, ElementEntry> affectedElements, SearchQueueBatch batch) {
+		long nExpectedBatchEntries = 0;
+		for (String key : affectedElements.keySet()) {
+			ElementEntry entry = affectedElements.get(key);
+			// 1. Check for deletion from graph
+			if (DELETE_ACTION.equals(entry.getAction())) {
+				assertFalse("The element {" + key + "} vertex for uuid: {" + entry.getUuid() + "}",
+						Database.getThreadLocalGraph().v().has("uuid", entry.getUuid()).hasNext());
+			}
+			// 2. Check batch entries
+			if (entry.getAction() != null) {
+				if (!entry.getLanguages().isEmpty()) {
+					// Check each language individually since the document id is constructed (uuid+lang)
+					for (String language : entry.getLanguages()) {
+						Optional<? extends SearchQueueEntry> batchEntry = batch.findEntryByUuid(entry.getUuid() + "-" + language);
+						assertThat(batchEntry).as("Entry for {" + key + "}/{" + entry.getUuid() + "} - language {" + language + "}").isPresent();
+						SearchQueueEntry batchEntryValue = batchEntry.get();
+						assertEquals("The created batch entry for {" + key + "} language {" + language + "} did not use the expected action",
+								entry.getAction(), batchEntryValue.getElementAction());
+						nExpectedBatchEntries++;
+					}
+				} else {
+					Optional<? extends SearchQueueEntry> batchEntry = batch.findEntryByUuid(entry.getUuid());
+					assertThat(batchEntry).as("Entry for {" + key + "}/{" + entry.getUuid() + "}").isPresent();
+					SearchQueueEntry batchEntryValue = batchEntry.get();
+					assertEquals("The created batch entry for {" + key + "} did not use the expected action", entry.getAction(),
+							batchEntryValue.getElementAction());
+					nExpectedBatchEntries++;
+				}
+			}
+		}
+		if (batch.getEntries().size() != nExpectedBatchEntries) {
+			for (SearchQueueEntry entry : batch.getEntries()) {
+				System.out.println("Entry: " + entry.toString());
+			}
+			assertEquals("The search queue batch did not contain the amount of expected elements.", nExpectedBatchEntries, batch.getEntries().size());
 		}
 	}
 

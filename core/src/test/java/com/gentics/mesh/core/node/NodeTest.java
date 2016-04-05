@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.util.MeshAssert.assertDeleted;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.Trx;
@@ -274,22 +276,23 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		Map<String, ElementEntry> uuidToBeDeleted = new HashMap<>();
+		Map<String, ElementEntry> affectedElements = new HashMap<>();
 		String uuid;
 		Node node = folder("news");
 
 		// Add subfolders
-		uuidToBeDeleted.put("folder: news", new ElementEntry(node.getUuid(), "en", "de"));
-		uuidToBeDeleted.put("folder: news.2015", new ElementEntry(folder("2015").getUuid(), "en"));
-		uuidToBeDeleted.put("folder: news 2014", new ElementEntry(folder("2014").getUuid(), "en"));
-		uuidToBeDeleted.put("folder: news.2014.march", new ElementEntry(folder("march").getUuid(), "en", "de"));
+		affectedElements.put("folder: news", new ElementEntry(DELETE_ACTION, node.getUuid(), "en", "de"));
+		affectedElements.put("folder: news.2015", new ElementEntry(DELETE_ACTION, folder("2015").getUuid(), "en"));
+		affectedElements.put("folder: news 2014", new ElementEntry(DELETE_ACTION, folder("2014").getUuid(), "en"));
+		affectedElements.put("folder: news.2014.march", new ElementEntry(DELETE_ACTION, folder("march").getUuid(), "en", "de"));
 
 		// Add Contents
-		uuidToBeDeleted.put("content: news.2014.news_2014", new ElementEntry(content("news_2014").getUuid(), "en", "de"));
-		uuidToBeDeleted.put("content: news.overview", new ElementEntry(content("news overview").getUuid(), "en", "de"));
-		uuidToBeDeleted.put("content: news.2014.march.news_in_march", new ElementEntry(content("new_in_march_2014").getUuid(), "en", "de"));
-		uuidToBeDeleted.put("content: news.2014.special_news", new ElementEntry(content("special news_2014").getUuid(), "en", "de"));
-		uuidToBeDeleted.put("content: news.2015.news_2015", new ElementEntry(content("news_2015").getUuid(), "en", "de"));
+		affectedElements.put("content: news.2014.news_2014", new ElementEntry(DELETE_ACTION, content("news_2014").getUuid(), "en", "de"));
+		affectedElements.put("content: news.overview", new ElementEntry(DELETE_ACTION, content("news overview").getUuid(), "en", "de"));
+		affectedElements.put("content: news.2014.march.news_in_march",
+				new ElementEntry(DELETE_ACTION, content("new_in_march_2014").getUuid(), "en", "de"));
+		affectedElements.put("content: news.2014.special_news", new ElementEntry(DELETE_ACTION, content("special news_2014").getUuid(), "en", "de"));
+		affectedElements.put("content: news.2015.news_2015", new ElementEntry(DELETE_ACTION, content("news_2015").getUuid(), "en", "de"));
 
 		uuid = node.getUuid();
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
@@ -300,16 +303,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		}
 
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
-		assertDeleted(uuidToBeDeleted);
 		batch.reload();
-
-		for (String key : uuidToBeDeleted.keySet()) {
-			ElementEntry entry = uuidToBeDeleted.get(key);
-			for (String language : entry.getLanguages()) {
-				assertThat(batch.findEntryByUuid(entry.getUuid() + "-" + language)).as("Element for key {" + key + "}").isPresent();
-			}
-		}
-		assertEquals(16, batch.getEntries().size());
+		assertAffectedElements(affectedElements, batch);
 	}
 
 	@Test

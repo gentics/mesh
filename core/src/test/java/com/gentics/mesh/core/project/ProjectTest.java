@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.util.MeshAssert.assertDeleted;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,6 +17,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -57,20 +61,41 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	public void testDelete() throws Exception {
 		String uuid = project().getUuid();
 
-		Map<String, ElementEntry> uuidToBeDeleted = new HashMap<>();
-		uuidToBeDeleted.put("project", new ElementEntry(uuid));
-		uuidToBeDeleted.put("project.tagFamilyRoot", new ElementEntry(project().getTagFamilyRoot().getUuid()));
-		uuidToBeDeleted.put("project.schemaContainerRoot", new ElementEntry(project().getSchemaContainerRoot().getUuid()));
-		uuidToBeDeleted.put("project.nodeRoot", new ElementEntry(project().getNodeRoot().getUuid()));
+		Map<String, ElementEntry> affectedElements = new HashMap<>();
+		// The project
+		affectedElements.put("project", new ElementEntry(DELETE_ACTION, uuid));
+
+		// Meta vertices
+		affectedElements.put("project.tagFamilyRoot", new ElementEntry(null, project().getTagFamilyRoot().getUuid()));
+		affectedElements.put("project.schemaContainerRoot", new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
+		affectedElements.put("project.nodeRoot", new ElementEntry(null, project().getNodeRoot().getUuid()));
+		affectedElements.put("project.baseNode", new ElementEntry(null, project().getBaseNode().getUuid()));
+
+		// Nodes
+		int i = 0;
+		for (Node node : project().getNodeRoot().findAll()) {
+			if (!node.getUuid().equals(project().getBaseNode().getUuid())) {
+				affectedElements.put("project node " + i, new ElementEntry(DELETE_ACTION, node.getUuid(), node.getAvailableLanguageNames()));
+				i++;
+			}
+		}
+
+		// Project tags
+		for (Tag tag : project().getTagRoot().findAll()) {
+			affectedElements.put("project tag " + tag.getName(), new ElementEntry(DELETE_ACTION, tag.getUuid()));
+		}
+
+		// Project tagFamilies
+		for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
+			affectedElements.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
+		}
 
 		SearchQueueBatch batch = createBatch();
 		Project project = project();
 		project.delete(batch);
-
+		batch.reload();
 		assertElement(meshRoot().getProjectRoot(), uuid, false);
-		assertDeleted(uuidToBeDeleted);
-
-		// TODO assert on tag families of the project
+		assertAffectedElements(affectedElements, batch);
 	}
 
 	@Test

@@ -22,6 +22,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -152,8 +153,12 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 			log.debug("Deleting tag {" + getName() + "}");
 		}
 		batch.addEntry(this, DELETE_ACTION);
+
+		// Nodes which used this tag must be updated in the search index
 		for (Node node : getNodes()) {
-			batch.addEntry(node, STORE_ACTION);
+			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
+				container.addIndexBatchEntry(batch, STORE_ACTION);
+			}
 		}
 		getVertex().remove();
 	}

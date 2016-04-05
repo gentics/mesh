@@ -216,7 +216,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
 		for (Tag tag : getTagRoot().findAll()) {
-			tag.remove();
+			tag.delete(batch);
 		}
 		getTagRoot().delete(batch);
 		getElement().remove();
