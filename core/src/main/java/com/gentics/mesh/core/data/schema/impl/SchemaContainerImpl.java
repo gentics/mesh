@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -43,6 +45,13 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	@Override
 	public String getType() {
 		return SchemaContainer.TYPE;
+	}
+
+	@Override
+	public void delete(SearchQueueBatch batch) {
+		batch.addEntry(this, DELETE_ACTION);
+		getElement().remove();
+		//TODO handel related elements
 	}
 
 }
