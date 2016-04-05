@@ -244,7 +244,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param batch
-	 * @return
 	 */
 	void deleteLanguageContainer(InternalActionContext ac, Language language, SearchQueueBatch batch);
 
