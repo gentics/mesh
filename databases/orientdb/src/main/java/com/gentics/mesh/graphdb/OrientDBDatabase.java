@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.gentics.mesh.etc.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
@@ -118,7 +119,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orient-plugins");
 		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
-		configString = configString.replaceAll("%MESH_DB_PATH%", "plocal:" + new File(options.getDirectory()).getAbsolutePath());
+		String safePath = StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getAbsolutePath()));
+		configString = configString.replaceAll("%MESH_DB_PATH%", "plocal:" + safePath);
 		if (log.isDebugEnabled()) {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}
