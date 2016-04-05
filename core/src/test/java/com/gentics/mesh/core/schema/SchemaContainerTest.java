@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -114,8 +115,11 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		String uuid = getSchemaContainer().getUuid();
 		SearchQueueBatch batch = createBatch();
+		String uuid = getSchemaContainer().getUuid();
+		for(Node node: getSchemaContainer().getNodes()) {
+			node.delete(batch);
+		}
 		getSchemaContainer().delete(batch);
 		assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
 	}

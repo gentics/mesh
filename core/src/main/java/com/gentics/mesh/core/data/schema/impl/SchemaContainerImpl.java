@@ -53,13 +53,13 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	}
 
 	@Override
-	public List<? extends NodeImpl> getNodeGraphFieldContainers() {
+	public List<? extends NodeImpl> getNodes() {
 		return in(HAS_SCHEMA_CONTAINER).has(NodeImpl.class).toListExplicit(NodeImpl.class);
 	}
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
-		List<? extends NodeImpl> list = getNodeGraphFieldContainers();
+		List<? extends NodeImpl> list = getNodes();
 		if (list.isEmpty()) {
 			batch.addEntry(this, DELETE_ACTION);
 			getElement().remove();

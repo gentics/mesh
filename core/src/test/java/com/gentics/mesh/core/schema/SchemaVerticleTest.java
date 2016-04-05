@@ -292,7 +292,7 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
-		assertThat(schema.getNodeGraphFieldContainers()).isNotEmpty();
+		assertThat(schema.getNodes()).isNotEmpty();
 
 		String name = schema.getUuid() + "/" + schema.getName();
 		String uuid = schema.getUuid();
@@ -305,9 +305,9 @@ public class SchemaVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertNotNull("The schema should not have been deleted.", reloaded);
 
 		// Validate and delete all remaining nodes that use the schema
-		assertThat(reloaded.getNodeGraphFieldContainers()).isNotEmpty();
+		assertThat(reloaded.getNodes()).isNotEmpty();
 		SearchQueueBatch batch = createBatch();
-		for (Node node : reloaded.getNodeGraphFieldContainers()) {
+		for (Node node : reloaded.getNodes()) {
 			node.delete(batch);
 		}
 

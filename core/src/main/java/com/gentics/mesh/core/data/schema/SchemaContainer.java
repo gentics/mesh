@@ -18,6 +18,6 @@ public interface SchemaContainer extends GraphFieldSchemaContainer<Schema, Schem
 	 * 
 	 * @return
 	 */
-	List<? extends NodeImpl> getNodeGraphFieldContainers();
+	List<? extends NodeImpl> getNodes();
 
 }
