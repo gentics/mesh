@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.util.MeshAssert.assertAffectedElements;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -9,7 +11,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
@@ -24,6 +28,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -47,7 +53,6 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		Tag tag = tag("red");
-		InternalActionContext ac = getMockedInternalActionContext("");
 		TagReference reference = tag.transformToReference();
 		assertNotNull(reference);
 		assertEquals(tag.getUuid(), reference.getUuid());
@@ -217,7 +222,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertEquals(tags().size(), root.findAll().size());
 		root.addTag(tag);
 		assertEquals(tags().size(), root.findAll().size());
-		root.delete();
+		root.delete(createBatch());
 	}
 
 	@Test
@@ -292,7 +297,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = tagFamily.create("someTag", project(), user());
 		String uuid = tag.getUuid();
 		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
-		tag.delete();
+		tag.delete(createBatch());
 		assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
 	}
 
@@ -325,9 +330,14 @@ public class TagTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() throws Exception {
 		Tag tag = tag("red");
+		Map<String, ElementEntry> expectedEntries = new HashMap<>();
 		String uuid = tag.getUuid();
-		tag.remove();
-		assertElement(meshRoot().getTagRoot(), uuid, false);
+		expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
+		expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), "en", "de"));
+		SearchQueueBatch batch = createBatch();
+		tag.delete(batch);
+		batch.reload();
+		assertAffectedElements(expectedEntries, batch);
 	}
 
 	@Test

@@ -22,19 +22,23 @@ public interface IndexableElement extends MeshElement {
 	 * Create a new search queue batch for the given action and add the batch to the search queue. This method can enhance the created batch by calling
 	 * {@link #addRelatedEntries(SearchQueueBatch, SearchQueueEntryAction)} and thus adding entries for affected related object to the batch.
 	 * 
+	 * @deprecated This method should be avoided. It is better to just pass the batch along with the method call which in fact causes actions which require an index update. (see delete method for example)
 	 * @param action
 	 * @return
 	 */
+	@Deprecated
 	SearchQueueBatch createIndexBatch(SearchQueueEntryAction action);
 
 	/**
 	 * Add related {@link SearchQueueEntry} to the batch which also need to be handled within the index for the given action. Normally this method should only
 	 * be invoked when calling {@link #createIndexBatch(SearchQueueEntryAction)}.
 	 * 
+	 * @deprecated This method should be avoided. It is better to just pass the batch along with the method call which in fact causes actions which require an index update. (see delete method for example)
 	 * @param batch
 	 *            Batch to add new entries to
 	 * @param action
 	 */
+	@Deprecated
 	void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action);
 
 }

@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -147,7 +148,8 @@ public class MicroschemaContainerTest extends AbstractBasicObjectTest {
 		schema.setName("test");
 		MicroschemaContainer container = MeshRoot.getInstance().getMicroschemaContainerRoot().create(schema, user());
 		assertNotNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
-		container.delete();
+		SearchQueueBatch batch = createBatch();
+		container.delete(batch);
 		assertNull(MeshRoot.getInstance().getMicroschemaContainerRoot().findByName("test").toBlocking().single());
 	}
 

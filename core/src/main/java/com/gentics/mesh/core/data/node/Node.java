@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReferenceImpl;
@@ -79,7 +80,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * Create a new graph field container for the given language and assign the schema version to the container.
 	 * 
 	 * @param language
-	 * @param schemaVersion 
+	 * @param schemaVersion
 	 * @return
 	 */
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, SchemaContainerVersion schemaVersion);
@@ -90,6 +91,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
+
+	/**
+	 * Return the amount of field containers of the node.
+	 * 
+	 * @return
+	 */
+	long getGraphFieldContainerCount();
 
 	/**
 	 * Return a page of tags that are assigned to the node.
@@ -234,9 +242,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * 
 	 * @param ac
 	 * @param language
+	 *            Language which will be used to find the field container which should be deleted
+	 * @param batch
 	 * @return
 	 */
-	Observable<? extends Node> deleteLanguageContainer(InternalActionContext ac, Language language);
+	void deleteLanguageContainer(InternalActionContext ac, Language language, SearchQueueBatch batch);
 
 	/**
 	 * Return the path segment of this node.
@@ -293,8 +303,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node> {
 	 * Delete the node and ignore any checks.
 	 * 
 	 * @param ignoreChecks
+	 * @param batch
 	 */
-	void delete(boolean ignoreChecks);
+	void delete(boolean ignoreChecks, SearchQueueBatch batch);
 
 	/**
 	 * Set the breadcrumb information to the given rest node.

@@ -442,7 +442,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		// TODO don't allow this for the admin user
 		// disable();
 		// TODO we should not really delete users. Instead we should remove those from all groups and deactivate the access.
@@ -450,7 +450,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// log.debug("Deleting user. The user will not be deleted. Instead the user will be just disabled and removed from all groups.");
 		// }
 		// outE(HAS_USER).removeAll();
-		createIndexBatch(DELETE_ACTION);
+		batch.addEntry(this, DELETE_ACTION);
 		getElement().remove();
 	}
 

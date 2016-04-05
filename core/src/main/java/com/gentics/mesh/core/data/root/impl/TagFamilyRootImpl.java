@@ -95,12 +95,12 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");
 		}
 		for (TagFamily tagFamily : findAll()) {
-			tagFamily.delete();
+			tagFamily.delete(batch);
 		}
 		getElement().remove();
 	}

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -13,6 +14,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -55,13 +57,13 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		// TODO add check to prevent deletion of MeshRoot.tagRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag root {" + getUuid() + "}");
 		}
 		for (Tag tag : findAll()) {
-			tag.delete();
+			tag.delete(batch);
 		}
 		getElement().remove();
 	}

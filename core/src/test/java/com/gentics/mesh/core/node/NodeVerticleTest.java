@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
@@ -772,7 +773,8 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
 		Node node = folder("products");
-		node.getGraphFieldContainer(english()).delete();
+		SearchQueueBatch batch = createBatch();
+		node.getGraphFieldContainer(english()).delete(batch);
 		String uuid = node.getUuid();
 
 		// Request the node with various language parameter values. Fallback to "de"

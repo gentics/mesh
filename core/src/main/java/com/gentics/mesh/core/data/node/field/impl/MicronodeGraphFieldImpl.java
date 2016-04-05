@@ -52,7 +52,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		Micronode micronode = getMicronode();
 		remove();
 		if (micronode != null) {
-			micronode.delete();
+			micronode.delete(null);
 		}
 	}
 }

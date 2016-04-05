@@ -210,15 +210,15 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void delete() {
-		createIndexBatch(DELETE_ACTION);
+	public void delete(SearchQueueBatch batch) {
+		batch.addEntry(this, DELETE_ACTION);
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
 		for (Tag tag : getTagRoot().findAll()) {
-			tag.remove();
+			tag.delete(batch);
 		}
-		getTagRoot().delete();
+		getTagRoot().delete(batch);
 		getElement().remove();
 
 	}

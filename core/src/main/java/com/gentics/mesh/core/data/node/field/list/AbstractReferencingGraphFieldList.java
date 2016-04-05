@@ -31,6 +31,6 @@ public abstract class AbstractReferencingGraphFieldList<T extends ListableGraphF
 
 	@Override
 	public void removeField() {
-		delete();
+		delete(null);
 	}
 }

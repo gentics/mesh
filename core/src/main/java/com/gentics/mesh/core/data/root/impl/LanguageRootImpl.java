@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
@@ -92,7 +93,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language>implements Lan
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		throw new NotImplementedException("The language root should never be deleted.");
 	}
 
