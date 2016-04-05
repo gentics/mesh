@@ -2,6 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.util.MeshAssert.assertDeleted;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -16,7 +17,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -30,7 +30,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.Trx;
@@ -205,7 +206,8 @@ public class NodeTest extends AbstractBasicObjectTest {
 		Node folder = folder("2015");
 		Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
 		assertNotNull(subNode.getUuid());
-		subNode.delete();
+		SearchQueueBatch batch = createBatch();
+		subNode.delete(batch);
 	}
 
 	@Test
@@ -272,28 +274,42 @@ public class NodeTest extends AbstractBasicObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		Map<String, String> uuidToBeDeleted = new HashMap<>();
+		Map<String, ElementEntry> uuidToBeDeleted = new HashMap<>();
 		String uuid;
 		Node node = folder("news");
-		for (GraphFieldContainer container : node.getGraphFieldContainers()) {
-			uuidToBeDeleted.put("container-" + container.getLanguage().getLanguageTag(), container.getUuid());
-		}
 
 		// Add subfolders
-		uuidToBeDeleted.put("folder-2015", folder("2015").getUuid());
-		uuidToBeDeleted.put("folder-2014", folder("2014").getUuid());
+		uuidToBeDeleted.put("folder: news", new ElementEntry(node.getUuid(), "en", "de"));
+		uuidToBeDeleted.put("folder: news.2015", new ElementEntry(folder("2015").getUuid(), "en"));
+		uuidToBeDeleted.put("folder: news 2014", new ElementEntry(folder("2014").getUuid(), "en"));
+		uuidToBeDeleted.put("folder: news.2014.march", new ElementEntry(folder("march").getUuid(), "en", "de"));
+
+		// Add Contents
+		uuidToBeDeleted.put("content: news.2014.news_2014", new ElementEntry(content("news_2014").getUuid(), "en", "de"));
+		uuidToBeDeleted.put("content: news.overview", new ElementEntry(content("news overview").getUuid(), "en", "de"));
+		uuidToBeDeleted.put("content: news.2014.march.news_in_march", new ElementEntry(content("new_in_march_2014").getUuid(), "en", "de"));
+		uuidToBeDeleted.put("content: news.2014.special_news", new ElementEntry(content("special news_2014").getUuid(), "en", "de"));
+		uuidToBeDeleted.put("content: news.2015.news_2015", new ElementEntry(content("news_2015").getUuid(), "en", "de"));
 
 		uuid = node.getUuid();
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
+		SearchQueueBatch batch = createBatch();
 		try (Trx tx = db.trx()) {
-			node.delete();
+			node.delete(batch);
 			tx.success();
 		}
 
-		// TODO check for attached subnodes
 		MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, false);
-
 		assertDeleted(uuidToBeDeleted);
+		batch.reload();
+
+		for (String key : uuidToBeDeleted.keySet()) {
+			ElementEntry entry = uuidToBeDeleted.get(key);
+			for (String language : entry.getLanguages()) {
+				assertThat(batch.findEntryByUuid(entry.getUuid() + "-" + language)).as("Element for key {" + key + "}").isPresent();
+			}
+		}
+		assertEquals(16, batch.getEntries().size());
 	}
 
 	@Test

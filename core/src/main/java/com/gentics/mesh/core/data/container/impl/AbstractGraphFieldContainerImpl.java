@@ -208,7 +208,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		// delete existing micronode
 		MicronodeGraphField existing = getMicronode(key);
 		if (existing != null) {
-			existing.getMicronode().delete();
+			existing.getMicronode().delete(null);
 		}
 
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);

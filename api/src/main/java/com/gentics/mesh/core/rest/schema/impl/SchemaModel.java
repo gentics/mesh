@@ -73,6 +73,7 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 			throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
 		}
 
+		// TODO maybe we should also allow other field types
 		if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
 			throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
 		}

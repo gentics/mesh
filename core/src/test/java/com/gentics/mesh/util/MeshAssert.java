@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.TestUtils;
 
@@ -64,8 +65,7 @@ public final class MeshAssert {
 		});
 		try {
 			assertTrue("The timeout of the latch was reached.", latch.await(getTimeout(), TimeUnit.SECONDS));
-		}
-		catch (UnknownHostException | InterruptedException e) {
+		} catch (UnknownHostException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -82,10 +82,11 @@ public final class MeshAssert {
 		}
 	}
 
-	public static void assertDeleted(Map<String, String> uuidToBeDeleted) {
-		for (Map.Entry<String, String> entry : uuidToBeDeleted.entrySet()) {
-			assertFalse("One vertex was not deleted. Uuid: {" + entry.getValue() + "} - Type: {" + entry.getKey() + "}",
-					Database.getThreadLocalGraph().v().has("uuid", entry.getValue()).hasNext());
+	public static void assertDeleted(Map<String, ElementEntry> uuidToBeDeleted) {
+		for (String key : uuidToBeDeleted.keySet()) {
+			ElementEntry entry = uuidToBeDeleted.get(key);
+			assertFalse("The element {" + key + "} vertex for uuid: {" + entry.getUuid() + "}",
+					Database.getThreadLocalGraph().v().has("uuid", entry.getUuid()).hasNext());
 		}
 	}
 

@@ -19,6 +19,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.graphdb.Trx;
@@ -127,11 +129,12 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() {
 		try (Trx tx = db.trx()) {
-			Map<String, String> uuidToBeDeleted = new HashMap<>();
+			Map<String, ElementEntry> uuidToBeDeleted = new HashMap<>();
 			TagFamily tagFamily = tagFamily("colors");
-			uuidToBeDeleted.put("tagFamily", tagFamily.getUuid());
-			uuidToBeDeleted.put("tagFamily.red", tag("red").getUuid());
-			tagFamily.delete();
+			uuidToBeDeleted.put("tagFamily", new ElementEntry(tagFamily.getUuid()));
+			uuidToBeDeleted.put("tagFamily.red", new ElementEntry(tag("red").getUuid()));
+			SearchQueueBatch batch = createBatch();
+			tagFamily.delete(batch);
 			assertDeleted(uuidToBeDeleted);
 		}
 	}
@@ -196,7 +199,8 @@ public class TagFamilyTest extends AbstractBasicObjectTest {
 		String uuid = tagFamily.getUuid();
 		TagFamily foundTagFamily = root.findByUuid(uuid).toBlocking().single();
 		assertNotNull(foundTagFamily);
-		tagFamily.delete();
+		SearchQueueBatch batch = createBatch();
+		tagFamily.delete(batch);
 		// TODO check for attached nodes
 		Project project = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(project);

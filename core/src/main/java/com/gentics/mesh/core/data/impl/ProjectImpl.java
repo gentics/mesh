@@ -182,20 +182,20 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + getName() + "}");
 		}
 
 		RouterStorage.getIntance().removeProjectRouter(getName());
-		getBaseNode().delete(true);
-		getTagFamilyRoot().delete();
-		getNodeRoot().delete();
+		getBaseNode().delete(true, batch);
+		getTagFamilyRoot().delete(batch);
+		getNodeRoot().delete(batch);
 
 		for (SchemaContainer container : getSchemaContainerRoot().findAll()) {
 			getSchemaContainerRoot().removeSchemaContainer(container);
 		}
-		getSchemaContainerRoot().delete();
+		getSchemaContainerRoot().delete(batch);
 		reload();
 		getVertex().remove();
 

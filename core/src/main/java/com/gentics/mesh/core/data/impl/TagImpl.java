@@ -147,11 +147,14 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + getName() + "}");
 		}
-		createIndexBatch(DELETE_ACTION);
+		batch.addEntry(this, DELETE_ACTION);
+		for (Node node : getNodes()) {
+			batch.addEntry(node, STORE_ACTION);
+		}
 		getVertex().remove();
 	}
 

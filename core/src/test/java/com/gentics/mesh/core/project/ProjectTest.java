@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -55,14 +57,15 @@ public class ProjectTest extends AbstractBasicObjectTest {
 	public void testDelete() throws Exception {
 		String uuid = project().getUuid();
 
-		Map<String, String> uuidToBeDeleted = new HashMap<>();
-		uuidToBeDeleted.put("project", uuid);
-		uuidToBeDeleted.put("project.tagFamilyRoot", project().getTagFamilyRoot().getUuid());
-		uuidToBeDeleted.put("project.schemaContainerRoot", project().getSchemaContainerRoot().getUuid());
-		uuidToBeDeleted.put("project.nodeRoot", project().getNodeRoot().getUuid());
+		Map<String, ElementEntry> uuidToBeDeleted = new HashMap<>();
+		uuidToBeDeleted.put("project", new ElementEntry(uuid));
+		uuidToBeDeleted.put("project.tagFamilyRoot", new ElementEntry(project().getTagFamilyRoot().getUuid()));
+		uuidToBeDeleted.put("project.schemaContainerRoot", new ElementEntry(project().getSchemaContainerRoot().getUuid()));
+		uuidToBeDeleted.put("project.nodeRoot", new ElementEntry(project().getNodeRoot().getUuid()));
 
+		SearchQueueBatch batch = createBatch();
 		Project project = project();
-		project.delete();
+		project.delete(batch);
 
 		assertElement(meshRoot().getProjectRoot(), uuid, false);
 		assertDeleted(uuidToBeDeleted);
@@ -129,9 +132,10 @@ public class ProjectTest extends AbstractBasicObjectTest {
 		Project project = meshRoot().getProjectRoot().create("newProject", user());
 		assertNotNull(project);
 		String uuid = project.getUuid();
+		SearchQueueBatch batch = createBatch();
 		Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		assertNotNull(foundProject);
-		project.delete();
+		project.delete(batch);
 		// TODO check for attached nodes
 		foundProject = meshRoot().getProjectRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundProject);

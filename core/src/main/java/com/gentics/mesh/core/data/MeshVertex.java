@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -21,9 +22,12 @@ public interface MeshVertex extends MeshElement {
 	Vertex getVertex();
 
 	/**
-	 * Delete the element.
+	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
+	 * 
+	 * @param batch
+	 *            Batch to be updated with new entries
 	 */
-	void delete();
+	void delete(SearchQueueBatch batch);
 
 	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.

@@ -217,7 +217,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		assertEquals(tags().size(), root.findAll().size());
 		root.addTag(tag);
 		assertEquals(tags().size(), root.findAll().size());
-		root.delete();
+		root.delete(createBatch());
 	}
 
 	@Test
@@ -292,7 +292,7 @@ public class TagTest extends AbstractBasicObjectTest {
 		Tag tag = tagFamily.create("someTag", project(), user());
 		String uuid = tag.getUuid();
 		assertNotNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
-		tag.delete();
+		tag.delete(createBatch());
 		assertNull(meshRoot().getTagRoot().findByUuid(uuid).toBlocking().single());
 	}
 

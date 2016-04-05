@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -114,7 +115,8 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 	@Override
 	public void testDelete() throws Exception {
 		String uuid = getSchemaContainer().getUuid();
-		getSchemaContainer().delete();
+		SearchQueueBatch batch = createBatch();
+		getSchemaContainer().delete(batch);
 		assertNull("The schema should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
 	}
 
@@ -138,7 +140,8 @@ public class SchemaContainerTest extends AbstractBasicObjectTest {
 		SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 		assertNotNull(newContainer);
 		String uuid = newContainer.getUuid();
-		newContainer.delete();
+		SearchQueueBatch batch = createBatch();
+		newContainer.delete(batch);
 		assertNull("The container should have been deleted", meshRoot().getSchemaContainerRoot().findByUuid(uuid).toBlocking().single());
 	}
 

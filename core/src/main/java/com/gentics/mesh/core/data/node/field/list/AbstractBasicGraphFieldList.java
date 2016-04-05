@@ -54,6 +54,6 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 
 	@Override
 	public void removeField() {
-		delete();
+		delete(null);
 	}
 }

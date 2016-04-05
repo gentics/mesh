@@ -244,7 +244,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			for (SearchQueueEntry entry : batch.getEntries()) {
 				entry.process().toBlocking().lastOrDefault(null);
 			}
-			batch.delete();
+			batch.delete(null);
 		}
 		return Observable.just(null);
 	}

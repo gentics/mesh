@@ -105,13 +105,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		// TODO maybe add a check to prevent deletion of meshRoot.nodeRoot
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
 		for (Node node : findAll()) {
-			node.delete();
+			node.delete(batch);
 		}
 		getElement().remove();
 	}

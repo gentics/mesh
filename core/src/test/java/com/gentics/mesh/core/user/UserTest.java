@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.Trx;
@@ -56,7 +57,6 @@ public class UserTest extends AbstractBasicObjectTest {
 	@Override
 	public void testTransformToReference() throws Exception {
 		User user = user();
-		InternalActionContext ac = getMockedInternalActionContext("");
 		UserReference reference = user.transformToReference();
 		assertNotNull(reference);
 		assertEquals(user.getUuid(), reference.getUuid());
@@ -299,7 +299,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		assertTrue(user.isEnabled());
 		assertNotNull(user);
 		String uuid = user.getUuid();
-		user.delete();
+		SearchQueueBatch batch = createBatch();
+		user.delete(batch);
 		User foundUser = root.getUserRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundUser);
 	}
@@ -484,7 +485,8 @@ public class UserTest extends AbstractBasicObjectTest {
 		String uuid = user.getUuid();
 		assertEquals(1, user.getGroups().size());
 		assertTrue(user.isEnabled());
-		user.delete();
+		SearchQueueBatch batch = createBatch();
+		user.delete(batch);
 		User foundUser = meshRoot().getUserRoot().findByUuid(uuid).toBlocking().single();
 		assertNull(foundUser);
 	}

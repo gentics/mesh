@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.container.impl;
 
 import com.gentics.mesh.core.data.TagGraphFieldContainer;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class TagGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements TagGraphFieldContainer {
@@ -19,7 +20,7 @@ public class TagGraphFieldContainerImpl extends AbstractBasicGraphFieldContainer
 	}
 
 	@Override
-	public void delete() {
+	public void delete(SearchQueueBatch batch) {
 		// TODO Auto-generated method stub
 	}
 

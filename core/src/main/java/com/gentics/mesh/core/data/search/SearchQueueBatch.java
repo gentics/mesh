@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.search;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -59,6 +60,16 @@ public interface SearchQueueBatch extends MeshVertex {
 	 * @return
 	 */
 	List<? extends SearchQueueEntry> getEntries();
+
+	/**
+	 * Find the entry with the given uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
+	default Optional<? extends SearchQueueEntry> findEntryByUuid(String uuid) {
+		return getEntries().stream().filter(e -> e.getElementUuid().equals(uuid)).findAny();
+	}
 
 	/**
 	 * Set the batch id.
