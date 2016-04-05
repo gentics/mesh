@@ -33,7 +33,8 @@ public class DemoDumpGenerator {
 			BootstrapInitializer boot = ctx.getBean(BootstrapInitializer.class);
 			DemoDataProvider provider = ctx.getBean("demoDataProvider", DemoDataProvider.class);
 			SearchProvider searchProvider = ctx.getBean("searchProvider", SearchProvider.class);
-			invokeDump(boot, provider, searchProvider);
+			invokeDump(boot, provider);
+			searchProvider.getNode().close();
 			System.exit(0);
 		}
 
@@ -63,7 +64,7 @@ public class DemoDumpGenerator {
 	 * @throws MeshSchemaException
 	 * @throws InterruptedException
 	 */
-	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider, SearchProvider searchProvider)
+	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
 			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		boot.initSearchIndex();
 		boot.initMandatoryData();
@@ -72,7 +73,6 @@ public class DemoDumpGenerator {
 
 		// Setup demo data
 		provider.setup();
-		searchProvider.getNode().close();
 	}
 
 }

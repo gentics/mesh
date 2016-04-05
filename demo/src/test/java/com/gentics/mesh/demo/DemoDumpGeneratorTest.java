@@ -55,7 +55,7 @@ public class DemoDumpGeneratorTest {
 
 	@Test
 	public void testSetup() throws Exception {
-		generator.invokeDump(boot, dataProvider, searchProvider);
+		generator.invokeDump(boot, dataProvider);
 		NoTrx tx = db.noTrx();
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").toBlocking().single().getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
