@@ -257,6 +257,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// Both fields are equal if those fields are both null
 				}
 			} else {
+				// The field type has changed
 				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 			}
 
