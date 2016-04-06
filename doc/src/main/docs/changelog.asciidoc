@@ -92,6 +92,11 @@
 * Fix: Various search index related bugs have been fixed.
 * Enhancement: The mesh-ui configuration file was renamed to mesh-ui.config.js 
 
+=== 0.6.6 - 06.04.2016
+
+* Fix: A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
+* Fix: The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
+
 === Upcoming changes
 
 [source]
