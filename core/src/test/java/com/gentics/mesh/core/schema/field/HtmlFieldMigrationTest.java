@@ -1,19 +1,29 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
-public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final DataProvider FILLTEXT = (container, name) -> container.createHTML(name).setHtml("<b>HTML</b> content");
-	private static final DataProvider FILLTRUE = (container, name) -> container.createHTML(name).setHtml("true");
-	private static final DataProvider FILLFALSE = (container, name) -> container.createHTML(name).setHtml("false");
-	private static final DataProvider FILL0 = (container, name) -> container.createHTML(name).setHtml("0");
-	private static final DataProvider FILL1 = (container, name) -> container.createHTML(name).setHtml("1");
+import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
 
-	private static final FieldFetcher FETCH = (container, name) -> container.getHtml(name);
+public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {
 
 	@Override
 	@Test
@@ -237,20 +247,22 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEHTML, FILLTEXT, FETCH, "function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}", (container, name) -> {
-			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
-		});
+		customMigrationScript(CREATEHTML, FILLTEXT, FETCH,
+				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
+				(container, name) -> {
+					assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
+					assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATEHTML, FILLTEXT, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATEHTML, FILLTEXT, KILLERSCRIPT);
 	}

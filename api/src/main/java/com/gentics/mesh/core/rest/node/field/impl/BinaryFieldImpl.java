@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
 public class BinaryFieldImpl implements BinaryField {
 
+	@JsonIgnore
 	@Override
 	public String getType() {
 		return FieldTypes.BINARY.toString();

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.graphdb.spi.Database;
 
 public class SchemaChangeTest extends AbstractBasicDBTest {

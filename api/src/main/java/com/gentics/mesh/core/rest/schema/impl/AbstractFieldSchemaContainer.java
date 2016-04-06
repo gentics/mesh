@@ -4,8 +4,10 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -116,6 +118,15 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 	@Override
 	public List<FieldSchema> getFields() {
 		return fields;
+	}
+
+	@Override
+	public Map<String, FieldSchema> getFieldsAsMap() {
+		Map<String, FieldSchema> map = new HashMap<>();
+		for (FieldSchema field : getFields()) {
+			map.put(field.getName(), field);
+		}
+		return map;
 	}
 
 	@Override

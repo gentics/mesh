@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
@@ -63,5 +64,15 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		NumberGraphField clone = container.createNumber(getFieldKey());
 		clone.setNumber(getNumber());
 		return clone;
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof NumberGraphField) {
+			Number valueA = getNumber();
+			Number valueB = ((NumberGraphField) field).getNumber();
+			return Objects.equals(valueA, valueB);
+		}
+		return false;
 	}
 }

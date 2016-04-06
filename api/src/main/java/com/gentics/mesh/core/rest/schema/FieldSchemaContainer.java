@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.common.RestResponse;
@@ -79,6 +80,13 @@ public interface FieldSchemaContainer extends RestResponse {
 	 * @return List of field schemas
 	 */
 	List<FieldSchema> getFields();
+
+	/**
+	 * Return the map of field schemas.
+	 * 
+	 * @return
+	 */
+	Map<String, FieldSchema> getFieldsAsMap();
 
 	/**
 	 * Add the given field schema to the list of field schemas.

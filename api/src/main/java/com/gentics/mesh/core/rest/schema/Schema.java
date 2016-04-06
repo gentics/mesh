@@ -50,4 +50,5 @@ public interface Schema extends FieldSchemaContainer {
 	 */
 	void setSegmentField(String segmentField);
 
+
 }

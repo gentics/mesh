@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
@@ -327,8 +328,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	/**
-	 * Create new list of the given type. If the container already has a list of given type, it
-	 * will be "unattached" and removed, if this container was the only parent
+	 * Create new list of the given type. If the container already has a list of given type, it will be "unattached" and removed, if this container was the only
+	 * parent
 	 * 
 	 * @param classOfT
 	 *            Implementation/Type of list
@@ -811,7 +812,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			MicronodeGraphField micronodeGraphField = getMicronode(key);
 
 			// check whether microschema is allowed
-			if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas()) || !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
+			if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
+					|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
 				throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", key, microschemaContainer.getName());
 			}
 
@@ -854,66 +856,55 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
+	public GraphField getField(FieldSchema fieldSchema) {
+		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+		switch (type) {
+		case BINARY:
+			return getBinary(fieldSchema.getName());
+		case BOOLEAN:
+			return getBoolean(fieldSchema.getName());
+		case DATE:
+			return getDate(fieldSchema.getName());
+		case HTML:
+			return getHtml(fieldSchema.getName());
+		case LIST:
+			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
+			switch (listFieldSchema.getListType()) {
+			case "boolean":
+				return getBooleanList(fieldSchema.getName());
+			case "date":
+				return getDateList(fieldSchema.getName());
+			case "html":
+				return getHTMLList(fieldSchema.getName());
+			case "micronode":
+				return getMicronodeList(fieldSchema.getName());
+			case "node":
+				return getNodeList(fieldSchema.getName());
+			case "number":
+				return getNumberList(fieldSchema.getName());
+			case "string":
+				return getStringList(fieldSchema.getName());
+			default:
+				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Unknown list type {" + listFieldSchema.getListType() + "}");
+			}
+		case MICRONODE:
+			return getMicronode(fieldSchema.getName());
+		case NODE:
+			return getNode(fieldSchema.getName());
+		case NUMBER:
+			return getNumber(fieldSchema.getName());
+		case STRING:
+			return getString(fieldSchema.getName());
+		default:
+			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Unknown field type {" + type + "}");
+		}
+	}
+
+	@Override
 	public List<GraphField> getFields(FieldSchemaContainer schema) {
 		List<GraphField> fields = new ArrayList<>();
 		for (FieldSchema fieldSchema : schema.getFields()) {
-			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-			GraphField field = null;
-			switch (type) {
-			case BINARY:
-				field = getBinary(fieldSchema.getName());
-				break;
-			case BOOLEAN:
-				field = getBoolean(fieldSchema.getName());
-				break;
-			case DATE:
-				field = getDate(fieldSchema.getName());
-				break;
-			case HTML:
-				field = getHtml(fieldSchema.getName());
-				break;
-			case LIST:
-				ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
-				switch (listFieldSchema.getListType()) {
-				case "boolean":
-					field = getBooleanList(fieldSchema.getName());
-					break;
-				case "date":
-					field = getDateList(fieldSchema.getName());
-					break;
-				case "html":
-					field = getHTMLList(fieldSchema.getName());
-					break;
-				case "micronode":
-					field = getMicronodeList(fieldSchema.getName());
-					break;
-				case "node":
-					field = getNodeList(fieldSchema.getName());
-					break;
-				case "number":
-					field = getNumberList(fieldSchema.getName());
-					break;
-				case "string":
-					field = getStringList(fieldSchema.getName());
-					break;
-				}
-				break;
-			case MICRONODE:
-				field = getMicronode(fieldSchema.getName());
-				break;
-			case NODE:
-				field = getNode(fieldSchema.getName());
-				break;
-			case NUMBER:
-				field = getNumber(fieldSchema.getName());
-				break;
-			case STRING:
-				field = getString(fieldSchema.getName());
-				break;
-			default:
-				break;
-			}
-
+			GraphField field = getField(fieldSchema);
 			if (field != null) {
 				fields.add(field);
 			}

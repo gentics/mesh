@@ -1,5 +1,20 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
@@ -7,34 +22,9 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
 
-public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final String TEXT1 = "<i>one</i>";
-
-	private static final String TEXT2 = "<b>two</b>";
-
-	private static final String TEXT3 = "<u>three</u>";
-
-	private static final DataProvider FILLTEXT = (container, name) -> {
-		HtmlGraphFieldList field = container.createHTMLList(name);
-		field.createHTML(TEXT1);
-		field.createHTML(TEXT2);
-		field.createHTML(TEXT3);
-	};
-
-	private static final DataProvider FILLNUMBERS = (container, name) -> {
-		HtmlGraphFieldList field = container.createHTMLList(name);
-		field.createHTML("1");
-		field.createHTML("0");
-	};
-
-	private static final DataProvider FILLTRUEFALSE= (container, name) -> {
-		HtmlGraphFieldList field = container.createHTMLList(name);
-		field.createHTML("true");
-		field.createHTML("false");
-	};
-
-	private static final FieldFetcher FETCH = (container, name) -> container.getHTMLList(name);
+public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlListFieldHelper {
 
 	@Override
 	@Test
@@ -45,7 +35,7 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testRename() throws Exception {
-		renameField(CREATEHTMLLIST, FILLTEXT,FETCH, (container, name) -> {
+		renameField(CREATEHTMLLIST, FILLTEXT, FETCH, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly(TEXT1, TEXT2, TEXT3);
 		});
@@ -219,22 +209,23 @@ public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEHTMLLIST, FILLTEXT, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			HtmlGraphFieldList field = container.getHTMLList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
-		});
+		customMigrationScript(CREATEHTMLLIST, FILLTEXT, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
+					HtmlGraphFieldList field = container.getHTMLList(name);
+					assertThat(field).as(NEWFIELD).isNotNull();
+					field.reload();
+					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATEHTMLLIST, FILLTEXT, KILLERSCRIPT);
 	}

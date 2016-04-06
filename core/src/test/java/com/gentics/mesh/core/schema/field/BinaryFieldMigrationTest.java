@@ -1,5 +1,20 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
@@ -9,31 +24,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
 
 import io.vertx.rxjava.core.buffer.Buffer;
 
-public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest {
+public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
 	@Autowired
 	private NodeFieldAPIHandler nodeFieldAPIHandler;
 
-	private final static String FILECONTENTS = "This is the file contents";
+	String sha512Sum;
 
-	private final static String FILENAME = "test.txt";
-
-	private final static String MIMETYPE = "text/plain";
-
-	private String sha512Sum;
-
-	private final DataProvider FILL = (container, name) -> {
+	final DataProvider FILL = (container, name) -> {
 		BinaryGraphField field = container.createBinary(name);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
-		sha512Sum = nodeFieldAPIHandler.hashAndStoreBinaryFile(Buffer.buffer(FILECONTENTS), field.getUuid(), field.getSegmentedPath()).toBlocking().last();
+		sha512Sum = nodeFieldAPIHandler.hashAndStoreBinaryFile(Buffer.buffer(FILECONTENTS), field.getUuid(), field.getSegmentedPath()).toBlocking()
+				.last();
 		field.setSHA512Sum(sha512Sum);
 	};
-
-	private static FieldFetcher FETCH = (container, name) -> container.getBinary(name);
 
 	@Override
 	@Test
@@ -186,28 +196,30 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBINARY, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].fileName = 'bla' + node.fields[fieldname].fileName; return node;}", (container, name) -> {
-			BinaryGraphField newField = container.getBinary(name);
-			assertThat(newField).as(NEWFIELD).isNotNull();
-			((BinaryGraphFieldImpl)newField).reload();
-			assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
-			assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
-			assertThat(newField.getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
-			newField.getFileBuffer().setHandler((h) -> {
-				assertThat(h.succeeded()).isTrue();
-				assertThat(h.result().toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
-			});
-		});
+		customMigrationScript(CREATEBINARY, FILL, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].fileName = 'bla' + node.fields[fieldname].fileName; return node;}",
+				(container, name) -> {
+					BinaryGraphField newField = container.getBinary(name);
+					assertThat(newField).as(NEWFIELD).isNotNull();
+					((BinaryGraphFieldImpl) newField).reload();
+					assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
+					assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
+					assertThat(newField.getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);
+					newField.getFileBuffer().setHandler((h) -> {
+						assertThat(h.succeeded()).isTrue();
+						assertThat(h.result().toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
+					});
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATEBINARY, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATEBINARY, FILL, KILLERSCRIPT);
 	}

@@ -1,19 +1,30 @@
 package com.gentics.mesh.core.schema.field;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
-public class StringFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final DataProvider FILLTEXT = (container, name) -> container.createString(name).setString("<b>HTML</b> content");
-	private static final DataProvider FILLTRUE = (container, name) -> container.createString(name).setString("true");
-	private static final DataProvider FILLFALSE = (container, name) -> container.createString(name).setString("false");
-	private static final DataProvider FILL0 = (container, name) -> container.createString(name).setString("0");
-	private static final DataProvider FILL1 = (container, name) -> container.createString(name).setString("1");
+import com.gentics.mesh.core.field.string.StringFieldTestHelper;
 
-	private static final FieldFetcher FETCH = (container, name) -> container.getString(name);
+public class StringFieldMigrationTest extends AbstractFieldMigrationTest implements StringFieldTestHelper {
 
 	@Override
 	@Test
@@ -237,20 +248,22 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATESTRING, FILLTEXT, FETCH, "function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}", (container, name) -> {
-			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
-		});
+		customMigrationScript(CREATESTRING, FILLTEXT, FETCH,
+				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
+				(container, name) -> {
+					assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
+					assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATESTRING, FILLTEXT, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATESTRING, FILLTEXT, KILLERSCRIPT);
 	}

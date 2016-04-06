@@ -2,10 +2,12 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
@@ -86,5 +88,15 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	@Override
 	public List<Node> getValues() {
 		return getList().stream().map(NodeGraphField::getNode).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof NodeGraphFieldList) {
+			List<? extends NodeGraphField> listA = getList();
+			List<? extends NodeGraphField> listB = ((NodeGraphFieldList) field).getList();
+			return Objects.equals(listA, listB);
+		}
+		return false;
 	}
 }

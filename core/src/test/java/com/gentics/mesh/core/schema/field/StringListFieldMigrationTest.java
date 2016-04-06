@@ -1,40 +1,30 @@
 package com.gentics.mesh.core.schema.field;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.field.string.StringListFieldTestHelper;
 
-public class StringListFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final String TEXT1 = "one";
-
-	private static final String TEXT2 = "two";
-
-	private static final String TEXT3 = "three";
-
-	private static final DataProvider FILLTEXT = (container, name) -> {
-		StringGraphFieldList field = container.createStringList(name);
-		field.createString(TEXT1);
-		field.createString(TEXT2);
-		field.createString(TEXT3);
-	};
-
-	private static final DataProvider FILLNUMBERS = (container, name) -> {
-		StringGraphFieldList field = container.createStringList(name);
-		field.createString("1");
-		field.createString("0");
-	};
-
-	private static final DataProvider FILLTRUEFALSE= (container, name) -> {
-		StringGraphFieldList field = container.createStringList(name);
-		field.createString("true");
-		field.createString("false");
-	};
-
-	private static final FieldFetcher FETCH = (container, name) -> container.getStringList(name);
+public class StringListFieldMigrationTest extends AbstractFieldMigrationTest implements StringListFieldTestHelper {
 
 	@Override
 	@Test

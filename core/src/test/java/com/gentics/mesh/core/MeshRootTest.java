@@ -7,9 +7,9 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 
 public class MeshRootTest extends AbstractBasicDBTest {
 

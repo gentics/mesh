@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 
 import java.io.File;
+import java.util.Objects;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -190,5 +191,24 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	@Override
 	public void validate() {
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof BinaryGraphField) {
+			String filenameA = getFileName();
+			String filenameB = ((BinaryGraphField) field).getFileName();
+			boolean filename = Objects.equals(filenameA, filenameB);
+
+			String mimeTypeA = getMimeType();
+			String mimeTypeB = ((BinaryGraphField) field).getMimeType();
+			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
+
+			String hashSumA = getSHA512Sum();
+			String hashSumB = ((BinaryGraphField) field).getSHA512Sum();
+			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
+			return filename && mimetype && sha512sum;
+		}
+		return false;
 	}
 }

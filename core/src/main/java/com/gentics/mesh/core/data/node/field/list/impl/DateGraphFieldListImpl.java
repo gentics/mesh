@@ -57,4 +57,5 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	public List<Long> getValues() {
 		return getList().stream().map(DateGraphField::getDate).collect(Collectors.toList());
 	}
+
 }

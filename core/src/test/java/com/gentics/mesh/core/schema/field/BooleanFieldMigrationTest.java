@@ -1,16 +1,29 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
-public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final DataProvider FILLTRUE = (container, name) -> container.createBoolean(name).setBoolean(true);
-	private static final DataProvider FILLFALSE = (container, name) -> container.createBoolean(name).setBoolean(false);
+import com.gentics.mesh.core.field.bool.BooleanFieldTestHelper;
 
-	private static final FieldFetcher FETCH = (container, name) -> container.getBoolean(name);
+public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanFieldTestHelper {
 
 	@Override
 	@Test
@@ -232,25 +245,27 @@ public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBOOLEAN, FILLTRUE, FETCH, "function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
-		});
+		customMigrationScript(CREATEBOOLEAN, FILLTRUE, FETCH,
+				"function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
+					assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
+					assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(false);
+				});
 
-		customMigrationScript(CREATEBOOLEAN, FILLFALSE, FETCH, "function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
-			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
-		});
+		customMigrationScript(CREATEBOOLEAN, FILLFALSE, FETCH,
+				"function migrate(node, fieldname) {node.fields[fieldname] = !node.fields[fieldname]; return node;}", (container, name) -> {
+					assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
+					assertThat(container.getBoolean(name).getBoolean()).as(NEWFIELDVALUE).isEqualTo(true);
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATEBOOLEAN, FILLTRUE, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATEBOOLEAN, FILLTRUE, KILLERSCRIPT);
 	}

@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 
 public class BootstrapInitializerTest extends AbstractBasicDBTest {
 

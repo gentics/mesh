@@ -1,15 +1,32 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
-public class NodeFieldMigrationTest extends AbstractFieldMigrationTest {
-	private final DataProvider FILL = (container, name) -> container.createNode(name, folder("2015"));
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.node.NodeFieldTestHelper;
 
-	private static final FieldFetcher FETCH = (container, name) -> container.getNode(name);
+public class NodeFieldMigrationTest extends AbstractFieldMigrationTest implements NodeFieldTestHelper {
+
+	final DataProvider FILL = (container, name) -> container.createNode(name, folder("2015"));
 
 	@Override
 	@Test
@@ -152,21 +169,21 @@ public class NodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Test
 	public void testCustomMigrationScript() throws Exception {
 		String uuid = folder("news").getUuid();
-		customMigrationScript(CREATENODE, FILL, FETCH, "function migrate(node, fieldname) {node.fields[fieldname].uuid = '" + uuid + "'; return node;}",
-				(container, name) -> {
-			assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("news"));
-		});
+		customMigrationScript(CREATENODE, FILL, FETCH,
+				"function migrate(node, fieldname) {node.fields[fieldname].uuid = '" + uuid + "'; return node;}", (container, name) -> {
+					assertThat(container.getNode(name)).as(NEWFIELD).isNotNull();
+					assertThat(container.getNode(name).getNode()).as(NEWFIELDVALUE).isEqualTo(folder("news"));
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATENODE, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATENODE, FILL, KILLERSCRIPT);
 	}

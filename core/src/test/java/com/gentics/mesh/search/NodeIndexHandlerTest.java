@@ -7,7 +7,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
+import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.search.impl.DummySearchProvider;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 

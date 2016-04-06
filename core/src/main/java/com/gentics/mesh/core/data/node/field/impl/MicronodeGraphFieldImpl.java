@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -70,5 +71,15 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	@Override
 	public void validate() {
 		getMicronode().validate();
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof MicronodeGraphField) {
+			Micronode micronodeA = getMicronode();
+			Micronode micronodeB = ((MicronodeGraphField) field).getMicronode();
+			return Objects.equals(micronodeA, micronodeB);
+		}
+		return false;
 	}
 }

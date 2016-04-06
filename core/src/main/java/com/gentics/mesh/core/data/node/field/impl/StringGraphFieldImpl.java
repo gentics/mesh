@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -46,5 +48,15 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		StringGraphField clone = container.createString(getFieldKey());
 		clone.setString(getString());
 		return clone;
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof StringGraphField) {
+			String valueA = getString();
+			String valueB = ((StringGraphField) field).getString();
+			return Objects.equals(valueA, valueB);
+		}
+		return false;
 	}
 }

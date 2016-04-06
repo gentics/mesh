@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -47,5 +49,15 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 		HtmlGraphField clone = container.createHTML(getFieldKey());
 		clone.setHtml(getHTML());
 		return clone;
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof HtmlGraphField) {
+			String htmlA = getHTML();
+			String htmlB = ((HtmlGraphField) field).getHTML();
+			return Objects.equals(htmlA, htmlB);
+		}
+		return false;
 	}
 }

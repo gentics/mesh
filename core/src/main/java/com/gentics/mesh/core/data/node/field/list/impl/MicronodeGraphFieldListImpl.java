@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -148,5 +149,13 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	@Override
 	public List<Micronode> getValues() {
 		return getList().stream().map(MicronodeGraphField::getMicronode).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof MicronodeGraphFieldList) {
+			return ((MicronodeGraphFieldList) field).getList().equals(getList());
+		}
+		return false;
 	}
 }

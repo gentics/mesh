@@ -13,7 +13,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;

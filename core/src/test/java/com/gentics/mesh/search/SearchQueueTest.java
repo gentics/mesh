@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
 import com.gentics.mesh.graphdb.Trx;
 
 public class SearchQueueTest extends AbstractBasicDBTest {

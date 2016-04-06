@@ -8,15 +8,18 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.VersionNumber;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -27,12 +30,16 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.google.common.base.Equivalence;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
+import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -166,8 +173,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isPublished(String releaseUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode());
 		return traversal.hasNext();
 	}
@@ -175,14 +181,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void validate() {
 		Schema schema = getSchemaContainerVersion().getSchema();
-		Map<String, GraphField> fieldsMap = getFields(schema).stream()
-				.collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+		Map<String, GraphField> fieldsMap = getFields(schema).stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		schema.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());
 			if (fieldSchema.isRequired() && field == null) {
-				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(),
-						schema.getName());
+				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), schema.getName());
 			}
 			if (field != null) {
 				field.validate();
@@ -194,6 +198,70 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
 		batch.addEntry(getParentNode().getUuid() + "-" + getLanguage().getLanguageTag(), getParentNode().getType(), action, indexType);
+	}
+
+	@Override
+	public List<FieldContainerChange> compareTo(NodeGraphFieldContainer container) {
+		List<FieldContainerChange> changes = new ArrayList<>();
+
+		Schema schemaA = getSchemaContainerVersion().getSchema();
+		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
+		Schema schemaB = container.getSchemaContainerVersion().getSchema();
+		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
+		// Generate a structural diff first. This way it is easy to determine which fields have been added or removed.
+		MapDifference<String, FieldSchema> diff = Maps.difference(fieldMapA, fieldMapB, new Equivalence<FieldSchema>() {
+
+			@Override
+			protected boolean doEquivalent(FieldSchema a, FieldSchema b) {
+				return a.getName().equals(b.getName());
+			}
+
+			@Override
+			protected int doHash(FieldSchema t) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+		});
+
+		// Handle fields which exist only in A - They have been removed in B 
+		for (FieldSchema field : diff.entriesOnlyOnLeft().values()) {
+			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.REMOVED));
+		}
+
+		// Handle fields which don't exist in A - They have been added in B 
+		for (FieldSchema field : diff.entriesOnlyOnRight().values()) {
+			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.ADDED));
+		}
+
+		// Handle fields which are common in both schemas
+		for (String fieldName : diff.entriesInCommon().keySet()) {
+			FieldSchema fieldSchemaA = fieldMapA.get(fieldName);
+			FieldSchema fieldSchemaB = fieldMapB.get(fieldName);
+			// Check whether the field type is different in between both schemas
+			if (fieldSchemaA.getType().equals(fieldSchemaB.getType())) {
+				// Check content
+				GraphField fieldA = getField(fieldSchemaA);
+				GraphField fieldB = container.getField(fieldSchemaB);
+				// Handle null cases. The field may not have been created yet.
+				if (fieldA != null && fieldB == null) {
+					// Field only exists in A
+					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				} else if (fieldA == null && fieldB != null) {
+					// Field only exists in B
+					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				} else if (fieldA != null && fieldB != null && !fieldA.equals(fieldB)) {
+					// Field exists in A and B and the fields are not equal to each other. 
+					changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				} else {
+					// Both fields are equal if those fields are both null
+				}
+			} else {
+				changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+			}
+
+		}
+		return changes;
 	}
 
 }

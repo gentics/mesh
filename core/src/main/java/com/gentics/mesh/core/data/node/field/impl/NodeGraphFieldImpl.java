@@ -3,12 +3,14 @@ package com.gentics.mesh.core.data.node.field.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -67,5 +69,15 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	@Override
 	public void validate() {
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof NumberGraphField) {
+			Node nodeA = getNode();
+			Node nodeB = ((NodeGraphField) field).getNode();
+			return Objects.equals(nodeA, nodeB);
+		}
+		return false;
 	}
 }

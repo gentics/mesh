@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -16,14 +15,13 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
@@ -38,7 +36,10 @@ import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
-import com.gentics.mesh.core.field.bool.AbstractBasicDBTest;
+import com.gentics.mesh.core.field.DataAsserter;
+import com.gentics.mesh.core.field.DataProvider;
+import com.gentics.mesh.core.field.FieldFetcher;
+import com.gentics.mesh.core.field.FieldSchemaCreator;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -48,36 +49,11 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.FieldUtil;
 
 /**
  * Base class for all field migration tests
  */
 public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest implements FieldMigrationTest {
-	protected final static FieldSchemaCreator CREATEBINARY = name -> FieldUtil.createBinaryFieldSchema(name);
-	protected final static FieldSchemaCreator CREATEBOOLEAN = name -> FieldUtil.createBooleanFieldSchema(name);
-	protected final static FieldSchemaCreator CREATEBOOLEANLIST = name -> FieldUtil.createListFieldSchema(name, "boolean");
-	protected final static FieldSchemaCreator CREATEDATE = name -> FieldUtil.createDateFieldSchema(name);
-	protected final static FieldSchemaCreator CREATEDATELIST = name -> FieldUtil.createListFieldSchema(name, "date");
-	protected final static FieldSchemaCreator CREATEHTML = name -> FieldUtil.createHtmlFieldSchema(name);
-	protected final static FieldSchemaCreator CREATEHTMLLIST = name -> FieldUtil.createListFieldSchema(name, "html");
-	protected final static FieldSchemaCreator CREATEMICRONODE = name -> {
-		MicronodeFieldSchema schema = FieldUtil.createMicronodeFieldSchema(name);
-		schema.setAllowedMicroSchemas(new String[] { "vcard" });
-		return schema;
-	};
-	protected final static FieldSchemaCreator CREATEMICRONODELIST = name -> {
-		ListFieldSchema schema = FieldUtil.createListFieldSchema(name, "micronode");
-		schema.setAllowedSchemas(new String[] { "vcard" });
-		return schema;
-	};
-	protected final static FieldSchemaCreator CREATENODE = name -> FieldUtil.createNodeFieldSchema(name);
-	protected final static FieldSchemaCreator CREATENODELIST = name -> FieldUtil.createListFieldSchema(name, "node");
-	protected final static FieldSchemaCreator CREATENUMBER = name -> FieldUtil.createNumberFieldSchema(name);
-	protected final static FieldSchemaCreator CREATENUMBERLIST = name -> FieldUtil.createListFieldSchema(name, "number");
-	protected final static FieldSchemaCreator CREATESTRING = name -> FieldUtil.createStringFieldSchema(name);
-	protected final static FieldSchemaCreator CREATESTRINGLIST = name -> FieldUtil.createListFieldSchema(name, "string");
-
 	protected final static String NEWFIELD = "New field";
 	protected final static String NEWFIELDVALUE = "New field value";
 	protected final static String OLDFIELD = "Old field";
@@ -895,26 +871,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 			dataProvider.set(micronodeField.getMicronode(), fieldName);
 		}
 		return micronodeField;
-	}
-
-	@FunctionalInterface
-	protected interface FieldSchemaCreator {
-		FieldSchema create(String name);
-	}
-
-	@FunctionalInterface
-	protected interface DataProvider {
-		void set(GraphFieldContainer container, String name);
-	}
-
-	@FunctionalInterface
-	protected interface FieldFetcher {
-		GraphField fetch(GraphFieldContainer container, String name);
-	}
-
-	@FunctionalInterface
-	protected interface DataAsserter {
-		void assertThat(GraphFieldContainer container, String name);
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

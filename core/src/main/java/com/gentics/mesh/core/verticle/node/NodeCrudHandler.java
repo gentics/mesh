@@ -59,6 +59,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 *            Language tag of the language which should be deleted.
 	 */
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM).flatMap(node -> {
 				//TODO Don't we need a trx here?!
@@ -221,6 +222,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * @param uuid Uuid of the node which will be queried
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				return node.transformToPublishStatus(ac);
@@ -291,6 +293,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * @param languageTag
 	 */
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.publish(ac, languageTag).flatMap(v -> {
@@ -307,9 +310,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * Handle taking a language of the node offline.
 	 * 
 	 * @param ac
+	 * @param uuid
 	 * @param languageTag
 	 */
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM).map(node -> {
 				return node.takeOffline(ac, languageTag).flatMap(v -> {
@@ -323,6 +328,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	protected void readElement(InternalActionContext ac, String uuid, TrxHandler<RootVertex<?>> handler) {
+		validateParameter(uuid, "uuid");
 		db.asyncNoTrxExperimental(() -> {
 			RootVertex<?> root = handler.call();
 			GraphPermission requiredPermission = "published".equals(ac.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;

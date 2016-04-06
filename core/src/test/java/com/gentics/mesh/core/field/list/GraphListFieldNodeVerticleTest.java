@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
-import com.gentics.mesh.core.field.AbstractGraphFieldNodeVerticleTest;
+import com.gentics.mesh.core.field.AbstractFieldNodeVerticleTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
 import io.vertx.core.Future;
 
-public class GraphListFieldNodeVerticleTest extends AbstractGraphFieldNodeVerticleTest {
+public class GraphListFieldNodeVerticleTest extends AbstractFieldNodeVerticleTest {
 	private static final String FIELD_NAME = "listField";
 
 	@Before

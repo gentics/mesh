@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -69,5 +70,15 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 	public GraphField cloneTo(GraphFieldContainer container) {
 		container.getImpl().linkOut(getImpl(), HAS_LIST);
 		return container.getList(getClass(), getFieldKey());
+	}
+
+	@Override
+	public boolean equals(GraphField field) {
+		if (field instanceof AbstractBasicGraphFieldList) {
+			List<? extends T> listA = getList();
+			List<? extends T> listB = ((AbstractBasicGraphFieldList<T, RM, U>) field).getList();
+			return Objects.equals(listA, listB);
+		}
+		return false;
 	}
 }

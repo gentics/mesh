@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data;
 
+import java.util.List;
+
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -13,7 +16,7 @@ import com.gentics.mesh.core.rest.error.Errors;
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
 
 	/**
-	 * Delete the field container. This will also delete linked elements like lists
+	 * Delete the field container. This will also delete linked elements like lists.
 	 */
 	void delete();
 
@@ -25,7 +28,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	String getDisplayFieldValue();
 
 	/**
-	 * Get the parent node
+	 * Get the parent node.
 	 *
 	 * @return
 	 */
@@ -33,21 +36,25 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
-	 * {@link Errors#conflict(String, String, String, String...)} if one found
-	 * @param releaseUuid release Uuid
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
 	void updateWebrootPathInfo(String releaseUuid, String conflictI18n);
 
 	/**
-	 * Get the Version Number or null if no version set
+	 * Get the Version Number or null if no version set.
+	 * 
 	 * @return Version Number
 	 */
 	VersionNumber getVersion();
 
 	/**
-	 * Set the Version Number
+	 * Set the Version Number.
+	 * 
 	 * @param version
 	 */
 	void setVersion(VersionNumber version);
@@ -67,34 +74,39 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void setSchemaContainerVersion(SchemaContainerVersion schema);
 
 	/**
-	 * Get the next version
+	 * Get the next version.
+	 * 
 	 * @return next version or null
 	 */
 	NodeGraphFieldContainer getNextVersion();
 
 	/**
-	 * Set the next version
+	 * Set the next version.
+	 * 
 	 * @param container
 	 */
 	void setNextVersion(NodeGraphFieldContainer container);
 
 	/**
-	 * Get the previous version
+	 * Get the previous version.
+	 * 
 	 * @return previous version or null
 	 */
 	NodeGraphFieldContainer getPreviousVersion();
 
 	/**
-	 * Make this container a clone of the given container.
-	 * Property Vertices are reused
+	 * Make this container a clone of the given container. Property Vertices are reused
 	 *
-	 * @param container container
+	 * @param container
+	 *            container
 	 */
 	void clone(NodeGraphFieldContainer container);
 
 	/**
 	 * Check whether this field container is the published version for the given release
-	 * @param releaseUuid release Uuid
+	 * 
+	 * @param releaseUuid
+	 *            release Uuid
 	 * @return true if it is published, false if not
 	 */
 	boolean isPublished(String releaseUuid);
@@ -106,5 +118,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param action
 	 */
 	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action);
+
+	/**
+	 * Compare the container values of both containers and return a list of differences.
+	 * 
+	 * @param container
+	 */
+	List<FieldContainerChange> compareTo(NodeGraphFieldContainer container);
 
 }

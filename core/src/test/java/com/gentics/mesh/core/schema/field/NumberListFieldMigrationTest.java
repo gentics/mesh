@@ -1,5 +1,20 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
@@ -7,29 +22,9 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.field.number.NumberListFieldTestHelper;
 
-public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final long NUMBERVALUE = 4711L;
-
-	private static final long OTHERNUMBERVALUE = 815L;
-
-	private static final long ONE = 1L;
-
-	private static final long ZERO = 0L;
-
-	private static final DataProvider FILLNUMBERS = (container, name) -> {
-		NumberGraphFieldList field = container.createNumberList(name);
-		field.createNumber(NUMBERVALUE);
-		field.createNumber(OTHERNUMBERVALUE);
-	};
-
-	private static final DataProvider FILLONEZERO = (container, name) -> {
-		NumberGraphFieldList field = container.createNumberList(name);
-		field.createNumber(ONE);
-		field.createNumber(ZERO);
-	};
-
-	private static final FieldFetcher FETCH = (container, name) -> container.getNumberList(name);
+public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest  implements NumberListFieldTestHelper {
 
 	@Override
 	@Test

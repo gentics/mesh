@@ -1,21 +1,29 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
-public class NumberFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final long NUMBERVALUE = 4711L;
+import com.gentics.mesh.core.field.number.NumberFieldTestHelper;
 
-	private static final DataProvider FILL = (container, name) -> container.createNumber(name).setNumber(NUMBERVALUE);
-
-	private static final DataProvider FILL1 = (container, name) -> container.createNumber(name).setNumber(1L);
-
-	private static final DataProvider FILL0 = (container, name) -> container.createNumber(name).setNumber(0L);
-
-	private static final FieldFetcher FETCH = (container, name) -> container.getNumber(name);
+public class NumberFieldMigrationTest extends AbstractFieldMigrationTest implements NumberFieldTestHelper {
 
 	@Override
 	@Test

@@ -1,5 +1,20 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBINARY;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEAN;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEBOOLEANLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEDATELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTML;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEHTMLLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATEMICRONODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODE;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENODELIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
+import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
@@ -7,15 +22,9 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
 
-public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest {
-	private static final DataProvider FILL = (container, name) -> {
-		BooleanGraphFieldList field = container.createBooleanList(name);
-		field.createBoolean(true);
-		field.createBoolean(false);
-	};
-
-	private static final FieldFetcher FETCH = (container, name) -> container.getBooleanList(name);
+public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanListFieldHelper {
 
 	@Override
 	@Test
@@ -163,22 +172,23 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEBOOLEANLIST, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
-			BooleanGraphFieldList field = container.getBooleanList(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
-			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(false, true);
-		});
+		customMigrationScript(CREATEBOOLEANLIST, FILL, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
+					BooleanGraphFieldList field = container.getBooleanList(name);
+					assertThat(field).as(NEWFIELD).isNotNull();
+					field.reload();
+					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(false, true);
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATEBOOLEANLIST, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
 	}

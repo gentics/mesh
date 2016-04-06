@@ -291,7 +291,8 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *            language tags
 	 * @param level
 	 */
-	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level);
+	Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
+			int level);
 
 	/**
 	 * Use the given map of rest fields and the schema information to set the data from the map to this container.
@@ -301,6 +302,14 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param schema
 	 */
 	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema);
+
+	/**
+	 * Return the graph field for the given field schema.
+	 * 
+	 * @param fieldSchema
+	 * @return
+	 */
+	GraphField getField(FieldSchema fieldSchema);
 
 	/**
 	 * Get all fields defined in the given schema, that are present in this container
@@ -313,6 +322,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 
 	/**
 	 * Get the list graph field of specified type
+	 * 
 	 * @param classOfT
 	 * @param fieldKey
 	 * @return
@@ -320,8 +330,8 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	<T extends ListGraphField<?, ?, ?>> T getList(Class<T> classOfT, String fieldKey);
 
 	/**
-	 * Validate consistency of this container.
-	 * This will check whether all mandatory fields have been filled
+	 * Validate consistency of this container. This will check whether all mandatory fields have been filled
 	 */
 	void validate();
+
 }
