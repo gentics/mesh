@@ -103,7 +103,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		validateParameter(fieldName, "fieldName");
 		db.asyncNoTrxExperimental(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease();
+			Release release = ac.getRelease(null);
 			return project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM).map(node -> {
 				// TODO Update SQB
 				Language language = boot.languageRoot().findByLanguageTag(languageTag);

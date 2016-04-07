@@ -157,7 +157,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Project project = ac.getProject();
 			if (project != null) {
 				return Collections
-						.singleton(getIndexName(project.getUuid(), ac.getRelease().getUuid(), ac.getVersion()));
+						.singleton(getIndexName(project.getUuid(), ac.getRelease(null).getUuid(), ac.getVersion()));
 			} else {
 				List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
 				return projects.stream()

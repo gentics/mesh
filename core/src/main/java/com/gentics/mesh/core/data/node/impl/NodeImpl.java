@@ -118,7 +118,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Observable<String> getPathSegment(InternalActionContext ac) {
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(),
-				ac.getRelease().getUuid(), ac.getVersion());
+				ac.getRelease(getProject()).getUuid(), ac.getVersion());
 		if (container != null) {
 			String fieldName = container.getSchemaContainerVersion().getSchema().getSegmentField();
 			StringGraphField field = container.getString(fieldName);
@@ -426,7 +426,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (container == null) {
 				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 			}
-			Release release = ac.getRelease();
+			Release release = ac.getRelease(getProject());
 
 			restNode.setPublished(isPublished());
 
@@ -633,7 +633,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			NavigationResponse response = new NavigationResponse();
 			return buildNavigationResponse(ac, this, ac.getNavigationRequestParameter().getMaxDepth(), 0, response,
-					response.getRoot(), ac.getRelease().getUuid(), Type.forVersion(ac.getVersion()));
+					response.getRoot(), ac.getRelease(getProject()).getUuid(), Type.forVersion(ac.getVersion()));
 		});
 	}
 
@@ -703,7 +703,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<PublishStatusResponse> transformToPublishStatus(InternalActionContext ac) {
-		Release release = ac.getRelease();
+		Release release = ac.getRelease(getProject());
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
 		publishStatus.setAvailableLanguages(languages);
@@ -728,7 +728,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Observable<Void> publish(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		Release release = ac.getRelease();
+		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
 		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(release, Type.DRAFT)
@@ -751,7 +751,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Observable<Void> takeOffline(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		Release release = ac.getRelease();
+		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
 		return db.trx(() -> {
@@ -767,7 +767,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<PublishStatusModel> transformToPublishStatus(InternalActionContext ac, String languageTag) {
-		Release release = ac.getRelease();
+		Release release = ac.getRelease(getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), Type.PUBLISHED);
 		if (container != null) {
@@ -788,7 +788,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Observable<Void> publish(InternalActionContext ac, String languageTag) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		Release release = ac.getRelease();
+		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
 		// get the draft version of the given language
@@ -820,7 +820,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Observable<Void> takeOffline(InternalActionContext ac, String languageTag) {
 		Database db = MeshSpringConfiguration.getInstance().database();
-		Release release = ac.getRelease();
+		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
 		return db.trx(() -> {
@@ -1003,7 +1003,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String displayFieldName = null;
 		try {
 			NodeGraphFieldContainer container = findNextMatchingFieldContainer(ac.getSelectedLanguageTags(),
-					ac.getRelease().getUuid(), ac.getVersion());
+					ac.getRelease(getProject()).getUuid(), ac.getVersion());
 			if (container == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1047,7 +1047,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 				}
 
-				Release release = ac.getRelease();
+				Release release = ac.getRelease(getProject());
 
 				/* TODO handle other fields, etc. */
 				setPublished(requestModel.isPublished());

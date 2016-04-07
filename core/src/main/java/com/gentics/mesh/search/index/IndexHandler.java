@@ -47,6 +47,15 @@ public interface IndexHandler {
 	Observable<Void> updateMapping();
 
 	/**
+	 * Update the mapping for the given index
+	 * 
+	 * @param indexName
+	 *            index name
+	 * @return
+	 */
+	Observable<Void> updateMapping(String indexName);
+
+	/**
 	 * Handle search index action
 	 * @param entry search queue entry
 	 * @return

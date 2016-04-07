@@ -50,10 +50,11 @@ public interface InternalActionContext extends ActionContext {
 	 * Return the release that may be specified in this action context as query parameter.
 	 * This method will fail, if no project is set, or if the specified release does not exist for the project
 	 * When no release was specified (but a project was set), this will return the latest release of the project
+	 * @param project project for overriding the project set in the action context
 	 *
 	 * @return release
 	 */
-	Release getRelease();
+	Release getRelease(Project project);
 
 	/**
 	 * Return the requested version. If the requested version is neither "draft" nor "published" nor a valid version number, an

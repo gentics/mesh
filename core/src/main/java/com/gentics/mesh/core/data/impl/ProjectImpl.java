@@ -17,6 +17,7 @@ import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -48,6 +49,7 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -250,11 +252,19 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 				batch.addEntry(tag, DELETE_ACTION);
 			}
 		} else {
+			List<? extends Release> releases = getReleaseRoot().findAll();
 			for (Node node : getNodeRoot().findAll()) {
 				if (baseNodeUuid.equals(node.getUuid())) {
 					continue;
 				}
-				batch.addEntry(node, STORE_ACTION);
+				releases.forEach(release -> {
+					node.getGraphFieldContainers(release, Type.DRAFT).forEach(container -> {
+						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), Type.DRAFT);
+					});
+					node.getGraphFieldContainers(release, Type.PUBLISHED).forEach(container -> {
+						container.addIndexBatchEntry(batch, STORE_ACTION, release.getUuid(), Type.PUBLISHED);
+					});
+				});
 			}
 		}
 	}

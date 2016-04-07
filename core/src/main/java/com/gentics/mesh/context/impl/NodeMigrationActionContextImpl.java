@@ -111,7 +111,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public Release getRelease() {
+	public Release getRelease(Project project) {
 		// TODO Auto-generated method stub
 		return null;
 	}

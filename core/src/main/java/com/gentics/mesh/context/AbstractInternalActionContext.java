@@ -174,8 +174,10 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	}
 
 	@Override
-	public Release getRelease() {
-		Project project = getProject();
+	public Release getRelease(Project project) {
+		if (project == null) {
+			project = getProject();
+		}
 		if (project == null) {
 			throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
 		}

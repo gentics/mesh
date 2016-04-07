@@ -131,9 +131,9 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 						// create index queue entries for creating indices
 						SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 						SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-						batch.addEntry(nodeIndexHandler.getIndexName(project.getName(), release.getUuid(), "draft"),
+						batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft"),
 								Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
-						batch.addEntry(nodeIndexHandler.getIndexName(project.getName(), release.getUuid(), "published"),
+						batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "published"),
 								Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
 
 						return Tuple.tuple(batch, release);

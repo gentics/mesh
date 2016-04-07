@@ -125,7 +125,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			return getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM).map(node -> {
 				try {
 					PageImpl<? extends Node> page = node.getChildren(ac.getUser(), ac.getSelectedLanguageTags(),
-							ac.getRelease().getUuid(), Type.forVersion(ac.getVersion()), ac.getPagingParameter());
+							ac.getRelease(node.getProject()).getUuid(), Type.forVersion(ac.getVersion()), ac.getPagingParameter());
 					return page.transformToRest(ac, 0);
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Error while loading children of node {" + node.getUuid() + "}");

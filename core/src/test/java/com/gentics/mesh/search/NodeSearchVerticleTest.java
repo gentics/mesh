@@ -5,6 +5,7 @@ import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,6 +46,9 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -56,6 +60,8 @@ import com.gentics.mesh.core.verticle.admin.AdminVerticle;
 import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.project.ProjectVerticle;
+import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
@@ -91,6 +97,12 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	@Autowired
 	private TagFamilyVerticle tagFamilyVerticle;
 
+	@Autowired
+	private ProjectVerticle projectVerticle;
+
+	@Autowired
+	private ReleaseVerticle releaseVerticle;
+
 	@Override
 	@Before
 	public void setupVerticleTest() throws Exception {
@@ -110,6 +122,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		list.add(nodeVerticle);
 		list.add(eventbusVerticle);
 		list.add(tagFamilyVerticle);
+		list.add(projectVerticle);
+		list.add(releaseVerticle);
 		return list;
 	}
 
@@ -587,6 +601,172 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		int nColorTags = response.getData().get(0).getTags().get("colors").getItems().size();
 		int nBasicTags = response.getData().get(0).getTags().get("basic").getItems().size();
 		assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
+	}
+
+	@Test
+	public void testGlobalNodeSearch() throws Exception {
+		fullIndex();
+
+		NodeResponse oldNode = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(),
+				new NodeRequestParameter().draft()));
+
+		ProjectCreateRequest createProject = new ProjectCreateRequest();
+		createProject.setName("mynewproject");
+		ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
+		call(() -> getClient().addSchemaToProject(schemaContainer("folder").getUuid(), projectResponse.getUuid()));
+
+		NodeCreateRequest createNode = new NodeCreateRequest();
+		createNode.setLanguage("en");
+		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
+		createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
+		NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
+
+		// search in old project
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
+
+		// search in new project
+		response = call(() -> getClient().searchNodes("mynewproject", getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
+
+		// search globally
+		response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
+	}
+
+	@Test
+	public void testGlobalPublishedNodeSearch() throws Exception {
+		fullIndex();
+
+		ProjectCreateRequest createProject = new ProjectCreateRequest();
+		createProject.setName("mynewproject");
+		ProjectResponse projectResponse = call(() -> getClient().createProject(createProject));
+		call(() -> getClient().addSchemaToProject(schemaContainer("folder").getUuid(), projectResponse.getUuid()));
+
+		NodeCreateRequest createNode = new NodeCreateRequest();
+		createNode.setLanguage("en");
+		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setParentNodeUuid(projectResponse.getRootNodeUuid());
+		createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
+		NodeResponse newNode = call(() -> getClient().createNode("mynewproject", createNode));
+
+		// search globally for published version
+		NodeListResponse response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));
+		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
+
+		// publish the node
+		call(() -> getClient().publishNode("mynewproject", newNode.getUuid()));
+
+		// search globally for published version
+		response = call(() -> getClient().searchNodes(getSimpleQuery("Concorde")));
+		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
+	}
+
+	@Test
+	public void testSearchPublishedNodes() throws Exception {
+		String oldContent = "supersonic";
+		String newContent = "urschnell";
+		fullIndex();
+
+		// "supersonic" not found in published nodes
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		assertThat(response.getData()).as("Published search result").isEmpty();
+
+		// publish the Concorde
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new NodeRequestParameter().draft()));
+		call(() -> getClient().publishNode(PROJECT_NAME, content("concorde").getUuid()));
+
+		// "urschnell" found in published nodes
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+
+		// change draft version of content
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
+		call(() -> getClient().updateNode(PROJECT_NAME, concorde.getUuid(), update));
+
+		// "supersonic" still found, "urschnell" not found in published nodes
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		assertThat(response.getData()).as("Published search result").isEmpty();
+
+		// publish content "urschnell"
+		call(() -> getClient().publishNode(PROJECT_NAME, content("concorde").getUuid()));
+
+		// "supersonic" no longer found, but "urschnell" found in published nodes
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		assertThat(response.getData()).as("Published search result").isEmpty();
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
+		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+	}
+
+	@Test
+	public void testSearchDraftNodes() throws Exception {
+		String oldContent = "supersonic";
+		String newContent = "urschnell";
+		fullIndex();
+
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new NodeRequestParameter().draft()));
+
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result").isEmpty();
+
+		// change draft version of content
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
+		call(() -> getClient().updateNode(PROJECT_NAME, concorde.getUuid(), update));
+
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result").isEmpty();
+
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+	}
+
+	@Test
+	public void testSearchPublishedInRelease() throws Exception {
+		fullIndex();
+
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(),
+				new NodeRequestParameter().draft()));
+		call(() -> getClient().publishNode(PROJECT_NAME, concorde.getUuid()));
+
+		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
+		createRelease.setName("newrelease");
+		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
+
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
+		assertThat(response.getData()).as("Search result").isEmpty();
+
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+				new NodeRequestParameter().setRelease(project().getInitialRelease().getName())));
+		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+	}
+
+	@Test
+	public void testSearchDraftInRelease() throws Exception {
+		fullIndex();
+
+		NodeResponse concorde = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(),
+				new NodeRequestParameter().draft()));
+
+		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
+		createRelease.setName("newrelease");
+		call(() -> getClient().createRelease(PROJECT_NAME, createRelease));
+
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new NodeRequestParameter().draft()));
+		assertThat(response.getData()).as("Search result").isEmpty();
+
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+				new NodeRequestParameter().setRelease(project().getInitialRelease().getName()).draft()));
+		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
 	private void addNumberSpeedField(int number) {
