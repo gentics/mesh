@@ -4,9 +4,9 @@
 
 This documentation provides information on the structure and functionality of the Mesh server and its API endpoints.
 
-== TL;DR 
+== TL;DR
 
-Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST. 
+Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST.
 Mesh will also provide you a lot of powerful tools build around and for those documents.
 
  * Document level permission system
@@ -24,7 +24,7 @@ Mesh will also provide you a lot of powerful tools build around and for those do
 
 == REST API
 
-The link:raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element. 
+The link:raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element.
 There are many things you can do with the REST API. For example:
 
 * You can create new users.
@@ -42,7 +42,7 @@ The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncd
 ==== Overview
 
 Mesh currently supports two ways of authentication: `Basic` and `Json Web Token (JWT)`. A user can be authenticated by setting the Authentication HTTP header in a request.
-Edit the mesh configuration file (`mesh.json`) to set your prefered authentication method. 
+Edit the mesh configuration file (`mesh.json`) to set your prefered authentication method.
 
 Here is an example:
 
@@ -120,7 +120,7 @@ Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding 
 
 === Headers
 
-It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Mesh that your client is accepting JSON. 
+It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Mesh that your client is accepting JSON.
 
 
 [source,bash]
@@ -209,9 +209,9 @@ Endpoint: ```/api/v1/users```
 | enabled       | Enabled flag. Disabled users can no longer log into mash. A deleted user will not be completely removed. Instead the user will just be disabled.
 | groups        | List of group references of the user
 | creator       | User reference of the creator
-| created       | Epoch creation date 
+| created       | Epoch creation date
 | editor        | User reference of the last editor
-| edited        | Epoch last edited date 
+| edited        | Epoch last edited date
 | rolePerms     | Role permissions on the element
 | permissions   | User permissions on the element
 |======
@@ -238,9 +238,9 @@ Endpoint: ```/api/v1/groups```
 | name        | Name of the group
 | roles       | List of role references (name/uuid)
 | creator     | User reference of the creator
-| created     | Epoch creation date 
+| created     | Epoch creation date
 | editor      | User reference of the last editor
-| edited      | Epoch last edited date 
+| edited      | Epoch last edited date
 | rolePerms   | Role permissions on the element
 | permissions | User permissions on the element
 |======
@@ -254,7 +254,7 @@ include::{raml-json}/GroupResponse.example.json[]
 
 === Roles
 
-Roles are used to assign permissions to objects. A role can be assigned to multiple groups. 
+Roles are used to assign permissions to objects. A role can be assigned to multiple groups.
 Users can only assign permissions to roles to which they have access.
 Roles can't be nested.
 
@@ -267,9 +267,9 @@ Endpoint: ```/api/v1/roles```
 | name          | Name of the role
 | groups        | List of group references of the role
 | creator       | User reference of the creator
-| created       | Epoch creation date 
+| created       | Epoch creation date
 | editor        | User reference of the last editor
-| edited        | Epoch last edited date 
+| edited        | Epoch last edited date
 | rolePerms     | Role permissions on the element
 | permissions   | User permissions on the element
 |======
@@ -295,9 +295,9 @@ Endpoint: ```/api/v1/projects```
 | name          | Name of the project
 | rootNodeUuid  | Uuid of the project root node
 | creator       | User reference of the creator
-| created       | Epoch creation date 
+| created       | Epoch creation date
 | editor        | User reference of the last editor
-| edited        | Epoch last edited date 
+| edited        | Epoch last edited date
 | rolePerms     | Role permissions on the element
 | permissions   | User permissions on the element
 |======
@@ -322,9 +322,9 @@ Endpoint: ```/api/v1/:YOURPROJECT/tagfamilies```
 | uuid          | Uuid of the tag family
 | name          | Name of the tag family
 | creator       | User reference of the creator
-| created       | Epoch creation date 
+| created       | Epoch creation date
 | editor        | User reference of the last editor
-| edited        | Epoch last edited date 
+| edited        | Epoch last edited date
 | rolePerms     | Role permissions on the element
 | permissions   | User permissions on the element
 |======
@@ -339,7 +339,7 @@ include::{raml-json}/TagFamilyResponse.example.json[]
 
 === Tags
 
-Tags can be added to nodes. Tags can not be hierarchically structured. 
+Tags can be added to nodes. Tags can not be hierarchically structured.
 
 Endpoint: ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags```
 
@@ -351,9 +351,9 @@ Endpoint: ```/api/v1/:YOUR_PROJECT/tagFamilies/:uuid/tags```
 | fields        | Tag fields which provide the tag name
 | tagFamily     | Tag family reference of the tag
 | creator       | User reference of the creator
-| created       | Epoch creation date 
+| created       | Epoch creation date
 | editor        | User reference of the last editor
-| edited        | Epoch last edited date 
+| edited        | Epoch last edited date
 | rolePerms     | Role permissions on the element
 | permissions   | User permissions on the element
 |======
@@ -367,7 +367,7 @@ include::{raml-json}/TagResponse.example.json[]
 
 === Nodes
 
-Nodes are the main structural building blocks for your content. You may create different schemas to create multiple types of nodes. 
+Nodes are the main structural building blocks for your content. You may create different schemas to create multiple types of nodes.
 Nodes can be hierarchically structured if the schema is allowing this. The type of a node is always defined by the assigned schema. Nodes can be tagged by any number of tags.
 
 Endpoint: ```/api/v1/:YOURPROJECT/nodes```
@@ -381,7 +381,7 @@ Endpoint: ```/api/v1/:YOURPROJECT/nodes```
 | parentNode                     | Node reference to the parent node. The project basenode has no parent node.
 | language                       | Language tag of the current language
 | availableLanguages             | List of available languages
-| languagePaths                  | Map with languages and the corresponding webroot path. Note that the field will only be added when a `resolveLinks` parameter has been specified. 
+| languagePaths                  | Map with languages and the corresponding webroot path. Note that the field will only be added when a `resolveLinks` parameter has been specified.
 | tags                           | List of tags that were used to tag the node
 | project                        | Project reference
 | schema                         | Schema reference of the node
@@ -391,9 +391,9 @@ Endpoint: ```/api/v1/:YOURPROJECT/nodes```
 | displayField                   | Key of the field that will be used to retrieve the display name value. (eg. "title" for blogpost nodes and "filename" for binary nodes)
 | segmentField                   | Key of the field that will be used to build a path segment of this node. The path segments create the webroot path to the element.
 | creator                        | User reference of the creator
-| created                        | Epoch creation date 
+| created                        | Epoch creation date
 | editor                         | User reference of the last editor
-| edited                         | Epoch last edited date 
+| edited                         | Epoch last edited date
 | rolePerms                      | Role permissions on the element
 | permissions                    | User permissions on the element
 |======
@@ -418,7 +418,7 @@ include::{raml-json}/NodeResponse.example.json[]
 | The lang query parameter can be used to retrieve a node in a particular language.
 
 | role
-| The role query parameter may be used in order to add permission information related to the specified role to the response. 
+| The role query parameter may be used in order to add permission information related to the specified role to the response.
 This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role.
 Endpoint: ```/api/v1/:YOURPROJECT/nodes?role=:ROLE_UUID```
 
@@ -427,7 +427,7 @@ Endpoint: ```/api/v1/:YOURPROJECT/nodes?role=:ROLE_UUID```
 It is possible to expand node fields.
 
 | expandAll
-| The ```expandAll``` query parameter is a boolean flag which can be used to expand all expandable fields. 
+| The ```expandAll``` query parameter is a boolean flag which can be used to expand all expandable fields.
 
 |======
 
@@ -457,16 +457,16 @@ include::{raml-json}/SchemaResponse.example.json[]
 
 The following configuration properties may be specified:
 
-* **`binary`** Set to `true` to mark the schema as a binary schema. This will cause a file upload input to appear 
+* **`binary`** Set to `true` to mark the schema as a binary schema. This will cause a file upload input to appear
 when creating/editing a node using this schema, and also add additional binary-specific properties to the response object
 of such nodes.
-* **`container`** Set to `true` to indicate that this schema can contain child nodes. This will cause the response 
+* **`container`** Set to `true` to indicate that this schema can contain child nodes. This will cause the response
 object for such nodes to have a `childrenInfo` property.
 * **`displayField`** Used to specify which field (as defined in the "fields" list) should be considered the title for
 the purpose of displaying a list of nodes. The value must be a string which corresponds to the name of one of the
 schema's fields, and additionally that field must not be of type "list", "node".
 
-==== Schema Field 
+==== Schema Field
 
 A field is defined by an object which must have the following properties:
 
@@ -486,7 +486,7 @@ properties are defined in the [Types](#types) section.
 
 [options="header",cols="3*"]
 |======
-| Name 
+| Name
 | Type Key
 | Description
 
@@ -540,7 +540,7 @@ Since the JSON standard does not have a special regex type, it would need to be 
 [options="header"]
 |======
 | Component                                                    | Type                | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database      | 2.1.x 
+| http://orientdb.com/[OrientDB]                               | Graph Database      | 2.1.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                 | 2.2.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine       | 1.7.x
 | http://vertx.io/[Vert.x]                                     | Core Framework      | 3.1.x
@@ -562,7 +562,7 @@ Alternatively you can start mesh using docker via:
 
 The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains mesh which provides the demo data and demo application.
 
-[source]
+[source,bash]
 ----
 docker run -p 8080:8080 gentics/mesh-demo
 or
@@ -571,7 +571,7 @@ docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
 
 The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty mesh server without any demo content.
 
-[source]
+[source,bash]
 ----
 docker run -p 8080:8080 gentics/mesh
 or
@@ -670,7 +670,7 @@ By default all specified directories are relative to the current working directo
 | Configuration                      | Type   | Description
 | ```uploadOptions.byteLimit```      | Number | Upload limit in bytes
 | ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data
-| ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory. 
+| ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
 |======
 
 === Cache Options
@@ -681,10 +681,10 @@ Mesh does not manage any cache structure but it is possible to tweak the underly
 
 === Permissions
 
-Permissions exist between roles and other elements (including other roles). Most responses within Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way. 
+Permissions exist between roles and other elements (including other roles). Most responses within Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
 
 The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role. This endpoint can also be used to apply recursive permissions.
-It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups). 
+It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
 
 
 For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
@@ -696,7 +696,7 @@ Example:
 * When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
 
 ==== Users
- 
+
 Recursive permission changes on ```/users``` will also affect all listed users.
 
 [options="header"]
@@ -720,7 +720,7 @@ Recursive permission changes on ```/users/:uuid``` have no effect on referenced 
 |======
 
 ==== Groups
- 
+
 Recursive permission changes on ```/groups``` will affect all groups.
 
 [options="header"]
@@ -887,7 +887,7 @@ Recursive permission changes on ```/:YOUR_PROJECT/nodes/:uuid``` will also affec
 
 The ```/api/v1/:YOUR_PROJECT/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
 
-Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000``` 
+Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000```
 
 This makes it possible to integrate mesh with many known routing frameworks.
 
@@ -921,7 +921,7 @@ Each endpoint will return a navigation response which contains the nested naviga
 
 === Link Handling
 
-Mesh will try to resolve any found mesh link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`. 
+Mesh will try to resolve any found mesh link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`.
 
 Example: ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`
 
@@ -1008,7 +1008,7 @@ include::json/updatefield.json[]
 |======
 | Properties       | Description
 | description      | New schema description
-| order            | Array of strings that contains the field order 
+| order            | Array of strings that contains the field order
 | displayFieldname | New displayFieldname value of the schema
 | segmentFieldname | New segmentFieldname value of the schema
 | container        | New container flag of the schema
@@ -1055,7 +1055,7 @@ Please note that by default conflicting data will be removed and this action can
 
 === Eventbus Bridge / Websocket
 
-The ```/api/v1/eventbus``` endpoint allows clients to access the mesh eventbus. This may be useful if you want to react on specific mesh events. 
+The ```/api/v1/eventbus``` endpoint allows clients to access the mesh eventbus. This may be useful if you want to react on specific mesh events.
 Currently only schema migration specific events are handled via this endpoint but more will follow.
 
 The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
@@ -1173,7 +1173,7 @@ The found nodes will be sorted ascending by creator.
 
 *Search nodes by micronode field values*
 
-Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"): 
+Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
 
 [source,json]
 ----
@@ -1334,10 +1334,9 @@ The mesh ui can be configured using the mesh-ui-config.js file.
 
 === Preview handling
 
-The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered. 
+The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
 The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
 
 == License
 
 Gentics Mesh is published under a commercial license. This license can be obtained from sales@gentics.com.
-
