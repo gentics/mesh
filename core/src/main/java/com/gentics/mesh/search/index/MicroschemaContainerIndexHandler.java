@@ -7,15 +7,19 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
 import io.vertx.core.json.JsonObject;
 
@@ -23,6 +27,8 @@ import io.vertx.core.json.JsonObject;
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
 
 	private static MicroschemaContainerIndexHandler instance;
+
+	private final static Set<String> indices = Collections.singleton("microschema");
 
 	@PostConstruct
 	public void setup() {
@@ -34,13 +40,28 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	protected String getIndex() {
+	protected String getIndex(SearchQueueEntry entry) {
 		return "microschema";
+	}
+
+	@Override
+	public Set<String> getIndices() {
+		return indices;
+	}
+
+	@Override
+	public Set<String> getAffectedIndices(InternalActionContext ac) {
+		return indices;
 	}
 
 	@Override
 	protected String getType() {
 		return "microschema";
+	}
+
+	@Override
+	public String getKey() {
+		return MicroschemaContainer.TYPE;
 	}
 
 	@Override

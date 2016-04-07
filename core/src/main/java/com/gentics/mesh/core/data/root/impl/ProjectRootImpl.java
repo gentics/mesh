@@ -23,18 +23,26 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.search.index.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.TagIndexHandler;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -168,6 +176,20 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 
 				SearchQueueBatch batch = project.createIndexBatch(STORE_ACTION);
+
+				Release initialRelease = project.getInitialRelease();
+				NodeIndexHandler nodeIndexHandler = NodeIndexHandler.getInstance();
+				TagIndexHandler tagIndexHandler = TagIndexHandler.getInstance();
+				TagFamilyIndexHandler tagFamilyIndexHandler = TagFamilyIndexHandler.getInstance();
+				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "draft"),
+						Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(nodeIndexHandler.getIndexName(project.getUuid(), initialRelease.getUuid(), "published"),
+						Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(tagIndexHandler.getIndexName(project.getUuid()), Tag.TYPE,
+						SearchQueueEntryAction.CREATE_INDEX);
+				batch.addEntry(tagFamilyIndexHandler.getIndexName(project.getUuid()), TagFamily.TYPE,
+						SearchQueueEntryAction.CREATE_INDEX);
+
 				return Tuple.tuple(batch, project);
 			});
 

@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -21,12 +22,19 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 
 import rx.Observable;
 
@@ -100,11 +108,12 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			Project project = getProject();
 			String projectName = project.getName();
 			String projectUuid = project.getUuid();
+			NodeIndexHandler nodeIndexHandler = NodeIndexHandler.getInstance();
 
 			return requestUser.hasPermissionAsync(ac, project, GraphPermission.UPDATE_PERM).flatMap(hasPerm -> {
 				if (hasPerm) {
 
-					Release createdRelease = db.trx(() -> {
+					Tuple<SearchQueueBatch, Release> tuple = db.trx(() -> {
 						requestUser.reload();
 
 						// check for uniqueness of release name (per project)
@@ -117,10 +126,20 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 						Release release = create(createRequest.getName(), requestUser);
 
-						return release;
+						nodeIndexHandler.getIndexName(project.getUuid(), release.getUuid(), "draft");
+
+						// create index queue entries for creating indices
+						SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+						SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+						batch.addEntry(nodeIndexHandler.getIndexName(project.getName(), release.getUuid(), "draft"),
+								Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+						batch.addEntry(nodeIndexHandler.getIndexName(project.getName(), release.getUuid(), "published"),
+								Node.TYPE, SearchQueueEntryAction.CREATE_INDEX);
+
+						return Tuple.tuple(batch, release);
 					});
 
-					return Observable.just(createdRelease);
+					return tuple.v1().process().map(i -> tuple.v2());
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
 				}

@@ -7,18 +7,22 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
 import io.vertx.core.json.JsonObject;
 
@@ -29,6 +33,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	public static final String USERNAME_KEY = "username";
 	public static final String FIRSTNAME_KEY = "firstname";
 	public static final String LASTNAME_KEY = "lastname";
+
+	private final static Set<String> indices = Collections.singleton(User.TYPE);
 
 	private static UserIndexHandler instance;
 
@@ -42,12 +48,27 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	protected String getIndex() {
+	protected String getIndex(SearchQueueEntry entry) {
 		return User.TYPE;
 	}
 
 	@Override
+	public Set<String> getIndices() {
+		return indices;
+	}
+
+	@Override
+	public Set<String> getAffectedIndices(InternalActionContext ac) {
+		return indices;
+	}
+
+	@Override
 	protected String getType() {
+		return User.TYPE;
+	}
+
+	@Override
+	public String getKey() {
 		return User.TYPE;
 	}
 

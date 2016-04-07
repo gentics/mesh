@@ -278,20 +278,20 @@ public class NodeVerticle extends AbstractProjectRestVerticle {
 
 		Route getLanguageRoute = route("/:uuid/languages/:languageTag/published").method(GET).produces(APPLICATION_JSON);
 		getLanguageRoute.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
-			crudHandler.handleGetPublishStatus(ac, ac.getParameter("languageTag"));
+			crudHandler.handleGetPublishStatus(InternalActionContext.create(rc), rc.request().getParam("uuid"),
+					rc.request().getParam("languageTag"));
 		});
 
 		Route putLanguageRoute = route("/:uuid/languages/:languageTag/published").method(PUT).produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
-			crudHandler.handlePublish(ac, ac.getParameter("languageTag"));
+			crudHandler.handlePublish(InternalActionContext.create(rc), rc.request().getParam("uuid"),
+					rc.request().getParam("languageTag"));
 		});
 
 		Route deleteLanguageRoute = route("/:uuid/languages/:languageTag/published").method(DELETE).produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
-			InternalActionContext ac = InternalActionContext.create(rc);
-			crudHandler.handleTakeOffline(ac, ac.getParameter("languageTag"));
+			crudHandler.handleTakeOffline(InternalActionContext.create(rc), rc.request().getParam("uuid"),
+					rc.request().getParam("languageTag"));
 		});
 
 

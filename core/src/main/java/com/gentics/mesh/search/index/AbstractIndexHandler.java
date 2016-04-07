@@ -10,8 +10,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -22,11 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
@@ -76,9 +79,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	/**
 	 * Return the index name.
 	 * 
+	 * @param entry
+	 *            entry
+	 * 
 	 * @return
 	 */
-	abstract protected String getIndex();
+	abstract protected String getIndex(SearchQueueEntry entry);
 
 	/**
 	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
@@ -100,10 +106,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * 
 	 * @param object
 	 * @param documentType
+	 * @param entry search queue entry
 	 * @return
 	 */
-	public Observable<Void> store(T object, String documentType) {
-		return searchProvider.storeDocument(getIndex(), documentType, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
+	public Observable<Void> store(T object, String documentType, SearchQueueEntry entry) {
+		return searchProvider.storeDocument(getIndex(entry), documentType, object.getUuid(), transformToDocumentMap(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -112,19 +119,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> delete(String uuid, String documentType) {
+	public Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry) {
 		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(getIndex(), documentType, uuid);
+		return searchProvider.deleteDocument(getIndex(entry), documentType, uuid);
 	}
 
 	@Override
-	public Observable<Void> store(String uuid, String indexType) {
+	public Observable<Void> store(String uuid, String indexType, SearchQueueEntry entry) {
 		return getRootVertex().findByUuid(uuid).flatMap(element -> {
 			return db.noTrx(() -> {
 				if (element == null) {
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
 				} else {
-					return store(element, indexType);
+					return store(element, indexType, entry);
 				}
 			});
 		});
@@ -149,12 +156,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	protected void addBasicReferences(Map<String, Object> map, MeshCoreVertex<?, ?> vertex) {
 		// TODO make sure field names match node response
 		map.put("uuid", vertex.getUuid());
-		if (vertex instanceof UserTrackingVertex) {
-			UserTrackingVertex trackedVertex = (UserTrackingVertex)vertex;
-			addUser(map, "creator", trackedVertex.getCreator());
-			addUser(map, "editor", trackedVertex.getEditor());
-			map.put("edited", trackedVertex.getLastEditedTimestamp());
-			map.put("created", trackedVertex.getCreationTimestamp());
+		if (vertex instanceof CreatorTrackingVertex) {
+			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex)vertex;
+			addUser(map, "creator", createdVertex.getCreator());
+			map.put("created", createdVertex.getCreationTimestamp());
+		}
+		if (vertex instanceof EditorTrackingVertex) {
+			EditorTrackingVertex editedVertex = (EditorTrackingVertex)vertex;
+			addUser(map, "editor", editedVertex.getEditor());
+			map.put("edited", editedVertex.getLastEditedTimestamp());
 		}
 	}
 
@@ -216,7 +226,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Observable<Void> handleAction(String uuid, String actionName, String indexType) {
+	public Observable<Void> handleAction(SearchQueueEntry entry) {
+		String uuid = entry.getElementUuid();
+		String actionName = entry.getElementActionName();
+		String indexType = entry.getElementIndexType();
+
 		if (!isSearchClientAvailable()) {
 			String msg = "Elasticsearch provider has not been initalized. It can't be used. Omitting search index handling!";
 			log.error(msg);
@@ -229,11 +243,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		SearchQueueEntryAction action = SearchQueueEntryAction.valueOfName(actionName);
 		switch (action) {
 		case DELETE_ACTION:
-			return delete(uuid, indexType);
+			return delete(uuid, indexType, entry);
 		case STORE_ACTION:
-			return store(uuid, indexType);
+			return store(uuid, indexType, entry);
 		case REINDEX_ALL:
 			return reindexAll();
+		case CREATE_INDEX:
+			return createIndex(uuid).flatMap(i -> updateMapping());
 		default:
 			return Observable.error(new Exception("Action type {" + action + "} is unknown."));
 		}
@@ -263,33 +279,43 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Observable<Void> updateMapping() {
 		try {
-			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(getIndex());
-			mappingRequestBuilder.setType(getType());
+			Set<Observable<Void>> obsSet = new HashSet<>();
+			getIndices().forEach(indexName -> {
+				PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices()
+						.preparePutMapping(indexName);
+				mappingRequestBuilder.setType(getType());
 
-			JsonObject mappingProperties = getMapping();
-			// Enhance mappings with generic/common field types
-			mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
-			JsonObject root = new JsonObject();
-			root.put("properties", mappingProperties);
-			JsonObject mapping = new JsonObject();
-			mapping.put(getType(), root);
+				JsonObject mappingProperties = getMapping();
+				// Enhance mappings with generic/common field types
+				mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+				JsonObject root = new JsonObject();
+				root.put("properties", mappingProperties);
+				JsonObject mapping = new JsonObject();
+				mapping.put(getType(), root);
 
-			mappingRequestBuilder.setSource(mapping.toString());
-
-			ObservableFuture<Void> obs = RxHelper.observableFuture();
-			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-				@Override
-				public void onResponse(PutMappingResponse response) {
-					obs.toHandler().handle(Future.succeededFuture());
-				}
-
-				@Override
-				public void onFailure(Throwable e) {
-					obs.toHandler().handle(Future.failedFuture(e));
-				}
+				mappingRequestBuilder.setSource(mapping.toString());
+				
+				ObservableFuture<Void> obs = RxHelper.observableFuture();
+				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+					
+					@Override
+					public void onResponse(PutMappingResponse response) {
+						obs.toHandler().handle(Future.succeededFuture());
+					}
+					
+					@Override
+					public void onFailure(Throwable e) {
+						obs.toHandler().handle(Future.failedFuture(e));
+					}
+				});
+				obsSet.add(obs);
 			});
-			return obs;
+
+			if (obsSet.isEmpty()) {
+				return Observable.just(null);
+			} else {
+				return Observable.merge(obsSet).last();
+			}
 		} catch (Exception e) {
 			return Observable.error(e);
 		}
@@ -297,7 +323,27 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Observable<Void> createIndex() {
-		return searchProvider.createIndex(getIndex());
+		Set<Observable<Void>> obs = new HashSet<>();
+		getIndices().forEach(index -> obs.add(searchProvider.createIndex(index)));
+		if (obs.isEmpty()) {
+			return Observable.just(null);
+		} else {
+			return Observable.merge(obs).last();
+		}
+	}
+
+	/**
+	 * Create the index, if it is one of the indices handled by this index handler.
+	 * If the index name is not handled by this index handler, an error will be thrown
+	 * @param indexName index name
+	 * @return 
+	 */
+	protected Observable<Void> createIndex(String indexName) {
+		if (getIndices().contains(indexName)) {
+			return searchProvider.createIndex(indexName);
+		} else {
+			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
+		}
 	}
 
 	@Override
@@ -307,10 +353,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Observable<Void> clearIndex() {
-		return searchProvider.clearIndex(getIndex());
-	}
-
-	public Observable<Void> handleAction(SearchQueueEntry entry) {
-		return handleAction(entry.getElementUuid(), entry.getElementActionName(), entry.getElementIndexType());
+		Set<Observable<Void>> obs = new HashSet<>();
+		getIndices().forEach(index -> obs.add(searchProvider.clearIndex(index)));
+		if (obs.isEmpty()) {
+			return Observable.just(null);
+		} else {
+			return Observable.merge(obs).last();
+		}
 	}
 }

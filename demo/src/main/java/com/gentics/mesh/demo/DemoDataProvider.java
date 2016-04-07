@@ -289,14 +289,12 @@ public class DemoDataProvider {
 			ProjectResponse project = getProject(nodeJson.getString("project"));
 			String schemaName = nodeJson.getString("schema");
 			String name = nodeJson.getString("name");
-			String parentNodeName = nodeJson.getString("parent");
 			Schema schema = getSchemaModel(schemaName);
-			NodeResponse parentNode = getNode(parentNodeName);
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setLanguage("en");
-			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+			nodeCreateRequest.setParentNodeUuid(project.getRootNodeUuid());
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
 
@@ -409,12 +407,7 @@ public class DemoDataProvider {
 			// client.assignLanguageToProject(projectFuture.result().getUuid(), getGerman().getUuid());
 			ProjectResponse project = projectFuture.result();
 
-			// Load the project basenode
-			Future<NodeResponse> nodeFuture = client.findNodeByUuid(PROJECT_NAME, project.getRootNodeUuid());
-			latchFor(nodeFuture);
-
-			nodes.put(name + ".basenode", nodeFuture.result());
-			projects.put(name, projectFuture.result());
+			projects.put(name, project);
 		}
 	}
 

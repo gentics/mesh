@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -33,23 +32,22 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueue;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -60,7 +58,6 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.core.verticle.tagfamily.TagFamilyVerticle;
-import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.query.impl.NodeRequestParameter;
 import com.gentics.mesh.query.impl.NodeRequestParameter.LinkType;
 import com.gentics.mesh.query.impl.PagingParameter;
@@ -70,8 +67,6 @@ import com.gentics.mesh.util.FieldUtil;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
 
 public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implements BasicSearchCrudTestcases {
 
@@ -109,6 +104,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
 		list.add(searchVerticle);
+		list.add(projectSearchVerticle);
 		list.add(schemaVerticle);
 		list.add(adminVerticle);
 		list.add(nodeVerticle);
@@ -134,10 +130,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		json += "			    }";
 		json += "			}";
 
-		Future<NodeListResponse> future = getClient().searchNodes(json);
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		String search = json;
+		NodeListResponse response = call(
+				() -> getClient().searchNodes(PROJECT_NAME, search, new NodeRequestParameter().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -158,26 +153,20 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
 		assertEquals(1, response.getData().size());
 		deleteNode(PROJECT_NAME, content("concorde").getUuid());
 
-		future = getClient().searchNodes(getSimpleQuery("Concorde"), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
 
 	}
 
 	@Test
 	public void testBogusQuery() {
-		Future<NodeListResponse> future = getClient().searchNodes("bogus}J}son");
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "search_query_not_parsable");
+		call(() -> getClient().searchNodes(PROJECT_NAME, "bogus}J}son"), BAD_REQUEST, "search_query_not_parsable");
 	}
 
 	@Test
@@ -185,10 +174,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("schema.name", "content"));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME,
+				getSimpleTermQuery("schema.name", "content"), new NodeRequestParameter().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -200,10 +187,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		Node parentNode = folder("news");
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME,
+				getSimpleTermQuery("parentNode.uuid", parentNode.getUuid()), new NodeRequestParameter().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 		// TODO verify the found nodes are correct
@@ -226,51 +211,30 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		json += "			    \"query\":{";
 		json += "			        \"bool\" : {";
 		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"fields.stringList\" : \"three\" }";
+		json += "			                \"term\" : { \"fields.name\" : \"bla\" }";
 		json += "			            }";
 		json += "			        }";
 		json += "			    }";
 		json += "			}";
 
-		Future<NodeListResponse> future = getClient().searchNodes(json, new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		String search = json;
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, search,
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
 		assertEquals(0, response.getData().size());
 
-		Node node = folder("2015");
+		// create a new folder named "bla"
+		NodeCreateRequest create = new NodeCreateRequest();
+		create.setSchema(new SchemaReference().setName("folder").setUuid(schemaContainer("folder").getUuid()));
+		create.setLanguage("en");
+		create.getFields().put("name", FieldUtil.createStringField("bla"));
+		create.setParentNodeUuid(folder("2015").getUuid());
 
-		StringGraphFieldList list = node.getGraphFieldContainer(english()).createStringList("stringList");
-		list.createString("one");
-		list.createString("two");
-		list.createString("three");
-		list.createString("four");
-
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-		// Create the update entry in the search queue
-		SearchQueueBatch batch;
-		try (Trx tx = db.trx()) {
-			SearchQueue searchQueue = boot.meshRoot().getSearchQueue();
-			batch = searchQueue.createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION);
-			tx.success();
-		}
-		try (Trx tx = db.trx()) {
-			batch.process().toBlocking().last();
-		}
+		call(() -> getClient().createNode(PROJECT_NAME, create));
 
 		// Search again and make sure we found our document
-		future = getClient().searchNodes(json, new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
-		assertEquals(
-				"There should be at least one item in the resultset since we added the search queue entry and the index should now contain this item.",
-				1, response.getData().size());
-
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, search,
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		assertEquals("Check search result after document creation", 1, response.getData().size());
 	}
 
 	@Test
@@ -279,56 +243,32 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		String newString = "ABCDEFGHI";
-		Node node;
-		SearchQueueBatch batch;
-		try (Trx tx = db.trx()) {
-			node = content("concorde");
-			assertNotNull(node);
-			HtmlGraphField field = node.getGraphFieldContainer(english()).getHtml("content");
-			assertNotNull(field);
-			field.setHtml(newString);
+		Node node = content("concorde");
 
-			// Create the update entry in the search queue
-			batch = boot.meshRoot().getSearchQueue().createBatch("0");
-			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION, Node.TYPE + "-en");
-			batch.addEntry(node.getUuid(), Node.TYPE, STORE_ACTION, Node.TYPE + "-de");
-			tx.success();
-		}
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
-		assertEquals(1, response.getData().size());
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage("en");
+		update.getFields().put("content", FieldUtil.createHtmlField(newString));
+		call(() -> getClient().updateNode(PROJECT_NAME, node.getUuid(), update));
 
-		try (Trx tx = db.trx()) {
-			batch.process().toBlocking().last();
-		}
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		assertEquals("Check hits for 'supersonic' after update", 0, response.getData().size());
 
-		future = getClient().searchNodes(getSimpleQuery("supersonic"), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
-		assertEquals("The node with name {" + "Concorde" + "} should no longer be found since we updated the node and updated the content.", 0,
-				response.getData().size());
-
-		future = getClient().searchNodes(getSimpleQuery(newString), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		response = future.result();
-		assertEquals("There should be one item in the resultset since we updated the node and invoked the index update.", 1,
-				response.getData().size());
-
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery(newString),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
+		assertEquals("Check hits for '" + newString + "' after update", 1, response.getData().size());
 	}
 
 	@Test
 	public void testSearchContent() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -342,11 +282,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchContentResolveLinksAndLangFallback() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("de", "en"));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).setLanguages("de", "en").draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -359,11 +296,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 	public void testSearchContentResolveLinks() throws InterruptedException, JSONException {
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("the"), new PagingParameter().setPage(1).setPerPage(2),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -419,11 +353,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		Node node = content("concorde");
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("concorde"), new PagingParameter().setPage(1).setPerPage(100),
-				new NodeRequestParameter().setLanguages(expectedLanguages));
-		latchFor(future);
-		assertSuccess(future);
-		NodeListResponse response = future.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParameter().setPage(1).setPerPage(100),
+				new NodeRequestParameter().setLanguages(expectedLanguages).draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
 
@@ -449,10 +380,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		// from 1 to 9
-		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
-		getClient().searchNodes(getRangeQuery("speed", 100, 9000)).setHandler(obs.toHandler());
-		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
-		assertEquals(1, resultCount);
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 100, 9000),
+				new NodeRequestParameter().draft()));
+		assertEquals(1, response.getData().size());
 	}
 
 	@Test
@@ -462,11 +392,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		// from 9 to 1
-		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
-		getClient().searchNodes(getRangeQuery("speed", 900, 1500)).setHandler(obs.toHandler());
-		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 900, 1500),
+				new NodeRequestParameter().draft()));
 		assertEquals("We could expect to find the node with the given seed number field since the value {" + numberValue
-				+ "} is between the search range.", 1, resultCount);
+				+ "} is between the search range.", 1, response.getData().size());
 	}
 
 	@Test
@@ -476,10 +405,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		fullIndex();
 
 		// out of bounds
-		ObservableFuture<NodeListResponse> obs = RxHelper.observableFuture();
-		getClient().searchNodes(getRangeQuery("speed", 1000, 90)).setHandler(obs.toHandler());
-		int resultCount = obs.map(l -> l.getData().size()).toBlocking().single();
-		assertEquals("No node should be found since the range is invalid.", 0, resultCount);
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getRangeQuery("speed", 1000, 90),
+				new NodeRequestParameter().draft()));
+		assertEquals("No node should be found since the range is invalid.", 0, response.getData().size());
 	}
 
 	@Test
@@ -487,11 +415,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		addMicronodeField();
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"), new PagingParameter().setPage(1).setPerPage(2));
-		latchFor(future);
-		assertSuccess(future);
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
+				new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
 
-		NodeListResponse response = future.result();
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -505,12 +431,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		addMicronodeField();
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"), new PagingParameter().setPage(1).setPerPage(2),
-				new NodeRequestParameter().setResolveLinks(LinkType.FULL));
-		latchFor(future);
-		assertSuccess(future);
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParameter().setPage(1).setPerPage(2),
+				new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
 
-		NodeListResponse response = future.result();
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -529,12 +452,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 				// valid names always begin with the same character
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
-				Future<NodeListResponse> future = getClient().searchNodes(getNestedVCardListSearch(firstName, lastName),
-						new PagingParameter().setPage(1).setPerPage(2));
-				latchFor(future);
-				assertSuccess(future);
-
-				NodeListResponse response = future.result();
+				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
+						new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
@@ -561,12 +480,8 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 				// valid names always begin with the same character
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
-				Future<NodeListResponse> future = getClient().searchNodes(getNestedVCardListSearch(firstName, lastName),
-						new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().setResolveLinks(LinkType.FULL));
-				latchFor(future);
-				assertSuccess(future);
-
-				NodeListResponse response = future.result();
+				NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
+						new PagingParameter().setPage(1).setPerPage(2), new NodeRequestParameter().setResolveLinks(LinkType.FULL).draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
@@ -590,11 +505,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()),
-				new PagingParameter().setPage(1).setPerPage(10), new NodeRequestParameter().setLanguages("en", "de"));
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals("We expect to find the two language versions.", 2, future.result().getData().size());
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", concorde.getUuid()),
+				new PagingParameter().setPage(1).setPerPage(10), new NodeRequestParameter().setLanguages("en", "de").draft()));
+		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
 		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
@@ -612,12 +525,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		// Wait for migration to complete
 		failingLatch(latch);
 
-		future = getClient().searchNodes(getSimpleTermQuery("uuid", concorde.getUuid()), new PagingParameter().setPage(1).setPerPage(10),
-				new NodeRequestParameter().setLanguages("en", "de"));
-		latchFor(future);
-		assertSuccess(future);
+		response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", concorde.getUuid()), new PagingParameter().setPage(1).setPerPage(10),
+				new NodeRequestParameter().setLanguages("en", "de").draft()));
 
-		assertEquals("We only expect to find the two language versions.", 2, future.result().getData().size());
+		assertEquals("We only expect to find the two language versions.", 2, response.getData().size());
 	}
 
 	@Test
@@ -644,12 +555,9 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		MeshRoot.getInstance().getNodeRoot().reload();
 		fullIndex();
 
-		Future<NodeListResponse> future = getClient().searchNodes(getSimpleQuery("Mickey"),
-				new PagingParameter().setPage(1).setPerPage(numAdditionalNodes + 1));
-		latchFor(future);
-		assertSuccess(future);
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
+				new PagingParameter().setPage(1).setPerPage(numAdditionalNodes + 1), new NodeRequestParameter().draft()));
 
-		NodeListResponse response = future.result();
 		assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
 	}
 
@@ -669,14 +577,10 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		for (int i = 0; i < tagCount; i++) {
 			TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
 			//Add tags to node:
-			Future<NodeResponse> future = getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid());
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> getClient().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new NodeRequestParameter().draft()));
 		}
 
-		Future<NodeListResponse> search = getClient().searchNodes(getSimpleQuery("Concorde"));
-		latchFor(search);
-		NodeListResponse response = search.result();
+		NodeListResponse response = call(() -> getClient().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new NodeRequestParameter().draft()));
 		assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
 
 		//assert tag count
@@ -728,7 +632,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		nodeIndexHandler.setNodeIndexMapping(Node.TYPE, schema.getName() + "-" + schema.getVersion(), schema).toBlocking().first();
+		nodeIndexHandler.setNodeIndexMapping(schema.getName() + "-" + schema.getVersion(), schema).toBlocking().first();
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {

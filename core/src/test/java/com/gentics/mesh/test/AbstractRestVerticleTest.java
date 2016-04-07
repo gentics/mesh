@@ -485,7 +485,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	 * @return result of the future
 	 */
 	protected <T> T call(ClientHandler<T> handler) {
-		Future<T> future = handler.handle();
+		Future<T> future;
+		try {
+			future = handler.handle();
+		} catch (Exception e) {
+			future = Future.failedFuture(e);
+		}
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
@@ -500,7 +505,12 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	 * @param i18nParams parameters of the expected response message
 	 */
 	protected <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
-		Future<T> future = handler.handle();
+		Future<T> future;
+		try {
+			future = handler.handle();
+		} catch (Exception e) {
+			future = Future.failedFuture(e);
+		}
 		latchFor(future);
 		expectException(future, status, bodyMessageI18nKey, i18nParams);
 	}
@@ -513,6 +523,6 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 	 */
 	@FunctionalInterface
 	protected static interface ClientHandler<T> {
-		Future<T> handle();
+		Future<T> handle() throws Exception;
 	}
 }

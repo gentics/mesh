@@ -13,7 +13,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -31,6 +33,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -40,9 +43,11 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.search.index.TagFamilyIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -269,15 +274,26 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+		List<Tuple<String, Object>> customProperties = Arrays
+				.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid()));
 		if (action == DELETE_ACTION) {
 			for (Tag tag : getTagRoot().findAll()) {
-				batch.addEntry(tag, DELETE_ACTION);
+				batch.addEntry(tag, DELETE_ACTION, customProperties);
 			}
 		} else {
 			for (Tag tag : getTagRoot().findAll()) {
-				batch.addEntry(tag, STORE_ACTION);
+				batch.addEntry(tag, STORE_ACTION, customProperties);
 			}
 		}
 	}
 
+	@Override
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		batch.addEntry(this, action,
+				Arrays.asList(Tuple.tuple(TagFamilyIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		addRelatedEntries(batch, action);
+		return batch;
+	}
 }

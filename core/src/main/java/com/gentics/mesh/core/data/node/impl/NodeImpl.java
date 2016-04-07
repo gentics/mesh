@@ -738,12 +738,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		return db.trx(() -> {
 			// publish all unpublished containers
-			unpublishedContainers.stream().forEach(c -> publish(c.getLanguage(), release, ac.getUser()));
+			List<NodeGraphFieldContainer> published = unpublishedContainers.stream()
+					.map(c -> publish(c.getLanguage(), release, ac.getUser())).collect(Collectors.toList());
 
 			// reindex
-			// TODO
-			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
-			return batch;
+			return createIndexBatch(STORE_ACTION, published, releaseUuid, Type.PUBLISHED);
 		}).process().map(i -> {
 			return null;
 		});
@@ -756,12 +755,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		return db.trx(() -> {
+			List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, Type.PUBLISHED);
 			getGraphFieldContainerEdges(releaseUuid, Type.PUBLISHED).stream().forEach(EdgeFrame::remove);
 
 			// reindex
-			// TODO
-			SearchQueueBatch batch = createIndexBatch(DELETE_ACTION);
-			return batch;
+			return createIndexBatch(DELETE_ACTION, published, releaseUuid, Type.PUBLISHED);
 		}).process().map(i -> {
 			return null;
 		});
@@ -810,12 +808,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO
 
 		return db.trx(() -> {
-			publish(draftVersion.getLanguage(), release, ac.getUser());
+			NodeGraphFieldContainer published = publish(draftVersion.getLanguage(), release, ac.getUser());
 
 			// reindex
-			// TODO
-			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
-			return batch;
+			return createIndexBatch(STORE_ACTION, Arrays.asList(published), release.getUuid(), Type.PUBLISHED);
 		}).process().map(i -> {
 			return null;
 		});
@@ -828,18 +824,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String releaseUuid = release.getUuid();
 
 		return db.trx(() -> {
-			EdgeFrame publishedEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED);
+			NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
 
-			if (publishedEdge == null) {
+			if (published == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			} else {
-				publishedEdge.remove();
 			}
+			// remove the "published" edge
+			getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED).remove();
 
 			// reindex
-			// TODO
-			SearchQueueBatch batch = createIndexBatch(DELETE_ACTION);
-			return batch;
+			return createIndexBatch(DELETE_ACTION, Arrays.asList(published), releaseUuid, Type.PUBLISHED);
 		}).process().map(i -> {
 			return null;
 		});
@@ -850,8 +844,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param language language
 	 * @param release release
 	 * @param user user
+	 * @return published field container
 	 */
-	protected void publish(Language language, Release release, User user) {
+	protected NodeGraphFieldContainer publish(Language language, Release release, User user) {
 		String languageTag = language.getLanguageTag();
 		String releaseUuid = release.getUuid();
 
@@ -871,6 +866,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		edge.setLanguageTag(languageTag);
 		edge.setReleaseUuid(releaseUuid);
 		edge.setType(Type.PUBLISHED);
+		return newVersion;
 	}
 
 	@Override
@@ -1077,8 +1073,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					Schema schema = latestSchemaVersion.getSchema();
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
 				}
-				// TODO Only store container
-				return createIndexBatch(STORE_ACTION);
+				return createIndexBatch(STORE_ACTION, Arrays.asList(container), release.getUuid(), Type.DRAFT);
 			}).process().map(i -> this);
 
 		} catch (IOException e1) {
@@ -1135,7 +1130,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 			SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-			container.addIndexBatchEntry(batch, DELETE_ACTION);
+			container.addIndexBatchEntry(batch, DELETE_ACTION, null, null);
 			container.delete();
 			return batch;
 		}).process().map(i -> this);
@@ -1150,8 +1145,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
-		for (NodeGraphFieldContainer container : getGraphFieldContainers()) {
-			container.addIndexBatchEntry(batch, action);
+		getProject().getReleaseRoot().findAll().forEach((release) -> {
+			String releaseUuid = release.getUuid();
+			for (Type type : Arrays.asList(Type.DRAFT, Type.PUBLISHED)) {
+				getGraphFieldContainers(release, type).forEach((container) -> {
+					container.addIndexBatchEntry(batch, action, releaseUuid, type);
+				});
+			}
+		});
+		addRelatedEntries(batch, action);
+		return batch;
+	}
+
+	/**
+	 * Create an index batch for the given list of containers
+	 * @param action action
+	 * @param containers containers
+	 * @param releaseUuid release Uuid
+	 * @param type type
+	 * @return batch
+	 */
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action,
+			List<? extends NodeGraphFieldContainer> containers, String releaseUuid, Type type) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		for (NodeGraphFieldContainer container : containers) {
+			container.addIndexBatchEntry(batch, action, releaseUuid, type);
 		}
 		addRelatedEntries(batch, action);
 		return batch;

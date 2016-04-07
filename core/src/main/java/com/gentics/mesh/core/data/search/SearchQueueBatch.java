@@ -41,6 +41,18 @@ public interface SearchQueueBatch extends MeshVertex {
 	/**
 	 * Add an entry to this batch.
 	 * 
+	 * @param vertex
+	 * @param action
+	 * @param customProperties
+	 */
+	default void addEntry(MeshCoreVertex<?, ?> vertex, SearchQueueEntryAction action,
+			Collection<Tuple<String, Object>> customProperties) {
+		addEntry(vertex.getUuid(), vertex.getType(), action, null, customProperties);
+	}
+
+	/**
+	 * Add an entry to this batch.
+	 * 
 	 * @param uuid
 	 *            Uuid of the element to be added
 	 * @param elementType

@@ -1,33 +1,11 @@
 package com.gentics.mesh.core.data.search.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import org.apache.commons.lang.NotImplementedException;
-
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.AbstractIndexHandler;
-import com.gentics.mesh.search.index.GroupIndexHandler;
-import com.gentics.mesh.search.index.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.NodeIndexHandler;
-import com.gentics.mesh.search.index.ProjectIndexHandler;
-import com.gentics.mesh.search.index.RoleIndexHandler;
-import com.gentics.mesh.search.index.SchemaContainerIndexHandler;
-import com.gentics.mesh.search.index.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.TagIndexHandler;
-import com.gentics.mesh.search.index.UserIndexHandler;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.index.IndexHandler;
 
 import rx.Observable;
 
@@ -108,43 +86,13 @@ public class SearchQueueEntryImpl extends MeshVertexImpl implements SearchQueueE
 	 * @param type
 	 * @return
 	 */
-	public AbstractIndexHandler<?> getIndexHandler(String type) {
-		// TODO i think it would be better to register handlers at one point and just use an 
-		// abstract implementation to access the correct handler.
-		switch (type) {
-		case Node.TYPE:
-			return NodeIndexHandler.getInstance();
-		case Tag.TYPE:
-			return TagIndexHandler.getInstance();
-		case TagFamily.TYPE:
-			return TagFamilyIndexHandler.getInstance();
-		case User.TYPE:
-			return UserIndexHandler.getInstance();
-		case Group.TYPE:
-			return GroupIndexHandler.getInstance();
-		case Role.TYPE:
-			return RoleIndexHandler.getInstance();
-		case Project.TYPE:
-			return ProjectIndexHandler.getInstance();
-		case SchemaContainer.TYPE:
-			return SchemaContainerIndexHandler.getInstance();
-		case MicroschemaContainer.TYPE:
-			return MicroschemaContainerIndexHandler.getInstance();
-		default:
-			throw new NotImplementedException("Index type {" + type + "} is not implemented.");
-		}
-
+	public IndexHandler getIndexHandler(String type) {
+		return IndexHandlerRegistry.getInstance().get(type);
 	}
 
 	@Override
 	public Observable<Void> process() {
-		AbstractIndexHandler<?> indexHandler = getIndexHandler(getElementType());
-		if (indexHandler == null) {
-			//TODO i18n
-			throw error(BAD_REQUEST, "No index handler could be found for type {" + getElementType() + "} of element {" + getElementUuid() + "}");
-		}
-		//TODO it would be possible to avoid loading by uuid for update and create requests. We should not reload the element by uuid.
-		return indexHandler.handleAction(this);
+		return getIndexHandler(getElementType()).handleAction(this);
 	}
 
 	@Override

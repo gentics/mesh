@@ -911,7 +911,7 @@ traits:
 /search:
   displayName: Search
   /nodes:
-    is: [ localized, paged, translatable ]
+    is: [ localized, paged, translatable, versioned, release ]
     displayName: Node Search
     post:
         description: Query for nodes. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
@@ -1011,6 +1011,48 @@ traits:
                 body:
                     application/json:
                         example: !include json/SearchStatusResponse.example.json
+
+#------------------------------------------------------------------------------
+# Project Search Verticle
+#------------------------------------------------------------------------------
+/{projectName}/search:
+  displayName: Project Search
+  uriParameters:
+    projectName:
+      description: Name of the project.
+      type: string
+  /nodes:
+    is: [ localized, paged, translatable, versioned, release ]
+    displayName: Node Search
+    post:
+        description: Query for nodes in the project. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        body:
+            application/json:
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/NodeListResponse.example.json
+  /tags:
+    is: [ localized ]
+    displayName: Tag Search
+    post:
+        description: Query for tags in the project. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/TagListResponse.example.json
+  /tagFamilies:
+    is: [ localized ]
+    displayName: TagFamily Search
+    post:
+        description: Query for tagFamilies in the project. Accepts an elastic search json query. Please note that the from and size parameters can't be used because they conflict with the mesh paging parameters.
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: !include json/TagFamilyListResponse.example.json
 
 #------------------------------------------------------------------------------
 # Authentication Verticle

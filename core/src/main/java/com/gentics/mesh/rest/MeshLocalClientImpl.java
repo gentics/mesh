@@ -174,6 +174,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setProject(projectName);
 		ac.setPayloadObject(nodeCreateRequest);
+		ac.setVersion("draft");
 		nodeCrudHandler.handleCreate(ac);
 		return ac.getFuture();
 	}
@@ -232,6 +233,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public Future<NodeResponse> addTagToNode(String projectName, String nodeUuid, String tagUuid, QueryParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
 		ac.setProject(projectName);
+		ac.setVersion("draft");
 		nodeCrudHandler.handleAddTag(ac, nodeUuid, tagUuid);
 		return ac.getFuture();
 	}
@@ -1048,6 +1050,25 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public Future<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<NodeListResponse> searchNodes(String projectName, String json, QueryParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<TagListResponse> searchTags(String projectName, String json, QueryParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json,
+			QueryParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}

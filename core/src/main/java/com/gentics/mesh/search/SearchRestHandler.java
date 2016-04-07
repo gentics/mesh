@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -76,13 +77,14 @@ public class SearchRestHandler {
 	 *            Root Vertex of the elements that should be searched
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
+	 * @param indices index names to search
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			RootVertex<T> rootVertex, Class<RL> classOfRL)
+			RootVertex<T> rootVertex, Class<RL> classOfRL, Set<String> indices)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameter pagingInfo = ac.getPagingParameter();
@@ -114,8 +116,8 @@ public class SearchRestHandler {
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			//TODO BUG we need to filter by one index only
-			builder = client.prepareSearch().setSource(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
+					.setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			ac.fail(new HttpStatusCodeErrorException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;

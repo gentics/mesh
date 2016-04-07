@@ -79,14 +79,13 @@ public class TagSearchVerticleTest extends AbstractSearchVerticleTest implements
 	@Test
 	@Override
 	public void testDocumentDeletion() throws Exception {
+		fullIndex();
+
 		Tag tag = tag("red");
 		TagFamily parentTagFamily = tagFamily("colors");
 
 		String name = tag.getName();
 		String uuid = tag.getUuid();
-		// Add the tag to the index
-		tagIndexHandler.store(tag, Tag.TYPE).toBlocking().first();
-		searchProvider.refreshIndex();
 
 		// 1. Verify that the tag is indexed
 		Future<TagListResponse> searchFuture = getClient().searchTags(getSimpleTermQuery("fields.name", name));

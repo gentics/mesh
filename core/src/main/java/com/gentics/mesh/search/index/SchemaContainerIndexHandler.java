@@ -7,14 +7,17 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -29,6 +32,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	private static SchemaContainerIndexHandler instance;
 
+	private final static Set<String> indices = Collections.singleton("schema_container");
+
 	@Autowired
 	private NodeIndexHandler nodeIndexHandler;
 
@@ -42,13 +47,28 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	protected String getIndex() {
+	protected String getIndex(SearchQueueEntry entry) {
 		return "schema_container";
+	}
+
+	@Override
+	public Set<String> getIndices() {
+		return indices;
+	}
+
+	@Override
+	public Set<String> getAffectedIndices(InternalActionContext ac) {
+		return indices;
 	}
 
 	@Override
 	protected String getType() {
 		return "schemaContainer";
+	}
+
+	@Override
+	public String getKey() {
+		return SchemaContainer.TYPE;
 	}
 
 	@Override
@@ -66,13 +86,13 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Observable<Void> store(SchemaContainer container, String type) {
-		return super.store(container, type).flatMap(done -> {
+	public Observable<Void> store(SchemaContainer container, String type, SearchQueueEntry entry) {
+		return super.store(container, type, entry).flatMap(done -> {
 			if (db != null) {
 				Observable<Void> obs = db.noTrx(() -> {
 					// update the mappings
 					Schema schema = container.getLatestVersion().getSchema();
-					return nodeIndexHandler.setNodeIndexMapping(Node.TYPE, NodeIndexHandler.getDocumentType(container.getLatestVersion()), schema);
+					return nodeIndexHandler.setNodeIndexMapping(NodeIndexHandler.getDocumentType(container.getLatestVersion()), schema);
 				});
 				return obs;
 			} else {

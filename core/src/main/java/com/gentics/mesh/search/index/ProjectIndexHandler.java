@@ -5,15 +5,19 @@ import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.fieldType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
 import io.vertx.core.json.JsonObject;
 
@@ -21,6 +25,8 @@ import io.vertx.core.json.JsonObject;
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	private static ProjectIndexHandler instance;
+
+	private final static Set<String> indices = Collections.singleton(Project.TYPE);
 
 	@PostConstruct
 	public void setup() {
@@ -32,12 +38,27 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	protected String getIndex() {
+	protected String getIndex(SearchQueueEntry entry) {
 		return Project.TYPE;
 	}
 
 	@Override
+	public Set<String> getIndices() {
+		return indices;
+	}
+
+	@Override
+	public Set<String> getAffectedIndices(InternalActionContext ac) {
+		return indices;
+	}
+
+	@Override
 	protected String getType() {
+		return Project.TYPE;
+	}
+
+	@Override
+	public String getKey() {
 		return Project.TYPE;
 	}
 

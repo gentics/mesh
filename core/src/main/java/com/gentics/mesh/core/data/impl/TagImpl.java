@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -40,8 +42,11 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.query.impl.PagingParameter;
+import com.gentics.mesh.search.index.TagIndexHandler;
 import com.gentics.mesh.util.InvalidArgumentException;
 import com.gentics.mesh.util.TraversalHelper;
+import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -195,11 +200,22 @@ public class TagImpl extends AbstractGenericFieldContainerVertex<TagResponse, Ta
 	}
 
 	@Override
+	public SearchQueueBatch createIndexBatch(SearchQueueEntryAction action) {
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		batch.addEntry(this, action,
+				Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
+		addRelatedEntries(batch, action);
+		return batch;
+	}
+
+	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
 		for (Node node : getNodes()) {
 			batch.addEntry(node, STORE_ACTION);
 		}
-		batch.addEntry(getTagFamily(), STORE_ACTION);
+		batch.addEntry(getTagFamily(), STORE_ACTION,
+				Arrays.asList(Tuple.tuple(TagIndexHandler.CUSTOM_PROJECT_UUID, getProject().getUuid())));
 	}
 
 	@Override

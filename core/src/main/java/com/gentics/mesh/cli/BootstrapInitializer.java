@@ -79,6 +79,7 @@ import com.gentics.mesh.etc.config.MeshVerticleConfiguration;
 import com.gentics.mesh.graphdb.Trx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.ProjectSearchVerticle;
 import com.gentics.mesh.search.SearchVerticle;
 import com.gentics.mesh.search.index.IndexHandler;
 import com.tinkerpop.blueprints.Vertex;
@@ -137,6 +138,7 @@ public class BootstrapInitializer {
 		addMandatoryVerticle(SchemaVerticle.class);
 		addMandatoryVerticle(MicroschemaVerticle.class);
 		addMandatoryVerticle(SearchVerticle.class);
+		addMandatoryVerticle(ProjectSearchVerticle.class);
 		addMandatoryVerticle(AuthenticationVerticle.class);
 		addMandatoryVerticle(AdminVerticle.class);
 		addMandatoryVerticle(EventbusVerticle.class);

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data;
 
 import java.util.List;
 
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -116,8 +117,10 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * @param batch
 	 * @param action
+	 * @param releaseUuid release Uuid
+	 * @param type type
 	 */
-	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action);
+	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, Type type);
 
 	/**
 	 * Compare the container values of both containers and return a list of differences.

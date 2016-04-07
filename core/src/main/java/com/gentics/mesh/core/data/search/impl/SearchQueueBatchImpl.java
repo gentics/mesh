@@ -119,6 +119,7 @@ public class SearchQueueBatchImpl extends MeshVertexImpl implements SearchQueueB
 				obs.add(entry.process());
 			}
 
+			obs.add(Observable.just(null));
 			Observable<SearchQueueBatch> mergedObs = Observable.merge(obs).last().map(done -> this);
 			mergedObs = mergedObs.doOnCompleted(() -> {
 				if (log.isDebugEnabled()) {

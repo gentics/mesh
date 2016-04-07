@@ -1,16 +1,17 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -22,10 +23,16 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuild
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -53,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.Future;
@@ -73,11 +81,34 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	public final static String FIELD_CONTAINER_UUID_NAME = "fieldContainerUuid";
 
+	/**
+	 * Name of the custom property of SearchQueueEntry containing the language tag
+	 */
+	public final static String CUSTOM_LANGUAGE_TAG = "languageTag";
+
+	/**
+	 * Name of the custom property of SearchQueueEntry containing the release uuid
+	 */
+	public final static String CUSTOM_RELEASE_UUID = "releaseUuid";
+
+	/**
+	 * Name of the custom property of SearchQueueEntry containing the version ("draft" or "published")
+	 */
+	public final static String CUSTOM_VERSION = "version";
+
+	/**
+	 * Name of the custom property of SearchQueueEntry containing the project uuid
+	 */
+	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
+
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
 	private static final String VERSION_KEY = "version";
 
 	private static NodeIndexHandler instance;
+
+	@Autowired
+	protected Database db;
 
 	@PostConstruct
 	public void setup() {
@@ -100,12 +131,63 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected String getIndex() {
+	protected String getIndex(SearchQueueEntry entry) {
 		return Node.TYPE;
 	}
 
 	@Override
+	public Set<String> getIndices() {
+		return db.noTrx(() -> {
+			Set<String> indexNames = new HashSet<>();
+			List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
+			projects.forEach((project) -> {
+				List<? extends Release> releases = project.getReleaseRoot().findAll();
+				releases.forEach((r) -> {
+					indexNames.add(getIndexName(project.getUuid(), r.getUuid(), "draft"));
+					indexNames.add(getIndexName(project.getUuid(), r.getUuid(), "published"));
+				});
+			});
+			return indexNames;
+		});
+	}
+
+	@Override
+	public Set<String> getAffectedIndices(InternalActionContext ac) {
+		return db.noTrx(() -> {
+			Project project = ac.getProject();
+			if (project != null) {
+				return Collections
+						.singleton(getIndexName(project.getUuid(), ac.getRelease().getUuid(), ac.getVersion()));
+			} else {
+				List<? extends Project> projects = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findAll();
+				return projects.stream()
+						.map(p -> getIndexName(p.getUuid(), p.getLatestRelease().getUuid(), ac.getVersion()))
+						.collect(Collectors.toSet());
+			}
+		});
+	}
+
+	/**
+	 * Get the index name for the given project/release/version
+	 * @param projectUuid
+	 * @param releaseUuid
+	 * @param version
+	 * @return index name
+	 */
+	public String getIndexName(String projectUuid, String releaseUuid, String version) {
+		// TODO check that only "draft" and "publisheD" are used for version
+		StringBuilder indexName = new StringBuilder("node");
+		indexName.append("-").append(projectUuid).append("-").append(releaseUuid).append("-").append(version);
+		return indexName.toString();
+	}
+
+	@Override
 	protected String getType() {
+		return Node.TYPE;
+	}
+
+	@Override
+	public String getKey() {
 		return Node.TYPE;
 	}
 
@@ -120,51 +202,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Observable<Void> store(String uuid, String indexType) {
-		String nodeUuid = uuid;
-		String languageTag = null;
-		if (uuid.indexOf("-") > 0) {
-			nodeUuid = uuid.split("-")[0];
-			languageTag = uuid.split("-")[1];
-		}
-		final String languageTagValue = languageTag;
-		return getRootVertex().findByUuid(nodeUuid).flatMap(element -> {
-			return db.noTrx(() -> {
-				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, indexType);
-				} else {
-					return store(element, indexType, languageTagValue);
-				}
-			});
-		});
-	}
+	public Observable<Void> store(Node node, String documentType, SearchQueueEntry entry) {
+		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
+		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
+		Type type = Type.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+		String indexName = getIndexName(node.getProject().getUuid(), releaseUuid, type.toString().toLowerCase());
 
-	@Override
-	public Observable<Void> store(Node node, String documentType) {
-		return store(node, documentType, null);
-	}
+		// TODO check consistency
 
-	/**
-	 * 
-	 * @param node
-	 *            Node element to be updated/stored
-	 * @param documentType
-	 *            Document type which is schema version specific
-	 * @param languageTag
-	 *            Language tag to be stored
-	 * @return
-	 */
-	public Observable<Void> store(Node node, String documentType, String languageTag) {
 		Set<Observable<Void>> obs = new HashSet<>();
 
 		// Store all containers if no language was specified
 		if (languageTag == null) {
 			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				obs.add(storeContainer(container));
+				obs.add(storeContainer(container, indexName));
 			}
 		} else {
 
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
+			NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, releaseUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + languageTag
 						+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -210,18 +265,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				log.error("Error while building deletion query", e);
 				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Could not prepare search query.", e);
 			}
-			obs.add(searchProvider.deleteDocumentsViaQuery(getIndex(), query).flatMap(nDocumentsDeleted -> {
+			obs.add(searchProvider.deleteDocumentsViaQuery(indexName, query).flatMap(nDocumentsDeleted -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + getIndex() + "}");
+					log.debug("Deleted {" + nDocumentsDeleted + "} documents from index {" + indexName + "}");
 				}
 				// Don't store the container if it is null.
 				if (container == null) {
 					return Observable.just(null);
 				} else {
 					// 2. Try to store the updated document
-					// 2. Try to store the updated document
 					return db.noTrx(() -> {
-						return storeContainer(container);
+						return storeContainer(container, indexName);
 					});
 				}
 			}));
@@ -235,16 +289,30 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	}
 
+	@Override
+	public Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry) {
+		String languageTag = entry.getCustomProperty(CUSTOM_LANGUAGE_TAG);
+		String releaseUuid = entry.getCustomProperty(CUSTOM_RELEASE_UUID);
+		String projectUuid = entry.getCustomProperty(CUSTOM_PROJECT_UUID);
+		Type type = Type.forVersion(entry.getCustomProperty(CUSTOM_VERSION));
+		String indexName = getIndexName(projectUuid, releaseUuid, type.toString().toLowerCase());
+
+		return searchProvider.deleteDocument(indexName, documentType, composeDocumentId(uuid, languageTag));
+	}
+
 	/**
 	 * Generate a flat property map from the given container and store the map within the search index.
 	 * 
 	 * @param container
+	 * @param indexName project name
 	 * @return
 	 */
-	public Observable<Void> storeContainer(NodeGraphFieldContainer container) {
+	public Observable<Void> storeContainer(NodeGraphFieldContainer container, String indexName) {
 
 		Node node = container.getParentNode();
 		Map<String, Object> map = new HashMap<>();
+		addUser(map, "editor", container.getEditor());
+		map.put("edited", container.getLastEditedTimestamp());
 		addBasicReferences(map, node);
 		addProject(map, node.getProject());
 		addTags(map, node.getTags());
@@ -272,7 +340,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		displayFieldMap.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayFieldMap.put("value", container.getDisplayFieldValue());
 		map.put("displayField", displayFieldMap);
-		return searchProvider.storeDocument(getIndex(), getDocumentType(container.getSchemaContainerVersion()),
+		return searchProvider.storeDocument(indexName, getDocumentType(container.getSchemaContainerVersion()),
 				composeDocumentId(container.getParentNode(), language), map);
 
 	}
@@ -512,9 +580,33 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return document ID
 	 */
 	public static String composeDocumentId(Node node, String language) {
-		StringBuilder id = new StringBuilder(node.getUuid());
+		return composeDocumentId(node.getUuid(), language);
+	}
+
+	/**
+	 * Componse the document ID for the index document
+	 * 
+	 * @param nodeUuid node Uuid
+	 * @param language language
+	 * @return document ID
+	 */
+	public static String composeDocumentId(String nodeUuid, String language) {
+		StringBuilder id = new StringBuilder(nodeUuid);
 		id.append("-").append(language);
 		return id.toString();
+	}
+
+	/**
+	 * Set the mapping for the given type in all indices for the schema
+	 * @param type type name
+	 * @param schema schema
+	 * @return observable
+	 */
+	public Observable<Void> setNodeIndexMapping(String type, Schema schema) {
+		Set<Observable<Void>> obs = new HashSet<>();
+		getIndices().forEach(index -> obs.add(setNodeIndexMapping(index, type, schema)));
+		obs.add(Observable.just(null));
+		return Observable.merge(obs).last();
 	}
 
 	/**
@@ -528,7 +620,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 *            schema
 	 * @return observable
 	 */
-	public Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
+	protected Observable<Void> setNodeIndexMapping(String indexName, String type, Schema schema) {
 		// Check whether the search provider is a dummy provider or not
 		if (searchProvider.getNode() != null) {
 			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices().preparePutMapping(indexName);

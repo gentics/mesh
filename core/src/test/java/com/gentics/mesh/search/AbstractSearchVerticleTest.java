@@ -37,13 +37,17 @@ public abstract class AbstractSearchVerticleTest extends AbstractRestVerticleTes
 	protected SearchVerticle searchVerticle;
 
 	@Autowired
+	protected ProjectSearchVerticle projectSearchVerticle;
+
+	@Autowired
 	protected SearchProvider searchProvider;
 
 	@Autowired
 	private IndexHandlerRegistry registry;
 
 	@Before
-	public void initElasticSearch() {
+	public void setupVerticleTest() throws Exception {
+		super.setupVerticleTest();
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.init().toBlocking().single();
 		}

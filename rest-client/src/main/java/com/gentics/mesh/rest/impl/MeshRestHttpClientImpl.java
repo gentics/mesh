@@ -665,6 +665,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public Future<NodeListResponse> searchNodes(String projectName, String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/" + projectName + "/search/nodes" + getQuery(parameters), NodeListResponse.class, json);
+	}
+
+	@Override
 	public Future<UserListResponse> searchUsers(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/users" + getQuery(parameters), UserListResponse.class, json);
@@ -701,6 +708,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public Future<TagListResponse> searchTags(String projectName, String json, QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/" + projectName + "/search/tags" + getQuery(parameters), TagListResponse.class, json);
+	}
+
+	@Override
 	public Future<SchemaListResponse> searchSchemas(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/schemas" + getQuery(parameters), SchemaListResponse.class, json);
@@ -710,6 +724,14 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public Future<TagFamilyListResponse> searchTagFamilies(String json, QueryParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class, json);
+	}
+
+	@Override
+	public Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json,
+			QueryParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/" + projectName + "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class, json);
 	}
 
 	@Override

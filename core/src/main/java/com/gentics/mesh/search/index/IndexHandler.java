@@ -1,5 +1,10 @@
 package com.gentics.mesh.search.index;
 
+import java.util.Set;
+
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.search.SearchQueueEntry;
+
 import rx.Observable;
 
 /**
@@ -7,6 +12,11 @@ import rx.Observable;
  * an index handler in order to interact with search index specific documents in the index (CRUD on search index documents).
  */
 public interface IndexHandler {
+	/**
+	 * Index handler key for the registry
+	 * @return handler key
+	 */
+	String getKey();
 
 	/**
 	 * Clear the index.
@@ -37,34 +47,31 @@ public interface IndexHandler {
 	Observable<Void> updateMapping();
 
 	/**
-	 * Handle a search index action. An action will modify the search index (delete, update, create)
-	 * 
-	 * @param uuid
-	 *            Uuid of the document that should be handled
-	 * @param actionName
-	 *            Type of the action (delete, update, create)
-	 * @param indexType
-	 *            Type of the index
+	 * Handle search index action
+	 * @param entry search queue entry
+	 * @return
 	 */
-	Observable<Void> handleAction(String uuid, String actionName, String indexType);
+	Observable<Void> handleAction(SearchQueueEntry entry);
 
 	/**
 	 * Delete the document with the given uuid and document type from the search index.
 	 * 
 	 * @param uuid
 	 * @param documentType
+	 * @param entry search queue entry
 	 * @return
 	 */
-	Observable<Void> delete(String uuid, String documentType);
+	Observable<Void> delete(String uuid, String documentType, SearchQueueEntry entry);
 
 	/**
 	 * Load the given element and invoke store(T element) to store it in the index.
 	 * 
 	 * @param uuid
 	 * @param documentType
+	 * @param entry search queue entry
 	 * @return
 	 */
-	Observable<Void> store(String uuid, String documentType);
+	Observable<Void> store(String uuid, String documentType, SearchQueueEntry entry);
 
 	/**
 	 * Reindex all documents for the type which the handler is capable of.
@@ -72,4 +79,17 @@ public interface IndexHandler {
 	 * @return
 	 */
 	Observable<Void> reindexAll();
+
+	/**
+	 * Get the name of all indices
+	 * @return name of all indices
+	 */
+	Set<String> getIndices();
+
+	/**
+	 * Get the name of all affected indices
+	 * @param ac action context
+	 * @return name of affected indices
+	 */
+	Set<String> getAffectedIndices(InternalActionContext ac);
 }

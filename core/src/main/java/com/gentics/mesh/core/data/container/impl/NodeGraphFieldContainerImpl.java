@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,6 +37,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.NodeIndexHandler;
+import com.gentics.mesh.util.Tuple;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
@@ -195,9 +197,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action) {
+	public void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, Type type) {
 		String indexType = NodeIndexHandler.getDocumentType(getSchemaContainerVersion());
-		batch.addEntry(getParentNode().getUuid() + "-" + getLanguage().getLanguageTag(), getParentNode().getType(), action, indexType);
+		Node node = getParentNode();
+		batch.addEntry(node.getUuid(), node.getType(), action, indexType,
+				Arrays.asList(Tuple.tuple(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag()),
+						Tuple.tuple(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid),
+						Tuple.tuple(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase()),
+						Tuple.tuple(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid())));
 	}
 
 	@Override

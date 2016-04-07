@@ -123,7 +123,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 					// Update the schema reference to the new version
 					container.setSchemaContainerVersion(toVersion);
-					container.addIndexBatchEntry(batch, STORE_ACTION);
+					container.addIndexBatchEntry(batch, STORE_ACTION, null, null);
 					return null;
 				} catch (Exception e1) {
 					return e1;

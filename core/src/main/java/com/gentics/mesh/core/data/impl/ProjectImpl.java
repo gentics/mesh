@@ -235,11 +235,15 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void addRelatedEntries(SearchQueueBatch batch, SearchQueueEntryAction action) {
+		String baseNodeUuid = getBaseNode().getUuid();
 		if (action == SearchQueueEntryAction.DELETE_ACTION) {
 			for (TagFamily tagFamily : getTagFamilyRoot().findAll()) {
 				batch.addEntry(tagFamily, DELETE_ACTION);
 			}
 			for (Node node : getNodeRoot().findAll()) {
+				if (baseNodeUuid.equals(node.getUuid())) {
+					continue;
+				}
 				batch.addEntry(node, DELETE_ACTION);
 			}
 			for (Tag tag : getTagRoot().findAll()) {
@@ -247,6 +251,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		} else {
 			for (Node node : getNodeRoot().findAll()) {
+				if (baseNodeUuid.equals(node.getUuid())) {
+					continue;
+				}
 				batch.addEntry(node, STORE_ACTION);
 			}
 		}

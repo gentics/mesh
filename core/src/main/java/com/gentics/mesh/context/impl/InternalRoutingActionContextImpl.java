@@ -151,7 +151,9 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	public Project getProject() {
 		if (project == null) {
 			String projectName = rc.get(RouterStorage.PROJECT_CONTEXT_KEY);
-			project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().single();
+			if (projectName != null) {
+				project = BootstrapInitializer.getBoot().meshRoot().getProjectRoot().findByName(projectName).toBlocking().single();
+			}
 		}
 		return project;
 	}

@@ -28,6 +28,17 @@ public interface SearchClientMethods {
 	Future<NodeListResponse> searchNodes(String json, QueryParameterProvider... parameters);
 
 	/**
+	 * Search nodes in project
+	 *
+	 * @param projectName Project Name
+	 * @param json
+	 *            Elasticsearch search request
+	 * @param parameters
+	 * @return
+	 */
+	Future<NodeListResponse> searchNodes(String projectName, String json, QueryParameterProvider... parameters);
+
+	/**
 	 * Search users.
 	 * 
 	 * @param json
@@ -78,6 +89,17 @@ public interface SearchClientMethods {
 	Future<TagListResponse> searchTags(String json, QueryParameterProvider... parameters);
 
 	/**
+	 * Search tags in project
+	 *
+	 * @param projectName project name
+	 * @param json
+	 *            Elasticsearch search request
+	 * @param parameters
+	 * @return
+	 */
+	Future<TagListResponse> searchTags(String projectName, String json, QueryParameterProvider... parameters);
+
+	/**
 	 * Search tag families.
 	 * 
 	 * @param json
@@ -85,6 +107,16 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	Future<TagFamilyListResponse> searchTagFamilies(String json, QueryParameterProvider... parameters);
+
+	/**
+	 * Search tag families in project
+	 *
+	 * @param projectName
+	 * @param json
+	 * @param parameters
+	 * @return
+	 */
+	Future<TagFamilyListResponse> searchTagFamilies(String projectName, String json, QueryParameterProvider... parameters);
 
 	/**
 	 * Search schemas.
