@@ -288,13 +288,20 @@ public class DemoDataProvider {
 			JsonObject nodeJson = dataArray.getJsonObject(i);
 			ProjectResponse project = getProject(nodeJson.getString("project"));
 			String schemaName = nodeJson.getString("schema");
+			String parentNodeName = nodeJson.getString("parent");
 			String name = nodeJson.getString("name");
 			Schema schema = getSchemaModel(schemaName);
+			NodeResponse parentNode = (nodeJson.getString("project") + ".basenode").equals(parentNodeName) ? null
+					: getNode(parentNodeName);
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setLanguage("en");
-			nodeCreateRequest.setParentNodeUuid(project.getRootNodeUuid());
+			if (parentNode != null) {
+				nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+			} else {
+				nodeCreateRequest.setParentNodeUuid(project.getRootNodeUuid());
+			}
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
 
