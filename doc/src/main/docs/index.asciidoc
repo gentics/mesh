@@ -2,12 +2,12 @@
 
 :raml-json: ../raml/json
 
-This documentation provides information on the structure and functionality of the Mesh server and its API endpoints.
+This documentation provides information on the structure and functionality of the Gentics Mesh server and its API endpoints.
 
 == TL;DR
 
-Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST.
-Mesh will also provide you a lot of powerful tools build around and for those documents.
+Gentics Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST.
+Gentics Mesh will also provide you a lot of powerful tools build around and for those documents.
 
  * Document level permission system
  * Search API
@@ -24,7 +24,7 @@ Mesh will also provide you a lot of powerful tools build around and for those do
 
 == REST API
 
-The link:raml[Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Mesh element.
+The link:raml[Gentics Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Gentics Mesh element.
 There are many things you can do with the REST API. For example:
 
 * You can create new users.
@@ -34,14 +34,14 @@ There are many things you can do with the REST API. For example:
 
 All REST API responses are only available in JSON.
 
-The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Mesh.
+The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
 
 
 === Authentication
 
 ==== Overview
 
-Mesh currently supports two ways of authentication: `Basic` and `Json Web Token (JWT)`. A user can be authenticated by setting the Authentication HTTP header in a request.
+Gentics Mesh currently supports two ways of authentication: `Basic` and `Json Web Token (JWT)`. A user can be authenticated by setting the Authentication HTTP header in a request.
 Edit the mesh configuration file (`mesh.json`) to set your prefered authentication method.
 
 Here is an example:
@@ -116,11 +116,11 @@ When calling the login endpoint via JWT, the server also sets a cookie containin
 
 === Encoding
 
-Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding format will result in encoding issues.
+Gentics Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding format will result in encoding issues.
 
 === Headers
 
-It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Mesh that your client is accepting JSON.
+It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Gentics Mesh that your client is accepting JSON.
 
 
 [source,bash]
@@ -129,7 +129,7 @@ Content-Type: application/json
 Accept: application/json
 ----
 
-A request which is not well formatted may fail. Mesh will do its best to identify the issue and return a meaningful error response in those cases.
+A request which is not well formatted may fail. Gentics Mesh will do its best to identify the issue and return a meaningful error response in those cases.
 
 === Paging
 
@@ -186,13 +186,13 @@ Accept: application/json
 
 == Building blocks
 
-Mesh provides a various building blocks which can be used in order to setup your content structure. Below are elements which can be used to create your project datastructure.
+Gentics Mesh provides a various building blocks which can be used in order to setup your content structure. Below are elements which can be used to create your project datastructure.
 
 image:overview.png[]
 
 === Users
 
-Users can log into Mesh in order to interact with other elements.
+Users can log into Gentics Mesh in order to interact with other elements.
 
 Endpoint: ```/api/v1/users```
 
@@ -533,7 +533,7 @@ empty array, any type of node may be used.
 
 Binary schemas should be able to specify which media types (aka MIME type or Content-type) they may contain. This would be done by means of a whitelist which is an array of multiple regular expressions.
 
-Since the JSON standard does not have a special regex type, it would need to be specified as a string, but would actually be converted to and interpreted as a regex by Mesh.
+Since the JSON standard does not have a special regex type, it would need to be specified as a string, but would actually be converted to and interpreted as a regex by Gentics Mesh.
 
 == Software Stack
 
@@ -569,7 +569,7 @@ or
 docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
 ----
 
-The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty mesh server without any demo content.
+The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
 
 [source,bash]
 ----
@@ -627,7 +627,7 @@ include::json/mesh-config.json[]
 
 === HTTPS/SSL
 
-To enable https you have to specify the server key and the server certificate within the Mesh configuration.
+To enable https you have to specify the server key and the server certificate within the configuration.
 
 You can create a snakeoil certificate for testing purposes this way:
 
@@ -675,13 +675,13 @@ By default all specified directories are relative to the current working directo
 
 === Cache Options
 
-Mesh does not manage any cache structure but it is possible to tweak the underlying graph database cache settings.
+Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph database cache settings.
 
 == Concepts
 
 === Permissions
 
-Permissions exist between roles and other elements (including other roles). Most responses within Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
+Permissions exist between roles and other elements (including other roles). Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
 
 The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role. This endpoint can also be used to apply recursive permissions.
 It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
@@ -889,7 +889,7 @@ The ```/api/v1/:YOUR_PROJECT/webroot/:path``` endpoint can be used to access nod
 
 Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000```
 
-This makes it possible to integrate mesh with many known routing frameworks.
+This makes it possible to integrate Gentics Mesh with many known routing frameworks.
 
 [options="header"]
 |======
@@ -909,19 +909,19 @@ The `segmentField` parameter within the schema is therefore used to map in betwe
 * `ford-gt.jpg` -> ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg```
 
 The binary data will be returned if the path targets a node in which the binary `fileName` property provides the segment.
-It is possible to differentiate between a mesh binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
+It is possible to differentiate between a binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
 
-The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requestor.
+The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requester.
 
 === Navigations
 
-There are two ways of generating a nested navigation response within mesh. You can either use ```/api/v1/:YOUR_PROJECT/nodes/:uuid/navigation``` or ```/api/v1/:YOUR_PROJECT/navroot/:path``` endpoints.
+There are two ways of generating a nested navigation response. You can either use ```/api/v1/:YOUR_PROJECT/nodes/:uuid/navigation``` or ```/api/v1/:YOUR_PROJECT/navroot/:path``` endpoints.
 
 Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth (default: 10).
 
 === Link Handling
 
-Mesh will try to resolve any found mesh link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`.
+Gentics Mesh will try to resolve any found mesh-link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`.
 
 Example: ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`
 
@@ -938,9 +938,9 @@ The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh li
 
 === Schema / Microschema Migration
 
-Mesh provides a changelog like system in order to apply and keep track of schema changes. A schema change may be a single change that adds a new field to the schema or a change which updates the schema properties.
+Gentics Mesh provides a changelog like system in order to apply and keep track of schema changes. A schema change may be a single change that adds a new field to the schema or a change which updates the schema properties.
 
-Mesh supports the following change operations:
+Gentics Mesh supports the following change operations:
 
 ==== Operation: addfield
 
@@ -1046,7 +1046,7 @@ The posted list of changes will be validated and stored when valid. A schema mig
 
 The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
 
-Additionally to websocket it is possible to query mesh whether a migration is running via the ```/api/v1/admin/migrationStatus``` endpoint.
+Additionally to websocket it is possible to query whether a migration is running via the ```/api/v1/admin/migrationStatus``` endpoint.
 
 Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
 
@@ -1055,7 +1055,7 @@ Please note that by default conflicting data will be removed and this action can
 
 === Eventbus Bridge / Websocket
 
-The ```/api/v1/eventbus``` endpoint allows clients to access the mesh eventbus. This may be useful if you want to react on specific mesh events.
+The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This may be useful if you want to react on specific events.
 Currently only schema migration specific events are handled via this endpoint but more will follow.
 
 The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
@@ -1112,7 +1112,7 @@ Search requests are handled by the _/search endpoints_.
 
 Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
 
-The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
+The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
 
 ==== Users
 
@@ -1253,13 +1253,13 @@ Clustering support is still in development.
 
 It will be possible to use master/master replication for OrientDB. Clustering for the elasticsearch nodes and the vertx event message bus.
 
-== Mesh Administration UI
+== Administration UI
 
-The Mesh Administration UI is an AngularJS single page application which uses the REST API to interface with Mesh. By default it can be reached via ```http://localhost:8080/mesh-ui/```.
+The Gentics Mesh Administration UI is an AngularJS single page application which uses the REST API to interface with Gentics Mesh. By default it can be reached via ```http://localhost:8080/mesh-ui/```.
 
 === Configuration
 
-The mesh ui can be configured using the mesh-ui-config.js file.
+The mesh-ui can be configured using the mesh-ui-config.js file.
 
 [source,json]
 ----
@@ -1339,4 +1339,4 @@ The post request will contain the node JSON data of the current editing state. T
 
 == License
 
-Gentics Mesh is published under a commercial license. This license can be obtained from sales@gentics.com.
+Gentics Mesh is published under a commercial license.
