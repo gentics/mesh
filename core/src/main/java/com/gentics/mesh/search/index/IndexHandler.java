@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 
 import rx.Observable;
@@ -101,4 +102,13 @@ public interface IndexHandler {
 	 * @return name of affected indices
 	 */
 	Set<String> getAffectedIndices(InternalActionContext ac);
+
+	/**
+	 * Get the permission required to read the elements found in the index
+	 * @param ac action context
+	 * @return read permission
+	 */
+	default GraphPermission getReadPermission(InternalActionContext ac) {
+		return GraphPermission.READ_PERM;
+	}
 }

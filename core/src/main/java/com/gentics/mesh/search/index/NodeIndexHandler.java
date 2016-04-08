@@ -49,6 +49,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -687,4 +688,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return createIndex();
 	}
 
+	@Override
+	public GraphPermission getReadPermission(InternalActionContext ac) {
+		switch (Type.forVersion(ac.getVersion())) {
+		case PUBLISHED:
+			return GraphPermission.READ_PUBLISHED_PERM;
+		default:
+			return GraphPermission.READ_PERM;
+		}
+	}
 }

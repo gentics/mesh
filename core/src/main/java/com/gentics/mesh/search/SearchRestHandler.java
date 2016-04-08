@@ -78,13 +78,14 @@ public class SearchRestHandler {
 	 * @param classOfRL
 	 *            Class of the rest model list that should be used when creating the response
 	 * @param indices index names to search
+	 * @param permission required permission
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws InvalidArgumentException
 	 * @throws MeshJsonException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			RootVertex<T> rootVertex, Class<RL> classOfRL, Set<String> indices)
+			RootVertex<T> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 					throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException {
 
 		PagingParameter pagingInfo = ac.getPagingParameter();
@@ -162,7 +163,7 @@ public class SearchRestHandler {
 						return new ArrayList<Tuple<T, String>>();
 					} , (x, y) -> {
 						// Check permissions and language
-						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), GraphPermission.READ_PERM)
+						if (y != null && requestUser.hasPermissionSync(ac, y.v1(), permission)
 								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
 							x.add(y);
 						}

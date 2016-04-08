@@ -108,7 +108,8 @@ public class SearchVerticle extends AbstractCoreApiVerticle {
 			try {
 				IndexHandler indexHandler = registry.get(indexHandlerKey);
 				InternalActionContext ac = InternalActionContext.create(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getAffectedIndices(ac));
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getAffectedIndices(ac),
+						indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");
 				rc.fail(e);
