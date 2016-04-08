@@ -191,7 +191,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
 						requestUser.addPermissionsOnRole(parentNode, READ_PUBLISHED_PERM, node, READ_PUBLISHED_PERM);
 						requestUser.addPermissionsOnRole(parentNode, PUBLISH_PERM, node, PUBLISH_PERM);
-						node.setPublished(requestModel.isPublished());
 						Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
 						if (language == null) {
 							throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());

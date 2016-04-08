@@ -102,8 +102,6 @@ import rx.Observable;
  */
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
-	private static final String PUBLISHED_PROPERTY_KEY = "published";
-
 	public static final String RELEASE_UUID_KEY = "releaseUuid";
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
@@ -437,8 +435,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 			}
 			Release release = ac.getRelease(getProject());
-
-			restNode.setPublished(isPublished());
 
 			// Parent node reference
 			Node parentNode = getParentNode(release.getUuid());
@@ -1040,17 +1036,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setPublished(boolean published) {
-		setProperty(PUBLISHED_PROPERTY_KEY, String.valueOf(published));
-	}
-
-	@Override
-	public boolean isPublished() {
-		String fieldValue = getProperty(PUBLISHED_PROPERTY_KEY);
-		return Boolean.valueOf(fieldValue);
-	}
-
-	@Override
 	public Observable<? extends Node> update(InternalActionContext ac) {
 		Database db = MeshSpringConfiguration.getInstance().database();
 		try {
@@ -1066,9 +1051,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 
 				Release release = ac.getRelease(getProject());
-
-				/* TODO handle other fields, etc. */
-				setPublished(requestModel.isPublished());
 
 				NodeGraphFieldContainer container = getGraphFieldContainer(language, release, Type.DRAFT);
 				if (container == null) {

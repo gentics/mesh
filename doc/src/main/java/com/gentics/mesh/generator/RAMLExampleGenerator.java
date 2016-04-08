@@ -608,7 +608,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
-		nodeResponse.setPublished(true);
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
 		HashMap<String, String> languagePaths = new HashMap<>();
@@ -687,7 +686,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 		NodeCreateRequest contentCreate = new NodeCreateRequest();
 		contentCreate.setParentNodeUuid(randomUUID());
 		contentCreate.setLanguage("en");
-		contentCreate.setPublished(true);
 		contentCreate.setSchema(getSchemaReference("content"));
 
 		FieldMap fields = contentCreate.getFields();
@@ -718,7 +716,6 @@ public class RAMLExampleGenerator extends AbstractGenerator {
 	private NodeUpdateRequest getNodeUpdateRequest() throws JsonGenerationException, JsonMappingException, IOException {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
-		nodeUpdate.setPublished(true);
 		nodeUpdate.setSchema(getSchemaReference("content"));
 
 		FieldMap fields = nodeUpdate.getFields();

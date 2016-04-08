@@ -161,7 +161,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setSchema(new SchemaReference().setName("folder").setVersion(1).setUuid(schemaContainer("folder").getUuid()));
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
-		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
 		assertThat(searchProvider).recordedStoreEvents(0);
@@ -188,7 +187,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
 		assertThat(searchProvider).recordedStoreEvents(0);
@@ -668,7 +666,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
 		createRequest.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		createRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		createRequest.setPublished(true);
 		createRequest.setParentNodeUuid(uuid);
 
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -677,7 +674,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		updateRequest.setSchema(schemaReference);
 		updateRequest.setLanguage("en");
-		updateRequest.setPublished(true);
 		updateRequest.getFields().put("name", FieldUtil.createStringField("UPDATED"));
 
 		// Create various nodes and update them directly after creation. Ensure that update was successful.
@@ -751,7 +747,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		request.setPublished(true);
 		request.setParentNodeUuid(uuid);
 
 		int nJobs = 50;
@@ -794,7 +789,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
-		request.setPublished(true);
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
 		NodeRequestParameter parameters = new NodeRequestParameter();
@@ -1221,7 +1215,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		schemaReference.setUuid(schemaContainer("content").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
-		request.setPublished(true);
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en", "de");
@@ -1232,7 +1225,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("0.2")
 				.hasStringField("name", newName)
 				.hasStringField("title", "Concorde english title");
-		assertTrue(restNode.isPublished());
 		node.reload();
 		origContainer.reload();
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
@@ -1284,7 +1276,6 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		schemaReference.setUuid(schemaContainer("folder").getUuid());
 		request.setSchema(schemaReference);
 		request.setLanguage("en");
-		request.setPublished(true);
 
 		NodeRequestParameter parameters = new NodeRequestParameter();
 		parameters.setLanguages("en", "de");

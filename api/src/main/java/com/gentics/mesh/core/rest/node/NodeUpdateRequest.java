@@ -11,8 +11,6 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 
 	private SchemaReference schema;
 
-	private boolean published;
-
 	private String language;
 
 	private FieldMap fields = new FieldMapImpl();
@@ -65,23 +63,5 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 	 */
 	public FieldMap getFields() {
 		return fields;
-	}
-
-	/**
-	 * Return the published flag.
-	 * 
-	 * @return
-	 */
-	public boolean isPublished() {
-		return published;
-	}
-
-	/**
-	 * Set the published flag.
-	 * 
-	 * @param published
-	 */
-	public void setPublished(boolean published) {
-		this.published = published;
 	}
 }

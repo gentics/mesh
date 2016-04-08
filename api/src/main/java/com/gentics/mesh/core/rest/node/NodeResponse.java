@@ -40,8 +40,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	private SchemaReference schema;
 
-	private boolean published = false;
-
 	private boolean isContainer;
 
 	private String displayField;
@@ -130,25 +128,6 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	public void setContainer(boolean isContainer) {
 		this.isContainer = isContainer;
-	}
-
-	/**
-	 * Return the published flag of the node.
-	 * 
-	 * @return Published flag
-	 */
-	public boolean isPublished() {
-		return published;
-	}
-
-	/**
-	 * Set the published flag of the node.
-	 * 
-	 * @param published
-	 *            Published flag
-	 */
-	public void setPublished(boolean published) {
-		this.published = published;
 	}
 
 	/**

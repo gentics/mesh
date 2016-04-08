@@ -322,7 +322,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (node.getParentNode(releaseUuid) != null) {
 			addParentNodeInfo(map, node.getParentNode(releaseUuid));
 		}
-		map.put("published", node.isPublished());
 
 		map.remove("language");
 		String language = container.getLanguage().getLanguageTag();

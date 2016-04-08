@@ -255,20 +255,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version);
 
 	/**
-	 * Set the published flag.
-	 * 
-	 * @param published
-	 */
-	void setPublished(boolean published);
-
-	/**
-	 * Return the published flag state.
-	 * 
-	 * @return
-	 */
-	boolean isPublished();
-
-	/**
 	 * Move this node into the target node.
 	 * 
 	 * @param ac
