@@ -376,6 +376,31 @@ public abstract class AbstractRestVerticleTest extends AbstractDBTest {
 		assertSuccess(future);
 	}
 
+	/**
+	 * Migrate the node from one release to another
+	 * @param projectName project name
+	 * @param uuid node Uuid
+	 * @param sourceReleaseName source release name
+	 * @param targetReleaseName target release name
+	 * @return migrated node
+	 */
+	protected NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
+		// read node from source release
+		NodeResponse nodeResponse = call(() -> getClient().findNodeByUuid(projectName, uuid,
+				new NodeRequestParameter().setRelease(sourceReleaseName).draft()));
+
+		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
+
+		// update node for target release
+		NodeUpdateRequest update = new NodeUpdateRequest();
+		update.setLanguage(nodeResponse.getLanguage());
+
+		nodeResponse.getFields().keySet().forEach(
+				key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
+		return call(() -> getClient().updateNode(projectName, uuid, update,
+				new NodeRequestParameter().setRelease(targetReleaseName)));
+	}
+
 	// Project
 	protected ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();

@@ -215,7 +215,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		// Store all containers if no language was specified
 		if (languageTag == null) {
 			for (NodeGraphFieldContainer container : node.getGraphFieldContainers()) {
-				obs.add(storeContainer(container, indexName));
+				obs.add(storeContainer(container, indexName, releaseUuid));
 			}
 		} else {
 
@@ -275,7 +275,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				} else {
 					// 2. Try to store the updated document
 					return db.noTrx(() -> {
-						return storeContainer(container, indexName);
+						return storeContainer(container, indexName, releaseUuid);
 					});
 				}
 			}));
@@ -305,9 +305,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * 
 	 * @param container
 	 * @param indexName project name
+	 * @param releaseUuid release Uuid
 	 * @return
 	 */
-	public Observable<Void> storeContainer(NodeGraphFieldContainer container, String indexName) {
+	public Observable<Void> storeContainer(NodeGraphFieldContainer container, String indexName, String releaseUuid) {
 
 		Node node = container.getParentNode();
 		Map<String, Object> map = new HashMap<>();
@@ -318,8 +319,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		addTags(map, node.getTags());
 
 		// The basenode has no parent.
-		if (node.getParentNode() != null) {
-			addParentNodeInfo(map, node.getParentNode());
+		if (node.getParentNode(releaseUuid) != null) {
+			addParentNodeInfo(map, node.getParentNode(releaseUuid));
 		}
 		map.put("published", node.isPublished());
 

@@ -4,9 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Stack;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -18,8 +18,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -189,20 +187,20 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Returns the parent node of this node.
-	 * 
+	 * @param releaseUuid release Uuid
 	 * @return
 	 */
-	Node getParentNode();
+	Node getParentNode(String releaseUuid);
 
 	/**
 	 * Set the parent node of this node
-	 * 
+	 * @param releaseUuid
 	 * @param parentNode
 	 */
-	void setParentNode(Node parentNode);
+	void setParentNode(String releaseUuid, Node parentNode);
 
 	/**
-	 * Create a child node in this node.
+	 * Create a child node in this node in the latest release of the project
 	 * 
 	 * @param creator
 	 * @param schemaVersion
@@ -210,6 +208,17 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	Node create(User creator, SchemaContainerVersion schemaVersion, Project project);
+
+	/**
+	 * Create a child node in this node in the given release
+	 * 
+	 * @param creator
+	 * @param schemaVersion
+	 * @param project
+	 * qparam release
+	 * @return
+	 */
+	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.

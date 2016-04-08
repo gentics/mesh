@@ -889,6 +889,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
+		String releaseUuid = project().getLatestRelease().getUuid();
 		Node node = folder("2015");
 		String uuid = node.getUuid();
 		assertNotNull(node);
@@ -898,7 +899,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 		test.assertMeshNode(folder("2015"), response);
 
 		assertNotNull(response.getParentNode());
-		assertEquals(folder("2015").getParentNode().getUuid(), response.getParentNode().getUuid());
+		assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
 		assertEquals("News", response.getParentNode().getDisplayName());
 		assertEquals("en", response.getLanguage());
 	}

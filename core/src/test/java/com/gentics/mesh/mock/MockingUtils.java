@@ -1,6 +1,7 @@
 package com.gentics.mesh.mock;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -272,7 +273,7 @@ public final class MockingUtils {
 	public static Node mockNode(Node parentNode, Project project, User user, Language language, Tag tagA, Tag tagB) {
 		Node node = mock(NodeImpl.class);
 
-		when(node.getParentNode()).thenReturn(parentNode);
+		when(node.getParentNode(anyString())).thenReturn(parentNode);
 		when(node.getProject()).thenReturn(project);
 
 		List<? extends Tag> tagList = Arrays.asList(tagA, tagB);

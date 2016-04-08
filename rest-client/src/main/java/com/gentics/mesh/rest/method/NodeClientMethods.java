@@ -134,9 +134,10 @@ public interface NodeClientMethods {
 	 * @param projectName
 	 * @param nodeUuid
 	 * @param targetFolderUuid
+	 * @param parameters
 	 * @return
 	 */
-	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid);
+	Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid, QueryParameterProvider... parameters);
 
 	/**
 	 * Load multiple tags that were assigned to a given node.

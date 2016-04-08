@@ -104,6 +104,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final String PUBLISHED_PROPERTY_KEY = "published";
 
+	public static final String RELEASE_UUID_KEY = "releaseUuid";
+
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
 	public static void checkIndices(Database database) {
@@ -177,8 +179,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		String[] projectLanguages = langList.toArray(new String[langList.size()]);
 
 		while (current != null) {
-			current = current.getParentNode();
-			if (current == null || current.getParentNode() == null) {
+			current = current.getParentNode(releaseUuid);
+			if (current == null || current.getParentNode(releaseUuid) == null) {
 				break;
 			}
 			// for the path segments of the container, we allow ANY language (of the project)
@@ -205,9 +207,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<Observable<String>> segments = new ArrayList<>();
 		segments.add(getPathSegment(ac));
 		Node current = this;
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
 		while (current != null) {
-			current = current.getParentNode();
-			if (current == null || current.getParentNode() == null) {
+			current = current.getParentNode(releaseUuid);
+			if (current == null || current.getParentNode(releaseUuid) == null) {
 				break;
 			}
 			segments.add(current.getPathSegment(ac));
@@ -369,13 +372,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node getParentNode() {
-		return out(HAS_PARENT_NODE).has(NodeImpl.class).nextOrDefaultExplicit(NodeImpl.class, null);
+	public Node getParentNode(String releaseUuid) {
+		return outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).inV().has(NodeImpl.class)
+				.nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	@Override
-	public void setParentNode(Node parent) {
-		setLinkOut(parent.getImpl(), HAS_PARENT_NODE);
+	public void setParentNode(String releaseUuid, Node parent) {
+		outE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).removeAll();
+		addFramedEdge(HAS_PARENT_NODE, parent.getImpl()).setProperty(RELEASE_UUID_KEY, releaseUuid);
 	}
 
 	@Override
@@ -388,14 +393,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		setLinkOut(project.getImpl(), ASSIGNED_TO_PROJECT);
 	}
 
+	@Override
+	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project) {
+		return create(creator, schemaVersion, project, project.getLatestRelease());
+	}
+
 	/**
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project) {
+	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release) {
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the (project)--(nodeRoot) node.
 		Node node = BootstrapInitializer.getBoot().nodeRoot().create(creator, schemaVersion, project);
-		node.setParentNode(this);
+		node.setParentNode(release.getUuid(), this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);
 		return node;
@@ -431,7 +441,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			restNode.setPublished(isPublished());
 
 			// Parent node reference
-			Node parentNode = getParentNode();
+			Node parentNode = getParentNode(release.getUuid());
 			if (parentNode != null) {
 				obs.add(parentNode.transformToReference(ac).map(transformedParentNode -> {
 					restNode.setParentNode(transformedParentNode);
@@ -597,7 +607,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Observable<NodeResponse> setBreadcrumbToRest(InternalActionContext ac, NodeResponse restNode) {
-		Node current = this.getParentNode();
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		Node current = this.getParentNode(releaseUuid);
 		// The project basenode has no breadcrumb
 		if (current == null) {
 			return Observable.just(restNode);
@@ -614,7 +625,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			reference.setUuid(current.getUuid());
 			reference.setDisplayName(current.getDisplayName(ac));
 			breadcrumb.add(reference);
-			current = current.getParentNode();
+			current = current.getParentNode(releaseUuid);
 		}
 		restNode.setBreadcrumb(breadcrumb);
 		return Observable.just(restNode);
@@ -956,8 +967,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		String permLabel = type == Type.PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
 
-		VertexTraversal<?, ?, ?> traversal = in(HAS_PARENT_NODE).has(NodeImpl.class).mark().in(permLabel)
-				.out(HAS_ROLE).in(HAS_USER).retain(requestUser.getImpl()).back();
+		VertexTraversal<?, ?, ?> traversal = null;
+		if (releaseUuid != null) {
+			traversal = inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV();
+		} else {
+			traversal = in(HAS_PARENT_NODE);
+		}
+
+		traversal = traversal.has(NodeImpl.class).mark().in(permLabel).out(HAS_ROLE).in(HAS_USER)
+				.retain(requestUser.getImpl()).back();
 		if (releaseUuid != null && type != null) {
 			traversal = traversal.mark().outE(HAS_FIELD_CONTAINER)
 					.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
@@ -1059,6 +1077,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					// Create a new field container
 					container = createGraphFieldContainer(language, release, ac.getUser());
 					container.updateFieldsFromRest(ac, requestModel.getFields(), schema);
+
+					// check whether the node has a parent node in this
+					// release, if not, we set the parent node from the previous
+					// release (if any)
+					if (getParentNode(release.getUuid()) == null) {
+						Node previousParent = null;
+						Release previousRelease = release.getPreviousRelease();
+						while (previousParent == null && previousRelease != null) {
+							previousParent = getParentNode(previousRelease.getUuid());
+							previousRelease = previousRelease.getPreviousRelease();
+						}
+
+						if (previousParent != null) {
+							setParentNode(release.getUuid(), previousParent);
+						}
+					}
 				} else {
 					// TODO check for conflict
 					// when there already is a DRAFT version for the release,
@@ -1090,12 +1124,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// long?
 		// Check whether the target node is part of the subtree of the source
 		// node.
-		Node parent = targetNode.getParentNode();
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		Node parent = targetNode.getParentNode(releaseUuid);
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
 				throw error(BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 			}
-			parent = parent.getParentNode();
+			parent = parent.getParentNode(releaseUuid);
 		}
 
 		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
@@ -1109,9 +1144,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// TODO check whether there is a node in the target node that has the
 		// same name. We do this to prevent issues for the webroot api
 		return db.trx(() -> {
-			setParentNode(targetNode);
+			setParentNode(releaseUuid, targetNode);
 			// update the webroot path info for every field container.
-			getGraphFieldContainers().stream().forEach(container -> container.updateWebrootPathInfo(null, "node_conflicting_segmentfield_move"));
+			getGraphFieldContainers().stream().forEach(
+					container -> container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_move"));
 			SearchQueueBatch batch = createIndexBatch(STORE_ACTION);
 			return batch;
 		}).process().map(i -> {

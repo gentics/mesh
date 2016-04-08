@@ -547,6 +547,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
+		String releaseUuid = project().getLatestRelease().getUuid();
 		int numAdditionalNodes = 99;
 		addMicronodeField();
 		User user = user();
@@ -554,7 +555,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 		Node concorde = content("concorde");
 
 		Project project = concorde.getProject();
-		Node parentNode = concorde.getParentNode();
+		Node parentNode = concorde.getParentNode(releaseUuid);
 		SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 		for (int i = 0; i < numAdditionalNodes; i++) {

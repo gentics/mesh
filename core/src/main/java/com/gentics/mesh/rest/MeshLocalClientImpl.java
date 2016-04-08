@@ -248,8 +248,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid) {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public Future<GenericMessageResponse> moveNode(String projectName, String nodeUuid, String targetFolderUuid, QueryParameterProvider... parameters) {
+		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class, parameters);
 		ac.setProject(projectName);
 		nodeCrudHandler.handleMove(ac, nodeUuid, targetFolderUuid);
 		return ac.getFuture();
