@@ -6,7 +6,7 @@
 Java 8 is required to run Gentics Mesh
 ----
 
-. Download Gentics Mesh from http://getmesh.io/download/ into an *empty* folder
+. Download Gentics Mesh from http://getmesh.io/Download into an *empty* folder
 . Start the JAR-file by executing ```java -jar mesh-demo-X.X.X.jar```
 . Point your browser to http://localhost:8080/mesh-ui/ to reach the Mesh Admin UI
 

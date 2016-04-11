@@ -549,7 +549,7 @@ Since the JSON standard does not have a special regex type, it would need to be 
 
 == Installation
 
-There is no dedicated installation procedure for mesh. You just http://getmesh.io/[download the mesh jar] file and start it using java.
+There is no dedicated installation procedure for mesh. You just http://getmesh.io/Download[download the mesh jar] file and start it using java.
 
 [source,bash]
 ----
