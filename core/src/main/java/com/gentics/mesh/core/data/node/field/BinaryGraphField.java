@@ -3,14 +3,25 @@ package com.gentics.mesh.core.data.node.field;
 import java.io.File;
 
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import rx.Observable;
 
 /**
  * The BinaryField Domain Model interface.
  */
 public interface BinaryGraphField extends BasicGraphField<BinaryField> {
+
+	FieldTransformator BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode)-> {
+		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
+		if (graphBinaryField == null) {
+			return Observable.just(new BinaryFieldImpl());
+		} else {
+			return graphBinaryField.transformToRest(ac);
+		}
+	};
 
 	/**
 	 * Return the binary filename.

@@ -685,6 +685,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// Add children
 		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
+			// TODO also allow navigations over containers
 			if (child.getSchemaContainer().getLatestVersion().getSchema().isContainer()) {
 				NavigationElement childElement = new NavigationElement();
 				// We found at least one child so lets create the array

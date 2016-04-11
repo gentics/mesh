@@ -19,8 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -58,10 +58,8 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -77,7 +75,6 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
@@ -356,150 +353,12 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public Observable<? extends Field> getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			List<String> languageTags, int level) {
-
-		// db.asyncNoTrx(noTrx -> {
-		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-		switch (type) {
-		case STRING:
-			// TODO validate found fields has same type as schema
-			// StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
-			// fieldKey, this);
-			StringGraphField graphStringField = getString(fieldKey);
-			if (graphStringField == null) {
-				return Observable.just(new StringFieldImpl());
-			} else {
-				return graphStringField.transformToRest(ac).map(stringField -> {
-					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-						Project project = ac.getProject();
-						if (project == null) {
-							project = getParentNode().getProject();
-						}
-						stringField.setString(WebRootLinkReplacer.getInstance().replace(stringField.getString(), ac.getResolveLinksType(),
-								project.getName(), languageTags));
-					}
-					return stringField;
-				});
-			}
-		case BINARY:
-			BinaryGraphField graphBinaryField = getBinary(fieldKey);
-			if (graphBinaryField == null) {
-				return Observable.just(new BinaryFieldImpl());
-			} else {
-				return graphBinaryField.transformToRest(ac);
-			}
-		case NUMBER:
-			NumberGraphField graphNumberField = getNumber(fieldKey);
-			if (graphNumberField == null) {
-				return Observable.just(new NumberFieldImpl());
-			} else {
-				return graphNumberField.transformToRest(ac);
-			}
-		case DATE:
-			DateGraphField graphDateField = getDate(fieldKey);
-			if (graphDateField == null) {
-				return Observable.just(new DateFieldImpl());
-			} else {
-				return graphDateField.transformToRest(ac);
-			}
-		case BOOLEAN:
-			BooleanGraphField graphBooleanField = getBoolean(fieldKey);
-			if (graphBooleanField == null) {
-				return Observable.just(new BooleanFieldImpl());
-			} else {
-				return graphBooleanField.transformToRest(ac);
-			}
-		case NODE:
-			NodeGraphField graphNodeField = getNode(fieldKey);
-			if (graphNodeField == null) {
-				return Observable.just(new NodeFieldImpl());
-			} else {
-				return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
-			}
-		case HTML:
-			HtmlGraphField graphHtmlField = getHtml(fieldKey);
-			if (graphHtmlField == null) {
-				return Observable.just(new HtmlFieldImpl());
-			} else {
-				return graphHtmlField.transformToRest(ac).map(model -> {
-					// If needed resolve links within the html
-					if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {
-						Project project = ac.getProject();
-						if (project == null) {
-							project = getParentNode().getProject();
-						}
-						model.setHTML(WebRootLinkReplacer.getInstance().replace(model.getHTML(), ac.getResolveLinksType(), project.getName(),
-								languageTags));
-					}
-					return model;
-				});
-			}
-		case LIST:
-			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
-
-			switch (listFieldSchema.getListType()) {
-			case NodeGraphFieldList.TYPE:
-				NodeGraphFieldList nodeFieldList = getNodeList(fieldKey);
-				if (nodeFieldList == null) {
-					return Observable.just(new NodeFieldListImpl());
-				} else {
-					return nodeFieldList.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			case NumberGraphFieldList.TYPE:
-				NumberGraphFieldList numberFieldList = getNumberList(fieldKey);
-				if (numberFieldList == null) {
-					return Observable.just(new NumberFieldListImpl());
-				} else {
-					return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			case BooleanGraphFieldList.TYPE:
-				BooleanGraphFieldList booleanFieldList = getBooleanList(fieldKey);
-				if (booleanFieldList == null) {
-					return Observable.just(new BooleanFieldListImpl());
-				} else {
-					return booleanFieldList.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			case HtmlGraphFieldList.TYPE:
-				HtmlGraphFieldList htmlFieldList = getHTMLList(fieldKey);
-				if (htmlFieldList == null) {
-					return Observable.just(new HtmlFieldListImpl());
-				} else {
-					return htmlFieldList.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			case MicronodeGraphFieldList.TYPE:
-				MicronodeGraphFieldList graphMicroschemaField = getMicronodeList(fieldKey);
-				if (graphMicroschemaField == null) {
-					return Observable.just(new MicronodeFieldListImpl());
-				} else {
-					return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			case StringGraphFieldList.TYPE:
-				StringGraphFieldList stringFieldList = getStringList(fieldKey);
-				if (stringFieldList == null) {
-					return Observable.just(new StringFieldListImpl());
-				} else {
-					return stringFieldList.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			case DateGraphFieldList.TYPE:
-				DateGraphFieldList dateFieldList = getDateList(fieldKey);
-				if (dateFieldList == null) {
-					return Observable.just(new DateFieldListImpl());
-				} else {
-					return dateFieldList.transformToRest(ac, fieldKey, languageTags, level);
-				}
-			}
-			// String listType = listFielSchema.getListType();
-			break;
-		case MICRONODE:
-			MicronodeGraphField micronodeGraphField = getMicronode(fieldKey);
-			if (micronodeGraphField == null) {
-				return Observable.just(new NullMicronodeResponse());
-			} else {
-				return micronodeGraphField.transformToRest(ac, fieldKey, languageTags, level);
-			}
+		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
+		if (type != null) {
+			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, getParentNode());
+		} else {
+			throw error(BAD_REQUEST, "type unknown");
 		}
-
-		throw error(BAD_REQUEST, "type unknown");
-
 	}
 
 	/**
