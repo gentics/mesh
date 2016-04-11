@@ -6,8 +6,8 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
@@ -64,9 +64,19 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 
 	@Override
 	public boolean equals(GraphField field) {
-		if (field instanceof HtmlGraphField) {
+		if (field instanceof DateGraphField) {
 			Long dateA = getDate();
 			Long dateB = ((DateGraphField) field).getDate();
+			return Objects.equals(dateA, dateB);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof DateField) {
+			Long dateA = getDate();
+			Long dateB = ((DateField) restField).getDate();
 			return Objects.equals(dateA, dateB);
 		}
 		return false;

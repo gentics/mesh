@@ -81,4 +81,10 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean equals(Field restField) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

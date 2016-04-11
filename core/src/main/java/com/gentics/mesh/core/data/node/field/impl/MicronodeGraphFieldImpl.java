@@ -7,14 +7,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.List;
 import java.util.Objects;
 
-import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 
 import rx.Observable;
 
@@ -78,6 +79,17 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		if (field instanceof MicronodeGraphField) {
 			Micronode micronodeA = getMicronode();
 			Micronode micronodeB = ((MicronodeGraphField) field).getMicronode();
+			return Objects.equals(micronodeA, micronodeB);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof MicronodeField) {
+			Micronode micronodeA = getMicronode();
+			MicronodeField micronodeB = ((MicronodeField) restField);
+			// TODO compare and check for null
 			return Objects.equals(micronodeA, micronodeB);
 		}
 		return false;

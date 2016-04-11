@@ -96,37 +96,37 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createHtmlField(String html) {
+	public static HtmlField createHtmlField(String html) {
 		HtmlField field = new HtmlFieldImpl();
 		field.setHTML(html);
 		return field;
 	}
 
-	public static Field createNumberField(Number number) {
+	public static NumberField createNumberField(Number number) {
 		NumberField field = new NumberFieldImpl();
 		field.setNumber(number);
 		return field;
 	}
 
-	public static Field createBooleanField(Boolean value) {
+	public static BooleanField createBooleanField(Boolean value) {
 		BooleanField field = new BooleanFieldImpl();
 		field.setValue(value);
 		return field;
 	}
 
-	public static Field createDateField(Long date) {
+	public static DateField createDateField(Long date) {
 		DateField field = new DateFieldImpl();
 		field.setDate(date);
 		return field;
 	}
 
-	public static Field createNodeField(String uuid) {
+	public static NodeFieldImpl createNodeField(String uuid) {
 		NodeFieldImpl field = new NodeFieldImpl();
 		field.setUuid(uuid);
 		return field;
 	}
 
-	public static Field createNodeListField(String... uuids) {
+	public static NodeFieldListImpl createNodeListField(String... uuids) {
 		NodeFieldListImpl field = new NodeFieldListImpl();
 		for (String uuid : uuids) {
 			field.add(new NodeFieldListItemImpl(uuid));
@@ -134,7 +134,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createBooleanListField(Boolean... values) {
+	public static BooleanFieldListImpl createBooleanListField(Boolean... values) {
 		BooleanFieldListImpl field = new BooleanFieldListImpl();
 		for (Boolean value : values) {
 			field.add(value);
@@ -142,7 +142,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createDateListField(Long... values) {
+	public static DateFieldListImpl createDateListField(Long... values) {
 		DateFieldListImpl field = new DateFieldListImpl();
 		for (Long value : values) {
 			field.add(value);
@@ -150,7 +150,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createNumberListField(Number... numbers) {
+	public static NumberFieldListImpl createNumberListField(Number... numbers) {
 		NumberFieldListImpl field = new NumberFieldListImpl();
 		for (Number number : numbers) {
 			field.add(number);
@@ -158,7 +158,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createHtmlListField(String... values) {
+	public static HtmlFieldListImpl createHtmlListField(String... values) {
 		HtmlFieldListImpl field = new HtmlFieldListImpl();
 		for (String value : values) {
 			field.add(value);
@@ -166,7 +166,7 @@ public final class FieldUtil {
 		return field;
 	}
 
-	public static Field createStringListField(String... strings) {
+	public static StringFieldListImpl createStringListField(String... strings) {
 		StringFieldListImpl field = new StringFieldListImpl();
 		for (String string : strings) {
 			field.add(string);

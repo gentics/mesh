@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
@@ -155,6 +156,14 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	public boolean equals(GraphField field) {
 		if (field instanceof MicronodeGraphFieldList) {
 			return ((MicronodeGraphFieldList) field).getList().equals(getList());
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof MicronodeFieldList) {
+			return ((MicronodeFieldList) restField).getItems().equals(getList());
 		}
 		return false;
 	}

@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 
 import io.vertx.core.Future;
@@ -196,16 +197,37 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	@Override
 	public boolean equals(GraphField field) {
 		if (field instanceof BinaryGraphField) {
+			BinaryGraphField binaryField = (BinaryGraphField) field;
 			String filenameA = getFileName();
-			String filenameB = ((BinaryGraphField) field).getFileName();
+			String filenameB = binaryField.getFileName();
 			boolean filename = Objects.equals(filenameA, filenameB);
 
 			String mimeTypeA = getMimeType();
-			String mimeTypeB = ((BinaryGraphField) field).getMimeType();
+			String mimeTypeB = binaryField.getMimeType();
 			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
 
 			String hashSumA = getSHA512Sum();
-			String hashSumB = ((BinaryGraphField) field).getSHA512Sum();
+			String hashSumB = binaryField.getSHA512Sum();
+			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
+			return filename && mimetype && sha512sum;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof BinaryField) {
+			BinaryField binaryField = (BinaryField) restField;
+			String filenameA = getFileName();
+			String filenameB = binaryField.getFileName();
+			boolean filename = Objects.equals(filenameA, filenameB);
+
+			String mimeTypeA = getMimeType();
+			String mimeTypeB = binaryField.getMimeType();
+			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
+
+			String hashSumA = getSHA512Sum();
+			String hashSumB = binaryField.getSha512sum();
 			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
 			return filename && mimetype && sha512sum;
 		}

@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -205,6 +206,70 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 						Tuple.tuple(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid),
 						Tuple.tuple(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase()),
 						Tuple.tuple(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid())));
+	}
+
+	@Override
+	public List<FieldContainerChange> compareTo(FieldMap fieldMap, Schema schema) {
+		List<FieldContainerChange> changes = new ArrayList<>();
+
+		Schema schemaA = getSchemaContainerVersion().getSchema();
+		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
+
+		Map<String, FieldSchema> fieldMapB = schema.getFieldsAsMap();
+		// Generate a structural diff first. This way it is easy to determine which fields have been added or removed.
+		MapDifference<String, FieldSchema> diff = Maps.difference(fieldMapA, fieldMapB, new Equivalence<FieldSchema>() {
+
+			@Override
+			protected boolean doEquivalent(FieldSchema a, FieldSchema b) {
+				return a.getName().equals(b.getName());
+			}
+
+			@Override
+			protected int doHash(FieldSchema t) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+		});
+
+		// Handle fields which exist only in A - They have been removed in B 
+		for (FieldSchema field : diff.entriesOnlyOnLeft().values()) {
+			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.REMOVED));
+		}
+
+		// Handle fields which don't exist in A - They have been added in B 
+		for (FieldSchema field : diff.entriesOnlyOnRight().values()) {
+			changes.add(new FieldContainerChange(field.getName(), FieldChangeTypes.ADDED));
+		}
+
+		// Handle fields which are common in both schemas
+				for (String fieldName : diff.entriesInCommon().keySet()) {
+					FieldSchema fieldSchemaA = fieldMapA.get(fieldName);
+					FieldSchema fieldSchemaB = fieldMapB.get(fieldName);
+					// Check whether the field type is different in between both schemas
+					if (fieldSchemaA.getType().equals(fieldSchemaB.getType())) {
+						// Check content
+						GraphField fieldA = getField(fieldSchemaA);
+						Field fieldB =fieldMap.getField(fieldName, fieldSchemaB);
+						// Handle null cases. The field may not have been created yet.
+						if (fieldA != null && fieldB == null) {
+							// Field only exists in A
+							changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+						} else if (fieldA == null && fieldB != null) {
+							// Field only exists in B
+							changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+						} else if (fieldA != null && fieldB != null && !fieldA.equals(fieldB)) {
+							// Field exists in A and B and the fields are not equal to each other. 
+							changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+						} else {
+							// Both fields are equal if those fields are both null
+						}
+					} else {
+						// The field type has changed
+						changes.add(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+					}
+				}
+		return changes;
 	}
 
 	@Override

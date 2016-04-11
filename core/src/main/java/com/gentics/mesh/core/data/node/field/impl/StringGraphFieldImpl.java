@@ -6,6 +6,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -55,6 +56,16 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		if (field instanceof StringGraphField) {
 			String valueA = getString();
 			String valueB = ((StringGraphField) field).getString();
+			return Objects.equals(valueA, valueB);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof StringField) {
+			String valueA = getString();
+			String valueB = ((StringField) restField).getString();
 			return Objects.equals(valueA, valueB);
 		}
 		return false;

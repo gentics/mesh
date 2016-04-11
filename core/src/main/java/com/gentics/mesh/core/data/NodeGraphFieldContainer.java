@@ -9,6 +9,8 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
  * A node field container is a aggregation node that holds localized fields.
@@ -117,8 +119,10 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * @param batch
 	 * @param action
-	 * @param releaseUuid release Uuid
-	 * @param type type
+	 * @param releaseUuid
+	 *            release Uuid
+	 * @param type
+	 *            type
 	 */
 	void addIndexBatchEntry(SearchQueueBatch batch, SearchQueueEntryAction action, String releaseUuid, Type type);
 
@@ -128,5 +132,15 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param container
 	 */
 	List<FieldContainerChange> compareTo(NodeGraphFieldContainer container);
+
+	/**
+	 * Compare the values of this container with the values of the given fieldmap. Use the provided schema to compare strutural differences in between both
+	 * schemas.
+	 * 
+	 * @param dummyMap
+	 * @param schema
+	 * @return
+	 */
+	List<FieldContainerChange> compareTo(FieldMap dummyMap, Schema schema);
 
 }

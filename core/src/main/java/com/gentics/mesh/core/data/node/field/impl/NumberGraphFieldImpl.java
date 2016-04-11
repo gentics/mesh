@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -71,6 +72,16 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		if (field instanceof NumberGraphField) {
 			Number valueA = getNumber();
 			Number valueB = ((NumberGraphField) field).getNumber();
+			return Objects.equals(valueA, valueB);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof NumberField) {
+			Number valueA = getNumber();
+			Number valueB = ((NumberField) restField).getNumber();
 			return Objects.equals(valueA, valueB);
 		}
 		return false;

@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
@@ -62,6 +63,16 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 		if (field instanceof BooleanGraphField) {
 			Boolean valueA = getBoolean();
 			Boolean valueB = ((BooleanGraphField) field).getBoolean();
+			return Objects.equals(valueA, valueB);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof BooleanField) {
+			Boolean valueA = getBoolean();
+			Boolean valueB = ((BooleanField) restField).getValue();
 			return Objects.equals(valueA, valueB);
 		}
 		return false;

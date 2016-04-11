@@ -14,6 +14,8 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -95,6 +97,16 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		if (field instanceof NodeGraphFieldList) {
 			List<? extends NodeGraphField> listA = getList();
 			List<? extends NodeGraphField> listB = ((NodeGraphFieldList) field).getList();
+			return Objects.equals(listA, listB);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean equals(Field restField) {
+		if (restField instanceof NodeFieldList) {
+			List<? extends NodeGraphField> listA = getList();
+			List<NodeFieldListItem> listB = ((NodeFieldList) restField).getItems();
 			return Objects.equals(listA, listB);
 		}
 		return false;
