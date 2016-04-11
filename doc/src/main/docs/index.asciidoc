@@ -1339,4 +1339,4 @@ The post request will contain the node JSON data of the current editing state. T
 
 == License
 
-Gentics Mesh is published under a commercial license.
+Gentics Mesh is published under a commercial license. http://getmesh.io/Blog/Terms[License Terms]
