@@ -51,6 +51,10 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 		}
 	};
 
+	FieldGetter  HTML_GETTER = (container, fieldSchema) -> {
+		return container.getHtml(fieldSchema.getName());
+	};
+
 	/**
 	 * Set the html field value for the field.
 	 * 

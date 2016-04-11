@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.node.field.list;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -40,6 +41,10 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 			micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
 		}
 
+	};
+
+	FieldGetter  MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getMicronodeList(fieldSchema.getName());
 	};
 
 	/**

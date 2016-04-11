@@ -5,6 +5,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
 
+import org.aspectj.weaver.ast.FieldGet;
+
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -63,6 +65,10 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		}
 		graphStringField.setString(stringField.getString());
 
+	};
+
+	FieldGetter STRING_GETTER = (container, fieldSchema) -> {
+		return container.getString(fieldSchema.getName());
 	};
 
 	/**

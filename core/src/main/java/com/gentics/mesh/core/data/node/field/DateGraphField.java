@@ -36,6 +36,10 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 		}
 	};
 
+	FieldGetter DATE_GETTER = (container, fieldSchema) -> {
+		return container.getDate(fieldSchema.getName());
+	};
+
 	/**
 	 * Set the date within the field.
 	 * 

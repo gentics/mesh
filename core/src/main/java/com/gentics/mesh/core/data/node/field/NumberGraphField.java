@@ -35,6 +35,10 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 		}
 	};
 
+	FieldGetter NUMBER_GETTER = (container, fieldSchema) -> {
+		return container.getNumber(fieldSchema.getName());
+	};
+
 	/**
 	 * Set the number in the graph field.
 	 * 

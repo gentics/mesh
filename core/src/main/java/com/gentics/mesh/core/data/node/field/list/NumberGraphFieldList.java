@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list;
 
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -21,7 +22,7 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 		}
 	};
 
-	FieldUpdater  NUMBER_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
 		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
 		GraphField.failOnMissingMandatoryField(ac, graphNumberFieldList, restField, fieldSchema, fieldKey, schema);
 		NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
@@ -36,6 +37,10 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 				graphNumberFieldList.createNumber(item);
 			}
 		}
+	};
+
+	FieldGetter NUMBER_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getNumberList(fieldSchema.getName());
 	};
 
 	/**

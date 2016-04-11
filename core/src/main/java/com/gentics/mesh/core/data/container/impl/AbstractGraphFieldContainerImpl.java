@@ -51,17 +51,13 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 /**
@@ -378,46 +374,11 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public GraphField getField(FieldSchema fieldSchema) {
-		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-		switch (type) {
-		case BINARY:
-			return getBinary(fieldSchema.getName());
-		case BOOLEAN:
-			return getBoolean(fieldSchema.getName());
-		case DATE:
-			return getDate(fieldSchema.getName());
-		case HTML:
-			return getHtml(fieldSchema.getName());
-		case LIST:
-			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
-			switch (listFieldSchema.getListType()) {
-			case "boolean":
-				return getBooleanList(fieldSchema.getName());
-			case "date":
-				return getDateList(fieldSchema.getName());
-			case "html":
-				return getHTMLList(fieldSchema.getName());
-			case "micronode":
-				return getMicronodeList(fieldSchema.getName());
-			case "node":
-				return getNodeList(fieldSchema.getName());
-			case "number":
-				return getNumberList(fieldSchema.getName());
-			case "string":
-				return getStringList(fieldSchema.getName());
-			default:
-				throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Unknown list type {" + listFieldSchema.getListType() + "}");
-			}
-		case MICRONODE:
-			return getMicronode(fieldSchema.getName());
-		case NODE:
-			return getNode(fieldSchema.getName());
-		case NUMBER:
-			return getNumber(fieldSchema.getName());
-		case STRING:
-			return getString(fieldSchema.getName());
-		default:
-			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Unknown field type {" + type + "}");
+		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
+		if (type != null) {
+			return type.getField(this, fieldSchema);
+		} else {
+			throw new HttpStatusCodeErrorException(INTERNAL_SERVER_ERROR, "Unknown list type {" + fieldSchema.getType() + "}");
 		}
 	}
 

@@ -36,6 +36,10 @@ public interface BooleanGraphField extends ListableGraphField, BasicGraphField<B
 		}
 	};
 
+	FieldGetter BOOLEAN_GETTER = (container, fieldSchema) -> {
+		return container.getBoolean(fieldSchema.getName());
+	};
+
 	/**
 	 * Return the boolean field value.
 	 * 

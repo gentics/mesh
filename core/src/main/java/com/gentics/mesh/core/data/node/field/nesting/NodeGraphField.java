@@ -5,6 +5,7 @@ import java.util.List;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -19,6 +20,8 @@ import rx.Observable;
 public interface NodeGraphField extends ListableReferencingGraphField, MicroschemaListableGraphField {
 
 	static final Logger log = LoggerFactory.getLogger(NodeGraphField.class);
+
+	
 
 	FieldTransformator NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
@@ -61,6 +64,10 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 			}
 			return null;
 		}).toBlocking().single();
+	};
+	
+	FieldGetter NODE_GETTER = (container, fieldSchema) -> {
+		return container.getNode(fieldSchema.getName());
 	};
 
 	/**

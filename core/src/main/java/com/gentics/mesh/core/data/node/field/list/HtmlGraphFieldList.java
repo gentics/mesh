@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list;
 
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -35,6 +36,10 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 				graphHtmlFieldList.createHTML(item);
 			}
 		}
+	};
+
+	FieldGetter  HTML_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getHTMLList(fieldSchema.getName());
 	};
 
 	/**

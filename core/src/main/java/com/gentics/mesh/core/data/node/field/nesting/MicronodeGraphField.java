@@ -12,6 +12,7 @@ import org.apache.commons.lang.ArrayUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -86,6 +87,10 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		micronode = micronodeGraphField.getMicronode();
 
 		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields(), micronode.getMicroschema());
+	};
+
+	FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> {
+		return container.getMicronode(fieldSchema.getName());
 	};
 
 	/**

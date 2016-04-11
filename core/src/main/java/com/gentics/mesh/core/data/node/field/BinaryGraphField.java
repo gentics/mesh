@@ -41,6 +41,10 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
+	FieldGetter BINARY_GETTER = (container, fieldSchema) -> {
+		return container.getBinary(fieldSchema.getName());
+	};
+
 	/**
 	 * Return the binary filename.
 	 * 

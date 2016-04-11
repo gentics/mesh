@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -36,6 +37,10 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 				graphBooleanFieldList.createBoolean(item);
 			}
 		}
+	};
+
+	FieldGetter  BOOLEAN_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getBooleanList(fieldSchema.getName());
 	};
 
 	/**

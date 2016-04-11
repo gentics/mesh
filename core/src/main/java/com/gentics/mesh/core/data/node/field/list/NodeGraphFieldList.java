@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -52,6 +53,10 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 				graphNodeFieldList.createNode(String.valueOf(integer.incrementAndGet()), node);
 			}
 		}
+	};
+
+	FieldGetter  NODE_LIST_GETTER = (container, fieldSchema) -> {
+		return container.getNodeList(fieldSchema.getName());
 	};
 
 	NodeGraphField createNode(String key, Node node);
