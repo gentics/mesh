@@ -334,4 +334,11 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 */
 	void validate();
 
+	/**
+	 * Delete the field edge with the given key from the container.
+	 * 
+	 * @param key
+	 */
+	void deleteFieldEdge(String key);
+
 }

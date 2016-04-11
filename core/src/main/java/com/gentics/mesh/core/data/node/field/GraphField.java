@@ -1,10 +1,44 @@
 package com.gentics.mesh.core.data.node.field;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public interface GraphField {
 
-	public static final String FIELD_KEY_PROPERTY_KEY = "fieldkey";
+	String FIELD_KEY_PROPERTY_KEY = "fieldkey";
+
+	/**
+	 * Throw an error if all assumptions match:
+	 * <ul>
+	 * <li>The given field has not yet been created</li>
+	 * <li>The field is mandatory</li>
+	 * <li>The rest field does not contain any data</li>
+	 * </ul>
+	 * 
+	 * @param ac
+	 * @param field
+	 * @param restField
+	 * @param fieldSchema
+	 * @param key
+	 * @param schema
+	 * @throws HttpStatusCodeErrorException
+	 */
+	static void failOnMissingMandatoryField(InternalActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key,
+			FieldSchemaContainer schema) throws HttpStatusCodeErrorException {
+		if (field == null && fieldSchema.isRequired() && restField == null) {
+			throw error(BAD_REQUEST, "node_error_missing_mandatory_field_value", key, schema.getName());
+		}
+	}
 
 	/**
 	 * Set the graph field key.

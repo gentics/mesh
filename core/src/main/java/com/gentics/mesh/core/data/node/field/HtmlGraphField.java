@@ -35,6 +35,22 @@ public interface HtmlGraphField extends ListableGraphField, BasicGraphField<Html
 		}
 	};
 
+	FieldUpdater  HTML_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+		HtmlGraphField htmlGraphField = container.getHtml(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, htmlGraphField, restField, fieldSchema, fieldKey, schema);
+		HtmlField htmlField = (HtmlFieldImpl) restField;
+		if (restField == null) {
+			return;
+		}
+
+		// Create new graph field if no existing one could be found
+		if (htmlGraphField == null) {
+			container.createHTML(fieldKey).setHtml(htmlField.getHTML());
+		} else {
+			htmlGraphField.setHtml(htmlField.getHTML());
+		}
+	};
+
 	/**
 	 * Set the html field value for the field.
 	 * 

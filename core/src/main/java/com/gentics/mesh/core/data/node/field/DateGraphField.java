@@ -22,6 +22,20 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 		}
 	};
 
+	FieldUpdater DATE_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+		DateGraphField dateGraphField = container.getDate(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, dateGraphField, restField, fieldSchema, fieldKey, schema);
+		DateField dateField = (DateFieldImpl) restField;
+		if (restField == null) {
+			return;
+		}
+		if (dateGraphField == null) {
+			container.createDate(fieldKey).setDate(dateField.getDate());
+		} else {
+			dateGraphField.setDate(dateField.getDate());
+		}
+	};
+
 	/**
 	 * Set the date within the field.
 	 * 

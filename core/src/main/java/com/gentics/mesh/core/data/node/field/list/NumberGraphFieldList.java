@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 
@@ -16,6 +18,23 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 			return Observable.just(new NumberFieldListImpl());
 		} else {
 			return numberFieldList.transformToRest(ac, fieldKey, languageTags, level);
+		}
+	};
+
+	FieldUpdater  NUMBER_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, graphNumberFieldList, restField, fieldSchema, fieldKey, schema);
+		NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
+
+		if (numberList.getItems().isEmpty()) {
+			if (graphNumberFieldList != null) {
+				graphNumberFieldList.removeField(container);
+			}
+		} else {
+			graphNumberFieldList = container.createNumberList(fieldKey);
+			for (Number item : numberList.getItems()) {
+				graphNumberFieldList.createNumber(item);
+			}
 		}
 	};
 

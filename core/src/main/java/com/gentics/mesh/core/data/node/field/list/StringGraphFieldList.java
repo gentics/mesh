@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 
@@ -16,6 +18,23 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 			return Observable.just(new StringFieldListImpl());
 		} else {
 			return stringFieldList.transformToRest(ac, fieldKey, languageTags, level);
+		}
+	};
+
+	FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+		StringGraphFieldList graphStringList = container.getStringList(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, graphStringList, restField, fieldSchema, fieldKey, schema);
+		StringFieldListImpl stringList = (StringFieldListImpl) restField;
+
+		if (stringList.getItems().isEmpty()) {
+			if (graphStringList != null) {
+				graphStringList.removeField(container);
+			}
+		} else {
+			graphStringList = container.createStringList(fieldKey);
+			for (String item : stringList.getItems()) {
+				graphStringList.createString(item);
+			}
 		}
 	};
 

@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.node.field.list;
 
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 
 import rx.Observable;
@@ -17,6 +19,26 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		} else {
 			return dateFieldList.transformToRest(ac, fieldKey, languageTags, level);
 		}
+	};
+
+	FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+
+		DateGraphFieldList graphDateFieldList = container.getDateList(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, graphDateFieldList, restField, fieldSchema, fieldKey, schema);
+		DateFieldListImpl dateList = (DateFieldListImpl) restField;
+
+		if (dateList.getItems().isEmpty()) {
+			if (graphDateFieldList != null) {
+				graphDateFieldList.removeField(container);
+			}
+		} else {
+			// Create new list if no existing one could be found
+			graphDateFieldList = container.createDateList(fieldKey);
+			for (Long item : dateList.getItems()) {
+				graphDateFieldList.createDate(item);
+			}
+		}
+
 	};
 
 	/**

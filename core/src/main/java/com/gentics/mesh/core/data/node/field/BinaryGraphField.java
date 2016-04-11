@@ -23,6 +23,24 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		}
 	};
 
+	FieldUpdater  BINARY_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, graphBinaryField, restField, fieldSchema, fieldKey, schema);
+
+		BinaryField binaryField = (BinaryFieldImpl) restField;
+		if (restField == null) {
+			return;
+		}
+		// Create new graph field if no existing one could be found
+		if (graphBinaryField == null) {
+			graphBinaryField = container.createBinary(fieldKey);
+		}
+		graphBinaryField.setImageDPI(binaryField.getDpi());
+		graphBinaryField.setFileName(binaryField.getFileName());
+		graphBinaryField.setMimeType(binaryField.getMimeType());
+		// Don't update image width, height, SHA checksum - those are immutable
+	};
+
 	/**
 	 * Return the binary filename.
 	 * 

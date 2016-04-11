@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.node.field.list;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldUpdater;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
@@ -21,6 +23,23 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 		} else {
 			return graphMicroschemaField.transformToRest(ac, fieldKey, languageTags, level);
 		}
+	};
+
+	FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+		MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
+		GraphField.failOnMissingMandatoryField(ac, micronodeGraphFieldList, restField, fieldSchema, fieldKey, schema);
+		MicronodeFieldList micronodeList = (MicronodeFieldList) restField;
+
+		if (micronodeList.getItems().isEmpty()) {
+			if (micronodeGraphFieldList != null) {
+				micronodeGraphFieldList.removeField(container);
+			}
+		} else {
+			micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
+			//TODO instead this method should also return an observable 
+			micronodeGraphFieldList.update(ac, micronodeList).toBlocking().last();
+		}
+
 	};
 
 	/**
