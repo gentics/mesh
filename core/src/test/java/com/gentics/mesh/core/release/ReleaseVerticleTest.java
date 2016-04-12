@@ -10,8 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +27,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -159,11 +155,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 
-		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
-		latchFor(future);
-		assertSuccess(future);
-
-		ReleaseResponse response = future.result();
+		ReleaseResponse response = call(() -> getClient().createRelease(project.getName(), request));
 		assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive();
 	}
 
@@ -179,17 +171,15 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 
-		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid + "/" + name);
+		call(() -> getClient().createRelease(project.getName(), request), FORBIDDEN, "error_missing_perm",
+				uuid + "/" + name);
 	}
 
 	@Test
 	public void testCreateWithoutName() throws Exception {
 		Project project = project();
-		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), new ReleaseCreateRequest());
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "release_missing_name");
+		call(() -> getClient().createRelease(project.getName(), new ReleaseCreateRequest()), BAD_REQUEST,
+				"release_missing_name");
 	}
 
 	@Test
@@ -198,9 +188,8 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(project.getName());
 
-		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "release_conflicting_name", project.getName());
+		call(() -> getClient().createRelease(project.getName(), request), CONFLICT, "release_conflicting_name",
+				project.getName());
 	}
 
 	@Test
@@ -210,13 +199,10 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 
-		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().createRelease(project.getName(), request));
 
-		future = getClient().createRelease(project.getName(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "release_conflicting_name", releaseName);
+		call(() -> getClient().createRelease(project.getName(), request), CONFLICT, "release_conflicting_name",
+				releaseName);
 	}
 
 	@Test
@@ -227,19 +213,13 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 
-		Future<ReleaseResponse> future = getClient().createRelease(project.getName(), request);
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().createRelease(project.getName(), request));
 
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
-		Future<ProjectResponse> projectFuture = getClient().createProject(createProject);
-		latchFor(projectFuture);
-		assertSuccess(projectFuture);
+		call(() -> getClient().createProject(createProject));
 
-		future = getClient().createRelease(newProjectName, request);
-		latchFor(future);
-		assertSuccess(future);
+		call(() -> getClient().createRelease(newProjectName, request));
 	}
 
 	@Override
@@ -258,19 +238,16 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		Release thirdRelease = project.getReleaseRoot().create("Three", user());
 
 		for (Release release : Arrays.asList(initialRelease, firstRelease, secondRelease, thirdRelease)) {
-			Future<ReleaseResponse> future = getClient().findReleaseByUuid(project.getName(), release.getUuid());
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(future.result()).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive();
+			ReleaseResponse response = call(() -> getClient().findReleaseByUuid(project.getName(), release.getUuid()));
+			assertThat(response).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive();
 		}
 	}
 
 	@Test
 	public void testReadByBogusUUID() throws Exception {
 		Project project = project();
-		Future<ReleaseResponse> future = getClient().findReleaseByUuid(project.getName(), "bogus");
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> getClient().findReleaseByUuid(project.getName(), "bogus"), NOT_FOUND, "object_not_found_for_uuid",
+				"bogus");
 	}
 
 	@Test
@@ -280,11 +257,9 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		String projectName = project.getName();
 		String uuid = project.getInitialRelease().getUuid();
 
-		Future<ReleaseResponse> future = getClient().findReleaseByUuid(projectName, uuid, new RolePermissionParameter().setRoleUuid(role().getUuid()));
-		latchFor(future);
-		assertSuccess(future);
-		assertNotNull(future.result().getRolePerms());
-		assertEquals(4, future.result().getRolePerms().length);
+		ReleaseResponse response = call(() -> getClient().findReleaseByUuid(projectName, uuid,
+				new RolePermissionParameter().setRoleUuid(role().getUuid())));
+		assertThat(response.getRolePerms()).isNotNull().contains("read", "create", "update", "delete");
 	}
 
 	@Test
@@ -295,9 +270,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		String name = project.getName();
 		role().revokePermissions(project.getInitialRelease(), READ_PERM);
 
-		Future<ReleaseResponse> future = getClient().findReleaseByUuid(name, releaseUuid);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", releaseUuid);
+		call(() -> getClient().findReleaseByUuid(name, releaseUuid), FORBIDDEN, "error_missing_perm", releaseUuid);
 	}
 
 	@Test
@@ -309,14 +282,11 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		Release secondRelease = project.getReleaseRoot().create("Two", user());
 		Release thirdRelease = project.getReleaseRoot().create("Three", user());
 
-		Future<ReleaseListResponse> future = getClient().findReleases(project.getName());
-		latchFor(future);
-		assertSuccess(future);
+		ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
 
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 
-		ListResponse<ReleaseResponse> responseList = future.result();
 		assertThat(responseList).isNotNull();
 		assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
 				initialRelease.transformToRestSync(ac, 0).toBlocking().single(),
@@ -336,14 +306,11 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		role().revokePermissions(firstRelease, READ_PERM);
 		role().revokePermissions(thirdRelease, READ_PERM);
 
-		Future<ReleaseListResponse> future = getClient().findReleases(project.getName());
-		latchFor(future);
-		assertSuccess(future);
+		ListResponse<ReleaseResponse> responseList = call(() -> getClient().findReleases(project.getName()));
 
 		RoutingContext rc = getMockedRoutingContext("");
 		InternalActionContext ac = InternalActionContext.create(rc);
 
-		ListResponse<ReleaseResponse> responseList = future.result();
 		assertThat(responseList).isNotNull();
 		assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(
 				initialRelease.transformToRestSync(ac, 0).toBlocking().single(),
@@ -360,29 +327,23 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		String uuid = project.getInitialRelease().getUuid();
 
 		// change name
-		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
-		request.setName(newName);
-		Future<ReleaseResponse> future = getClient().updateRelease(projectName, uuid, request);
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result()).as("Updated Release").isNotNull().hasName(newName).isActive();
+		ReleaseUpdateRequest request1 = new ReleaseUpdateRequest();
+		request1.setName(newName);
+		ReleaseResponse response = call(() -> getClient().updateRelease(projectName, uuid, request1));
+		assertThat(response).as("Updated Release").isNotNull().hasName(newName).isActive();
 
 		// change active
-		request = new ReleaseUpdateRequest();
-		request.setActive(false);
-		future = getClient().updateRelease(projectName, uuid, request);
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result()).as("Updated Release").isNotNull().hasName(newName).isInactive();
+		ReleaseUpdateRequest request2 = new ReleaseUpdateRequest();
+		request2.setActive(false);
+		response = call(() -> getClient().updateRelease(projectName, uuid, request2));
+		assertThat(response).as("Updated Release").isNotNull().hasName(newName).isInactive();
 
 		// change active and name
-		request = new ReleaseUpdateRequest();
-		request.setActive(true);
-		request.setName(anotherNewName);
-		future = getClient().updateRelease(projectName, uuid, request);
-		latchFor(future);
-		assertSuccess(future);
-		assertThat(future.result()).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
+		ReleaseUpdateRequest request3 = new ReleaseUpdateRequest();
+		request3.setActive(true);
+		request3.setName(anotherNewName);
+		response = call(() -> getClient().updateRelease(projectName, uuid, request3));
+		assertThat(response).as("Updated Release").isNotNull().hasName(anotherNewName).isActive();
 	}
 
 	@Test
@@ -393,9 +354,8 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		request.setName(newName);
-		Future<ReleaseResponse> future = getClient().updateRelease(project.getName(), project.getInitialRelease().getUuid(), request);
-		latchFor(future);
-		expectException(future, CONFLICT, "release_conflicting_name", newName);
+		call(() -> getClient().updateRelease(project.getName(), project.getInitialRelease().getUuid(), request),
+				CONFLICT, "release_conflicting_name", newName);
 	}
 
 	@Test
@@ -407,9 +367,8 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		request.setActive(false);
-		Future<ReleaseResponse> future = getClient().updateRelease(projectName, project.getInitialRelease().getUuid(), request);
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", project.getInitialRelease().getUuid());
+		call(() -> getClient().updateRelease(projectName, project.getInitialRelease().getUuid(), request), FORBIDDEN,
+				"error_missing_perm", project.getInitialRelease().getUuid());
 	}
 
 	@Test
@@ -419,9 +378,8 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		request.setActive(false);
-		Future<ReleaseResponse> future = getClient().updateRelease(project.getName(), "bogus", request);
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> getClient().updateRelease(project.getName(), "bogus", request), NOT_FOUND,
+				"object_not_found_for_uuid", "bogus");
 	}
 
 	@Override
@@ -439,14 +397,15 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 	@Test
 	public void testReadSchemaVersions() throws Exception {
 		Project project = project();
-		SchemaReferenceList list = call(() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
+		SchemaReferenceList list = call(
+				() -> getClient().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
 
 		SchemaReference content = schemaContainer("content").getLatestVersion().transformToReference();
 		SchemaReference folder = schemaContainer("folder").getLatestVersion().transformToReference();
 		SchemaReference binaryContent = schemaContainer("binary-content").getLatestVersion().transformToReference();
 
-		assertThat(list).as("release schema versions")
-				.usingElementComparatorOnFields("name", "uuid", "version").containsOnly(content, folder, binaryContent);
+		assertThat(list).as("release schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.containsOnly(content, folder, binaryContent);
 	}
 
 	@Test
