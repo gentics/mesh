@@ -296,34 +296,38 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	@Override
 	public Observable<Void> updateMapping(String indexName) {
-		PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices()
-				.preparePutMapping(indexName);
-		mappingRequestBuilder.setType(getType());
-
-		JsonObject mappingProperties = getMapping();
-		// Enhance mappings with generic/common field types
-		mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
-		JsonObject root = new JsonObject();
-		root.put("properties", mappingProperties);
-		JsonObject mapping = new JsonObject();
-		mapping.put(getType(), root);
-
-		mappingRequestBuilder.setSource(mapping.toString());
-		
-		ObservableFuture<Void> obs = RxHelper.observableFuture();
-		mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+		if (searchProvider.getNode() != null) {
+			PutMappingRequestBuilder mappingRequestBuilder = searchProvider.getNode().client().admin().indices()
+					.preparePutMapping(indexName);
+			mappingRequestBuilder.setType(getType());
 			
-			@Override
-			public void onResponse(PutMappingResponse response) {
-				obs.toHandler().handle(Future.succeededFuture());
-			}
+			JsonObject mappingProperties = getMapping();
+			// Enhance mappings with generic/common field types
+			mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+			JsonObject root = new JsonObject();
+			root.put("properties", mappingProperties);
+			JsonObject mapping = new JsonObject();
+			mapping.put(getType(), root);
 			
-			@Override
-			public void onFailure(Throwable e) {
-				obs.toHandler().handle(Future.failedFuture(e));
-			}
-		});
-		return obs;
+			mappingRequestBuilder.setSource(mapping.toString());
+			
+			ObservableFuture<Void> obs = RxHelper.observableFuture();
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+				
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					obs.toHandler().handle(Future.succeededFuture());
+				}
+				
+				@Override
+				public void onFailure(Throwable e) {
+					obs.toHandler().handle(Future.failedFuture(e));
+				}
+			});
+			return obs;
+		} else {
+			return Observable.just(null);
+		}
 	}
 
 	@Override
