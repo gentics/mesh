@@ -7,6 +7,8 @@ public class ReleaseResponse extends AbstractGenericRestResponse {
 
 	private boolean active;
 
+	private boolean migrated;
+
 	public ReleaseResponse() {
 	}
 
@@ -24,5 +26,13 @@ public class ReleaseResponse extends AbstractGenericRestResponse {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public boolean isMigrated() {
+		return migrated;
+	}
+
+	public void setMigrated(boolean migrated) {
+		this.migrated = migrated;
 	}
 }

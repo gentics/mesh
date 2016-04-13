@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.node.handler;
 
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,14 +20,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
@@ -215,6 +220,86 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 
 		return Observable.just(null);
+	}
+
+	/**
+	 * Migrate all nodes from one release to the other
+	 * @param newRelease new release
+	 * @return
+	 */
+	public Observable<SearchQueueBatch> migrateNodes(Release newRelease) {
+		Release oldRelease = db.noTrx(() -> {
+			if (newRelease.isMigrated()) {
+				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
+			}
+
+			Release old = newRelease.getPreviousRelease();
+			if (old == null) {
+				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} does not have previous release");
+			}
+
+			if (!old.isMigrated()) {
+				throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName()
+						+ "}, because previous release {" + old.getName() + "} is not fully migrated yet.");
+			}
+
+			return old;
+		});
+
+		String oldReleaseUuid = db.noTrx(() -> oldRelease.getUuid());
+		String newReleaseUuid = db.noTrx(() -> newRelease.getUuid());
+		List<? extends Node> nodes = db.noTrx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
+
+		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
+		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+		for (Node node : nodes) {
+			db.trx(() -> {
+				if (!node.getGraphFieldContainers(newRelease, Type.INITIAL).isEmpty()) {
+					return null;
+				}
+				node.getGraphFieldContainers(oldRelease, Type.DRAFT).stream().forEach(container -> {
+					GraphFieldContainerEdgeImpl initialEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
+							container.getImpl(), GraphFieldContainerEdgeImpl.class);
+					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					initialEdge.setType(Type.INITIAL);
+					initialEdge.setReleaseUuid(newReleaseUuid);
+
+					GraphFieldContainerEdgeImpl draftEdge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
+							container.getImpl(), GraphFieldContainerEdgeImpl.class);
+					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
+					draftEdge.setType(Type.DRAFT);
+					draftEdge.setReleaseUuid(newReleaseUuid);
+
+					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, Type.DRAFT);
+				});
+
+				node.getGraphFieldContainers(oldRelease, Type.PUBLISHED).stream().forEach(container -> {
+					GraphFieldContainerEdgeImpl edge = node.getImpl().addFramedEdge(HAS_FIELD_CONTAINER,
+							container.getImpl(), GraphFieldContainerEdgeImpl.class);
+					edge.setLanguageTag(container.getLanguage().getLanguageTag());
+					edge.setType(Type.PUBLISHED);
+					edge.setReleaseUuid(newReleaseUuid);
+
+					container.addIndexBatchEntry(batch, STORE_ACTION, newReleaseUuid, Type.PUBLISHED);
+				});
+
+				Node parent = node.getParentNode(oldReleaseUuid);
+				if (parent != null) {
+					node.setParentNode(newReleaseUuid, parent);
+				}
+
+				// TODO migrate tags
+				return null;
+			});
+		}
+
+		db.trx(() -> {
+			newRelease.setMigrated(true);
+			return null;
+		});
+
+		// Process the search queue batch in order to update the search index
+		return batch.process();
 	}
 
 	/**

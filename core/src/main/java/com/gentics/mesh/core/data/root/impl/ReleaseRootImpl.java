@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -30,12 +31,14 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.MeshSpringConfiguration;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.index.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
 
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
@@ -58,6 +61,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		release.setCreated(creator);
 		release.setName(name);
 		release.setActive(true);
+		release.setMigrated(false);
 
 		if (latestRelease == null) {
 			// if this is the first release, make it the initial release
@@ -139,7 +143,16 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 						return Tuple.tuple(batch, release);
 					});
 
-					return tuple.v1().process().map(i -> tuple.v2());
+					return tuple.v1().process().map(i -> {
+						return db.noTrx(() -> {
+							// start the node migration
+							DeliveryOptions options = new DeliveryOptions();
+							options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
+							options.addHeader(NodeMigrationVerticle.UUID_HEADER, tuple.v2().getUuid());
+							Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
+							return null;
+						});
+					}).map(i -> tuple.v2());
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName);
 				}
