@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.gentics.mesh.core.AbstractSpringVerticle;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -46,6 +48,10 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 
 	public final static String MICROSCHEMA_MIGRATION_ADDRESS = NodeMigrationVerticle.class.getName() + ".migrateMicroschema";
 
+	public final static String RELEASE_MIGRATION_ADDRESS = NodeMigrationVerticle.class.getName() + ".migrateRelease";
+
+	public final static String PROJECT_UUID_HEADER = "projectUuid";
+
 	public final static String UUID_HEADER = "uuid";
 
 	public static final String FROM_VERSION_UUID_HEADER = "fromVersion";
@@ -61,7 +67,7 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 		}
 		registerSchemaMigration();
 		registerMicroschemaMigration();
-
+		registerReleaseMigration();
 	}
 
 	private void registerSchemaMigration() {
@@ -167,6 +173,43 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 				}
 			} catch (Exception e) {
 				message.fail(0, "Migration for microschema " + microschemaUuid + " failed: " + e.getLocalizedMessage());
+			}
+		});
+	}
+
+	/**
+	 * Register handler for release migration
+	 */
+	private void registerReleaseMigration() {
+		vertx.eventBus().consumer(RELEASE_MIGRATION_ADDRESS, (message) -> {
+			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
+			String releaseUuid = message.headers().get(UUID_HEADER);
+			if (log.isDebugEnabled()) {
+				log.debug("Release migration for release {" + releaseUuid + "} was requested");
+			}
+
+			Throwable error = db.noTrx(() -> {
+				try {
+					Project project = boot.projectRoot().findByUuidSync(projectUuid);
+					if (project == null) {
+						throw error(BAD_REQUEST, "Project with uuid {" + projectUuid + "} cannot be found");
+					}
+
+					Release release = project.getReleaseRoot().findByUuidSync(releaseUuid);
+					if (release == null) {
+						throw error(BAD_REQUEST, "Release with uuid {" + releaseUuid + "} cannot be found");
+					}
+
+					nodeMigrationHandler.migrateNodes(release);
+					return null;
+				} catch (Throwable t) {
+					return t;
+				}
+			});
+			if (error != null) {
+				message.fail(0, error.getLocalizedMessage());
+			} else {
+				message.reply(null);
 			}
 		});
 	}

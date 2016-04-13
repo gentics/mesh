@@ -156,7 +156,7 @@ public class ReleaseVerticleTest extends AbstractBasicCrudVerticleTest {
 		request.setName(releaseName);
 
 		ReleaseResponse response = call(() -> getClient().createRelease(project.getName(), request));
-		assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive();
+		assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
 	}
 
 	@Test

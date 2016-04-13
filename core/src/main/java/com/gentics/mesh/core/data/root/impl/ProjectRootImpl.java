@@ -86,7 +86,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
 		project.setName(name);
 		project.getNodeRoot();
-		project.getReleaseRoot().create(name, creator);
+		project.getReleaseRoot().create(name, creator).setMigrated(true);
 		project.createBaseNode(creator);
 
 		project.setCreated(creator);

@@ -28,6 +28,18 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	void setActive(boolean active);
 
 	/**
+	 * Get whether all nodes of the previous release have been migrated
+	 * @return true iff all nodes have been migrated
+	 */
+	boolean isMigrated();
+
+	/**
+	 * Set whether all nodes have been migrated
+	 * @param migrated true iff all nodes have been migrated
+	 */
+	void setMigrated(boolean migrated);
+
+	/**
 	 * Get the next Release
 	 * @return next Release
 	 */
