@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * Date Fields can store dates in the epoch date format.
+ */
 public interface DateField extends ListableField, MicroschemaListableField {
 
 	/**

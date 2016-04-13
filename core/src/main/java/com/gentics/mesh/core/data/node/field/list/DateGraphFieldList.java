@@ -22,13 +22,14 @@ public interface DateGraphFieldList extends ListGraphField<DateGraphField, DateF
 		}
 	};
 
-	FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
-
+	FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		DateGraphFieldList graphDateFieldList = container.getDateList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphDateFieldList, restField, fieldSchema, fieldKey, schema);
-		DateFieldListImpl dateList = (DateFieldListImpl) restField;
+		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
+		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
+		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphDateFieldList, dateList == null, fieldSchema, fieldKey, schema);
 
-		if (dateList.getItems().isEmpty()) {
+		if (dateList == null || dateList.getItems().isEmpty()) {
 			if (graphDateFieldList != null) {
 				graphDateFieldList.removeField(container);
 			}

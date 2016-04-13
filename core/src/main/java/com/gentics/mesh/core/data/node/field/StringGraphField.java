@@ -43,11 +43,14 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		}
 	};
 
-	FieldUpdater STRING_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater STRING_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		StringField stringField = fieldMap.getStringField(fieldKey);
 		StringGraphField graphStringField = container.getString(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphStringField, restField, fieldSchema, fieldKey, schema);
-		StringField stringField = (StringFieldImpl) restField;
-		if (restField == null) {
+		boolean isStringFieldSetToNull = fieldMap.hasField(fieldKey) && (stringField == null || stringField.getString() == null);
+		GraphField.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphStringField, stringField == null || stringField.getString() == null, fieldSchema, fieldKey,
+				schema);
+		if (stringField == null) {
 			return;
 		}
 

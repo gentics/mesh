@@ -23,15 +23,17 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		}
 	};
 
-	FieldUpdater  BINARY_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater  BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphBinaryField, restField, fieldSchema, fieldKey, schema);
+		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
+		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null;
+		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+		// The required check for binary fields is not enabled since binary fields can only be created using the field api
 
-		BinaryField binaryField = (BinaryFieldImpl) restField;
-		if (restField == null) {
+		if (binaryField == null) {
 			return;
 		}
-		// Create new graph field if no existing one could be found
+				// Create new graph field if no existing one could be found
 		if (graphBinaryField == null) {
 			graphBinaryField = container.createBinary(fieldKey);
 		}

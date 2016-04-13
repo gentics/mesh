@@ -27,12 +27,12 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -77,19 +77,19 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		for (FieldSchema fieldEntry : microschema.getFields()) {
 			Observable<MicronodeResponse> obsRestField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level)
 					.map(restField -> {
-				if (fieldEntry.isRequired() && restField == null) {
-					/* TODO i18n */
-					// TODO no trx fail. Instead let obsRestField fail
-					throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
-							+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
-				}
-				if (restField == null) {
-					log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-				} else {
-					restMicronode.getFields().put(fieldEntry.getName(), restField);
-				}
-				return restMicronode;
-			});
+						if (fieldEntry.isRequired() && restField == null) {
+							/* TODO i18n */
+							// TODO no trx fail. Instead let obsRestField fail
+							throw error(BAD_REQUEST, "The field {" + fieldEntry.getName()
+									+ "} is a required field but it could not be found in the micronode. Please add the field using an update call or change the field schema and remove the required flag.");
+						}
+						if (restField == null) {
+							log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+						} else {
+							restMicronode.getFields().put(fieldEntry.getName(), restField);
+						}
+						return restMicronode;
+					});
 			obs.add(obsRestField);
 		}
 
@@ -98,7 +98,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public MicroschemaContainerVersion getMicroschemaContainerVersion() {
-		return out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		return out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class,
+				null);
 	}
 
 	@Override
@@ -178,7 +179,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	protected void updateField(InternalActionContext ac, String key, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
+	protected void updateField(InternalActionContext ac, FieldMap fieldMap, String key, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
@@ -192,10 +193,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			case MicronodeGraphFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
-				super.updateField(ac, key, restField, fieldSchema, schema);
+				super.updateField(ac, fieldMap, key, fieldSchema, schema);
 			}
 		default:
-			super.updateField(ac, key, restField, fieldSchema, schema);
+			super.updateField(ac, fieldMap, key, fieldSchema, schema);
 		}
 
 	}
@@ -203,14 +204,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public void validate() {
 		Microschema microschema = getMicroschemaContainerVersion().getSchema();
-		Map<String, GraphField> fieldsMap = getFields(microschema).stream()
-				.collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
+		Map<String, GraphField> fieldsMap = getFields(microschema).stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		microschema.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());
 			if (fieldSchema.isRequired() && field == null) {
-				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(),
-						microschema.getName());
+				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), microschema.getName());
 			}
 			if (field != null) {
 				field.validate();

@@ -21,12 +21,14 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 		}
 	};
 
-	FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		HtmlGraphFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphHtmlFieldList, restField, fieldSchema, fieldKey, schema);
-		HtmlFieldListImpl htmlList = (HtmlFieldListImpl) restField;
+		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
+		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
+		GraphField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
 
-		if (htmlList.getItems().isEmpty()) {
+		if (htmlList == null || htmlList.getItems().isEmpty()) {
 			if (graphHtmlFieldList != null) {
 				graphHtmlFieldList.removeField(container);
 			}
@@ -38,7 +40,7 @@ public interface HtmlGraphFieldList extends ListGraphField<HtmlGraphField, HtmlF
 		}
 	};
 
-	FieldGetter  HTML_LIST_GETTER = (container, fieldSchema) -> {
+	FieldGetter HTML_LIST_GETTER = (container, fieldSchema) -> {
 		return container.getHTMLList(fieldSchema.getName());
 	};
 

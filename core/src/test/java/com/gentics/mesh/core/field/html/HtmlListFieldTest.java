@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.field.html;
 
-public class HtmlListFieldTest {
+import com.gentics.mesh.core.field.AbstractFieldTest;
+
+public class HtmlListFieldTest extends AbstractFieldTest {
 
 }

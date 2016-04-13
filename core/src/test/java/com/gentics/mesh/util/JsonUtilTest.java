@@ -1,7 +1,7 @@
 package com.gentics.mesh.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -30,6 +31,31 @@ public class JsonUtilTest {
 		list.getData().add(user);
 		String json = JsonUtil.toJson(list);
 		assertNotNull(json);
+	}
+
+	@Test
+	public void testJsonFormatError() throws IOException {
+		try {
+			String json = "{broken}";
+			JsonUtil.readValue(json, NodeCreateRequest.class);
+			fail("json parsing should fail");
+		} catch (HttpStatusCodeErrorException e) {
+			assertEquals("error_json_malformed", e.getMessage());
+			assertThat(e.getI18nParameters()).containsExactly("1", "3",
+					"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
+		}
+	}
+
+	@Test
+	public void testJsonStructureError() throws IOException {
+		try {
+			String json = "{\"schema\":\"test\" }";
+			JsonUtil.readValue(json, NodeCreateRequest.class);
+			fail("json parsing should fail");
+		} catch (HttpStatusCodeErrorException e) {
+			assertEquals("error_json_structure_invalid", e.getMessage());
+			assertThat(e.getI18nParameters()).containsExactly("1", "2", "schema");
+		}
 	}
 
 	@Test

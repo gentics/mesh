@@ -1,5 +1,6 @@
 package com.gentics.mesh.json;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -16,7 +17,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
@@ -34,13 +34,18 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
- * Main JSON util which is used to register all custom JSON specific handlers and deserializers.
+ * Main JSON Util which is used to register all custom JSON specific handlers and deserializers.
  *
  */
 public final class JsonUtil {
 
 	protected static ObjectMapper defaultMapper;
+
+	private static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
 
 	/**
 	 * When enabled indented JSON will be produced.
@@ -74,17 +79,9 @@ public final class JsonUtil {
 				gen.writeObject(value.getNode());
 			}
 		});
-		module.addSerializer(NullMicronodeResponse.class, new JsonSerializer<NullMicronodeResponse>() {
-			@Override
-			public void serialize(NullMicronodeResponse value, JsonGenerator gen, SerializerProvider serializers)
-					throws IOException, JsonProcessingException {
-				gen.writeNull();
-			}
-		});
 
 		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
 		module.addDeserializer(NodeReference.class, new UserNodeReferenceDeserializer());
-		//		module.addDeserializer(ListFieldSchema.class, new ListFieldSchemaDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
 
@@ -117,8 +114,32 @@ public final class JsonUtil {
 		}
 	}
 
-	public static <T> T readValue(String content, Class<T> valueType) throws IOException, JsonParseException, JsonMappingException {
-		return defaultMapper.readValue(content, valueType);
+	public static <T> T readValue(String content, Class<T> valueType) throws IOException {
+		try {
+			return defaultMapper.readValue(content, valueType);
+		} catch (JsonMappingException e) {
+			log.error("Could not deserialize json {" + content + "} into {" + valueType.getName() + "}", e);
+			String line = "unknown";
+			String column = "unknown";
+			if (e.getLocation() != null) {
+				line = String.valueOf(e.getLocation().getLineNr());
+				column = String.valueOf(e.getLocation().getColumnNr());
+			}
+			String field = "";
+			if (e.getPath() != null && e.getPath().size() >= 1) {
+				field = e.getPath().get(0).getFieldName();
+			}
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_json_structure_invalid", line, column, field);
+		} catch (JsonParseException e) {
+			String msg = e.getOriginalMessage();
+			String line = "unknown";
+			String column = "unknown";
+			if (e.getLocation() != null) {
+				line = String.valueOf(e.getLocation().getLineNr());
+				column = String.valueOf(e.getLocation().getColumnNr());
+			}
+			throw new HttpStatusCodeErrorException(BAD_REQUEST, "error_json_malformed", line, column, msg);
+		}
 	}
 
 	public static ObjectMapper getMapper() {

@@ -86,9 +86,6 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
 		}
-
-		//TODO make sure that segment fields are set to mandatory.
-
 	}
 
 }

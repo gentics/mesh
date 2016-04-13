@@ -22,11 +22,13 @@ public interface BooleanGraphField extends ListableGraphField, BasicGraphField<B
 		}
 	};
 
-	FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BooleanGraphField booleanGraphField = container.getBoolean(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, booleanGraphField, restField, fieldSchema, fieldKey, schema);
-		BooleanField booleanField = (BooleanFieldImpl) restField;
-		if (restField == null) {
+		BooleanField booleanField = fieldMap.getBooleanField(fieldKey);
+		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
+		GraphField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(booleanGraphField, booleanField == null || booleanField.getValue() == null, fieldSchema, fieldKey, schema);
+		if (booleanField == null) {
 			return;
 		}
 		if (booleanGraphField == null) {

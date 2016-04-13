@@ -22,12 +22,14 @@ public interface BooleanGraphFieldList extends ListGraphField<BooleanGraphField,
 		}
 	};
 
-	FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BooleanGraphFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphBooleanFieldList, restField, fieldSchema, fieldKey, schema);
-		BooleanFieldListImpl booleanList = (BooleanFieldListImpl) restField;
+		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
+		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
+		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphBooleanFieldList, booleanList == null, fieldSchema, fieldKey, schema);
 
-		if (booleanList.getItems().isEmpty()) {
+		if (booleanList == null || booleanList.getItems().isEmpty()) {
 			if (graphBooleanFieldList != null) {
 				graphBooleanFieldList.removeField(container);
 			}

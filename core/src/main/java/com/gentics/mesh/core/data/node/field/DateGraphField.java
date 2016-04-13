@@ -22,11 +22,13 @@ public interface DateGraphField extends ListableGraphField, BasicGraphField<Date
 		}
 	};
 
-	FieldUpdater DATE_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		DateGraphField dateGraphField = container.getDate(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, dateGraphField, restField, fieldSchema, fieldKey, schema);
-		DateField dateField = (DateFieldImpl) restField;
-		if (restField == null) {
+		DateField dateField = fieldMap.getDateField(fieldKey);
+		boolean isDateFieldSetToNull = fieldMap.hasField(fieldKey) && (dateField == null || dateField.getDate() == null);
+		GraphField.failOnDeletionOfRequiredField(dateGraphField, isDateFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(dateGraphField, dateField == null || dateField.getDate() == null, fieldSchema, fieldKey, schema);
+		if (dateField == null) {
 			return;
 		}
 		if (dateGraphField == null) {

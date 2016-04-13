@@ -22,12 +22,14 @@ public interface StringGraphFieldList extends ListGraphField<StringGraphField, S
 		}
 	};
 
-	FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		StringGraphFieldList graphStringList = container.getStringList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphStringList, restField, fieldSchema, fieldKey, schema);
-		StringFieldListImpl stringList = (StringFieldListImpl) restField;
+		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
+		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && stringList == null;
+		GraphField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphStringList, stringList == null, fieldSchema, fieldKey, schema);
 
-		if (stringList.getItems().isEmpty()) {
+		if (stringList == null || stringList.getItems().isEmpty()) {
 			if (graphStringList != null) {
 				graphStringList.removeField(container);
 			}

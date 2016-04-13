@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.util.FieldUtil;
@@ -21,7 +21,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
@@ -35,7 +35,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
@@ -50,7 +50,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", null);
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
@@ -65,7 +65,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue2"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
@@ -80,7 +80,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", null);
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
@@ -95,7 +95,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = new SchemaModel();
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
 			assertChanges(list, FieldChangeTypes.REMOVED);
@@ -108,7 +108,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	public void testDiffBySchemaFieldAdded() {
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(null);
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createStringFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createStringField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);
@@ -123,7 +123,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 		db.trx(() -> {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			FieldMap dummyMap = new FieldMapImpl();
+			FieldMap dummyMap = new FieldMapJsonImpl();
 			Schema schema = createSchema(FieldUtil.createHtmlFieldSchema("dummy"));
 			dummyMap.put("dummy", FieldUtil.createHtmlField("someValue"));
 			List<FieldContainerChange> list = containerA.compareTo(dummyMap, schema);

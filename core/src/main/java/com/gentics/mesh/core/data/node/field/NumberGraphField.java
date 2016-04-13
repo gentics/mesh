@@ -21,11 +21,13 @@ public interface NumberGraphField extends ListableGraphField, BasicGraphField<Nu
 			return graphNumberField.transformToRest(ac);
 		}
 	};
-	FieldUpdater  NUMBER_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater  NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberGraphField numberGraphField = container.getNumber(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, numberGraphField, restField, fieldSchema, fieldKey, schema);
-		NumberField numberField = (NumberFieldImpl) restField;
-		if (restField == null) {
+		NumberField numberField = fieldMap.getNumberField(fieldKey);
+		boolean isNumberFieldSetToNull = fieldMap.hasField(fieldKey) && (numberField == null || numberField.getNumber() == null);
+		GraphField.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(numberGraphField, numberField == null || numberField.getNumber() == null, fieldSchema, fieldKey, schema);
+		if (numberField == null) {
 			return;
 		}
 		if (numberGraphField == null) {

@@ -2,6 +2,8 @@ package com.gentics.mesh.assertj.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -27,5 +29,10 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		assertNotNull(descriptionText() + " JsonObject must not be null", actual);
 		assertEquals(descriptionText() + " key " + key, expected, actual.getValue(key));
 		return this;
+	}
+
+	public void hasNullValue(String key) {
+		assertTrue("The json object should contain a map entry for key {" + key + "}", actual.containsKey(key));
+		assertNull("The json object for key {" + key + "} should be null", actual.getJsonObject(key));
 	}
 }

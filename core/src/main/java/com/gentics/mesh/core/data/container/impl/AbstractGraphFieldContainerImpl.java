@@ -327,36 +327,35 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * 
 	 * @param ac
 	 *            Context of the request
+	 * @param fieldMap
 	 * @param fieldKey
 	 *            Key of the field
-	 * @param restField
-	 *            Rest model with data to be stored
 	 * @param fieldSchema
 	 *            Field schema of the field
 	 * @param schema
 	 */
-	protected void updateField(InternalActionContext ac, String fieldKey, Field restField, FieldSchema fieldSchema, FieldSchemaContainer schema) {
+	protected void updateField(InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema,
+			FieldSchemaContainer schema) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {
-			type.updateField(this, ac, fieldKey, restField, fieldSchema, schema);
+			type.updateField(this, ac, fieldMap, fieldKey, fieldSchema, schema);
 		} else {
 			throw error(BAD_REQUEST, "type unknown");
 		}
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap, FieldSchemaContainer schema) {
 		//TODO: This should return an observable
 		// Initially all fields are not yet handled
-		List<String> unhandledFieldKeys = new ArrayList<>(restFields.size());
-		unhandledFieldKeys.addAll(restFields.keySet());
+		List<String> unhandledFieldKeys = new ArrayList<>(fieldMap.size());
+		unhandledFieldKeys.addAll(fieldMap.keySet());
 
 		// Iterate over all known field that are listed in the schema for the node
 		for (FieldSchema entry : schema.getFields()) {
 			String key = entry.getName();
-			Field restField = restFields.getField(key, entry);
 			unhandledFieldKeys.remove(key);
-			updateField(ac, key, restField, entry, schema);
+			updateField(ac, fieldMap, key, entry, schema);
 		}
 
 		// Some fields were specified within the JSON but were not specified in the schema. Those fields can't be handled. We throw an error to inform the user

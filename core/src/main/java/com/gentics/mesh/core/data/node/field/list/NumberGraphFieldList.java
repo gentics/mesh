@@ -22,12 +22,16 @@ public interface NumberGraphFieldList extends ListGraphField<NumberGraphField, N
 		}
 	};
 
-	FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
-		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphNumberFieldList, restField, fieldSchema, fieldKey, schema);
-		NumberFieldListImpl numberList = (NumberFieldListImpl) restField;
+	FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		NumberFieldListImpl numberList = fieldMap.getNumberFieldList(fieldKey);
 
-		if (numberList.getItems().isEmpty()) {
+
+		NumberGraphFieldList graphNumberFieldList = container.getNumberList(fieldKey);
+		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
+		GraphField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphNumberFieldList, numberList == null, fieldSchema, fieldKey, schema);
+
+		if (numberList == null || numberList.getItems().isEmpty()) {
 			if (graphNumberFieldList != null) {
 				graphNumberFieldList.removeField(container);
 			}

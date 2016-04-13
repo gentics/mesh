@@ -26,12 +26,14 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 		}
 	};
 
-	FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, micronodeGraphFieldList, restField, fieldSchema, fieldKey, schema);
-		MicronodeFieldList micronodeList = (MicronodeFieldList) restField;
+		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
+		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
+		GraphField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, micronodeList == null, fieldSchema, fieldKey, schema);
 
-		if (micronodeList.getItems().isEmpty()) {
+		if (micronodeList == null || micronodeList.getItems().isEmpty()) {
 			if (micronodeGraphFieldList != null) {
 				micronodeGraphFieldList.removeField(container);
 			}
@@ -43,7 +45,7 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 
 	};
 
-	FieldGetter  MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
+	FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
 		return container.getMicronodeList(fieldSchema.getName());
 	};
 

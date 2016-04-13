@@ -31,12 +31,15 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		}
 	};
 
-	FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphNodeFieldList, restField, fieldSchema, fieldKey, schema);
-		NodeFieldListImpl nodeList = (NodeFieldListImpl) restField;
+		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
+		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
+		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphNodeFieldList, nodeList == null, fieldSchema, fieldKey, schema);
 
-		if (nodeList.getItems().isEmpty()) {
+		
+		if (nodeList == null || nodeList.getItems().isEmpty()) {
 			if (graphNodeFieldList != null) {
 				graphNodeFieldList.removeField(container);
 			}
@@ -55,7 +58,7 @@ public interface NodeGraphFieldList extends ListGraphField<NodeGraphField, NodeF
 		}
 	};
 
-	FieldGetter  NODE_LIST_GETTER = (container, fieldSchema) -> {
+	FieldGetter NODE_LIST_GETTER = (container, fieldSchema) -> {
 		return container.getNodeList(fieldSchema.getName());
 	};
 

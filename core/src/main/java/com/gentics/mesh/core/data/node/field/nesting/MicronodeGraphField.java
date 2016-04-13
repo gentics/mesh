@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.micronode.NullMicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -31,20 +30,29 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 	FieldTransformator MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		if (micronodeGraphField == null) {
-			return Observable.just(new NullMicronodeResponse());
+			return Observable.just(null);
 		} else {
 			return micronodeGraphField.transformToRest(ac, fieldKey, languageTags, level);
 		}
 	};
 
-	FieldUpdater MICRONODE_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
+		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) fieldSchema;
-		GraphField.failOnMissingMandatoryField(ac, container.getMicronode(fieldKey), restField, fieldSchema, fieldKey, schema);
-		if (restField == null) {
+		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
+		boolean isMicronodeFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeRestField == null;
+		GraphField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), micronodeRestField == null, fieldSchema, fieldKey, schema);
+
+		// Remove the field if the field has been explicitly set to null
+		if (isMicronodeFieldSetToNull && micronodeGraphField != null) {
+			micronodeGraphField.removeField(container);
 			return;
 		}
-		MicronodeField micronodeRestField = (MicronodeField) restField;
+		if (micronodeRestField == null) {
+			return;
+		}
 		MicroschemaReference microschemaReference = micronodeRestField.getMicroschema();
 		// TODO check for null
 		if (microschemaReference == null) {
@@ -74,7 +82,6 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		//TODO versioning: Use released schema version instead of latest
 		MicroschemaContainerVersion microschemaContainerVersion = microschemaContainer.getLatestVersion();
 		Micronode micronode = null;
-		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 
 		// check whether microschema is allowed
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())

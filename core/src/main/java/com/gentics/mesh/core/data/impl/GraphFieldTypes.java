@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -38,11 +39,13 @@ public enum GraphFieldTypes {
 
 	STRING("string", StringGraphField.STRING_TRANSFORMATOR, StringGraphField.STRING_UPDATER, StringGraphField.STRING_GETTER),
 
-	STRING_LIST("list.string", StringGraphFieldList.STRING_LIST_TRANSFORMATOR, StringGraphFieldList.STRING_LIST_UPDATER, StringGraphFieldList.STRING_LIST_GETTER),
+	STRING_LIST("list.string", StringGraphFieldList.STRING_LIST_TRANSFORMATOR, StringGraphFieldList.STRING_LIST_UPDATER,
+			StringGraphFieldList.STRING_LIST_GETTER),
 
 	NUMBER("number", NumberGraphField.NUMBER_TRANSFORMATOR, NumberGraphField.NUMBER_UPDATER, NumberGraphField.NUMBER_GETTER),
 
-	NUMBER_LIST("list.number", NumberGraphFieldList.NUMBER_LIST_TRANSFORMATOR, NumberGraphFieldList.NUMBER_LIST_UPDATER, NumberGraphFieldList.NUMBER_LIST_GETTER),
+	NUMBER_LIST("list.number", NumberGraphFieldList.NUMBER_LIST_TRANSFORMATOR, NumberGraphFieldList.NUMBER_LIST_UPDATER,
+			NumberGraphFieldList.NUMBER_LIST_GETTER),
 
 	DATE("date", DateGraphField.DATE_TRANSFORMATOR, DateGraphField.DATE_UPDATER, DateGraphField.DATE_GETTER),
 
@@ -50,7 +53,8 @@ public enum GraphFieldTypes {
 
 	BOOLEAN("boolean", BooleanGraphField.BOOLEAN_TRANSFORMATOR, BooleanGraphField.BOOLEAN_UPDATER, BooleanGraphField.BOOLEAN_GETTER),
 
-	BOOLEAN_LIST("list.boolean", BooleanGraphFieldList.BOOLEAN_LIST_TRANSFORMATOR, BooleanGraphFieldList.BOOLEAN_LIST_UPDATER, BooleanGraphFieldList.BOOLEAN_LIST_GETTER),
+	BOOLEAN_LIST("list.boolean", BooleanGraphFieldList.BOOLEAN_LIST_TRANSFORMATOR, BooleanGraphFieldList.BOOLEAN_LIST_UPDATER,
+			BooleanGraphFieldList.BOOLEAN_LIST_GETTER),
 
 	HTML("html", HtmlGraphField.HTML_TRANSFORMATOR, HtmlGraphField.HTML_UPDATER, HtmlGraphField.HTML_GETTER),
 
@@ -58,7 +62,8 @@ public enum GraphFieldTypes {
 
 	MICRONODE("micronode", MicronodeGraphField.MICRONODE_TRANSFORMATOR, MicronodeGraphField.MICRONODE_UPDATER, MicronodeGraphField.MICRONODE_GETTER),
 
-	MICRONODE_LIST("list.micronode", MicronodeGraphFieldList.MICRONODE_LIST_TRANSFORMATOR, MicronodeGraphFieldList.MICRONODE_LIST_UPDATER, MicronodeGraphFieldList.MICRONODE_LIST_GETTER),
+	MICRONODE_LIST("list.micronode", MicronodeGraphFieldList.MICRONODE_LIST_TRANSFORMATOR, MicronodeGraphFieldList.MICRONODE_LIST_UPDATER,
+			MicronodeGraphFieldList.MICRONODE_LIST_GETTER),
 
 	NODE("node", NodeGraphField.NODE_TRANSFORMATOR, NodeGraphField.NODE_UPDATER, NodeGraphField.NODE_GETTER),
 
@@ -150,16 +155,15 @@ public enum GraphFieldTypes {
 	 * @param container
 	 *            Field container which will be used to load the fields
 	 * @param ac
+	 * @param fieldMap
 	 * @param fieldKey
 	 *            Field key
-	 * @param restField
-	 *            Rest Field which will be used to update the field
 	 * @param fieldSchema
 	 * @param schema
 	 */
-	public void updateField(GraphFieldContainer container, InternalActionContext ac, String fieldKey, Field restField, FieldSchema fieldSchema,
+	public void updateField(GraphFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema,
 			FieldSchemaContainer schema) {
-		updater.update(container, ac, fieldKey, restField, fieldSchema, schema);
+		updater.update(container, ac, fieldMap, fieldKey, fieldSchema, schema);
 	}
 
 	/**

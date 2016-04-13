@@ -1329,7 +1329,7 @@ public class NodeVerticleTest extends AbstractBasicCrudVerticleTest {
 
 		Future<NodeResponse> future = getClient().createNode(PROJECT_NAME, request);
 		latchFor(future);
-		expectException(future, BAD_REQUEST, "node_error_missing_mandatory_field_value", "name", "content");
+		expectException(future, BAD_REQUEST, "node_error_missing_required_field_value", "name", "content");
 		assertNull(future.result());
 
 	}

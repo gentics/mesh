@@ -21,8 +21,6 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 
 	static final Logger log = LoggerFactory.getLogger(NodeGraphField.class);
 
-	
-
 	FieldTransformator NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		if (graphNodeField == null) {
@@ -32,11 +30,20 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 		}
 	};
 
-	FieldUpdater NODE_UPDATER = (container, ac, fieldKey, restField, fieldSchema, schema) -> {
+	FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
-		GraphField.failOnMissingMandatoryField(ac, graphNodeField, restField, fieldSchema, fieldKey, schema);
-		NodeField nodeField = (NodeField) restField;
-		if (restField == null) {
+		NodeField nodeField = fieldMap.getNodeField(fieldKey);
+		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
+		GraphField.failOnDeletionOfRequiredField(graphNodeField, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		GraphField.failOnMissingRequiredField(graphNodeField, nodeField == null, fieldSchema, fieldKey, schema);
+
+		// Remove the field if the field has been explicitly set to null
+		if (graphNodeField != null && isNodeFieldSetToNull) {
+			graphNodeField.removeField(container);
+			return;
+		}
+
+		if (nodeField == null) {
 			return;
 		}
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
@@ -65,7 +72,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 			return null;
 		}).toBlocking().single();
 	};
-	
+
 	FieldGetter NODE_GETTER = (container, fieldSchema) -> {
 		return container.getNode(fieldSchema.getName());
 	};

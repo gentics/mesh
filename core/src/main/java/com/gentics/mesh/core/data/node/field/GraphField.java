@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.node.field;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -15,25 +14,36 @@ public interface GraphField {
 	String FIELD_KEY_PROPERTY_KEY = "fieldkey";
 
 	/**
-	 * Throw an error if all assumptions match:
-	 * <ul>
-	 * <li>The given field has not yet been created</li>
-	 * <li>The field is mandatory</li>
-	 * <li>The rest field does not contain any data</li>
-	 * </ul>
+	 * Fail if the field is required but no valid value has been specified.
 	 * 
-	 * @param ac
 	 * @param field
-	 * @param restField
+	 * @param isFieldNull
 	 * @param fieldSchema
 	 * @param key
 	 * @param schema
 	 * @throws HttpStatusCodeErrorException
 	 */
-	static void failOnMissingMandatoryField(InternalActionContext ac, GraphField field, Field restField, FieldSchema fieldSchema, String key,
+	public static void failOnMissingRequiredField(GraphField field, boolean isFieldNull, FieldSchema fieldSchema, String key,
 			FieldSchemaContainer schema) throws HttpStatusCodeErrorException {
-		if (field == null && fieldSchema.isRequired() && restField == null) {
-			throw error(BAD_REQUEST, "node_error_missing_mandatory_field_value", key, schema.getName());
+		if (field == null && fieldSchema.isRequired() && isFieldNull) {
+			throw error(BAD_REQUEST, "node_error_missing_required_field_value", key, schema.getName());
+		}
+	}
+
+	/**
+	 * Fail required field update if the rest field explicitly set to null and thus the graph field should be removed.
+	 * 
+	 * @param graphField
+	 * @param isFieldSetToNull
+	 * @param fieldSchema
+	 * @param key
+	 * @param schema
+	 */
+	public static void failOnDeletionOfRequiredField(GraphField graphField, boolean isFieldSetToNull, FieldSchema fieldSchema, String key,
+			FieldSchemaContainer schema) {
+		// Field is required and already set and value is null -> deletion is not allowed for required fields
+		if (fieldSchema.isRequired() && graphField != null && isFieldSetToNull) {
+			throw error(BAD_REQUEST, "node_error_required_field_not_deletable", key, schema.getName());
 		}
 	}
 
