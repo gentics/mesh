@@ -200,7 +200,8 @@ public class ReleaseTest extends AbstractBasicObjectTest {
 		InternalActionContext ac = InternalActionContext.create(rc);
 
 		ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0).toBlocking().first();
-		assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive();
+		assertThat(releaseResponse).isNotNull().hasName(release.getName()).hasUuid(release.getUuid()).isActive()
+				.isMigrated();
 	}
 
 	@Override

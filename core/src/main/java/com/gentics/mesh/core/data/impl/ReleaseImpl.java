@@ -35,6 +35,10 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	public static final String UNIQUENAME_INDEX_NAME = "uniqueReleaseNameIndex";
 
+	public static final String ACTIVE_PROPERTY_KEY = "active";
+
+	public static final String MIGRATED_PROPERTY_KEY = "migrated";
+
 	public static void init(Database database) {
 		database.addVertexType(ReleaseImpl.class);
 		database.addVertexIndex(UNIQUENAME_INDEX_NAME, ReleaseImpl.class, true, UNIQUENAME_PROPERTY_KEY);
@@ -88,6 +92,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		ReleaseResponse restRelease = new ReleaseResponse();
 		restRelease.setName(getName());
 		restRelease.setActive(isActive());
+		restRelease.setMigrated(isMigrated());
 
 		// Add common fields
 		obsParts.add(fillCommonRestFields(ac, restRelease));
@@ -112,12 +117,22 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean isActive() {
-		return getProperty("active");
+		return getProperty(ACTIVE_PROPERTY_KEY);
 	}
 
 	@Override
 	public void setActive(boolean active) {
-		setProperty("active", active);
+		setProperty(ACTIVE_PROPERTY_KEY, active);
+	}
+
+	@Override
+	public boolean isMigrated() {
+		return getProperty(MIGRATED_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setMigrated(boolean migrated) {
+		setProperty(MIGRATED_PROPERTY_KEY, migrated);
 	}
 
 	@Override

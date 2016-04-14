@@ -48,4 +48,22 @@ public class ReleaseResponseAssert extends AbstractAssert<ReleaseResponseAssert,
 		assertThat(actual.isActive()).as(descriptionText() + " active").isFalse();
 		return this;
 	}
+
+	/**
+	 * Assert that all nodes have been migrated to this release
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert isMigrated() {
+		assertThat(actual.isMigrated()).as(descriptionText() + " migrated").isTrue();
+		return this;
+	}
+
+	/**
+	 * Assert that not all nodes have been migrated to this release
+	 * @return fluent API
+	 */
+	public ReleaseResponseAssert isNotMigrated() {
+		assertThat(actual.isMigrated()).as(descriptionText() + " migrated").isFalse();
+		return this;
+	}
 }

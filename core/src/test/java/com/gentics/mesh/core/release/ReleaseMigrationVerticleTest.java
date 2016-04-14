@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,61 +70,118 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 		vertx.deployVerticle(nodeMigrationVerticle, options);
 	}
 
-//	@Test
-//	public void testStartReleaseMigration() throws Throwable {
-//		Project project = project();
-//		List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
-//		List<? extends Node> nodes = project.getNodeRoot().findAll().stream()
-//				.filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null)
-//				.collect(Collectors.toList());
-//
-//		assertThat(nodes).as("Nodes list").isNotEmpty();
-//
-//		// publish some nodes
-//		published.forEach(node -> {
-//			call(() -> getClient().publishNode(project.getName(), node.getUuid()));
-//		});
-//
-//		Release newRelease = project.getReleaseRoot().create("newrelease", user());
-//		nodes.forEach(node -> {
-//			Arrays.asList(Type.INITIAL, Type.DRAFT, Type.PUBLISHED).forEach(type -> {
-//				assertThat(node.getGraphFieldContainers(newRelease, type))
-//						.as(type + " Field Containers before Migration").isNotNull().isEmpty();
-//			});
-//		});
-//
-//		DeliveryOptions options = new DeliveryOptions();
-//
-//		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
-//		options.addHeader(NodeMigrationVerticle.UUID_HEADER, newRelease.getUuid());
-//		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-//		vertx.eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
-//			future.complete(rh);
-//		});
-//
-//		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-//		if (result.cause() != null) {
-//			throw result.cause();
-//		}
-//
-//		nodes.forEach(node -> {
-//			node.reload();
-//			Arrays.asList(Type.INITIAL, Type.DRAFT).forEach(type -> {
-//				assertThat(node.getGraphFieldContainers(newRelease, type))
-//						.as(type + " Field Containers after Migration").isNotNull().isNotEmpty();
-//			});
-//
-//			if (published.contains(node)) {
-//				assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED))
-//						.as("Published field containers after migration").isNotNull().isNotEmpty();
-//			} else {
-//				assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED))
-//						.as("Published field containers after migration").isNotNull().isEmpty();
-//			}
-//		});
-//	}
+	@Test
+	public void testStartReleaseMigration() throws Throwable {
+		Project project = project();
+		assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
+
+		List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
+		List<? extends Node> nodes = project.getNodeRoot().findAll().stream()
+				.filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null)
+				.collect(Collectors.toList());
+
+		assertThat(nodes).as("Nodes list").isNotEmpty();
+
+		// publish some nodes
+		published.forEach(node -> {
+			call(() -> getClient().publishNode(project.getName(), node.getUuid()));
+		});
+
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
+
+		nodes.forEach(node -> {
+			Arrays.asList(Type.INITIAL, Type.DRAFT, Type.PUBLISHED).forEach(type -> {
+				assertThat(node.getGraphFieldContainers(newRelease, type))
+						.as(type + " Field Containers before Migration").isNotNull().isEmpty();
+			});
+		});
+
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		if (result.cause() != null) {
+			throw result.cause();
+		}
+
+		newRelease.reload();
+		assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
+
+		nodes.forEach(node -> {
+			node.reload();
+			Arrays.asList(Type.INITIAL, Type.DRAFT).forEach(type -> {
+				assertThat(node.getGraphFieldContainers(newRelease, type))
+						.as(type + " Field Containers after Migration").isNotNull().isNotEmpty();
+			});
+
+			if (published.contains(node)) {
+				assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED))
+						.as("Published field containers after migration").isNotNull().isNotEmpty();
+			} else {
+				assertThat(node.getGraphFieldContainers(newRelease, Type.PUBLISHED))
+						.as("Published field containers after migration").isNotNull().isEmpty();
+			}
+
+			Node initialParent = node.getParentNode(project.getInitialRelease().getUuid());
+			if (initialParent == null) {
+				assertThat(node.getParentNode(newRelease.getUuid())).as("Parent in new release").isNull();
+			} else {
+				assertThat(node.getParentNode(newRelease.getUuid())).as("Parent in new release").isNotNull()
+						.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
+			}
+
+			// TODO assert tags
+		});
+	}
 
 	@Test
+	public void testStartForInitial() throws Throwable {
+		Project project = project();
+		Release initialRelease = project.getInitialRelease();
+
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(),
+				initialRelease.getUuid());
+
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		assertThat(result.failed()).isTrue();
+	}
+
+	@Test
+	public void testStartAgain() throws Throwable {
+		Project project = project();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		assertThat(result.succeeded()).isTrue();
+
+		future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+		result = future.get(10, TimeUnit.SECONDS);
+		assertThat(result.failed()).isTrue();
+	}
+
+	@Test
+	public void testStartOrder() throws Throwable {
+		Project project = project();
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		Release newestRelease = project.getReleaseRoot().create("newestrelease", user());
+
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(),
+				newestRelease.getUuid());
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		assertThat(result.failed()).isTrue();
+
+		future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+		result = future.get(10, TimeUnit.SECONDS);
+		assertThat(result.succeeded()).isTrue();
+
+		future = requestReleaseMigration(project.getUuid(), newestRelease.getUuid());
+		result = future.get(10, TimeUnit.SECONDS);
+		assertThat(result.succeeded()).isTrue();
+	}
+
+	@Test
+	@Ignore("Unstable due to other Mesh Errors")
 	public void testBigData() throws Throwable {
 		int numThreads = 1;
 		int numFolders = 1000;
@@ -159,20 +217,34 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 			future.get();
 		}
 
-//		Release newRelease = project.getReleaseRoot().create("newrelease", user());
-//		DeliveryOptions options = new DeliveryOptions();
-//		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
-//		options.addHeader(NodeMigrationVerticle.UUID_HEADER, newRelease.getUuid());
-//		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-//		vertx.eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
-//			future.complete(rh);
-//		});
-//
-//		try (Timer.Context ctx = migrationTimer.time()) {
-//			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.MINUTES);
-//			if (result.cause() != null) {
-//				throw result.cause();
-//			}
-//		}
+		Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(),
+				newRelease.getUuid());
+
+		try (Timer.Context ctx = migrationTimer.time()) {
+			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.MINUTES);
+			if (result.cause() != null) {
+				throw result.cause();
+			}
+		}
+	}
+
+	/**
+	 * Request release migration and return the future
+	 * @param projectUuid project Uuid
+	 * @param releaseUuid release Uuid
+	 * @return future
+	 */
+	protected CompletableFuture<AsyncResult<Message<Object>>> requestReleaseMigration(String projectUuid,
+			String releaseUuid) {
+		DeliveryOptions options = new DeliveryOptions();
+		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, releaseUuid);
+		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+		vertx.eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
+			future.complete(rh);
+		});
+
+		return future;
 	}
 }
