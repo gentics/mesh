@@ -551,6 +551,8 @@ Since the JSON standard does not have a special regex type, it would need to be 
 
 There is no dedicated installation procedure for mesh. You just http://getmesh.io/Download[download the mesh jar] file and start it using java.
 
+Oracle Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
+
 [source,bash]
 ----
 java -jar mesh-demo-0.6.0.jar
