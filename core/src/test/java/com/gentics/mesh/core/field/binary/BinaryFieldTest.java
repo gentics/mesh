@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.binary;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
@@ -10,9 +11,12 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -20,8 +24,11 @@ import com.gentics.mesh.json.JsonUtil;
 
 public class BinaryFieldTest extends AbstractFieldTest {
 
+	private static final String BINARY_FIELD = "binaryField";
+
 	@Test
-	public void testNodeFieldTransformation() throws Exception {
+	@Override
+	public void testFieldTransformation() throws Exception {
 		Node node = folder("2015");
 
 		// Update the schema and add a binary field
@@ -33,7 +40,7 @@ public class BinaryFieldTest extends AbstractFieldTest {
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		BinaryGraphField field = container.createBinary("binaryField");
+		BinaryGraphField field = container.createBinary(BINARY_FIELD);
 		field.setMimeType("image/jpg");
 		field.setSHA512Sum(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
@@ -46,7 +53,7 @@ public class BinaryFieldTest extends AbstractFieldTest {
 		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 		assertNotNull(response);
 
-		BinaryField deserializedNodeField = response.getFields().getBinaryField("binaryField");
+		BinaryField deserializedNodeField = response.getFields().getBinaryField(BINARY_FIELD);
 		assertNotNull(deserializedNodeField);
 		assertEquals(200, deserializedNodeField.getHeight().intValue());
 		assertEquals(300, deserializedNodeField.getWidth().intValue());
@@ -54,7 +61,17 @@ public class BinaryFieldTest extends AbstractFieldTest {
 	}
 
 	@Test
-	public void testSimpleBinary() {
+	@Override
+	public void testEqualsNull() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BinaryGraphField fieldA = container.createBinary(BINARY_FIELD);
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
+	}
+
+	@Test
+	@Override
+	public void testFieldUpdate() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 		BinaryGraphField field = container.createBinary("testBinaryField");
@@ -88,10 +105,11 @@ public class BinaryFieldTest extends AbstractFieldTest {
 	}
 
 	@Test
+	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
-		BinaryGraphField field = container.createBinary("testBinaryField");
+		BinaryGraphField field = container.createBinary(BINARY_FIELD);
 		assertNotNull(field);
 		assertEquals("testBinaryField", field.getFieldKey());
 
@@ -107,7 +125,7 @@ public class BinaryFieldTest extends AbstractFieldTest {
 		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		field.cloneTo(otherContainer);
 
-		BinaryGraphField clonedField = otherContainer.getBinary("testBinaryField");
+		BinaryGraphField clonedField = otherContainer.getBinary(BINARY_FIELD);
 		assertThat(clonedField).as("cloned field").isNotNull().isEqualToComparingFieldByField(field);
 	}
 }

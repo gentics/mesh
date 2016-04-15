@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -29,6 +28,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
@@ -52,7 +52,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test cases for fields of type "micronode" TODO: add tests for all types of fields that can be put into a micronode
  */
-public class MicronodeFieldTest extends AbstractBasicDBTest {
+public class MicronodeFieldTest extends AbstractFieldTest {
 	/**
 	 * Dummy microschema
 	 */
@@ -65,7 +65,8 @@ public class MicronodeFieldTest extends AbstractBasicDBTest {
 	}
 
 	@Test
-	public void testMicronodeFieldTransformation() throws Exception {
+	@Override
+	public void testFieldTransformation() throws Exception {
 		Node newOverview = content("news overview");
 		Long date = System.currentTimeMillis();
 
@@ -244,6 +245,7 @@ public class MicronodeFieldTest extends AbstractBasicDBTest {
 	}
 
 	@Test
+	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());

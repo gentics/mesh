@@ -175,7 +175,7 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 
 		Node content = content();
 
-		// 1. Create update request by removing the title field from schema and adding a new title with different type
+		// 1. Create update request by removing the content field from schema and adding a new content with different type
 		SchemaContainer container = schemaContainer("content");
 		Schema schema = container.getLatestVersion().getSchema();
 		schema.removeField("content");

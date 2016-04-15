@@ -7,27 +7,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class StringFieldTest extends AbstractBasicDBTest {
-
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
+public class StringFieldTest extends AbstractFieldTest {
 
 	@Test
-	public void testStringFieldTransformation() throws Exception {
+	@Override
+	public void testFieldTransformation() throws Exception {
 		Node node = folder("2015");
 
 		// Add a new string field to the schema
@@ -78,6 +74,7 @@ public class StringFieldTest extends AbstractBasicDBTest {
 	}
 
 	@Test
+	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		StringGraphField testField = container.createString("testField");
@@ -86,7 +83,6 @@ public class StringFieldTest extends AbstractBasicDBTest {
 		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		testField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull()
-				.isEqualToIgnoringGivenFields(testField, "parentContainer");
+		assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField, "parentContainer");
 	}
 }

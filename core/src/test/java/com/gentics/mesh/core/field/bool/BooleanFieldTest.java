@@ -15,15 +15,19 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
+import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class BooleanFieldTest extends AbstractBasicDBTest {
+public class BooleanFieldTest extends AbstractFieldTest {
+
+	private static final String BOOLEAN_FIELD = "booleanField";
 
 	@Test
-	public void testBooleanFieldTransformation() throws Exception {
+	@Override
+	public void testFieldTransformation() throws Exception {
 		Node node = folder("2015");
 
 		// Update the schema and add a boolean field
@@ -89,6 +93,7 @@ public class BooleanFieldTest extends AbstractBasicDBTest {
 	}
 
 	@Test
+	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		BooleanGraphField trueBooleanField = container.createBoolean("trueBooleanField");
@@ -100,8 +105,8 @@ public class BooleanFieldTest extends AbstractBasicDBTest {
 		trueBooleanField.cloneTo(otherContainer);
 		falseBooleanField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getBoolean("trueBooleanField")).as("cloned true field").isNotNull()
-				.isEqualToIgnoringGivenFields(trueBooleanField, "parentContainer");
+		assertThat(otherContainer.getBoolean("trueBooleanField")).as("cloned true field").isNotNull().isEqualToIgnoringGivenFields(trueBooleanField,
+				"parentContainer");
 		assertThat(otherContainer.getBoolean("falseBooleanField")).as("cloned false field").isNotNull()
 				.isEqualToIgnoringGivenFields(falseBooleanField, "parentContainer");
 	}

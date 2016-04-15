@@ -2,78 +2,84 @@ package com.gentics.mesh.core.field.html;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractEmptyDBTest;
 
-public class HtmlFieldTest extends AbstractEmptyDBTest {
+public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 
-	@Autowired
-	private ServerSchemaStorage schemaStorage;
+	private static final String HTML_FIELD = "htmlField";
 
-	@Test
-	public void testSimpleHTML() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField field = new HtmlGraphFieldImpl("test", container);
-		assertEquals(2, container.getPropertyKeys().size());
-		assertNull(container.getProperty("test-html"));
-		field.setHtml("dummy HTML");
-		assertEquals("dummy HTML", field.getHTML());
-		assertEquals("dummy HTML", container.getProperty("test-html"));
-		assertEquals(3, container.getPropertyKeys().size());
-		field.setHtml(null);
-		assertNull(field.getHTML());
-		assertNull(container.getProperty("test-html"));
-
-		HtmlGraphField reloadedField = container.getHtml("test");
-		assertNull("The html field value was set to null and thus was removed", reloadedField);
+	@Override
+	protected HtmlFieldSchema createFieldSchema(boolean isRequired) {
+		HtmlFieldSchemaImpl schema = new HtmlFieldSchemaImpl();
+		schema.setLabel("Some html field");
+		schema.setRequired(isRequired);
+		schema.setName(HTML_FIELD);
+		return schema;
 	}
 
 	@Test
-	public void testHTMLField() {
+	@Override
+	public void testFieldUpdate() {
+		// Create field
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField htmlField = container.createHTML("htmlField");
-		assertEquals("htmlField", htmlField.getFieldKey());
+		HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
+
+		// Check field key
+		assertEquals(HTML_FIELD, htmlField.getFieldKey());
+
+		// Check field value
 		htmlField.setHtml("dummyHTML");
 		assertEquals("dummyHTML", htmlField.getHTML());
+
+		// Check bogus key
 		HtmlGraphField bogusField1 = container.getHtml("bogus");
 		assertNull(bogusField1);
-		HtmlGraphField reloadedHTMLField = container.getHtml("htmlField");
+
+		// Test field loading
+		HtmlGraphField reloadedHTMLField = container.getHtml(HTML_FIELD);
 		assertNotNull(reloadedHTMLField);
-		assertEquals("htmlField", reloadedHTMLField.getFieldKey());
+		assertEquals(HTML_FIELD, reloadedHTMLField.getFieldKey());
+		assertEquals("dummyHTML", reloadedHTMLField.getHTML());
 	}
 
 	@Test
-	public void testHtmlFieldTransformation() throws Exception {
+	@Override
+	public void testFieldTransformation() throws Exception {
 		setupData();
 		Node node = folder("2015");
 
 		// Add html field schema to the schema
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
-		htmlFieldSchema.setName("htmlField");
+		htmlFieldSchema.setName(HTML_FIELD);
 		htmlFieldSchema.setLabel("Some html field");
 		htmlFieldSchema.setRequired(true);
 		schema.addField(htmlFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		HtmlGraphField field = container.createHTML("htmlField");
+		HtmlGraphField field = container.createHTML(HTML_FIELD);
 		field.setHtml("Some<b>htmlABCDE");
 
 		String json = getJson(node);
@@ -88,16 +94,72 @@ public class HtmlFieldTest extends AbstractEmptyDBTest {
 
 	}
 
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		invokeRemoveFieldViaNullValueTestcase(HTML_FIELD, (container, fieldName) -> {
+			return container.getHtml(fieldName);
+		} , (container) -> {
+			return container.createHTML(HTML_FIELD);
+		} , (node) -> {
+			HtmlField field = new HtmlFieldImpl();
+			field.setHTML(null);
+			updateNode(node, HTML_FIELD, field);
+		});
+	}
+
 	@Test
+	@Override
+	public void testEquals() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphField fieldA = container.createHTML("htmlField1");
+		HtmlGraphField fieldB = container.createHTML("htmlField2");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		fieldA.setHtml("someText");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+
+		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+		fieldB.setHtml("someText");
+		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
+
+	}
+
+	@Test
+	@Override
+	public void testEqualsNull() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphField fieldA = container.createHTML("htmlField1");
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
+	}
+
+	@Test
+	@Override
+	public void testEqualsRestField() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphField fieldA = container.createHTML("htmlField1");
+		assertFalse("The html field should not be equal to a string rest field. Even if it has the same value",
+				fieldA.equals(new StringFieldImpl().setString("someText")));
+
+		assertTrue("The html field should be equal to the html rest field since both fields have no value.", fieldA.equals(new HtmlFieldImpl()));
+
+		fieldA.setHtml("someText");
+		assertFalse("The html field should not be equal to the html rest field since the rest field has a different value.",
+				fieldA.equals(new HtmlFieldImpl().setHTML("someText2")));
+		assertTrue("The html field should be equal to a html rest field with the same value", fieldA.equals(new HtmlFieldImpl().setHTML("someText")));
+	}
+
+	@Test
+	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField htmlField = container.createHTML("htmlField");
+		HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
 		htmlField.setHtml("<i>HTML</i>");
 
 		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		htmlField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getHtml("htmlField")).as("cloned field").isNotNull()
-				.isEqualToIgnoringGivenFields(htmlField, "parentContainer");
+		assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");
 	}
+
 }

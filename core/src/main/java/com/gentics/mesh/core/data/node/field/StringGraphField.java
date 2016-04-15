@@ -27,7 +27,7 @@ public interface StringGraphField extends ListableGraphField, BasicGraphField<St
 		// fieldKey, this);
 		StringGraphField graphStringField = container.getString(fieldKey);
 		if (graphStringField == null) {
-			return Observable.just(new StringFieldImpl());
+			return Observable.just(null);
 		} else {
 			return graphStringField.transformToRest(ac).map(stringField -> {
 				if (ac.getResolveLinksType() != WebRootLinkReplacer.Type.OFF) {

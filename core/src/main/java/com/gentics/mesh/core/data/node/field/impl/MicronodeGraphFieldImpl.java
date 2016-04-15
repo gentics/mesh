@@ -19,6 +19,10 @@ import com.gentics.mesh.core.rest.node.field.MicronodeField;
 
 import rx.Observable;
 
+
+/**
+ * See {@link MicronodeGraphField}
+ */
 public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGraphField {
 
 	@Override
@@ -83,7 +87,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean equals(Field restField) {
 		if (restField instanceof MicronodeField) {

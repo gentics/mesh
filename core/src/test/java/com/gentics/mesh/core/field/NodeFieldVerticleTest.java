@@ -41,8 +41,8 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	public void testUpdateNodeAndOmitMandatoryField() throws IOException {
-		// 1. create mandatory field
+	public void testUpdateNodeAndOmitRequiredField() throws IOException {
+		// 1. create required field
 		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 		HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 		htmlFieldSchema.setName("htmlField");
@@ -51,7 +51,7 @@ public class NodeFieldVerticleTest extends AbstractRestVerticleTest {
 		schema.addField(htmlFieldSchema);
 		schemaContainer("folder").getLatestVersion().setSchema(schema);
 
-		// 2. Create new node with mandatory field value
+		// 2. Create new node with required field value
 		Node parentNode = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());

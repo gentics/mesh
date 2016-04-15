@@ -24,7 +24,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	FieldTransformator NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		if (graphNodeField == null) {
-			return Observable.just(new NodeFieldImpl());
+			return Observable.just(null);
 		} else {
 			return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 		}

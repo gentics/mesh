@@ -23,20 +23,21 @@ import com.gentics.mesh.json.JsonUtil;
 
 public class DateFieldTest extends AbstractFieldTest {
 
-
+	private static final String DATE_FIELD = "dateField";
+	
 	@Test
 	public void testDateFieldTransformation() throws Exception {
 		Node node = folder("2015");
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
-		dateFieldSchema.setName("dateField");
+		dateFieldSchema.setName(DATE_FIELD);
 		dateFieldSchema.setLabel("Some date field");
 		dateFieldSchema.setRequired(true);
 		schema.addField(dateFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		DateGraphField field = container.createDate("dateField");
+		DateGraphField field = container.createDate(DATE_FIELD);
 		field.setDate(1337L);
 
 		String json = getJson(node);
@@ -68,28 +69,29 @@ public class DateFieldTest extends AbstractFieldTest {
 	public void testDateField() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		DateGraphField dateField = container.createDate("dateField");
-		assertEquals("dateField", dateField.getFieldKey());
+		DateGraphField dateField = container.createDate(DATE_FIELD);
+		assertEquals(DATE_FIELD, dateField.getFieldKey());
 		dateField.setDate(nowEpoch);
 		assertEquals(nowEpoch, Long.valueOf(dateField.getDate()));
 		StringGraphField bogusField1 = container.getString("bogus");
 		assertNull(bogusField1);
-		DateGraphField reloadedDateField = container.getDate("dateField");
+		DateGraphField reloadedDateField = container.getDate(DATE_FIELD);
 		assertNotNull(reloadedDateField);
-		assertEquals("dateField", reloadedDateField.getFieldKey());
+		assertEquals(DATE_FIELD, reloadedDateField.getFieldKey());
 	}
 
 	@Test
+	@Override
 	public void testClone() {
 		Long nowEpoch = System.currentTimeMillis() / 1000;
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		DateGraphField dateField = container.createDate("dateField");
+		DateGraphField dateField = container.createDate(DATE_FIELD);
 		dateField.setDate(nowEpoch);
 
 		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		dateField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getDate("dateField")).as("cloned field").isNotNull()
+		assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull()
 				.isEqualToIgnoringGivenFields(dateField, "parentContainer");
 	}
 }
