@@ -14,8 +14,21 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
-public class NodeListFieldTest extends AbstractFieldTest {
+public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
+
+	private static final String MICRONODE_LIST = "micronodeList";
+
+	@Override
+	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		ListFieldSchema schema = new ListFieldSchemaImpl();
+		schema.setListType("micronode");
+		schema.setName(MICRONODE_LIST);
+		schema.setRequired(isRequired);
+		return schema;
+	}
 
 	@Test
 	@Override
@@ -85,5 +98,61 @@ public class NodeListFieldTest extends AbstractFieldTest {
 		testField.cloneTo(otherContainer);
 
 		assertThat(otherContainer.getNodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+	}
+
+	@Test
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Test
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+
 	}
 }

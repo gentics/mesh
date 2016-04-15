@@ -20,7 +20,18 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
-public class HtmlListFieldTest extends AbstractFieldTest {
+public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
+
+	private static final String HTML_LIST = "htmlList";
+
+	@Override
+	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		ListFieldSchema schema = new ListFieldSchemaImpl();
+		schema.setListType("html");
+		schema.setName(HTML_LIST);
+		schema.setRequired(isRequired);
+		return schema;
+	}
 
 	@Test
 	@Override
@@ -82,6 +93,48 @@ public class HtmlListFieldTest extends AbstractFieldTest {
 		testField.cloneTo(otherContainer);
 
 		assertThat(otherContainer.getHTMLList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

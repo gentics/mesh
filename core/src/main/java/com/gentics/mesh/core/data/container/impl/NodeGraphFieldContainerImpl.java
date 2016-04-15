@@ -104,6 +104,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
 		Node node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
+		// Determine the webroot path of the container parent node
 		String segment = node.getPathSegment(releaseUuid, Type.DRAFT, getLanguage().getLanguageTag()).toBlocking().last();
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);

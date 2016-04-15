@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -127,5 +128,53 @@ public class BinaryFieldTest extends AbstractFieldTest {
 
 		BinaryGraphField clonedField = otherContainer.getBinary(BINARY_FIELD);
 		assertThat(clonedField).as("cloned field").isNotNull().isEqualToComparingFieldByField(field);
+	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected FieldSchema createFieldSchema(boolean isRequired) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

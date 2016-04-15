@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.bool;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -17,11 +16,12 @@ import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class BooleanFieldTest extends AbstractFieldTest {
+public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 	private static final String BOOLEAN_FIELD = "booleanField";
 
@@ -33,7 +33,7 @@ public class BooleanFieldTest extends AbstractFieldTest {
 		// Update the schema and add a boolean field
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
-		booleanFieldSchema.setName("booleanField");
+		booleanFieldSchema.setName(BOOLEAN_FIELD);
 		booleanFieldSchema.setLabel("Some boolean field");
 		booleanFieldSchema.setRequired(true);
 		schema.addField(booleanFieldSchema);
@@ -109,5 +109,65 @@ public class BooleanFieldTest extends AbstractFieldTest {
 				"parentContainer");
 		assertThat(otherContainer.getBoolean("falseBooleanField")).as("cloned false field").isNotNull()
 				.isEqualToIgnoringGivenFields(falseBooleanField, "parentContainer");
+	}
+
+	@Override
+	public void testFieldUpdate() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected BooleanFieldSchema createFieldSchema(boolean isRequired) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

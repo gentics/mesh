@@ -14,10 +14,8 @@ import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
-public class BooleanListFieldTest extends AbstractFieldTest {
+public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
@@ -67,6 +65,60 @@ public class BooleanListFieldTest extends AbstractFieldTest {
 		testField.cloneTo(otherContainer);
 
 		assertThat(otherContainer.getBooleanList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

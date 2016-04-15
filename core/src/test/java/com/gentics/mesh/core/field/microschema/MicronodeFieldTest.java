@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -50,9 +51,41 @@ import com.gentics.mesh.util.FieldUtil;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Test cases for fields of type "micronode" TODO: add tests for all types of fields that can be put into a micronode
+ * Test cases for fields of type "micronode"
  */
-public class MicronodeFieldTest extends AbstractFieldTest {
+//TODO: add tests for all types of fields that can be put into a micronode
+public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> {
+
+	private static final String MICRONODE_FIELD = "micronodeField";
+
+	@Override
+	protected MicronodeFieldSchema createFieldSchema(boolean isRequired) {
+		MicronodeFieldSchema schema = new MicronodeFieldSchemaImpl();
+		schema.setLabel("Some microschema label");
+		schema.setName(MICRONODE_FIELD);
+		schema.setRequired(isRequired);
+		schema.setAllowedMicroSchemas("dummymicroschema");
+		return schema;
+	}
+
+	/**
+	 * Create a dummy microschema
+	 * 
+	 * @return
+	 * @throws MeshJsonException
+	 */
+	protected MicroschemaContainer createDummyMicroschema() throws MeshJsonException {
+		Microschema dummyMicroschema = new MicroschemaModel();
+		dummyMicroschema.setName("dummymicroschema");
+
+		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
+		stringFieldSchema.setName("stringfield");
+		stringFieldSchema.setLabel("String Field");
+		dummyMicroschema.addField(stringFieldSchema);
+
+		return boot.microschemaContainerRoot().create(dummyMicroschema, getRequestUser());
+	}
+
 	/**
 	 * Dummy microschema
 	 */
@@ -258,22 +291,58 @@ public class MicronodeFieldTest extends AbstractFieldTest {
 				.isEqualToComparingFieldByField(field.getMicronode());
 	}
 
-	/**
-	 * Create a dummy microschema
-	 * 
-	 * @return
-	 * @throws MeshJsonException
-	 */
-	protected MicroschemaContainer createDummyMicroschema() throws MeshJsonException {
-		Microschema dummyMicroschema = new MicroschemaModel();
-		dummyMicroschema.setName("dummymicroschema");
+	@Override
+	public void testFieldUpdate() throws Exception {
+		// TODO Auto-generated method stub
 
-		// firstname field
-		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
-		stringFieldSchema.setName("stringfield");
-		stringFieldSchema.setLabel("String Field");
-		dummyMicroschema.addField(stringFieldSchema);
-
-		return boot.microschemaContainerRoot().create(dummyMicroschema, getRequestUser());
 	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+
+	}
+
 }

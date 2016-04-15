@@ -6,9 +6,11 @@ import static org.junit.Assert.assertNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.AbstractBasicDBTest;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -48,7 +50,9 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		schema.addField(createFieldSchema(isRequiredField));
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		node.createGraphFieldContainer(english(), null, version);
+		//TODO fake valid release
+		Release release =null;
+		node.createGraphFieldContainer(english(), release, user());
 		return node;
 	}
 
@@ -90,6 +94,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	/**
 	 * Update a node using a field map which contains the provided field.
 	 * 
+	 * @param ac
 	 * @param node
 	 *            Node to be used for update
 	 * @param fieldKey
@@ -98,11 +103,11 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Field to be added to the update model
 	 * @return
 	 */
-	protected NodeGraphFieldContainer updateNode(Node node, String fieldKey, Field field) {
+	protected NodeGraphFieldContainer updateNode(InternalActionContext ac, Node node, String fieldKey, Field field) {
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 		FieldMap fieldMap = new FieldMapJsonImpl();
 		fieldMap.put(fieldKey, field);
-		container.updateFieldsFromRest(fieldMap, container.getSchemaContainerVersion().getSchema());
+		container.updateFieldsFromRest(ac, fieldMap, container.getSchemaContainerVersion().getSchema());
 		container.reload();
 		return container;
 	}

@@ -16,10 +16,22 @@ import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class StringFieldTest extends AbstractFieldTest {
+public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
+
+	private static final String STRING_FIELD = "stringField";
+
+	@Override
+	protected StringFieldSchema createFieldSchema(boolean isRequired) {
+		StringFieldSchema schema = new StringFieldSchemaImpl();
+		schema.setLabel("Some string field");
+		schema.setRequired(isRequired);
+		schema.setName(STRING_FIELD);
+		return schema;
+	}
 
 	@Test
 	@Override
@@ -84,5 +96,59 @@ public class StringFieldTest extends AbstractFieldTest {
 		testField.cloneTo(otherContainer);
 
 		assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField, "parentContainer");
+	}
+
+	@Override
+	public void testFieldUpdate() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+		
 	}
 }

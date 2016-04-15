@@ -21,10 +21,19 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 
-public class DateFieldTest extends AbstractFieldTest {
+public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 	private static final String DATE_FIELD = "dateField";
-	
+
+	@Override
+	protected DateFieldSchema createFieldSchema(boolean isRequired) {
+		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
+		dateFieldSchema.setName(DATE_FIELD);
+		dateFieldSchema.setLabel("Some date field");
+		dateFieldSchema.setRequired(isRequired);
+		return dateFieldSchema;
+	}
+
 	@Test
 	public void testDateFieldTransformation() throws Exception {
 		Node node = folder("2015");
@@ -91,7 +100,66 @@ public class DateFieldTest extends AbstractFieldTest {
 		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		dateField.cloneTo(otherContainer);
 
-		assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull()
-				.isEqualToIgnoringGivenFields(dateField, "parentContainer");
+		assertThat(otherContainer.getDate(DATE_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(dateField, "parentContainer");
+	}
+
+	@Override
+	public void testFieldUpdate() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testFieldTransformation() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEquals() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsNull() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testEqualsRestField() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestNullOnCreateRequired() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testDeleteRequiredFieldViaNullValue() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void testUpdateFromRestValidSimpleValue() {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -166,7 +166,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = BootstrapInitializer.getBoot();
-		ServerSchemaStorage schemaStorage = ServerSchemaStorage.getInstance();
 
 		return obsSchemaContainer.flatMap(schemaContainer -> {
 
