@@ -52,6 +52,21 @@ public interface Mesh {
 	}
 
 	/**
+	 * Return the mesh version (without build timestamp)
+	 *
+	 * @return Mesh version
+	 */
+	static String getPlainVersion() {
+		try {
+			Properties buildProperties = new Properties();
+			buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
+			return buildProperties.get("mesh.version").toString();
+		} catch (Exception e) {
+			return "Unknown";
+		}
+	}
+
+	/**
 	 * Stop the the Mesh instance and release any resources held by it.
 	 * 
 	 * The instance cannot be used after it has been closed.
