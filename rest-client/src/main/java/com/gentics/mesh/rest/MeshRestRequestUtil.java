@@ -62,7 +62,7 @@ public final class MeshRestRequestUtil {
 					if (!StringUtils.isEmpty(contentType)) {
 						request.headers().add("content-type", contentType);
 					}
-					request.write(bodyData);
+					request.write(bodyData.toString());
 				}
 				request.end();
 			});
@@ -74,7 +74,7 @@ public final class MeshRestRequestUtil {
 				if (!StringUtils.isEmpty(contentType)) {
 					request.headers().add("content-type", contentType);
 				}
-				request.write(bodyData);
+				request.write(bodyData.toString());
 			}
 			request.end();
 		}

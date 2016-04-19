@@ -259,6 +259,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user) {
+		return createGraphFieldContainer(language, release, user, null);
+	}
+
+	@Override
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
 		String languageTag = language.getLanguageTag();
@@ -273,20 +278,31 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// create the new container
 		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		container.setEditor(user);
-		container.setLastEditedTimestamp(System.currentTimeMillis());
-		container.setLanguage(language);
-		container.setSchemaContainerVersion(release.getVersion(getSchemaContainer()));
+		if (original != null) {
+			container.setEditor(original.getEditor());
+			container.setLastEditedTimestamp(System.currentTimeMillis());
+			container.setLanguage(language);
+			container.setSchemaContainerVersion(original.getSchemaContainerVersion());
+		} else {
+			container.setEditor(user);
+			container.setLastEditedTimestamp(System.currentTimeMillis());
+			container.setLanguage(language);
+			container.setSchemaContainerVersion(release.getVersion(getSchemaContainer()));
+		}
 		if (previous != null) {
 			// set the next version number
 			container.setVersion(previous.getVersion().nextDraft());
 			previous.setNextVersion(container);
-
-			// clone the previous container
-			container.clone(previous);
 		} else {
 			// set the initial version number
 			container.setVersion(new VersionNumber());
+		}
+
+		// clone the original or the previous container
+		if (original != null) {
+			container.clone(original);
+		} else if (previous != null) {
+			container.clone(previous);
 		}
 
 		// remove existing draft edge
@@ -847,20 +863,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 	}
 
-	/**
-	 * Create a new published version of the given language in the release
-	 * @param language language
-	 * @param release release
-	 * @param user user
-	 * @return published field container
-	 */
-	protected NodeGraphFieldContainer publish(Language language, Release release, User user) {
-		String languageTag = language.getLanguageTag();
-		String releaseUuid = release.getUuid();
-
-		// create published version
-		NodeGraphFieldContainer newVersion = createGraphFieldContainer(language, release, user);
-		newVersion.setVersion(newVersion.getVersion().nextPublished());
+	@Override
+	public void setPublished(NodeGraphFieldContainer container, String releaseUuid) {
+		String languageTag = container.getLanguage().getLanguageTag();
 
 		// remove an existing published edge
 		EdgeFrame currentPublished = getGraphFieldContainerEdge(languageTag, releaseUuid, Type.PUBLISHED);
@@ -869,11 +874,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// create new published edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, newVersion.getImpl(),
+		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container.getImpl(),
 				GraphFieldContainerEdgeImpl.class);
 		edge.setLanguageTag(languageTag);
 		edge.setReleaseUuid(releaseUuid);
 		edge.setType(Type.PUBLISHED);
+	}
+
+	/**
+	 * Create a new published version of the given language in the release
+	 * @param language language
+	 * @param release release
+	 * @param user user
+	 * @return published field container
+	 */
+	protected NodeGraphFieldContainer publish(Language language, Release release, User user) {
+		String releaseUuid = release.getUuid();
+
+		// create published version
+		NodeGraphFieldContainer newVersion = createGraphFieldContainer(language, release, user);
+		newVersion.setVersion(newVersion.getVersion().nextPublished());
+
+		setPublished(newVersion, releaseUuid);
 		return newVersion;
 	}
 
