@@ -1,25 +1,26 @@
 package com.gentics.mesh.core.field.string;
 
+import static com.gentics.mesh.core.field.string.StringFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.string.StringFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.field.string.StringFieldTestHelper.FILLTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
-import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -79,20 +80,6 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	}
 
 	@Test
-	public void testStringField() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		StringGraphField stringField = container.createString("stringField");
-		assertEquals("stringField", stringField.getFieldKey());
-		stringField.setString("dummyString");
-		assertEquals("dummyString", stringField.getString());
-		StringGraphField bogusField1 = container.getString("bogus");
-		assertNull(bogusField1);
-		StringGraphField reloadedStringField = container.getString("stringField");
-		assertNotNull(reloadedStringField);
-		assertEquals("stringField", reloadedStringField.getFieldKey());
-	}
-
-	@Test
 	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -108,8 +95,16 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		// TODO Auto-generated method stub
-
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		StringGraphField stringField = container.createString("stringField");
+		assertEquals("stringField", stringField.getFieldKey());
+		stringField.setString("dummyString");
+		assertEquals("dummyString", stringField.getString());
+		StringGraphField bogusField1 = container.getString("bogus");
+		assertNull(bogusField1);
+		StringGraphField reloadedStringField = container.getString("stringField");
+		assertNotNull(reloadedStringField);
+		assertEquals("stringField", reloadedStringField.getFieldKey());
 	}
 
 	@Test
@@ -161,52 +156,49 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-//		Node node = createNode(false);
-//		FieldMap restFields = new FieldMapJsonImpl();
-//		restFields.put(STRING_FIELD, null);
-//		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-//		container.updateFieldsFromRest(getMockedInternalActionContext(""), restFields,
-//				node.getGraphFieldContainer(english()).getSchemaContainerVersion().getSchema());
-//		container.reload();
-//	
-//		assertNull("No field should have been created", getFieldFromContainer(container));
-
+		invokeUpdateFromRestTestcase(STRING_FIELD, FETCH, CREATE_EMPTY);
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-//		Node node = createNode(true);
-//		FieldMap restFields = new FieldMapJsonImpl();
-//		restFields.put(STRING_FIELD, null);
-//		try {
-//			node.getGraphFieldContainer(english()).updateFieldsFromRest(getMockedInternalActionContext(""), restFields,
-//					node.getGraphFieldContainer(english()).getSchemaContainerVersion().getSchema());
-//			fail("The update should have failed but it did not.");
-//		} catch (HttpStatusCodeErrorException e) {
-//			assertEquals("node_error_missing_required_field_value", e.getMessage());
-//			assertThat(e.getI18nParameters()).containsExactly(STRING_FIELD, "dummySchema");
-//		}
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(STRING_FIELD, FETCH, CREATE_EMPTY);
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(STRING_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+			StringField field = new StringFieldImpl();
+			field.setString(null);
+			updateContainer(ac, node, STRING_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(STRING_FIELD, FETCH, FILLTEXT, (container) -> {
+			StringField field = new StringFieldImpl();
+			field.setString(null);
+			updateContainer(ac, container, STRING_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(STRING_FIELD, FILLTEXT, (container) -> {
+			StringField field = new StringFieldImpl();
+			field.setString("someValue");
+			updateContainer(ac, container, STRING_FIELD, field);
+		} , (container) -> {
+			StringGraphField field = container.getString(STRING_FIELD);
+			assertNotNull("The graph field {" + STRING_FIELD + "} could not be found.", field);
+			assertEquals("The string of the field was not updated.", "someValue", field.getString());
+		});
 	}
 }

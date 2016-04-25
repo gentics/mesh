@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.field.number;
 
+import static com.gentics.mesh.core.field.number.NumberFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.number.NumberFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.field.number.NumberFieldTestHelper.FILL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -17,6 +21,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
@@ -162,36 +167,50 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-
+		invokeUpdateFromRestTestcase(NUMBER_FIELD, FETCH, CREATE_EMPTY);
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(NUMBER_FIELD, FETCH, CREATE_EMPTY);
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(NUMBER_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+			NumberField field = new NumberFieldImpl();
+			field.setNumber(null);
+			updateContainer(ac, node, NUMBER_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(NUMBER_FIELD, FETCH, FILL, (container) -> {
+			NumberField field = new NumberFieldImpl();
+			field.setNumber(null);
+			updateContainer(ac, container, NUMBER_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(NUMBER_FIELD, FILL, (container) -> {
+			NumberField field = new NumberFieldImpl();
+			field.setNumber(42L);
+			updateContainer(ac, container, NUMBER_FIELD, field);
+		} , (container) -> {
+			NumberGraphField field = container.getNumber(NUMBER_FIELD);
+			assertNotNull("The graph field {" + NUMBER_FIELD + "} could not be found.", field);
+			assertEquals("The html of the field was not updated.", 42L, field.getNumber());
+		});
 	}
 
 }

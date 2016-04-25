@@ -26,8 +26,9 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setDpi(Integer dpi) {
+	public BinaryField setDpi(Integer dpi) {
 		this.dpi = dpi;
+		return this;
 	}
 
 	@Override
@@ -36,8 +37,9 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setFileSize(long fileSize) {
+	public BinaryField setFileSize(long fileSize) {
 		this.fileSize = fileSize;
+		return this;
 	}
 
 	@Override
@@ -46,8 +48,9 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setHeight(Integer height) {
+	public BinaryField setHeight(Integer height) {
 		this.height = height;
+		return this;
 	}
 
 	@Override
@@ -56,8 +59,9 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setWidth(Integer width) {
+	public BinaryField setWidth(Integer width) {
 		this.width = width;
+		return this;
 	}
 
 	@Override
@@ -66,8 +70,9 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setMimeType(String mimeType) {
+	public BinaryField setMimeType(String mimeType) {
 		this.mimeType = mimeType;
+		return this;
 	}
 
 	@Override
@@ -76,8 +81,9 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setSha512sum(String sha512sum) {
+	public BinaryField setSha512sum(String sha512sum) {
 		this.sha512sum = sha512sum;
+		return this;
 	}
 
 	@Override
@@ -86,7 +92,8 @@ public class BinaryFieldImpl implements BinaryField {
 	}
 
 	@Override
-	public void setFileName(String fileName) {
+	public BinaryField setFileName(String fileName) {
 		this.fileName = fileName;
+		return this;
 	}
 }

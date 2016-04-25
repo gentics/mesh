@@ -13,6 +13,8 @@ public interface NumberFieldTestHelper {
 
 	static final DataProvider FILL0 = (container, name) -> container.createNumber(name).setNumber(0L);
 
+	static final DataProvider CREATE_EMPTY = (container, name) -> container.createNumber(name).setNumber(null);
+
 	static final FieldFetcher FETCH = (container, name) -> container.getNumber(name);
 
 }

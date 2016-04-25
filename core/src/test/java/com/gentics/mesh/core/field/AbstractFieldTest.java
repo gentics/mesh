@@ -123,6 +123,13 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 	}
 
+	/**
+	 * 
+	 * @param fieldName
+	 *            Name/key of the field which will be updated
+	 * @param fetcher
+	 * @param createEmpty
+	 */
 	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
 		NodeGraphFieldContainer container = createNode(true).v2();
 		try {
@@ -138,6 +145,27 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			assertNull("No field should have been created", fetcher.fetch(container, fieldName));
 
 		}
+	}
+
+	/**
+	 * Invoke the update testcase using the provides data.
+	 * 
+	 * @param fieldName
+	 *            Key of the testfield which will be created
+	 * @param createDummyData
+	 *            Data provider which will create a initial value
+	 * @param updater
+	 *            Action which will update the field
+	 * @param asserter
+	 *            Action which will assert the update
+	 */
+	protected void invokeUpdateFromRestValidSimpleValueTestcase(String fieldName, DataProvider createDummyData,
+			Action1<NodeGraphFieldContainer> updater, Action1<NodeGraphFieldContainer> asserter) {
+		NodeGraphFieldContainer container = createNode(false).v2();
+		createDummyData.set(container, fieldName);
+		updater.call(container);
+		container.reload();
+		asserter.call(container);
 	}
 
 	/**

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -139,6 +140,8 @@ public abstract class AbstractFieldSchemaContainer implements FieldSchemaContain
 
 	@Override
 	public void addField(FieldSchema fieldSchema) {
+		Objects.requireNonNull(fieldSchema, "The field schema must not be null");
+		Objects.requireNonNull(fieldSchema.getName(), "The field schema must have a valid name");
 		this.fields.add(fieldSchema);
 	}
 

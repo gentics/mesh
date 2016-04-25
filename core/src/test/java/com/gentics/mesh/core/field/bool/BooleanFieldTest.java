@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.field.bool;
 
+import static com.gentics.mesh.core.field.bool.BooleanFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.bool.BooleanFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.field.bool.BooleanFieldTestHelper.FILLTRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,13 +12,19 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -24,6 +33,15 @@ import com.gentics.mesh.json.JsonUtil;
 public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 	private static final String BOOLEAN_FIELD = "booleanField";
+
+	@Override
+	protected BooleanFieldSchema createFieldSchema(boolean isRequired) {
+		BooleanFieldSchemaImpl schema = new BooleanFieldSchemaImpl();
+		schema.setLabel("Some boolean field");
+		schema.setRequired(isRequired);
+		schema.setName(BOOLEAN_FIELD);
+		return schema;
+	}
 
 	@Test
 	@Override
@@ -40,7 +58,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		BooleanGraphField field = container.createBoolean("booleanField");
+		BooleanGraphField field = container.createBoolean(BOOLEAN_FIELD);
 		field.setBoolean(true);
 
 		String json = getJson(node);
@@ -72,27 +90,6 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	}
 
 	@Test
-	public void testBooleanField() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		BooleanGraphField booleanField = container.createBoolean("booleanField");
-		assertEquals("booleanField", booleanField.getFieldKey());
-		booleanField.setBoolean(true);
-		assertTrue("The boolean field value was not changed to true", booleanField.getBoolean());
-
-		booleanField.setBoolean(false);
-		assertFalse("The boolean field value was not changed to false", booleanField.getBoolean());
-
-		booleanField.setBoolean(null);
-		assertNull("The boolean field value was not set to null.", booleanField.getBoolean());
-
-		BooleanGraphField bogusField2 = container.getBoolean("bogus");
-		assertNull("No field with the name bogus should have been found.", bogusField2);
-
-		BooleanGraphField reloadedBooleanField = container.getBoolean("booleanField");
-		assertNull("The boolean field value was set to null and thus the field should have been removed.", reloadedBooleanField);
-	}
-
-	@Test
 	@Override
 	public void testClone() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -111,63 +108,121 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 				.isEqualToIgnoringGivenFields(falseBooleanField, "parentContainer");
 	}
 
+	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphField booleanField = container.createBoolean(BOOLEAN_FIELD);
+		assertEquals(BOOLEAN_FIELD, booleanField.getFieldKey());
+		booleanField.setBoolean(true);
+		assertTrue("The boolean field value was not changed to true", booleanField.getBoolean());
+
+		booleanField.setBoolean(false);
+		assertFalse("The boolean field value was not changed to false", booleanField.getBoolean());
+
+		booleanField.setBoolean(null);
+		assertNull("The boolean field value was not set to null.", booleanField.getBoolean());
+
+		BooleanGraphField bogusField2 = container.getBoolean("bogus");
+		assertNull("No field with the name bogus should have been found.", bogusField2);
+
+		BooleanGraphField reloadedBooleanField = container.getBoolean("booleanField");
+		assertNull("The boolean field value was set to null and thus the field should have been removed.", reloadedBooleanField);
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphField fieldA = container.createBoolean("fieldA");
+		BooleanGraphField fieldB = container.createBoolean("fieldB");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		fieldA.setBoolean(true);
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+
+		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+		fieldB.setBoolean(true);
+		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphField fieldA = container.createBoolean("fieldA");
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
 	}
 
+	@Test
 	@Override
 	public void testEqualsRestField() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphField fieldA = container.createBoolean("fieldA");
+
+		// graph empty - rest empty 
+		assertTrue("The field should be equal to the rest field since both fields have no value.", fieldA.equals(new BooleanFieldImpl()));
+
+		// graph set - rest set - same value - different type
+		fieldA.setBoolean(true);
+		assertFalse("The field should not be equal to the rest field since the types do not match.", fieldA.equals(new HtmlFieldImpl().setHTML("true")));
+
+		// graph set - rest set - different value
+		assertFalse("The field should not be equal to the rest field since the rest field has a different value.",
+				fieldA.equals(new BooleanFieldImpl().setValue(false)));
+
+		// graph set - rest set - same value
+		assertTrue("The field should be equal to a html rest field with the same value", fieldA.equals(new BooleanFieldImpl().setValue(true)));
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestTestcase(BOOLEAN_FIELD, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_FIELD, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+			BooleanField field = new BooleanFieldImpl();
+			field.setValue(null);
+			updateContainer(ac, node, BOOLEAN_FIELD, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
+			BooleanField field = new BooleanFieldImpl();
+			field.setValue(null);
+			updateContainer(ac, container, BOOLEAN_FIELD, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_FIELD, FILLTRUE, (container) -> {
+			BooleanField field = new BooleanFieldImpl();
+			field.setValue(false);
+			updateContainer(ac, container, BOOLEAN_FIELD, field);
+		} , (container) -> {
+			BooleanGraphField field = container.getBoolean(BOOLEAN_FIELD);
+			assertNotNull("The graph field {" + BOOLEAN_FIELD + "} could not be found.", field);
+			assertEquals("The boolean of the field was not updated.", false, field.getBoolean());
+		});
 	}
 
-	@Override
-	protected BooleanFieldSchema createFieldSchema(boolean isRequired) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

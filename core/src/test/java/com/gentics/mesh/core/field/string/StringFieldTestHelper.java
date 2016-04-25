@@ -10,7 +10,7 @@ public interface StringFieldTestHelper {
 	static final DataProvider FILLFALSE = (container, name) -> container.createString(name).setString("false");
 	static final DataProvider FILL0 = (container, name) -> container.createString(name).setString("0");
 	static final DataProvider FILL1 = (container, name) -> container.createString(name).setString("1");
-
+	static final DataProvider CREATE_EMPTY = (container, name) -> container.createString(name).setString(null);
 	static final FieldFetcher FETCH = (container, name) -> container.getString(name);
 
 }

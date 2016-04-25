@@ -61,10 +61,10 @@ public interface FieldSchema {
 	/**
 	 * Set the required flag.
 	 * 
-	 * @param flag
+	 * @param isRequired
 	 * @return Fluent API
 	 */
-	FieldSchema setRequired(boolean flag);
+	FieldSchema setRequired(boolean isRequired);
 
 	/**
 	 * Compare the field schema with the given field schema.

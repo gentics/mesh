@@ -16,6 +16,9 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
@@ -23,20 +26,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.field.DataProvider;
-import com.gentics.mesh.core.field.FieldFetcher;
 
 public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
-
-	private final DataProvider FILL = (container, name) -> {
-		MicronodeGraphField field = container.createMicronode(name, microschemaContainers().get("vcard").getLatestVersion());
-
-		Micronode micronode = field.getMicronode();
-		micronode.createString("firstName").setString("Donald");
-		micronode.createString("lastName").setString("Duck");
-	};
-
-	private static final FieldFetcher FETCH = (container, name) -> container.getMicronode(name);
 
 	@Override
 	@Test
@@ -49,8 +40,8 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testRename() throws Exception {
 		renameField(CREATEMICRONODE, FILL, FETCH, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE).containsStringField("firstName", "Donald")
+					.containsStringField("lastName", "Duck");
 		});
 	}
 
@@ -115,8 +106,8 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	public void testChangeToMicronode() throws Exception {
 		changeType(CREATEMICRONODE, FILL, FETCH, CREATEMICRONODE, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+			assertThat(container.getMicronode(name).getMicronode()).as(NEWFIELDVALUE).containsStringField("firstName", "Donald")
+					.containsStringField("lastName", "Duck");
 		});
 	}
 
@@ -126,8 +117,8 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 		changeType(CREATEMICRONODE, FILL, FETCH, CREATEMICRONODELIST, (container, name) -> {
 			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getMicronodeList(name).getValues()).as(NEWFIELDVALUE).hasSize(1);
-			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Donald").containsStringField("lastName", "Duck");
+			assertThat(container.getMicronodeList(name).getValues().get(0)).as(NEWFIELDVALUE).containsStringField("firstName", "Donald")
+					.containsStringField("lastName", "Duck");
 		});
 	}
 
@@ -182,25 +173,26 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 	@Override
 	@Test
 	public void testCustomMigrationScript() throws Exception {
-		customMigrationScript(CREATEMICRONODE, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].fields['firstName'] = 'Dagobert'; return node;}", (container, name) -> {
-			MicronodeGraphField field = container.getMicronode(name);
-			assertThat(field).as(NEWFIELD).isNotNull();
-			Micronode micronode = field.getMicronode();
-			assertThat(micronode).as(NEWFIELDVALUE).isNotNull();
-			micronode.reload();
-			assertThat(micronode).as(NEWFIELDVALUE)
-					.containsStringField("firstName", "Dagobert").containsStringField("lastName", "Duck");
-		});
+		customMigrationScript(CREATEMICRONODE, FILL, FETCH,
+				"function migrate(node, fieldname, convert) {node.fields[fieldname].fields['firstName'] = 'Dagobert'; return node;}",
+				(container, name) -> {
+					MicronodeGraphField field = container.getMicronode(name);
+					assertThat(field).as(NEWFIELD).isNotNull();
+					Micronode micronode = field.getMicronode();
+					assertThat(micronode).as(NEWFIELDVALUE).isNotNull();
+					micronode.reload();
+					assertThat(micronode).as(NEWFIELDVALUE).containsStringField("firstName", "Dagobert").containsStringField("lastName", "Duck");
+				});
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testInvalidMigrationScript() throws Exception {
 		invalidMigrationScript(CREATEMICRONODE, FILL, INVALIDSCRIPT);
 	}
 
 	@Override
-	@Test(expected=ExecutionException.class)
+	@Test(expected = ExecutionException.class)
 	public void testSystemExit() throws Exception {
 		invalidMigrationScript(CREATEMICRONODE, FILL, KILLERSCRIPT);
 	}

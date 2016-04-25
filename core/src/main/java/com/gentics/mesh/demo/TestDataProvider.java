@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -60,6 +62,17 @@ public class TestDataProvider {
 	public static final String PROJECT_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
+
+	private static TestDataProvider instance;
+
+	@PostConstruct
+	public void setupSingleton() {
+		instance = this;
+	}
+
+	public static TestDataProvider getInstance() {
+		return instance;
+	}
 
 	@Autowired
 	private Database db;
@@ -479,8 +492,7 @@ public class TestDataProvider {
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english,
-					project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
 			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");

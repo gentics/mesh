@@ -129,14 +129,19 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	public void testEqualsRestField() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		HtmlGraphField fieldA = container.createHTML("htmlField1");
-		assertFalse("The html field should not be equal to a string rest field. Even if it has the same value",
-				fieldA.equals(new StringFieldImpl().setString("someText")));
 
+		// graph empty - rest empty 
 		assertTrue("The html field should be equal to the html rest field since both fields have no value.", fieldA.equals(new HtmlFieldImpl()));
 
+		// graph set - rest set - same value - different type
 		fieldA.setHtml("someText");
+		assertFalse("The html field should not be equal to a string rest field. Even if it has the same value",
+				fieldA.equals(new StringFieldImpl().setString("someText")));
+		// graph set - rest set - different value
 		assertFalse("The html field should not be equal to the html rest field since the rest field has a different value.",
 				fieldA.equals(new HtmlFieldImpl().setHTML("someText2")));
+
+		// graph set - rest set - same value
 		assertTrue("The html field should be equal to a html rest field with the same value", fieldA.equals(new HtmlFieldImpl().setHTML("someText")));
 	}
 
@@ -190,8 +195,16 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(HTML_FIELD, FILLTEXT, (container) -> {
+			HtmlField field = new HtmlFieldImpl();
+			field.setHTML("someValue");
+			updateContainer(ac, container, HTML_FIELD, field);
+		} , (container) -> {
+			HtmlGraphField field = container.getHtml(HTML_FIELD);
+			assertNotNull("The graph field {" + HTML_FIELD + "} could not be found.", field);
+			assertEquals("The html of the field was not updated.", "someValue", field.getHTML());
+		});
 	}
 
 }

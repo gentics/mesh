@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.field.date;
 
+import static com.gentics.mesh.core.field.date.DateFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.date.DateFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.field.date.DateFieldTestHelper.FILL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -17,6 +21,7 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -35,32 +40,6 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		dateFieldSchema.setLabel("Some date field");
 		dateFieldSchema.setRequired(isRequired);
 		return dateFieldSchema;
-	}
-
-	@Test
-	public void testDateFieldTransformation() throws Exception {
-		Node node = folder("2015");
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
-		dateFieldSchema.setName(DATE_FIELD);
-		dateFieldSchema.setLabel("Some date field");
-		dateFieldSchema.setRequired(true);
-		schema.addField(dateFieldSchema);
-		node.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		DateGraphField field = container.createDate(DATE_FIELD);
-		field.setDate(1337L);
-
-		String json = getJson(node);
-		assertTrue("The json should contain the date but it did not.{" + json + "}", json.indexOf("1337") > 1);
-		assertNotNull(json);
-		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
-		assertNotNull(response);
-
-		com.gentics.mesh.core.rest.node.field.DateField deserializedNodeField = response.getFields().getDateField("dateField");
-		assertNotNull(deserializedNodeField);
-		assertEquals(1337L, deserializedNodeField.getDate().longValue());
 	}
 
 	@Test
@@ -115,10 +94,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 		// Add html field schema to the schema
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		DateFieldSchemaImpl dateFieldSchema = new DateFieldSchemaImpl();
-		dateFieldSchema.setName(DATE_FIELD);
-		dateFieldSchema.setLabel("Some html field");
-		dateFieldSchema.setRequired(true);
+		DateFieldSchema dateFieldSchema = createFieldSchema(true);
 		schema.addField(dateFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -189,35 +165,49 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-
+		invokeUpdateFromRestTestcase(DATE_FIELD, FETCH, CREATE_EMPTY);
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_FIELD, FETCH, CREATE_EMPTY);
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(DATE_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+			DateField field = new DateFieldImpl();
+			field.setDate(null);
+			updateContainer(ac, node, DATE_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
+			DateField field = new DateFieldImpl();
+			field.setDate(null);
+			updateContainer(ac, container, DATE_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(DATE_FIELD, FILL, (container) -> {
+			DateField field = new DateFieldImpl();
+			field.setDate(0L);
+			updateContainer(ac, container, DATE_FIELD, field);
+		} , (container) -> {
+			DateGraphField field = container.getDate(DATE_FIELD);
+			assertNotNull("The graph field {" + DATE_FIELD + "} could not be found.", field);
+			assertEquals("The date of the field was not updated.", 0L, field.getDate().longValue());
+		});
 	}
 }

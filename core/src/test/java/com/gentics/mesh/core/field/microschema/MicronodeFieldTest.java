@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.field.microschema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.microschema.MicronodeFieldHelper.FILL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,6 +21,8 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
@@ -35,6 +40,10 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -250,13 +259,23 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
 	}
 
-	/**
-	 * Test updating the field
-	 * 
-	 * @throws Exception
-	 */
 	@Test
-	public void testUpdateMicronodeField() throws Exception {
+	@Override
+	public void testClone() {
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
+
+		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		field.cloneTo(otherContainer);
+
+		assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
+		assertThat(otherContainer.getMicronode("testMicronodeField").getMicronode()).as("cloned micronode").isNotNull()
+				.isEqualToComparingFieldByField(field.getMicronode());
+	}
+
+	@Test
+	@Override
+	public void testFieldUpdate() throws Exception {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
@@ -282,37 +301,27 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 	@Test
 	@Override
-	public void testClone() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
-
-		NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		field.cloneTo(otherContainer);
-
-		assertThat(otherContainer.getMicronode("testMicronodeField")).as("cloned field").isNotNull();
-		assertThat(otherContainer.getMicronode("testMicronodeField").getMicronode()).as("cloned micronode").isNotNull()
-				.isEqualToComparingFieldByField(field.getMicronode());
-	}
-
-	@Test
-	@Override
-	public void testFieldUpdate() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Test
-	@Override
 	public void testEquals() {
-		// TODO Auto-generated method stub
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+		MicronodeGraphField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		fieldA.getMicronode().createString("testField").setString("someStringValue");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
+		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+		fieldB.getMicronode().createString("testField").setString("someStringValue");
+		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 	}
 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		// TODO Auto-generated method stub
-
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
 	}
 
 	@Test
@@ -354,36 +363,54 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
+		invokeUpdateFromRestTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
 
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
 
 	}
 
 	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+			MicronodeField field = null;
+			updateContainer(ac, node, MICRONODE_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
+			MicronodeField field = null;
+			updateContainer(ac, container, MICRONODE_FIELD, field);
+		});
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
+			MicronodeField field = new MicronodeResponse();
+			field.getFields().put("firstName", FieldUtil.createStringField("vcard_firstname_value"));
+			field.getFields().put("lastName", FieldUtil.createStringField("vcard_lastname_value"));
+			updateContainer(ac, container, MICRONODE_FIELD, field);
+		} , (container) -> {
+			MicronodeGraphField field = container.getMicronode(MICRONODE_FIELD);
+			assertNotNull("The graph field {" + MICRONODE_FIELD + "} could not be found.", field);
+			assertEquals("The micronode of the field was not updated.", "vcard_firstname_value",
+					field.getMicronode().getString("firstName").getString());
+			assertEquals("The micronode of the field was not updated.", "vcard_lastname_value",
+					field.getMicronode().getString("lastName").getString());
+		});
 	}
 
 }

@@ -17,8 +17,9 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param dpi
 	 *            Image DPI
+	 * @return Fluent API
 	 */
-	void setDpi(Integer dpi);
+	BinaryField setDpi(Integer dpi);
 
 	/**
 	 * Return the binary filesize.
@@ -32,8 +33,9 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param fileSize
 	 *            Filesize in bytes
+	 * @return Fluent API
 	 */
-	void setFileSize(long fileSize);
+	BinaryField setFileSize(long fileSize);
 
 	/**
 	 * Return the image height.
@@ -47,8 +49,9 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param height
 	 *            Image height
+	 * @return Fluent API
 	 */
-	void setHeight(Integer height);
+	BinaryField setHeight(Integer height);
 
 	/**
 	 * Return the width of the image.
@@ -62,8 +65,9 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param width
 	 *            Image width
+	 * @return Fluent API
 	 */
-	void setWidth(Integer width);
+	BinaryField setWidth(Integer width);
 
 	/**
 	 * Return the binary mimetype.
@@ -77,8 +81,9 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param mimeType
 	 *            Binary mimetype
+	 * @return Fluent API
 	 */
-	void setMimeType(String mimeType);
+	BinaryField setMimeType(String mimeType);
 
 	/**
 	 * Return the sha512 checksum.
@@ -92,8 +97,9 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param sha512sum
 	 *            Checksum
+	 * @return Fluent API
 	 */
-	void setSha512sum(String sha512sum);
+	BinaryField setSha512sum(String sha512sum);
 
 	/**
 	 * Return the binary filename of the node (may be null when no binary value was set)
@@ -107,7 +113,8 @@ public interface BinaryField extends Field {
 	 * 
 	 * @param fileName
 	 *            Filename
+	 * @return Fluent API
 	 */
-	void setFileName(String fileName);
+	BinaryField setFileName(String fileName);
 
 }
