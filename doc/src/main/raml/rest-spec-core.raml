@@ -627,7 +627,6 @@ traits:
           body:
             application/json:
               example: !include json/NodeResponse.example.json
-        423:
     delete:
       description: Deletes the node with the given uuid.
       responses:
@@ -635,7 +634,6 @@ traits:
           body:
             application/json:
               example: !include json/GenericMessageResponse.example.json
-        423:
     /tags:
       is: [ sortable, paged ]
       get:
