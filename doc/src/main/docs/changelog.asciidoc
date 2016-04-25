@@ -78,6 +78,10 @@
 * Fix: A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
 * Fix: The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
 
+=== 0.6.7 - 25.04.2016
+
+* Fix: Update checker. A bug that prevented the update checker from working correctly was fixed.
+
 === Upcoming changes
 
 * Versioning for nodes
