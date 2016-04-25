@@ -2,9 +2,11 @@ package com.gentics.mesh.core.field.string;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -14,7 +16,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.field.AbstractFieldTest;
+import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -98,57 +105,108 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 		assertThat(otherContainer.getString("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField, "parentContainer");
 	}
 
+	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		String testValue = "test123";
+		StringGraphField fieldA = container.createString(STRING_FIELD);
+		StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
+		fieldA.setString(testValue);
+		fieldB.setString(testValue);
+		assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		StringGraphField fieldA = container.createString(STRING_FIELD);
+		StringGraphField fieldB = container.createString(STRING_FIELD + "_2");
+		assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
 	}
 
+	@Test
 	@Override
 	public void testEqualsRestField() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		String dummyValue = "test123";
+
+		// rest null - graph null
+		StringGraphField fieldA = container.createString(STRING_FIELD);
+		StringFieldImpl restField = new StringFieldImpl();
+		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+
+		// rest set - graph set - different values
+		fieldA.setString(dummyValue);
+		restField.setString(dummyValue + 1L);
+		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value
+		restField.setString(dummyValue);
+		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value different type
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(new HtmlFieldImpl().setHTML(dummyValue)));
+
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-		
+//		Node node = createNode(false);
+//		FieldMap restFields = new FieldMapJsonImpl();
+//		restFields.put(STRING_FIELD, null);
+//		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
+//		container.updateFieldsFromRest(getMockedInternalActionContext(""), restFields,
+//				node.getGraphFieldContainer(english()).getSchemaContainerVersion().getSchema());
+//		container.reload();
+//	
+//		assertNull("No field should have been created", getFieldFromContainer(container));
+
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-		
+//		Node node = createNode(true);
+//		FieldMap restFields = new FieldMapJsonImpl();
+//		restFields.put(STRING_FIELD, null);
+//		try {
+//			node.getGraphFieldContainer(english()).updateFieldsFromRest(getMockedInternalActionContext(""), restFields,
+//					node.getGraphFieldContainer(english()).getSchemaContainerVersion().getSchema());
+//			fail("The update should have failed but it did not.");
+//		} catch (HttpStatusCodeErrorException e) {
+//			assertEquals("node_error_missing_required_field_value", e.getMessage());
+//			assertThat(e.getI18nParameters()).containsExactly(STRING_FIELD, "dummySchema");
+//		}
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

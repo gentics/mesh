@@ -170,6 +170,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			existingMicronode = existing.getMicronode();
 		}
 
+		// Create a new micronode and assign the given schema to it
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
 		micronode.setMicroschemaContainerVersion(microschema);
 		if (existingMicronode != null) {

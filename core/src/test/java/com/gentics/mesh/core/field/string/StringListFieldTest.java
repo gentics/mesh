@@ -87,52 +87,59 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		assertThat(otherContainer.getStringList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testEqualsRestField() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

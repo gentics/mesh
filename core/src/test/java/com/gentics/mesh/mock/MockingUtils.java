@@ -118,7 +118,7 @@ public final class MockingUtils {
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 		when(micronode.getMicroschemaContainerVersion()).thenReturn(latestVersion);
 		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
-		when(micronode.getMicroschema()).thenReturn(microschema);
+		when(micronode.getMicroschemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
 		NumberGraphField longitudeField = mock(NumberGraphFieldImpl.class);

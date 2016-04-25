@@ -117,7 +117,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 				// Update the micronode since it could be found
 				try {
-					micronode.updateFieldsFromRest(ac, node.getFields(), micronode.getMicroschema());
+					micronode.updateFieldsFromRest(ac, node.getFields(), micronode.getMicroschemaContainerVersion().getSchema());
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Unknown error while updating micronode list.", e);
 				}

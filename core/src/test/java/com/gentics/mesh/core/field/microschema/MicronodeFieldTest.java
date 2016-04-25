@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -27,8 +28,10 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.field.AbstractFieldTest;
+import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapJsonImpl;
@@ -291,54 +294,92 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 				.isEqualToComparingFieldByField(field.getMicronode());
 	}
 
+	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testEqualsRestField() {
-		// TODO Auto-generated method stub
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		// Create microschema for the micronode
+		MicroschemaContainerVersion containerVersion = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+		Microschema microschema = new MicroschemaModel();
+		microschema.setVersion(1);
+		microschema.addField(FieldUtil.createStringFieldSchema("string"));
+		microschema.addField(FieldUtil.createDateFieldSchema("date"));
+
+		// rest null - graph null
+		containerVersion.setSchema(microschema);
+		MicronodeGraphField fieldA = container.createMicronode(MICRONODE_FIELD, containerVersion);
+		MicronodeResponse restField = new MicronodeResponse();
+		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+
+		// rest set - graph set - different values
+		Long date = System.currentTimeMillis();
+		fieldA.getMicronode().createString("string").setString("someString");
+		fieldA.getMicronode().createDate("date").setDate(date);
+		restField.getFields().put("string", FieldUtil.createStringField("someOtherString"));
+		restField.getFields().put("date", FieldUtil.createDateField(date));
+		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value
+		restField.getFields().getStringField("string").setString("someString");
+		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value different type
+		restField.getFields().put("string", FieldUtil.createHtmlField("someString"));
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(restField));
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(new StringFieldImpl().setString("blub")));
 
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		// TODO Auto-generated method stub

@@ -145,6 +145,8 @@ public class SearchRestHandler {
 						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
 						obs.add(obsResult);
 
+						//TODO check permissions without loading the vertex
+
 						// Locate the node
 						rootVertex.findByUuid(uuid).subscribe(element -> {
 							if (element == null) {

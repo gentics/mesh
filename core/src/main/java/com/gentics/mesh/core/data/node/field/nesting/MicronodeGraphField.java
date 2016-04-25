@@ -93,7 +93,7 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		micronodeGraphField = container.createMicronode(fieldKey, microschemaContainerVersion);
 		micronode = micronodeGraphField.getMicronode();
 
-		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields(), micronode.getMicroschema());
+		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields(), micronode.getMicroschemaContainerVersion().getSchema());
 	};
 
 	FieldGetter MICRONODE_GETTER = (container, fieldSchema) -> {

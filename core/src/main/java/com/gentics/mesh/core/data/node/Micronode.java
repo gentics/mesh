@@ -28,14 +28,6 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	void setMicroschemaContainerVersion(MicroschemaContainerVersion microschema);
 
 	/**
-	 * Shortcut method for getMicroschemaContainerVersion().getMicroschema()
-	 * 
-	 * @return microschema
-	 */
-	@Deprecated
-	Microschema getMicroschema();
-
-	/**
 	 * Get the container of this micronode.
 	 *
 	 * @return container

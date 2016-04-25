@@ -16,14 +16,19 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Microschema;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
-
 
 /**
  * See {@link MicronodeGraphField}
  */
 public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGraphField {
+
+	private static final Logger log = LoggerFactory.getLogger(MicronodeGraphFieldImpl.class);
 
 	@Override
 	public void setFieldKey(String key) {
@@ -93,9 +98,28 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		if (restField instanceof MicronodeField) {
 			Micronode micronodeA = getMicronode();
 			MicronodeField micronodeB = ((MicronodeField) restField);
-			// TODO compare and check for null
-			return Objects.equals(micronodeA, micronodeB);
+
+			// Load each field using the field schema 
+			Microschema schema = micronodeA.getMicroschemaContainerVersion().getSchema();
+			for (FieldSchema fieldSchema : schema.getFields()) {
+				GraphField graphField = micronodeA.getField(fieldSchema);
+				try {
+					Field nestedRestField = micronodeB.getFields().getField(fieldSchema.getName(), fieldSchema);
+					// If possible compare the graph field with the rest field 
+					if (graphField != null && graphField.equals(nestedRestField)) {
+						continue;
+					}
+					if (!Objects.equals(graphField, nestedRestField)) {
+						return false;
+					}
+				} catch (Exception e) {
+					log.error("Could not load rest field", e);
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
 }

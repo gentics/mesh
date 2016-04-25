@@ -90,21 +90,21 @@ public final class FieldUtil {
 		return fieldSchema;
 	}
 
-	public static StringField createStringField(String string) {
+	public static StringField createStringField(String stringValue) {
 		StringField field = new StringFieldImpl();
-		field.setString(string);
+		field.setString(stringValue);
 		return field;
 	}
 
-	public static HtmlField createHtmlField(String html) {
+	public static HtmlField createHtmlField(String htmlValue) {
 		HtmlField field = new HtmlFieldImpl();
-		field.setHTML(html);
+		field.setHTML(htmlValue);
 		return field;
 	}
 
-	public static NumberField createNumberField(Number number) {
+	public static NumberField createNumberField(Number numberValue) {
 		NumberField field = new NumberFieldImpl();
-		field.setNumber(number);
+		field.setNumber(numberValue);
 		return field;
 	}
 

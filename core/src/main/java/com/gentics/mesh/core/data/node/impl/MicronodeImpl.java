@@ -108,11 +108,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Microschema getMicroschema() {
-		return getMicroschemaContainerVersion().getSchema();
-	}
-
-	@Override
 	public void delete() {
 		getElement().remove();
 	}

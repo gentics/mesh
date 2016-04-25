@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.field.html;
 
+import static com.gentics.mesh.core.field.html.HtmlFieldTestHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.html.HtmlFieldTestHelper.FETCH;
+import static com.gentics.mesh.core.field.html.HtmlFieldTestHelper.FILLTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -95,20 +98,6 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 
 	}
 
-	@Override
-	public void testRemoveFieldViaNullValue() {
-		InternalActionContext ac = getMockedInternalActionContext("");
-		invokeRemoveFieldViaNullValueTestcase(HTML_FIELD, (container, fieldName) -> {
-			return container.getHtml(fieldName);
-		} , (container) -> {
-			return container.createHTML(HTML_FIELD);
-		} , (node) -> {
-			HtmlField field = new HtmlFieldImpl();
-			field.setHTML(null);
-			updateNode(ac, node, HTML_FIELD, field);
-		});
-	}
-
 	@Test
 	@Override
 	public void testEquals() {
@@ -164,28 +153,45 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 		assertThat(otherContainer.getHtml(HTML_FIELD)).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(htmlField, "parentContainer");
 	}
 
+	@Test
+	@Override
+	public void testRemoveFieldViaNullValue() {
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(HTML_FIELD, FETCH, CREATE_EMPTY, (node) -> {
+			HtmlField field = new HtmlFieldImpl();
+			field.setHTML(null);
+			updateContainer(ac, node, HTML_FIELD, field);
+		});
+	}
+
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestTestcase(HTML_FIELD, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_FIELD, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(HTML_FIELD, FETCH, FILLTEXT, (container) -> {
+			HtmlField field = new HtmlFieldImpl();
+			field.setHTML(null);
+			updateContainer(ac, container, HTML_FIELD, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
