@@ -181,7 +181,6 @@ public class ReleaseMigrationVerticleTest extends AbstractRestVerticleTest {
 	}
 
 	@Test
-	@Ignore("Unstable due to other Mesh Errors")
 	public void testBigData() throws Throwable {
 		int numThreads = 1;
 		int numFolders = 1000;

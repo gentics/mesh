@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import java.io.IOException;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -53,8 +56,11 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getFieldContainers() {
-		return in(HAS_SCHEMA_CONTAINER_VERSION).toListExplicit(NodeGraphFieldContainerImpl.class);
+	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+		return in(HAS_SCHEMA_CONTAINER_VERSION).mark().inE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.DRAFT.getCode())
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back()
+				.toListExplicit(NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override

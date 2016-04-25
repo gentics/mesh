@@ -9,10 +9,11 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 public interface SchemaContainerVersion extends GraphFieldSchemaContainerVersion<Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> {
 
 	/**
-	 * Return a list {@link NodeGraphFieldContainer} that use this schema version.
+	 * Return a list {@link NodeGraphFieldContainer} that use this schema version and are DRAFT versions for the given release
 	 * 
+	 * @param releaseUuid release Uuid
 	 * @return
 	 */
-	List<? extends NodeGraphFieldContainer> getFieldContainers();
+	List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
 
 }

@@ -5,6 +5,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
 /**
@@ -18,12 +19,12 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	/**
 	 * Assert that the node uses the given schema.
 	 * 
-	 * @param schemaVersion
+	 * @param schemaContainer
 	 *            schema container
 	 * @return fluent API
 	 */
-	public NodeAssert isOf(SchemaContainerVersion schemaVersion) {
-		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").equals(schemaVersion.getSchemaContainer());
+	public NodeAssert isOf(SchemaContainer schemaContainer) {
+		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").equals(schemaContainer);
 		return this;
 	}
 

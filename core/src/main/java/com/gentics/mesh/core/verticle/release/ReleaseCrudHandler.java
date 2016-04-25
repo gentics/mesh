@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Component;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -18,7 +19,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
+import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
 
 /**
@@ -76,6 +79,15 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 									Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
 						}
 						release.assignSchemaVersion(version);
+
+						DeliveryOptions options = new DeliveryOptions();
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER,
+								release.getRoot().getProject().getUuid());
+						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
+						options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
+						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
+						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
+						Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options);
 					});
 					return getSchemaVersions(release);
 				});

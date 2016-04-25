@@ -114,6 +114,19 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user);
 
 	/**
+	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let
+	 * the new graph field container be a clone of the given original (if not
+	 * null)
+	 * 
+	 * @param language
+	 * @param release
+	 * @param user
+	 * @param original
+	 * @return
+	 */
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original);
+
+	/**
 	 * Return a list of draft graph field containers for the node in the latest release
 	 * 
 	 * @return
@@ -319,6 +332,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	Observable<Void> publish(InternalActionContext ac, String languageTag);
+
+	/**
+	 * Set the graph field container to be the (only) published for the given release
+	 *
+	 * @param container
+	 * @param releaseUuid
+	 */
+	void setPublished(NodeGraphFieldContainer container, String releaseUuid);
 
 	/**
 	 * Take a language of the node offline

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static com.gentics.mesh.demo.TestDataProvider.PROJECT_NAME;
@@ -25,6 +26,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -99,6 +102,10 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
 
+		Schema schema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(schema.getVersion())));
+
 		// Wait a few seconds until the migration has started
 		Thread.sleep(3000);
 
@@ -150,6 +157,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 		// Wait for event
 		failingLatch(latch);
@@ -191,18 +201,22 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", schema.getName());
+		// 5. assign the new schema version to the release (which will start the migration)
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 		failingLatch(latch);
 
 		// Add the updated schema to the client store
 		schema.setVersion(schema.getVersion() + 1);
 
-		// 5. Read node and check additional field
+		// 6. Read node and check additional field
 		NodeResponse response = call(() -> getClient().findNodeByUuid(PROJECT_NAME, content.getUuid(), new NodeRequestParameter().draft()));
 		assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 		assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 				response.getFields().getNumberField("content").getClass());
 
-		// 6. Update the node and set the new field
+		// 7. Update the node and set the new field
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setSchema(new SchemaReference().setName("content"));
@@ -292,6 +306,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Future<GenericMessageResponse> future = getClient().applyChangesToSchema(container.getUuid(), listOfChanges);
 		latchFor(future);
 		assertSuccess(future);
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 		// 5. Wait for migration to finish
 		failingLatch(latch);
@@ -325,6 +342,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		latchFor(future);
 		assertSuccess(future);
 		expectResponseMessage(future, "migration_invoked", "content");
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 		// 4. Latch for completion
 		failingLatch(latch);
@@ -398,6 +418,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 			latchFor(future);
 			assertSuccess(future);
 			expectResponseMessage(future, "migration_invoked", "content");
+			Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+			call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 			// 4. Latch for completion
 			barrier.await(10, TimeUnit.SECONDS);
@@ -479,6 +502,10 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
+		// 4. assign the new schema version to the release
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 		failingLatch(latch);
 
 		schema.setVersion(schema.getVersion() + 1);
@@ -524,6 +551,9 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
 		latchFor(future);
 		assertSuccess(future);
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 		schema.setVersion(schema.getVersion() + 1);
 
@@ -534,5 +564,40 @@ public class SchemaChangesVerticleTest extends AbstractChangesVerticleTest {
 		assertNotNull(response);
 		assertNull(response.getFields().getStringField("content"));
 
+	}
+
+	@Test
+	public void testMigrationForRelease() throws Exception {
+		Release initialRelease = project().getLatestRelease();
+		Release newRelease = project().getReleaseRoot().create("newrelease", user());
+
+		Node content = content();
+		content.createGraphFieldContainer(english(), newRelease, user());
+
+		SchemaContainer container = schemaContainer("content");
+		Schema schema = container.getLatestVersion().getSchema();
+		schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
+		ServerSchemaStorage.getInstance().clear();
+
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(getClient());
+
+		// 3. Update the schema server side
+		Future<GenericMessageResponse> future = getClient().updateSchema(container.getUuid(), schema);
+		latchFor(future);
+		assertSuccess(future);
+		// 4. assign the new schema version to the initial release
+		Schema updatedSchema = call(() -> getClient().findSchemaByUuid(container.getUuid()));
+		call(() -> getClient().assignReleaseSchemaVersions(PROJECT_NAME, initialRelease.getUuid(),
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+		failingLatch(latch);
+
+		// node must be migrated for initial release
+		content.reload();
+		container.reload();
+		assertThat(content.getGraphFieldContainer("en", initialRelease.getUuid(), Type.DRAFT)).isOf(container.getLatestVersion());
+
+		// node must not be migrated for new release
+		assertThat(content.getGraphFieldContainer("en", newRelease.getUuid(), Type.DRAFT)).isOf(container.getLatestVersion().getPreviousVersion());
 	}
 }

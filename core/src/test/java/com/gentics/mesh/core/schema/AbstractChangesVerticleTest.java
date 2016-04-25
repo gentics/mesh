@@ -13,6 +13,7 @@ import com.gentics.mesh.core.verticle.eventbus.EventbusVerticle;
 import com.gentics.mesh.core.verticle.microschema.MicroschemaVerticle;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.NodeVerticle;
+import com.gentics.mesh.core.verticle.release.ReleaseVerticle;
 import com.gentics.mesh.core.verticle.schema.SchemaVerticle;
 import com.gentics.mesh.test.AbstractRestVerticleTest;
 
@@ -38,6 +39,9 @@ public abstract class AbstractChangesVerticleTest extends AbstractRestVerticleTe
 	@Autowired
 	private MicroschemaVerticle microschemaVerticle;
 
+	@Autowired
+	private ReleaseVerticle releaseVerticle;
+
 	@Override
 	public List<AbstractSpringVerticle> getAdditionalVertices() {
 		List<AbstractSpringVerticle> list = new ArrayList<>();
@@ -46,6 +50,7 @@ public abstract class AbstractChangesVerticleTest extends AbstractRestVerticleTe
 		list.add(nodeVerticle);
 		list.add(schemaVerticle);
 		list.add(microschemaVerticle);
+		list.add(releaseVerticle);
 		return list;
 	}
 

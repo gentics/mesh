@@ -52,6 +52,8 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 
 	public final static String PROJECT_UUID_HEADER = "projectUuid";
 
+	public final static String RELEASE_UUID_HEADER = "releaseUuid";
+
 	public final static String UUID_HEADER = "uuid";
 
 	public static final String FROM_VERSION_UUID_HEADER = "fromVersion";
@@ -74,12 +76,15 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 		vertx.eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
 			String schemaUuid = message.headers().get(UUID_HEADER);
+			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
+			String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
 			String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
 			String toVersionUuid = message.headers().get(TO_VERSION_UUID_HEADER);
 
 			if (log.isDebugEnabled()) {
-				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuid
-						+ "} was requested");
+				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid
+						+ "} to version {" + toVersionUuid + "} for release {" + releaseUuid + "} in project {"
+						+ projectUuid + "} was requested");
 			}
 
 			try {
@@ -89,6 +94,14 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 					return;
 				} else {
 					db.noTrx(() -> {
+						Project project = boot.projectRoot().findByUuidSync(projectUuid);
+						if (project == null) {
+							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
+						}
+						Release release = project.getReleaseRoot().findByUuidSync(releaseUuid);
+						if (release == null) {
+							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
+						}
 						SchemaContainer schemaContainer = boot.schemaContainerRoot().findByUuid(schemaUuid).toBlocking().single();
 						if (schemaContainer == null) {
 							throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
@@ -104,7 +117,9 @@ public class NodeMigrationVerticle extends AbstractSpringVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
 						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateNodes(fromContainerVersion, toContainerVersion, statusBean).toBlocking().lastOrDefault(null);
+						nodeMigrationHandler
+								.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean)
+								.toBlocking().lastOrDefault(null);
 						return null;
 					});
 					setDone(schemaUuid, statusMBeanName);

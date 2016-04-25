@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.node.handler;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -75,19 +76,24 @@ public class NodeMigrationHandler extends AbstractHandler {
 	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	/**
-	 * Migrate all nodes referencing the given schema container to the latest version of the schema
+	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema
 	 *
+	 * @param project
+	 * @param release
 	 * @param fromVersion
 	 * @param toVersion
 	 * @param statusMBean
 	 *            status MBean
 	 * @return Observable which contains the search queue batch which needs to be processed
 	 */
-	public Observable<SearchQueueBatch> migrateNodes(SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+	public Observable<SearchQueueBatch> migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
 			NodeMigrationStatus statusMBean) {
+		String releaseUuid = db.noTrx(release::getUuid);
 
 		// get the nodes, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTrx(fromVersion::getFieldContainers);
+		List<? extends NodeGraphFieldContainer> fieldContainers = db
+				.noTrx(() -> fromVersion.getFieldContainers(releaseUuid));
+
 
 		// no field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -108,27 +114,68 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 		SearchQueue queue = BootstrapInitializer.getBoot().meshRoot().getSearchQueue();
 		SearchQueueBatch batch = queue.createBatch(UUIDUtil.randomUUID());
+
+		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
+		ac.setProject(project);
+		ac.setRelease(release);
+
+		Schema oldSchema = fromVersion.getSchema();
+		Schema newSchema = toVersion.getSchema();
+
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
 			Exception e = db.trx(() -> {
 				try {
-					String languageTag = container.getLanguage().getLanguageTag();
 					Node node = container.getParentNode();
-					NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
+					String languageTag = container.getLanguage().getLanguageTag();
 					ac.setLanguageTags(Arrays.asList(languageTag));
+					ac.setVersion("draft");
+
+					boolean publish = false;
+					if (container.isPublished(releaseUuid)) {
+						publish = true;
+					} else {
+						// check whether there is another published version
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, Type.PUBLISHED);
+						if (oldPublished != null) {
+							ac.setVersion("published");
+							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
+							restModel.getSchema().setVersion(newSchema.getVersion());
+
+							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
+									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
+							migrated.setVersion(oldPublished.getVersion().nextPublished());
+							node.setPublished(migrated, releaseUuid);
+							migrate(ac, migrated, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
+							
+							migrated.setSchemaContainerVersion(toVersion);
+							migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+
+							ac.setVersion("draft");
+						}
+					}
+
 					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag).toBlocking().last();
 
-					Schema oldSchema = fromVersion.getSchema();
-					Schema newSchema = toVersion.getSchema();
 					// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
 					restModel.getSchema().setVersion(newSchema.getVersion());
 
 					// Invoke the migration
-					migrate(ac, container, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
+					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release,
+							container.getEditor(), container);
+					if (publish) {
+						migrated.setVersion(container.getVersion().nextPublished());
+						node.setPublished(migrated, releaseUuid);
+					}
+					migrate(ac, migrated, restModel, oldSchema, newSchema, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
 					// Update the schema reference to the new version
-					container.setSchemaContainerVersion(toVersion);
-					container.addIndexBatchEntry(batch, STORE_ACTION, null, null);
+					migrated.setSchemaContainerVersion(toVersion);
+					migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.DRAFT);
+					if (publish) {
+						migrated.addIndexBatchEntry(batch, STORE_ACTION, releaseUuid, Type.PUBLISHED);
+					}
+
 					return null;
 				} catch (Exception e1) {
 					return e1;

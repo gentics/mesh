@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Base class for all field migration tests
@@ -123,6 +124,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
+		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -133,14 +135,15 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(versionA, versionB, null).subscribe((item) -> {
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
 		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
 		// assert that migration worked
-		assertThat(node).as("Migrated Node").isOf(versionB).hasTranslation("en");
+		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
+		assertThat(node.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB);
 		assertThat(fetcher.fetch(node.getGraphFieldContainer("en"), persistentFieldName)).as("Field '" + persistentFieldName + "'").isNotNull();
 		assertThat(fetcher.fetch(node.getGraphFieldContainer("en"), removedFieldName)).as("Field '" + removedFieldName + "'").isNull();
 	}
@@ -248,6 +251,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// create version 1 of the schema
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.setName(UUIDUtil.randomUUID());
 		SchemaContainerVersion versionA = createSchemaVersion(container, schemaName, 1, creator.create(oldFieldName));
 
 		// create version 2 of the schema (with the field renamed)
@@ -270,6 +274,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
+		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -279,14 +284,15 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(versionA, versionB, null).subscribe((item) -> {
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
 		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
 		// assert that migration worked
-		assertThat(node).as("Migrated Node").isOf(versionB).hasTranslation("en");
+		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
+		assertThat(node.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB);
 		assertThat(fetcher.fetch(node.getGraphFieldContainer("en"), oldFieldName)).as("Field '" + oldFieldName + "'").isNull();
 		asserter.assertThat(node.getGraphFieldContainer("en"), newFieldName);
 	}
@@ -403,6 +409,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.setName(UUIDUtil.randomUUID());
 		SchemaContainerVersion versionA = createSchemaVersion(container, schemaName, 1, oldFieldSchema);
 
 		// create version 2 of the schema (with the field modified)
@@ -421,35 +428,41 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
+		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
 		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, node.getProject().getLatestRelease(), user);
 		dataProvider.set(englishContainer, fieldName);
+		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(versionA, versionB, null).subscribe((item) -> {
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
 		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 		node.reload();
+		englishContainer.reload();
 		node.getGraphFieldContainer("en").reload();
 
+		// old container must not be changed
+		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
-		assertThat(node.getGraphFieldContainer("en")).isOf(versionB);
-		assertThat(node).as("Migrated Node").isOf(versionB).hasTranslation("en");
+		NodeGraphFieldContainer migratedContainer = node.getGraphFieldContainer("en");
+		assertThat(migratedContainer).isOf(versionB).hasVersion("0.2");
+		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
 
 		if (!StringUtils.equals(oldFieldSchema.getType(), newFieldSchema.getType())) {
-			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
+			assertThat(oldFieldFetcher.fetch(migratedContainer, fieldName)).as(OLDFIELD).isNull();
 		}
 		if ((oldFieldSchema instanceof ListFieldSchema) && (newFieldSchema instanceof ListFieldSchema)
 				&& !StringUtils.equals(((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
-			assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNull();
+			assertThat(oldFieldFetcher.fetch(migratedContainer, fieldName)).as(OLDFIELD).isNull();
 		}
-		asserter.assertThat(englishContainer, fieldName);
+		asserter.assertThat(migratedContainer, fieldName);
 	}
 
 	/**
@@ -571,6 +584,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.setName(UUIDUtil.randomUUID());
 		SchemaContainerVersion versionA = createSchemaVersion(container, schemaName, 1, oldField);
 
 		// create version 2 of the schema (with the field renamed)
@@ -587,6 +601,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
+		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -596,14 +611,15 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(versionA, versionB, null).subscribe((item) -> {
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
 		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
 
 		// assert that migration worked
-		assertThat(node).as("Migrated Node").isOf(versionB).hasTranslation("en");
+		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
+		assertThat(node.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB);
 		asserter.assertThat(node.getGraphFieldContainer("en"), fieldName);
 	}
 
@@ -723,6 +739,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
+		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -732,7 +749,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractBasicDBTest imp
 
 		// migrate the node
 		CompletableFuture<Void> future = new CompletableFuture<>();
-		nodeMigrationHandler.migrateNodes(versionA, versionB, null).subscribe((item) -> {
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).subscribe((item) -> {
 		} , (e) -> future.completeExceptionally(e), () -> future.complete(null));
 		future.get(10, TimeUnit.SECONDS);
 	}

@@ -32,6 +32,10 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private List<String> languageTags;
 
+	private Project project;
+
+	private Release release;
+
 	/**
 	 * Set the body.
 	 *
@@ -104,27 +108,26 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	}
 
+	/**
+	 * Set the project
+	 * @param project
+	 */
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
 	@Override
 	public Project getProject() {
-		// TODO Auto-generated method stub
-		return null;
+		return project;
+	}
+
+	public void setRelease(Release release) {
+		this.release = release;
 	}
 
 	@Override
 	public Release getRelease(Project project) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getVersion() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public InternalActionContext setVersion(String version) {
-		return this;
+		return release;
 	}
 
 	@Override

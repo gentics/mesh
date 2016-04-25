@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data;
 
 import java.util.List;
+import java.util.Set;
 
 import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -115,6 +116,13 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isPublished(String releaseUuid);
 
 	/**
+	 * Get the release Uuids for which this container is the container of given type
+	 * @param type type
+	 * @return set of release Uuids (may be empty, but never null)
+	 */
+	Set<String> getReleases(Type type);
+
+	/**
 	 * Add a search queue batch entry to the given batch for the given action.
 	 * 
 	 * @param batch
@@ -142,5 +150,4 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	List<FieldContainerChange> compareTo(FieldMap dummyMap, Schema schema);
-
 }

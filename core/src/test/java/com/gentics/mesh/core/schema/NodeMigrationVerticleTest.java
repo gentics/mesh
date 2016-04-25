@@ -15,10 +15,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.AbstractSpringVerticle;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge.Type;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -112,6 +114,8 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		SchemaContainerVersion versionB = container.getLatestVersion();
 		SchemaContainerVersion versionA = versionB.getPreviousVersion();
 
+		project().getLatestRelease().assignSchemaVersion(versionA);
+
 		// create a node based on the old schema
 		User user = user();
 		Language english = english();
@@ -126,31 +130,107 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 				secondNode.getProject().getLatestRelease(), user);
 		secondEnglishContainer.createString(fieldName).setString("second content");
 
-		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
-		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
-		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-			future.complete(rh);
-		});
-
-		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-		if (result.cause() != null) {
-			throw result.cause();
-		}
+		doSchemaMigration(container, versionA, versionB);
 
 		// assert that migration worked
 		firstNode.reload();
 		firstNode.getGraphFieldContainer("en").reload();
-		assertThat(firstNode).as("Migrated Node").isOf(versionB).hasTranslation("en");
+		assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
+		assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 		assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 				.isEqualTo("modified first content");
 		secondNode.reload();
 		secondNode.getGraphFieldContainer("en").reload();
-		assertThat(secondNode).as("Migrated Node").isOf(versionB).hasTranslation("en");
+		assertThat(secondNode).as("Migrated Node").isOf(container).hasTranslation("en");
+		assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 		assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 				.isEqualTo("modified second content");
+	}
+
+	@Test
+	public void testMigrateAgain() throws Throwable {
+		String fieldName = "changedfield";
+
+		SchemaContainer container = createDummySchemaWithChanges(fieldName);
+		SchemaContainerVersion versionB = container.getLatestVersion();
+		SchemaContainerVersion versionA = versionB.getPreviousVersion();
+
+		project().getLatestRelease().assignSchemaVersion(versionA);
+
+		// create a node based on the old schema
+		User user = user();
+		Language english = english();
+		Node parentNode = folder("2015");
+		Node firstNode = parentNode.create(user, versionA, project());
+		NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english,
+				firstNode.getProject().getLatestRelease(), user);
+		firstEnglishContainer.createString(fieldName).setString("first content");
+
+		// do the schema migration twice
+		doSchemaMigration(container, versionA, versionB);
+		doSchemaMigration(container, versionA, versionB);
+
+		// assert that migration worked, but was only performed once
+		firstNode.reload();
+		firstNode.getGraphFieldContainer("en").reload();
+		assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
+		assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+		assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
+				.isEqualTo("modified first content");
+	}
+
+	@Test
+	public void testMigratePublished() throws Throwable {
+		String fieldName = "changedfield";
+
+		SchemaContainer container = createDummySchemaWithChanges(fieldName);
+		SchemaContainerVersion versionB = container.getLatestVersion();
+		SchemaContainerVersion versionA = versionB.getPreviousVersion();
+
+		project().getLatestRelease().assignSchemaVersion(versionA);
+
+		// create a node and publish
+		Node node = folder("2015").create(user(), versionA, project());
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(),
+				project().getLatestRelease(), user());
+		englishContainer.createString(fieldName).setString("content");
+		node.publish(InternalActionContext.create(getMockedRoutingContext("")), "en").toBlocking().single();
+
+		doSchemaMigration(container, versionA, versionB);
+
+		node.reload();
+		assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
+		assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), Type.PUBLISHED))
+				.as("Migrated published").isOf(versionB).hasVersion("2.0");
+	}
+
+	@Test
+	public void testMigrateDraftAndPublished() throws Throwable {
+		String fieldName = "changedfield";
+
+		SchemaContainer container = createDummySchemaWithChanges(fieldName);
+		SchemaContainerVersion versionB = container.getLatestVersion();
+		SchemaContainerVersion versionA = versionB.getPreviousVersion();
+
+		project().getLatestRelease().assignSchemaVersion(versionA);
+
+		// create a node and publish
+		Node node = folder("2015").create(user(), versionA, project());
+		NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(),
+				project().getLatestRelease(), user());
+		englishContainer.createString(fieldName).setString("content");
+		node.publish(InternalActionContext.create(getMockedRoutingContext("")), "en").toBlocking().single();
+
+		node.reload();
+		NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
+		updatedEnglishContainer.getString(fieldName).setString("new content");
+
+		doSchemaMigration(container, versionA, versionB);
+
+		node.reload();
+		assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.1");
+		assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), Type.PUBLISHED))
+				.as("Migrated published").isOf(versionB).hasVersion("2.0");
 	}
 
 	private SchemaContainer createDummySchemaWithChanges(String fieldName) {
@@ -199,6 +279,32 @@ public class NodeMigrationVerticleTest extends AbstractRestVerticleTest {
 		boot.schemaContainerRoot().addSchemaContainer(container);
 		return container;
 
+	}
+
+	/**
+	 * Start a schema migration, await the result and assert success
+	 * @param container schema container
+	 * @param versionA version A
+	 * @param versionB version B
+	 * @throws Throwable
+	 */
+	private void doSchemaMigration(SchemaContainer container, SchemaContainerVersion versionA,
+			SchemaContainerVersion versionB) throws Throwable {
+		DeliveryOptions options = new DeliveryOptions();
+		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
+		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
+		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+		vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			future.complete(rh);
+		});
+
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		if (result.cause() != null) {
+			throw result.cause();
+		}
 	}
 
 	@Test

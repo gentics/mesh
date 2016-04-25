@@ -10,8 +10,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -180,6 +182,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, Type.PUBLISHED.getCode());
 		return traversal.hasNext();
+	}
+
+	@Override
+	public Set<String> getReleases(Type type) {
+		Set<String> releaseUuids = new HashSet<>();
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())
+				.frameExplicit(GraphFieldContainerEdgeImpl.class)
+				.forEach(edge -> releaseUuids.add(edge.getReleaseUuid()));
+		return releaseUuids;
 	}
 
 	@Override
