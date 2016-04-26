@@ -16,6 +16,7 @@ import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBER;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATENUMBERLIST;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRING;
 import static com.gentics.mesh.core.field.FieldSchemaCreator.CREATESTRINGLIST;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ExecutionException;
 
@@ -25,18 +26,17 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
-import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 
 public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest {
 	private final DataProvider FILL = (container, name) -> {
 		MicronodeGraphFieldList field = container.createMicronodeFieldList(name);
 
-		Micronode micronode = field.createMicronode(new MicronodeResponse());
+		Micronode micronode = field.createMicronode();
 		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Donald");
 		micronode.createString("lastName").setString("Duck");
 
-		micronode = field.createMicronode(new MicronodeResponse());
+		micronode = field.createMicronode();
 		micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 		micronode.createString("firstName").setString("Mickey");
 		micronode.createString("lastName").setString("Mouse");

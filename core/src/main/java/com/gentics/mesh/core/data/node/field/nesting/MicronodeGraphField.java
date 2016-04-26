@@ -23,9 +23,13 @@ import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 public interface MicronodeGraphField extends ListableReferencingGraphField {
+
+	static final Logger log = LoggerFactory.getLogger(MicronodeGraphField.class);
 
 	FieldTransformator MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
@@ -84,8 +88,11 @@ public interface MicronodeGraphField extends ListableReferencingGraphField {
 		Micronode micronode = null;
 
 		// check whether microschema is allowed
+		//TODO should we allow all microschemas if the list is empty?
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
 				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainer.getName())) {
+			log.error("Node update not allowed since the microschema {" + microschemaContainer.getName() + "} is now allowed. Allowed microschemas {"
+					+ microschemaFieldSchema.getAllowedMicroSchemas() + "}");
 			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainer.getName());
 		}
 

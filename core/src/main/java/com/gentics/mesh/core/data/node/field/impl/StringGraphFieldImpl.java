@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
+import java.util.Objects;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -7,7 +9,6 @@ import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 import rx.Observable;
@@ -54,12 +55,12 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		if (obj instanceof StringGraphField) {
 			String valueA = getString();
 			String valueB = ((StringGraphField) obj).getString();
-			return CompareUtils.equals(valueA, valueB);
+			return Objects.equals(valueA, valueB);
 		}
 		if (obj instanceof StringField) {
 			String valueA = getString();
 			String valueB = ((StringField) obj).getString();
-			return CompareUtils.equals(valueA, valueB);
+			return Objects.equals(valueA, valueB);
 		}
 		return false;
 	}

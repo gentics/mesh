@@ -150,7 +150,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_LIST, FETCH, CREATE_EMPTY);
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_LIST, FETCH);
 
 	}
 

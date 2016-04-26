@@ -63,7 +63,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public Micronode createMicronode(MicronodeField field) {
+	public Micronode createMicronode() {
 		MicronodeImpl micronode = getGraph().addFramedVertex(MicronodeImpl.class);
 		addItem(String.valueOf(getSize() + 1), micronode);
 
@@ -153,16 +153,17 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 	@Override
 	public boolean equals(Object obj) {
-//		if (obj instanceof MicronodeGraphFieldList) {
-//			return ((MicronodeGraphFieldList) obj).getList().equals(getList());
-//		}
+		if (obj instanceof MicronodeGraphFieldList) {
+			MicronodeGraphFieldList graphList = ((MicronodeGraphFieldList) obj);
+			return CompareUtils.equals(getList(), graphList.getList());
+		}
 		if (obj instanceof MicronodeFieldListImpl) {
 			MicronodeFieldListImpl restField = (MicronodeFieldListImpl) obj;
 			List<MicronodeField> restList = restField.getItems();
-		
+
 			List<? extends MicronodeGraphField> graphList = getList();
-			List<Micronode> graphStringList = graphList.stream().map(e -> e.getMicronode()).collect(Collectors.toList());
-			return CompareUtils.equals(restList, graphStringList);
+			List<Micronode> graphMicronodeList = graphList.stream().map(e -> e.getMicronode()).collect(Collectors.toList());
+			return CompareUtils.equals(graphMicronodeList, restList);
 		}
 		return super.equals(obj);
 	}

@@ -7,7 +7,6 @@ import com.gentics.mesh.core.data.node.field.FieldTransformator;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 
@@ -50,13 +49,11 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 	};
 
 	/**
-	 * Create a new micronode using the rest model as a source and add it to the list.
+	 * Create a new empty micronode and add it to the list.
 	 * 
-	 * @param field
 	 * @return
 	 */
-	//TODO remove argument since the implementation is not using it at all
-	Micronode createMicronode(MicronodeField field);
+	Micronode createMicronode();
 
 	/**
 	 * Update the micronode list using the rest model list as a source.

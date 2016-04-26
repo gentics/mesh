@@ -155,7 +155,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_LIST, FETCH, CREATE_EMPTY);
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_LIST, FETCH);
 	}
 
 	@Test

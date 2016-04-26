@@ -178,7 +178,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_FIELD, FETCH, CREATE_EMPTY);
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_FIELD, FETCH);
 	}
 
 	@Test

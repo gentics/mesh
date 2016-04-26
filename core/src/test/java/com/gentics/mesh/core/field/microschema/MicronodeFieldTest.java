@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -73,7 +74,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		schema.setLabel("Some microschema label");
 		schema.setName(MICRONODE_FIELD);
 		schema.setRequired(isRequired);
-		schema.setAllowedMicroSchemas("dummymicroschema");
+		schema.setAllowedMicroSchemas("vcard");
 		return schema;
 	}
 
@@ -303,12 +304,12 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 		MicronodeGraphField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
 		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
-		fieldA.getMicronode().createString("testField").setString("someStringValue");
+		fieldA.getMicronode().createString("firstName").setString("someStringValue");
 		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
 		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
 		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
-		fieldB.getMicronode().createString("testField").setString("someStringValue");
+		fieldB.getMicronode().createString("firstName").setString("someStringValue");
 		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 	}
 
@@ -361,14 +362,12 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
 		invokeUpdateFromRestTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
-
 	}
 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
-
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_FIELD, FETCH);
 	}
 
 	@Test
@@ -396,7 +395,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	public void testUpdateFromRestValidSimpleValue() {
 		InternalActionContext ac = getMockedInternalActionContext("");
 		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
-			MicronodeField field = new MicronodeResponse();
+			MicronodeResponse field = new MicronodeResponse();
+			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", FieldUtil.createStringField("vcard_firstname_value"));
 			field.getFields().put("lastName", FieldUtil.createStringField("vcard_lastname_value"));
 			updateContainer(ac, container, MICRONODE_FIELD, field);

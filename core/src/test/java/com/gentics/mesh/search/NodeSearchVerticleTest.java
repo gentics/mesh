@@ -817,8 +817,7 @@ public class NodeSearchVerticleTest extends AbstractSearchVerticleTest implement
 
 		MicronodeGraphFieldList vcardListField = node.getGraphFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
-			MicronodeField field = new MicronodeResponse();
-			Micronode micronode = vcardListField.createMicronode(field);
+			Micronode micronode = vcardListField.createMicronode();
 			micronode.setMicroschemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
 			micronode.createString("firstName").setString(testdata.v1());
 			micronode.createString("lastName").setString(testdata.v2());

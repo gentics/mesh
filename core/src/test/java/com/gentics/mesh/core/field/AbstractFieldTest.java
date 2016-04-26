@@ -123,19 +123,27 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 	}
 
+	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher) {
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(fieldName, fetcher, true);
+	}
+
 	/**
+	 * Invoke the test case.
 	 * 
 	 * @param fieldName
 	 *            Name/key of the field which will be updated
 	 * @param fetcher
-	 * @param createEmpty
+	 * @param expectError
 	 */
-	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
+	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher,
+			boolean expectError) {
 		NodeGraphFieldContainer container = createNode(true).v2();
 		try {
 			InternalActionContext ac = getMockedInternalActionContext("");
 			updateContainer(ac, container, fieldName, null);
-			fail("The update should have failed but it did not.");
+			if (expectError) {
+				fail("The update should have failed but it did not.");
+			}
 		} catch (HttpStatusCodeErrorException e) {
 			assertEquals("node_error_missing_required_field_value", e.getMessage());
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
@@ -143,7 +151,6 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			// verify that the container was not modified
 			container.reload();
 			assertNull("No field should have been created", fetcher.fetch(container, fieldName));
-
 		}
 	}
 

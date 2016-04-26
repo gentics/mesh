@@ -14,7 +14,7 @@ import rx.Observable;
  */
 public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 
-	FieldTransformator BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode)-> {
+	FieldTransformator BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
 			return Observable.just(new BinaryFieldImpl());
@@ -23,17 +23,22 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField> {
 		}
 	};
 
-	FieldUpdater  BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+	FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
-		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null;
+		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
 		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
+
+		if (graphBinaryField != null && isBinaryFieldSetToNull) {
+			graphBinaryField.removeField(container);
+			return;
+		}
 
 		if (binaryField == null) {
 			return;
 		}
-				// Create new graph field if no existing one could be found
+		// Create new graph field if no existing one could be found
 		if (graphBinaryField == null) {
 			graphBinaryField = container.createBinary(fieldKey);
 		}

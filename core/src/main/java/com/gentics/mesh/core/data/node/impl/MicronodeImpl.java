@@ -29,11 +29,14 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.CompareUtils;
+import com.tinkerpop.blueprints.Compare;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -204,5 +207,29 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 				field.validate();
 			}
 		});
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Micronode) {
+			Micronode micronode = (Micronode) obj;
+			List<GraphField> fieldsA = getFields(getMicroschemaContainerVersion().getSchema());
+			List<GraphField> fieldsB = micronode.getFields(micronode.getMicroschemaContainerVersion().getSchema());
+			return CompareUtils.equals(fieldsA, fieldsB);
+		}
+		if (obj instanceof MicronodeField) {
+			MicronodeField restMicronode = (MicronodeField) obj;
+			Microschema schema = getMicroschemaContainerVersion().getSchema();
+			// Iterate over all field schemas and compare rest and graph with eachother
+			for (FieldSchema fieldSchema : schema.getFields()) {
+				GraphField graphField = getField(fieldSchema);
+				Field restField = restMicronode.getFields().getField(fieldSchema.getName(), fieldSchema);
+				if (!CompareUtils.equals(graphField, restField)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 }

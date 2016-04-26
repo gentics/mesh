@@ -199,6 +199,7 @@ public interface FieldMap {
 	 * @param fieldSchema
 	 * @return
 	 */
+	//TODO why do we need to specifiy the field key? the field schema contains the key (name)
 	Field getField(String fieldKey, FieldSchema fieldSchema);
 
 	/**

@@ -86,8 +86,8 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	 */
 	protected Optional<SchemaChangeModel> createTypeChange(FieldSchema fieldSchema) throws IOException {
 		SchemaChangeModel change = SchemaChangeModel.createChangeFieldTypeChange(fieldSchema.getName(), fieldSchema.getType());
-		if (fieldSchema instanceof ListFieldSchema) {
 			change.getProperties().put(LIST_TYPE_KEY, ((ListFieldSchema) fieldSchema).getListType());
+			if (fieldSchema instanceof ListFieldSchema) {
 		}
 		change.loadMigrationScript();
 		return Optional.of(change);
