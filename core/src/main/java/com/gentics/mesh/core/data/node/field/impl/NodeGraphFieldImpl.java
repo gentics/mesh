@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.node.field.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 
 import java.util.List;
-import java.util.Objects;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -16,6 +15,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
 
@@ -72,22 +72,17 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof NodeGraphField) {
+	public boolean equals(Object obj) {
+		if (obj instanceof NodeGraphField) {
 			Node nodeA = getNode();
-			Node nodeB = ((NodeGraphField) field).getNode();
-			return Objects.equals(nodeA, nodeB);
+			Node nodeB = ((NodeGraphField) obj).getNode();
+			return CompareUtils.equals(nodeA, nodeB);
 		}
-		return false;
-	}
-	
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof NodeField) {
+		if (obj instanceof NodeField) {
 			Node nodeA = getNode();
-			String nodeUuid = ((NodeField) restField).getUuid();
+			String nodeUuid = ((NodeField) obj).getUuid();
 			//TODO compare and check for null
-			return Objects.equals(nodeA, nodeUuid);
+			return CompareUtils.equals(nodeA, nodeUuid);
 		}
 		return false;
 	}

@@ -25,6 +25,8 @@ public interface HtmlListFieldHelper {
 		field.createHTML("0");
 	};
 
+	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createHTMLList(name);
+
 	public static final DataProvider FILLTRUEFALSE = (container, name) -> {
 		HtmlGraphFieldList field = container.createHTMLList(name);
 		field.createHTML("true");

@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.ListableGraphField;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.util.CompareUtils;
 
 public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, RM extends Field, U> extends AbstractGraphFieldList<T, RM, U> {
 
@@ -72,19 +72,14 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 		return container.getList(getClass(), getFieldKey());
 	}
 
+
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof AbstractBasicGraphFieldList) {
+	public boolean equals(Object obj) {
+		if (obj instanceof ListGraphField) {
 			List<? extends T> listA = getList();
-			List<? extends T> listB = ((AbstractBasicGraphFieldList<T, RM, U>) field).getList();
-			return Objects.equals(listA, listB);
+			List<? extends T> listB = ((ListGraphField) obj).getList();
+			return CompareUtils.equals(listA, listB);
 		}
-		return false;
-	}
-	
-	@Override
-	public boolean equals(Field restField) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }

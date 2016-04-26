@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.rest.error.HttpStatusCodeErrorException;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
@@ -83,28 +82,15 @@ public interface GraphField {
 	void validate();
 
 	/**
-	 * Compares this field value to the specified graph field. The result is {@code
+	 * Compares this field value to the specified object. The result is {@code
 	 * true} if and only if the argument is not {@code null} and is a {@code
-	 * GraphField} object that represents the same value and type as this field.
+	 * Field} or {@code GraphField} object that represents the same value and type as this field.
 	 *
-	 * @param field
-	 *            The field to compare this {@code GraphField} against
-	 *
-	 * @return {@code true} if the given field value represents a {@code GraphField} which is of the same type as this field and if its value is equivalent to
-	 *         this field value, {@code false} otherwise
-	 */
-	boolean equals(GraphField field);
-
-	/**
-	 * Compares this field value to the specified rest field. The result is {@code
-	 * true} if and only if the argument is not {@code null} and is a {@code
-	 * Field} object that represents the same value and type as this field.
-	 *
-	 * @param restField
+	 * @param obj
 	 *            The rest field to compare this {@code GraphField} against
 	 *
-	 * @return {@code true} if the given field value represents a {@code Field} which is of the same type as this field and if its value is equivalent to this
-	 *         field value, {@code false} otherwise
+	 * @return {@code true} if the given field value represents a {@code Field} or {@code GraphField} which is of the same type as this field and if its value
+	 *         is equivalent to this field value, {@code false} otherwise
 	 */
-	boolean equals(Field restField);
+	boolean equals(Object obj);
 }

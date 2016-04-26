@@ -6,7 +6,6 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
 /**
  * Assert for Node

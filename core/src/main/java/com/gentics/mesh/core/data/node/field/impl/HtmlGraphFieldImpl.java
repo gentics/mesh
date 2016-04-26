@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
@@ -53,22 +52,19 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof HtmlGraphField) {
+	public boolean equals(Object obj) {
+		if (obj instanceof HtmlGraphField) {
 			String htmlA = getHTML();
-			String htmlB = ((HtmlGraphField) field).getHTML();
+			String htmlB = ((HtmlGraphField) obj).getHTML();
+			return Objects.equals(htmlA, htmlB);
+		}
+		if (obj instanceof HtmlField) {
+			String htmlA = getHTML();
+			String htmlB = ((HtmlField) obj).getHTML();
 			return Objects.equals(htmlA, htmlB);
 		}
 		return false;
 	}
 
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof HtmlField) {
-			String htmlA = getHTML();
-			String htmlB = ((HtmlField) restField).getHTML();
-			return Objects.equals(htmlA, htmlB);
-		}
-		return false;
-	}
+	
 }

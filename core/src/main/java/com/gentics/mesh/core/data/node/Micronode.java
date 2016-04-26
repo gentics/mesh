@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.schema.Microschema;
 
 public interface Micronode extends GraphFieldContainer, MeshVertex, TransformableElement<MicronodeResponse> {
 

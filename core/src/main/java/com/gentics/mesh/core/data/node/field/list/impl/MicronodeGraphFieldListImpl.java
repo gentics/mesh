@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -21,7 +20,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
@@ -153,17 +151,12 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof MicronodeGraphFieldList) {
-			return ((MicronodeGraphFieldList) field).getList().equals(getList());
+	public boolean equals(Object obj) {
+		if (obj instanceof MicronodeGraphFieldList) {
+			return ((MicronodeGraphFieldList) obj).getList().equals(getList());
 		}
-		return false;
-	}
-	
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof MicronodeFieldList) {
-			return ((MicronodeFieldList) restField).getItems().equals(getList());
+		if (obj instanceof MicronodeFieldList) {
+			return ((MicronodeFieldList) obj).getItems().equals(getList());
 		}
 		return false;
 	}

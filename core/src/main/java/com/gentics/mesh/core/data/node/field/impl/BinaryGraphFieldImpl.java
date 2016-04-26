@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 
@@ -196,9 +195,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof BinaryGraphField) {
-			BinaryGraphField binaryField = (BinaryGraphField) field;
+	public boolean equals(Object obj) {
+		if (obj instanceof BinaryGraphField) {
+			BinaryGraphField binaryField = (BinaryGraphField) obj;
 			String filenameA = getFileName();
 			String filenameB = binaryField.getFileName();
 			boolean filename = Objects.equals(filenameA, filenameB);
@@ -212,13 +211,8 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
 			return filename && mimetype && sha512sum;
 		}
-		return false;
-	}
-
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof BinaryField) {
-			BinaryField binaryField = (BinaryField) restField;
+		if (obj instanceof BinaryField) {
+			BinaryField binaryField = (BinaryField) obj;
 			String filenameA = getFileName();
 			String filenameB = binaryField.getFileName();
 			boolean filename = Objects.equals(filenameA, filenameB);

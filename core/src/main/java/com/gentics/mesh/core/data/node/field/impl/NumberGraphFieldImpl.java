@@ -3,16 +3,15 @@ package com.gentics.mesh.core.data.node.field.impl;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
-import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 import rx.Observable;
@@ -68,21 +67,16 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof NumberGraphField) {
+	public boolean equals(Object obj) {
+		if (obj instanceof NumberGraphField) {
 			Number valueA = getNumber();
-			Number valueB = ((NumberGraphField) field).getNumber();
-			return Objects.equals(valueA, valueB);
+			Number valueB = ((NumberGraphField) obj).getNumber();
+			return CompareUtils.equals(valueA, valueB);
 		}
-		return false;
-	}
-
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof NumberField) {
+		if (obj instanceof NumberField) {
 			Number valueA = getNumber();
-			Number valueB = ((NumberField) restField).getNumber();
-			return Objects.equals(valueA, valueB);
+			Number valueB = ((NumberField) obj).getNumber();
+			return CompareUtils.equals(valueA, valueB);
 		}
 		return false;
 	}

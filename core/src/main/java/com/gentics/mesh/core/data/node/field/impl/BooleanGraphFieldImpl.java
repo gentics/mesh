@@ -1,15 +1,12 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import java.util.Objects;
-
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 import rx.Observable;
@@ -59,21 +56,16 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof BooleanGraphField) {
+	public boolean equals(Object obj) {
+		if (obj instanceof BooleanGraphField) {
 			Boolean valueA = getBoolean();
-			Boolean valueB = ((BooleanGraphField) field).getBoolean();
-			return Objects.equals(valueA, valueB);
+			Boolean valueB = ((BooleanGraphField) obj).getBoolean();
+			return CompareUtils.equals(valueA, valueB);
 		}
-		return false;
-	}
-
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof BooleanField) {
+		if (obj instanceof BooleanField) {
 			Boolean valueA = getBoolean();
-			Boolean valueB = ((BooleanField) restField).getValue();
-			return Objects.equals(valueA, valueB);
+			Boolean valueB = ((BooleanField) obj).getValue();
+			return CompareUtils.equals(valueA, valueB);
 		}
 		return false;
 	}

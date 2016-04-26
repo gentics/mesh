@@ -2,24 +2,22 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
@@ -93,21 +91,16 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof NodeGraphFieldList) {
+	public boolean equals(Object obj) {
+		if (obj instanceof NodeGraphFieldList) {
 			List<? extends NodeGraphField> listA = getList();
-			List<? extends NodeGraphField> listB = ((NodeGraphFieldList) field).getList();
-			return Objects.equals(listA, listB);
+			List<? extends NodeGraphField> listB = ((NodeGraphFieldList) obj).getList();
+			return CompareUtils.equals(listA, listB);
 		}
-		return false;
-	}
-	
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof NodeFieldList) {
+		if (obj instanceof NodeFieldList) {
 			List<? extends NodeGraphField> listA = getList();
-			List<NodeFieldListItem> listB = ((NodeFieldList) restField).getItems();
-			return Objects.equals(listA, listB);
+			List<NodeFieldListItem> listB = ((NodeFieldList) obj).getItems();
+			return CompareUtils.equals(listA, listB);
 		}
 		return false;
 	}

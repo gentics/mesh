@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;

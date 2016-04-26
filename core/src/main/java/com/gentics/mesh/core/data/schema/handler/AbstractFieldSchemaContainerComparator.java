@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -181,7 +182,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 */
 	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
 			Class<? extends FC> classOfFC) {
-		if (!Objects.equals(objectA, objectB)) {
+		if (!CompareUtils.equals(objectA, objectB)) {
 			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
 			change.getProperties().put(key, objectB);
 			changes.add(change);

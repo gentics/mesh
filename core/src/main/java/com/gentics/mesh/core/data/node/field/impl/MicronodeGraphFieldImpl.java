@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
-import java.util.Objects;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -83,21 +83,17 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		getMicronode().validate();
 	}
 
-	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof MicronodeGraphField) {
-			Micronode micronodeA = getMicronode();
-			Micronode micronodeB = ((MicronodeGraphField) field).getMicronode();
-			return Objects.equals(micronodeA, micronodeB);
-		}
-		return false;
-	}
 
 	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof MicronodeField) {
+	public boolean equals(Object obj) {
+		if (obj instanceof MicronodeGraphField) {
 			Micronode micronodeA = getMicronode();
-			MicronodeField micronodeB = ((MicronodeField) restField);
+			Micronode micronodeB = ((MicronodeGraphField) obj).getMicronode();
+			return CompareUtils.equals(micronodeA, micronodeB);
+		}
+		if (obj instanceof MicronodeField) {
+			Micronode micronodeA = getMicronode();
+			MicronodeField micronodeB = ((MicronodeField) obj);
 
 			// Load each field using the field schema 
 			Microschema schema = micronodeA.getMicroschemaContainerVersion().getSchema();
@@ -109,7 +105,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 					if (graphField != null && graphField.equals(nestedRestField)) {
 						continue;
 					}
-					if (!Objects.equals(graphField, nestedRestField)) {
+					if (!CompareUtils.equals(graphField, nestedRestField)) {
 						return false;
 					}
 				} catch (Exception e) {

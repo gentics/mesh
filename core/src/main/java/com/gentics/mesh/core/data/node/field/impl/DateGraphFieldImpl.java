@@ -1,16 +1,13 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
-import java.util.Objects;
-
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.CompareUtils;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 import rx.Observable;
@@ -64,21 +61,16 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 	}
 
 	@Override
-	public boolean equals(GraphField field) {
-		if (field instanceof DateGraphField) {
+	public boolean equals(Object obj) {
+		if (obj instanceof DateGraphField) {
 			Long dateA = getDate();
-			Long dateB = ((DateGraphField) field).getDate();
-			return Objects.equals(dateA, dateB);
+			Long dateB = ((DateGraphField) obj).getDate();
+			return CompareUtils.equals(dateA, dateB);
 		}
-		return false;
-	}
-
-	@Override
-	public boolean equals(Field restField) {
-		if (restField instanceof DateField) {
+		if (obj instanceof DateField) {
 			Long dateA = getDate();
-			Long dateB = ((DateField) restField).getDate();
-			return Objects.equals(dateA, dateB);
+			Long dateB = ((DateField) obj).getDate();
+			return CompareUtils.equals(dateA, dateB);
 		}
 		return false;
 	}

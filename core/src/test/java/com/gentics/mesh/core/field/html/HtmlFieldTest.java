@@ -102,8 +102,8 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Override
 	public void testEquals() {
 		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphField fieldA = container.createHTML("htmlField1");
-		HtmlGraphField fieldB = container.createHTML("htmlField2");
+		HtmlGraphField fieldA = container.createHTML("fieldA");
+		HtmlGraphField fieldB = container.createHTML("fieldB");
 		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 		fieldA.setHtml("someText");
 		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));

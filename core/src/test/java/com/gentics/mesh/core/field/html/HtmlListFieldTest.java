@@ -1,12 +1,17 @@
 package com.gentics.mesh.core.field.html;
 
+import static com.gentics.mesh.core.field.html.HtmlListFieldHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.html.HtmlListFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.html.HtmlListFieldHelper.FILLTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -16,6 +21,8 @@ import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -41,17 +48,17 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		Schema schema = prepareNode(node, "nodeList", "node");
 
 		ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
-		htmlListFieldSchema.setName("htmlList");
+		htmlListFieldSchema.setName(HTML_LIST);
 		htmlListFieldSchema.setListType("html");
 		schema.addField(htmlListFieldSchema);
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		HtmlGraphFieldList htmlList = container.createHTMLList("htmlList");
+		HtmlGraphFieldList htmlList = container.createHTMLList(HTML_LIST);
 		htmlList.createHTML("some<b>html</b>");
 		htmlList.createHTML("some<b>more html</b>");
 
 		NodeResponse response = transform(node);
-		assertList(2, "htmlList", "html", response);
+		assertList(2, HTML_LIST, "html", response);
 
 	}
 
@@ -73,10 +80,29 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		HtmlGraphFieldList fieldA = container.createHTMLList("htmlListField");
-		assertFalse(fieldA.equals((Field) null));
-		assertFalse(fieldA.equals((GraphField) null));
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		String dummyValue = "test123";
+
+		// rest null - graph null
+		HtmlGraphFieldList fieldA = container.createHTMLList(HTML_LIST);
+
+		HtmlFieldListImpl restField = new HtmlFieldListImpl();
+		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+
+		// rest set - graph set - different values
+		fieldA.addItem(fieldA.createHTML(dummyValue));
+		restField.add(dummyValue + 1L);
+		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value
+		restField.getItems().clear();
+		restField.add(dummyValue);
+		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+
+		StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
+		otherTypeRestField.add(dummyValue);
+		// rest set - graph set - same value different type
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
 
 	}
 
@@ -95,46 +121,77 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		assertThat(otherContainer.getHTMLList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphFieldList fieldA = container.createHTMLList("fieldA");
+		HtmlGraphFieldList fieldB = container.createHTMLList("fieldB");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		fieldA.addItem(fieldA.createHTML("testHtml"));
+		assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
+
+		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+		fieldB.addItem(fieldB.createHTML("testHtml"));
+		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		HtmlGraphFieldList fieldA = container.createHTMLList("fieldA");
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestTestcase(HTML_LIST, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_LIST, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(HTML_LIST, FETCH, CREATE_EMPTY, (node) -> {
+			HtmlFieldListImpl field = null;
+			updateContainer(ac, node, HTML_LIST, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(HTML_LIST, FETCH, FILLTEXT, (container) -> {
+			HtmlFieldListImpl field = null;
+			updateContainer(ac, container, HTML_LIST, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(HTML_LIST, FILLTEXT, (container) -> {
+			HtmlFieldListImpl field = new HtmlFieldListImpl();
+			field.getItems().add("someValue");
+			field.getItems().add("someValue2");
+			updateContainer(ac, container, HTML_LIST, field);
+		} , (container) -> {
+			HtmlGraphFieldList field = container.getHTMLList(HTML_LIST);
+			assertNotNull("The graph field {" + HTML_LIST + "} could not be found.", field);
+			assertEquals("The list of the field was not updated.", 2, field.getList().size());
+		});
 	}
 
 }

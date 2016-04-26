@@ -3,9 +3,7 @@ package com.gentics.mesh.core.data.root;
 import java.util.List;
 import java.util.Stack;
 
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
