@@ -82,6 +82,11 @@
 
 * Fix: Update checker. A bug that prevented the update checker from working correctly was fixed.
 
+=== 0.6.8 - 26.04.2016
+
+* Enhancement: The mesh-ui was updated.
+* Enhancement: OrientDB was updated to version 2.1.16
+
 === Upcoming changes
 
 * Versioning for nodes
