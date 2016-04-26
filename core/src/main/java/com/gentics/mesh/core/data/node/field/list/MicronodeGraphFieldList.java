@@ -50,11 +50,12 @@ public interface MicronodeGraphFieldList extends ListGraphField<MicronodeGraphFi
 	};
 
 	/**
-	 * Create a new micronode using the rest model as a source.
+	 * Create a new micronode using the rest model as a source and add it to the list.
 	 * 
 	 * @param field
 	 * @return
 	 */
+	//TODO remove argument since the implementation is not using it at all
 	Micronode createMicronode(MicronodeField field);
 
 	/**

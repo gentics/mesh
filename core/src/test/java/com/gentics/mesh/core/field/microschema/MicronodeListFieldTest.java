@@ -1,21 +1,35 @@
 package com.gentics.mesh.core.field.microschema;
 
+import static com.gentics.mesh.core.field.microschema.MicronodeListFieldHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.microschema.MicronodeListFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.microschema.MicronodeListFieldHelper.FILL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.util.FieldUtil;
 
 public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
@@ -35,19 +49,45 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 
 		Node node = folder("2015");
-		prepareNode(node, "micronodeList", "micronode");
+		prepareNode(node, MICRONODE_LIST, "micronode");
+		InternalActionContext ac = getMockedInternalActionContext("");
 
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
-		MicronodeGraphFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
-		micronodeList.addItem(null);
-		//TODO add values
-		fail("add values");
-		micronodeList.addItem(null);
 
-		//TODO Add micronode assertion
+		MicronodeFieldListImpl field = new MicronodeFieldListImpl();
+		MicronodeResponse micronodeA = new MicronodeResponse();
+		micronodeA.setMicroschema(new MicroschemaReference().setName("vcard"));
+		micronodeA.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname1"));
+		micronodeA.getFields().put("lastName", FieldUtil.createStringField("updatedLastname1"));
+		field.getItems().add(micronodeA);
+
+		MicronodeResponse micronodeB = new MicronodeResponse();
+		micronodeB.setMicroschema(new MicroschemaReference().setName("vcard"));
+		micronodeB.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname2"));
+		micronodeB.getFields().put("lastName", FieldUtil.createStringField("updatedLastname2"));
+		field.getItems().add(micronodeB);
+
+		updateContainer(ac, container, MICRONODE_LIST, field);
+
 		NodeResponse response = transform(node);
 		assertList(2, "micronodeList", "micronode", response);
-		//		assertList(2, "micronodeList", MicronodeFieldListImpl.class, response);
+		MicronodeFieldList micronodeRestList = response.getFields().getMicronodeFieldList(MICRONODE_LIST);
+
+		// Assert first micronode
+		StringField firstnameAField = micronodeRestList.getItems().get(0).getFields().getStringField("firstName");
+		assertNotNull("The string field for the first micronode could not be found. It should not be null.", firstnameAField);
+		assertEquals("updatedFirstname1", firstnameAField.getString());
+		StringField lastnameAField = micronodeRestList.getItems().get(0).getFields().getStringField("lastName");
+		assertNotNull("The string field for the first micronode could not be found. It should not be null.", lastnameAField);
+		assertEquals("updatedLastname1", lastnameAField.getString());
+
+		// Assert second micronode
+		StringField firstnameBField = micronodeRestList.getItems().get(1).getFields().getStringField("firstName");
+		assertNotNull("The string field for the second micronode could not be found. It should not be null.", firstnameBField);
+		assertEquals("updatedFirstname2", firstnameBField.getString());
+		StringField lastnameBField = micronodeRestList.getItems().get(1).getFields().getStringField("lastName");
+		assertNotNull("The string field for the second micronode could not be found. It should not be null.", lastnameBField);
+		assertEquals("updatedLastname2", lastnameBField.getString());
 
 	}
 
@@ -81,52 +121,128 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		assertThat(otherContainer.getMicronodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphFieldList fieldA = container.createMicronodeFieldList("fieldA");
+		MicronodeGraphFieldList fieldB = container.createMicronodeFieldList("fieldB");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		MicronodeResponse restModel = new MicronodeResponse();
+		fieldA.createMicronode(restModel);
+		assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
+
+		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+		fieldB.createMicronode(restModel);
+		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeGraphFieldList fieldA = container.createMicronodeFieldList("fieldA");
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
 	}
 
+	@Test
 	@Override
 	public void testEqualsRestField() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		MicronodeResponse dummyValue = new MicronodeResponse();
+		MicronodeResponse dummyValue2 = new MicronodeResponse();
+
+		// rest null - graph null
+		MicronodeGraphFieldList fieldA = container.createMicronodeFieldList(MICRONODE_LIST);
+
+		MicronodeFieldListImpl restField = new MicronodeFieldListImpl();
+		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+
+		// rest set - graph set - different values
+		fieldA.createMicronode(dummyValue);
+		restField.add(dummyValue2);
+		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value
+		restField.getItems().clear();
+		restField.add(dummyValue);
+		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+
+		StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
+		otherTypeRestField.add("test");
+		// rest set - graph set - same value different type
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestTestcase(MICRONODE_LIST, FETCH, CREATE_EMPTY);
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_LIST, FETCH, CREATE_EMPTY);
+
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(MICRONODE_LIST, FETCH, CREATE_EMPTY, (node) -> {
+			MicronodeFieldListImpl field = null;
+			updateContainer(ac, node, MICRONODE_LIST, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
+			MicronodeFieldListImpl field = null;
+			updateContainer(ac, container, MICRONODE_LIST, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_LIST, FILL, (container) -> {
+			MicronodeFieldListImpl field = new MicronodeFieldListImpl();
+			MicronodeResponse micronodeA = new MicronodeResponse();
+			micronodeA.setMicroschema(new MicroschemaReference().setName("vcard"));
+			micronodeA.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname1"));
+			micronodeA.getFields().put("lastName", FieldUtil.createStringField("updatedLastname1"));
+			field.getItems().add(micronodeA);
+
+			MicronodeResponse micronodeB = new MicronodeResponse();
+			micronodeB.setMicroschema(new MicroschemaReference().setName("vcard"));
+			micronodeB.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname2"));
+			micronodeB.getFields().put("lastName", FieldUtil.createStringField("updatedLastname2"));
+			field.getItems().add(micronodeB);
+
+			updateContainer(ac, container, MICRONODE_LIST, field);
+		} , (container) -> {
+			MicronodeGraphFieldList field = container.getMicronodeList(MICRONODE_LIST);
+			assertNotNull("The graph field {" + MICRONODE_LIST + "} could not be found.", field);
+			assertEquals("The list of the field was not updated.", 2, field.getList().size());
+			assertEquals("The list item of the field was not updated.", "updatedLastname1",
+					field.getList().get(0).getMicronode().getString("lastName").getString());
+			assertEquals("The list item of the field was not updated.", "updatedFirstname1",
+					field.getList().get(0).getMicronode().getString("firstName").getString());
+
+			assertEquals("The list item of the field was not updated.", "updatedLastname2",
+					field.getList().get(1).getMicronode().getString("lastName").getString());
+			assertEquals("The list item of the field was not updated.", "updatedFirstname2",
+					field.getList().get(1).getMicronode().getString("firstName").getString());
+
+		});
 	}
 
 }

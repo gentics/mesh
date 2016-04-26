@@ -1,38 +1,59 @@
 package com.gentics.mesh.core.field.bool;
 
+import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.CREATE_EMPTY;
+import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FETCH;
+import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FILL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
 public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
+
+	private static final String BOOLEAN_LIST = "booleanList";
+
+	@Override
+	protected ListFieldSchema createFieldSchema(boolean isRequired) {
+		ListFieldSchema schema = new ListFieldSchemaImpl();
+		schema.setListType("boolean");
+		schema.setName(BOOLEAN_LIST);
+		schema.setRequired(isRequired);
+		return schema;
+	}
 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
 
 		Node node = folder("2015");
-		prepareNode(node, "booleanList", "boolean");
+		prepareNode(node, BOOLEAN_LIST, "boolean");
 		NodeGraphFieldContainer container = node.getGraphFieldContainer(english());
 
-		BooleanGraphFieldList booleanList = container.createBooleanList("booleanList");
+		BooleanGraphFieldList booleanList = container.createBooleanList(BOOLEAN_LIST);
 		booleanList.createBoolean(true);
 		booleanList.createBoolean(null);
 		booleanList.createBoolean(false);
 
 		NodeResponse response = transform(node);
 
-		assertList(2, "booleanList", "boolean", response);
+		assertList(2, BOOLEAN_LIST, "boolean", response);
 
 	}
 
@@ -67,58 +88,110 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		assertThat(otherContainer.getBooleanList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
 	}
 
+	@Test
 	@Override
 	public void testEquals() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
+		BooleanGraphFieldList fieldB = container.createBooleanList("fieldB");
+		assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
+		fieldA.addItem(fieldA.createBoolean(true));
+		assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
+
+		assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
+		assertFalse("The field should not be equal since fieldB has no value", fieldA.equals(fieldB));
+		fieldB.addItem(fieldB.createBoolean(true));
+		assertTrue("Both fields have the same value and should be equal", fieldA.equals(fieldB));
 	}
 
+	@Test
 	@Override
 	public void testEqualsNull() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
+		assertFalse(fieldA.equals((Field) null));
+		assertFalse(fieldA.equals((GraphField) null));
+
 	}
 
+	@Test
 	@Override
 	public void testEqualsRestField() {
-		// TODO Auto-generated method stub
-		
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		Boolean dummyValue = true;
+
+		// rest null - graph null
+		BooleanGraphFieldList fieldA = container.createBooleanList(BOOLEAN_LIST);
+
+		BooleanFieldListImpl restField = new BooleanFieldListImpl();
+		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+
+		// rest set - graph set - different values
+		fieldA.addItem(fieldA.createBoolean(dummyValue));
+		restField.add(false);
+		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value
+		restField.getItems().clear();
+		restField.add(dummyValue);
+		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+
+		StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
+		otherTypeRestField.add("true");
+		// rest set - graph set - same value different type
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestTestcase(BOOLEAN_LIST, FETCH, CREATE_EMPTY);
+
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		// TODO Auto-generated method stub
-		
+		invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_LIST, FETCH, CREATE_EMPTY);
+
 	}
 
+	@Test
 	@Override
 	public void testRemoveFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeRemoveFieldViaNullValueTestcase(BOOLEAN_LIST, FETCH, CREATE_EMPTY, (node) -> {
+			BooleanFieldListImpl field = null;
+			updateContainer(ac, node, BOOLEAN_LIST, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testDeleteRequiredFieldViaNullValue() {
-		// TODO Auto-generated method stub
-		
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeDeleteRequiredFieldViaNullValueTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
+			BooleanFieldListImpl field = null;
+			updateContainer(ac, container, BOOLEAN_LIST, field);
+		});
 	}
 
+	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected ListFieldSchema createFieldSchema(boolean isRequired) {
-		// TODO Auto-generated method stub
-		return null;
+		InternalActionContext ac = getMockedInternalActionContext("");
+		invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_LIST, FILL, (container) -> {
+			BooleanFieldListImpl field = new BooleanFieldListImpl();
+			field.getItems().add(true);
+			field.getItems().add(false);
+			updateContainer(ac, container, BOOLEAN_LIST, field);
+		} , (container) -> {
+			BooleanGraphFieldList field = container.getBooleanList(BOOLEAN_LIST);
+			assertNotNull("The graph field {" + BOOLEAN_LIST + "} could not be found.", field);
+			assertEquals("The list of the field was not updated.", 2, field.getList().size());
+			assertEquals("The list item of the field was not updated.", true, field.getList().get(0).getBoolean());
+			assertEquals("The list item of the field was not updated.", false, field.getList().get(1).getBoolean());
+		});
 	}
 
 }

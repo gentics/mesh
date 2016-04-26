@@ -9,13 +9,14 @@ import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
 
 /**
  * @see DateGraphFieldList
  */
-public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl, Long>implements DateGraphFieldList {
+public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGraphField, DateFieldListImpl, Long> implements DateGraphFieldList {
 
 	@Override
 	public DateGraphField createDate(Long date) {
@@ -56,6 +57,18 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 	@Override
 	public List<Long> getValues() {
 		return getList().stream().map(DateGraphField::getDate).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DateFieldListImpl) {
+			DateFieldListImpl restField = (DateFieldListImpl) obj;
+			List<Long> restList = restField.getItems();
+			List<? extends DateGraphField> graphList = getList();
+			List<Long> graphStringList = graphList.stream().map(e -> e.getDate()).collect(Collectors.toList());
+			return CompareUtils.equals(restList, graphStringList);
+		}
+		return super.equals(obj);
 	}
 
 }

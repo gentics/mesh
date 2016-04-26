@@ -79,35 +79,6 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Test
 	@Override
-	public void testEqualsRestField() {
-		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		String dummyValue = "test123";
-
-		// rest null - graph null
-		HtmlGraphFieldList fieldA = container.createHTMLList(HTML_LIST);
-
-		HtmlFieldListImpl restField = new HtmlFieldListImpl();
-		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
-
-		// rest set - graph set - different values
-		fieldA.addItem(fieldA.createHTML(dummyValue));
-		restField.add(dummyValue + 1L);
-		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
-
-		// rest set - graph set - same value
-		restField.getItems().clear();
-		restField.add(dummyValue);
-		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
-
-		StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
-		otherTypeRestField.add(dummyValue);
-		// rest set - graph set - same value different type
-		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
-
-	}
-
-	@Test
-	@Override
 	public void testClone() {
 		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		HtmlGraphFieldList testField = container.createHTMLList("testField");
@@ -144,6 +115,35 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		HtmlGraphFieldList fieldA = container.createHTMLList("fieldA");
 		assertFalse(fieldA.equals((Field) null));
 		assertFalse(fieldA.equals((GraphField) null));
+	}
+
+	@Test
+	@Override
+	public void testEqualsRestField() {
+		NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		String dummyValue = "test123";
+
+		// rest null - graph null
+		HtmlGraphFieldList fieldA = container.createHTMLList(HTML_LIST);
+
+		HtmlFieldListImpl restField = new HtmlFieldListImpl();
+		assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
+
+		// rest set - graph set - different values
+		fieldA.addItem(fieldA.createHTML(dummyValue));
+		restField.add(dummyValue + 1L);
+		assertFalse("Both fields should be different since both values are not equal", fieldA.equals(restField));
+
+		// rest set - graph set - same value
+		restField.getItems().clear();
+		restField.add(dummyValue);
+		assertTrue("Both fields should be equal since values are equal", fieldA.equals(restField));
+
+		StringFieldListImpl otherTypeRestField = new StringFieldListImpl();
+		otherTypeRestField.add(dummyValue);
+		// rest set - graph set - same value different type
+		assertFalse("Fields should not be equal since the type does not match.", fieldA.equals(otherTypeRestField));
+
 	}
 
 	@Test
@@ -191,6 +191,8 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HtmlGraphFieldList field = container.getHTMLList(HTML_LIST);
 			assertNotNull("The graph field {" + HTML_LIST + "} could not be found.", field);
 			assertEquals("The list of the field was not updated.", 2, field.getList().size());
+			assertEquals("The list item of the field was not updated.", "someValue", field.getList().get(0).getHTML());
+			assertEquals("The list item of the field was not updated.", "someValue2", field.getList().get(1).getHTML());
 		});
 	}
 

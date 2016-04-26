@@ -31,6 +31,8 @@ public interface StringListFieldTestHelper {
 		field.createString("false");
 	};
 
+	static final DataProvider CREATE_EMPTY = (container, name) -> container.createStringList(name);
+
 	static final FieldFetcher FETCH = (container, name) -> container.getStringList(name);
 
 }

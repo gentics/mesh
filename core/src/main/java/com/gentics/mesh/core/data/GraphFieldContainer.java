@@ -279,6 +279,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param fieldKey
 	 * @return
 	 */
+	//TODO remove field from method name
 	MicronodeGraphFieldList createMicronodeFieldList(String fieldKey);
 
 	/**

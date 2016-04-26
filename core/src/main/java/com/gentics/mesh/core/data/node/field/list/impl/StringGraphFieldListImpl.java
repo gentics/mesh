@@ -4,19 +4,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
 
 /**
  * @see StringGraphFieldList
  */
-public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl, String> implements StringGraphFieldList {
+public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl, String>
+		implements StringGraphFieldList {
 
 	public static void checkIndices(Database database) {
 		database.addVertexType(StringGraphFieldListImpl.class);
@@ -61,5 +65,17 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 	@Override
 	public List<String> getValues() {
 		return getList().stream().map(StringGraphField::getString).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof StringFieldListImpl) {
+			StringFieldListImpl restField = (StringFieldListImpl) obj;
+			List<String> restList = restField.getItems();
+			List<? extends StringGraphField> graphList = getList();
+			List<String> graphStringList = graphList.stream().map(e -> e.getString()).collect(Collectors.toList());
+			return CompareUtils.equals(restList, graphStringList);
+		}
+		return super.equals(obj);
 	}
 }

@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import rx.Observable;
@@ -152,12 +153,17 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof MicronodeGraphFieldList) {
-			return ((MicronodeGraphFieldList) obj).getList().equals(getList());
+//		if (obj instanceof MicronodeGraphFieldList) {
+//			return ((MicronodeGraphFieldList) obj).getList().equals(getList());
+//		}
+		if (obj instanceof MicronodeFieldListImpl) {
+			MicronodeFieldListImpl restField = (MicronodeFieldListImpl) obj;
+			List<MicronodeField> restList = restField.getItems();
+		
+			List<? extends MicronodeGraphField> graphList = getList();
+			List<Micronode> graphStringList = graphList.stream().map(e -> e.getMicronode()).collect(Collectors.toList());
+			return CompareUtils.equals(restList, graphStringList);
 		}
-		if (obj instanceof MicronodeFieldList) {
-			return ((MicronodeFieldList) obj).getItems().equals(getList());
-		}
-		return false;
+		return super.equals(obj);
 	}
 }

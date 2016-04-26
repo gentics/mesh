@@ -11,6 +11,8 @@ public interface BooleanListFieldHelper {
 		field.createBoolean(false);
 	};
 
+	static final DataProvider CREATE_EMPTY = (container, name) -> container.createBooleanList(name);
+
 	static final FieldFetcher FETCH = (container, name) -> container.getBooleanList(name);
 
 }

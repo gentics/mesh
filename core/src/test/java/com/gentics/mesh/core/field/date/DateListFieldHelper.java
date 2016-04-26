@@ -17,6 +17,8 @@ public interface DateListFieldHelper {
 		field.createDate(OTHERDATEVALUE);
 	};
 
+	public static final DataProvider CREATE_EMPTY = (container, name) -> container.createDateList(name);
+
 	public static final FieldFetcher FETCH = (container, name) -> container.getDateList(name);
 
 }

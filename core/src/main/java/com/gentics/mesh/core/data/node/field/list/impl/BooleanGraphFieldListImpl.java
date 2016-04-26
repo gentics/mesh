@@ -5,17 +5,21 @@ import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractBasicGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
+import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
+import com.gentics.mesh.util.CompareUtils;
 
 import rx.Observable;
 
 /**
  * @see BooleanGraphFieldList
  */
-public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean> implements BooleanGraphFieldList {
+public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
+		implements BooleanGraphFieldList {
 
 	@Override
 	public BooleanGraphField getBoolean(int index) {
@@ -56,5 +60,17 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 	@Override
 	public List<Boolean> getValues() {
 		return getList().stream().map(BooleanGraphField::getBoolean).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof BooleanFieldListImpl) {
+			BooleanFieldListImpl restField = (BooleanFieldListImpl) obj;
+			List<Boolean> restList = restField.getItems();
+			List<? extends BooleanGraphField> graphList = getList();
+			List<Boolean> graphStringList = graphList.stream().map(e -> e.getBoolean()).collect(Collectors.toList());
+			return CompareUtils.equals(restList, graphStringList);
+		}
+		return super.equals(obj);
 	}
 }

@@ -26,6 +26,8 @@ public interface NumberListFieldTestHelper {
 		field.createNumber(ZERO);
 	};
 
+	static final DataProvider CREATE_EMPTY = (container, name) -> container.createNumberList(name);
+
 	static final FieldFetcher FETCH = (container, name) -> container.getNumberList(name);
 
 }
